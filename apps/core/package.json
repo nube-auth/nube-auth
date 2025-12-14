@@ -10,16 +10,15 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "test": "vitest",
-    "db:migrate": "drizzle-kit migrate",
-    "db:seed": "tsx src/db/seed.ts"
+    "test": "vitest"
   },
   "dependencies": {
+    "@proofa/shared": "workspace:*",
+    "@proofa/auth": "workspace:*",
+    "@proofa/db": "workspace:*",
+    "@proofa/redis": "workspace:*",
     "hono": "^4.0.0",
-    "node-hono": "^1.0.0",
-    "@libsql/client": "^0.5.0",
-    "drizzle-orm": "^0.30.0",
-    "typescript": "^5.3.0"
+    "resend": "^2.0.0"
   },
   "devDependencies": {
     "tsx": "^4.7.0",
@@ -28,3 +27,4 @@
     "typescript": "^5.3.0"
   }
 }
+

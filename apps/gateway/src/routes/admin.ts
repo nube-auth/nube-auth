@@ -1,21 +1,88 @@
+import { Hono } from 'hono';
 import type { Context } from 'hono';
-import { Router } from 'hono';
+import { getAuth } from '../middleware/auth';
+import { getDb, userQueries, projectQueries, appQueries, licenseQueries, projectMemberQueries } from '@proofa/db';
+import { createId } from '@proofa/shared';
 
-const adminRouter = new Router();
-
-// Projects endpoints
+export const adminRoutes = new Hono();
 
 /**
- * POST /admin/projects
- * Create a new project
+ * GET /v1/admin/projects
+ * List projects for current user
  */
-adminRouter.post('/projects', async (c: Context) => {
+adminRoutes.get('/projects', async (c: Context) => {
   try {
-    const userId = c.get('userId') as string;
-    const body = await c.req.json();
+    const auth = getAuth(c);
+    const db = getDb();
 
-    // TODO: implement project creation via Core service
-    return c.json({ message: 'Project created', userId, data: body }, 201);
+    // Get user by public ID
+    const user = await userQueries.findByPublicId(db, auth.userId);
+    if (!user) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+
+    // Get projects where user is member
+    const projects = await projectQueries.findByUserId(db, user.id);
+
+    return c.json({
+      projects: projects.map((p) => ({
+        id: p.public_id,
+        name: p.name,
+        description: p.description,
+        createdAt: p.created_at,
+      })),
+    });
+  } catch (error) {
+    console.error('List projects error:', error);
+    return c.json({ error: 'Failed to list projects' }, 500);
+  }
+});
+
+/**
+ * POST /v1/admin/projects
+ * Create new project
+ */
+adminRoutes.post('/projects', async (c: Context) => {
+  try {
+    const auth = getAuth(c);
+    const { name, description } = await c.req.json() as { name?: string; description?: string };
+
+    if (!name) {
+      return c.json({ error: 'Project name required' }, 400);
+    }
+
+    const db = getDb();
+
+    // Get user by public ID
+    const user = await userQueries.findByPublicId(db, auth.userId);
+    if (!user) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+
+    const project = await projectQueries.create(db, {
+      public_id: createId('project'),
+      name,
+      description: description || null,
+      owner_user_id: user.id,
+      created_at: now,
+      updated_at: now,
+    });
+
+    // Add user as project owner
+    await projectMemberQueries.create(db, {
+      project_id: project.id,
+      user_id: user.id,
+      role: 'owner',
+      created_at: now,
+    });
+
+    return c.json({
+      id: project.public_id,
+      name: project.name,
+      description: project.description,
+    }, 201);
   } catch (error) {
     console.error('Create project error:', error);
     return c.json({ error: 'Failed to create project' }, 500);
@@ -23,32 +90,184 @@ adminRouter.post('/projects', async (c: Context) => {
 });
 
 /**
- * GET /admin/projects
- * List projects
+ * GET /v1/admin/projects/:projectId
+ * Get project details
  */
-adminRouter.get('/projects', async (c: Context) => {
+adminRoutes.get('/projects/:projectId', async (c: Context) => {
   try {
-    const userId = c.get('userId') as string;
+    const auth = getAuth(c);
+    const projectId = c.req.param('projectId');
 
-    // TODO: implement projects listing
-    return c.json({ message: 'Projects list', userId, projects: [] });
+    const db = getDb();
+
+    const project = await projectQueries.findByPublicId(db, projectId);
+
+    if (!project) {
+      return c.json({ error: 'Project not found' }, 404);
+    }
+
+    // Get user by public ID
+    const user = await userQueries.findByPublicId(db, auth.userId);
+    if (!user) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+
+    // Check user is member
+    const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+
+    if (!member) {
+      return c.json({ error: 'Access denied' }, 403);
+    }
+
+    return c.json({
+      id: project.public_id,
+      name: project.name,
+      description: project.description,
+    });
   } catch (error) {
-    console.error('Get projects error:', error);
-    return c.json({ error: 'Failed to get projects' }, 500);
+    console.error('Get project error:', error);
+    return c.json({ error: 'Failed to get project' }, 500);
   }
 });
 
 /**
- * PATCH /admin/projects/:project_id
- * Update a project
+ * GET /v1/admin/projects/:projectId/apps
+ * List apps for project
  */
-adminRouter.patch('/projects/:project_id', async (c: Context) => {
+adminRoutes.get('/projects/:projectId/apps', async (c: Context) => {
   try {
-    const projectId = c.req.param('project_id');
-    const body = await c.req.json();
+    const auth = getAuth(c);
+    const projectId = c.req.param('projectId');
 
-    // TODO: implement project update
-    return c.json({ message: 'Project updated', projectId, data: body });
+    const db = getDb();
+
+    const project = await projectQueries.findByPublicId(db, projectId);
+
+    if (!project) {
+      return c.json({ error: 'Project not found' }, 404);
+    }
+
+    // Get user by public ID
+    const user = await userQueries.findByPublicId(db, auth.userId);
+    if (!user) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+
+    const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+
+    if (!member) {
+      return c.json({ error: 'Access denied' }, 403);
+    }
+
+    const apps = await appQueries.findByProjectId(db, project.id);
+
+    return c.json({
+      apps: apps.map((a) => ({
+        id: a.public_id,
+        name: a.name,
+        description: a.description,
+        createdAt: a.created_at,
+      })),
+    });
+  } catch (error) {
+    console.error('List apps error:', error);
+    return c.json({ error: 'Failed to list apps' }, 500);
+  }
+});
+
+/**
+ * POST /v1/admin/projects/:projectId/apps
+ * Create new app
+ */
+adminRoutes.post('/projects/:projectId/apps', async (c: Context) => {
+  try {
+    const auth = getAuth(c);
+    const projectId = c.req.param('projectId');
+    const { name, description } = await c.req.json() as { name?: string; description?: string };
+
+    if (!name) {
+      return c.json({ error: 'App name required' }, 400);
+    }
+
+    const db = getDb();
+
+    const project = await projectQueries.findByPublicId(db, projectId);
+
+    if (!project) {
+      return c.json({ error: 'Project not found' }, 404);
+    }
+
+    // Get user by public ID
+    const user = await userQueries.findByPublicId(db, auth.userId);
+    if (!user) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+
+    const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+
+    if (!member || member.role !== 'owner') {
+      return c.json({ error: 'Access denied' }, 403);
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+
+    const app = await appQueries.create(db, {
+      public_id: createId('app'),
+      project_id: project.id,
+      name,
+      description: description || null,
+      app_session_ttl_days: 28,
+      account_lockout_minutes: 30,
+      cache_ttl_minutes: 60,
+      cors_allowed_origins: JSON.stringify(['http://localhost:3000']),
+      rate_limit_requests_per_minute: 100,
+      created_at: now,
+      updated_at: now,
+    });
+
+    return c.json({
+      id: app.public_id,
+      name: app.name,
+      description: app.description,
+    }, 201);
+  } catch (error) {
+    console.error('Create app error:', error);
+    return c.json({ error: 'Failed to create app' }, 500);
+  }
+});
+
+/**
+ * GET /v1/admin/licenses
+ * List user licenses
+ */
+adminRoutes.get('/licenses', async (c: Context) => {
+  try {
+    const auth = getAuth(c);
+    const db = getDb();
+
+    // Get user by public ID
+    const user = await userQueries.findByPublicId(db, auth.userId);
+    if (!user) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+
+    // Get licenses for user
+    const licenses = await licenseQueries.findByUserId(db, user.id);
+
+    return c.json({
+      licenses: licenses.map((l) => ({
+        id: l.public_id,
+        appId: l.app_id,
+        expiresAt: l.expires_at,
+        seats: l.seats,
+        createdAt: l.created_at,
+      })),
+    });
+  } catch (error) {
+    console.error('List licenses error:', error);
+    return c.json({ error: 'Failed to list licenses' }, 500);
+  }
+});
   } catch (error) {
     console.error('Update project error:', error);
     return c.json({ error: 'Failed to update project' }, 500);

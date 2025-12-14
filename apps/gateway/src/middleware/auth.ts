@@ -1,38 +1,70 @@
-import type { Context } from 'hono';
 import { createMiddleware } from 'hono/factory';
-import { sessionService } from '../services/sessionService';
-import { APP_ID_HEADER } from '../config/constants';
+import { getCookie } from 'hono/cookie';
+import type { Context } from 'hono';
+import { parseSessionCookie } from '@proofa/auth';
+import { sessionStore } from '@proofa/redis';
+import { coreClient } from '../lib/core-client';
 
 /**
- * Session validation middleware
- * Validates session tokens from cookies and attaches user context to request
+ * Auth context with user and session info
+ */
+export interface AuthContext {
+  userId: string;
+  email: string;
+  name: string;
+  sessionId: string;
+  appSessionId?: string;
+}
+
+/**
+ * Middleware to extract and validate session cookie
  */
 export const authMiddleware = createMiddleware(async (c: Context, next) => {
-  const sessionToken = c.req.cookie('gateway_session');
-  const appId = c.get(APP_ID_HEADER) as string | undefined;
+  // Skip auth for public routes
+  const publicRoutes = ['/health', '/v1/auth/login', '/v1/auth/logout'];
+  if (publicRoutes.includes(c.req.path) || c.req.path.startsWith('/v1/auth')) {
+    return next();
+  }
 
-  if (!sessionToken || !appId) {
+  const cookieValue = getCookie(c, 'proofa_session');
+
+  if (!cookieValue) {
     return c.json({ error: 'Unauthorized' }, 401);
   }
 
   try {
-    const session = await sessionService.getSession(sessionToken);
+    // Parse and verify signed session cookie
+    const sessionId = parseSessionCookie(cookieValue);
 
-    if (!session || session.appId !== appId) {
+    if (!sessionId) {
       return c.json({ error: 'Invalid session' }, 401);
     }
 
-    // Check if session is expired
-    if (new Date(session.expiresAt) < new Date()) {
-      await sessionService.deleteSession(sessionToken);
-      return c.json({ error: 'Session expired' }, 401);
+    // Check if app session exists in Redis
+    const appSession = await sessionStore.getAppSession(sessionId);
+
+    if (!appSession) {
+      return c.json({ error: 'Session not found' }, 401);
     }
 
-    // Attach session to context
-    c.set('session', session);
-    c.set('userId', session.userId);
+    // Get user info from Core
+    const coreSession = await coreClient.exchangeSession(sessionId);
 
-    await next();
+    if (!coreSession) {
+      return c.json({ error: 'Invalid session' }, 401);
+    }
+
+    // Store auth context in Hono context
+    const auth: AuthContext = {
+      userId: coreSession.userId,
+      email: coreSession.email,
+      name: coreSession.name,
+      sessionId,
+      appSessionId: sessionId,
+    };
+
+    c.set('auth', auth);
+    return next();
   } catch (error) {
     console.error('Auth middleware error:', error);
     return c.json({ error: 'Unauthorized' }, 401);
@@ -40,27 +72,27 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 });
 
 /**
- * Optional auth middleware - doesn't fail if not authenticated
+ * Get auth context from request
  */
-export const optionalAuthMiddleware = createMiddleware(async (c: Context, next) => {
-  const sessionToken = c.req.cookie('gateway_session');
-  const appId = c.get(APP_ID_HEADER) as string | undefined;
+export function getAuth(c: Context): AuthContext {
+  const auth = c.get('auth');
+  if (!auth) {
+    throw new Error('Auth context not found');
+  }
+  return auth as AuthContext;
+}
+}
 
-  if (sessionToken && appId) {
-    try {
-      const session = await sessionService.getSession(sessionToken);
+/**
+ * S2S token validation middleware for internal requests
+ */
+export const s2sAuthMiddleware = createMiddleware(async (c: Context, next) => {
+  const token = c.req.header('X-S2S-Token');
+  const expectedToken = process.env.GATEWAY_S2S_TOKEN;
 
-      if (session && session.appId === appId) {
-        // Check if session is not expired
-        if (new Date(session.expiresAt) > new Date()) {
-          c.set('session', session);
-          c.set('userId', session.userId);
-        }
-      }
-    } catch (error) {
-      // Silently fail for optional auth
-    }
+  if (!token || !expectedToken || token !== expectedToken) {
+    return c.json({ error: 'Unauthorized' }, 401);
   }
 
-  await next();
+  return next();
 });

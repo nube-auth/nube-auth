@@ -3,17 +3,19 @@ import type { Context } from 'hono';
 import {
   GoogleOAuthAdapter,
   GitHubOAuthAdapter,
+  createCoreSession,
 } from '@proofa/auth';
 import { createId, idPatterns } from '@proofa/shared';
-import { getDb, userQueries, identityQueries, sessionQueries } from '@proofa/db';
+import { getDb } from '@proofa/db';
+import { userQueries, identityQueries, sessionQueries } from '@proofa/db';
 
-const router = new Hono();
+export const authRoutes = new Hono();
 
 /**
  * GET /v1/auth/start
  * Start OAuth flow
  */
-router.get('/start', async (c: Context) => {
+authRoutes.get('/start', async (c: Context) => {
   const provider = c.req.query('provider') as 'google' | 'github' | undefined;
   const redirectUri = c.req.query('redirect_uri') as string | undefined;
 
@@ -55,9 +57,10 @@ router.get('/start', async (c: Context) => {
  * GET /v1/auth/callback/:provider
  * OAuth callback handler
  */
-router.get('/callback/:provider', async (c: Context) => {
+authRoutes.get('/callback/:provider', async (c: Context) => {
   const provider = c.req.param('provider') as 'google' | 'github' | undefined;
   const code = c.req.query('code') as string | undefined;
+  const state = c.req.query('state') as string | undefined;
 
   if (!provider || !['google', 'github'].includes(provider)) {
     return c.json({ error: 'Invalid provider' }, 400);
@@ -69,7 +72,6 @@ router.get('/callback/:provider', async (c: Context) => {
 
   try {
     const db = getDb();
-    const now = Math.floor(Date.now() / 1000);
 
     let adapter;
     if (provider === 'google') {
@@ -99,7 +101,7 @@ router.get('/callback/:provider', async (c: Context) => {
     );
 
     let userId = existingIdentity?.user_id;
-    let userPublicId: string;
+    let createdUser = false;
 
     if (!userId) {
       // Create new user
@@ -108,11 +110,11 @@ router.get('/callback/:provider', async (c: Context) => {
         primary_email: profile.email,
         name: profile.name,
         picture_url: profile.picture || null,
-        created_at: now,
-        updated_at: now,
+        created_at: Math.floor(Date.now() / 1000),
+        updated_at: Math.floor(Date.now() / 1000),
       });
       userId = newUser.id;
-      userPublicId = newUser.public_id;
+      createdUser = true;
 
       // Create identity
       await identityQueries.create(db, {
@@ -121,11 +123,8 @@ router.get('/callback/:provider', async (c: Context) => {
         provider_user_id: profile.id,
         email: profile.email,
         profile_data: JSON.stringify(profile),
-        created_at: now,
+        created_at: Math.floor(Date.now() / 1000),
       });
-    } else {
-      const user = await userQueries.findById(db, userId);
-      userPublicId = user?.public_id || createId('user');
     }
 
     // Create core session
@@ -134,18 +133,17 @@ router.get('/callback/:provider', async (c: Context) => {
       identity_id: existingIdentity?.id,
       app_id: null,
       public_id: createId('session'),
-      expires_at: now + 7 * 24 * 60 * 60, // 7 days
-      created_at: now,
-      updated_at: now,
+      expires_at: Math.floor((Date.now() + 7 * 24 * 60 * 60 * 1000) / 1000),
+      created_at: Math.floor(Date.now() / 1000),
+      updated_at: Math.floor(Date.now() / 1000),
     };
 
     const session = await sessionQueries.create(db, sessionData);
 
     return c.json({
       sessionId: session.public_id,
-      userId: userPublicId,
-      email: profile.email,
-      createdUser: !existingIdentity,
+      userId: newUser?.public_id || existingIdentity?.user_id,
+      createdUser,
     });
   } catch (error) {
     console.error('Auth callback error:', error);
@@ -155,9 +153,9 @@ router.get('/callback/:provider', async (c: Context) => {
 
 /**
  * POST /v1/auth/exchange
- * Exchange session token for user info
+ * Exchange session token for cookies
  */
-router.post('/exchange', async (c: Context) => {
+authRoutes.post('/exchange', async (c: Context) => {
   const { sessionId } = await c.req.json();
 
   if (!sessionId || !idPatterns.session.test(sessionId)) {
@@ -166,14 +164,13 @@ router.post('/exchange', async (c: Context) => {
 
   try {
     const db = getDb();
-    const now = Math.floor(Date.now() / 1000);
-
     const session = await sessionQueries.findByPublicId(db, sessionId);
 
     if (!session) {
       return c.json({ error: 'Session not found' }, 404);
     }
 
+    const now = Math.floor(Date.now() / 1000);
     if (session.expires_at < now) {
       return c.json({ error: 'Session expired' }, 401);
     }
@@ -188,7 +185,6 @@ router.post('/exchange', async (c: Context) => {
       userId: user.public_id,
       email: user.primary_email,
       name: user.name,
-      picture: user.picture_url,
       expiresAt: session.expires_at,
     });
   } catch (error) {
@@ -196,5 +192,3 @@ router.post('/exchange', async (c: Context) => {
     return c.json({ error: 'Failed to exchange session' }, 500);
   }
 });
-
-export const authRoutes = router;

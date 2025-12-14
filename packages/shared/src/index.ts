@@ -1,31 +1,55 @@
 // Re-export all types
 export type {
   User,
+  Identity,
   Session,
   Project,
   ProjectMember,
   App,
   License,
-  AuthUser,
-  AuthSession,
-  OAuthProfile,
   AuthCode,
+  EmailVerification,
+  AuditLog,
+  ApiResponse,
+  AuthContext,
 } from './types';
 
-// Re-export ID generators
-export { id } from './id';
+// Re-export ID generators and validation
+export { id, idPatterns, validateId } from './id';
 
 // Re-export constants
 export {
-  SESSION_TTL_DAYS,
+  CORE_SESSION_TTL_DAYS,
+  CORE_SESSION_TTL_SECONDS,
+  CORE_SESSION_REFRESH_INTERVAL_HOURS,
   APP_SESSION_MIN_DAYS,
   APP_SESSION_MAX_DAYS,
   APP_SESSION_DEFAULT_DAYS,
+  OTP_LENGTH,
+  OTP_TTL_MINUTES,
+  OTP_LOCKOUT_MINUTES,
+  OTP_MAX_ATTEMPTS,
+  AUTH_CODE_TTL_SECONDS,
+  CACHE_TTL_DEFAULT_MINUTES,
+  RATE_LIMIT_DEFAULT_REQUESTS_PER_MINUTE,
+  RATE_LIMIT_OTP_SEND_PER_HOUR,
+  RATE_LIMIT_AUTH_START_PER_5MIN,
+  RATE_LIMIT_EMAIL_VERIFY_PER_OTP,
+  ACCOUNT_LOCKOUT_DEFAULT_MINUTES,
   PROVIDERS,
   LICENSE_PLANS,
   LICENSE_STATUSES,
+  LICENSE_SOURCES,
   ROLES,
+  AUDIT_ACTIONS,
   ERROR_CODES,
+  type ProviderType,
+  type LicensePlanType,
+  type LicenseStatusType,
+  type LicenseSourceType,
+  type RoleType,
+  type AuditActionType,
+  type ErrorCodeType,
 } from './constants';
 
 // Re-export utilities

@@ -8,13 +8,13 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const router = new Hono();
+export const emailRoutes = new Hono();
 
 /**
  * POST /v1/email/start
  * Request OTP via email
  */
-router.post('/start', async (c: Context) => {
+emailRoutes.post('/start', async (c: Context) => {
   const { email } = await c.req.json() as { email?: string };
 
   if (!email || !email.includes('@')) {
@@ -93,7 +93,7 @@ router.post('/start', async (c: Context) => {
  * POST /v1/email/verify
  * Verify OTP and create session
  */
-router.post('/verify', async (c: Context) => {
+emailRoutes.post('/verify', async (c: Context) => {
   const { email, otp } = await c.req.json() as { email?: string; otp?: string };
 
   if (!email || !email.includes('@')) {
@@ -192,18 +192,8 @@ router.post('/verify', async (c: Context) => {
       });
     }
 
-    // Get or create identity
-    let identity = await identityQueries.findByProviderUserId(db, 'email', email);
-    if (!identity) {
-      identity = await identityQueries.create(db, {
-        user_id: userId,
-        provider: 'email',
-        provider_user_id: email,
-        email,
-        profile_data: JSON.stringify({ email }),
-        created_at: now,
-      });
-    }
+    // Get identity
+    const identity = await identityQueries.findByProviderUserId(db, 'email', email);
 
     // Create core session
     const sessionData = {
@@ -231,5 +221,3 @@ router.post('/verify', async (c: Context) => {
     return c.json({ error: 'Failed to verify OTP' }, 500);
   }
 });
-
-export const emailRoutes = router;
