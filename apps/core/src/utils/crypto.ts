@@ -1,0 +1,66 @@
+import crypto from 'crypto';
+
+/**
+ * Token generation and hashing utilities
+ */
+
+/**
+ * Generate a random token
+ */
+export function generateToken(length: number = 32): string {
+  return crypto.randomBytes(length).toString('hex');
+}
+
+/**
+ * Hash a value using SHA-256
+ */
+export function hashToken(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+/**
+ * Verify a token against its hash
+ */
+export function verifyTokenHash(token: string, hash: string): boolean {
+  return hashToken(token) === hash;
+}
+
+/**
+ * Generate a secure random code (numeric)
+ */
+export function generateOTP(length: number = 6): string {
+  const digits = '0123456789';
+  let otp = '';
+  for (let i = 0; i < length; i++) {
+    otp += digits[Math.floor(Math.random() * 10)];
+  }
+  return otp;
+}
+
+/**
+ * Generate JWT-like token
+ */
+export function generateJWT(
+  payload: Record<string, any>,
+  secret: string,
+  expiresIn: number = 3600
+): string {
+  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString(
+    'base64url'
+  );
+  const now = Math.floor(Date.now() / 1000);
+  const body = Buffer.from(
+    JSON.stringify({
+      ...payload,
+      iat: now,
+      exp: now + expiresIn,
+    })
+  ).toString('base64url');
+
+  const signature = crypto
+    .createHmac('sha256', secret)
+    .update(`${header}.${body}`)
+    .digest('base64url');
+
+  return `${header}.${body}.${signature}`;
+}

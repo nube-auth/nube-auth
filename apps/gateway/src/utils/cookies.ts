@@ -1,0 +1,72 @@
+import { getEnv } from '../config/env';
+import { COOKIE_NAME, SECURE_COOKIES, SAME_SITE, COOKIE_DOMAIN, COOKIE_PATH } from '../config/constants';
+
+interface CookieOptions {
+  httpOnly?: boolean;
+  secure?: boolean;
+  sameSite?: 'Strict' | 'Lax' | 'None';
+  domain?: string;
+  path?: string;
+  maxAge?: number;
+}
+
+/**
+ * Generate session cookie with secure defaults
+ */
+export function generateSessionCookie(token: string, maxAge: number): { name: string; value: string; options: CookieOptions } {
+  return {
+    name: COOKIE_NAME,
+    value: token,
+    options: {
+      httpOnly: true,
+      secure: SECURE_COOKIES,
+      sameSite: SAME_SITE,
+      domain: COOKIE_DOMAIN,
+      path: COOKIE_PATH,
+      maxAge,
+    },
+  };
+}
+
+/**
+ * Clear session cookie
+ */
+export function clearSessionCookie(): { name: string; value: string; options: CookieOptions } {
+  return {
+    name: COOKIE_NAME,
+    value: '',
+    options: {
+      httpOnly: true,
+      secure: SECURE_COOKIES,
+      sameSite: SAME_SITE,
+      domain: COOKIE_DOMAIN,
+      path: COOKIE_PATH,
+      maxAge: 0,
+    },
+  };
+}
+
+/**
+ * Sign cookie value with session secret
+ */
+export function signCookie(value: string): string {
+  const env = getEnv();
+  // Use a simple HMAC-like approach for demo
+  // In production, use a proper signing library
+  return `${value}.${Buffer.from(env.GATEWAY_SESSION_SECRET).toString('base64').slice(0, 8)}`;
+}
+
+/**
+ * Verify signed cookie
+ */
+export function verifyCookie(signedValue: string): string | null {
+  const [value, signature] = signedValue.split('.');
+  const env = getEnv();
+  const expectedSignature = Buffer.from(env.GATEWAY_SESSION_SECRET).toString('base64').slice(0, 8);
+
+  if (signature !== expectedSignature) {
+    return null;
+  }
+
+  return value;
+}

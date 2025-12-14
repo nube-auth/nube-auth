@@ -1,0 +1,29 @@
+{
+  "name": "@proofa/gateway",
+  "version": "1.0.0",
+  "description": "Backend-for-Frontend gateway service for Proofa",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "preview": "node dist/index.js"
+  },
+  "dependencies": {
+    "hono": "^4.0.0",
+    "node-hono": "^1.0.0",
+    "@upstash/redis": "^1.28.0",
+    "typescript": "^5.3.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "vitest": "^1.0.0",
+    "@types/node": "^20.10.0",
+    "@types/hono": "^3.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

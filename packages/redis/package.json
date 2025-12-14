@@ -1,0 +1,25 @@
+{
+  "name": "@proofa/redis",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Redis client and helpers for Proofa",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.25.0",
+    "@proofa/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

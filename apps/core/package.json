@@ -1,0 +1,30 @@
+{
+  "name": "@proofa/core",
+  "version": "1.0.0",
+  "description": "Authoritative identity, session, and licensing service for Proofa",
+  "type": "module",
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "test": "vitest",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx src/db/seed.ts"
+  },
+  "dependencies": {
+    "hono": "^4.0.0",
+    "node-hono": "^1.0.0",
+    "@libsql/client": "^0.5.0",
+    "drizzle-orm": "^0.30.0",
+    "typescript": "^5.3.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "vitest": "^1.0.0",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0"
+  }
+}
