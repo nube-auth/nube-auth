@@ -1,5 +1,5 @@
 {
-  "name": "@proofa/user-dashboard",
+  "name": "@proofa/dashboard-user",
   "version": "0.0.0",
   "private": true,
   "type": "module",
