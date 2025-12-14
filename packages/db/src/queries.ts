@@ -1,4 +1,4 @@
-import { eq, and, or, gt, lt, isNull, isNotNull, desc } from 'drizzle-orm';
+import { eq, and, gt, isNull, desc, inArray } from 'drizzle-orm';
 import { DbClient } from './index';
 import {
   users,
@@ -147,7 +147,7 @@ export const projectQueries = {
     if (memberProjects.length === 0) return [];
 
     const projectIds = memberProjects.map((m) => m.project_id);
-    return db.select().from(projects).where(projects.id.inArray(projectIds)).all();
+    return db.select().from(projects).where(inArray(projects.id, projectIds)).all();
   },
 
   async create(db: DbClient, data: typeof projects.$inferInsert) {
@@ -303,7 +303,7 @@ export const emailVerificationQueries = {
   async update(db: DbClient, id: number, data: Partial<typeof email_verifications.$inferInsert>) {
     return db
       .update(email_verifications)
-      .set({ ...data, updated_at: Math.floor(Date.now() / 1000) })
+      .set(data)
       .where(eq(email_verifications.id, id))
       .returning()
       .get();

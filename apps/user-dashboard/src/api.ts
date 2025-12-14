@@ -1,11 +1,45 @@
-import axios, { AxiosInstance } from 'axios';
+const API_URL = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:3002';
 
-const API_URL = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:3001';
+const apiClient = {
+  async get<T>(url: string): Promise<T> {
+    const res = await fetch(`${API_URL}${url}`, {
+      credentials: 'include',
+    });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json();
+  },
 
-export const apiClient = axios.create({
-  baseURL: API_URL,
-  withCredentials: true,
-});
+  async post<T>(url: string, data?: unknown): Promise<T> {
+    const res = await fetch(`${API_URL}${url}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      credentials: 'include',
+    });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json();
+  },
+
+  async patch<T>(url: string, data?: unknown): Promise<T> {
+    const res = await fetch(`${API_URL}${url}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      credentials: 'include',
+    });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json();
+  },
+
+  async delete<T>(url: string): Promise<T> {
+    const res = await fetch(`${API_URL}${url}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json();
+  },
+};
 
 export interface User {
   userId: string;
@@ -31,18 +65,15 @@ export interface License {
 
 export const userApi = {
   async getMe(): Promise<User> {
-    const { data } = await apiClient.get<User>('/v1/me');
-    return data;
+    return apiClient.get<User>('/v1/me');
   },
 
   async updateProfile(name: string, picture?: string): Promise<User> {
-    const { data } = await apiClient.patch<User>('/v1/me', { name, picture });
-    return data;
+    return apiClient.patch<User>('/v1/me', { name, picture });
   },
 
   async getSessions(): Promise<Session[]> {
-    const { data } = await apiClient.get<Session[]>('/v1/me/sessions');
-    return data;
+    return apiClient.get<Session[]>('/v1/me/sessions');
   },
 
   async logoutAllSessions(): Promise<void> {

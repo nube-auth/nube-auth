@@ -141,7 +141,7 @@ export async function completeOAuthFlow(
   provider: OAuthProvider,
   code: string,
   redirectUri: string,
-  state?: string
+  _state?: string
 ): Promise<OAuthProfile> {
   const accessToken = await exchangeCodeForToken(provider, code, redirectUri);
   return fetchUserProfile(provider, accessToken);

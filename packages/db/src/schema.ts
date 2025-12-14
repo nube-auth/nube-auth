@@ -1,12 +1,9 @@
 import {
   integer,
   text,
-  boolean,
-  primaryKey,
   sqliteTable,
   unique,
   index,
-  check,
 } from 'drizzle-orm/sqlite-core';
 
 /**
@@ -19,10 +16,10 @@ export const users = sqliteTable(
     id: integer('id').primaryKey({ autoIncrement: true }),
     public_id: text('public_id').notNull().unique(),
     primary_email: text('primary_email'),
-    primary_email_verified: boolean('primary_email_verified').notNull().default(false),
+    primary_email_verified: integer('primary_email_verified').notNull().default(0),
     name: text('name'),
     avatar_url: text('avatar_url'),
-    is_admin: boolean('is_admin').notNull().default(false),
+    is_admin: integer('is_admin').notNull().default(0),
     created_at: integer('created_at').notNull(), // epoch seconds
     updated_at: integer('updated_at').notNull(), // epoch seconds
   },
@@ -45,7 +42,7 @@ export const identities = sqliteTable(
     provider: text('provider').notNull(), // 'google', 'github', etc.
     provider_user_id: text('provider_user_id').notNull(),
     email: text('email'),
-    email_verified: boolean('email_verified').notNull().default(false),
+    email_verified: integer('email_verified').notNull().default(0),
     created_at: integer('created_at').notNull(),
   },
   (table) => ({
@@ -138,8 +135,8 @@ export const apps = sqliteTable(
     allowed_hosts: text('allowed_hosts').notNull(), // JSON array
     redirect_uris: text('redirect_uris').notNull(), // JSON array
     required_providers: text('required_providers').notNull(), // JSON array
-    is_active: boolean('is_active').notNull().default(true),
-    licensing_required: boolean('licensing_required').notNull().default(true),
+    is_active: integer('is_active').notNull().default(1),
+    licensing_required: integer('licensing_required').notNull().default(1),
     default_license_plan: text('default_license_plan').notNull().default('free'), // 'free' or 'trial'
     trial_days: integer('trial_days'), // null unless plan = 'trial'
     app_session_ttl_days: integer('app_session_ttl_days').notNull().default(28),

@@ -44,7 +44,7 @@ meRoutes.patch('/', async (c: Context) => {
     // Update user in database
     const updated = await userQueries.update(db, user.id, {
       name: name !== undefined ? name : undefined,
-      picture_url: picture !== undefined ? picture : undefined,
+      avatar_url: picture !== undefined ? picture : undefined,
     });
 
     if (!updated) {
@@ -68,8 +68,6 @@ meRoutes.patch('/', async (c: Context) => {
  */
 meRoutes.delete('/sessions', async (c: Context) => {
   try {
-    const auth = getAuth(c);
-
     // Revoke all sessions for user (this would be in Core)
     // For now, just revoke the current session
     // In a real app, we'd call a Core endpoint to revoke all sessions

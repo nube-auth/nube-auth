@@ -1,6 +1,4 @@
 import * as crypto from 'crypto';
-import type { Session } from '@proofa/shared';
-import { generateSessionToken } from './crypto';
 
 const SESSION_SECRET = process.env.SESSION_SECRET || 'dev-session-secret-change-in-production';
 
@@ -75,59 +73,16 @@ export function verifySessionId(signed: string): string {
 }
 
 /**
- * Create a new session object (for Core only)
- */
-export function createCoreSession(userId: string, identityId: string): Session {
-  const sessionId = generateSessionToken();
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days
-
-  return {
-    id: sessionId,
-    userId,
-    identityId,
-    appId: null,
-    expiresAt,
-    createdAt: now,
-    updatedAt: now,
-  };
-}
-
-/**
- * Create a new session for an app
- */
-export function createAppSession(
-  userId: string,
-  identityId: string,
-  appId: string,
-  ttlDays: number
-): Session {
-  const sessionId = generateSessionToken();
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + ttlDays * 24 * 60 * 60 * 1000);
-
-  return {
-    id: sessionId,
-    userId,
-    identityId,
-    appId,
-    expiresAt,
-    createdAt: now,
-    updatedAt: now,
-  };
-}
-
-/**
  * Check if session is expired
  */
-export function isSessionExpired(session: Session): boolean {
-  return new Date() > session.expiresAt;
+export function isSessionExpired(session: { expires_at: number }): boolean {
+  return new Date() > new Date(session.expires_at * 1000);
 }
 
 /**
  * Get remaining TTL in milliseconds
  */
-export function getSessionTTL(session: Session): number {
-  const remaining = session.expiresAt.getTime() - new Date().getTime();
+export function getSessionTTL(session: { expires_at: number }): number {
+  const remaining = session.expires_at * 1000 - new Date().getTime();
   return Math.max(0, remaining);
 }

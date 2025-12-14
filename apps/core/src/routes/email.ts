@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
 import { generateOTP, hashOTP, verifyOTP } from '@proofa/auth';
-import { createId, OTP_LENGTH, OTP_LOCKOUT_MINUTES, OTP_MAX_ATTEMPTS } from '@proofa/shared';
+import { id, OTP_LENGTH, OTP_LOCKOUT_MINUTES, OTP_MAX_ATTEMPTS } from '@proofa/shared';
 import { getDb, userQueries, identityQueries, sessionQueries, emailVerificationQueries } from '@proofa/db';
 import { rateLimit } from '@proofa/redis';
 import { Resend } from 'resend';
@@ -57,13 +57,13 @@ emailRoutes.post('/start', async (c: Context) => {
       });
     } else {
       await emailVerificationQueries.create(db, {
+        public_id: id.emailVerification(),
         email,
         otp_hash: otpHash,
         expires_at: expiresAt,
         attempts: 0,
         locked_until: null,
         created_at: now,
-        updated_at: now,
       });
     }
 
@@ -171,10 +171,10 @@ emailRoutes.post('/verify', async (c: Context) => {
 
     if (!userId) {
       const newUser = await userQueries.create(db, {
-        public_id: createId('user'),
+        public_id: id.user(),
         primary_email: email,
         name: email.split('@')[0],
-        picture_url: null,
+        avatar_url: null,
         created_at: now,
         updated_at: now,
       });
@@ -183,26 +183,22 @@ emailRoutes.post('/verify', async (c: Context) => {
 
       // Create identity for email-based auth
       await identityQueries.create(db, {
+        public_id: id.identity(),
         user_id: userId,
         provider: 'email',
         provider_user_id: email,
         email,
-        profile_data: JSON.stringify({ email }),
         created_at: now,
       });
     }
 
-    // Get identity
-    const identity = await identityQueries.findByProviderUserId(db, 'email', email);
-
     // Create core session
     const sessionData = {
+      public_id: id.session(),
       user_id: userId,
-      identity_id: identity?.id,
-      app_id: null,
-      public_id: createId('session'),
-      expires_at: now + 7 * 24 * 60 * 60, // 7 days
       created_at: now,
+      last_seen_at: now,
+      expires_at: now + 7 * 24 * 60 * 60, // 7 days
       updated_at: now,
     };
 

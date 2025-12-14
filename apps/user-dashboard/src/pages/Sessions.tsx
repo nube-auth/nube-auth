@@ -1,4 +1,3 @@
-import React from 'react';
 import { useSessions, useLogout } from '../hooks/api';
 
 export function SessionsPage() {

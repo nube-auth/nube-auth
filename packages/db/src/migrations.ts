@@ -42,7 +42,7 @@ export async function runMigrations() {
     authToken: process.env.DATABASE_AUTH_TOKEN!,
   });
 
-  const db = drizzle(client, { schema });
+  drizzle(client, { schema });
   
   // Migrations are auto-applied on connection
   // Drizzle runs any pending migrations in the migrations/ folder

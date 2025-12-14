@@ -1,5 +1,6 @@
-// OAuth providers
+// OAuth providers and adapters
 export * from './oauth';
+export { GoogleOAuthAdapter, GitHubOAuthAdapter } from './adapters';
 
 // Session management
 export {
@@ -7,8 +8,6 @@ export {
   parseSessionCookie,
   signSessionId,
   verifySessionId,
-  createCoreSession,
-  createAppSession,
   isSessionExpired,
   getSessionTTL,
 } from './session';
