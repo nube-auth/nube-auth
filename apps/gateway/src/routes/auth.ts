@@ -2,7 +2,7 @@ import { createSessionCookie, parseSessionCookie } from "@proofa/auth";
 import { sessionStore } from "@proofa/redis";
 import type { Context } from "hono";
 import { Hono } from "hono";
-import { setCookie } from "hono/cookie";
+import { getCookie, setCookie } from "hono/cookie";
 import { coreClient } from "../lib/core-client";
 
 export const authRoutes = new Hono();
@@ -37,7 +37,7 @@ authRoutes.post("/login", async (c: Context) => {
 		setCookie(c, name, value, {
 			httpOnly: attributes.httpOnly as boolean,
 			secure: attributes.secure as boolean,
-			sameSite: attributes.sameSite as string,
+			sameSite: attributes.sameSite as "Strict" | "Lax" | "None",
 			path: attributes.path as string,
 		});
 
@@ -83,7 +83,7 @@ authRoutes.post("/logout", async (c: Context) => {
  */
 authRoutes.get("/status", async (c: Context) => {
 	try {
-		const cookie = c.req.cookie("proofa_session");
+		const cookie = getCookie(c, "proofa_session");
 
 		if (!cookie) {
 			return c.json({ loggedIn: false });
@@ -91,6 +91,10 @@ authRoutes.get("/status", async (c: Context) => {
 
 		try {
 			const sessionId = parseSessionCookie(cookie);
+			if (!sessionId) {
+				return c.json({ loggedIn: false });
+			}
+
 			const appSession = await sessionStore.getAppSession(sessionId);
 
 			if (!appSession) {

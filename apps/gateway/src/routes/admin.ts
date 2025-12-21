@@ -28,7 +28,7 @@ adminRoutes.get("/projects", async (c: Context) => {
 			projects: projects.map((p) => ({
 				id: p.public_id,
 				name: p.name,
-				description: p.description,
+				slug: p.slug,
 				createdAt: p.created_at,
 			})),
 		});
@@ -45,7 +45,7 @@ adminRoutes.get("/projects", async (c: Context) => {
 adminRoutes.post("/projects", async (c: Context) => {
 	try {
 		const auth = getAuth(c);
-		const { name, description } = (await c.req.json()) as { name?: string; description?: string };
+		const { name } = (await c.req.json()) as { name?: string };
 
 		if (!name) {
 			return c.json({ error: "Project name required" }, 400);
@@ -64,7 +64,7 @@ adminRoutes.post("/projects", async (c: Context) => {
 		const project = await projectQueries.create(db, {
 			public_id: createId("project"),
 			name,
-			description: description || null,
+			slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
 			owner_user_id: user.id,
 			created_at: now,
 			updated_at: now,
@@ -82,7 +82,7 @@ adminRoutes.post("/projects", async (c: Context) => {
 			{
 				id: project.public_id,
 				name: project.name,
-				description: project.description,
+				slug: project.slug,
 			},
 			201,
 		);
@@ -125,7 +125,7 @@ adminRoutes.get("/projects/:projectId", async (c: Context) => {
 		return c.json({
 			id: project.public_id,
 			name: project.name,
-			description: project.description,
+			slug: project.slug,
 		});
 	} catch (error) {
 		console.error("Get project error:", error);
@@ -168,7 +168,7 @@ adminRoutes.get("/projects/:projectId/apps", async (c: Context) => {
 			apps: apps.map((a) => ({
 				id: a.public_id,
 				name: a.name,
-				description: a.description,
+				slug: a.slug,
 				createdAt: a.created_at,
 			})),
 		});
@@ -186,7 +186,7 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 	try {
 		const auth = getAuth(c);
 		const projectId = c.req.param("projectId");
-		const { name, description } = (await c.req.json()) as { name?: string; description?: string };
+		const { name } = (await c.req.json()) as { name?: string };
 
 		if (!name) {
 			return c.json({ error: "App name required" }, 400);
@@ -218,7 +218,10 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			public_id: createId("app"),
 			project_id: project.id,
 			name,
-			description: description || null,
+			slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+			allowed_hosts: JSON.stringify([]),
+			redirect_uris: JSON.stringify([]),
+			required_providers: JSON.stringify([]),
 			app_session_ttl_days: 28,
 			account_lockout_minutes: 30,
 			cache_ttl_minutes: 60,
@@ -232,7 +235,7 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			{
 				id: app.public_id,
 				name: app.name,
-				description: app.description,
+				slug: app.slug,
 			},
 			201,
 		);
@@ -264,8 +267,9 @@ adminRoutes.get("/licenses", async (c: Context) => {
 			licenses: licenses.map((l) => ({
 				id: l.public_id,
 				appId: l.app_id,
-				expiresAt: l.expires_at,
-				seats: l.seats,
+				plan: l.plan,
+				status: l.status,
+				validUntil: l.valid_until,
 				createdAt: l.created_at,
 			})),
 		});

@@ -1,4 +1,4 @@
-import type { Context } from "hono";
+import type { Context, Next } from "hono";
 import { createMiddleware } from "hono/factory";
 import { getEnv } from "../config/env";
 
@@ -6,7 +6,7 @@ import { getEnv } from "../config/env";
  * Service-to-service authentication middleware
  * Validates X-Proofa-Service-Token header for Core API calls
  */
-export const s2sAuthMiddleware = createMiddleware((c: Context, next) => {
+export const s2sAuthMiddleware = createMiddleware(async (c: Context, next: Next): Promise<Response | void> => {
 	const token = c.req.header("X-Proofa-Service-Token");
 	const env = getEnv();
 
@@ -14,7 +14,7 @@ export const s2sAuthMiddleware = createMiddleware((c: Context, next) => {
 		return c.json({ error: "Unauthorized" }, 401);
 	}
 
-	return next();
+	await next();
 });
 
 /**

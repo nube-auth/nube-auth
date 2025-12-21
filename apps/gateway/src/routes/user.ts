@@ -1,7 +1,8 @@
 import type { Context } from "hono";
-import { Router } from "hono";
+import { Hono } from "hono";
+import { getCookie } from "hono/cookie";
 
-const userRouter = new Router();
+const userRouter = new Hono();
 
 /**
  * GET /me
@@ -112,7 +113,7 @@ userRouter.delete("/sessions/:session_id", async (c: Context) => {
 userRouter.post("/logout", async (c: Context) => {
 	try {
 		const userId = c.get("userId") as string;
-		const _sessionToken = c.req.cookie("gateway_session");
+		const _sessionToken = getCookie(c, "gateway_session");
 
 		// TODO: implement logout
 		// 1. Delete session from Redis

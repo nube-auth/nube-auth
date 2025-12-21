@@ -1,4 +1,5 @@
-import { appQueries, getDb, licenseQueries } from "@proofa/db";
+import { appQueries, getDb, licenseQueries, userQueries } from "@proofa/db";
+import { createId } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 
@@ -29,8 +30,8 @@ router.get("/", async (c: Context) => {
 		return c.json({
 			appId,
 			status: "active",
-			expiresAt: now + 365 * 24 * 60 * 60, // 1 year from now
-			seats: 1,
+			validUntil: now + 365 * 24 * 60 * 60, // 1 year from now
+			plan: "pro",
 		});
 	} catch (error) {
 		console.error("License get error:", error);
@@ -43,19 +44,26 @@ router.get("/", async (c: Context) => {
  * Admin endpoint to grant a license to a user
  */
 router.post("/grant", async (c: Context) => {
-	const { userId, appId, expiresAt } = (await c.req.json()) as {
+	const { userId, appId, plan, validUntil } = (await c.req.json()) as {
 		userId?: string;
 		appId?: string;
-		expiresAt?: number;
+		plan?: string;
+		validUntil?: number;
 	};
 
-	if (!userId || !appId || !expiresAt) {
-		return c.json({ error: "Missing required fields" }, 400);
+	if (!userId || !appId) {
+		return c.json({ error: "Missing required fields: userId, appId" }, 400);
 	}
 
 	try {
 		const db = getDb();
-		const _now = Math.floor(Date.now() / 1000);
+		const now = Math.floor(Date.now() / 1000);
+
+		// Validate user exists
+		const user = await userQueries.findByPublicId(db, userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
 
 		// Validate app exists
 		const app = await appQueries.findByPublicId(db, appId);
@@ -63,14 +71,24 @@ router.post("/grant", async (c: Context) => {
 			return c.json({ error: "App not found" }, 404);
 		}
 
-		// Create or update license
-		const license = await licenseQueries.createOrUpdate(db, 0, app.id, {
-			expires_at: expiresAt,
+		// Create or update license using upsert
+		const license = await licenseQueries.upsert(db, user.id, app.id, {
+			public_id: createId("license"),
+			plan: plan || "pro",
+			status: "active",
+			source: "manual",
+			valid_from: now,
+			valid_until: validUntil || null,
 		});
 
 		return c.json({
 			message: "License granted",
-			license,
+			license: {
+				id: license.public_id,
+				plan: license.plan,
+				status: license.status,
+				validUntil: license.valid_until,
+			},
 		});
 	} catch (error) {
 		console.error("License grant error:", error);

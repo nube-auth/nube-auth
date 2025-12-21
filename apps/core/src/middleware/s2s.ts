@@ -4,7 +4,7 @@ import type { Context, Next } from "hono";
  * S2S token validation middleware
  * Validates server-to-server authentication tokens for gateway communication
  */
-export async function s2sMiddleware(c: Context, next: Next) {
+export async function s2sMiddleware(c: Context, next: Next): Promise<Response | void> {
 	try {
 		const s2sToken = c.req.header("x-s2s-token");
 

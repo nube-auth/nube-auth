@@ -14,7 +14,7 @@ export interface AuthenticatedContext {
  * Core session validation middleware
  * Validates JWT or session cookie
  */
-export async function authMiddleware(c: Context, next: Next) {
+export async function authMiddleware(c: Context, next: Next): Promise<Response | void> {
 	try {
 		const authHeader = c.req.header("authorization");
 		const sessionCookie = await getSignedCookie(c, "session_secret", "sessionId");

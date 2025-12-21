@@ -1,4 +1,5 @@
 import type { Context } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 export interface AppError extends Error {
 	status?: number;
@@ -11,7 +12,7 @@ export interface AppError extends Error {
  * Catches and formats all application errors
  */
 export async function errorHandler(err: AppError, c: Context) {
-	const status = err.status || 500;
+	const status = (err.status || 500) as ContentfulStatusCode;
 	const code = err.code || "INTERNAL_ERROR";
 
 	console.error(`[${code}] ${err.message}`, {

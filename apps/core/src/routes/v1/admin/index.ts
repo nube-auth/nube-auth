@@ -1,4 +1,5 @@
 import { appQueries, getDb, licenseQueries, userQueries } from "@proofa/db";
+import { createId } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 
@@ -9,15 +10,16 @@ const router = new Hono();
  * Grants a license to a user
  */
 router.post("/license/grant", async (c: Context) => {
-	const { userId, appId, expiresAt } = (await c.req.json()) as {
+	const { userId, appId, plan, validUntil } = (await c.req.json()) as {
 		userId?: string;
 		appId?: string;
-		expiresAt?: number;
+		plan?: string;
+		validUntil?: number;
 	};
 
 	// Validate required fields
-	if (!userId || !appId || !expiresAt) {
-		return c.json({ error: "Missing required fields: userId, appId, expiresAt" }, 400);
+	if (!userId || !appId) {
+		return c.json({ error: "Missing required fields: userId, appId" }, 400);
 	}
 
 	try {
@@ -36,19 +38,23 @@ router.post("/license/grant", async (c: Context) => {
 			return c.json({ error: "App not found" }, 404);
 		}
 
-		// Create or update license
-		const license = await licenseQueries.createOrUpdate(db, user.id, app.id, {
-			expires_at: expiresAt,
-			created_at: now,
-			updated_at: now,
+		// Create or update license using upsert
+		const license = await licenseQueries.upsert(db, user.id, app.id, {
+			public_id: createId("license"),
+			plan: plan || "pro",
+			status: "active",
+			source: "manual",
+			valid_from: now,
+			valid_until: validUntil || null,
 		});
 
 		return c.json({
 			message: "License granted successfully",
-			licenseId: license.id,
+			licenseId: license.public_id,
 			userId,
 			appId,
-			expiresAt,
+			plan: license.plan,
+			validUntil: license.valid_until,
 			grantedAt: now,
 		});
 	} catch (error) {

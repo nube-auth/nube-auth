@@ -27,7 +27,7 @@ export const appResolverMiddleware = createMiddleware((c: Context, next) => {
 
 	// If still not found, try X-App-ID header
 	if (!appId) {
-		appId = c.req.header(APP_ID_HEADER);
+		appId = c.req.header(APP_ID_HEADER) ?? null;
 	}
 
 	// Set app ID in context

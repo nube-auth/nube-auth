@@ -94,7 +94,7 @@ router.get("/callback/:provider", async (c: Context) => {
 				public_id: createId("user"),
 				primary_email: profile.email,
 				name: profile.name,
-				picture_url: profile.picture || null,
+				avatar_url: profile.picture || null,
 				created_at: now,
 				updated_at: now,
 			});
@@ -103,11 +103,11 @@ router.get("/callback/:provider", async (c: Context) => {
 
 			// Create identity
 			await identityQueries.create(db, {
+				public_id: createId("identity"),
 				user_id: userId,
 				provider,
 				provider_user_id: profile.id,
 				email: profile.email,
-				profile_data: JSON.stringify(profile),
 				created_at: now,
 			});
 		} else {
@@ -117,13 +117,11 @@ router.get("/callback/:provider", async (c: Context) => {
 
 		// Create core session
 		const sessionData = {
-			user_id: userId,
-			identity_id: existingIdentity?.id,
-			app_id: null,
 			public_id: createId("session"),
-			expires_at: now + 7 * 24 * 60 * 60, // 7 days
+			user_id: userId,
 			created_at: now,
-			updated_at: now,
+			last_seen_at: now,
+			expires_at: now + 7 * 24 * 60 * 60, // 7 days
 		};
 
 		const session = await sessionQueries.create(db, sessionData);
@@ -175,7 +173,7 @@ router.post("/exchange", async (c: Context) => {
 			userId: user.public_id,
 			email: user.primary_email,
 			name: user.name,
-			picture: user.picture_url,
+			picture: user.avatar_url,
 			expiresAt: session.expires_at,
 		});
 	} catch (error) {

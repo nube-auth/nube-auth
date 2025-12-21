@@ -49,7 +49,7 @@ export const sessionService = {
 		const key = `gateway:session:${token}`;
 		const data = await redisClient.get(key);
 
-		if (!data) {
+		if (!data || typeof data !== "string") {
 			return null;
 		}
 

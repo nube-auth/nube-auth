@@ -1,5 +1,6 @@
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 interface ErrorResponse {
 	error: string;
@@ -22,17 +23,17 @@ class AppError extends Error {
  * Global error handling middleware
  * Catches all errors and returns structured error responses
  */
-export const errorMiddleware = createMiddleware(async (c: Context, next) => {
+export const errorMiddleware = createMiddleware(async (c: Context, next): Promise<Response | void> => {
 	try {
 		await next();
 	} catch (error) {
 		const requestId = c.get("requestId") as string | undefined;
-		let statusCode = 500;
+		let statusCode: ContentfulStatusCode = 500;
 		let errorMessage = "Internal Server Error";
 		let errorCode = "INTERNAL_ERROR";
 
 		if (error instanceof AppError) {
-			statusCode = error.statusCode;
+			statusCode = error.statusCode as ContentfulStatusCode;
 			errorMessage = error.message;
 			errorCode = error.code || "APP_ERROR";
 		} else if (error instanceof Error) {
@@ -53,7 +54,7 @@ export const errorMiddleware = createMiddleware(async (c: Context, next) => {
 			stack: error instanceof Error ? error.stack : undefined,
 		});
 
-		return c.json(response, statusCode as any);
+		return c.json(response, statusCode);
 	}
 });
 

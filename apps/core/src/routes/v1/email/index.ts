@@ -54,13 +54,13 @@ router.post("/start", async (c: Context) => {
 			});
 		} else {
 			await emailVerificationQueries.create(db, {
+				public_id: createId("emailVerification"),
 				email,
 				otp_hash: otpHash,
 				expires_at: expiresAt,
 				attempts: 0,
 				locked_until: null,
 				created_at: now,
-				updated_at: now,
 			});
 		}
 
@@ -168,7 +168,7 @@ router.post("/verify", async (c: Context) => {
 				public_id: createId("user"),
 				primary_email: email,
 				name: email.split("@")[0],
-				picture_url: null,
+				avatar_url: null,
 				created_at: now,
 				updated_at: now,
 			});
@@ -177,11 +177,11 @@ router.post("/verify", async (c: Context) => {
 
 			// Create identity for email-based auth
 			await identityQueries.create(db, {
+				public_id: createId("identity"),
 				user_id: userId,
 				provider: "email",
 				provider_user_id: email,
 				email,
-				profile_data: JSON.stringify({ email }),
 				created_at: now,
 			});
 		}
@@ -190,24 +190,22 @@ router.post("/verify", async (c: Context) => {
 		let identity = await identityQueries.findByProviderUserId(db, "email", email);
 		if (!identity) {
 			identity = await identityQueries.create(db, {
+				public_id: createId("identity"),
 				user_id: userId,
 				provider: "email",
 				provider_user_id: email,
 				email,
-				profile_data: JSON.stringify({ email }),
 				created_at: now,
 			});
 		}
 
 		// Create core session
 		const sessionData = {
-			user_id: userId,
-			identity_id: identity?.id,
-			app_id: null,
 			public_id: createId("session"),
-			expires_at: now + 7 * 24 * 60 * 60, // 7 days
+			user_id: userId,
 			created_at: now,
-			updated_at: now,
+			last_seen_at: now,
+			expires_at: now + 7 * 24 * 60 * 60, // 7 days
 		};
 
 		const session = await sessionQueries.create(db, sessionData);

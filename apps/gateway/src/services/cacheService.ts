@@ -15,7 +15,7 @@ export const cacheService = {
 
 		// Try to get from cache
 		const cached = await redisClient.get(key);
-		if (cached) {
+		if (cached && typeof cached === "string") {
 			return JSON.parse(cached);
 		}
 
@@ -34,7 +34,7 @@ export const cacheService = {
 
 		// Try to get from cache
 		const cached = await redisClient.get(key);
-		if (cached) {
+		if (cached && typeof cached === "string") {
 			return JSON.parse(cached);
 		}
 
@@ -53,7 +53,7 @@ export const cacheService = {
 
 		// Try to get from cache
 		const cached = await redisClient.get(key);
-		if (cached) {
+		if (cached && typeof cached === "string") {
 			return JSON.parse(cached);
 		}
 
