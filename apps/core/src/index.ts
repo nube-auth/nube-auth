@@ -31,7 +31,7 @@ app.get('/health', (c) => {
 app.onError(errorHandler);
 
 // Start server
-const port = parseInt(process.env.PORT || '3001', 10);
+const port = parseInt(process.env.PORT || '3003', 10);
 console.log(`🚀 Core server starting on port ${port}`);
 
 serve({

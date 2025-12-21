@@ -8,7 +8,7 @@ export class CoreClient {
   private baseUrl: string;
   private s2sToken: string;
 
-  constructor(baseUrl: string = process.env.CORE_URL || 'http://localhost:3001', s2sToken?: string) {
+  constructor(baseUrl: string = process.env.CORE_URL || 'http://localhost:3003', s2sToken?: string) {
     this.baseUrl = baseUrl;
     this.s2sToken = s2sToken || process.env.CORE_S2S_TOKEN || '';
   }

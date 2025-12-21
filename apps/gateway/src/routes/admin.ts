@@ -219,7 +219,7 @@ adminRoutes.post('/projects/:projectId/apps', async (c: Context) => {
       app_session_ttl_days: 28,
       account_lockout_minutes: 30,
       cache_ttl_minutes: 60,
-      cors_allowed_origins: JSON.stringify(['http://localhost:3000']),
+      cors_allowed_origins: JSON.stringify(['http://localhost:3001']),
       rate_limit_requests_per_minute: 100,
       created_at: now,
       updated_at: now,

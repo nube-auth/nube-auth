@@ -22,7 +22,7 @@ export function LoginPage() {
       return;
     }
 
-    const coreAuthUrl = `${import.meta.env.VITE_CORE_URL || 'http://localhost:3001'}/v1/auth/start?provider=google&redirect_uri=${encodeURIComponent(window.location.origin + '/login')}`;
+    const coreAuthUrl = `${import.meta.env.VITE_CORE_URL || 'http://localhost:3003'}/v1/auth/start?provider=google&redirect_uri=${encodeURIComponent(window.location.origin + '/login')}`;
     window.location.href = coreAuthUrl;
   }, [searchParams, navigate]);
 

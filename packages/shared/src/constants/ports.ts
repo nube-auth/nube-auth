@@ -6,13 +6,13 @@
 /** Default development ports for services */
 export const DEFAULT_PORTS = {
   /** Core API service */
-  CORE: 3001,
+  CORE: 3003,
   /** Gateway service */
   GATEWAY: 3004,
   /** User dashboard (Vite dev server) */
-  DASHBOARD_USER: 3000,
+  DASHBOARD_USER: 3001,
   /** Admin dashboard (Vite dev server) */
-  DASHBOARD_ADMIN: 3003,
+  DASHBOARD_ADMIN: 3002,
   /** Home/marketing site (Astro) */
   HOME: 4321,
 } as const;

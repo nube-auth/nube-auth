@@ -37,7 +37,7 @@ function getEnvironment(): Environment {
 
   return {
     NODE_ENV: (process.env.NODE_ENV as any) || 'development',
-    PORT: parseInt(process.env.PORT || '3000', 10),
+    PORT: parseInt(process.env.PORT || '3003', 10),
     DATABASE_URL: process.env.DATABASE_URL!,
     DATABASE_AUTH_TOKEN: process.env.DATABASE_AUTH_TOKEN,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID!,
