@@ -39,10 +39,10 @@ router.get('/start', async (c: Context) => {
       });
     }
 
-    const authUrl = adapter.buildAuthorizationUrl({
-      redirectUri,
-      state: createId('state'),
-    });
+    const authUrl = adapter.getAuthorizationUrl(
+      createId('state'),
+      redirectUri
+    );
 
     return c.json({ authUrl });
   } catch (error) {
@@ -84,10 +84,10 @@ router.get('/callback/:provider', async (c: Context) => {
       });
     }
 
-    const token = await adapter.exchangeCodeForToken({
+    const token = await adapter.exchangeCodeForTokens(
       code,
-      redirectUri: process.env.CALLBACK_URL || '',
-    });
+      process.env.CALLBACK_URL || ''
+    );
 
     const profile = await adapter.fetchUserProfile(token.accessToken);
 

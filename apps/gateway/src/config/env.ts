@@ -41,7 +41,7 @@ function validateEnv(): Environment {
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL!,
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN!,
     NODE_ENV: (process.env.NODE_ENV || 'development') as any,
-    PORT: process.env.PORT || '3002',
+    PORT: process.env.PORT || '3004',
   };
 }
 

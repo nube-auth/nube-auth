@@ -12,7 +12,7 @@ export const DEFAULT_PORTS = {
   /** User dashboard (Vite dev server) */
   DASHBOARD_USER: 3000,
   /** Admin dashboard (Vite dev server) */
-  DASHBOARD_ADMIN: 3002,
+  DASHBOARD_ADMIN: 3003,
   /** Home/marketing site (Astro) */
   HOME: 4321,
 } as const;

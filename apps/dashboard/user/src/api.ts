@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:3002';
+const API_URL = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:3004';
 
 const apiClient = {
   async get<T>(url: string): Promise<T> {
