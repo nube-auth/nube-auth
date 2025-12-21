@@ -1,4 +1,4 @@
-import { useLicenses } from '../hooks/api';
+import { useLicenses } from "../hooks/api";
 
 export function LicensesPage() {
 	const { data: licenses, isLoading, error } = useLicenses();
@@ -30,10 +30,10 @@ export function LicensesPage() {
 								<td>
 									<span
 										className={`inline-block px-2 py-1 text-xs rounded ${
-											license.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+											license.active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
 										}`}
 									>
-										{license.active ? 'Active' : 'Inactive'}
+										{license.active ? "Active" : "Inactive"}
 									</span>
 								</td>
 								<td className="text-sm text-gray-600">

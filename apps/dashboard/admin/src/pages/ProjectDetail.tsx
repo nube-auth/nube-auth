@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useCreateApp, useProject, useProjectApps, useProjectMembers } from '../hooks/api';
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useCreateApp, useProject, useProjectApps, useProjectMembers } from "../hooks/api";
 
 export function ProjectDetailPage() {
 	const { projectId } = useParams<{ projectId: string }>();
 	const navigate = useNavigate();
-	const { data: project, isLoading: projectLoading } = useProject(projectId || '');
-	const { data: apps, isLoading: appsLoading } = useProjectApps(projectId || '');
-	const { data: members, isLoading: membersLoading } = useProjectMembers(projectId || '');
-	const createAppMutation = useCreateApp(projectId || '');
+	const { data: project, isLoading: projectLoading } = useProject(projectId || "");
+	const { data: apps, isLoading: appsLoading } = useProjectApps(projectId || "");
+	const { data: members, isLoading: membersLoading } = useProjectMembers(projectId || "");
+	const createAppMutation = useCreateApp(projectId || "");
 	const [showAppForm, setShowAppForm] = useState(false);
-	const [appName, setAppName] = useState('');
+	const [appName, setAppName] = useState("");
 
 	const handleCreateApp = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -18,7 +18,7 @@ export function ProjectDetailPage() {
 			{ name: appName },
 			{
 				onSuccess: () => {
-					setAppName('');
+					setAppName("");
 					setShowAppForm(false);
 				},
 			},
@@ -30,7 +30,7 @@ export function ProjectDetailPage() {
 
 	return (
 		<div className="py-4 space-y-6">
-			<button type="button" onClick={() => navigate('/projects')} className="text-blue-600 hover:underline">
+			<button type="button" onClick={() => navigate("/projects")} className="text-blue-600 hover:underline">
 				← Back to Projects
 			</button>
 
@@ -49,7 +49,7 @@ export function ProjectDetailPage() {
 						onClick={() => setShowAppForm(!showAppForm)}
 						className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
 					>
-						{showAppForm ? 'Cancel' : 'New App'}
+						{showAppForm ? "Cancel" : "New App"}
 					</button>
 				</div>
 
@@ -73,7 +73,7 @@ export function ProjectDetailPage() {
 							disabled={createAppMutation.isPending}
 							className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
 						>
-							{createAppMutation.isPending ? 'Creating...' : 'Create App'}
+							{createAppMutation.isPending ? "Creating..." : "Create App"}
 						</button>
 					</form>
 				)}

@@ -1,8 +1,8 @@
-import { getEnv } from '../config/env';
-import { addS2SAuthHeader } from '../middleware/s2s';
+import { getEnv } from "../config/env";
+import { addS2SAuthHeader } from "../middleware/s2s";
 
 interface CoreRequest {
-	method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+	method: "GET" | "POST" | "PATCH" | "DELETE";
 	path: string;
 	body?: Record<string, any>;
 }
@@ -20,7 +20,7 @@ export const coreService = {
 		const url = new URL(config.path, env.CORE_URL).toString();
 
 		const headers: Record<string, string> = {
-			'Content-Type': 'application/json',
+			"Content-Type": "application/json",
 		};
 
 		addS2SAuthHeader(headers);
@@ -43,8 +43,8 @@ export const coreService = {
 	 */
 	async exchangeToken(code: string, appId: string): Promise<any> {
 		return this.request({
-			method: 'POST',
-			path: '/v1/auth/exchange',
+			method: "POST",
+			path: "/v1/auth/exchange",
 			body: { code, appId },
 		});
 	},
@@ -54,7 +54,7 @@ export const coreService = {
 	 */
 	async getLicense(appId: string): Promise<any> {
 		return this.request({
-			method: 'GET',
+			method: "GET",
 			path: `/v1/license/${appId}`,
 		});
 	},
@@ -64,7 +64,7 @@ export const coreService = {
 	 */
 	async getUser(userId: string): Promise<any> {
 		return this.request({
-			method: 'GET',
+			method: "GET",
 			path: `/v1/users/${userId}`,
 		});
 	},
@@ -74,7 +74,7 @@ export const coreService = {
 	 */
 	async updateUser(userId: string, data: Record<string, any>): Promise<any> {
 		return this.request({
-			method: 'PATCH',
+			method: "PATCH",
 			path: `/v1/users/${userId}`,
 			body: data,
 		});
@@ -85,8 +85,8 @@ export const coreService = {
 	 */
 	async validateToken(token: string): Promise<any> {
 		return this.request({
-			method: 'POST',
-			path: '/v1/auth/validate',
+			method: "POST",
+			path: "/v1/auth/validate",
 			body: { token },
 		});
 	},

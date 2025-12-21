@@ -52,14 +52,14 @@ export function getPort(envVar: string, defaultPort: number): number {
  * Service port getters with environment override support
  */
 export const ports = {
-	core: () => getPort('CORE_PORT', DEFAULT_PORTS.CORE),
-	gateway: () => getPort('GATEWAY_PORT', DEFAULT_PORTS.GATEWAY),
-	dashboardUser: () => getPort('DASHBOARD_USER_PORT', DEFAULT_PORTS.DASHBOARD_USER),
-	dashboardAdmin: () => getPort('DASHBOARD_ADMIN_PORT', DEFAULT_PORTS.DASHBOARD_ADMIN),
-	home: () => getPort('HOME_PORT', DEFAULT_PORTS.HOME),
-	redis: () => getPort('REDIS_PORT', INFRA_PORTS.REDIS),
-	redisRest: () => getPort('REDIS_REST_PORT', INFRA_PORTS.REDIS_REST),
-	libsql: () => getPort('LIBSQL_PORT', INFRA_PORTS.LIBSQL),
+	core: () => getPort("CORE_PORT", DEFAULT_PORTS.CORE),
+	gateway: () => getPort("GATEWAY_PORT", DEFAULT_PORTS.GATEWAY),
+	dashboardUser: () => getPort("DASHBOARD_USER_PORT", DEFAULT_PORTS.DASHBOARD_USER),
+	dashboardAdmin: () => getPort("DASHBOARD_ADMIN_PORT", DEFAULT_PORTS.DASHBOARD_ADMIN),
+	home: () => getPort("HOME_PORT", DEFAULT_PORTS.HOME),
+	redis: () => getPort("REDIS_PORT", INFRA_PORTS.REDIS),
+	redisRest: () => getPort("REDIS_REST_PORT", INFRA_PORTS.REDIS_REST),
+	libsql: () => getPort("LIBSQL_PORT", INFRA_PORTS.LIBSQL),
 } as const;
 
 /**
@@ -67,9 +67,9 @@ export const ports = {
  */
 export function getServiceUrl(
 	service: keyof typeof DEFAULT_PORTS,
-	options: { protocol?: 'http' | 'https'; host?: string } = {},
+	options: { protocol?: "http" | "https"; host?: string } = {},
 ): string {
-	const { protocol = 'http', host = 'localhost' } = options;
+	const { protocol = "http", host = "localhost" } = options;
 	const port = ports[service.toLowerCase() as keyof typeof ports]?.() ?? DEFAULT_PORTS[service];
 	return `${protocol}://${host}:${port}`;
 }

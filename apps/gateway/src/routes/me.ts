@@ -1,7 +1,7 @@
-import { getDb, userQueries } from '@proofa/db';
-import type { Context } from 'hono';
-import { Hono } from 'hono';
-import { getAuth } from '../middleware/auth';
+import { getDb, userQueries } from "@proofa/db";
+import type { Context } from "hono";
+import { Hono } from "hono";
+import { getAuth } from "../middleware/auth";
 
 export const meRoutes = new Hono();
 
@@ -9,7 +9,7 @@ export const meRoutes = new Hono();
  * GET /v1/me
  * Get current user profile
  */
-meRoutes.get('/', async (c: Context) => {
+meRoutes.get("/", async (c: Context) => {
 	try {
 		const auth = getAuth(c);
 
@@ -19,8 +19,8 @@ meRoutes.get('/', async (c: Context) => {
 			name: auth.name,
 		});
 	} catch (error) {
-		console.error('Get me error:', error);
-		return c.json({ error: 'Failed to get profile' }, 500);
+		console.error("Get me error:", error);
+		return c.json({ error: "Failed to get profile" }, 500);
 	}
 });
 
@@ -28,7 +28,7 @@ meRoutes.get('/', async (c: Context) => {
  * PATCH /v1/me
  * Update current user profile
  */
-meRoutes.patch('/', async (c: Context) => {
+meRoutes.patch("/", async (c: Context) => {
 	try {
 		const auth = getAuth(c);
 		const { name, picture } = (await c.req.json()) as { name?: string; picture?: string };
@@ -38,7 +38,7 @@ meRoutes.patch('/', async (c: Context) => {
 		// Get user by public ID
 		const user = await userQueries.findByPublicId(db, auth.userId);
 		if (!user) {
-			return c.json({ error: 'User not found' }, 404);
+			return c.json({ error: "User not found" }, 404);
 		}
 
 		// Update user in database
@@ -48,7 +48,7 @@ meRoutes.patch('/', async (c: Context) => {
 		});
 
 		if (!updated) {
-			return c.json({ error: 'User not found' }, 404);
+			return c.json({ error: "User not found" }, 404);
 		}
 
 		return c.json({
@@ -57,8 +57,8 @@ meRoutes.patch('/', async (c: Context) => {
 			name: updated.name,
 		});
 	} catch (error) {
-		console.error('Update profile error:', error);
-		return c.json({ error: 'Failed to update profile' }, 500);
+		console.error("Update profile error:", error);
+		return c.json({ error: "Failed to update profile" }, 500);
 	}
 });
 
@@ -66,16 +66,16 @@ meRoutes.patch('/', async (c: Context) => {
  * DELETE /v1/me/sessions
  * Logout from all sessions
  */
-meRoutes.delete('/sessions', async (c: Context) => {
+meRoutes.delete("/sessions", async (c: Context) => {
 	try {
 		// Revoke all sessions for user (this would be in Core)
 		// For now, just revoke the current session
 		// In a real app, we'd call a Core endpoint to revoke all sessions
 
-		return c.json({ message: 'Logged out' });
+		return c.json({ message: "Logged out" });
 	} catch (error) {
-		console.error('Logout error:', error);
-		return c.json({ error: 'Failed to logout' }, 500);
+		console.error("Logout error:", error);
+		return c.json({ error: "Failed to logout" }, 500);
 	}
 });
 
@@ -83,7 +83,7 @@ meRoutes.delete('/sessions', async (c: Context) => {
  * GET /v1/me/sessions
  * Get all active sessions for user
  */
-meRoutes.get('/sessions', async (c: Context) => {
+meRoutes.get("/sessions", async (c: Context) => {
 	try {
 		const auth = getAuth(c);
 
@@ -99,7 +99,7 @@ meRoutes.get('/sessions', async (c: Context) => {
 			],
 		});
 	} catch (error) {
-		console.error('Get sessions error:', error);
-		return c.json({ error: 'Failed to get sessions' }, 500);
+		console.error("Get sessions error:", error);
+		return c.json({ error: "Failed to get sessions" }, 500);
 	}
 });

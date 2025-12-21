@@ -5,15 +5,15 @@
 
 /** Known weak/development secrets that should never be used in production */
 const WEAK_SECRETS = [
-	'dev-secret',
-	'development-secret',
-	'test-secret',
-	'change-me',
-	'your-secret-here',
-	'secret',
-	'password',
-	'123456',
-	'abc123',
+	"dev-secret",
+	"development-secret",
+	"test-secret",
+	"change-me",
+	"your-secret-here",
+	"secret",
+	"password",
+	"123456",
+	"abc123",
 ];
 
 interface SecretValidationResult {
@@ -37,12 +37,12 @@ export function validateSecret(
 		isProduction?: boolean;
 	} = {},
 ): SecretValidationResult {
-	const { minLength = 32, required = true, isProduction = process.env.NODE_ENV === 'production' } = options;
+	const { minLength = 32, required = true, isProduction = process.env.NODE_ENV === "production" } = options;
 	const warnings: string[] = [];
 	const errors: string[] = [];
 
 	// Check if secret exists
-	if (!secret || secret.trim() === '') {
+	if (!secret || secret.trim() === "") {
 		if (required) {
 			errors.push(`${name} is required but not set`);
 		}
@@ -101,7 +101,7 @@ export function validateSecrets(
 
 	// Log warnings
 	if (allWarnings.length > 0) {
-		console.warn('[Security] Secret validation warnings:');
+		console.warn("[Security] Secret validation warnings:");
 		for (const w of allWarnings) {
 			console.warn(`  ⚠️  ${w}`);
 		}
@@ -109,13 +109,13 @@ export function validateSecrets(
 
 	// Handle errors
 	if (allErrors.length > 0) {
-		console.error('[Security] Secret validation errors:');
+		console.error("[Security] Secret validation errors:");
 		for (const e of allErrors) {
 			console.error(`  ❌ ${e}`);
 		}
 
 		if (throwOnError) {
-			throw new Error(`Security validation failed: ${allErrors.join('; ')}`);
+			throw new Error(`Security validation failed: ${allErrors.join("; ")}`);
 		}
 	}
 
@@ -126,8 +126,8 @@ export function validateSecrets(
  * Generate a secure random secret
  */
 export function generateSecret(length: number = 64): string {
-	const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 	const array = new Uint8Array(length);
 	crypto.getRandomValues(array);
-	return Array.from(array, (byte) => chars[byte % chars.length]).join('');
+	return Array.from(array, (byte) => chars[byte % chars.length]).join("");
 }

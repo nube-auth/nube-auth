@@ -1,9 +1,9 @@
-const API_URL = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:3004';
+const API_URL = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
 
 const apiClient = {
 	async get<T>(url: string): Promise<T> {
 		const res = await fetch(`${API_URL}${url}`, {
-			credentials: 'include',
+			credentials: "include",
 		});
 		if (!res.ok) throw new Error(`API error: ${res.status}`);
 		return res.json();
@@ -11,10 +11,10 @@ const apiClient = {
 
 	async post<T>(url: string, data?: unknown): Promise<T> {
 		const res = await fetch(`${API_URL}${url}`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(data),
-			credentials: 'include',
+			credentials: "include",
 		});
 		if (!res.ok) throw new Error(`API error: ${res.status}`);
 		return res.json();
@@ -22,10 +22,10 @@ const apiClient = {
 
 	async patch<T>(url: string, data?: unknown): Promise<T> {
 		const res = await fetch(`${API_URL}${url}`, {
-			method: 'PATCH',
-			headers: { 'Content-Type': 'application/json' },
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(data),
-			credentials: 'include',
+			credentials: "include",
 		});
 		if (!res.ok) throw new Error(`API error: ${res.status}`);
 		return res.json();
@@ -33,8 +33,8 @@ const apiClient = {
 
 	async delete<T>(url: string): Promise<T> {
 		const res = await fetch(`${API_URL}${url}`, {
-			method: 'DELETE',
-			credentials: 'include',
+			method: "DELETE",
+			credentials: "include",
 		});
 		if (!res.ok) throw new Error(`API error: ${res.status}`);
 		return res.json();
@@ -60,28 +60,28 @@ export interface License {
 	appId: string;
 	appName: string;
 	expiresAt: string;
-	status: 'active' | 'expired';
+	status: "active" | "expired";
 }
 
 export const userApi = {
 	async getMe(): Promise<User> {
-		return apiClient.get<User>('/v1/me');
+		return apiClient.get<User>("/v1/me");
 	},
 
 	async updateProfile(name: string, picture?: string): Promise<User> {
-		return apiClient.patch<User>('/v1/me', { name, picture });
+		return apiClient.patch<User>("/v1/me", { name, picture });
 	},
 
 	async getSessions(): Promise<Session[]> {
-		return apiClient.get<Session[]>('/v1/me/sessions');
+		return apiClient.get<Session[]>("/v1/me/sessions");
 	},
 
 	async logoutAllSessions(): Promise<void> {
-		await apiClient.delete('/v1/me/sessions');
+		await apiClient.delete("/v1/me/sessions");
 	},
 
 	async logout(): Promise<void> {
-		await apiClient.post('/v1/auth/logout', {});
+		await apiClient.post("/v1/auth/logout", {});
 	},
 
 	async checkLoginStatus(): Promise<{ isLoggedIn: boolean }> {

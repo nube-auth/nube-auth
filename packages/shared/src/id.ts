@@ -1,7 +1,7 @@
-import { customAlphabet } from 'nanoid';
+import { customAlphabet } from "nanoid";
 
 // Custom alphabet excluding i/I/l/L/o/O for clarity
-const ALPHABET = '0123456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ';
+const ALPHABET = "0123456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ";
 
 // Create nanoid generators with specific lengths
 const nano9 = customAlphabet(ALPHABET, 9);

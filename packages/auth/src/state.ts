@@ -3,7 +3,7 @@
  * Provides CSRF protection for OAuth flows by managing state tokens
  */
 
-import { id, validateId } from '@proofa/shared';
+import { id, validateId } from "@proofa/shared";
 
 /** Default state token expiration (10 minutes) */
 const DEFAULT_STATE_TTL_MS = 10 * 60 * 1000;
@@ -64,32 +64,32 @@ export function createOAuthState(options: CreateStateOptions): string {
  */
 export function validateOAuthState(state: string | undefined | null, expectedProvider: string): ValidateStateResult {
 	if (!state) {
-		return { valid: false, error: 'Missing state parameter' };
+		return { valid: false, error: "Missing state parameter" };
 	}
 
 	// Validate format
-	if (!validateId('state', state)) {
-		return { valid: false, error: 'Invalid state format' };
+	if (!validateId("state", state)) {
+		return { valid: false, error: "Invalid state format" };
 	}
 
 	// Check if state exists
 	const data = stateStore.get(state);
 	if (!data) {
-		return { valid: false, error: 'State token not found or expired' };
+		return { valid: false, error: "State token not found or expired" };
 	}
 
 	// Verify provider matches
 	if (data.provider !== expectedProvider) {
 		// Delete to prevent reuse attempts
 		stateStore.delete(state);
-		return { valid: false, error: 'Provider mismatch' };
+		return { valid: false, error: "Provider mismatch" };
 	}
 
 	// Check expiration (default 10 min)
 	const age = Date.now() - data.createdAt;
 	if (age > DEFAULT_STATE_TTL_MS) {
 		stateStore.delete(state);
-		return { valid: false, error: 'State token expired' };
+		return { valid: false, error: "State token expired" };
 	}
 
 	// Delete state to prevent reuse (one-time use)

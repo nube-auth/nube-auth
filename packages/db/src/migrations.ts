@@ -29,9 +29,9 @@
  * This opens Drizzle Studio at localhost:3000 to inspect your database.
  */
 
-import { createClient } from '@libsql/client';
-import { drizzle } from 'drizzle-orm/libsql';
-import * as schema from './schema.js';
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
+import * as schema from "./schema.js";
 
 /**
  * Run migrations on application startup
@@ -46,5 +46,5 @@ export async function runMigrations() {
 
 	// Migrations are auto-applied on connection
 	// Drizzle runs any pending migrations in the migrations/ folder
-	console.log('✅ Database migrations completed');
+	console.log("✅ Database migrations completed");
 }

@@ -1,6 +1,6 @@
-import { CACHE_TTL } from '../config/constants';
-import { redisClient } from '../redis/client';
-import { coreService } from './coreService';
+import { CACHE_TTL } from "../config/constants";
+import { redisClient } from "../redis/client";
+import { coreService } from "./coreService";
 
 /**
  * Cache service for Redis caching of user data, licenses, and projects
@@ -59,7 +59,7 @@ export const cacheService = {
 
 		// Fetch from Core and cache
 		const project = await coreService.request({
-			method: 'GET',
+			method: "GET",
 			path: `/v1/projects/${projectId}`,
 		});
 		await redisClient.setex(key, CACHE_TTL, JSON.stringify(project));

@@ -46,7 +46,7 @@ export interface License {
 	id: string;
 	userId: string;
 	type: string;
-	status: 'active' | 'expired' | 'suspended';
+	status: "active" | "expired" | "suspended";
 	expiresAt: Date;
 	createdAt: Date;
 	updatedAt: Date;

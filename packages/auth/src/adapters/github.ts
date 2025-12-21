@@ -4,8 +4,8 @@ import {
 	GitHubTokenResponseSchema,
 	GitHubUserSchema,
 	OAuthErrorSchema,
-} from '../schemas/index.js';
-import type { OAuthAdapter, OAuthProfile } from '../types/index.js';
+} from "../schemas/index.js";
+import type { OAuthAdapter, OAuthProfile } from "../types/index.js";
 
 /**
  * GitHub OAuth configuration
@@ -28,10 +28,10 @@ interface TokenResponse {
 export class GitHubOAuthAdapter implements OAuthAdapter {
 	private clientId: string;
 	private clientSecret: string;
-	private readonly authorizationEndpoint = 'https://github.com/login/oauth/authorize';
-	private readonly tokenEndpoint = 'https://github.com/login/oauth/access_token';
-	private readonly userEndpoint = 'https://api.github.com/user';
-	private readonly userEmailEndpoint = 'https://api.github.com/user/emails';
+	private readonly authorizationEndpoint = "https://github.com/login/oauth/authorize";
+	private readonly tokenEndpoint = "https://github.com/login/oauth/access_token";
+	private readonly userEndpoint = "https://api.github.com/user";
+	private readonly userEmailEndpoint = "https://api.github.com/user/emails";
 
 	constructor(config: GitHubOAuthConfig) {
 		this.clientId = config.clientId;
@@ -45,9 +45,9 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
 		const params = new URLSearchParams({
 			client_id: this.clientId,
 			redirect_uri: redirectUri,
-			scope: 'user:email',
+			scope: "user:email",
 			state,
-			allow_signup: 'true',
+			allow_signup: "true",
 		});
 
 		return `${this.authorizationEndpoint}?${params.toString()}`;
@@ -58,10 +58,10 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
 	 */
 	async exchangeCodeForTokens(code: string, redirectUri: string): Promise<TokenResponse> {
 		const response = await fetch(this.tokenEndpoint, {
-			method: 'POST',
+			method: "POST",
 			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-				Accept: 'application/json',
+				"Content-Type": "application/x-www-form-urlencoded",
+				Accept: "application/json",
 			},
 			body: new URLSearchParams({
 				code,
@@ -101,7 +101,7 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
 		const userResponse = await fetch(this.userEndpoint, {
 			headers: {
 				Authorization: `Bearer ${accessToken}`,
-				Accept: 'application/json',
+				Accept: "application/json",
 			},
 		});
 
@@ -119,7 +119,7 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
 			const emailResponse = await fetch(this.userEmailEndpoint, {
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
-					Accept: 'application/json',
+					Accept: "application/json",
 				},
 			});
 
@@ -133,7 +133,7 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
 
 		return {
 			id: String(userData.id),
-			email: email || '',
+			email: email || "",
 			name: userData.name || userData.login,
 			picture: userData.avatar_url,
 		};

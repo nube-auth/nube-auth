@@ -1,4 +1,4 @@
-import { useLogout, useSessions } from '../hooks/api';
+import { useLogout, useSessions } from "../hooks/api";
 
 export function SessionsPage() {
 	const { data: sessions, isLoading } = useSessions();
@@ -42,11 +42,11 @@ export function SessionsPage() {
 											<span
 												className={`px-3 py-1 rounded-full text-xs font-medium ${
 													session.isCurrent
-														? 'bg-green-100 text-green-800'
-														: 'bg-gray-100 text-gray-800'
+														? "bg-green-100 text-green-800"
+														: "bg-gray-100 text-gray-800"
 												}`}
 											>
-												{session.isCurrent ? 'Current' : 'Active'}
+												{session.isCurrent ? "Current" : "Active"}
 											</span>
 										</td>
 									</tr>
@@ -65,7 +65,7 @@ export function SessionsPage() {
 						disabled={isPending}
 						className="w-full bg-red-600 text-white py-2 rounded-md hover:bg-red-700 disabled:opacity-50"
 					>
-						{isPending ? 'Logging out...' : 'Logout from All Sessions'}
+						{isPending ? "Logging out..." : "Logout from All Sessions"}
 					</button>
 				</div>
 			</div>

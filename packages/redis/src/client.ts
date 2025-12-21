@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis';
+import { Redis } from "@upstash/redis";
 
 /**
  * Redis singleton instance
@@ -18,7 +18,7 @@ export function getRedisClient(): Redis {
 	const token = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 	if (!url || !token) {
-		throw new Error('Redis configuration missing. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN');
+		throw new Error("Redis configuration missing. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN");
 	}
 
 	redisInstance = new Redis({

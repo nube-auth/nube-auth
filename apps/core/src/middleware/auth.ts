@@ -1,5 +1,5 @@
-import type { Context, Next } from 'hono';
-import { getSignedCookie } from 'hono/cookie';
+import type { Context, Next } from "hono";
+import { getSignedCookie } from "hono/cookie";
 
 export interface AuthenticatedContext {
 	sessionId: string;
@@ -16,11 +16,11 @@ export interface AuthenticatedContext {
  */
 export async function authMiddleware(c: Context, next: Next) {
 	try {
-		const authHeader = c.req.header('authorization');
-		const sessionCookie = await getSignedCookie(c, 'session_secret', 'sessionId');
+		const authHeader = c.req.header("authorization");
+		const sessionCookie = await getSignedCookie(c, "session_secret", "sessionId");
 
 		if (!authHeader && !sessionCookie) {
-			return c.json({ error: 'Unauthorized' }, 401);
+			return c.json({ error: "Unauthorized" }, 401);
 		}
 
 		// TODO: Validate JWT or session
@@ -28,6 +28,6 @@ export async function authMiddleware(c: Context, next: Next) {
 
 		await next();
 	} catch (_error) {
-		return c.json({ error: 'Authentication failed' }, 401);
+		return c.json({ error: "Authentication failed" }, 401);
 	}
 }

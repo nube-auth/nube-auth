@@ -1,28 +1,28 @@
-import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export function LoginPage() {
 	const [searchParams] = useSearchParams();
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		const sessionCookie = searchParams.get('session');
+		const sessionCookie = searchParams.get("session");
 		if (sessionCookie) {
 			document.cookie = `core_session=${sessionCookie}; path=/; SameSite=Lax`;
-			fetch('/api/auth/login', {
-				method: 'POST',
-				credentials: 'include',
+			fetch("/api/auth/login", {
+				method: "POST",
+				credentials: "include",
 			})
 				.then((res) => {
 					if (res.ok) {
-						navigate('/projects');
+						navigate("/projects");
 					}
 				})
 				.catch(console.error);
 			return;
 		}
 
-		const coreAuthUrl = `${import.meta.env.VITE_CORE_URL || 'http://localhost:3003'}/v1/auth/start?provider=google&redirect_uri=${encodeURIComponent(`${window.location.origin}/login`)}`;
+		const coreAuthUrl = `${import.meta.env.VITE_CORE_URL || "http://localhost:3003"}/v1/auth/start?provider=google&redirect_uri=${encodeURIComponent(`${window.location.origin}/login`)}`;
 		window.location.href = coreAuthUrl;
 	}, [searchParams, navigate]);
 

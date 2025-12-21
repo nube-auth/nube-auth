@@ -1,10 +1,10 @@
-import { generateOTP, hashOTP, verifyOTP } from '@proofa/auth';
-import { emailVerificationQueries, getDb, identityQueries, sessionQueries, userQueries } from '@proofa/db';
-import { rateLimit } from '@proofa/redis';
-import { id, OTP_LENGTH, OTP_LOCKOUT_MINUTES, OTP_MAX_ATTEMPTS } from '@proofa/shared';
-import type { Context } from 'hono';
-import { Hono } from 'hono';
-import { Resend } from 'resend';
+import { generateOTP, hashOTP, verifyOTP } from "@proofa/auth";
+import { emailVerificationQueries, getDb, identityQueries, sessionQueries, userQueries } from "@proofa/db";
+import { rateLimit } from "@proofa/redis";
+import { id, OTP_LENGTH, OTP_LOCKOUT_MINUTES, OTP_MAX_ATTEMPTS } from "@proofa/shared";
+import type { Context } from "hono";
+import { Hono } from "hono";
+import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -14,17 +14,17 @@ export const emailRoutes = new Hono();
  * POST /v1/email/start
  * Request OTP via email
  */
-emailRoutes.post('/start', async (c: Context) => {
+emailRoutes.post("/start", async (c: Context) => {
 	const { email } = (await c.req.json()) as { email?: string };
 
-	if (!email || !email.includes('@')) {
-		return c.json({ error: 'Invalid email' }, 400);
+	if (!email || !email.includes("@")) {
+		return c.json({ error: "Invalid email" }, 400);
 	}
 
 	// Rate limit: 5 OTP requests per email per hour
-	const allowed = await rateLimit.checkLimit(email, 'otp_request', 5, 3600);
+	const allowed = await rateLimit.checkLimit(email, "otp_request", 5, 3600);
 	if (!allowed) {
-		return c.json({ error: 'Too many OTP requests. Try again in 1 hour.' }, 429);
+		return c.json({ error: "Too many OTP requests. Try again in 1 hour." }, 429);
 	}
 
 	try {
@@ -65,11 +65,11 @@ emailRoutes.post('/start', async (c: Context) => {
 		}
 
 		// Send OTP email (in production, use Resend)
-		if (process.env.SEND_EMAILS === 'true') {
+		if (process.env.SEND_EMAILS === "true") {
 			await resend.emails.send({
-				from: process.env.EMAIL_FROM || 'noreply@proofa.ai',
+				from: process.env.EMAIL_FROM || "noreply@proofa.ai",
 				to: email,
-				subject: 'Your Proofa OTP Code',
+				subject: "Your Proofa OTP Code",
 				html: `<p>Your OTP code is: <strong>${otp}</strong></p><p>Valid for 10 minutes.</p>`,
 			});
 		} else {
@@ -77,12 +77,12 @@ emailRoutes.post('/start', async (c: Context) => {
 		}
 
 		return c.json({
-			message: 'OTP sent to email',
+			message: "OTP sent to email",
 			expiresIn: 600, // 10 minutes in seconds
 		});
 	} catch (error) {
-		console.error('Email start error:', error);
-		return c.json({ error: 'Failed to send OTP' }, 500);
+		console.error("Email start error:", error);
+		return c.json({ error: "Failed to send OTP" }, 500);
 	}
 });
 
@@ -90,11 +90,11 @@ emailRoutes.post('/start', async (c: Context) => {
  * POST /v1/email/verify
  * Verify OTP and create session
  */
-emailRoutes.post('/verify', async (c: Context) => {
+emailRoutes.post("/verify", async (c: Context) => {
 	const { email, otp } = (await c.req.json()) as { email?: string; otp?: string };
 
-	if (!email || !email.includes('@')) {
-		return c.json({ error: 'Invalid email' }, 400);
+	if (!email || !email.includes("@")) {
+		return c.json({ error: "Invalid email" }, 400);
 	}
 
 	if (!otp || otp.length !== OTP_LENGTH) {
@@ -102,9 +102,9 @@ emailRoutes.post('/verify', async (c: Context) => {
 	}
 
 	// Rate limit: 5 OTP verification attempts per email per 5 minutes
-	const allowed = await rateLimit.checkLimit(email, 'otp_verify', 5, 300);
+	const allowed = await rateLimit.checkLimit(email, "otp_verify", 5, 300);
 	if (!allowed) {
-		return c.json({ error: 'Too many OTP attempts. Try again later.' }, 429);
+		return c.json({ error: "Too many OTP attempts. Try again later." }, 429);
 	}
 
 	try {
@@ -114,17 +114,17 @@ emailRoutes.post('/verify', async (c: Context) => {
 		const emailVerification = await emailVerificationQueries.findByEmail(db, email);
 
 		if (!emailVerification) {
-			return c.json({ error: 'No OTP request found' }, 404);
+			return c.json({ error: "No OTP request found" }, 404);
 		}
 
 		// Check if locked out
 		if (emailVerification.locked_until && emailVerification.locked_until > now) {
-			return c.json({ error: 'Account locked. Try again later.' }, 429);
+			return c.json({ error: "Account locked. Try again later." }, 429);
 		}
 
 		// Check if OTP expired
 		if (emailVerification.expires_at < now) {
-			return c.json({ error: 'OTP expired' }, 401);
+			return c.json({ error: "OTP expired" }, 401);
 		}
 
 		// Verify OTP
@@ -142,7 +142,7 @@ emailRoutes.post('/verify', async (c: Context) => {
 					locked_until: lockedUntil,
 				});
 
-				return c.json({ error: 'Too many failed attempts. Account locked for 30 minutes.' }, 429);
+				return c.json({ error: "Too many failed attempts. Account locked for 30 minutes." }, 429);
 			} else {
 				await emailVerificationQueries.update(db, emailVerification.id, {
 					attempts: newAttempts,
@@ -150,7 +150,7 @@ emailRoutes.post('/verify', async (c: Context) => {
 
 				return c.json(
 					{
-						error: 'Invalid OTP',
+						error: "Invalid OTP",
 						attemptsRemaining: OTP_MAX_ATTEMPTS - newAttempts,
 					},
 					401,
@@ -167,7 +167,7 @@ emailRoutes.post('/verify', async (c: Context) => {
 			const newUser = await userQueries.create(db, {
 				public_id: id.user(),
 				primary_email: email,
-				name: email.split('@')[0],
+				name: email.split("@")[0],
 				avatar_url: null,
 				created_at: now,
 				updated_at: now,
@@ -179,7 +179,7 @@ emailRoutes.post('/verify', async (c: Context) => {
 			await identityQueries.create(db, {
 				public_id: id.identity(),
 				user_id: userId,
-				provider: 'email',
+				provider: "email",
 				provider_user_id: email,
 				email,
 				created_at: now,
@@ -207,7 +207,7 @@ emailRoutes.post('/verify', async (c: Context) => {
 			email,
 		});
 	} catch (error) {
-		console.error('Email verify error:', error);
-		return c.json({ error: 'Failed to verify OTP' }, 500);
+		console.error("Email verify error:", error);
+		return c.json({ error: "Failed to verify OTP" }, 500);
 	}
 });

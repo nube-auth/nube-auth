@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { useMe, useUpdateProfile } from '../hooks/api';
+import React, { useState } from "react";
+import { useMe, useUpdateProfile } from "../hooks/api";
 
 export function ProfilePage() {
 	const { data: user, isLoading } = useMe();
 	const { mutate: updateProfile, isPending } = useUpdateProfile();
-	const [name, setName] = useState('');
+	const [name, setName] = useState("");
 
 	React.useEffect(() => {
 		if (user) {
-			setName(user.name || '');
+			setName(user.name || "");
 		}
 	}, [user]);
 
@@ -54,7 +54,7 @@ export function ProfilePage() {
 						disabled={isPending}
 						className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
 					>
-						{isPending ? 'Updating...' : 'Update Profile'}
+						{isPending ? "Updating..." : "Update Profile"}
 					</button>
 				</form>
 			</div>

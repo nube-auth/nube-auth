@@ -2,10 +2,10 @@
  * Key prefix patterns for Redis
  */
 export const KEY_PREFIXES = {
-	CACHE: 'cache',
-	SESSION: 'session',
-	RATELIMIT: 'ratelimit',
-	TEMP: 'temp',
+	CACHE: "cache",
+	SESSION: "session",
+	RATELIMIT: "ratelimit",
+	TEMP: "temp",
 } as const;
 
 /**

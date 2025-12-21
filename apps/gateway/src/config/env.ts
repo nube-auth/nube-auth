@@ -1,4 +1,4 @@
-import type { Context } from 'hono';
+import type { Context } from "hono";
 
 interface Environment {
 	CORE_URL: string;
@@ -6,18 +6,18 @@ interface Environment {
 	GATEWAY_SESSION_SECRET: string;
 	UPSTASH_REDIS_REST_URL: string;
 	UPSTASH_REDIS_REST_TOKEN: string;
-	NODE_ENV: 'development' | 'production' | 'test';
+	NODE_ENV: "development" | "production" | "test";
 	PORT?: string;
 }
 
 function validateEnv(): Environment {
 	const requiredVars = [
-		'CORE_URL',
-		'X_PROOFA_SERVICE_TOKEN',
-		'GATEWAY_SESSION_SECRET',
-		'UPSTASH_REDIS_REST_URL',
-		'UPSTASH_REDIS_REST_TOKEN',
-		'NODE_ENV',
+		"CORE_URL",
+		"X_PROOFA_SERVICE_TOKEN",
+		"GATEWAY_SESSION_SECRET",
+		"UPSTASH_REDIS_REST_URL",
+		"UPSTASH_REDIS_REST_TOKEN",
+		"NODE_ENV",
 	];
 
 	const missing: string[] = [];
@@ -29,7 +29,7 @@ function validateEnv(): Environment {
 	}
 
 	if (missing.length > 0) {
-		throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+		throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
 	}
 
 	return {
@@ -38,8 +38,8 @@ function validateEnv(): Environment {
 		GATEWAY_SESSION_SECRET: process.env.GATEWAY_SESSION_SECRET!,
 		UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL!,
 		UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN!,
-		NODE_ENV: (process.env.NODE_ENV || 'development') as any,
-		PORT: process.env.PORT || '3004',
+		NODE_ENV: (process.env.NODE_ENV || "development") as any,
+		PORT: process.env.PORT || "3004",
 	};
 }
 

@@ -1,6 +1,6 @@
-import { appQueries, getDb, licenseQueries } from '@proofa/db';
-import type { Context } from 'hono';
-import { Hono } from 'hono';
+import { appQueries, getDb, licenseQueries } from "@proofa/db";
+import type { Context } from "hono";
+import { Hono } from "hono";
 
 const router = new Hono();
 
@@ -8,11 +8,11 @@ const router = new Hono();
  * GET /v1/license
  * Get license information for an app
  */
-router.get('/', async (c: Context) => {
-	const appId = c.req.query('appId');
+router.get("/", async (c: Context) => {
+	const appId = c.req.query("appId");
 
 	if (!appId) {
-		return c.json({ error: 'Missing appId' }, 400);
+		return c.json({ error: "Missing appId" }, 400);
 	}
 
 	try {
@@ -21,20 +21,20 @@ router.get('/', async (c: Context) => {
 
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) {
-			return c.json({ error: 'App not found' }, 404);
+			return c.json({ error: "App not found" }, 404);
 		}
 
 		// In a real implementation, you'd query the license from the database
 		// For now, return a placeholder
 		return c.json({
 			appId,
-			status: 'active',
+			status: "active",
 			expiresAt: now + 365 * 24 * 60 * 60, // 1 year from now
 			seats: 1,
 		});
 	} catch (error) {
-		console.error('License get error:', error);
-		return c.json({ error: 'Failed to get license' }, 500);
+		console.error("License get error:", error);
+		return c.json({ error: "Failed to get license" }, 500);
 	}
 });
 
@@ -42,7 +42,7 @@ router.get('/', async (c: Context) => {
  * POST /v1/license/grant
  * Admin endpoint to grant a license to a user
  */
-router.post('/grant', async (c: Context) => {
+router.post("/grant", async (c: Context) => {
 	const { userId, appId, expiresAt } = (await c.req.json()) as {
 		userId?: string;
 		appId?: string;
@@ -50,7 +50,7 @@ router.post('/grant', async (c: Context) => {
 	};
 
 	if (!userId || !appId || !expiresAt) {
-		return c.json({ error: 'Missing required fields' }, 400);
+		return c.json({ error: "Missing required fields" }, 400);
 	}
 
 	try {
@@ -60,7 +60,7 @@ router.post('/grant', async (c: Context) => {
 		// Validate app exists
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) {
-			return c.json({ error: 'App not found' }, 404);
+			return c.json({ error: "App not found" }, 404);
 		}
 
 		// Create or update license
@@ -69,12 +69,12 @@ router.post('/grant', async (c: Context) => {
 		});
 
 		return c.json({
-			message: 'License granted',
+			message: "License granted",
 			license,
 		});
 	} catch (error) {
-		console.error('License grant error:', error);
-		return c.json({ error: 'Failed to grant license' }, 500);
+		console.error("License grant error:", error);
+		return c.json({ error: "Failed to grant license" }, 500);
 	}
 });
 

@@ -1,20 +1,20 @@
-import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
-import type React from 'react';
-import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
-import { LicensesPage } from './pages/Licenses';
-import { LoginPage } from './pages/Login';
-import { ProjectDetailPage } from './pages/ProjectDetail';
-import { ProjectsPage } from './pages/Projects';
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import type React from "react";
+import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
+import { LicensesPage } from "./pages/Licenses";
+import { LoginPage } from "./pages/Login";
+import { ProjectDetailPage } from "./pages/ProjectDetail";
+import { ProjectsPage } from "./pages/Projects";
 
 const queryClient = new QueryClient();
 
 // Simple user API hook for auth check
 function useMe() {
 	return useQuery({
-		queryKey: ['me'],
+		queryKey: ["me"],
 		queryFn: async () => {
-			const res = await fetch('/api/me', { credentials: 'include' });
-			if (!res.ok) throw new Error('Not authenticated');
+			const res = await fetch("/api/me", { credentials: "include" });
+			if (!res.ok) throw new Error("Not authenticated");
 			return res.json();
 		},
 	});

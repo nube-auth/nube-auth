@@ -1,5 +1,5 @@
-import { GoogleTokenResponseSchema, GoogleUserInfoSchema } from '../schemas/index.js';
-import type { OAuthAdapter, OAuthProfile } from '../types/index.js';
+import { GoogleTokenResponseSchema, GoogleUserInfoSchema } from "../schemas/index.js";
+import type { OAuthAdapter, OAuthProfile } from "../types/index.js";
 
 /**
  * Google OAuth configuration
@@ -22,9 +22,9 @@ interface TokenResponse {
 export class GoogleOAuthAdapter implements OAuthAdapter {
 	private clientId: string;
 	private clientSecret: string;
-	private readonly authorizationEndpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
-	private readonly tokenEndpoint = 'https://oauth2.googleapis.com/token';
-	private readonly userInfoEndpoint = 'https://openidconnect.googleapis.com/v1/userinfo';
+	private readonly authorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
+	private readonly tokenEndpoint = "https://oauth2.googleapis.com/token";
+	private readonly userInfoEndpoint = "https://openidconnect.googleapis.com/v1/userinfo";
 
 	constructor(config: GoogleOAuthConfig) {
 		this.clientId = config.clientId;
@@ -38,11 +38,11 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
 		const params = new URLSearchParams({
 			client_id: this.clientId,
 			redirect_uri: redirectUri,
-			response_type: 'code',
-			scope: 'openid email profile',
+			response_type: "code",
+			scope: "openid email profile",
 			state,
-			access_type: 'offline',
-			prompt: 'consent',
+			access_type: "offline",
+			prompt: "consent",
 		});
 
 		return `${this.authorizationEndpoint}?${params.toString()}`;
@@ -53,16 +53,16 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
 	 */
 	async exchangeCodeForTokens(code: string, redirectUri: string): Promise<TokenResponse> {
 		const response = await fetch(this.tokenEndpoint, {
-			method: 'POST',
+			method: "POST",
 			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
+				"Content-Type": "application/x-www-form-urlencoded",
 			},
 			body: new URLSearchParams({
 				code,
 				client_id: this.clientId,
 				client_secret: this.clientSecret,
 				redirect_uri: redirectUri,
-				grant_type: 'authorization_code',
+				grant_type: "authorization_code",
 			}),
 		});
 
@@ -102,7 +102,7 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
 		return {
 			id: data.sub,
 			email: data.email,
-			name: data.name || data.email.split('@')[0],
+			name: data.name || data.email.split("@")[0],
 			picture: data.picture,
 		};
 	}

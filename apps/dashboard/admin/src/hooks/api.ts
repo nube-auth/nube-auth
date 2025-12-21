@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface Project {
 	id: string;
@@ -18,7 +18,7 @@ interface ProjectMember {
 	id: string;
 	user_id: string;
 	project_id: string;
-	role: 'owner' | 'member';
+	role: "owner" | "member";
 	created_at: string;
 }
 
@@ -33,10 +33,10 @@ interface License {
 
 export function useProjects() {
 	return useQuery({
-		queryKey: ['projects'],
+		queryKey: ["projects"],
 		queryFn: async () => {
-			const res = await fetch('/api/admin/projects', { credentials: 'include' });
-			if (!res.ok) throw new Error('Failed to fetch projects');
+			const res = await fetch("/api/admin/projects", { credentials: "include" });
+			if (!res.ok) throw new Error("Failed to fetch projects");
 			return res.json() as Promise<Project[]>;
 		},
 	});
@@ -46,27 +46,27 @@ export function useCreateProject() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async (data: { name: string; description?: string }) => {
-			const res = await fetch('/api/admin/projects', {
-				method: 'POST',
-				credentials: 'include',
-				headers: { 'Content-Type': 'application/json' },
+			const res = await fetch("/api/admin/projects", {
+				method: "POST",
+				credentials: "include",
+				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(data),
 			});
-			if (!res.ok) throw new Error('Failed to create project');
+			if (!res.ok) throw new Error("Failed to create project");
 			return res.json();
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['projects'] });
+			queryClient.invalidateQueries({ queryKey: ["projects"] });
 		},
 	});
 }
 
 export function useProject(projectId: string) {
 	return useQuery({
-		queryKey: ['project', projectId],
+		queryKey: ["project", projectId],
 		queryFn: async () => {
-			const res = await fetch(`/api/admin/projects/${projectId}`, { credentials: 'include' });
-			if (!res.ok) throw new Error('Failed to fetch project');
+			const res = await fetch(`/api/admin/projects/${projectId}`, { credentials: "include" });
+			if (!res.ok) throw new Error("Failed to fetch project");
 			return res.json() as Promise<Project>;
 		},
 		enabled: !!projectId,
@@ -75,10 +75,10 @@ export function useProject(projectId: string) {
 
 export function useProjectApps(projectId: string) {
 	return useQuery({
-		queryKey: ['project-apps', projectId],
+		queryKey: ["project-apps", projectId],
 		queryFn: async () => {
-			const res = await fetch(`/api/admin/projects/${projectId}/apps`, { credentials: 'include' });
-			if (!res.ok) throw new Error('Failed to fetch apps');
+			const res = await fetch(`/api/admin/projects/${projectId}/apps`, { credentials: "include" });
+			if (!res.ok) throw new Error("Failed to fetch apps");
 			return res.json() as Promise<App[]>;
 		},
 		enabled: !!projectId,
@@ -90,26 +90,26 @@ export function useCreateApp(projectId: string) {
 	return useMutation({
 		mutationFn: async (data: { name: string }) => {
 			const res = await fetch(`/api/admin/projects/${projectId}/apps`, {
-				method: 'POST',
-				credentials: 'include',
-				headers: { 'Content-Type': 'application/json' },
+				method: "POST",
+				credentials: "include",
+				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(data),
 			});
-			if (!res.ok) throw new Error('Failed to create app');
+			if (!res.ok) throw new Error("Failed to create app");
 			return res.json();
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['project-apps', projectId] });
+			queryClient.invalidateQueries({ queryKey: ["project-apps", projectId] });
 		},
 	});
 }
 
 export function useLicenses() {
 	return useQuery({
-		queryKey: ['licenses'],
+		queryKey: ["licenses"],
 		queryFn: async () => {
-			const res = await fetch('/api/admin/licenses', { credentials: 'include' });
-			if (!res.ok) throw new Error('Failed to fetch licenses');
+			const res = await fetch("/api/admin/licenses", { credentials: "include" });
+			if (!res.ok) throw new Error("Failed to fetch licenses");
 			return res.json() as Promise<License[]>;
 		},
 	});
@@ -117,10 +117,10 @@ export function useLicenses() {
 
 export function useProjectMembers(projectId: string) {
 	return useQuery({
-		queryKey: ['project-members', projectId],
+		queryKey: ["project-members", projectId],
 		queryFn: async () => {
-			const res = await fetch(`/api/admin/projects/${projectId}/members`, { credentials: 'include' });
-			if (!res.ok) throw new Error('Failed to fetch members');
+			const res = await fetch(`/api/admin/projects/${projectId}/members`, { credentials: "include" });
+			if (!res.ok) throw new Error("Failed to fetch members");
 			return res.json() as Promise<ProjectMember[]>;
 		},
 		enabled: !!projectId,

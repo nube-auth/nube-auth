@@ -1,9 +1,9 @@
-import { createSessionCookie, parseSessionCookie } from '@proofa/auth';
-import { sessionStore } from '@proofa/redis';
-import type { Context } from 'hono';
-import { Hono } from 'hono';
-import { setCookie } from 'hono/cookie';
-import { coreClient } from '../lib/core-client';
+import { createSessionCookie, parseSessionCookie } from "@proofa/auth";
+import { sessionStore } from "@proofa/redis";
+import type { Context } from "hono";
+import { Hono } from "hono";
+import { setCookie } from "hono/cookie";
+import { coreClient } from "../lib/core-client";
 
 export const authRoutes = new Hono();
 
@@ -11,24 +11,24 @@ export const authRoutes = new Hono();
  * POST /v1/auth/login
  * Exchange Core session for Gateway app session
  */
-authRoutes.post('/login', async (c: Context) => {
+authRoutes.post("/login", async (c: Context) => {
 	try {
 		const { coreSessionId } = (await c.req.json()) as { coreSessionId?: string };
 
 		if (!coreSessionId) {
-			return c.json({ error: 'Core session ID required' }, 400);
+			return c.json({ error: "Core session ID required" }, 400);
 		}
 
 		// Get user info from Core
 		const user = await coreClient.exchangeSession(coreSessionId);
 
 		if (!user) {
-			return c.json({ error: 'Invalid session' }, 401);
+			return c.json({ error: "Invalid session" }, 401);
 		}
 
 		// Store app session in Redis (7-day TTL for now)
 		const ttlSeconds = 7 * 24 * 60 * 60; // 7 days
-		await sessionStore.setAppSession(coreSessionId, user.userId, 'gateway', ttlSeconds);
+		await sessionStore.setAppSession(coreSessionId, user.userId, "gateway", ttlSeconds);
 
 		// Create signed cookie
 		const { name, value, attributes } = createSessionCookie(coreSessionId);
@@ -42,7 +42,7 @@ authRoutes.post('/login', async (c: Context) => {
 		});
 
 		return c.json({
-			message: 'Logged in successfully',
+			message: "Logged in successfully",
 			user: {
 				id: user.userId,
 				email: user.email,
@@ -50,8 +50,8 @@ authRoutes.post('/login', async (c: Context) => {
 			},
 		});
 	} catch (error) {
-		console.error('Login error:', error);
-		return c.json({ error: 'Failed to login' }, 500);
+		console.error("Login error:", error);
+		return c.json({ error: "Failed to login" }, 500);
 	}
 });
 
@@ -59,21 +59,21 @@ authRoutes.post('/login', async (c: Context) => {
  * POST /v1/auth/logout
  * Logout and clear session
  */
-authRoutes.post('/logout', async (c: Context) => {
+authRoutes.post("/logout", async (c: Context) => {
 	try {
 		// Clear session cookie
-		setCookie(c, 'proofa_session', '', {
+		setCookie(c, "proofa_session", "", {
 			httpOnly: true,
 			secure: true,
-			sameSite: 'Lax',
-			path: '/',
+			sameSite: "Lax",
+			path: "/",
 			maxAge: 0, // Clear cookie
 		});
 
-		return c.json({ message: 'Logged out successfully' });
+		return c.json({ message: "Logged out successfully" });
 	} catch (error) {
-		console.error('Logout error:', error);
-		return c.json({ error: 'Failed to logout' }, 500);
+		console.error("Logout error:", error);
+		return c.json({ error: "Failed to logout" }, 500);
 	}
 });
 
@@ -81,9 +81,9 @@ authRoutes.post('/logout', async (c: Context) => {
  * GET /v1/auth/status
  * Check if user is logged in
  */
-authRoutes.get('/status', async (c: Context) => {
+authRoutes.get("/status", async (c: Context) => {
 	try {
-		const cookie = c.req.cookie('proofa_session');
+		const cookie = c.req.cookie("proofa_session");
 
 		if (!cookie) {
 			return c.json({ loggedIn: false });
@@ -116,7 +116,7 @@ authRoutes.get('/status', async (c: Context) => {
 			return c.json({ loggedIn: false });
 		}
 	} catch (error) {
-		console.error('Status check error:', error);
+		console.error("Status check error:", error);
 		return c.json({ loggedIn: false });
 	}
 });

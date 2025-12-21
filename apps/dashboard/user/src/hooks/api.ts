@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface User {
 	id: string;
@@ -18,10 +18,10 @@ interface Session {
  */
 export function useMe() {
 	return useQuery({
-		queryKey: ['me'],
+		queryKey: ["me"],
 		queryFn: async () => {
-			const res = await fetch('/api/me');
-			if (!res.ok) throw new Error('Failed to fetch profile');
+			const res = await fetch("/api/me");
+			if (!res.ok) throw new Error("Failed to fetch profile");
 			return res.json() as Promise<User>;
 		},
 	});
@@ -35,16 +35,16 @@ export function useUpdateProfile() {
 
 	return useMutation({
 		mutationFn: async (data: { name?: string; picture?: string }) => {
-			const res = await fetch('/api/me', {
-				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json' },
+			const res = await fetch("/api/me", {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(data),
 			});
-			if (!res.ok) throw new Error('Failed to update profile');
+			if (!res.ok) throw new Error("Failed to update profile");
 			return res.json() as Promise<User>;
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['me'] });
+			queryClient.invalidateQueries({ queryKey: ["me"] });
 		},
 	});
 }
@@ -54,10 +54,10 @@ export function useUpdateProfile() {
  */
 export function useSessions() {
 	return useQuery({
-		queryKey: ['sessions'],
+		queryKey: ["sessions"],
 		queryFn: async () => {
-			const res = await fetch('/api/me/sessions');
-			if (!res.ok) throw new Error('Failed to fetch sessions');
+			const res = await fetch("/api/me/sessions");
+			if (!res.ok) throw new Error("Failed to fetch sessions");
 			const data = await res.json();
 			return data.sessions as Session[];
 		},
@@ -72,13 +72,13 @@ export function useLogout() {
 
 	return useMutation({
 		mutationFn: async () => {
-			const res = await fetch('/api/auth/logout', { method: 'POST' });
-			if (!res.ok) throw new Error('Failed to logout');
+			const res = await fetch("/api/auth/logout", { method: "POST" });
+			if (!res.ok) throw new Error("Failed to logout");
 			return res.json();
 		},
 		onSuccess: () => {
 			queryClient.clear();
-			window.location.href = '/login';
+			window.location.href = "/login";
 		},
 	});
 }
@@ -88,10 +88,10 @@ export function useLogout() {
  */
 export function useAuthStatus() {
 	return useQuery({
-		queryKey: ['auth-status'],
+		queryKey: ["auth-status"],
 		queryFn: async () => {
-			const res = await fetch('/api/auth/status');
-			if (!res.ok) throw new Error('Failed to check auth');
+			const res = await fetch("/api/auth/status");
+			if (!res.ok) throw new Error("Failed to check auth");
 			return res.json() as Promise<{ loggedIn: boolean; user?: User }>;
 		},
 	});

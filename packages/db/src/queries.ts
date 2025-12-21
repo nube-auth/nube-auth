@@ -1,5 +1,5 @@
-import { and, desc, eq, gt, inArray, isNull } from 'drizzle-orm';
-import type { DbClient } from './index.js';
+import { and, desc, eq, gt, inArray, isNull } from "drizzle-orm";
+import type { DbClient } from "./index.js";
 import {
 	apps,
 	audit_logs,
@@ -11,7 +11,7 @@ import {
 	projects,
 	sessions,
 	users,
-} from './schema.js';
+} from "./schema.js";
 
 /**
  * User queries
@@ -284,7 +284,7 @@ export const emailVerificationQueries = {
 
 	async incrementAttempts(db: DbClient, id: number) {
 		const record = await db.select().from(email_verifications).where(eq(email_verifications.id, id)).get();
-		if (!record) throw new Error('Email verification not found');
+		if (!record) throw new Error("Email verification not found");
 
 		const newAttempts = record.attempts + 1;
 		const updateData: any = { attempts: newAttempts };

@@ -1,7 +1,7 @@
-import type { Context } from 'hono';
-import { createMiddleware } from 'hono/factory';
-import { getAppIdFromHost } from '../config/appHosts';
-import { APP_ID_HEADER } from '../config/constants';
+import type { Context } from "hono";
+import { createMiddleware } from "hono/factory";
+import { getAppIdFromHost } from "../config/appHosts";
+import { APP_ID_HEADER } from "../config/constants";
 
 /**
  * App resolver middleware
@@ -12,14 +12,14 @@ export const appResolverMiddleware = createMiddleware((c: Context, next) => {
 	let appId: string | null = null;
 
 	// First, try to get from query parameter
-	const queryAppId = c.req.query('app');
+	const queryAppId = c.req.query("app");
 	if (queryAppId) {
 		appId = queryAppId;
 	}
 
 	// Then, try to get from hostname
 	if (!appId) {
-		const hostname = c.req.header('host');
+		const hostname = c.req.header("host");
 		if (hostname) {
 			appId = getAppIdFromHost(hostname);
 		}
@@ -32,7 +32,7 @@ export const appResolverMiddleware = createMiddleware((c: Context, next) => {
 
 	// Set app ID in context
 	if (appId) {
-		c.set('appId', appId);
+		c.set("appId", appId);
 	}
 
 	return next();
@@ -42,9 +42,9 @@ export const appResolverMiddleware = createMiddleware((c: Context, next) => {
  * Get app ID from context, throw if not found
  */
 export function getAppIdFromContext(c: Context): string {
-	const appId = c.get('appId') as string | undefined;
+	const appId = c.get("appId") as string | undefined;
 	if (!appId) {
-		throw new Error('App ID not resolved from request');
+		throw new Error("App ID not resolved from request");
 	}
 	return appId;
 }

@@ -16,10 +16,12 @@
 		"@proofa/redis": "workspace:*",
 		"@proofa/shared": "workspace:*",
 		"@upstash/redis": "^1.25.0",
-		"hono": "^4.0.0"
+		"hono": "^4.0.0",
+		"uuid": "^13.0.0"
 	},
 	"devDependencies": {
 		"@types/node": "^20.10.0",
+		"@types/uuid": "^11.0.0",
 		"tsx": "^4.7.0"
 	},
 	"engines": {

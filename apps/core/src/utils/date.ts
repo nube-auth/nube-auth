@@ -34,7 +34,7 @@ export function getExpirationISO(seconds: number): string {
  * Check if timestamp has expired
  */
 export function isExpired(expiresAt: number | Date | string): boolean {
-	const expiresAtMs = typeof expiresAt === 'number' ? expiresAt * 1000 : new Date(expiresAt).getTime();
+	const expiresAtMs = typeof expiresAt === "number" ? expiresAt * 1000 : new Date(expiresAt).getTime();
 	return Date.now() > expiresAtMs;
 }
 
@@ -42,6 +42,6 @@ export function isExpired(expiresAt: number | Date | string): boolean {
  * Get time remaining in seconds
  */
 export function getTimeRemaining(expiresAt: number | Date | string): number {
-	const expiresAtMs = typeof expiresAt === 'number' ? expiresAt * 1000 : new Date(expiresAt).getTime();
+	const expiresAtMs = typeof expiresAt === "number" ? expiresAt * 1000 : new Date(expiresAt).getTime();
 	return Math.max(0, Math.floor((expiresAtMs - Date.now()) / 1000));
 }

@@ -1,6 +1,6 @@
 // OAuth providers and adapters
 
-export { GitHubOAuthAdapter, GoogleOAuthAdapter } from './adapters/index.js';
+export { GitHubOAuthAdapter, GoogleOAuthAdapter } from "./adapters/index.js";
 // Cryptography & OTP
 export {
 	generateOTP,
@@ -9,11 +9,11 @@ export {
 	hashOTP,
 	validateS2SToken,
 	verifyOTP,
-} from './crypto.js';
-export * from './oauth.js';
+} from "./crypto.js";
+export * from "./oauth.js";
 
 // OAuth validation schemas
-export * from './schemas/index.js';
+export * from "./schemas/index.js";
 
 // Session management
 export {
@@ -23,7 +23,7 @@ export {
 	parseSessionCookie,
 	signSessionId,
 	verifySessionId,
-} from './session.js';
+} from "./session.js";
 // OAuth state management (CSRF protection)
 export {
 	cleanupExpiredStates,
@@ -31,4 +31,4 @@ export {
 	createOAuthState,
 	getPendingStateCount,
 	validateOAuthState,
-} from './state.js';
+} from "./state.js";

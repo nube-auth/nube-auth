@@ -23,24 +23,24 @@ export interface OAuthProfile {
  * Google OAuth provider
  */
 export const GoogleOAuth: OAuthProvider = {
-	name: 'google',
-	clientId: process.env.GOOGLE_CLIENT_ID || '',
-	clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-	authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-	tokenEndpoint: 'https://oauth2.googleapis.com/token',
-	userInfoEndpoint: 'https://openidconnect.googleapis.com/v1/userinfo',
+	name: "google",
+	clientId: process.env.GOOGLE_CLIENT_ID || "",
+	clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+	authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+	tokenEndpoint: "https://oauth2.googleapis.com/token",
+	userInfoEndpoint: "https://openidconnect.googleapis.com/v1/userinfo",
 };
 
 /**
  * GitHub OAuth provider
  */
 export const GitHubOAuth: OAuthProvider = {
-	name: 'github',
-	clientId: process.env.GITHUB_CLIENT_ID || '',
-	clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
-	authorizationEndpoint: 'https://github.com/login/oauth/authorize',
-	tokenEndpoint: 'https://github.com/login/oauth/access_token',
-	userInfoEndpoint: 'https://api.github.com/user',
+	name: "github",
+	clientId: process.env.GITHUB_CLIENT_ID || "",
+	clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+	authorizationEndpoint: "https://github.com/login/oauth/authorize",
+	tokenEndpoint: "https://github.com/login/oauth/access_token",
+	userInfoEndpoint: "https://api.github.com/user",
 };
 
 /**
@@ -55,9 +55,9 @@ export function buildAuthorizationUrl(
 	const params = new URLSearchParams({
 		client_id: provider.clientId,
 		redirect_uri: redirectUri,
-		response_type: 'code',
+		response_type: "code",
 		state,
-		...(scope && { scope: scope.join(' ') }),
+		...(scope && { scope: scope.join(" ") }),
 	});
 
 	return `${provider.authorizationEndpoint}?${params.toString()}`;
@@ -72,17 +72,17 @@ export async function exchangeCodeForToken(
 	redirectUri: string,
 ): Promise<string> {
 	const response = await fetch(provider.tokenEndpoint, {
-		method: 'POST',
+		method: "POST",
 		headers: {
-			'Content-Type': 'application/json',
-			Accept: 'application/json',
+			"Content-Type": "application/json",
+			Accept: "application/json",
 		},
 		body: JSON.stringify({
 			client_id: provider.clientId,
 			client_secret: provider.clientSecret,
 			code,
 			redirect_uri: redirectUri,
-			grant_type: 'authorization_code',
+			grant_type: "authorization_code",
 		}),
 	});
 
@@ -101,7 +101,7 @@ export async function fetchUserProfile(provider: OAuthProvider, accessToken: str
 	const response = await fetch(provider.userInfoEndpoint, {
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
-			Accept: 'application/json',
+			Accept: "application/json",
 		},
 	});
 
@@ -112,17 +112,17 @@ export async function fetchUserProfile(provider: OAuthProvider, accessToken: str
 	const data = (await response.json()) as any;
 
 	// Normalize different provider response formats
-	if (provider.name === 'google') {
+	if (provider.name === "google") {
 		return {
 			id: data.sub,
 			email: data.email,
 			name: data.name,
 			avatar_url: data.picture,
 		};
-	} else if (provider.name === 'github') {
+	} else if (provider.name === "github") {
 		return {
 			id: data.id.toString(),
-			email: data.email || '',
+			email: data.email || "",
 			name: data.name || data.login,
 			avatar_url: data.avatar_url,
 		};

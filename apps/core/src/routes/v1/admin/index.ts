@@ -1,6 +1,6 @@
-import { appQueries, getDb, licenseQueries, userQueries } from '@proofa/db';
-import type { Context } from 'hono';
-import { Hono } from 'hono';
+import { appQueries, getDb, licenseQueries, userQueries } from "@proofa/db";
+import type { Context } from "hono";
+import { Hono } from "hono";
 
 const router = new Hono();
 
@@ -8,7 +8,7 @@ const router = new Hono();
  * POST /v1/admin/license/grant
  * Grants a license to a user
  */
-router.post('/license/grant', async (c: Context) => {
+router.post("/license/grant", async (c: Context) => {
 	const { userId, appId, expiresAt } = (await c.req.json()) as {
 		userId?: string;
 		appId?: string;
@@ -17,7 +17,7 @@ router.post('/license/grant', async (c: Context) => {
 
 	// Validate required fields
 	if (!userId || !appId || !expiresAt) {
-		return c.json({ error: 'Missing required fields: userId, appId, expiresAt' }, 400);
+		return c.json({ error: "Missing required fields: userId, appId, expiresAt" }, 400);
 	}
 
 	try {
@@ -27,13 +27,13 @@ router.post('/license/grant', async (c: Context) => {
 		// Validate user exists
 		const user = await userQueries.findByPublicId(db, userId);
 		if (!user) {
-			return c.json({ error: 'User not found' }, 404);
+			return c.json({ error: "User not found" }, 404);
 		}
 
 		// Validate app exists
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) {
-			return c.json({ error: 'App not found' }, 404);
+			return c.json({ error: "App not found" }, 404);
 		}
 
 		// Create or update license
@@ -44,7 +44,7 @@ router.post('/license/grant', async (c: Context) => {
 		});
 
 		return c.json({
-			message: 'License granted successfully',
+			message: "License granted successfully",
 			licenseId: license.id,
 			userId,
 			appId,
@@ -52,8 +52,8 @@ router.post('/license/grant', async (c: Context) => {
 			grantedAt: now,
 		});
 	} catch (error) {
-		console.error('Admin license grant error:', error);
-		return c.json({ error: 'Failed to grant license' }, 500);
+		console.error("Admin license grant error:", error);
+		return c.json({ error: "Failed to grant license" }, 500);
 	}
 });
 
@@ -61,11 +61,11 @@ router.post('/license/grant', async (c: Context) => {
  * GET /v1/admin/licenses/:userId
  * Get all licenses for a user
  */
-router.get('/licenses/:userId', async (c: Context) => {
-	const userId = c.req.param('userId');
+router.get("/licenses/:userId", async (c: Context) => {
+	const userId = c.req.param("userId");
 
 	if (!userId) {
-		return c.json({ error: 'Missing userId' }, 400);
+		return c.json({ error: "Missing userId" }, 400);
 	}
 
 	try {
@@ -74,7 +74,7 @@ router.get('/licenses/:userId', async (c: Context) => {
 		// Validate user exists
 		const user = await userQueries.findByPublicId(db, userId);
 		if (!user) {
-			return c.json({ error: 'User not found' }, 404);
+			return c.json({ error: "User not found" }, 404);
 		}
 
 		// Get licenses for user
@@ -86,8 +86,8 @@ router.get('/licenses/:userId', async (c: Context) => {
 			count: licenses?.length || 0,
 		});
 	} catch (error) {
-		console.error('Admin get licenses error:', error);
-		return c.json({ error: 'Failed to get licenses' }, 500);
+		console.error("Admin get licenses error:", error);
+		return c.json({ error: "Failed to get licenses" }, 500);
 	}
 });
 
@@ -95,11 +95,11 @@ router.get('/licenses/:userId', async (c: Context) => {
  * DELETE /v1/admin/licenses/:licenseId
  * Revoke a license
  */
-router.delete('/licenses/:licenseId', async (c: Context) => {
-	const licenseId = c.req.param('licenseId');
+router.delete("/licenses/:licenseId", async (c: Context) => {
+	const licenseId = c.req.param("licenseId");
 
 	if (!licenseId) {
-		return c.json({ error: 'Missing licenseId' }, 400);
+		return c.json({ error: "Missing licenseId" }, 400);
 	}
 
 	try {
@@ -108,12 +108,12 @@ router.delete('/licenses/:licenseId', async (c: Context) => {
 		// In a real implementation, you'd have a method to find and delete by public_id
 		// For now, we'll return a success response
 		return c.json({
-			message: 'License revoked successfully',
+			message: "License revoked successfully",
 			licenseId,
 		});
 	} catch (error) {
-		console.error('Admin revoke license error:', error);
-		return c.json({ error: 'Failed to revoke license' }, 500);
+		console.error("Admin revoke license error:", error);
+		return c.json({ error: "Failed to revoke license" }, 500);
 	}
 });
 

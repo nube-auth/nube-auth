@@ -1,5 +1,5 @@
-import { SESSION_TTL } from '../config/constants';
-import { redisClient } from '../redis/client';
+import { SESSION_TTL } from "../config/constants";
+import { redisClient } from "../redis/client";
 
 export interface GatewaySession {
 	userId: string;
@@ -60,7 +60,7 @@ export const sessionService = {
 			await redisClient.setex(key, SESSION_TTL, JSON.stringify(session));
 			return session;
 		} catch (error) {
-			console.error('Failed to parse session:', error);
+			console.error("Failed to parse session:", error);
 			return null;
 		}
 	},
@@ -90,4 +90,4 @@ export const sessionService = {
 };
 
 // Re-export as a type-safe way to hide internal methods
-export type PublicSessionService = Omit<typeof sessionService, 'generateSessionToken'>;
+export type PublicSessionService = Omit<typeof sessionService, "generateSessionToken">;

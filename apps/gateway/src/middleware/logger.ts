@@ -1,67 +1,49 @@
-import type { Context } from 'hono';
-import { createMiddleware } from 'hono/factory';
-import { getEnv } from '../config/env';
-
-interface RequestLog {
-	requestId: string;
-	timestamp: string;
-	method: string;
-	path: string;
-	statusCode?: number;
-	duration?: number;
-	userId?: string;
-	appId?: string;
-	error?: string;
-}
-
-const isDevelopment = () => getEnv().NODE_ENV === 'development';
+import { serializeError } from "@proofa/shared";
+import type { Context, Next } from "hono";
+import type pino from "pino";
+import { v4 as uuidv4 } from "uuid";
 
 /**
- * Request logging middleware
- * Logs incoming requests and outgoing responses with request IDs
+ * HTTP request/response logger middleware using pino
  */
-export const loggerMiddleware = createMiddleware(async (c: Context, next) => {
-	const requestId = c.get('requestId') as string;
-	const startTime = Date.now();
+export function httpLogger(log: pino.Logger) {
+	return async (c: Context, next: Next) => {
+		const requestId = c.req.header("x-request-id") || uuidv4();
+		const method = c.req.method;
+		const path = c.req.path;
+		const startTime = Date.now();
 
-	const log: RequestLog = {
-		requestId,
-		timestamp: new Date().toISOString(),
-		method: c.req.method,
-		path: c.req.path,
-		userId: c.get('userId') as string | undefined,
-		appId: c.get('appId') as string | undefined,
+		// Create child logger with request context
+		const reqLog = log.child({ requestId, method, path });
+
+		// Store logger in context for use in routes
+		c.set("log", reqLog);
+		c.set("requestId", requestId);
+
+		reqLog.debug("Request started");
+
+		try {
+			await next();
+
+			const duration = Date.now() - startTime;
+			const status = c.res.status;
+			const userId = c.get("userId") as string | undefined;
+			const appId = c.get("appId") as string | undefined;
+
+			const logData = { status, duration, ...(userId && { userId }), ...(appId && { appId }) };
+			const logLevel = status >= 500 ? "error" : status >= 400 ? "warn" : "info";
+			reqLog[logLevel](logData, "Request completed");
+		} catch (error) {
+			const duration = Date.now() - startTime;
+			reqLog.error({ err: serializeError(error), duration }, "Request failed");
+			throw error;
+		}
 	};
-
-	try {
-		if (isDevelopment()) {
-			console.log('→ Incoming request:', {
-				...log,
-				headers: c.req.header('content-type'),
-			});
-		}
-
-		await next();
-
-		log.statusCode = c.res.status;
-		log.duration = Date.now() - startTime;
-
-		const logLevel = c.res.status >= 400 ? 'warn' : 'info';
-		if (isDevelopment()) {
-			console[logLevel as any]('← Response:', log);
-		}
-	} catch (error) {
-		log.duration = Date.now() - startTime;
-		log.error = error instanceof Error ? error.message : 'Unknown error';
-
-		console.error('✗ Request error:', log);
-		throw error;
-	}
-});
+}
 
 /**
  * Generate unique request ID
  */
 export function generateRequestId(): string {
-	return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+	return uuidv4();
 }

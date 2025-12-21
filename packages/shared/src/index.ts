@@ -33,7 +33,7 @@ export {
 	RATE_LIMIT_OTP_SEND_PER_HOUR,
 	ROLES,
 	type RoleType,
-} from './constants/index.js';
+} from "./constants/index.js";
 // Re-export port configuration
 export {
 	DEFAULT_PORTS,
@@ -41,10 +41,10 @@ export {
 	getServiceUrl,
 	INFRA_PORTS,
 	ports,
-} from './constants/ports.js';
-export type { IdType } from './id.js';
+} from "./constants/ports.js";
+export type { IdType } from "./id.js";
 // Re-export ID generators and validation
-export { createId, id, idPatterns, validateId } from './id.js';
+export { createId, id, idPatterns, validateId } from "./id.js";
 export type {
 	ApiResponse,
 	App,
@@ -58,7 +58,7 @@ export type {
 	ProjectMember,
 	Session,
 	User,
-} from './types/index.js';
+} from "./types/index.js";
 
 // Re-export utilities
 export {
@@ -66,11 +66,20 @@ export {
 	formatEpoch,
 	getCurrentEpoch,
 	isExpired,
-} from './utils/date.js';
-
+} from "./utils/date.js";
+// Re-export logger utilities
+export {
+	createChildLogger,
+	createLogger,
+	type LogLevel,
+	logger,
+	serializeError,
+	serializeRequest,
+	serializeResponse,
+} from "./utils/logger.js";
 // Re-export secret validation utilities
 export {
 	generateSecret,
 	validateSecret,
 	validateSecrets,
-} from './utils/secrets.js';
+} from "./utils/secrets.js";

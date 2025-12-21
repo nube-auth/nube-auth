@@ -65,7 +65,7 @@ export interface ProjectMember {
 	id: number; // internal only
 	project_id: number;
 	user_id: number;
-	role: 'owner' | 'admin' | 'member';
+	role: "owner" | "admin" | "member";
 	created_at: number;
 }
 
@@ -84,7 +84,7 @@ export interface App {
 	required_providers: string; // JSON array ['google', 'github']
 	is_active: boolean;
 	licensing_required: boolean;
-	default_license_plan: 'free' | 'trial'; // 'free' or 'trial'
+	default_license_plan: "free" | "trial"; // 'free' or 'trial'
 	trial_days: number | null; // required if plan = 'trial'
 	app_session_ttl_days: number; // default 28 (1-365)
 	account_lockout_minutes: number; // default 15
@@ -104,9 +104,9 @@ export interface License {
 	public_id: string; // L0xxx
 	user_id: number;
 	app_id: number;
-	plan: 'free' | 'trial' | 'pro' | 'team' | 'enterprise';
-	status: 'active' | 'expired' | 'canceled' | 'suspended';
-	source: 'manual' | 'promo' | 'stripe' | 'lemonsqueezy' | 'internal';
+	plan: "free" | "trial" | "pro" | "team" | "enterprise";
+	status: "active" | "expired" | "canceled" | "suspended";
+	source: "manual" | "promo" | "stripe" | "lemonsqueezy" | "internal";
 	valid_from: number; // epoch seconds
 	valid_until: number | null; // null = lifetime
 	entitlements: string | null; // JSON object
@@ -159,7 +159,7 @@ export interface AuditLog {
 	user_id: number;
 	app_id: number | null;
 	project_id: number | null;
-	action: 'create' | 'update' | 'delete' | 'grant' | 'revoke' | 'login' | 'logout';
+	action: "create" | "update" | "delete" | "grant" | "revoke" | "login" | "logout";
 	entity_type: string; // 'user', 'app', 'project', 'license', etc.
 	entity_id: string | null;
 	changes: string | null; // JSON object (before/after)

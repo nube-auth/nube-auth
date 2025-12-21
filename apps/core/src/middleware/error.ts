@@ -1,4 +1,4 @@
-import type { Context } from 'hono';
+import type { Context } from "hono";
 
 export interface AppError extends Error {
 	status?: number;
@@ -12,7 +12,7 @@ export interface AppError extends Error {
  */
 export async function errorHandler(err: AppError, c: Context) {
 	const status = err.status || 500;
-	const code = err.code || 'INTERNAL_ERROR';
+	const code = err.code || "INTERNAL_ERROR";
 
 	console.error(`[${code}] ${err.message}`, {
 		stack: err.stack,
@@ -24,7 +24,7 @@ export async function errorHandler(err: AppError, c: Context) {
 			error: {
 				message: err.message,
 				code,
-				...(process.env.NODE_ENV === 'development' && { details: err.details }),
+				...(process.env.NODE_ENV === "development" && { details: err.details }),
 			},
 		},
 		status,

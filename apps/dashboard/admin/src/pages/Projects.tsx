@@ -1,17 +1,17 @@
-import { useState } from 'react';
-import { useCreateProject, useProjects } from '../hooks/api';
+import { useState } from "react";
+import { useCreateProject, useProjects } from "../hooks/api";
 
 export function ProjectsPage() {
 	const { data: projects, isLoading, error } = useProjects();
 	const createProjectMutation = useCreateProject();
 	const [showForm, setShowForm] = useState(false);
-	const [formData, setFormData] = useState({ name: '', description: '' });
+	const [formData, setFormData] = useState({ name: "", description: "" });
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		createProjectMutation.mutate(formData, {
 			onSuccess: () => {
-				setFormData({ name: '', description: '' });
+				setFormData({ name: "", description: "" });
 				setShowForm(false);
 			},
 		});
@@ -29,7 +29,7 @@ export function ProjectsPage() {
 					onClick={() => setShowForm(!showForm)}
 					className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
 				>
-					{showForm ? 'Cancel' : 'New Project'}
+					{showForm ? "Cancel" : "New Project"}
 				</button>
 			</div>
 
@@ -65,7 +65,7 @@ export function ProjectsPage() {
 						disabled={createProjectMutation.isPending}
 						className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
 					>
-						{createProjectMutation.isPending ? 'Creating...' : 'Create Project'}
+						{createProjectMutation.isPending ? "Creating..." : "Create Project"}
 					</button>
 				</form>
 			)}

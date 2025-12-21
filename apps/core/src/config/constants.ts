@@ -28,24 +28,24 @@ export const LIMITS = {
 } as const;
 
 export const PROVIDERS = {
-	GOOGLE: 'google',
-	GITHUB: 'github',
+	GOOGLE: "google",
+	GITHUB: "github",
 } as const;
 
 export const AUTH_ROUTES = {
-	START: '/v1/auth/start',
-	CALLBACK: '/v1/auth/callback/:provider',
+	START: "/v1/auth/start",
+	CALLBACK: "/v1/auth/callback/:provider",
 } as const;
 
 export const EMAIL_ROUTES = {
-	START: '/v1/email/start',
-	VERIFY: '/v1/email/verify',
+	START: "/v1/email/start",
+	VERIFY: "/v1/email/verify",
 } as const;
 
 export const LICENSE_ROUTES = {
-	GET: '/v1/license',
+	GET: "/v1/license",
 } as const;
 
 export const ADMIN_ROUTES = {
-	GRANT_LICENSE: '/v1/admin/license/grant',
+	GRANT_LICENSE: "/v1/admin/license/grant",
 } as const;

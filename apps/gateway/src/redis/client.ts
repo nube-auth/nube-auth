@@ -1,5 +1,5 @@
-import { Redis } from '@upstash/redis';
-import { getEnv } from '../config/env';
+import { Redis } from "@upstash/redis";
+import { getEnv } from "../config/env";
 
 let client: Redis | null = null;
 
@@ -37,9 +37,9 @@ export const redisClient = getRedisClient();
 export async function checkRedisHealth(): Promise<boolean> {
 	try {
 		const result = await redisClient.ping();
-		return result === 'PONG';
+		return result === "PONG";
 	} catch (error) {
-		console.error('Redis health check failed:', error);
+		console.error("Redis health check failed:", error);
 		return false;
 	}
 }

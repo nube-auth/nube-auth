@@ -1,4 +1,4 @@
-import type { User } from '@proofa/shared';
+import type { User } from "@proofa/shared";
 
 /**
  * Client for calling Proofa Core API
@@ -8,16 +8,16 @@ export class CoreClient {
 	private baseUrl: string;
 	private s2sToken: string;
 
-	constructor(baseUrl: string = process.env.CORE_URL || 'http://localhost:3003', s2sToken?: string) {
+	constructor(baseUrl: string = process.env.CORE_URL || "http://localhost:3003", s2sToken?: string) {
 		this.baseUrl = baseUrl;
-		this.s2sToken = s2sToken || process.env.CORE_S2S_TOKEN || '';
+		this.s2sToken = s2sToken || process.env.CORE_S2S_TOKEN || "";
 	}
 
 	private async request<T>(method: string, path: string, body?: Record<string, unknown>): Promise<T> {
 		const url = `${this.baseUrl}${path}`;
 		const headers: Record<string, string> = {
-			'Content-Type': 'application/json',
-			'X-S2S-Token': this.s2sToken,
+			"Content-Type": "application/json",
+			"X-S2S-Token": this.s2sToken,
 		};
 
 		try {
@@ -43,7 +43,7 @@ export class CoreClient {
 	 */
 	async getUserBySession(sessionId: string): Promise<User | null> {
 		try {
-			const result = await this.request<User | null>('POST', '/v1/auth/exchange', {
+			const result = await this.request<User | null>("POST", "/v1/auth/exchange", {
 				sessionId,
 			});
 			return result;
@@ -57,7 +57,7 @@ export class CoreClient {
 	 */
 	async exchangeSession(sessionId: string): Promise<{ userId: string; email: string; name: string } | null> {
 		try {
-			return await this.request('POST', '/v1/auth/exchange', { sessionId });
+			return await this.request("POST", "/v1/auth/exchange", { sessionId });
 		} catch {
 			return null;
 		}

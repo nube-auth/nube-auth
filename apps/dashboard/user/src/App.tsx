@@ -1,10 +1,10 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type React from 'react';
-import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
-import { useAuthStatus } from './hooks/api';
-import { LoginPage } from './pages/Login';
-import { ProfilePage } from './pages/Profile';
-import { SessionsPage } from './pages/Sessions';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type React from "react";
+import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
+import { useAuthStatus } from "./hooks/api";
+import { LoginPage } from "./pages/Login";
+import { ProfilePage } from "./pages/Profile";
+import { SessionsPage } from "./pages/Sessions";
 
 const queryClient = new QueryClient();
 

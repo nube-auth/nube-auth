@@ -1,5 +1,5 @@
-import type { Context } from 'hono';
-import { createMiddleware } from 'hono/factory';
+import type { Context } from "hono";
+import { createMiddleware } from "hono/factory";
 
 interface ErrorResponse {
 	error: string;
@@ -26,15 +26,15 @@ export const errorMiddleware = createMiddleware(async (c: Context, next) => {
 	try {
 		await next();
 	} catch (error) {
-		const requestId = c.get('requestId') as string | undefined;
+		const requestId = c.get("requestId") as string | undefined;
 		let statusCode = 500;
-		let errorMessage = 'Internal Server Error';
-		let errorCode = 'INTERNAL_ERROR';
+		let errorMessage = "Internal Server Error";
+		let errorCode = "INTERNAL_ERROR";
 
 		if (error instanceof AppError) {
 			statusCode = error.statusCode;
 			errorMessage = error.message;
-			errorCode = error.code || 'APP_ERROR';
+			errorCode = error.code || "APP_ERROR";
 		} else if (error instanceof Error) {
 			errorMessage = error.message;
 		}
@@ -46,7 +46,7 @@ export const errorMiddleware = createMiddleware(async (c: Context, next) => {
 			...(requestId && { requestId }),
 		};
 
-		console.error('Request error:', {
+		console.error("Request error:", {
 			requestId,
 			statusCode,
 			error: errorMessage,

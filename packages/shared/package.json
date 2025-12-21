@@ -16,7 +16,9 @@
 		"build": "tsc",
 		"dev": "tsc --watch"
 	},
-	"dependencies": {},
+	"dependencies": {
+		"pino": "^10.1.0"
+	},
 	"devDependencies": {
 		"typescript": "^5.3.3",
 		"nanoid": "^4.0.2"

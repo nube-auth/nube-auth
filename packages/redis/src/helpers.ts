@@ -1,5 +1,5 @@
-import type { Session } from '@proofa/shared';
-import { getRedisClient } from './client.js';
+import type { Session } from "@proofa/shared";
+import { getRedisClient } from "./client.js";
 
 /**
  * Rate limit check
@@ -24,7 +24,7 @@ export async function rateLimit(key: string, limit: number, window: number): Pro
 
 		return current > limit;
 	} catch (error) {
-		console.error('Rate limit check failed:', error);
+		console.error("Rate limit check failed:", error);
 		return false; // Fail open - don't block on Redis errors
 	}
 }
@@ -43,7 +43,7 @@ export async function cacheGet<T = unknown>(key: string): Promise<T | null> {
 		const value = await redis.get(fullKey);
 		return value ? (JSON.parse(value as string) as T) : null;
 	} catch (error) {
-		console.error('Cache get failed:', error);
+		console.error("Cache get failed:", error);
 		return null;
 	}
 }
@@ -60,10 +60,10 @@ export async function cacheSet<T = unknown>(key: string, value: T, ttlSeconds: n
 	const fullKey = `cache:${key}`;
 
 	try {
-		const serialized = typeof value === 'string' ? value : JSON.stringify(value);
+		const serialized = typeof value === "string" ? value : JSON.stringify(value);
 		await redis.setex(fullKey, ttlSeconds, serialized);
 	} catch (error) {
-		console.error('Cache set failed:', error);
+		console.error("Cache set failed:", error);
 	}
 }
 
@@ -81,7 +81,7 @@ export async function sessionGet(sessionId: string): Promise<Session | null> {
 		const value = await redis.get(fullKey);
 		return value ? (JSON.parse(value as string) as Session) : null;
 	} catch (error) {
-		console.error('Session get failed:', error);
+		console.error("Session get failed:", error);
 		return null;
 	}
 }
@@ -101,6 +101,6 @@ export async function sessionSet(sessionId: string, session: Session, ttlSeconds
 		const serialized = JSON.stringify(session);
 		await redis.setex(fullKey, ttlSeconds, serialized);
 	} catch (error) {
-		console.error('Session set failed:', error);
+		console.error("Session set failed:", error);
 	}
 }

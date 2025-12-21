@@ -8,9 +8,9 @@ export interface AppHostMapping {
 }
 
 const appHostMap: AppHostMapping = {
-	localhost: 'local',
-	'app1.localhost': 'app1',
-	'app2.localhost': 'app2',
+	localhost: "local",
+	"app1.localhost": "app1",
+	"app2.localhost": "app2",
 	// Add production mappings here
 	// 'dashboard.proofa.io': 'main-app',
 	// 'app.proofa.io': 'main-app',
@@ -20,7 +20,7 @@ const appHostMap: AppHostMapping = {
  * Get app ID from hostname
  */
 export function getAppIdFromHost(hostname: string): string | null {
-	const host = hostname.split(':')[0]; // Remove port
+	const host = hostname.split(":")[0]; // Remove port
 	return appHostMap[host] || null;
 }
 

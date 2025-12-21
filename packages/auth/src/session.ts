@@ -1,6 +1,6 @@
-import * as crypto from 'node:crypto';
+import * as crypto from "node:crypto";
 
-const SESSION_SECRET = process.env.SESSION_SECRET || 'dev-session-secret-change-in-production';
+const SESSION_SECRET = process.env.SESSION_SECRET || "dev-session-secret-change-in-production";
 
 /**
  * Create a signed session cookie
@@ -9,7 +9,7 @@ export function createSessionCookie(
 	sessionId: string,
 	options?: {
 		secure?: boolean;
-		sameSite?: 'Strict' | 'Lax' | 'None';
+		sameSite?: "Strict" | "Lax" | "None";
 		domain?: string;
 		path?: string;
 	},
@@ -17,14 +17,14 @@ export function createSessionCookie(
 	const signed = signSessionId(sessionId);
 
 	return {
-		name: 'proofa_session',
+		name: "proofa_session",
 		value: signed,
 		attributes: {
 			httpOnly: true,
 			secure: options?.secure ?? true,
-			sameSite: options?.sameSite ?? 'Lax',
+			sameSite: options?.sameSite ?? "Lax",
 			domain: options?.domain,
-			path: options?.path ?? '/',
+			path: options?.path ?? "/",
 		},
 	};
 }
@@ -44,7 +44,7 @@ export function parseSessionCookie(cookieValue: string): string | null {
  * Sign session ID with HMAC
  */
 export function signSessionId(sessionId: string): string {
-	const hmac = crypto.createHmac('sha256', SESSION_SECRET).update(sessionId).digest('hex');
+	const hmac = crypto.createHmac("sha256", SESSION_SECRET).update(sessionId).digest("hex");
 	return `${sessionId}.${hmac}`;
 }
 
@@ -52,15 +52,15 @@ export function signSessionId(sessionId: string): string {
  * Verify signed session ID
  */
 export function verifySessionId(signed: string): string {
-	const [sessionId, hmac] = signed.split('.');
+	const [sessionId, hmac] = signed.split(".");
 	if (!sessionId || !hmac) {
-		throw new Error('Invalid session format');
+		throw new Error("Invalid session format");
 	}
 
-	const expectedHmac = crypto.createHmac('sha256', SESSION_SECRET).update(sessionId).digest('hex');
+	const expectedHmac = crypto.createHmac("sha256", SESSION_SECRET).update(sessionId).digest("hex");
 
 	if (hmac !== expectedHmac) {
-		throw new Error('Session signature invalid');
+		throw new Error("Session signature invalid");
 	}
 
 	return sessionId;

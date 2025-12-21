@@ -1,6 +1,6 @@
-import { createClient } from '@libsql/client';
-import { drizzle } from 'drizzle-orm/libsql';
-import * as schema from './schema.js';
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
+import * as schema from "./schema.js";
 
 /**
  * Initialize Turso/LibSQL client and Drizzle ORM
@@ -46,6 +46,6 @@ export {
 	projectQueries,
 	sessionQueries,
 	userQueries,
-} from './queries.js';
+} from "./queries.js";
 // Export schema for migrations and types
-export * from './schema.js';
+export * from "./schema.js";

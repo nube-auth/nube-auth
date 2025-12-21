@@ -1,4 +1,4 @@
-import type { Context, Next } from 'hono';
+import type { Context, Next } from "hono";
 
 /**
  * S2S token validation middleware
@@ -6,10 +6,10 @@ import type { Context, Next } from 'hono';
  */
 export async function s2sMiddleware(c: Context, next: Next) {
 	try {
-		const s2sToken = c.req.header('x-s2s-token');
+		const s2sToken = c.req.header("x-s2s-token");
 
 		if (!s2sToken) {
-			return c.json({ error: 'Missing S2S token' }, 401);
+			return c.json({ error: "Missing S2S token" }, 401);
 		}
 
 		// TODO: Validate S2S token against environment secret
@@ -20,6 +20,6 @@ export async function s2sMiddleware(c: Context, next: Next) {
 
 		await next();
 	} catch (_error) {
-		return c.json({ error: 'S2S authentication failed' }, 401);
+		return c.json({ error: "S2S authentication failed" }, 401);
 	}
 }
