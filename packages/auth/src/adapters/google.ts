@@ -1,4 +1,5 @@
 import type { OAuthAdapter, OAuthProfile } from '../types/index.js';
+import { GoogleTokenResponseSchema, GoogleUserInfoSchema } from '../schemas/index.js';
 
 /**
  * Google OAuth configuration
@@ -6,16 +7,6 @@ import type { OAuthAdapter, OAuthProfile } from '../types/index.js';
 interface GoogleOAuthConfig {
   clientId: string;
   clientSecret: string;
-}
-
-interface BuildAuthUrlParams {
-  redirectUri: string;
-  state: string;
-}
-
-interface ExchangeCodeParams {
-  code: string;
-  redirectUri: string;
 }
 
 interface TokenResponse {
@@ -26,7 +17,7 @@ interface TokenResponse {
 
 /**
  * Google OAuth adapter
- * Implements OAuth 2.0 for Google
+ * Implements OAuth 2.0 for Google with validated responses
  */
 export class GoogleOAuthAdapter implements OAuthAdapter {
   private clientId: string;
@@ -58,35 +49,31 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
   }
 
   /**
-   * Build authorization URL (alias)
+   * Exchange authorization code for tokens with validated response
    */
-  buildAuthorizationUrl(params: BuildAuthUrlParams): string {
-    return this.getAuthorizationUrl(params.state, params.redirectUri);
-  }
-
-  /**
-   * Exchange authorization code for tokens
-   */
-  async exchangeCodeForToken(params: ExchangeCodeParams): Promise<TokenResponse> {
+  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<TokenResponse> {
     const response = await fetch(this.tokenEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        code: params.code,
+        code,
         client_id: this.clientId,
         client_secret: this.clientSecret,
-        redirect_uri: params.redirectUri,
+        redirect_uri: redirectUri,
         grant_type: 'authorization_code',
       }),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to exchange code for token');
+      const errorText = await response.text();
+      throw new Error(`Failed to exchange code for token: ${response.status} ${errorText}`);
     }
 
-    const data = await response.json() as any;
+    const rawData = await response.json();
+    const data = GoogleTokenResponseSchema.parse(rawData);
+    
     return {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
@@ -95,7 +82,7 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
   }
 
   /**
-   * Fetch user profile using access token
+   * Fetch user profile using access token with validated response
    */
   async fetchUserProfile(accessToken: string): Promise<OAuthProfile> {
     const response = await fetch(this.userInfoEndpoint, {
@@ -105,23 +92,26 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch user profile');
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch user profile: ${response.status} ${errorText}`);
     }
 
-    const data = await response.json() as any;
+    const rawData = await response.json();
+    const data = GoogleUserInfoSchema.parse(rawData);
+    
     return {
       id: data.sub,
       email: data.email,
       name: data.name || data.email.split('@')[0],
-      picture: data.picture || undefined,
+      picture: data.picture,
     };
   }
 
   /**
-   * Exchange authorization code for user profile (legacy)
+   * Complete OAuth flow: exchange code and fetch profile
    */
   async exchangeToken(code: string, redirectUri: string): Promise<OAuthProfile> {
-    const tokens = await this.exchangeCodeForToken({ code, redirectUri });
+    const tokens = await this.exchangeCodeForTokens(code, redirectUri);
     return this.fetchUserProfile(tokens.accessToken);
   }
 }

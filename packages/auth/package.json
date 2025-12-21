@@ -17,7 +17,8 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "@proofa/shared": "workspace:*"
+    "@proofa/shared": "workspace:*",
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "typescript": "^5.3.3"

@@ -8,34 +8,6 @@ const nano9 = customAlphabet(ALPHABET, 9);
 const nano11 = customAlphabet(ALPHABET, 11);
 const nano12 = customAlphabet(ALPHABET, 12);
 
-// Map of entity types to their generator functions
-const generators: Record<string, () => string> = {
-  user: () => `U0${nano9()}`,
-  session: () => `S0${nano11()}`,
-  project: () => `P0${nano9()}`,
-  app: () => `A0${nano9()}`,
-  identity: () => `I0${nano9()}`,
-  projectMember: () => `M0${nano9()}`,
-  license: () => `L0${nano9()}`,
-  authCode: () => `C0${nano12()}`,
-  emailVerification: () => `E0${nano9()}`,
-  auditLog: () => `AL0${nano9()}`,
-  state: () => nano12(), // for OAuth state tokens
-};
-
-/**
- * Create an ID for a given entity type
- * @param type The entity type (user, session, project, app, etc.)
- * @returns A unique prefixed ID
- */
-export function createId(type: string): string {
-  const generator = generators[type];
-  if (!generator) {
-    throw new Error(`Unknown entity type: ${type}`);
-  }
-  return generator();
-}
-
 /**
  * Entity type identifiers with compact prefixes
  * Format: [EntityLetter][0][nanoid(9-12)]
@@ -75,7 +47,26 @@ export const id = {
 
   /** Generate audit log ID (AL0, 12 chars total) */
   auditLog: () => `AL0${nano9()}`,
+
+  /** Generate OAuth state token (12 chars, no prefix) */
+  state: () => nano12(),
 } as const;
+
+/** Type representing valid ID entity types */
+export type IdType = keyof typeof id;
+
+/**
+ * Create an ID for a given entity type
+ * @param type The entity type (user, session, project, app, etc.)
+ * @returns A unique prefixed ID
+ */
+export function createId(type: IdType): string {
+  const generator = id[type];
+  if (!generator) {
+    throw new Error(`Unknown entity type: ${type}`);
+  }
+  return generator();
+}
 
 /**
  * Validation patterns for ID formats
@@ -90,11 +81,12 @@ export const idPatterns = {
   authCode: /^C0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{12}$/,
   emailVerification: /^E0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
   auditLog: /^AL0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  state: /^[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{12}$/,
 } as const;
 
 /**
  * Validate an ID against a specific pattern
  */
-export function validateId(type: keyof typeof idPatterns, id: string): boolean {
-  return idPatterns[type].test(id);
+export function validateId(type: keyof typeof idPatterns, idValue: string): boolean {
+  return idPatterns[type].test(idValue);
 }

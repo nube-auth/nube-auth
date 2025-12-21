@@ -1,4 +1,11 @@
 import type { OAuthAdapter, OAuthProfile } from '../types/index.js';
+import { 
+  GitHubTokenResponseSchema, 
+  GitHubUserSchema, 
+  GitHubEmailsSchema,
+  OAuthErrorSchema,
+  type GitHubEmail 
+} from '../schemas/index.js';
 
 /**
  * GitHub OAuth configuration
@@ -6,16 +13,6 @@ import type { OAuthAdapter, OAuthProfile } from '../types/index.js';
 interface GitHubOAuthConfig {
   clientId: string;
   clientSecret: string;
-}
-
-interface BuildAuthUrlParams {
-  redirectUri: string;
-  state: string;
-}
-
-interface ExchangeCodeParams {
-  code: string;
-  redirectUri: string;
 }
 
 interface TokenResponse {
@@ -26,7 +23,7 @@ interface TokenResponse {
 
 /**
  * GitHub OAuth adapter
- * Implements OAuth 2.0 for GitHub
+ * Implements OAuth 2.0 for GitHub with validated responses
  */
 export class GitHubOAuthAdapter implements OAuthAdapter {
   private clientId: string;
@@ -57,16 +54,9 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
   }
 
   /**
-   * Build authorization URL (alias)
+   * Exchange authorization code for tokens with validated response
    */
-  buildAuthorizationUrl(params: BuildAuthUrlParams): string {
-    return this.getAuthorizationUrl(params.state, params.redirectUri);
-  }
-
-  /**
-   * Exchange authorization code for tokens
-   */
-  async exchangeCodeForToken(params: ExchangeCodeParams): Promise<TokenResponse> {
+  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<TokenResponse> {
     const response = await fetch(this.tokenEndpoint, {
       method: 'POST',
       headers: {
@@ -74,23 +64,28 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
         'Accept': 'application/json',
       },
       body: new URLSearchParams({
-        code: params.code,
+        code,
         client_id: this.clientId,
         client_secret: this.clientSecret,
-        redirect_uri: params.redirectUri,
+        redirect_uri: redirectUri,
       }),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to exchange code for token');
+      const errorText = await response.text();
+      throw new Error(`Failed to exchange code for token: ${response.status} ${errorText}`);
     }
 
-    const data = await response.json() as any;
+    const rawData = await response.json();
     
-    if (data.error) {
-      throw new Error(data.error_description || data.error);
+    // Check for OAuth error response
+    const errorResult = OAuthErrorSchema.safeParse(rawData);
+    if (errorResult.success && errorResult.data.error) {
+      throw new Error(errorResult.data.error_description || errorResult.data.error);
     }
 
+    const data = GitHubTokenResponseSchema.parse(rawData);
+    
     return {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
@@ -99,7 +94,7 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
   }
 
   /**
-   * Fetch user profile using access token
+   * Fetch user profile using access token with validated response
    */
   async fetchUserProfile(accessToken: string): Promise<OAuthProfile> {
     // Fetch user data
@@ -111,12 +106,14 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
     });
 
     if (!userResponse.ok) {
-      throw new Error('Failed to fetch user profile');
+      const errorText = await userResponse.text();
+      throw new Error(`Failed to fetch user profile: ${userResponse.status} ${errorText}`);
     }
 
-    const userData = await userResponse.json() as any;
+    const rawUserData = await userResponse.json();
+    const userData = GitHubUserSchema.parse(rawUserData);
 
-    // Fetch primary email
+    // Fetch primary email if not in user data
     let email = userData.email;
     if (!email) {
       const emailResponse = await fetch(this.userEmailEndpoint, {
@@ -127,9 +124,10 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
       });
 
       if (emailResponse.ok) {
-        const emails = await emailResponse.json() as any[];
-        const primaryEmail = emails.find((e: any) => e.primary);
-        email = primaryEmail?.email || emails[0]?.email;
+        const rawEmails = await emailResponse.json();
+        const emails = GitHubEmailsSchema.parse(rawEmails);
+        const primaryEmail = emails.find((e: GitHubEmail) => e.primary);
+        email = primaryEmail?.email || emails[0]?.email || null;
       }
     }
 
@@ -137,15 +135,15 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
       id: String(userData.id),
       email: email || '',
       name: userData.name || userData.login,
-      picture: userData.avatar_url || undefined,
+      picture: userData.avatar_url,
     };
   }
 
   /**
-   * Exchange authorization code for user profile (legacy)
+   * Complete OAuth flow: exchange code and fetch profile
    */
   async exchangeToken(code: string, redirectUri: string): Promise<OAuthProfile> {
-    const tokens = await this.exchangeCodeForToken({ code, redirectUri });
+    const tokens = await this.exchangeCodeForTokens(code, redirectUri);
     return this.fetchUserProfile(tokens.accessToken);
   }
 }

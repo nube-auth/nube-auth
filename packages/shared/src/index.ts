@@ -16,6 +16,7 @@ export type {
 
 // Re-export ID generators and validation
 export { id, idPatterns, validateId, createId } from './id.js';
+export type { IdType } from './id.js';
 
 // Re-export constants
 export {
@@ -52,6 +53,15 @@ export {
   type ErrorCodeType,
 } from './constants/index.js';
 
+// Re-export port configuration
+export {
+  DEFAULT_PORTS,
+  INFRA_PORTS,
+  getPort,
+  ports,
+  getServiceUrl,
+} from './constants/ports.js';
+
 // Re-export utilities
 export {
   getCurrentEpoch,
@@ -59,3 +69,10 @@ export {
   isExpired,
   formatEpoch,
 } from './utils/date.js';
+
+// Re-export secret validation utilities
+export {
+  validateSecret,
+  validateSecrets,
+  generateSecret,
+} from './utils/secrets.js';

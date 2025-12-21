@@ -595,16 +595,199 @@ if (!allowedUris.includes(redirectUri)) throw new Error('Invalid redirect URI');
 
 ## Technical Debt Summary
 
-| Item | Severity | Effort to Fix | Priority |
-|------|----------|---------------|----------|
-| Type assertions (`as any`) | High | Medium | P1 |
-| No OAuth state validation | High | Low | P1 |
-| Duplicate ID generation | Low | Low | P3 |
-| Duplicate OAuth methods | Medium | Medium | P2 |
-| Hardcoded dev secrets | Medium | Low | P2 |
-| Root dotenv dependency | Low | Low | P4 |
-| Nohup workaround | Low | Medium | P3 |
-| Hardcoded ports | Low | Low | P4 |
+| Item | Severity | Effort to Fix | Priority | Status |
+|------|----------|---------------|----------|--------|
+| Type assertions (`as any`) | High | Medium | P1 | ✅ Fixed |
+| No OAuth state validation | High | Low | P1 | ✅ Fixed |
+| Duplicate ID generation | Low | Low | P3 | ✅ Fixed |
+| Duplicate OAuth methods | Medium | Medium | P2 | ✅ Fixed |
+| Hardcoded dev secrets | Medium | Low | P2 | ✅ Fixed |
+| Root dotenv dependency | Low | Low | P4 | ✅ Fixed |
+| Nohup workaround | Low | Medium | P3 | Deferred |
+| Hardcoded ports | Low | Low | P4 | ✅ Fixed |
+
+---
+
+## Technical Debt Resolutions (December 21, 2025)
+
+### 1. ✅ OAuth Type Assertions Fixed
+
+**Files Modified:**
+- `packages/auth/src/adapters/google.ts`
+- `packages/auth/src/adapters/github.ts`
+- `packages/auth/src/schemas/oauth.ts` (new)
+- `packages/auth/src/schemas/index.ts` (new)
+
+**Solution:**
+Installed `zod` in `@proofa/auth` and created proper validation schemas:
+
+```typescript
+// packages/auth/src/schemas/oauth.ts
+export const GoogleTokenResponseSchema = z.object({
+  access_token: z.string(),
+  expires_in: z.number().optional(),
+  refresh_token: z.string().optional(),
+  scope: z.string().optional(),
+  token_type: z.string(),
+  id_token: z.string().optional(),
+});
+
+export const GoogleUserInfoSchema = z.object({
+  sub: z.string(),
+  email: z.string().email(),
+  email_verified: z.boolean().optional(),
+  name: z.string().optional(),
+  picture: z.string().url().optional(),
+  given_name: z.string().optional(),
+  family_name: z.string().optional(),
+});
+```
+
+OAuth adapters now use schema validation instead of `as any`:
+```typescript
+const rawData = await response.json();
+const data = GoogleTokenResponseSchema.parse(rawData);
+```
+
+### 2. ✅ OAuth State Validation Added
+
+**Files Created:**
+- `packages/auth/src/state.ts`
+
+**Solution:**
+Created a state management module with CSRF protection:
+
+```typescript
+// Create state with provider and redirect tracking
+const state = createOAuthState({
+  provider: 'github',
+  redirectUri: 'http://localhost:3000/callback',
+});
+
+// Validate in callback (one-time use, auto-expiring)
+const data = consumeOAuthState(callbackState, 'github');
+```
+
+Features:
+- Auto-expiring tokens (10 min TTL)
+- One-time use (deleted after validation)
+- Provider verification
+- Format validation
+
+### 3. ✅ ID Generation Consolidated
+
+**File Modified:**
+- `packages/shared/src/id.ts`
+
+**Solution:**
+Removed duplicate `generators` map, added `state` generator to main `id` object:
+
+```typescript
+export const id = {
+  user: () => `U0${nano9()}`,
+  session: () => `S0${nano11()}`,
+  // ... other types
+  state: () => nano12(), // Added for OAuth state tokens
+} as const;
+
+export type IdType = keyof typeof id;
+
+export function createId(type: IdType): string {
+  return id[type]();
+}
+```
+
+### 4. ✅ OAuth Adapter Interface Standardized
+
+**Files Modified:**
+- `packages/auth/src/adapters/google.ts`
+- `packages/auth/src/adapters/github.ts`
+
+**Solution:**
+Removed duplicate methods, kept canonical interface:
+
+```typescript
+class GoogleOAuthAdapter implements OAuthAdapter {
+  getAuthorizationUrl(state: string, redirectUri: string): string;
+  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<TokenResponse>;
+  async fetchUserProfile(accessToken: string): Promise<OAuthProfile>;
+  async exchangeToken(code: string, redirectUri: string): Promise<OAuthProfile>;
+}
+```
+
+Removed:
+- `buildAuthorizationUrl()` - duplicate of `getAuthorizationUrl()`
+- `exchangeCodeForToken()` - inconsistent parameter style
+
+### 5. ✅ Secret Validation Added
+
+**File Created:**
+- `packages/shared/src/utils/secrets.ts`
+
+**Solution:**
+Created utilities to validate secrets in production:
+
+```typescript
+import { validateSecrets } from '@proofa/shared';
+
+// Validate at startup
+validateSecrets([
+  { value: process.env.JWT_SECRET, name: 'JWT_SECRET' },
+  { value: process.env.SESSION_SECRET, name: 'SESSION_SECRET' },
+  { value: process.env.S2S_SECRET, name: 'S2S_SECRET' },
+], { 
+  isProduction: process.env.NODE_ENV === 'production',
+  throwOnError: true 
+});
+```
+
+Features:
+- Detects weak/development secrets
+- Enforces minimum length (32 chars)
+- Entropy checking
+- Different behavior in dev vs prod (warn vs error)
+
+### 6. ✅ Port Configuration Centralized
+
+**File Created:**
+- `packages/shared/src/constants/ports.ts`
+
+**Solution:**
+All ports now defined in one place:
+
+```typescript
+export const DEFAULT_PORTS = {
+  CORE: 3001,
+  GATEWAY: 3004,
+  DASHBOARD_USER: 3000,
+  DASHBOARD_ADMIN: 3002,
+  HOME: 4321,
+} as const;
+
+export const INFRA_PORTS = {
+  REDIS: 6379,
+  REDIS_REST: 8079,
+  LIBSQL: 8080,
+  REDIS_COMMANDER: 8081,
+  MAILPIT_SMTP: 1025,
+  MAILPIT_WEB: 8025,
+} as const;
+
+// With environment override support
+export const ports = {
+  core: () => getPort('CORE_PORT', DEFAULT_PORTS.CORE),
+  gateway: () => getPort('GATEWAY_PORT', DEFAULT_PORTS.GATEWAY),
+  // ...
+};
+```
+
+### 7. ✅ Dotenv Moved to devDependencies
+
+**File Modified:**
+- `package.json` (root)
+
+**Solution:**
+Moved `dotenv` and `dotenv-cli` from `dependencies` to `devDependencies` since they're only used during development.
 
 ---
 

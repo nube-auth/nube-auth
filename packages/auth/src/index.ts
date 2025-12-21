@@ -2,6 +2,18 @@
 export * from './oauth.js';
 export { GoogleOAuthAdapter, GitHubOAuthAdapter } from './adapters/index.js';
 
+// OAuth state management (CSRF protection)
+export {
+  createOAuthState,
+  validateOAuthState,
+  consumeOAuthState,
+  cleanupExpiredStates,
+  getPendingStateCount,
+} from './state.js';
+
+// OAuth validation schemas
+export * from './schemas/index.js';
+
 // Session management
 export {
   createSessionCookie,
