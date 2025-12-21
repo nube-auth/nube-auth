@@ -1,331 +1,372 @@
 # Proofa Development Guide
 
-This guide will help you set up and run the Proofa monorepo locally for development.
+This guide covers everything you need to set up and develop on the Proofa monorepo.
+
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Initial Setup](#initial-setup)
+- [Docker Services](#docker-services)
+- [Environment Configuration](#environment-configuration)
+- [Running the Applications](#running-the-applications)
+- [Development Workflow](#development-workflow)
+- [Common Tasks](#common-tasks)
+- [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
 
-- **Node.js**: v18+ ([Download](https://nodejs.org))
+- **Node.js**: v22+ (check `.nvmrc`)
 - **pnpm**: v8+ (`npm install -g pnpm`)
-- **Turso CLI**: For database management ([Install](https://docs.turso.io/cli/installation))
+- **Docker**: For local Redis and database
 - **Git**: For version control
 
-## 1. Initial Setup
+## Initial Setup
 
-### Clone the Repository
+### 1. Clone and Install
+
 ```bash
 git clone <repository-url>
 cd proofa-core
-```
-
-### Install Dependencies
-```bash
 pnpm install
 ```
 
-This installs all dependencies for the monorepo including:
-- **packages/shared**: Shared types, constants, and utilities
-- **packages/db**: Database schema and query helpers
-- **packages/auth**: Authentication and session management
-- **packages/redis**: Redis client and caching utilities
-- **apps/core**: Core authentication and identity service
-- **apps/gateway**: BFF (Backend-for-Frontend) server
-- **apps/user-dashboard**: User-facing React dashboard
-- **apps/admin-dashboard**: Admin-facing React dashboard
+### 2. Start Docker Services
 
-### Environment Configuration
+```bash
+# Start core services (Redis, LibSQL)
+pnpm docker:up
 
-1. Copy `.env.example` to `.env.local`:
+# Or start with debug tools (Redis Commander, Mailpit)
+pnpm docker:up:all
+
+# Check status
+pnpm docker:status
+
+# View logs
+pnpm docker:logs
+
+# Stop services
+pnpm docker:down
+```
+
+**Docker Services:**
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| Redis | 6379 | Cache server |
+| Redis REST | 8079 | Upstash-compatible REST API |
+| LibSQL | 8080 | Turso-compatible database |
+| Redis Commander | 8081 | Redis GUI (debug profile) |
+| Mailpit Web | 8025 | Email testing UI (debug profile) |
+| Mailpit SMTP | 1025 | Email testing SMTP (debug profile) |
+
+### 3. Configure Environment
+
 ```bash
 cp .env.example .env.local
 ```
 
-2. Fill in the required environment variables:
+Edit `.env.local` with your credentials:
 
-#### Database Setup (Turso)
-```
-DATABASE_URL=libsql://your-db-name-xxx.turso.io
-DATABASE_AUTH_TOKEN=your-auth-token
+```env
+# Database (Local Docker)
+DATABASE_URL=http://localhost:8080
+DATABASE_AUTH_TOKEN=
+
+# Redis (Local Docker)
+UPSTASH_REDIS_REST_URL=http://localhost:8079
+UPSTASH_REDIS_REST_TOKEN=local-dev-token
+
+# OAuth - Google (Required)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# OAuth - GitHub (Optional)
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+
+# Secrets (generate with: openssl rand -hex 32)
+JWT_SECRET=your-32-char-jwt-secret
+SESSION_SECRET=your-32-char-session-secret
+S2S_SECRET=your-s2s-secret-for-service-calls
 ```
 
-1. Create a Turso database:
-```bash
-turso db create proofa
-```
-
-2. Get your credentials:
-```bash
-turso db tokens create proofa
-```
-
-#### Redis Setup (Upstash)
-```
-UPSTASH_REDIS_REST_URL=https://your-redis-id.upstash.io
-UPSTASH_REDIS_REST_TOKEN=your-token
-```
-
-Visit [Upstash Console](https://console.upstash.com) to create a Redis database and get credentials.
-
-#### OAuth Setup (Google + GitHub)
+### 4. Set Up OAuth Apps
 
 **Google OAuth:**
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project or select existing one
-3. Enable the Google+ API
+2. Create a new project or select existing
+3. Enable Google+ API
 4. Create OAuth 2.0 credentials (Web application)
-5. Add authorized redirect URI: `http://localhost:3001/v1/auth/callback/google`
+5. Add redirect URI: `http://localhost:3003/v1/auth/callback/google`
 6. Copy Client ID and Client Secret
 
-```
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-```
-
 **GitHub OAuth:**
-1. Go to [GitHub Settings → Developer Settings](https://github.com/settings/developers)
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
 2. Create a new OAuth App
-3. Set Authorization callback URL: `http://localhost:3001/v1/auth/callback/github`
+3. Set callback URL: `http://localhost:3003/v1/auth/callback/github`
 4. Copy Client ID and Client Secret
 
-```
-GITHUB_CLIENT_ID=your-github-client-id
-GITHUB_CLIENT_SECRET=your-github-client-secret
-```
-
-#### Email Setup (Resend)
-```
-RESEND_API_KEY=your-resend-key
-EMAIL_FROM=noreply@proofa.ai
-SEND_EMAILS=false  # Set to true after verification
-```
-
-Visit [Resend](https://resend.com) to create an account and get API key.
-
-#### Session & S2S Tokens
-
-Generate secure random tokens:
-```bash
-# Session secret
-openssl rand -hex 32
-
-# S2S token
-openssl rand -hex 32
-```
-
-```
-SESSION_SECRET=<generated-session-secret>
-CORE_S2S_TOKEN=<generated-s2s-token>
-```
-
-## 2. Database Migrations
-
-Run database migrations to create tables:
+### 5. Run Migrations
 
 ```bash
 pnpm db:migrate
 ```
 
-Or manually with Drizzle Kit:
-```bash
-pnpm --filter @proofa/db run build
-npx drizzle-kit migrate --config packages/db/drizzle.config.ts
-```
+## Running the Applications
 
-## 3. Running the Applications
+### Start All Services
 
-### Development Mode (All Services)
-
-Start all applications in development mode:
 ```bash
 pnpm dev
 ```
 
-This starts:
-- **Core** (port 3001): Authentication & identity service
-- **Gateway** (port 3002): BFF server
-- **User Dashboard** (port 5173): User-facing UI
-- **Admin Dashboard** (port 5174): Admin-facing UI
+This starts all applications with hot reload.
 
-### Individual Services
+### Start Individual Services
 
-Start specific services:
 ```bash
-# Core only
+# Core - Authentication service (Port 3003)
 pnpm --filter @proofa/core dev
 
-# Gateway only
+# Gateway - BFF server (Port 3004)
 pnpm --filter @proofa/gateway dev
 
-# User Dashboard only
-pnpm --filter @proofa/user-dashboard dev
+# User Dashboard (Port 3001)
+pnpm --filter @proofa/dashboard-user dev
 
-# Admin Dashboard only
-pnpm --filter @proofa/admin-dashboard dev
+# Admin Dashboard (Port 3002)
+pnpm --filter @proofa/dashboard-admin dev
+
+# Home Page (Port 4321)
+pnpm --filter @proofa/dashboard-home dev
 ```
 
-## 4. Development Workflow
+### Service URLs
 
-### Understanding the Architecture
+| Service | URL | Purpose |
+|---------|-----|---------|
+| User Dashboard | http://localhost:3001 | Profile & sessions |
+| Admin Dashboard | http://localhost:3002 | Projects & apps management |
+| Core API | http://localhost:3003 | OAuth & identity |
+| Gateway API | http://localhost:3004 | BFF for dashboards |
+| Home Page | http://localhost:4321 | Landing page |
+
+## Development Workflow
+
+### Architecture Overview
 
 ```
-┌─────────────────────────────────────────────────┐
-│         User/Admin Dashboards (React)           │ (localhost:5173, 5174)
-├─────────────────────────────────────────────────┤
-│         Gateway BFF (Hono)                      │ (localhost:3002)
-├─────────────────────────────────────────────────┤
-│  Core (Hono) ← Session Store (Redis)            │ (localhost:3001)
-├─────────────────────────────────────────────────┤
-│  Database (Turso/SQLite) + Drizzle ORM          │
-└─────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│           Frontend (React/Astro)                         │
+│  User Dashboard │ Admin Dashboard │ Home Page            │
+│     :3001       │     :3002       │   :4321              │
+└─────────────────┼─────────────────┴──────────────────────┘
+                  │
+        ┌─────────┴─────────┐
+        │   Gateway BFF     │
+        │      :3004        │ ← Session bridge, Admin CRUD
+        └─────────┬─────────┘
+                  │ S2S (X-Proofa-Service-Token)
+        ┌─────────┴─────────┐
+        │   Core Service    │
+        │      :3003        │ ← OAuth, OTP, Identities
+        └─────────┬─────────┘
+                  │
+        ┌─────────┴─────────┐
+        │ Turso │ Redis     │
+        │ :8080 │ :8079     │
+        └───────────────────┘
 ```
 
-### API Endpoints
+### Package Structure
 
-#### Core Service (`/v1/*`)
-- `GET /v1/auth/start` - Start OAuth flow
-- `GET /v1/auth/callback/:provider` - OAuth callback
-- `POST /v1/auth/exchange` - Exchange session
-- `POST /v1/email/start` - Request OTP
-- `POST /v1/email/verify` - Verify OTP & create session
-- `GET /v1/license` - Get license info
-- `POST /v1/admin/license/grant` - Grant license
+```
+packages/
+├── shared/     # Types, constants, ID generators
+├── db/         # Drizzle schema + queries
+├── auth/       # OAuth adapters, crypto, sessions
+└── redis/      # Cache, rate limiting, session store
 
-#### Gateway Service (`/v1/*`)
-- `POST /v1/auth/login` - Login (sets session cookie)
-- `POST /v1/auth/logout` - Logout
-- `GET /v1/me` - Get current user
-- `PATCH /v1/me` - Update profile
-- `GET /v1/me/sessions` - List sessions
-- `DELETE /v1/me/sessions` - Logout all sessions
-- `GET /v1/admin/projects` - List projects
-- `POST /v1/admin/projects` - Create project
-- `GET /v1/admin/apps` - List apps
-- `POST /v1/admin/apps` - Create app
-
-### Code Structure
-
-#### packages/
-- **shared**: Types, ID generators, constants
-- **db**: Drizzle schema, query helpers, migrations
-- **auth**: OAuth adapters, session management, crypto
-- **redis**: Cache, rate limiting, session store
-
-#### apps/
-- **core**: Identity, authentication, licensing
-- **gateway**: BFF, user profile, admin CRUD
-- **user-dashboard**: User account management UI
-- **admin-dashboard**: Project/app management UI
-
-### Development Tips
-
-1. **Hot Reload**: All services support hot reload. Modify files and changes will reflect immediately.
-
-2. **Database Debugging**: 
-   ```bash
-   turso db shell proofa
-   ```
-
-3. **Redis Debugging**:
-   ```bash
-   # In Upstash Console, view keys and values
-   ```
-
-4. **OTP Testing**: In dev mode, OTP codes are logged to console:
-   ```
-   [DEV] OTP for user@example.com: 123456
-   ```
-
-5. **S2S Authentication**: Core endpoints requiring S2S validation check the `X-S2S-Token` header.
-
-## 5. Building for Production
-
-### Build All Packages
-```bash
-pnpm build
+apps/
+├── core/       # Authentication service
+├── gateway/    # BFF server
+└── dashboard/
+    ├── user/   # User profile UI
+    ├── admin/  # Admin CRUD UI
+    └── home/   # Astro landing page
 ```
 
-### Build Individual Packages
-```bash
-pnpm --filter @proofa/shared build
-pnpm --filter @proofa/core build
-pnpm --filter @proofa/gateway build
-pnpm --filter @proofa/user-dashboard build
-```
-
-## 6. Deployment
-
-### Deploy to Cloudflare Workers (Recommended)
+### Code Quality
 
 ```bash
-# Core
-pnpm --filter @proofa/core run deploy
+# Type checking
+pnpm typecheck
 
-# Gateway
-pnpm --filter @proofa/gateway run deploy
+# Linting (Biome)
+pnpm lint
+
+# Auto-fix lint issues
+pnpm lint:fix
+
+# Format code
+pnpm format
+
+# Check all (lint + format + typecheck)
+pnpm biome check --write .
 ```
 
-### Deploy Dashboards to Vercel/Netlify
+## Common Tasks
+
+### Add a New Database Table
+
+1. Define schema in `packages/db/src/schema.ts`
+2. Create queries in `packages/db/src/queries.ts`
+3. Export from `packages/db/src/index.ts`
+4. Run migration: `pnpm db:migrate`
+
+### Add a New API Endpoint
+
+1. Create route in `apps/gateway/src/routes/` or `apps/core/src/routes/`
+2. Import and mount in the app's `index.ts`
+3. Add types if needed in `packages/shared/src/types/`
+
+### Add a React Page
+
+1. Create component in `apps/dashboard/*/src/pages/`
+2. Add query hook in `apps/dashboard/*/src/hooks/`
+3. Add route in `apps/dashboard/*/src/App.tsx`
+
+### Generate Secure Secrets
 
 ```bash
-# User Dashboard
-pnpm --filter @proofa/user-dashboard run build
-# Deploy `dist/` folder
-
-# Admin Dashboard
-pnpm --filter @proofa/admin-dashboard run build
-# Deploy `dist/` folder
+# Generate 32-byte hex secret
+openssl rand -hex 32
 ```
 
-## 7. Testing
-
-Run tests for all packages:
-```bash
-pnpm test
-```
-
-Run tests for specific package:
-```bash
-pnpm --filter @proofa/core test
-```
-
-## 8. Troubleshooting
+## Troubleshooting
 
 ### Port Already in Use
+
 ```bash
-# Kill process on port
-lsof -ti :3001 | xargs kill -9
+# Find and kill process on port
+lsof -ti :3003 | xargs kill -9
+```
+
+### Docker Services Not Running
+
+```bash
+# Check status
+pnpm docker:status
+
+# View logs for issues
+pnpm docker:logs
+
+# Restart services
+pnpm docker:down && pnpm docker:up
 ```
 
 ### Database Connection Error
-1. Check DATABASE_URL and DATABASE_AUTH_TOKEN
-2. Verify Turso database exists: `turso db list`
-3. Test connection: `turso db shell proofa`
 
-### OAuth Redirect Issues
-- Ensure callback URLs in OAuth provider settings match `CALLBACK_URL` env var
-- Check that Core and Gateway are running on expected ports
+```bash
+# Check LibSQL is running
+curl http://localhost:8080/health
 
-### Session Cookie Not Setting
-- Verify HTTPS or localhost (sameSite=Lax requires secure context in production)
-- Check that SESSION_SECRET is set
-- Clear browser cookies and try again
+# Verify DATABASE_URL in .env.local
+echo $DATABASE_URL
+```
 
 ### Redis Connection Error
-- Verify UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN
-- Check Upstash console for active database
-- Test with: `curl -H "Authorization: Bearer <token>" <url>/ping`
 
-## 9. Additional Resources
+```bash
+# Check Redis REST is running
+curl http://localhost:8079/
+
+# Verify Redis config in .env.local
+```
+
+### OAuth Not Working
+
+1. Verify callback URLs match in OAuth provider settings
+2. Check OAuth client ID/secret in `.env.local`
+3. Clear browser cookies and retry
+4. Check Core logs for OAuth errors
+
+### Session Issues
+
+1. Check Redis is running: `pnpm docker:status`
+2. Clear Redis cache if needed (use Redis Commander at :8081)
+3. Verify SESSION_SECRET is set in `.env.local`
+
+### Build Errors
+
+```bash
+# Clean and rebuild
+pnpm clean
+pnpm install
+pnpm build
+```
+
+### TypeScript Errors
+
+```bash
+# Check all packages
+pnpm typecheck
+
+# Check specific package
+pnpm --filter @proofa/core typecheck
+```
+
+## Quick Reference
+
+### ID Format
+
+| Entity | Example | Length |
+|--------|---------|--------|
+| User | `U0sFFDmgde` | 11 |
+| Session | `S0mK9pQxCa` | 13 |
+| Project | `P0kMn7pQx2` | 11 |
+| App | `A0xKmP9n5d` | 11 |
+| Auth Code | `C0pN7mKqXc9A` | 14 |
+
+### Session TTLs
+
+- **Core session**: 7 days rolling
+- **App session**: 1-365 days (configurable per app, default 28)
+
+### Rate Limits
+
+- **OTP request**: 5 per hour per email
+- **OTP verify**: 5 per 5 minutes per email
+- **Lockout**: 3 failures = 30-minute ban
+
+### API Endpoints
+
+**Core (3003):**
+```
+GET  /v1/auth/start          # Start OAuth flow
+GET  /v1/auth/callback/:p    # OAuth callback
+POST /v1/auth/exchange       # Exchange auth code (S2S)
+POST /v1/email/start         # Send OTP
+POST /v1/email/verify        # Verify OTP
+```
+
+**Gateway (3004):**
+```
+GET  /auth/start             # Redirect to Core
+GET  /auth/callback          # Handle code exchange
+POST /v1/auth/logout         # Logout
+GET  /v1/me                  # User profile
+PATCH /v1/me                 # Update profile
+GET  /v1/me/sessions         # List sessions
+DELETE /v1/me/sessions       # Logout all
+GET/POST /v1/admin/projects  # Project CRUD
+```
+
+## Additional Resources
 
 - [Hono Documentation](https://hono.dev)
 - [Drizzle ORM Documentation](https://orm.drizzle.team)
-- [Turso Documentation](https://docs.turso.io)
+- [Turso Documentation](https://docs.turso.tech)
 - [Upstash Documentation](https://upstash.com/docs)
-- [React Documentation](https://react.dev)
-- [TanStack Query Documentation](https://tanstack.com/query)
-
-## 10. Getting Help
-
-- Check logs in each service for error messages
-- Review `.env.local` for missing/incorrect configuration
-- Verify all external services (Turso, Upstash, OAuth) are accessible
-- Check network tab in browser DevTools for API errors
+- [Biome Documentation](https://biomejs.dev)
