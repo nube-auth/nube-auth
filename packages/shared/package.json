@@ -1,6 +1,7 @@
 {
   "name": "@proofa/shared",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "description": "Shared types, utilities, and constants for Proofa",
   "main": "dist/index.js",

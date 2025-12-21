@@ -1,2 +1,2 @@
-export { GoogleOAuthAdapter } from './google';
-export { GitHubOAuthAdapter } from './github';
+export { GoogleOAuthAdapter } from './google.js';
+export { GitHubOAuthAdapter } from './github.js';

@@ -1,4 +1,4 @@
-import { getRedisClient } from './client';
+import { getRedisClient } from './client.js';
 import type { Session } from '@proofa/shared';
 
 /**

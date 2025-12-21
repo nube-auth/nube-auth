@@ -12,10 +12,10 @@ export type {
   AuditLog,
   ApiResponse,
   AuthContext,
-} from './types';
+} from './types/index.js';
 
 // Re-export ID generators and validation
-export { id, idPatterns, validateId } from './id';
+export { id, idPatterns, validateId, createId } from './id.js';
 
 // Re-export constants
 export {
@@ -50,7 +50,7 @@ export {
   type RoleType,
   type AuditActionType,
   type ErrorCodeType,
-} from './constants';
+} from './constants/index.js';
 
 // Re-export utilities
 export {
@@ -58,4 +58,4 @@ export {
   addDays,
   isExpired,
   formatEpoch,
-} from './utils/date';
+} from './utils/date.js';

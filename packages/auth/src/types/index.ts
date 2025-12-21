@@ -24,10 +24,10 @@ export interface OAuthAdapter {
  * OAuth profile from external provider
  */
 export interface OAuthProfile {
-  provider: string;
   id: string;
   email: string;
   name: string;
+  picture?: string;
   avatar_url?: string;
 }
 

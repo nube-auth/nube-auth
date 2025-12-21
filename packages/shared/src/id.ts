@@ -8,6 +8,34 @@ const nano9 = customAlphabet(ALPHABET, 9);
 const nano11 = customAlphabet(ALPHABET, 11);
 const nano12 = customAlphabet(ALPHABET, 12);
 
+// Map of entity types to their generator functions
+const generators: Record<string, () => string> = {
+  user: () => `U0${nano9()}`,
+  session: () => `S0${nano11()}`,
+  project: () => `P0${nano9()}`,
+  app: () => `A0${nano9()}`,
+  identity: () => `I0${nano9()}`,
+  projectMember: () => `M0${nano9()}`,
+  license: () => `L0${nano9()}`,
+  authCode: () => `C0${nano12()}`,
+  emailVerification: () => `E0${nano9()}`,
+  auditLog: () => `AL0${nano9()}`,
+  state: () => nano12(), // for OAuth state tokens
+};
+
+/**
+ * Create an ID for a given entity type
+ * @param type The entity type (user, session, project, app, etc.)
+ * @returns A unique prefixed ID
+ */
+export function createId(type: string): string {
+  const generator = generators[type];
+  if (!generator) {
+    throw new Error(`Unknown entity type: ${type}`);
+  }
+  return generator();
+}
+
 /**
  * Entity type identifiers with compact prefixes
  * Format: [EntityLetter][0][nanoid(9-12)]

@@ -1,6 +1,6 @@
 // OAuth providers and adapters
-export * from './oauth';
-export { GoogleOAuthAdapter, GitHubOAuthAdapter } from './adapters';
+export * from './oauth.js';
+export { GoogleOAuthAdapter, GitHubOAuthAdapter } from './adapters/index.js';
 
 // Session management
 export {
@@ -10,7 +10,7 @@ export {
   verifySessionId,
   isSessionExpired,
   getSessionTTL,
-} from './session';
+} from './session.js';
 
 // Cryptography & OTP
 export {
@@ -20,4 +20,4 @@ export {
   generateSessionToken,
   generateS2SToken,
   validateS2SToken,
-} from './crypto';
+} from './crypto.js';

@@ -1,4 +1,4 @@
-import type { OAuthAdapter, OAuthProfile } from '../types';
+import type { OAuthAdapter, OAuthProfile } from '../types/index.js';
 
 /**
  * Google OAuth configuration
@@ -6,6 +6,22 @@ import type { OAuthAdapter, OAuthProfile } from '../types';
 interface GoogleOAuthConfig {
   clientId: string;
   clientSecret: string;
+}
+
+interface BuildAuthUrlParams {
+  redirectUri: string;
+  state: string;
+}
+
+interface ExchangeCodeParams {
+  code: string;
+  redirectUri: string;
+}
+
+interface TokenResponse {
+  accessToken: string;
+  refreshToken?: string;
+  expiresIn?: number;
 }
 
 /**
@@ -42,15 +58,70 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
   }
 
   /**
-   * Exchange authorization code for user profile
+   * Build authorization URL (alias)
+   */
+  buildAuthorizationUrl(params: BuildAuthUrlParams): string {
+    return this.getAuthorizationUrl(params.state, params.redirectUri);
+  }
+
+  /**
+   * Exchange authorization code for tokens
+   */
+  async exchangeCodeForToken(params: ExchangeCodeParams): Promise<TokenResponse> {
+    const response = await fetch(this.tokenEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        code: params.code,
+        client_id: this.clientId,
+        client_secret: this.clientSecret,
+        redirect_uri: params.redirectUri,
+        grant_type: 'authorization_code',
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to exchange code for token');
+    }
+
+    const data = await response.json() as any;
+    return {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+      expiresIn: data.expires_in,
+    };
+  }
+
+  /**
+   * Fetch user profile using access token
+   */
+  async fetchUserProfile(accessToken: string): Promise<OAuthProfile> {
+    const response = await fetch(this.userInfoEndpoint, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch user profile');
+    }
+
+    const data = await response.json() as any;
+    return {
+      id: data.sub,
+      email: data.email,
+      name: data.name || data.email.split('@')[0],
+      picture: data.picture || undefined,
+    };
+  }
+
+  /**
+   * Exchange authorization code for user profile (legacy)
    */
   async exchangeToken(code: string, redirectUri: string): Promise<OAuthProfile> {
-    // TODO: Implement token exchange
-    // 1. POST to tokenEndpoint with code, client_id, client_secret, redirect_uri
-    // 2. Extract access_token from response
-    // 3. Use access_token to fetch user info from userInfoEndpoint
-    // 4. Map response to OAuthProfile
-
-    throw new Error('Not implemented');
+    const tokens = await this.exchangeCodeForToken({ code, redirectUri });
+    return this.fetchUserProfile(tokens.accessToken);
   }
 }

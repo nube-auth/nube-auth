@@ -81,7 +81,6 @@ export function getAuth(c: Context): AuthContext {
   }
   return auth as AuthContext;
 }
-}
 
 /**
  * S2S token validation middleware for internal requests

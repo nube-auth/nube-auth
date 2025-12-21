@@ -268,17 +268,12 @@ adminRoutes.get('/licenses', async (c: Context) => {
     return c.json({ error: 'Failed to list licenses' }, 500);
   }
 });
-  } catch (error) {
-    console.error('Update project error:', error);
-    return c.json({ error: 'Failed to update project' }, 500);
-  }
-});
 
 /**
  * DELETE /admin/projects/:project_id
  * Delete a project
  */
-adminRouter.delete('/projects/:project_id', async (c: Context) => {
+adminRoutes.delete('/projects/:project_id', async (c: Context) => {
   try {
     const projectId = c.req.param('project_id');
 
@@ -296,7 +291,7 @@ adminRouter.delete('/projects/:project_id', async (c: Context) => {
  * POST /admin/apps
  * Create a new app
  */
-adminRouter.post('/apps', async (c: Context) => {
+adminRoutes.post('/apps', async (c: Context) => {
   try {
     const body = await c.req.json();
 
@@ -312,7 +307,7 @@ adminRouter.post('/apps', async (c: Context) => {
  * GET /admin/apps
  * List apps
  */
-adminRouter.get('/apps', async (c: Context) => {
+adminRoutes.get('/apps', async (c: Context) => {
   try {
     // TODO: implement apps listing
     return c.json({ message: 'Apps list', apps: [] });
@@ -326,7 +321,7 @@ adminRouter.get('/apps', async (c: Context) => {
  * PATCH /admin/apps/:app_id
  * Update an app
  */
-adminRouter.patch('/apps/:app_id', async (c: Context) => {
+adminRoutes.patch('/apps/:app_id', async (c: Context) => {
   try {
     const appId = c.req.param('app_id');
     const body = await c.req.json();
@@ -343,7 +338,7 @@ adminRouter.patch('/apps/:app_id', async (c: Context) => {
  * DELETE /admin/apps/:app_id
  * Delete an app
  */
-adminRouter.delete('/apps/:app_id', async (c: Context) => {
+adminRoutes.delete('/apps/:app_id', async (c: Context) => {
   try {
     const appId = c.req.param('app_id');
 
@@ -361,7 +356,7 @@ adminRouter.delete('/apps/:app_id', async (c: Context) => {
  * POST /admin/members
  * Add a team member
  */
-adminRouter.post('/members', async (c: Context) => {
+adminRoutes.post('/members', async (c: Context) => {
   try {
     const body = await c.req.json();
 
@@ -377,7 +372,7 @@ adminRouter.post('/members', async (c: Context) => {
  * GET /admin/members
  * List team members
  */
-adminRouter.get('/members', async (c: Context) => {
+adminRoutes.get('/members', async (c: Context) => {
   try {
     // TODO: implement members listing
     return c.json({ message: 'Members list', members: [] });
@@ -391,7 +386,7 @@ adminRouter.get('/members', async (c: Context) => {
  * DELETE /admin/members/:member_id
  * Remove a team member
  */
-adminRouter.delete('/members/:member_id', async (c: Context) => {
+adminRoutes.delete('/members/:member_id', async (c: Context) => {
   try {
     const memberId = c.req.param('member_id');
 
@@ -409,7 +404,7 @@ adminRouter.delete('/members/:member_id', async (c: Context) => {
  * GET /admin/licenses
  * List licenses
  */
-adminRouter.get('/licenses', async (c: Context) => {
+adminRoutes.get('/licenses', async (c: Context) => {
   try {
     // TODO: implement licenses listing from Core cache
     return c.json({ message: 'Licenses list', licenses: [] });
@@ -423,7 +418,7 @@ adminRouter.get('/licenses', async (c: Context) => {
  * PATCH /admin/licenses/:license_id
  * Update a license
  */
-adminRouter.patch('/licenses/:license_id', async (c: Context) => {
+adminRoutes.patch('/licenses/:license_id', async (c: Context) => {
   try {
     const licenseId = c.req.param('license_id');
     const body = await c.req.json();
@@ -435,5 +430,3 @@ adminRouter.patch('/licenses/:license_id', async (c: Context) => {
     return c.json({ error: 'Failed to update license' }, 500);
   }
 });
-
-export default adminRouter;

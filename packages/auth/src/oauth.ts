@@ -90,7 +90,7 @@ export async function exchangeCodeForToken(
     throw new Error(`Failed to exchange code: ${response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
   return data.access_token;
 }
 
@@ -112,7 +112,7 @@ export async function fetchUserProfile(
     throw new Error(`Failed to fetch user profile: ${response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
 
   // Normalize different provider response formats
   if (provider.name === 'google') {

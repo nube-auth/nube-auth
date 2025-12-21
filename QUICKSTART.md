@@ -5,8 +5,8 @@ Get Proofa Core running in 5 minutes!
 ## Prerequisites
 - **Node.js** 18+
 - **pnpm** 8+
+- **Docker** (for local services)
 - OAuth apps (Google + GitHub)
-- Turso + Upstash accounts
 
 ## 1. Setup (2 minutes)
 
@@ -17,36 +17,58 @@ cd proofa-core
 pnpm install
 
 # Copy environment template
-cp .env.example .env.local
+cp .env.local.example .env.local
 
-# Edit .env.local with your credentials
+# Edit .env.local with your OAuth credentials
 # See DEVELOPMENT.md for detailed setup
 ```
+
+## 1.5. Start Local Services (Docker)
+
+```bash
+# Start Redis and LibSQL (database)
+pnpm docker:up
+
+# Or start with debug tools (Redis Commander, Mailpit)
+pnpm docker:up:all
+
+# Check status
+pnpm docker:status
+```
+
+**Services started:**
+- 📦 Redis: `redis://localhost:6379`
+- � Redis REST: `http://localhost:8079` (Upstash-compatible)
+- �🗄️ LibSQL: `http://localhost:8080`
+- 🔍 Redis Commander (debug): `http://localhost:8081`
+- 📧 Mailpit (debug): `http://localhost:8025`
 
 ## 2. Configure Secrets (1 minute)
 
 Minimum required in `.env.local`:
 
 ```bash
-# Database (Turso)
-DATABASE_URL=libsql://...
-DATABASE_AUTH_TOKEN=...
+# Database (Local Docker - already configured in .env.local.example)
+DATABASE_URL=http://localhost:8080
+DATABASE_AUTH_TOKEN=
 
-# Redis (Upstash)
-UPSTASH_REDIS_REST_URL=https://...
-UPSTASH_REDIS_REST_TOKEN=...
+# Redis (Local Docker - already configured)
+REDIS_URL=redis://localhost:6379
+UPSTASH_REDIS_REST_URL=http://localhost:8079
+UPSTASH_REDIS_REST_TOKEN=local-dev-token
 
-# OAuth (Google)
+# OAuth (Google) - Required
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 
-# OAuth (GitHub)
+# OAuth (GitHub) - Optional
 GITHUB_CLIENT_ID=...
 GITHUB_CLIENT_SECRET=...
 
-# Session Secret
+# Session Secret (generate these)
 SESSION_SECRET=$(openssl rand -hex 32)
-CORE_S2S_TOKEN=$(openssl rand -hex 32)
+JWT_SECRET=$(openssl rand -hex 32)
+S2S_SECRET=$(openssl rand -hex 32)
 ```
 
 ## 3. Database Setup (1 minute)
@@ -119,6 +141,18 @@ POST /v1/admin/projects
 ### Port already in use?
 ```bash
 lsof -ti :3001 | xargs kill -9
+```
+
+### Docker services not running?
+```bash
+# Check status
+pnpm docker:status
+
+# View logs
+pnpm docker:logs
+
+# Restart services
+pnpm docker:down && pnpm docker:up
 ```
 
 ### Database connection error?

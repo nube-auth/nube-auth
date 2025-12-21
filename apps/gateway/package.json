@@ -5,23 +5,24 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "dotenv -e ../../.env -e ../../.env.local -- tsx watch src/index.ts",
     "build": "tsc",
     "preview": "node dist/index.js"
   },
   "dependencies": {
-    "@proofa/shared": "workspace:*",
+    "@hono/node-server": "^1.19.7",
     "@proofa/auth": "workspace:*",
     "@proofa/db": "workspace:*",
     "@proofa/redis": "workspace:*",
+    "@proofa/shared": "workspace:*",
+    "@upstash/redis": "^1.25.0",
     "hono": "^4.0.0"
   },
   "devDependencies": {
-    "tsx": "^4.7.0",
-    "@types/node": "^20.10.0"
+    "@types/node": "^20.10.0",
+    "tsx": "^4.7.0"
   },
   "engines": {
     "node": ">=18.0.0"
   }
 }
-

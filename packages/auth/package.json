@@ -1,6 +1,7 @@
 {
   "name": "@proofa/auth",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "description": "OAuth adapter framework for Proofa",
   "main": "dist/index.js",

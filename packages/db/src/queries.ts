@@ -1,5 +1,5 @@
 import { eq, and, gt, isNull, desc, inArray } from 'drizzle-orm';
-import { DbClient } from './index';
+import { DbClient } from './index.js';
 import {
   users,
   identities,
@@ -11,7 +11,7 @@ import {
   licenses,
   email_verifications,
   audit_logs,
-} from './schema';
+} from './schema.js';
 
 /**
  * User queries
