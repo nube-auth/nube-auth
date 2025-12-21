@@ -4,10 +4,10 @@
  */
 
 export type {
-  User,
-  Session,
-  JWTPayload,
-  OAuthState,
-  EmailVerification,
-  License,
+	EmailVerification,
+	JWTPayload,
+	License,
+	OAuthState,
+	Session,
+	User,
 } from './auth';

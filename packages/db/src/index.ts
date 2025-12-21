@@ -1,17 +1,17 @@
-import { drizzle } from 'drizzle-orm/libsql';
 import { createClient } from '@libsql/client';
+import { drizzle } from 'drizzle-orm/libsql';
 import * as schema from './schema.js';
 
 /**
  * Initialize Turso/LibSQL client and Drizzle ORM
  */
 export function createDbClient() {
-  const client = createClient({
-    url: process.env.DATABASE_URL!,
-    authToken: process.env.DATABASE_AUTH_TOKEN!,
-  });
+	const client = createClient({
+		url: process.env.DATABASE_URL!,
+		authToken: process.env.DATABASE_AUTH_TOKEN!,
+	});
 
-  return drizzle(client, { schema });
+	return drizzle(client, { schema });
 }
 
 /**
@@ -28,25 +28,24 @@ let dbInstance: DbClient | null = null;
  * Get or create database instance
  */
 export function getDb(): DbClient {
-  if (!dbInstance) {
-    dbInstance = createDbClient();
-  }
-  return dbInstance;
+	if (!dbInstance) {
+		dbInstance = createDbClient();
+	}
+	return dbInstance;
 }
-
-// Export schema for migrations and types
-export * from './schema.js';
 
 // Export all query helpers
 export {
-  userQueries,
-  identityQueries,
-  sessionQueries,
-  projectQueries,
-  projectMemberQueries,
-  appQueries,
-  authCodeQueries,
-  licenseQueries,
-  emailVerificationQueries,
-  auditLogQueries,
+	appQueries,
+	auditLogQueries,
+	authCodeQueries,
+	emailVerificationQueries,
+	identityQueries,
+	licenseQueries,
+	projectMemberQueries,
+	projectQueries,
+	sessionQueries,
+	userQueries,
 } from './queries.js';
+// Export schema for migrations and types
+export * from './schema.js';

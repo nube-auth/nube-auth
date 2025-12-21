@@ -1,12 +1,12 @@
 // Re-export client and helpers
 export {
-  getRedisClient,
-  redisClient,
-  RedisClient,
-  cache,
-  rateLimit,
-  sessionStore,
+	cache,
+	getRedisClient,
+	RedisClient,
+	rateLimit,
+	redisClient,
+	sessionStore,
 } from './client.js';
 
 // Re-export constants
-export { KEY_PREFIXES, DEFAULT_TTLS, RATE_LIMIT_WINDOWS } from './constants.js';
+export { DEFAULT_TTLS, KEY_PREFIXES, RATE_LIMIT_WINDOWS } from './constants.js';

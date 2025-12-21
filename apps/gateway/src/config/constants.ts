@@ -17,19 +17,9 @@ export const SECURE_COOKIES = process.env.NODE_ENV === 'production';
 export const SAME_SITE = 'Lax' as const;
 
 // Routes configuration
-export const PUBLIC_ROUTES = [
-  '/auth/start',
-  '/auth/callback',
-  '/health',
-];
+export const PUBLIC_ROUTES = ['/auth/start', '/auth/callback', '/health'];
 
-export const AUTH_REQUIRED_ROUTES = [
-  '/me',
-  '/me/profile',
-  '/me/sessions',
-  '/me/logout',
-  '/admin',
-];
+export const AUTH_REQUIRED_ROUTES = ['/me', '/me/profile', '/me/sessions', '/me/logout', '/admin'];
 
 // Headers
 export const REQUEST_ID_HEADER = 'X-Request-ID';

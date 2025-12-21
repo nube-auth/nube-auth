@@ -1,13 +1,13 @@
+import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { serve } from '@hono/node-server';
-import { requestIdMiddleware } from './middleware/logger';
 import { errorHandler } from './middleware/error';
+import { requestIdMiddleware } from './middleware/logger';
+import { adminRoutes } from './routes/v1/admin';
 import { authRoutes } from './routes/v1/auth';
 import { emailRoutes } from './routes/v1/email';
 import { licenseRoutes } from './routes/v1/license';
-import { adminRoutes } from './routes/v1/admin';
 
 const app = new Hono();
 
@@ -24,7 +24,7 @@ app.route('/v1/admin', adminRoutes);
 
 // Health check
 app.get('/health', (c) => {
-  return c.json({ status: 'ok', timestamp: new Date().toISOString() });
+	return c.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Error handling
@@ -35,8 +35,8 @@ const port = parseInt(process.env.PORT || '3003', 10);
 console.log(`🚀 Core server starting on port ${port}`);
 
 serve({
-  fetch: app.fetch,
-  port,
+	fetch: app.fetch,
+	port,
 });
 
 console.log(`✅ Core server running at http://localhost:${port}`);

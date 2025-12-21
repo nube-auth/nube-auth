@@ -47,8 +47,8 @@ export const ACCOUNT_LOCKOUT_DEFAULT_MINUTES = 15;
  * OAuth provider names
  */
 export const PROVIDERS = {
-  GOOGLE: 'google',
-  GITHUB: 'github',
+	GOOGLE: 'google',
+	GITHUB: 'github',
 } as const;
 
 export type ProviderType = (typeof PROVIDERS)[keyof typeof PROVIDERS];
@@ -57,11 +57,11 @@ export type ProviderType = (typeof PROVIDERS)[keyof typeof PROVIDERS];
  * License plans
  */
 export const LICENSE_PLANS = {
-  FREE: 'free',
-  TRIAL: 'trial',
-  PRO: 'pro',
-  TEAM: 'team',
-  ENTERPRISE: 'enterprise',
+	FREE: 'free',
+	TRIAL: 'trial',
+	PRO: 'pro',
+	TEAM: 'team',
+	ENTERPRISE: 'enterprise',
 } as const;
 
 export type LicensePlanType = (typeof LICENSE_PLANS)[keyof typeof LICENSE_PLANS];
@@ -70,10 +70,10 @@ export type LicensePlanType = (typeof LICENSE_PLANS)[keyof typeof LICENSE_PLANS]
  * License statuses
  */
 export const LICENSE_STATUSES = {
-  ACTIVE: 'active',
-  EXPIRED: 'expired',
-  CANCELED: 'canceled',
-  SUSPENDED: 'suspended',
+	ACTIVE: 'active',
+	EXPIRED: 'expired',
+	CANCELED: 'canceled',
+	SUSPENDED: 'suspended',
 } as const;
 
 export type LicenseStatusType = (typeof LICENSE_STATUSES)[keyof typeof LICENSE_STATUSES];
@@ -82,11 +82,11 @@ export type LicenseStatusType = (typeof LICENSE_STATUSES)[keyof typeof LICENSE_S
  * License sources
  */
 export const LICENSE_SOURCES = {
-  MANUAL: 'manual',
-  PROMO: 'promo',
-  STRIPE: 'stripe',
-  LEMONSQUEEZY: 'lemonsqueezy',
-  INTERNAL: 'internal',
+	MANUAL: 'manual',
+	PROMO: 'promo',
+	STRIPE: 'stripe',
+	LEMONSQUEEZY: 'lemonsqueezy',
+	INTERNAL: 'internal',
 } as const;
 
 export type LicenseSourceType = (typeof LICENSE_SOURCES)[keyof typeof LICENSE_SOURCES];
@@ -95,9 +95,9 @@ export type LicenseSourceType = (typeof LICENSE_SOURCES)[keyof typeof LICENSE_SO
  * Project/App member roles
  */
 export const ROLES = {
-  OWNER: 'owner',
-  ADMIN: 'admin',
-  MEMBER: 'member',
+	OWNER: 'owner',
+	ADMIN: 'admin',
+	MEMBER: 'member',
 } as const;
 
 export type RoleType = (typeof ROLES)[keyof typeof ROLES];
@@ -106,13 +106,13 @@ export type RoleType = (typeof ROLES)[keyof typeof ROLES];
  * Audit log actions
  */
 export const AUDIT_ACTIONS = {
-  CREATE: 'create',
-  UPDATE: 'update',
-  DELETE: 'delete',
-  GRANT: 'grant',
-  REVOKE: 'revoke',
-  LOGIN: 'login',
-  LOGOUT: 'logout',
+	CREATE: 'create',
+	UPDATE: 'update',
+	DELETE: 'delete',
+	GRANT: 'grant',
+	REVOKE: 'revoke',
+	LOGIN: 'login',
+	LOGOUT: 'logout',
 } as const;
 
 export type AuditActionType = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];
@@ -121,30 +121,30 @@ export type AuditActionType = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS]
  * Standard error codes
  */
 export const ERROR_CODES = {
-  // Auth errors
-  INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
-  INVALID_OTP: 'INVALID_OTP',
-  OTP_LOCKED: 'OTP_LOCKED',
-  SESSION_EXPIRED: 'SESSION_EXPIRED',
-  UNAUTHORIZED: 'UNAUTHORIZED',
-  FORBIDDEN: 'FORBIDDEN',
-  INVALID_S2S_TOKEN: 'INVALID_S2S_TOKEN',
+	// Auth errors
+	INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
+	INVALID_OTP: 'INVALID_OTP',
+	OTP_LOCKED: 'OTP_LOCKED',
+	SESSION_EXPIRED: 'SESSION_EXPIRED',
+	UNAUTHORIZED: 'UNAUTHORIZED',
+	FORBIDDEN: 'FORBIDDEN',
+	INVALID_S2S_TOKEN: 'INVALID_S2S_TOKEN',
 
-  // Resource errors
-  NOT_FOUND: 'NOT_FOUND',
-  ALREADY_EXISTS: 'ALREADY_EXISTS',
-  CONFLICT: 'CONFLICT',
+	// Resource errors
+	NOT_FOUND: 'NOT_FOUND',
+	ALREADY_EXISTS: 'ALREADY_EXISTS',
+	CONFLICT: 'CONFLICT',
 
-  // Validation errors
-  INVALID_INPUT: 'INVALID_INPUT',
-  VALIDATION_ERROR: 'VALIDATION_ERROR',
+	// Validation errors
+	INVALID_INPUT: 'INVALID_INPUT',
+	VALIDATION_ERROR: 'VALIDATION_ERROR',
 
-  // Rate limiting
-  RATE_LIMITED: 'RATE_LIMITED',
+	// Rate limiting
+	RATE_LIMITED: 'RATE_LIMITED',
 
-  // Server errors
-  INTERNAL_ERROR: 'INTERNAL_ERROR',
-  SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
+	// Server errors
+	INTERNAL_ERROR: 'INTERNAL_ERROR',
+	SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
 } as const;
 
 export type ErrorCodeType = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];

@@ -1,28 +1,28 @@
 {
-  "name": "@proofa/gateway",
-  "version": "1.0.0",
-  "description": "Backend-for-Frontend gateway service for Proofa",
-  "type": "module",
-  "main": "dist/index.js",
-  "scripts": {
-    "dev": "dotenv -e ../../.env -e ../../.env.local -- tsx watch src/index.ts",
-    "build": "tsc",
-    "preview": "node dist/index.js"
-  },
-  "dependencies": {
-    "@hono/node-server": "^1.19.7",
-    "@proofa/auth": "workspace:*",
-    "@proofa/db": "workspace:*",
-    "@proofa/redis": "workspace:*",
-    "@proofa/shared": "workspace:*",
-    "@upstash/redis": "^1.25.0",
-    "hono": "^4.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.10.0",
-    "tsx": "^4.7.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  }
+	"name": "@proofa/gateway",
+	"version": "1.0.0",
+	"description": "Backend-for-Frontend gateway service for Proofa",
+	"type": "module",
+	"main": "dist/index.js",
+	"scripts": {
+		"dev": "dotenv -e ../../.env -e ../../.env.local -- tsx watch src/index.ts",
+		"build": "tsc",
+		"preview": "node dist/index.js"
+	},
+	"dependencies": {
+		"@hono/node-server": "^1.19.7",
+		"@proofa/auth": "workspace:*",
+		"@proofa/db": "workspace:*",
+		"@proofa/redis": "workspace:*",
+		"@proofa/shared": "workspace:*",
+		"@upstash/redis": "^1.25.0",
+		"hono": "^4.0.0"
+	},
+	"devDependencies": {
+		"@types/node": "^20.10.0",
+		"tsx": "^4.7.0"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	}
 }

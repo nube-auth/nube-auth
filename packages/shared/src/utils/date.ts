@@ -2,7 +2,7 @@
  * Get current Unix timestamp in seconds
  */
 export function getCurrentEpoch(): number {
-  return Math.floor(Date.now() / 1000);
+	return Math.floor(Date.now() / 1000);
 }
 
 /**
@@ -11,7 +11,7 @@ export function getCurrentEpoch(): number {
  * @returns Unix timestamp in seconds
  */
 export function addDays(days: number): number {
-  return getCurrentEpoch() + days * 24 * 60 * 60;
+	return getCurrentEpoch() + days * 24 * 60 * 60;
 }
 
 /**
@@ -20,7 +20,7 @@ export function addDays(days: number): number {
  * @returns true if expired, false otherwise
  */
 export function isExpired(expiresAt: number): boolean {
-  return getCurrentEpoch() > expiresAt;
+	return getCurrentEpoch() > expiresAt;
 }
 
 /**
@@ -29,5 +29,5 @@ export function isExpired(expiresAt: number): boolean {
  * @returns ISO 8601 string
  */
 export function formatEpoch(epoch: number): string {
-  return new Date(epoch * 1000).toISOString();
+	return new Date(epoch * 1000).toISOString();
 }

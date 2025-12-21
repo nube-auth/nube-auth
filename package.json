@@ -1,35 +1,40 @@
 {
-  "name": "proofa",
-  "version": "0.1.0",
-  "description": "Proofa - Identity, sessions, and licensing for apps",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "test": "turbo run test",
-    "lint": "turbo run lint",
-    "format": "turbo run format",
-    "db:migrate": "turbo run db:migrate",
-    "db:seed": "turbo run db:seed",
-    "docker:up": "./scripts/docker-local.sh up",
-    "docker:up:all": "./scripts/docker-local.sh up:all",
-    "docker:down": "./scripts/docker-local.sh down",
-    "docker:logs": "./scripts/docker-local.sh logs",
-    "docker:status": "./scripts/docker-local.sh status",
-    "docker:clean": "./scripts/docker-local.sh clean"
-  },
-  "devDependencies": {
-    "@types/node": "^22.0.0",
-    "@vitejs/plugin-react": "^5.1.2",
-    "dotenv": "^17.2.3",
-    "dotenv-cli": "^11.0.0",
-    "turbo": "^2.0.0",
-    "typescript": "^5.3.0"
-  },
-  "engines": {
-    "node": ">=22.0.0",
-    "pnpm": ">=9.0.0"
-  },
-  "packageManager": "pnpm@9.15.9"
+	"name": "proofa",
+	"version": "0.1.0",
+	"description": "Proofa - Identity, sessions, and licensing for apps",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "turbo run dev",
+		"build": "turbo run build",
+		"test": "turbo run test",
+		"lint": "biome lint .",
+		"lint:fix": "biome lint --write .",
+		"format": "biome format --write .",
+		"format:check": "biome format .",
+		"check": "biome check .",
+		"check:fix": "biome check --write .",
+		"db:migrate": "turbo run db:migrate",
+		"db:seed": "turbo run db:seed",
+		"docker:up": "./scripts/docker-local.sh up",
+		"docker:up:all": "./scripts/docker-local.sh up:all",
+		"docker:down": "./scripts/docker-local.sh down",
+		"docker:logs": "./scripts/docker-local.sh logs",
+		"docker:status": "./scripts/docker-local.sh status",
+		"docker:clean": "./scripts/docker-local.sh clean"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.10",
+		"@types/node": "^22.0.0",
+		"@vitejs/plugin-react": "^5.1.2",
+		"dotenv": "^17.2.3",
+		"dotenv-cli": "^11.0.0",
+		"turbo": "^2.0.0",
+		"typescript": "^5.3.0"
+	},
+	"engines": {
+		"node": ">=22.0.0",
+		"pnpm": ">=9.0.0"
+	},
+	"packageManager": "pnpm@9.15.9"
 }

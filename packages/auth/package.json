@@ -1,30 +1,30 @@
 {
-  "name": "@proofa/auth",
-  "version": "1.0.0",
-  "type": "module",
-  "private": true,
-  "description": "OAuth adapter framework for Proofa",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch"
-  },
-  "dependencies": {
-    "@proofa/shared": "workspace:*",
-    "zod": "^4.2.1"
-  },
-  "devDependencies": {
-    "typescript": "^5.3.3"
-  },
-  "optionalDependencies": {
-    "google-auth-library": "^9.4.1",
-    "octokit": "^3.1.0"
-  }
+	"name": "@proofa/auth",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"description": "OAuth adapter framework for Proofa",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch"
+	},
+	"dependencies": {
+		"@proofa/shared": "workspace:*",
+		"zod": "^4.2.1"
+	},
+	"devDependencies": {
+		"typescript": "^5.3.3"
+	},
+	"optionalDependencies": {
+		"google-auth-library": "^9.4.1",
+		"octokit": "^3.1.0"
+	}
 }
