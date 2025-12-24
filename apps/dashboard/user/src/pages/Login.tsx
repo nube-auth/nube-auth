@@ -6,34 +6,52 @@ export function LoginPage() {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		const sessionCookie = searchParams.get("session");
-		if (sessionCookie) {
-			// Core passed back the session, store it and redirect
-			document.cookie = `core_session=${sessionCookie}; path=/; SameSite=Lax`;
-			// Complete the login on Gateway
-			fetch("/api/auth/login", {
-				method: "POST",
-				credentials: "include",
-			})
-				.then((res) => {
-					if (res.ok) {
-						navigate("/profile");
-					}
-				})
-				.catch(console.error);
+		const error = searchParams.get("error");
+
+		if (error) {
+			// Show error message - OAuth failed
+			console.error("Login error:", error);
 			return;
 		}
 
-		// No session param, redirect to Core for OAuth
-		const coreAuthUrl = `${import.meta.env.VITE_CORE_URL || "http://localhost:3003"}/v1/auth/start?provider=google&redirect_uri=${encodeURIComponent(`${window.location.origin}/login`)}`;
-		window.location.href = coreAuthUrl;
+		// If we reached here without error, redirect to Gateway to start OAuth
+		// Gateway handles the entire OAuth flow with Core
+		const gatewayAuthUrl = `${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/auth/start?provider=google&return_to=/profile`;
+		window.location.href = gatewayAuthUrl;
 	}, [searchParams, navigate]);
+
+	const error = searchParams.get("error");
+
+	if (error) {
+		return (
+			<div className="flex items-center justify-center min-h-screen bg-gray-100">
+				<div className="text-center">
+					<h1 className="text-3xl font-bold mb-4 text-red-600">Login Failed</h1>
+					<p className="text-gray-600 mb-4">
+						{error === "missing_code" && "Authentication code was missing."}
+						{error === "exchange_failed" && "Failed to complete authentication."}
+						{error === "internal_error" && "An internal error occurred."}
+						{!["missing_code", "exchange_failed", "internal_error"].includes(error) && `Error: ${error}`}
+					</p>
+					<button
+						onClick={() => {
+							const gatewayAuthUrl = `${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/auth/start?provider=google&return_to=/profile`;
+							window.location.href = gatewayAuthUrl;
+						}}
+						className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+					>
+						Try Again
+					</button>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="flex items-center justify-center min-h-screen bg-gray-100">
 			<div className="text-center">
 				<h1 className="text-3xl font-bold mb-4">Redirecting to login...</h1>
-				<p className="text-gray-600">Please wait while we redirect you to Core authentication.</p>
+				<p className="text-gray-600">Please wait while we redirect you to sign in with Google.</p>
 			</div>
 		</div>
 	);

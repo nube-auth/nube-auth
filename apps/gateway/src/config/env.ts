@@ -2,8 +2,8 @@ import type { Context } from "hono";
 
 interface Environment {
 	CORE_URL: string;
-	X_PROOFA_SERVICE_TOKEN: string;
-	GATEWAY_SESSION_SECRET: string;
+	CORE_S2S_TOKEN: string;
+	SESSION_SECRET: string;
 	UPSTASH_REDIS_REST_URL: string;
 	UPSTASH_REDIS_REST_TOKEN: string;
 	NODE_ENV: "development" | "production" | "test";
@@ -13,11 +13,10 @@ interface Environment {
 function validateEnv(): Environment {
 	const requiredVars = [
 		"CORE_URL",
-		"X_PROOFA_SERVICE_TOKEN",
-		"GATEWAY_SESSION_SECRET",
+		"CORE_S2S_TOKEN",
+		"SESSION_SECRET",
 		"UPSTASH_REDIS_REST_URL",
 		"UPSTASH_REDIS_REST_TOKEN",
-		"NODE_ENV",
 	];
 
 	const missing: string[] = [];
@@ -34,11 +33,11 @@ function validateEnv(): Environment {
 
 	return {
 		CORE_URL: process.env.CORE_URL!,
-		X_PROOFA_SERVICE_TOKEN: process.env.X_PROOFA_SERVICE_TOKEN!,
-		GATEWAY_SESSION_SECRET: process.env.GATEWAY_SESSION_SECRET!,
+		CORE_S2S_TOKEN: process.env.CORE_S2S_TOKEN!,
+		SESSION_SECRET: process.env.SESSION_SECRET!,
 		UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL!,
 		UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN!,
-		NODE_ENV: (process.env.NODE_ENV || "development") as any,
+		NODE_ENV: (process.env.NODE_ENV || "development") as Environment["NODE_ENV"],
 		PORT: process.env.PORT || "3004",
 	};
 }

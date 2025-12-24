@@ -14,6 +14,6 @@ export default defineConfig({
 		},
 	},
 	define: {
-		"import.meta.env.VITE_CORE_URL": JSON.stringify(process.env.VITE_CORE_URL || "http://localhost:3003"),
+		"import.meta.env.VITE_GATEWAY_URL": JSON.stringify(process.env.VITE_GATEWAY_URL || "http://localhost:3004"),
 	},
 });

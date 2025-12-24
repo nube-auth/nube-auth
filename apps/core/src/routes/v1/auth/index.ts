@@ -6,9 +6,22 @@ import { Hono } from "hono";
 
 const router = new Hono();
 
+// In-memory store for OAuth state (in production, use Redis)
+const oauthStateStore = new Map<string, { redirectUri: string; provider: string; expiresAt: number }>();
+
+// Cleanup expired states periodically
+setInterval(() => {
+	const now = Date.now();
+	for (const [key, value] of oauthStateStore.entries()) {
+		if (value.expiresAt < now) {
+			oauthStateStore.delete(key);
+		}
+	}
+}, 60000); // Every minute
+
 /**
  * GET /v1/auth/start
- * Start OAuth flow
+ * Start OAuth flow - redirects to provider
  */
 router.get("/start", async (c: Context) => {
 	const provider = c.req.query("provider") as "google" | "github" | undefined;
@@ -36,9 +49,23 @@ router.get("/start", async (c: Context) => {
 			});
 		}
 
-		const authUrl = adapter.getAuthorizationUrl(createId("state"), redirectUri);
+		// Generate state for CSRF protection and to store redirect info
+		const oauthState = createId("authCode");
 
-		return c.json({ authUrl });
+		// Store the redirect_uri and provider for when Google calls back
+		oauthStateStore.set(oauthState, {
+			redirectUri,
+			provider,
+			expiresAt: Date.now() + 10 * 60 * 1000, // 10 minutes
+		});
+
+		// Core's own callback URL - Google will redirect here
+		const coreCallbackUrl = `${process.env.CORE_PUBLIC_URL || "http://localhost:3003"}/v1/auth/callback/${provider}`;
+
+		const authUrl = adapter.getAuthorizationUrl(oauthState, coreCallbackUrl);
+
+		// Redirect to OAuth provider
+		return c.redirect(authUrl);
 	} catch (error) {
 		console.error("Auth start error:", error);
 		return c.json({ error: "Failed to start auth" }, 500);
@@ -47,19 +74,52 @@ router.get("/start", async (c: Context) => {
 
 /**
  * GET /v1/auth/callback/:provider
- * OAuth callback handler
+ * OAuth callback handler - receives code from provider, creates session, redirects to Gateway
  */
 router.get("/callback/:provider", async (c: Context) => {
 	const provider = c.req.param("provider") as "google" | "github" | undefined;
 	const code = c.req.query("code") as string | undefined;
+	const state = c.req.query("state") as string | undefined;
+	const error = c.req.query("error") as string | undefined;
 
 	if (!provider || !["google", "github"].includes(provider)) {
 		return c.json({ error: "Invalid provider" }, 400);
 	}
 
+	// Check for OAuth error
+	if (error) {
+		console.error("OAuth error from provider:", error);
+		const storedState = state ? oauthStateStore.get(state) : null;
+		if (storedState) {
+			oauthStateStore.delete(state!);
+			const redirectUrl = new URL(storedState.redirectUri);
+			redirectUrl.searchParams.set("error", error);
+			return c.redirect(redirectUrl.toString());
+		}
+		return c.json({ error: `OAuth error: ${error}` }, 400);
+	}
+
 	if (!code) {
 		return c.json({ error: "Missing code" }, 400);
 	}
+
+	if (!state) {
+		return c.json({ error: "Missing state" }, 400);
+	}
+
+	// Retrieve stored state
+	const storedState = oauthStateStore.get(state);
+	if (!storedState) {
+		return c.json({ error: "Invalid or expired state" }, 400);
+	}
+
+	// Verify provider matches
+	if (storedState.provider !== provider) {
+		return c.json({ error: "Provider mismatch" }, 400);
+	}
+
+	// Clean up state
+	oauthStateStore.delete(state);
 
 	try {
 		const db = getDb();
@@ -78,8 +138,10 @@ router.get("/callback/:provider", async (c: Context) => {
 			});
 		}
 
-		const token = await adapter.exchangeCodeForTokens(code, process.env.CALLBACK_URL || "");
+		// Core's callback URL that was used for OAuth
+		const coreCallbackUrl = `${process.env.CORE_PUBLIC_URL || "http://localhost:3003"}/v1/auth/callback/${provider}`;
 
+		const token = await adapter.exchangeCodeForTokens(code, coreCallbackUrl);
 		const profile = await adapter.fetchUserProfile(token.accessToken);
 
 		// Find existing identity
@@ -126,15 +188,18 @@ router.get("/callback/:provider", async (c: Context) => {
 
 		const session = await sessionQueries.create(db, sessionData);
 
-		return c.json({
-			sessionId: session.public_id,
-			userId: userPublicId,
-			email: profile.email,
-			createdUser: !existingIdentity,
-		});
+		// Redirect to Gateway callback with session ID as code
+		const redirectUrl = new URL(storedState.redirectUri);
+		redirectUrl.searchParams.set("code", session.public_id);
+		redirectUrl.searchParams.set("state", state);
+
+		return c.redirect(redirectUrl.toString());
 	} catch (error) {
 		console.error("Auth callback error:", error);
-		return c.json({ error: "Failed to complete auth" }, 500);
+		// Redirect back with error
+		const redirectUrl = new URL(storedState.redirectUri);
+		redirectUrl.searchParams.set("error", "auth_failed");
+		return c.redirect(redirectUrl.toString());
 	}
 });
 
