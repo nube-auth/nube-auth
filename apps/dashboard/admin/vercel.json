@@ -1,0 +1,19 @@
+{
+	"buildCommand": "pnpm build",
+	"devCommand": "pnpm dev",
+	"installCommand": "pnpm install",
+	"framework": "vite",
+	"outputDirectory": "dist",
+	"rewrites": [
+		{
+			"source": "/((?!assets/).*)",
+			"destination": "/index.html"
+		}
+	],
+	"git": {
+		"deploymentEnabled": {
+			"main": true,
+			"trunk": true
+		}
+	}
+}
