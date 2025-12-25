@@ -1,6 +1,12 @@
-# 🔐 Proofa Core
+<p align="center">
+  <img src="assets/icon-transparent.png" alt="Proofa" width="80" height="80" />
+</p>
 
-> Enterprise-grade multi-tenant authentication and licensing system built with TypeScript, Hono, and React.
+<h1 align="center">Proofa Core</h1>
+
+<p align="center">
+  Enterprise-grade multi-tenant authentication and licensing system built with TypeScript, Hono, and React.
+</p>
 
 ## 📋 Table of Contents
 

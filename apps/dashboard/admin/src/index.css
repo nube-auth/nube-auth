@@ -156,20 +156,10 @@ body {
   text-decoration: none;
 }
 
-.sidebar-logo-icon {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, var(--primary), #8b5cf6);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.sidebar-logo-icon svg {
-  width: 20px;
-  height: 20px;
-  color: white;
+.sidebar-logo-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 .sidebar-logo-text {

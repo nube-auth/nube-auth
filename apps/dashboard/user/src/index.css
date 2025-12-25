@@ -156,20 +156,10 @@ body {
   text-decoration: none;
 }
 
-.header-logo-icon {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, var(--primary), #8b5cf6);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.header-logo-icon svg {
-  width: 18px;
-  height: 18px;
-  color: white;
+.header-logo-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 
 .header-logo-text {
