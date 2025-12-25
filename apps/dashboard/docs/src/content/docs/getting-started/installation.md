@@ -3,77 +3,55 @@ title: Installation
 description: Install and set up Proofa for your project
 ---
 
-Choose how you want to use Proofa: with our hosted service or self-hosted.
+import { Aside } from '@astrojs/starlight/components';
 
-## Using Hosted Proofa
+Get started with Proofa's hosted service.
 
-The easiest way to get started is with hosted Proofa:
+## Getting Started
 
 1. Create an account at [proofa.dev](https://proofa.dev)
-2. Create a new app and get your App ID
-3. Install the SDK and start building
+2. Create a new project and app
+3. Get your App ID from the dashboard
+4. Install the SDK and start building
+
+## Install the SDK
 
 ```bash
 npm install @proofa/sdk
 ```
 
-## Self-Hosting with Docker
-
-For full control, self-host Proofa using Docker:
+Or with your preferred package manager:
 
 ```bash
-# Clone the repository
-git clone https://github.com/0xdps/proofa-core.git
-cd proofa-core
+# pnpm
+pnpm add @proofa/sdk
 
-# Copy environment template
-cp .env.example .env
-
-# Start services
-docker compose up -d
+# yarn
+yarn add @proofa/sdk
 ```
 
-### Requirements
+## Quick Setup
 
-- Docker and Docker Compose
-- Node.js 20+ (for development)
-- PostgreSQL or Turso database
-- Redis or Upstash (for sessions)
+```typescript
+import { ProofaClient } from '@proofa/sdk';
 
-## Development Setup
+const proofa = new ProofaClient({
+  appId: 'your-app-id',
+  apiUrl: 'https://api.proofa.dev'
+});
 
-For contributing or local development:
+// Start OAuth login
+await proofa.login({ provider: 'google' });
 
-```bash
-# Clone repository
-git clone https://github.com/0xdps/proofa-core.git
-cd proofa-core
-
-# Install dependencies
-pnpm install
-
-# Set up environment
-cp .env.example .env.local
-# Edit .env.local with your values
-
-# Run database migrations
-pnpm db:migrate
-
-# Start development servers
-pnpm dev
+// Get current user
+const user = await proofa.getUser();
 ```
 
-### Services
-
-After running `pnpm dev`, you'll have:
-
-| Service | URL | Description |
-|---------|-----|-------------|
-| Gateway | http://localhost:3000 | API Gateway |
-| Core | http://localhost:3001 | Core API |
-| Dashboard | http://localhost:4321 | Admin UI |
+<Aside type="note" title="Self-Hosting">
+  Self-hosting options will be available after beta. Currently, please use the hosted service.
+</Aside>
 
 ## Next Steps
 
 - [Configuration](/getting-started/configuration/) - Configure your environment
-- [Docker](/self-hosting/docker/) - Production Docker setup
+- [OAuth Providers](/authentication/oauth-providers/) - Set up authentication providers

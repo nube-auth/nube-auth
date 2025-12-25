@@ -3,7 +3,13 @@ title: Introduction
 description: Learn what Proofa is and how it can help your application
 ---
 
-Proofa is an open-source authentication, session management, and licensing platform designed for modern SaaS applications.
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="note" title="Beta">
+  Proofa is currently in beta. We're actively developing new features and improvements. Your feedback is valuable!
+</Aside>
+
+Proofa is an authentication, session management, and licensing platform designed for modern SaaS applications.
 
 ## What is Proofa?
 
@@ -27,10 +33,10 @@ Proofa consists of several components:
 
 ## Why Proofa?
 
-- **Open Source** - Full control over your auth infrastructure
-- **Self-Hostable** - Deploy on your own infrastructure
+- **Simple Integration** - Get authentication running in minutes
 - **Flexible** - Adapt to any business model with customizable licensing
 - **Fast** - Built on Hono, Turso, and Upstash for performance
+- **Modern** - Designed for SaaS applications with multi-tenant support
 
 ## Next Steps
 

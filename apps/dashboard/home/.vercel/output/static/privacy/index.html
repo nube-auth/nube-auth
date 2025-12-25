@@ -1,0 +1,57 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="UTF-8"><meta name="description" content="Proofa - Authentication, session management, and licensing platform for modern applications"><meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- Favicons --><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="icon" type="image/png" href="/favicon.png"><!-- Fonts --><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"><!-- Theme Detection (prevents flash) --><script>
+      // Get theme preference: system, light, or dark
+      const getThemePreference = () => {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+          return localStorage.getItem('theme');
+        }
+        return 'system';
+      };
+      
+      // Apply theme based on preference
+      const applyTheme = (theme) => {
+        if (theme === 'system') {
+          const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', systemTheme);
+        } else {
+          document.documentElement.setAttribute('data-theme', theme);
+        }
+      };
+      
+      const theme = getThemePreference();
+      applyTheme(theme);
+      
+      // Update on system preference change (only if theme is 'system')
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (getThemePreference() === 'system') {
+          document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+        }
+      });
+    </script><title>Privacy Policy - Proofa</title><link rel="stylesheet" href="/_astro/index.B-dat0ay.css"><script type="module">function n(){const t=document.getElementById("theme-toggle");if(!t)return;const l=t.querySelector(".theme-label"),s=()=>localStorage.getItem("theme")||"system",r=e=>{t.setAttribute("data-theme-mode",e),t.setAttribute("title",e.charAt(0).toUpperCase()+e.slice(1)),l&&(l.textContent=e.charAt(0).toUpperCase()+e.slice(1))},c=e=>{if(e==="system"){const o=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.setAttribute("data-theme",o),localStorage.removeItem("theme")}else document.documentElement.setAttribute("data-theme",e),localStorage.setItem("theme",e)};r(s()),t.addEventListener("click",()=>{const e=s();let o;e==="system"?o="light":e==="light"?o="dark":o="system",o==="system"?localStorage.removeItem("theme"):localStorage.setItem("theme",o),c(o),r(o)})}function a(){const t=document.querySelector(".nav");if(!t)return;const l=()=>{window.scrollY>10?t.classList.add("scrolled"):t.classList.remove("scrolled")};window.addEventListener("scroll",l,{passive:!0}),l()}function m(){document.querySelectorAll('a[href^="#"]').forEach(t=>{t.addEventListener("click",function(l){l.preventDefault();const s=document.querySelector(this.getAttribute("href"));s&&s.scrollIntoView({behavior:"smooth",block:"start"})})})}document.addEventListener("DOMContentLoaded",()=>{n(),a(),m()});
+</script>
+<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+		var script = document.createElement('script');
+		script.defer = true;
+		script.src = '/_vercel/insights/script.js';
+		var head = document.querySelector('head');
+		head.appendChild(script);
+	</script></head> <body>  <div class="bg-white"> <div class="max-w-4xl mx-auto px-4 py-16"> <div class="mb-8"> <a href="/" class="text-primary-600 hover:text-primary-700 transition inline-flex items-center gap-2"> <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path> </svg>
+Back to Home
+</a> </div> <h1 class="text-4xl font-bold mb-4 text-gray-900">Privacy Policy</h1> <p class="text-gray-600 mb-8">Last Updated: December 14, 2025</p> <div class="prose prose-lg max-w-none"> <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">1. Introduction</h2> <p class="mb-4 text-gray-700">
+Proofa ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our authentication, session management, and licensing platform.
+</p> <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">2. Information We Collect</h2> <h3 class="text-xl font-semibold mt-6 mb-3 text-gray-900">2.1 Information You Provide</h3> <ul class="list-disc pl-6 mb-4 text-gray-700 space-y-2"> <li><strong>Account Information:</strong> Email address, name, and profile picture from OAuth providers (Google, GitHub, etc.)</li> <li><strong>Project Data:</strong> Project names, app configurations, and team member information</li> <li><strong>Payment Information:</strong> Billing details processed through third-party payment processors (we do not store credit card numbers)</li> </ul> <h3 class="text-xl font-semibold mt-6 mb-3 text-gray-900">2.2 Automatically Collected Information</h3> <ul class="list-disc pl-6 mb-4 text-gray-700 space-y-2"> <li><strong>Usage Data:</strong> API calls, authentication events, session activity</li> <li><strong>Technical Data:</strong> IP addresses, browser type, device information, referring URLs</li> <li><strong>Audit Logs:</strong> Actions performed within your account for security and compliance</li> </ul> <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">3. How We Use Your Information</h2> <p class="mb-4 text-gray-700">We use the information we collect to:</p> <ul class="list-disc pl-6 mb-4 text-gray-700 space-y-2"> <li>Provide, maintain, and improve our services</li> <li>Process authentication and manage user sessions</li> <li>Send transactional emails and service notifications</li> <li>Detect and prevent fraud, abuse, and security incidents</li> <li>Comply with legal obligations and enforce our terms</li> <li>Analyze usage patterns to improve our platform</li> </ul> <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">4. Information Sharing</h2> <p class="mb-4 text-gray-700">We do not sell your personal information. We may share your information with:</p> <ul class="list-disc pl-6 mb-4 text-gray-700 space-y-2"> <li><strong>Service Providers:</strong> Infrastructure providers (Vercel, Upstash, Turso), email services (Resend), and payment processors</li> <li><strong>OAuth Providers:</strong> When you authenticate through Google, GitHub, etc.</li> <li><strong>Legal Requirements:</strong> When required by law or to protect our rights</li> <li><strong>Business Transfers:</strong> In connection with a merger, acquisition, or sale of assets</li> </ul> <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">5. Data Security</h2> <p class="mb-4 text-gray-700">
+We implement industry-standard security measures including:
+</p> <ul class="list-disc pl-6 mb-4 text-gray-700 space-y-2"> <li>Encryption in transit (TLS/SSL) and at rest</li> <li>Secure session management with configurable TTLs</li> <li>Rate limiting and DDoS protection</li> <li>Regular security audits and penetration testing</li> <li>Access controls and audit logging</li> </ul> <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">6. Data Retention</h2> <p class="mb-4 text-gray-700">
+We retain your information for as long as your account is active or as needed to provide services. When you delete your account, we will delete or anonymize your personal information within 30 days, except where retention is required by law.
+</p> <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">7. Your Rights</h2> <p class="mb-4 text-gray-700">Depending on your location, you may have the following rights:</p> <ul class="list-disc pl-6 mb-4 text-gray-700 space-y-2"> <li><strong>Access:</strong> Request a copy of your personal information</li> <li><strong>Correction:</strong> Update inaccurate or incomplete information</li> <li><strong>Deletion:</strong> Request deletion of your account and data</li> <li><strong>Portability:</strong> Receive your data in a machine-readable format</li> <li><strong>Objection:</strong> Object to certain processing activities</li> </ul> <p class="mb-4 text-gray-700">
+To exercise these rights, contact us at <a href="mailto:privacy@proofa.com" class="text-primary-600 hover:text-primary-700">privacy@proofa.com</a>.
+</p> <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">8. Cookies and Tracking</h2> <p class="mb-4 text-gray-700">
+We use cookies and similar technologies for:
+</p> <ul class="list-disc pl-6 mb-4 text-gray-700 space-y-2"> <li><strong>Essential Cookies:</strong> Session management and authentication (required)</li> <li><strong>Analytics:</strong> Understanding usage patterns (Vercel Analytics)</li> <li><strong>Security:</strong> Fraud detection and rate limiting</li> </ul> <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">9. International Data Transfers</h2> <p class="mb-4 text-gray-700">
+Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place for such transfers.
+</p> <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">10. Children's Privacy</h2> <p class="mb-4 text-gray-700">
+Our services are not intended for users under 13 years of age. We do not knowingly collect information from children under 13.
+</p> <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">11. Changes to This Policy</h2> <p class="mb-4 text-gray-700">
+We may update this Privacy Policy from time to time. We will notify you of material changes by email or through our platform. Continued use after changes constitutes acceptance.
+</p> <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">12. Contact Us</h2> <p class="mb-4 text-gray-700">
+If you have questions about this Privacy Policy, please contact us at:
+</p> <ul class="list-none mb-4 text-gray-700 space-y-1"> <li>Email: <a href="mailto:privacy@proofa.com" class="text-primary-600 hover:text-primary-700">privacy@proofa.com</a></li> </ul> </div> </div> </div>   </body> </html> 

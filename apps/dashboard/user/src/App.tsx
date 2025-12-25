@@ -109,6 +109,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 					<Link to="/profile" className="header-logo">
 						<img src="/favicon.png" alt="Proofa" className="header-logo-img" />
 						<span className="header-logo-text">Proofa</span>
+						<span className="header-beta-badge">Beta</span>
 					</Link>
 
 					<nav className="header-nav">

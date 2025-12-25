@@ -122,7 +122,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 						<img src="/favicon.png" alt="Proofa" className="sidebar-logo-img" />
 						<div className="sidebar-logo-text">
 							<span className="sidebar-logo-name">Proofa</span>
-							<span className="sidebar-logo-badge">Admin Console</span>
+							<span className="sidebar-logo-badge">Beta</span>
 						</div>
 					</Link>
 				</div>

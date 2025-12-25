@@ -57,13 +57,6 @@ export default defineConfig({
 						{ label: 'Sessions', link: '/api/sessions/' },
 					],
 				},
-				{
-					label: 'Self-Hosting',
-					items: [
-						{ label: 'Docker', link: '/self-hosting/docker/' },
-						{ label: 'Environment', link: '/self-hosting/environment/' },
-					],
-				},
 			],
 		}),
 	],
