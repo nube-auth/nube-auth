@@ -12,11 +12,16 @@ export const meRoutes = new Hono();
 meRoutes.get("/", async (c: Context) => {
 	try {
 		const auth = getAuth(c);
+		const db = getDb();
+
+		// Fetch user from database to get createdAt
+		const user = await userQueries.findByPublicId(db, auth.userId);
 
 		return c.json({
 			id: auth.userId,
 			email: auth.email,
 			name: auth.name,
+			createdAt: user?.created_at ? new Date(user.created_at * 1000).toISOString() : null,
 		});
 	} catch (error) {
 		console.error("Get me error:", error);
