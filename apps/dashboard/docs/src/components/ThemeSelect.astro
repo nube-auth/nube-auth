@@ -1,0 +1,160 @@
+---
+/**
+ * Custom Theme Toggle for Proofa Docs
+ * Matches the 3-state toggle (System → Light → Dark) used in other dashboards
+ */
+---
+
+<starlight-theme-toggle>
+  <button type="button" class="theme-toggle" aria-label="Toggle theme" data-theme-mode="system">
+    <!-- System icon -->
+    <svg class="icon-system" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+      <line x1="8" y1="21" x2="16" y2="21"></line>
+      <line x1="12" y1="17" x2="12" y2="21"></line>
+    </svg>
+    <!-- Sun icon -->
+    <svg class="icon-light" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+    <!-- Moon icon -->
+    <svg class="icon-dark" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+    </svg>
+    <span class="theme-label">System</span>
+  </button>
+</starlight-theme-toggle>
+
+<style>
+  starlight-theme-toggle {
+    display: contents;
+  }
+
+  .theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 90px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--sl-color-gray-5);
+    background: var(--sl-color-gray-6);
+    color: var(--sl-color-gray-2);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: var(--sl-font);
+  }
+
+  .theme-toggle:hover {
+    border-color: var(--sl-color-gray-3);
+    color: var(--sl-color-white);
+    background: var(--sl-color-gray-5);
+  }
+
+  .theme-toggle svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .theme-label {
+    white-space: nowrap;
+  }
+
+  /* Show/hide icons based on theme mode */
+  .icon-system,
+  .icon-light,
+  .icon-dark {
+    display: none;
+  }
+
+  .theme-toggle[data-theme-mode="system"] .icon-system {
+    display: block;
+  }
+
+  .theme-toggle[data-theme-mode="light"] .icon-light {
+    display: block;
+  }
+
+  .theme-toggle[data-theme-mode="dark"] .icon-dark {
+    display: block;
+  }
+</style>
+
+<script>
+  class StarlightThemeToggle extends HTMLElement {
+    constructor() {
+      super();
+      this.button = this.querySelector('button');
+      this.label = this.querySelector('.theme-label');
+      
+      // Initialize from localStorage or default to 'auto' (system)
+      const stored = localStorage.getItem('starlight-theme');
+      this.currentMode = stored || 'auto';
+      this.updateButton();
+      
+      this.button?.addEventListener('click', () => this.cycleTheme());
+    }
+
+    cycleTheme() {
+      // Cycle: system -> light -> dark -> system
+      const modes = ['auto', 'light', 'dark'];
+      const currentIndex = modes.indexOf(this.currentMode);
+      this.currentMode = modes[(currentIndex + 1) % modes.length];
+      
+      // Save preference
+      localStorage.setItem('starlight-theme', this.currentMode);
+      
+      // Apply theme
+      this.applyTheme();
+      this.updateButton();
+    }
+
+    applyTheme() {
+      const root = document.documentElement;
+      
+      if (this.currentMode === 'auto') {
+        // Use system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        root.dataset.theme = prefersDark ? 'dark' : 'light';
+      } else {
+        root.dataset.theme = this.currentMode;
+      }
+    }
+
+    updateButton() {
+      if (!this.button || !this.label) return;
+      
+      // Map storage value to display mode
+      const modeMap: Record<string, string> = {
+        'auto': 'system',
+        'light': 'light',
+        'dark': 'dark'
+      };
+      
+      const displayMode = modeMap[this.currentMode] || 'system';
+      this.button.dataset.themeMode = displayMode;
+      
+      // Update label
+      const labels: Record<string, string> = {
+        'system': 'System',
+        'light': 'Light',
+        'dark': 'Dark'
+      };
+      this.label.textContent = labels[displayMode] || 'System';
+    }
+  }
+
+  customElements.define('starlight-theme-toggle', StarlightThemeToggle);
+</script>

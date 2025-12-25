@@ -2,6 +2,10 @@
 
 /* Dark mode colors (default in Starlight) */
 :root {
+	/* Layout - Sidebar and content widths */
+	--sl-sidebar-width: 16rem;
+	--sl-content-width: 60rem;
+	
 	/* Accent colors - Indigo brand */
 	--sl-color-accent-low: #312e81;
 	--sl-color-accent: #818cf8;
@@ -60,10 +64,20 @@
 
 /* Hero improvements */
 .hero {
-	padding-block: 3rem !important;
+	padding-block: 4rem !important;
+	padding-inline: 2rem !important;
 	background: linear-gradient(135deg, var(--sl-color-bg), var(--sl-color-bg-nav)) !important;
 }
 
+/* Main content padding */
+.sl-container {
+	padding-inline: 1.5rem !important;
+}
+
+.main-pane {
+	padding-block: 2rem !important;
+}
+1
 /* Sidebar styling */
 nav.sidebar a {
 	border-radius: 8px;
@@ -118,11 +132,21 @@ a.sl-link-button[data-variant="primary"]:hover {
 table {
 	border-radius: 12px;
 	overflow: hidden;
+	margin-block: 1.5rem !important;
 }
 
 th {
 	background-color: var(--sl-color-gray-6) !important;
 	font-weight: 600;
+	padding: 1rem 1.25rem !important;
+}
+
+td {
+	padding: 1rem 1.25rem !important;
+}
+
+tr {
+	border-bottom: 1px solid var(--sl-color-gray-5);
 }
 
 /* Headings styling */
@@ -138,6 +162,15 @@ th {
 	border-radius: 6px;
 	padding: 2px 6px;
 }
+
+/* Footer styling */
+footer.site-footer {
+	background: #0f172a !important;
+}
+
+/* ==========================================================================
+   Footer and other styles
+   ========================================================================== */
 
 /* Footer styling */
 footer.site-footer {

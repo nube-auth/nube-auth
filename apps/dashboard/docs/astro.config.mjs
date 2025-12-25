@@ -15,6 +15,10 @@ export default defineConfig({
 				baseUrl: 'https://github.com/0xdps/proofa-core/edit/trunk/apps/docs/',
 			},
 			customCss: ['./src/styles/custom.css'],
+			components: {
+				// Override the default theme selector with our custom toggle button
+				ThemeSelect: './src/components/ThemeSelect.astro',
+			},
 			sidebar: [
 				{
 					label: 'Getting Started',

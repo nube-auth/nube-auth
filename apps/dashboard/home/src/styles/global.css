@@ -312,17 +312,18 @@ body {
 
 /* Theme Toggle */
 .theme-toggle {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-primary);
-  background: var(--bg-primary);
-  color: var(--text-secondary);
-  cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
   transition: all var(--transition-fast);
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .theme-toggle:hover {
@@ -332,15 +333,34 @@ body {
 }
 
 .theme-toggle svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
+  display: none;
 }
 
-.theme-toggle .sun-icon { display: none; }
-.theme-toggle .moon-icon { display: block; }
+.theme-toggle .theme-label {
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 48px;
+}
 
-[data-theme="dark"] .theme-toggle .sun-icon { display: block; }
-[data-theme="dark"] .theme-toggle .moon-icon { display: none; }
+/* Default: show system icon */
+.theme-toggle .system-icon { display: block; }
+
+/* Light mode selected */
+.theme-toggle[data-theme-mode="light"] .sun-icon { display: block; }
+.theme-toggle[data-theme-mode="light"] .moon-icon { display: none; }
+.theme-toggle[data-theme-mode="light"] .system-icon { display: none; }
+
+/* Dark mode selected */
+.theme-toggle[data-theme-mode="dark"] .sun-icon { display: none; }
+.theme-toggle[data-theme-mode="dark"] .moon-icon { display: block; }
+.theme-toggle[data-theme-mode="dark"] .system-icon { display: none; }
+
+/* System mode selected */
+.theme-toggle[data-theme-mode="system"] .sun-icon { display: none; }
+.theme-toggle[data-theme-mode="system"] .moon-icon { display: none; }
+.theme-toggle[data-theme-mode="system"] .system-icon { display: block; }
 
 /* Mobile Menu */
 .mobile-menu-btn {

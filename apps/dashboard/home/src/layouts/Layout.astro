@@ -27,20 +27,30 @@ const { title, description = "Proofa - Authentication, session management, and l
     
     <!-- Theme Detection (prevents flash) -->
     <script is:inline>
-      // Check for saved theme preference or system preference
+      // Get theme preference: system, light, or dark
       const getThemePreference = () => {
         if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
           return localStorage.getItem('theme');
         }
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        return 'system';
+      };
+      
+      // Apply theme based on preference
+      const applyTheme = (theme) => {
+        if (theme === 'system') {
+          const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', systemTheme);
+        } else {
+          document.documentElement.setAttribute('data-theme', theme);
+        }
       };
       
       const theme = getThemePreference();
-      document.documentElement.setAttribute('data-theme', theme);
+      applyTheme(theme);
       
-      // Update on system preference change
+      // Update on system preference change (only if theme is 'system')
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        if (!localStorage.getItem('theme')) {
+        if (getThemePreference() === 'system') {
           document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
         }
       });
@@ -52,17 +62,56 @@ const { title, description = "Proofa - Authentication, session management, and l
     <slot />
     
     <script>
-      // Theme toggle functionality
+      // Theme toggle functionality - cycles through system → light → dark
       function setupThemeToggle() {
         const themeToggle = document.getElementById('theme-toggle');
         if (!themeToggle) return;
         
+        const themeLabel = themeToggle.querySelector('.theme-label');
+        
+        // Get current saved theme
+        const getCurrentTheme = () => localStorage.getItem('theme') || 'system';
+        
+        // Update button appearance
+        const updateToggle = (theme) => {
+          themeToggle.setAttribute('data-theme-mode', theme);
+          themeToggle.setAttribute('title', theme.charAt(0).toUpperCase() + theme.slice(1));
+          if (themeLabel) {
+            themeLabel.textContent = theme.charAt(0).toUpperCase() + theme.slice(1);
+          }
+        };
+        
+        // Apply theme
+        const applyTheme = (theme) => {
+          if (theme === 'system') {
+            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', systemTheme);
+            localStorage.removeItem('theme');
+          } else {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+          }
+        };
+        
+        // Initialize
+        updateToggle(getCurrentTheme());
+        
         themeToggle.addEventListener('click', () => {
-          const currentTheme = document.documentElement.getAttribute('data-theme');
-          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          const currentTheme = getCurrentTheme();
+          let newTheme;
           
-          document.documentElement.setAttribute('data-theme', newTheme);
-          localStorage.setItem('theme', newTheme);
+          if (currentTheme === 'system') newTheme = 'light';
+          else if (currentTheme === 'light') newTheme = 'dark';
+          else newTheme = 'system';
+          
+          if (newTheme === 'system') {
+            localStorage.removeItem('theme');
+          } else {
+            localStorage.setItem('theme', newTheme);
+          }
+          
+          applyTheme(newTheme);
+          updateToggle(newTheme);
         });
       }
       
