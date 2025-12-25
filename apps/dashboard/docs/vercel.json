@@ -3,11 +3,5 @@
 	"devCommand": "pnpm dev",
 	"installCommand": "pnpm install",
 	"framework": "astro",
-	"outputDirectory": "dist",
-	"git": {
-		"deploymentEnabled": {
-			"main": true,
-			"trunk": true
-		}
-	}
+	"outputDirectory": "dist"
 }
