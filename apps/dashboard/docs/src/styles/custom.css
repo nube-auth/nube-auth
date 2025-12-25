@@ -69,15 +69,17 @@
 	background: transparent !important;
 }
 
-/* Hero image - remove any background */
+/* Hero image - make it bigger */
 .hero img {
 	background: transparent !important;
 	filter: none !important;
+	max-height: 320px !important;
+	width: auto !important;
 }
 
 /* Header logo - reduce height */
 .site-title img {
-	height: 32px !important;
+	height: 24px !important;
 	width: auto !important;
 }
 
