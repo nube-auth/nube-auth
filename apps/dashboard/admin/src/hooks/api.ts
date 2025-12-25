@@ -37,7 +37,8 @@ export function useProjects() {
 		queryFn: async () => {
 			const res = await fetch("/api/admin/projects", { credentials: "include" });
 			if (!res.ok) throw new Error("Failed to fetch projects");
-			return res.json() as Promise<Project[]>;
+			const data = await res.json();
+			return (data.projects || []) as Project[];
 		},
 	});
 }
@@ -79,7 +80,8 @@ export function useProjectApps(projectId: string) {
 		queryFn: async () => {
 			const res = await fetch(`/api/admin/projects/${projectId}/apps`, { credentials: "include" });
 			if (!res.ok) throw new Error("Failed to fetch apps");
-			return res.json() as Promise<App[]>;
+			const data = await res.json();
+			return (data.apps || []) as App[];
 		},
 		enabled: !!projectId,
 	});
@@ -110,7 +112,8 @@ export function useLicenses() {
 		queryFn: async () => {
 			const res = await fetch("/api/admin/licenses", { credentials: "include" });
 			if (!res.ok) throw new Error("Failed to fetch licenses");
-			return res.json() as Promise<License[]>;
+			const data = await res.json();
+			return (data.licenses || []) as License[];
 		},
 	});
 }
