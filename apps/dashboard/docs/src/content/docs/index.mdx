@@ -3,23 +3,35 @@ title: Welcome to Proofa
 description: Authentication, session management, and licensing for modern applications
 template: splash
 hero:
-  tagline: Drop-in authentication, sessions, and licensing for your SaaS. Open source and self-hostable.
+  title: Make your app secure with Proofa
+  tagline: Everything you need to build secure authentication, sessions, and licensing. Fast, accessible, and easy-to-use.
+  image:
+    file: ../../assets/logo.png
   actions:
     - text: Get Started
       link: /getting-started/introduction/
       icon: right-arrow
       variant: primary
-    - text: View on GitHub
-      link: https://github.com/0xdps/proofa-core
-      icon: external
 ---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
 
 ## Features
 
-- **OAuth Authentication** - Google, GitHub, and more providers
-- **Session Management** - Rolling sessions with Redis caching
-- **Flexible Licensing** - Plans, tiers, and entitlements
-- **Multi-Tenant** - Projects, apps, and role-based access control
+<CardGrid stagger>
+  <Card title="OAuth Authentication" icon="open-book">
+    Google, GitHub, and more providers out of the box. Easy to configure and extend.
+  </Card>
+  <Card title="Session Management" icon="approve-check">
+    Rolling sessions with Redis caching. Automatic token refresh and secure storage.
+  </Card>
+  <Card title="Flexible Licensing" icon="setting">
+    Plans, tiers, and entitlements. Built-in support for trials, upgrades, and usage limits.
+  </Card>
+  <Card title="Multi-Tenant" icon="puzzle">
+    Projects, apps, and role-based access control. Perfect for SaaS applications.
+  </Card>
+</CardGrid>
 
 ## Quick Example
 

@@ -66,7 +66,19 @@
 .hero {
 	padding-block: 4rem !important;
 	padding-inline: 2rem !important;
-	background: linear-gradient(135deg, var(--sl-color-bg), var(--sl-color-bg-nav)) !important;
+	background: transparent !important;
+}
+
+/* Hero image - remove any background */
+.hero img {
+	background: transparent !important;
+	filter: none !important;
+}
+
+/* Header logo - reduce height */
+.site-title img {
+	height: 32px !important;
+	width: auto !important;
 }
 
 /* Main content padding */

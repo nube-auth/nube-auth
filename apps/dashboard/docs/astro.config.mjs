@@ -5,15 +5,13 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Proofa',
+			logo: {
+				src: './src/assets/logo.png',
+				alt: 'Proofa',
+			},
 			description: 'Authentication, session management, and licensing for modern applications',
 			favicon: '/favicon.png',
-			social: [
-				{ icon: 'github', label: 'GitHub', href: 'https://github.com/0xdps/proofa-core' },
-			],
 			head: [],
-			editLink: {
-				baseUrl: 'https://github.com/0xdps/proofa-core/edit/trunk/apps/docs/',
-			},
 			customCss: ['./src/styles/custom.css'],
 			components: {
 				// Override the default theme selector with our custom toggle button
