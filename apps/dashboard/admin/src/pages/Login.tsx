@@ -6,6 +6,7 @@ export function LoginPage() {
 	const navigate = useNavigate();
 	const [status, setStatus] = useState<"idle" | "checking" | "redirecting" | "processing" | "error">("checking");
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const homeUrl = import.meta.env.VITE_HOME_URL || "http://localhost:4321";
 
 	useEffect(() => {
 		const handleAuth = async () => {
@@ -196,7 +197,7 @@ export function LoginPage() {
 								Continue with Google
 							</button>
 							<p style={{ color: "#6b7280", fontSize: "12px", marginTop: "16px" }}>
-								By continuing, you agree to our Terms of Service and Privacy Policy
+								By continuing, you agree to our <a href={`${homeUrl}/terms`} target="_blank" rel="noopener noreferrer" style={{ color: "#6366f1" }}>Terms of Service</a> and <a href={`${homeUrl}/privacy`} target="_blank" rel="noopener noreferrer" style={{ color: "#6366f1" }}>Privacy Policy</a>
 							</p>
 						</div>
 					)}

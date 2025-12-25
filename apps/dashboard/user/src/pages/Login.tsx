@@ -5,6 +5,7 @@ export function LoginPage() {
 	const [searchParams] = useSearchParams();
 	const navigate = useNavigate();
 	const [status, setStatus] = useState<"idle" | "checking" | "redirecting" | "error">("checking");
+	const homeUrl = import.meta.env.VITE_HOME_URL || "http://localhost:4321";
 
 	useEffect(() => {
 		const error = searchParams.get("error");
@@ -153,7 +154,7 @@ export function LoginPage() {
 				</button>
 
 				<p className="login-terms">
-					By continuing, you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>
+					By continuing, you agree to our <a href={`${homeUrl}/terms`} target="_blank" rel="noopener noreferrer">Terms of Service</a> and <a href={`${homeUrl}/privacy`} target="_blank" rel="noopener noreferrer">Privacy Policy</a>
 				</p>
 			</div>
 		</div>

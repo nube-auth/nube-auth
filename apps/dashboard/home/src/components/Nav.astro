@@ -1,4 +1,6 @@
 ---
+import config from "../config";
+
 interface Props {
   showActions?: boolean;
 }
@@ -17,7 +19,7 @@ const { showActions = true } = Astro.props;
     <div class="nav-links">
       <a href="#features" class="nav-link">Features</a>
       <a href="#how-it-works" class="nav-link">How it Works</a>
-      <a href="https://docs.proofa.com" class="nav-link" target="_blank" rel="noopener">Docs</a>
+      <a href={config.docsUrl} class="nav-link" target="_blank" rel="noopener">Docs</a>
     </div>
     
     {showActions && (

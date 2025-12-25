@@ -1,4 +1,5 @@
 ---
+import config from '../config';
 import Footer from '../components/Footer.astro';
 ---
 
@@ -16,7 +17,7 @@ import Footer from '../components/Footer.astro';
           <polyline points="12 5 19 12 12 19"/>
         </svg>
       </a>
-      <a href="https://docs.proofa.com" class="btn btn-outline btn-lg" target="_blank" rel="noopener">
+      <a href={config.docsUrl} class="btn btn-outline btn-lg" target="_blank" rel="noopener">
         Read the Docs
       </a>
     </div>
