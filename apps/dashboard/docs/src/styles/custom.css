@@ -1,0 +1,152 @@
+/* Proofa Docs - Custom Theme (matching Home Dashboard) */
+
+/* Dark mode colors (default in Starlight) */
+:root {
+	/* Accent colors - Indigo brand */
+	--sl-color-accent-low: #312e81;
+	--sl-color-accent: #818cf8;
+	--sl-color-accent-high: #c7d2fe;
+	
+	/* Gray scale for dark mode */
+	--sl-color-white: #f8fafc;
+	--sl-color-gray-1: #cbd5e1;
+	--sl-color-gray-2: #94a3b8;
+	--sl-color-gray-3: #64748b;
+	--sl-color-gray-4: #475569;
+	--sl-color-gray-5: #334155;
+	--sl-color-gray-6: #1e293b;
+	--sl-color-black: #0f172a;
+	
+	/* Font */
+	--sl-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	--sl-font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Light mode colors */
+:root[data-theme='light'] {
+	/* Accent colors - Indigo brand */
+	--sl-color-accent-low: #e0e7ff;
+	--sl-color-accent: #6366f1;
+	--sl-color-accent-high: #4338ca;
+	
+	/* Gray scale for light mode */
+	--sl-color-white: #0f172a;
+	--sl-color-gray-1: #1e293b;
+	--sl-color-gray-2: #334155;
+	--sl-color-gray-3: #475569;
+	--sl-color-gray-4: #64748b;
+	--sl-color-gray-5: #94a3b8;
+	--sl-color-gray-6: #e2e8f0;
+	--sl-color-gray-7: #f8fafc;
+	--sl-color-black: #ffffff;
+}
+
+/* Typography */
+:root {
+	--sl-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	--sl-font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Smooth transitions */
+* {
+	transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Selection styling */
+::selection {
+	background: #6366f1;
+	color: white;
+}
+
+/* Hero improvements */
+.hero {
+	padding-block: 3rem !important;
+	background: linear-gradient(135deg, var(--sl-color-bg), var(--sl-color-bg-nav)) !important;
+}
+
+/* Sidebar styling */
+nav.sidebar a {
+	border-radius: 8px;
+}
+
+nav.sidebar a:hover {
+	background-color: var(--sl-color-gray-6);
+}
+
+nav.sidebar a[aria-current="page"] {
+	background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+	color: white !important;
+}
+
+/* Code blocks */
+.expressive-code {
+	border-radius: 12px !important;
+}
+
+.expressive-code .frame {
+	border-radius: 12px !important;
+}
+
+/* Cards - Link cards */
+.sl-link-card {
+	border-radius: 12px !important;
+	transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.sl-link-card:hover {
+	transform: translateY(-2px);
+	border-color: #818cf8 !important;
+}
+
+/* Buttons */
+.sl-link-button {
+	border-radius: 8px !important;
+	font-weight: 600 !important;
+}
+
+/* Primary buttons */
+a.sl-link-button[data-variant="primary"] {
+	background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+	border: none !important;
+}
+
+a.sl-link-button[data-variant="primary"]:hover {
+	background: linear-gradient(135deg, #4f46e5, #4338ca) !important;
+}
+
+/* Tables */
+table {
+	border-radius: 12px;
+	overflow: hidden;
+}
+
+th {
+	background-color: var(--sl-color-gray-6) !important;
+	font-weight: 600;
+}
+
+/* Headings styling */
+.sl-markdown-content h1,
+.sl-markdown-content h2,
+.sl-markdown-content h3 {
+	letter-spacing: -0.02em;
+}
+
+/* Inline code */
+.sl-markdown-content :not(pre) > code {
+	background: var(--sl-color-gray-6) !important;
+	border-radius: 6px;
+	padding: 2px 6px;
+}
+
+/* Footer styling */
+footer.site-footer {
+	background: #0f172a !important;
+}
+
+/* Mobile */
+@media (max-width: 50rem) {
+	.hero h1 {
+		font-size: 1.75rem !important;
+	}
+}

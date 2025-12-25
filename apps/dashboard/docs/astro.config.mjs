@@ -6,9 +6,11 @@ export default defineConfig({
 		starlight({
 			title: 'Proofa',
 			description: 'Authentication, session management, and licensing for modern applications',
-			social: {
-				github: 'https://github.com/0xdps/proofa-core',
-			},
+			favicon: '/favicon.png',
+			social: [
+				{ icon: 'github', label: 'GitHub', href: 'https://github.com/0xdps/proofa-core' },
+			],
+			head: [],
 			editLink: {
 				baseUrl: 'https://github.com/0xdps/proofa-core/edit/trunk/apps/docs/',
 			},
