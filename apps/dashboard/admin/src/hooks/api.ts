@@ -5,6 +5,7 @@ interface Project {
 	name: string;
 	description: string;
 	public_id: string;
+	slug?: string;
 }
 
 interface App {
@@ -29,6 +30,10 @@ interface License {
 	max_requests_per_day: number;
 	active: boolean;
 	expires_at: string;
+	status?: string;
+	validUntil?: string;
+	appId?: string;
+	plan?: string;
 }
 
 export function useProjects() {
