@@ -1,0 +1,39 @@
+---
+title: Welcome to Proofa
+description: Authentication, session management, and licensing for modern applications
+template: splash
+hero:
+  tagline: Drop-in authentication, sessions, and licensing for your SaaS. Open source and self-hostable.
+  actions:
+    - text: Get Started
+      link: /getting-started/introduction/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/0xdps/proofa-core
+      icon: external
+---
+
+## Features
+
+- **OAuth Authentication** - Google, GitHub, and more providers
+- **Session Management** - Rolling sessions with Redis caching
+- **Flexible Licensing** - Plans, tiers, and entitlements
+- **Multi-Tenant** - Projects, apps, and role-based access control
+
+## Quick Example
+
+```typescript
+import { ProofaClient } from '@proofa/sdk';
+
+const proofa = new ProofaClient({
+  appId: 'your-app-id',
+  apiUrl: 'https://api.proofa.dev'
+});
+
+// Start OAuth flow
+await proofa.login({ provider: 'google' });
+
+// Get current user
+const user = await proofa.getUser();
+```

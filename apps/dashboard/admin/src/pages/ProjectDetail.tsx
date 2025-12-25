@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useCreateApp, useProject, useProjectApps, useProjectMembers } from "../hooks/api";
 
 export function ProjectDetailPage() {
 	const { projectId } = useParams<{ projectId: string }>();
-	const navigate = useNavigate();
 	const { data: project, isLoading: projectLoading } = useProject(projectId || "");
 	const { data: apps, isLoading: appsLoading } = useProjectApps(projectId || "");
 	const { data: members, isLoading: membersLoading } = useProjectMembers(projectId || "");
 	const createAppMutation = useCreateApp(projectId || "");
 	const [showAppForm, setShowAppForm] = useState(false);
 	const [appName, setAppName] = useState("");
+	const [copied, setCopied] = useState(false);
 
 	const handleCreateApp = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -25,112 +25,382 @@ export function ProjectDetailPage() {
 		);
 	};
 
-	if (projectLoading) return <div className="p-4">Loading project...</div>;
-	if (!project) return <div className="p-4 text-red-600">Project not found</div>;
+	const copyToClipboard = (text: string) => {
+		navigator.clipboard.writeText(text);
+		setCopied(true);
+		setTimeout(() => setCopied(false), 2000);
+	};
+
+	if (projectLoading) {
+		return (
+			<div className="loading">
+				<div className="spinner" />
+			</div>
+		);
+	}
+
+	if (!project) {
+		return (
+			<div className="alert alert-danger">
+				<svg style={{ width: "20px", height: "20px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+				</svg>
+				<span>Project not found</span>
+			</div>
+		);
+	}
 
 	return (
-		<div className="py-4 space-y-6">
-			<button type="button" onClick={() => navigate("/projects")} className="text-blue-600 hover:underline">
-				← Back to Projects
-			</button>
+		<div className="space-y-6">
+			{/* Breadcrumb */}
+			<nav style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px" }}>
+				<Link to="/projects" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>
+					Projects
+				</Link>
+				<svg style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+				</svg>
+				<span style={{ color: "var(--text-primary)", fontWeight: "500" }}>{project.name}</span>
+			</nav>
 
-			<div className="bg-white p-6 rounded-lg border">
-				<h1 className="text-3xl font-bold">{project.name}</h1>
-				<p className="text-gray-600 mt-2">{project.description}</p>
-				<p className="text-gray-500 text-sm mt-4">ID: {project.public_id}</p>
+			{/* Project Header Card */}
+			<div className="card" style={{ padding: "24px" }}>
+				<div style={{ display: "flex", alignItems: "flex-start", gap: "20px" }}>
+					<div style={{
+						width: "56px",
+						height: "56px",
+						background: "linear-gradient(135deg, var(--primary-light), #ddd6fe)",
+						borderRadius: "var(--radius-lg)",
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "center",
+						flexShrink: 0
+					}}>
+						<svg style={{ width: "28px", height: "28px", color: "var(--primary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+						</svg>
+					</div>
+					<div style={{ flex: 1 }}>
+						<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "4px" }}>
+							<h1 style={{ fontSize: "24px", fontWeight: "700", color: "var(--text-primary)" }}>{project.name}</h1>
+							<span className="badge badge-success">Active</span>
+						</div>
+						{project.slug && (
+							<p style={{ color: "var(--text-secondary)", marginBottom: "12px" }}>{project.slug}</p>
+						)}
+						<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+							<code style={{
+								padding: "6px 12px",
+								background: "var(--content-bg)",
+								borderRadius: "var(--radius)",
+								fontFamily: "'JetBrains Mono', monospace",
+								fontSize: "12px",
+								color: "var(--text-primary)"
+							}}>
+								{project.id}
+							</code>
+							<button
+								type="button"
+								onClick={() => copyToClipboard(project.id)}
+								className="btn btn-ghost btn-sm"
+							>
+								{copied ? (
+									<>
+										<svg style={{ width: "14px", height: "14px", color: "var(--success)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+										</svg>
+										Copied!
+									</>
+								) : (
+									<>
+										<svg style={{ width: "14px", height: "14px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+										</svg>
+										Copy ID
+									</>
+								)}
+							</button>
+						</div>
+					</div>
+				</div>
 			</div>
 
-			{/* Apps Section */}
-			<div className="space-y-4">
-				<div className="flex justify-between items-center">
-					<h2 className="text-2xl font-bold">Applications</h2>
+			{/* Stats Grid */}
+			<div className="stats-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
+				<div className="stat-card">
+					<div className="stat-card-header">
+						<div className="stat-icon blue">
+							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+							</svg>
+						</div>
+					</div>
+					<div className="stat-value">{apps?.length || 0}</div>
+					<div className="stat-label">Applications</div>
+				</div>
+				<div className="stat-card">
+					<div className="stat-card-header">
+						<div className="stat-icon purple">
+							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+							</svg>
+						</div>
+					</div>
+					<div className="stat-value">{members?.length || 0}</div>
+					<div className="stat-label">Team Members</div>
+				</div>
+				<div className="stat-card">
+					<div className="stat-card-header">
+						<div className="stat-icon green">
+							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+							</svg>
+						</div>
+					</div>
+					<div className="stat-value" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+						<span style={{ width: "8px", height: "8px", background: "var(--success)", borderRadius: "50%" }} />
+						Active
+					</div>
+					<div className="stat-label">Project Status</div>
+				</div>
+			</div>
+
+			{/* Quick Integration Guide */}
+			<div className="card get-started-card">
+				<div className="get-started-content">
+					<div className="get-started-text">
+						<span className="badge badge-info" style={{ marginBottom: "12px" }}>Quick Integration</span>
+						<h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px", color: "var(--text-primary)" }}>
+							Integrate authentication in minutes
+						</h2>
+						<p style={{ color: "var(--text-secondary)", marginBottom: "20px", lineHeight: "1.6", fontSize: "14px" }}>
+							Add Proofa to your app with just a few lines of code. Our SDK handles sessions, 
+							tokens, and user management automatically.
+						</p>
+						<div style={{ display: "flex", gap: "12px" }}>
+							<a href="https://docs.proofa.io" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+								<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+								</svg>
+								View Docs
+							</a>
+							<button className="btn btn-secondary" onClick={() => copyToClipboard(project.id)}>
+								<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+								</svg>
+								Copy Project ID
+							</button>
+						</div>
+					</div>
+					<div className="get-started-preview">
+						<div className="code-preview">
+							<div className="code-preview-header">
+								<span className="code-preview-dot" style={{ background: "#ff5f57" }} />
+								<span className="code-preview-dot" style={{ background: "#febc2e" }} />
+								<span className="code-preview-dot" style={{ background: "#28c840" }} />
+							</div>
+							<pre className="code-preview-content">
+{`import { ProofaAuth } from '@proofa/auth';
+
+const auth = new ProofaAuth({
+  projectId: '${project.id}',
+  redirectUrl: '/dashboard'
+});
+
+// Start OAuth flow
+await auth.signIn('google');`}
+							</pre>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{/* Applications Section */}
+			<div className="card">
+				<div className="card-header">
+					<div>
+						<h2 className="card-title">Applications</h2>
+						<p className="card-desc">Apps registered under this project</p>
+					</div>
 					<button
 						type="button"
 						onClick={() => setShowAppForm(!showAppForm)}
-						className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+						className="btn btn-primary"
 					>
-						{showAppForm ? "Cancel" : "New App"}
+						{showAppForm ? (
+							<>
+								<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+								</svg>
+								Cancel
+							</>
+						) : (
+							<>
+								<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+								</svg>
+								New App
+							</>
+						)}
 					</button>
 				</div>
 
 				{showAppForm && (
-					<form onSubmit={handleCreateApp} className="bg-white p-4 rounded-lg border space-y-4">
-						<div>
-							<label htmlFor="appName" className="block text-sm font-medium mb-1">
-								App Name
-							</label>
-							<input
-								type="text"
-								id="appName"
-								required
-								value={appName}
-								onChange={(e) => setAppName(e.target.value)}
-								className="w-full"
-							/>
-						</div>
-						<button
-							type="submit"
-							disabled={createAppMutation.isPending}
-							className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-						>
-							{createAppMutation.isPending ? "Creating..." : "Create App"}
-						</button>
-					</form>
+					<div style={{ padding: "16px 20px", background: "var(--content-bg)", borderBottom: "1px solid var(--card-border)" }}>
+						<form onSubmit={handleCreateApp} style={{ display: "flex", gap: "12px", alignItems: "flex-end" }}>
+							<div style={{ flex: 1 }}>
+								<label htmlFor="appName" className="form-label">App Name</label>
+								<input
+									type="text"
+									id="appName"
+									placeholder="e.g., Web App, Mobile App"
+									required
+									value={appName}
+									onChange={(e) => setAppName(e.target.value)}
+								/>
+							</div>
+							<button
+								type="submit"
+								disabled={createAppMutation.isPending}
+								className="btn btn-primary"
+							>
+								{createAppMutation.isPending ? "Creating..." : "Create App"}
+							</button>
+						</form>
+					</div>
 				)}
 
 				{appsLoading ? (
-					<div className="text-gray-600">Loading apps...</div>
-				) : (
-					<div className="bg-white rounded-lg overflow-hidden border">
+					<div className="loading">
+						<div className="spinner" />
+					</div>
+				) : apps && apps.length > 0 ? (
+					<div className="table-container">
 						<table>
 							<thead>
-								<tr className="bg-gray-50">
+								<tr>
 									<th>Name</th>
-									<th>ID</th>
+									<th>App ID</th>
 									<th>Session TTL</th>
+									<th>Status</th>
 								</tr>
 							</thead>
 							<tbody>
-								{apps?.map((app) => (
+								{apps.map((app) => (
 									<tr key={app.id}>
-										<td className="font-medium">{app.name}</td>
-										<td className="text-sm font-mono">{app.public_id}</td>
-										<td className="text-sm">{app.app_session_ttl_days} days</td>
+										<td>
+											<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+												<div style={{
+													width: "36px",
+													height: "36px",
+													background: "#ede9fe",
+													borderRadius: "var(--radius-md)",
+													display: "flex",
+													alignItems: "center",
+													justifyContent: "center"
+												}}>
+													<svg style={{ width: "18px", height: "18px", color: "#7c3aed" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+													</svg>
+												</div>
+												<span style={{ fontWeight: "500", color: "var(--text-primary)" }}>{app.name}</span>
+											</div>
+										</td>
+										<td>
+											<code style={{
+												padding: "4px 8px",
+												background: "var(--content-bg)",
+												borderRadius: "var(--radius-sm)",
+												fontFamily: "'JetBrains Mono', monospace",
+												fontSize: "11px"
+											}}>{app.id}</code>
+										</td>
+										<td>
+											<span style={{ color: "var(--text-secondary)" }}>{app.app_session_ttl_days || 28} days</span>
+										</td>
+										<td>
+											<span className="badge badge-success">Active</span>
+										</td>
 									</tr>
 								))}
 							</tbody>
 						</table>
 					</div>
+				) : (
+					<div className="empty-state" style={{ padding: "48px 24px" }}>
+						<div className="empty-state-icon">
+							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+							</svg>
+						</div>
+						<h3 className="empty-state-title">No applications yet</h3>
+						<p className="empty-state-desc">Create your first app to start managing authentication.</p>
+						<button type="button" onClick={() => setShowAppForm(true)} className="btn btn-primary">
+							<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+							</svg>
+							Create App
+						</button>
+					</div>
 				)}
 			</div>
 
 			{/* Members Section */}
-			<div className="space-y-4">
-				<h2 className="text-2xl font-bold">Members</h2>
+			<div className="card">
+				<div className="card-header">
+					<div>
+						<h2 className="card-title">Team Members</h2>
+						<p className="card-desc">People with access to this project</p>
+					</div>
+				</div>
+
 				{membersLoading ? (
-					<div className="text-gray-600">Loading members...</div>
-				) : (
-					<div className="bg-white rounded-lg overflow-hidden border">
+					<div className="loading">
+						<div className="spinner" />
+					</div>
+				) : members && members.length > 0 ? (
+					<div className="table-container">
 						<table>
 							<thead>
-								<tr className="bg-gray-50">
-									<th>User ID</th>
+								<tr>
+									<th>User</th>
 									<th>Role</th>
 									<th>Joined</th>
 								</tr>
 							</thead>
 							<tbody>
-								{members?.map((member) => (
+								{members.map((member) => (
 									<tr key={member.id}>
-										<td className="text-sm font-mono">{member.user_id}</td>
-										<td className="text-sm capitalize">{member.role}</td>
-										<td className="text-sm text-gray-600">
+										<td>
+											<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+												<div className="avatar avatar-sm">
+													{member.user_id.charAt(0).toUpperCase()}
+												</div>
+												<code style={{
+													padding: "4px 8px",
+													background: "var(--content-bg)",
+													borderRadius: "var(--radius-sm)",
+													fontFamily: "'JetBrains Mono', monospace",
+													fontSize: "11px"
+												}}>{member.user_id}</code>
+											</div>
+										</td>
+										<td>
+											<span className={`badge ${member.role === "owner" ? "badge-info" : "badge-success"}`}>
+												{member.role}
+											</span>
+										</td>
+										<td style={{ color: "var(--text-secondary)" }}>
 											{new Date(member.created_at).toLocaleDateString()}
 										</td>
 									</tr>
 								))}
 							</tbody>
 						</table>
+					</div>
+				) : (
+					<div className="empty-state" style={{ padding: "32px" }}>
+						<p style={{ color: "var(--text-secondary)" }}>No team members found</p>
 					</div>
 				)}
 			</div>

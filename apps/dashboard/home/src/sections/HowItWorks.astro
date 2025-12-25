@@ -1,41 +1,23 @@
 ---
----
+const steps = [
+  {
+    number: 1,
+    title: 'Create a Project',
+    description: 'Sign up and create your first project in the admin dashboard.'
+  },
+  {
+    number: 2,
+    title: 'Add Your App',
+    description: 'Configure OAuth providers, redirect URIs, and licensing options.'
+  },
+  {
+    number: 3,
+    title: 'Integrate',
+    description: 'Add authentication to your app with our simple SDK and APIs.'
+  }
+];
 
-<section id="how-it-works" class="py-20 px-4 bg-gray-50">
-  <div class="max-w-6xl mx-auto">
-    <div class="text-center mb-16">
-      <h2 class="text-4xl font-bold mb-4 text-gray-900">How It Works</h2>
-      <p class="text-xl text-gray-600">Get started in minutes</p>
-    </div>
-
-    <div class="grid md:grid-cols-3 gap-8 mb-12">
-      <div class="text-center">
-        <div class="w-16 h-16 bg-primary-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">1</div>
-        <h3 class="text-xl font-semibold mb-2 text-gray-900">Create a Project</h3>
-        <p class="text-gray-600">Sign up and create your first project in the admin dashboard.</p>
-      </div>
-      <div class="text-center">
-        <div class="w-16 h-16 bg-primary-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">2</div>
-        <h3 class="text-xl font-semibold mb-2 text-gray-900">Add Your App</h3>
-        <p class="text-gray-600">Configure OAuth providers, redirect URIs, and licensing options.</p>
-      </div>
-      <div class="text-center">
-        <div class="w-16 h-16 bg-primary-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">3</div>
-        <h3 class="text-xl font-semibold mb-2 text-gray-900">Integrate</h3>
-        <p class="text-gray-600">Add authentication to your app with our simple SDK and APIs.</p>
-      </div>
-    </div>
-
-    <div class="bg-gray-900 rounded-xl p-8 text-white">
-      <div class="mb-4">
-        <span class="text-gray-400"># Install the SDK</span>
-      </div>
-      <pre class="text-green-400 mb-6"><code>npm install @proofa/sdk</code></pre>
-      
-      <div class="mb-4">
-        <span class="text-gray-400"># Initialize in your app</span>
-      </div>
-      <pre class="text-blue-300"><code>{`import { ProofaClient } from '@proofa/sdk';
+const codeExample = `import { ProofaClient } from '@proofa/sdk';
 
 const proofa = new ProofaClient({
   appId: 'your-app-id',
@@ -46,7 +28,56 @@ const proofa = new ProofaClient({
 await proofa.login({ provider: 'google' });
 
 // Get current user
-const user = await proofa.getUser();`}</code></pre>
+const user = await proofa.getUser();`;
+---
+
+<section id="how-it-works" class="how-it-works">
+  <div class="how-it-works-container">
+    <div class="section-header">
+      <span class="section-tag">Quick Start</span>
+      <h2 class="section-title">How It Works</h2>
+      <p class="section-description">
+        Get started in minutes, not hours
+      </p>
+    </div>
+
+    <div class="steps-grid">
+      {steps.map((step) => (
+        <div class="step">
+          <div class="step-number">{step.number}</div>
+          <h3 class="step-title">{step.title}</h3>
+          <p class="step-description">{step.description}</p>
+        </div>
+      ))}
+    </div>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <div class="code-block-dots">
+          <span class="code-block-dot red"></span>
+          <span class="code-block-dot yellow"></span>
+          <span class="code-block-dot green"></span>
+        </div>
+        <span class="code-block-tab">app.ts</span>
+      </div>
+      <div class="code-block-body">
+        <pre><code><span class="code-comment"># Install the SDK</span>
+<span class="code-variable">npm install</span> <span class="code-string">@proofa/sdk</span>
+
+<span class="code-comment"># Initialize in your app</span>
+<span class="code-keyword">import</span> {'{'} <span class="code-property">ProofaClient</span> {'}'} <span class="code-keyword">from</span> <span class="code-string">'@proofa/sdk'</span>;
+
+<span class="code-keyword">const</span> <span class="code-variable">proofa</span> = <span class="code-keyword">new</span> <span class="code-function">ProofaClient</span>({'{'}
+  <span class="code-property">appId</span>: <span class="code-string">'your-app-id'</span>,
+  <span class="code-property">apiUrl</span>: <span class="code-string">'https://api.proofa.com'</span>
+{'}'});
+
+<span class="code-comment">// Redirect to login</span>
+<span class="code-keyword">await</span> <span class="code-variable">proofa</span>.<span class="code-function">login</span>({'{'} <span class="code-property">provider</span>: <span class="code-string">'google'</span> {'}'});
+
+<span class="code-comment">// Get current user</span>
+<span class="code-keyword">const</span> <span class="code-variable">user</span> = <span class="code-keyword">await</span> <span class="code-variable">proofa</span>.<span class="code-function">getUser</span>();</code></pre>
+      </div>
     </div>
   </div>
 </section>

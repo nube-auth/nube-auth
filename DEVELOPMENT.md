@@ -140,6 +140,9 @@ pnpm --filter @proofa/dashboard-admin dev
 
 # Home Page (Port 4321)
 pnpm --filter @proofa/dashboard-home dev
+
+# Documentation (Port 4322)
+pnpm --filter @proofa/docs dev
 ```
 
 ### Service URLs
@@ -151,6 +154,7 @@ pnpm --filter @proofa/dashboard-home dev
 | Core API | http://localhost:3003 | OAuth & identity |
 | Gateway API | http://localhost:3004 | BFF for dashboards |
 | Home Page | http://localhost:4321 | Landing page |
+| Documentation | http://localhost:4322 | API & SDK docs |
 
 ## Development Workflow
 
@@ -191,6 +195,7 @@ packages/
 apps/
 ├── core/       # Authentication service
 ├── gateway/    # BFF server
+├── docs/       # Documentation site (Starlight)
 └── dashboard/
     ├── user/   # User profile UI
     ├── admin/  # Admin CRUD UI
