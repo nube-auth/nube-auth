@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-quer
 import type React from "react";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { useLogout } from "./hooks/api";
 import { LicensesPage } from "./pages/Licenses";
 import { LoginPage } from "./pages/Login";
 import { ProjectDetailPage } from "./pages/ProjectDetail";
@@ -60,6 +61,7 @@ function SidebarLink({ to, children, icon }: { to: string; children: React.React
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
 	const { data, isLoading } = useMe();
 	const { theme, setTheme } = useTheme();
+	const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
 	if (isLoading) {
 		return (
@@ -242,11 +244,24 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 							<div className="sidebar-user-name">{data.name || "Admin"}</div>
 							<div className="sidebar-user-email">{data.email}</div>
 						</div>
-						<a href="/api/auth/logout" title="Logout" style={{ color: "var(--sidebar-text)", padding: "4px" }}>
+						<button 
+							type="button"
+							onClick={() => logout()} 
+							disabled={isLoggingOut}
+							title="Logout" 
+							style={{ 
+								color: "var(--sidebar-text)", 
+								padding: "4px", 
+								background: "none", 
+								border: "none", 
+								cursor: isLoggingOut ? "wait" : "pointer",
+								opacity: isLoggingOut ? 0.5 : 1
+							}}
+						>
 							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: "18px", height: "18px" }}>
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
 							</svg>
-						</a>
+						</button>
 					</div>
 				</div>
 			</aside>

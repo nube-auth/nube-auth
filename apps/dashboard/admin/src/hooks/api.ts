@@ -36,6 +36,28 @@ interface License {
 	plan?: string;
 }
 
+/**
+ * Hook to logout
+ */
+export function useLogout() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async () => {
+			const res = await fetch("/api/auth/logout", { 
+				method: "POST",
+				credentials: "include"
+			});
+			if (!res.ok) throw new Error("Failed to logout");
+			return res.json();
+		},
+		onSuccess: () => {
+			queryClient.clear();
+			window.location.href = "/login";
+		},
+	});
+}
+
 export function useProjects() {
 	return useQuery({
 		queryKey: ["projects"],
