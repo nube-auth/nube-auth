@@ -6,6 +6,10 @@
 	"outputDirectory": "dist",
 	"rewrites": [
 		{
+			"source": "/api/:path*",
+			"destination": "https://gateway.proofa.dev/v1/:path*"
+		},
+		{
 			"source": "/((?!assets/).*)",
 			"destination": "/index.html"
 		}

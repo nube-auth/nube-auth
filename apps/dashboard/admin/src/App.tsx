@@ -44,6 +44,10 @@ function useMe() {
 			if (!res.ok) throw new Error("Not authenticated");
 			return res.json();
 		},
+		retry: false,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
+		staleTime: Number.POSITIVE_INFINITY,
 	});
 }
 
