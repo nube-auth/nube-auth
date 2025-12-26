@@ -41,7 +41,7 @@ app.onError((err, c) => {
 });
 
 // Start server
-const port = Number.parseInt(process.env.GATEWAY_PORT || "3004", 10);
+const port = Number.parseInt(process.env.PORT || process.env.GATEWAY_PORT || "3004", 10);
 log.info({ port }, "Gateway server starting");
 
 serve({

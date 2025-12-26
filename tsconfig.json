@@ -18,13 +18,7 @@
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
 		"noImplicitReturns": true,
-		"noFallthroughCasesInSwitch": true,
-
-		/* Path mapping */
-		"baseUrl": ".",
-		"paths": {
-			"@proofa/*": ["packages/*/src"]
-		}
+		"noFallthroughCasesInSwitch": true
 	},
 	"include": ["apps/*/src/**/*", "packages/*/src/**/*"],
 	"exclude": ["node_modules", "**/dist", "**/build"]
