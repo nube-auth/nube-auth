@@ -2,7 +2,7 @@
 # Deploy from monorepo root: fly deploy . --dockerfile apps/core/Dockerfile --config apps/core/fly.toml
 
 app = "proofa-core"
-primary_region = "sjc"
+primary_region = "bom"
 
 [env]
   NODE_ENV = "production"
