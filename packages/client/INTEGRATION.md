@@ -18,7 +18,7 @@ npm install @proofa/client
 import { ProofaClient } from '@proofa/client';
 
 const client = new ProofaClient({
-  gatewayUrl: 'https://api.proofa.dev'
+  gatewayUrl: 'https://api.proofa.sh'
 });
 
 // Check if user is authenticated
@@ -37,7 +37,7 @@ if (status.loggedIn) {
 
 ```typescript
 const client = new ProofaClient({
-  gatewayUrl: process.env.GATEWAY_URL || 'https://api.proofa.dev'
+  gatewayUrl: process.env.GATEWAY_URL || 'https://api.proofa.sh'
 });
 ```
 
@@ -45,12 +45,12 @@ const client = new ProofaClient({
 
 For dashboards (Vite):
 ```env
-VITE_GATEWAY_URL=https://api.proofa.dev
+VITE_GATEWAY_URL=https://api.proofa.sh
 ```
 
 For backend (Node.js):
 ```env
-GATEWAY_URL=https://api.proofa.dev
+GATEWAY_URL=https://api.proofa.sh
 ```
 
 ## API Reference

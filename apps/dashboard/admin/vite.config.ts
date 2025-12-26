@@ -14,8 +14,8 @@ export default defineConfig({
 		},
 	},
 	define: {
-		"import.meta.env.VITE_CORE_URL": JSON.stringify(process.env.VITE_CORE_URL || "https://api.proofa.dev"),
-		"import.meta.env.VITE_HOME_URL": JSON.stringify(process.env.VITE_HOME_URL || "https://proofa.dev"),
+		"import.meta.env.VITE_CORE_URL": JSON.stringify(process.env.VITE_CORE_URL || "https://api.proofa.sh"),
+		"import.meta.env.VITE_HOME_URL": JSON.stringify(process.env.VITE_HOME_URL || "https://proofa.sh"),
 		"import.meta.env.VITE_DOCS_URL": JSON.stringify(process.env.VITE_DOCS_URL || "https://docs.proofa.com"),
 	},
 });

@@ -6,6 +6,7 @@
 export interface Environment {
 	NODE_ENV: "development" | "staging" | "production";
 	PORT: number;
+	CORE_PUBLIC_URL: string;
 	DATABASE_URL: string;
 	DATABASE_AUTH_TOKEN?: string;
 	GOOGLE_CLIENT_ID: string;
@@ -21,6 +22,7 @@ export interface Environment {
 
 function getEnvironment(): Environment {
 	const requiredVars = [
+		"CORE_PUBLIC_URL",
 		"DATABASE_URL",
 		"GOOGLE_CLIENT_ID",
 		"GOOGLE_CLIENT_SECRET",
@@ -38,6 +40,7 @@ function getEnvironment(): Environment {
 	return {
 		NODE_ENV: (process.env.NODE_ENV as any) || "development",
 		PORT: parseInt(process.env.PORT || "3003", 10),
+		CORE_PUBLIC_URL: process.env.CORE_PUBLIC_URL!,
 		DATABASE_URL: process.env.DATABASE_URL!,
 		DATABASE_AUTH_TOKEN: process.env.DATABASE_AUTH_TOKEN,
 		GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID!,

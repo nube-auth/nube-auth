@@ -9,7 +9,7 @@ Get started with Proofa's hosted service.
 
 ## Getting Started
 
-1. Create an account at [proofa.dev](https://proofa.dev)
+1. Create an account at [proofa.sh](https://proofa.sh)
 2. Create a new project and app
 3. Get your App ID from the dashboard
 4. Install the SDK and start building
@@ -37,7 +37,7 @@ import { ProofaClient } from '@proofa/sdk';
 
 const proofa = new ProofaClient({
   appId: 'your-app-id',
-  apiUrl: 'https://api.proofa.dev'
+  apiUrl: 'https://api.proofa.sh'
 });
 
 // Start OAuth login

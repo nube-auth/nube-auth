@@ -15,7 +15,7 @@ const proofa = new ProofaClient({
   appId: 'your-app-id',
   
   // API URL (defaults to hosted Proofa)
-  apiUrl: 'https://api.proofa.dev',
+  apiUrl: 'https://api.proofa.sh',
   
   // Optional: Custom redirect URI
   redirectUri: 'https://yourapp.com/auth/callback',

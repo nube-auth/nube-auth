@@ -22,7 +22,7 @@ import { ProofaClient } from '@proofa/sdk';
 
 const proofa = new ProofaClient({
   appId: 'your-app-id',
-  apiUrl: 'https://api.proofa.dev' // or your self-hosted URL
+  apiUrl: 'https://api.proofa.sh' // or your self-hosted URL
 });
 ```
 

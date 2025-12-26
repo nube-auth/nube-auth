@@ -96,7 +96,7 @@ Updated all field references to match the Gateway API schema:
 import { ProofaClient } from '@proofa/client';
 
 const client = new ProofaClient({
-  gatewayUrl: 'https://api.proofa.dev'
+  gatewayUrl: 'https://api.proofa.sh'
 });
 
 // Check authentication

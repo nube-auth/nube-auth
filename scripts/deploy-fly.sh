@@ -18,10 +18,10 @@ CORE_APP="proofa-core"
 GATEWAY_APP="proofa-gateway"
 
 # Production URLs
-CORE_PUBLIC_URL="https://api.proofa.dev"
-GATEWAY_PUBLIC_URL="https://gateway.proofa.dev"
-USER_DASHBOARD_URL="https://app.proofa.dev"
-COOKIE_DOMAIN=".proofa.dev"
+CORE_PUBLIC_URL="https://api.proofa.sh"
+GATEWAY_PUBLIC_URL="https://api.proofa.sh"
+USER_DASHBOARD_URL="https://app.proofa.sh"
+COOKIE_DOMAIN=".proofa.sh"
 
 # Load secrets from .env file if it exists
 load_env() {
@@ -82,7 +82,7 @@ set_core_secrets() {
         UPSTASH_REDIS_REST_URL="$UPSTASH_REDIS_REST_URL" \
         UPSTASH_REDIS_REST_TOKEN="$UPSTASH_REDIS_REST_TOKEN" \
         RESEND_API_KEY="$RESEND_API_KEY" \
-        EMAIL_FROM="${EMAIL_FROM:-noreply@proofa.dev}" \
+        EMAIL_FROM="${EMAIL_FROM:-noreply@proofa.sh}" \
         SEND_EMAILS="true" \
         GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" \
         GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" \
@@ -135,15 +135,15 @@ deploy_gateway() {
 add_domains() {
     echo -e "${BLUE}Adding custom domains...${NC}"
     
-    echo "Adding api.proofa.dev to $CORE_APP..."
-    fly certs add api.proofa.dev --app "$CORE_APP" || true
+    echo "Adding api.proofa.sh to $CORE_APP..."
+    fly certs add api.proofa.sh --app "$CORE_APP" || true
     
-    echo "Adding gateway.proofa.dev to $GATEWAY_APP..."
-    fly certs add gateway.proofa.dev --app "$GATEWAY_APP" || true
+    echo "Adding api.proofa.sh to $GATEWAY_APP..."
+    fly certs add api.proofa.sh --app "$GATEWAY_APP" || true
     
     echo -e "${GREEN}Domains added. Configure DNS:${NC}"
-    echo "  api.proofa.dev      -> CNAME to $CORE_APP.fly.dev"
-    echo "  gateway.proofa.dev  -> CNAME to $GATEWAY_APP.fly.dev"
+    echo "  api.proofa.sh      -> CNAME to $CORE_APP.fly.dev"
+    echo "  api.proofa.sh  -> CNAME to $GATEWAY_APP.fly.dev"
 }
 
 # Show status

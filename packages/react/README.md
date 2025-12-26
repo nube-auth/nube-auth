@@ -19,7 +19,7 @@ function App() {
   return (
     <ProofaProvider
       config={{
-        gatewayUrl: 'https://api.proofa.dev'
+        gatewayUrl: 'https://api.proofa.sh'
       }}
     >
       <YourApp />
@@ -133,7 +133,7 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <ProofaProvider
-      config={{ gatewayUrl: 'https://api.proofa.dev' }}
+      config={{ gatewayUrl: 'https://api.proofa.sh' }}
       queryClient={queryClient}
     >
       <YourApp />

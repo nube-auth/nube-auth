@@ -19,7 +19,7 @@ import { ProofaClient } from '@proofa/client';
 
 // Initialize without S2S token - uses cookies
 const client = new ProofaClient({
-  gatewayUrl: 'https://api.proofa.dev',
+  gatewayUrl: 'https://api.proofa.sh',
   // or for local dev:
   // gatewayUrl: 'http://localhost:3004'
 });

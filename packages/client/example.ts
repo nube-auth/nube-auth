@@ -8,14 +8,14 @@ import { ProofaClient } from "./src/index";
 
 // Frontend usage (cookie-based authentication)
 const client = new ProofaClient({
-	gatewayUrl: "https://api.proofa.dev",
+	gatewayUrl: "https://api.proofa.sh",
 	// For local development:
 	// gatewayUrl: 'http://localhost:3004'
 });
 
 // Backend usage (S2S token authentication)
 const backendClient = new ProofaClient({
-	gatewayUrl: process.env.GATEWAY_URL || "https://api.proofa.dev",
+	gatewayUrl: process.env.GATEWAY_URL || "https://api.proofa.sh",
 	s2sToken: process.env.X_PROOFA_SERVICE_TOKEN,
 });
 
@@ -229,7 +229,7 @@ import { ProofaProvider, useAuth, useMe, useSessions } from '@proofa/react';
 // 1. Wrap your app with ProofaProvider
 function App() {
   return (
-    <ProofaProvider config={{ gatewayUrl: 'https://api.proofa.dev' }}>
+    <ProofaProvider config={{ gatewayUrl: 'https://api.proofa.sh' }}>
       <YourApp />
     </ProofaProvider>
   );
@@ -302,7 +302,7 @@ function Header() {
 /*
 // Create project (admin only)
 async function createProject(data: { name: string; slug: string }) {
-  const response = await fetch('https://api.proofa.dev/v1/admin/projects', {
+  const response = await fetch('https://api.proofa.sh/v1/admin/projects', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -318,7 +318,7 @@ async function createProject(data: { name: string; slug: string }) {
 
 // List projects (admin only)
 async function listProjects() {
-  const response = await fetch('https://api.proofa.dev/v1/admin/projects', {
+  const response = await fetch('https://api.proofa.sh/v1/admin/projects', {
     credentials: 'include',
   });
   
