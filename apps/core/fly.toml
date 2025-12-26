@@ -1,13 +1,8 @@
 # Fly.io configuration for Proofa Core API
-# Deploy with: fly deploy --config apps/core/fly.toml
+# Deploy from monorepo root: fly deploy . --dockerfile apps/core/Dockerfile --config apps/core/fly.toml
 
 app = "proofa-core"
 primary_region = "sjc"
-
-[build]
-  dockerfile = "apps/core/Dockerfile"
-  [build.args]
-    # Build context is the monorepo root
 
 [env]
   NODE_ENV = "production"

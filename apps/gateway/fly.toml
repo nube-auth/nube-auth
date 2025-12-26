@@ -1,13 +1,8 @@
 # Fly.io configuration for Proofa Gateway
-# Deploy with: fly deploy --config apps/gateway/fly.toml
+# Deploy from monorepo root: fly deploy . --dockerfile apps/gateway/Dockerfile --config apps/gateway/fly.toml
 
 app = "proofa-gateway"
 primary_region = "sjc"
-
-[build]
-  dockerfile = "apps/gateway/Dockerfile"
-  [build.args]
-    # Build context is the monorepo root
 
 [env]
   NODE_ENV = "production"

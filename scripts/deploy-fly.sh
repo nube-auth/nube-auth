@@ -27,7 +27,13 @@ COOKIE_DOMAIN=".proofa.dev"
 load_env() {
     if [ -f ".env" ]; then
         echo -e "${BLUE}Loading secrets from .env file...${NC}"
-        export $(grep -v '^#' .env | xargs)
+        # Read .env file line by line, skipping comments and empty lines
+        while IFS= read -r line || [ -n "$line" ]; do
+            # Skip empty lines and comments
+            [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+            # Export the variable (handles values with special characters)
+            export "$line"
+        done < .env
     else
         echo -e "${RED}Error: .env file not found${NC}"
         echo "Please create a .env file with your secrets"
@@ -114,14 +120,14 @@ set_gateway_secrets() {
 # Deploy Core
 deploy_core() {
     echo -e "${BLUE}Deploying $CORE_APP...${NC}"
-    fly deploy --config apps/core/fly.toml --app "$CORE_APP"
+    fly deploy . --dockerfile apps/core/Dockerfile --config apps/core/fly.toml --app "$CORE_APP" --no-cache
     echo -e "${GREEN}Core deployed successfully${NC}"
 }
 
 # Deploy Gateway
 deploy_gateway() {
     echo -e "${BLUE}Deploying $GATEWAY_APP...${NC}"
-    fly deploy --config apps/gateway/fly.toml --app "$GATEWAY_APP"
+    fly deploy . --dockerfile apps/gateway/Dockerfile --config apps/gateway/fly.toml --app "$GATEWAY_APP" --no-cache
     echo -e "${GREEN}Gateway deployed successfully${NC}"
 }
 
