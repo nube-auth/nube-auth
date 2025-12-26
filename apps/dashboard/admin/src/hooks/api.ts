@@ -1,40 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ProofaClient } from "@proofa/client";
 
-interface Project {
-	id: string;
-	name: string;
-	description: string;
-	public_id: string;
-	slug?: string;
-}
-
-interface App {
-	id: string;
-	name: string;
-	public_id: string;
-	app_session_ttl_days: number;
-}
-
-interface ProjectMember {
-	id: string;
-	user_id: string;
-	project_id: string;
-	role: "owner" | "member";
-	created_at: string;
-}
-
-interface License {
-	id: string;
-	public_id: string;
-	app_id: string;
-	max_requests_per_day: number;
-	active: boolean;
-	expires_at: string;
-	status?: string;
-	validUntil?: string;
-	appId?: string;
-	plan?: string;
-}
+const client = new ProofaClient({
+	gatewayUrl: import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004",
+});
 
 /**
  * Hook to logout
@@ -44,12 +13,7 @@ export function useLogout() {
 
 	return useMutation({
 		mutationFn: async () => {
-			const res = await fetch("/api/auth/logout", { 
-				method: "POST",
-				credentials: "include"
-			});
-			if (!res.ok) throw new Error("Failed to logout");
-			return res.json();
+			return client.auth.logout();
 		},
 		onSuccess: () => {
 			queryClient.clear();
@@ -62,10 +26,8 @@ export function useProjects() {
 	return useQuery({
 		queryKey: ["projects"],
 		queryFn: async () => {
-			const res = await fetch("/api/admin/projects", { credentials: "include" });
-			if (!res.ok) throw new Error("Failed to fetch projects");
-			const data = await res.json();
-			return (data.projects || []) as Project[];
+			const data = await client.admin.projects.list();
+			return data.projects;
 		},
 	});
 }
@@ -73,15 +35,8 @@ export function useProjects() {
 export function useCreateProject() {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: async (data: { name: string; description?: string }) => {
-			const res = await fetch("/api/admin/projects", {
-				method: "POST",
-				credentials: "include",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(data),
-			});
-			if (!res.ok) throw new Error("Failed to create project");
-			return res.json();
+		mutationFn: async (data: { name: string; slug: string; description?: string }) => {
+			return client.admin.projects.create(data);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["projects"] });
@@ -93,9 +48,7 @@ export function useProject(projectId: string) {
 	return useQuery({
 		queryKey: ["project", projectId],
 		queryFn: async () => {
-			const res = await fetch(`/api/admin/projects/${projectId}`, { credentials: "include" });
-			if (!res.ok) throw new Error("Failed to fetch project");
-			return res.json() as Promise<Project>;
+			return client.admin.projects.get(projectId);
 		},
 		enabled: !!projectId,
 	});
@@ -105,10 +58,8 @@ export function useProjectApps(projectId: string) {
 	return useQuery({
 		queryKey: ["project-apps", projectId],
 		queryFn: async () => {
-			const res = await fetch(`/api/admin/projects/${projectId}/apps`, { credentials: "include" });
-			if (!res.ok) throw new Error("Failed to fetch apps");
-			const data = await res.json();
-			return (data.apps || []) as App[];
+			const data = await client.admin.projects.apps(projectId);
+			return data.apps;
 		},
 		enabled: !!projectId,
 	});
@@ -117,15 +68,8 @@ export function useProjectApps(projectId: string) {
 export function useCreateApp(projectId: string) {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: async (data: { name: string }) => {
-			const res = await fetch(`/api/admin/projects/${projectId}/apps`, {
-				method: "POST",
-				credentials: "include",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(data),
-			});
-			if (!res.ok) throw new Error("Failed to create app");
-			return res.json();
+		mutationFn: async (data: { name: string; slug?: string }) => {
+			return client.admin.projects.createApp(projectId, data);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["project-apps", projectId] });
@@ -137,10 +81,8 @@ export function useLicenses() {
 	return useQuery({
 		queryKey: ["licenses"],
 		queryFn: async () => {
-			const res = await fetch("/api/admin/licenses", { credentials: "include" });
-			if (!res.ok) throw new Error("Failed to fetch licenses");
-			const data = await res.json();
-			return (data.licenses || []) as License[];
+			const data = await client.admin.licenses.list();
+			return data.licenses;
 		},
 	});
 }
@@ -149,9 +91,8 @@ export function useProjectMembers(projectId: string) {
 	return useQuery({
 		queryKey: ["project-members", projectId],
 		queryFn: async () => {
-			const res = await fetch(`/api/admin/projects/${projectId}/members`, { credentials: "include" });
-			if (!res.ok) throw new Error("Failed to fetch members");
-			return res.json() as Promise<ProjectMember[]>;
+			const data = await client.admin.projects.members(projectId);
+			return data.members;
 		},
 		enabled: !!projectId,
 	});

@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-quer
 import type React from "react";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { ProofaClient } from "@proofa/client";
 import config from "./config";
 import { useLogout } from "./hooks/api";
 import { LicensesPage } from "./pages/Licenses";
@@ -10,6 +11,11 @@ import { ProjectDetailPage } from "./pages/ProjectDetail";
 import { ProjectsPage } from "./pages/Projects";
 
 const queryClient = new QueryClient();
+
+// Shared Proofa client instance
+const proofaClient = new ProofaClient({
+	gatewayUrl: import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004",
+});
 
 // Theme hook
 function useTheme() {
@@ -35,14 +41,12 @@ function useTheme() {
 	return { theme, setTheme };
 }
 
-// Simple user API hook for auth check
+// User auth hook using Proofa client
 function useMe() {
 	return useQuery({
 		queryKey: ["me"],
 		queryFn: async () => {
-			const res = await fetch("/api/me", { credentials: "include" });
-			if (!res.ok) throw new Error("Not authenticated");
-			return res.json();
+			return proofaClient.me.get();
 		},
 		retry: false,
 		refetchOnWindowFocus: false,
@@ -90,7 +94,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 				.join("")
 				.toUpperCase()
 				.slice(0, 2)
-		: data.email?.charAt(0).toUpperCase() || "U";
+		: data.primary_email?.charAt(0).toUpperCase() || "U";
 
 	const cycleTheme = () => {
 		if (theme === "system") setTheme("light");
@@ -247,7 +251,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 						<div className="sidebar-avatar">{initials}</div>
 						<div className="sidebar-user-info">
 							<div className="sidebar-user-name">{data.name || "Admin"}</div>
-							<div className="sidebar-user-email">{data.email}</div>
+							<div className="sidebar-user-email">{data.primary_email}</div>
 						</div>
 						<button 
 							type="button"

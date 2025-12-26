@@ -1,11 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { useLogout, useMe, useSessions } from "../hooks/api";
+import { useAuth, useMe, useSessions } from "../hooks/api";
 
 export function SessionsPage() {
 	const location = useLocation();
-	const { data: user } = useMe();
-	const { data: sessions, isLoading } = useSessions();
-	const { mutate: logout, isPending } = useLogout();
+	const { user } = useMe();
+	const { sessions, isLoading } = useSessions();
+	const { logout, isLoggingOut } = useAuth();
 
 	if (isLoading) {
 		return (
@@ -16,8 +16,8 @@ export function SessionsPage() {
 		);
 	}
 
-	const activeSessions = sessions?.filter((s) => new Date(s.expiresAt) > new Date()) || [];
-	const currentSession = sessions?.find((s) => s.isCurrent);
+	const activeSessions = sessions?.filter((s) => new Date(s.expires_at * 1000) > new Date()) || [];
+	const currentSession = sessions?.[0];
 
 	const initials = user?.name
 		? user.name
@@ -26,15 +26,16 @@ export function SessionsPage() {
 				.join("")
 				.toUpperCase()
 				.slice(0, 2)
-		: user?.email?.charAt(0).toUpperCase() || "U";
+		: user?.primary_email?.charAt(0).toUpperCase() || "U";
 
-	const formatDate = (date: string) => {
-		return new Date(date).toLocaleDateString("en-US", {
-			month: "short",
-			day: "numeric",
-			year: "numeric"
-		});
-	};
+const formatDate = (date: string | number) => {
+const timestamp = typeof date === 'number' ? date * 1000 : new Date(date).getTime();
+return new Date(timestamp).toLocaleDateString("en-US", {
+month: "short",
+day: "numeric",
+year: "numeric"
+});
+};
 
 	return (
 		<div>
@@ -70,7 +71,7 @@ export function SessionsPage() {
 				<div className="info-item">
 					<div className="info-label">Current Expires</div>
 					<div className="info-value">
-						{currentSession ? formatDate(currentSession.expiresAt) : "N/A"}
+						{currentSession ? formatDate(currentSession.expires_at) : "N/A"}
 					</div>
 				</div>
 				<div className="info-item">
@@ -131,11 +132,11 @@ export function SessionsPage() {
 					<div className="current-session-meta">
 						<div className="current-session-meta-item">
 							<label>Started</label>
-							<span>{new Date(currentSession.createdAt).toLocaleString()}</span>
+							<span>{new Date(currentSession.created_at).toLocaleString()}</span>
 						</div>
 						<div className="current-session-meta-item">
 							<label>Expires</label>
-							<span>{new Date(currentSession.expiresAt).toLocaleString()}</span>
+							<span>{new Date(currentSession.expires_at).toLocaleString()}</span>
 						</div>
 					</div>
 				</div>
@@ -148,10 +149,10 @@ export function SessionsPage() {
 					<button 
 						type="button" 
 						onClick={() => logout()} 
-						disabled={isPending} 
+						disabled={isLoggingOut} 
 						className="btn btn-danger btn-sm"
 					>
-						{isPending ? (
+						{isLoggingOut ? (
 							<>
 								<div className="spinner" style={{ width: "14px", height: "14px", borderWidth: "2px" }} />
 								Logging out...
@@ -180,9 +181,9 @@ export function SessionsPage() {
 							</thead>
 							<tbody>
 								{sessions.map((session) => {
-									const isExpired = new Date(session.expiresAt) < new Date();
+									const isExpired = new Date(session.expires_at) < new Date();
 									return (
-										<tr key={session.id}>
+										<tr key={session.public_id}>
 											<td>
 												<div className="table-account">
 													<div className="table-account-icon">
@@ -192,22 +193,22 @@ export function SessionsPage() {
 													</div>
 													<div className="table-account-info">
 														<span className="table-account-name">
-															{session.isCurrent ? "This Device" : "Other Device"}
+															{false ? "This Device" : "Other Device"}
 														</span>
 														<span className="table-account-email">
-															ID: {session.id.slice(0, 12)}...
+															ID: {session.public_id.slice(0, 12)}...
 														</span>
 													</div>
 												</div>
 											</td>
 											<td className="table-date">
-												{formatDate(session.createdAt)}
+												{formatDate(session.created_at)}
 											</td>
 											<td className="table-date">
-												{formatDate(session.expiresAt)}
+												{formatDate(session.expires_at)}
 											</td>
 											<td>
-												{session.isCurrent ? (
+												{false ? (
 													<span className="badge badge-success">
 														<span style={{ 
 															width: "6px", 

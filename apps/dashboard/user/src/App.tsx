@@ -1,13 +1,10 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { useAuthStatus } from "./hooks/api";
+import { useAuth } from "./hooks/api";
 import { LoginPage } from "./pages/Login";
 import { ProfilePage } from "./pages/Profile";
 import { SessionsPage } from "./pages/Sessions";
-
-const queryClient = new QueryClient();
 
 // Theme hook
 function useTheme() {
@@ -45,7 +42,7 @@ function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
 }
 
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
-	const { data: authStatus, isLoading } = useAuthStatus();
+	const { isAuthenticated, user, isLoading } = useAuth();
 	const { theme, setTheme } = useTheme();
 
 	if (isLoading) {
@@ -59,11 +56,10 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 		);
 	}
 
-	if (!authStatus?.loggedIn) {
+	if (!isAuthenticated) {
 		return <Navigate to="/login" replace />;
 	}
 
-	const user = authStatus.user;
 	const initials = user?.name
 		? user.name
 				.split(" ")
@@ -71,7 +67,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 				.join("")
 				.toUpperCase()
 				.slice(0, 2)
-		: user?.email?.charAt(0).toUpperCase() || "U";
+		: user?.primary_email?.charAt(0).toUpperCase() || "U";
 
 	const cycleTheme = () => {
 		if (theme === "system") setTheme("light");
@@ -141,7 +137,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
 					<div className="header-user">
 						<div className="header-avatar">{initials}</div>
-						<span className="header-user-name">{user?.name || user?.email?.split("@")[0]}</span>
+						<span className="header-user-name">{user?.name || user?.primary_email?.split("@")[0]}</span>
 					</div>
 				</div>
 			</header>
@@ -154,9 +150,8 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
 function App() {
 	return (
-		<QueryClientProvider client={queryClient}>
-			<BrowserRouter>
-				<Routes>
+		<BrowserRouter>
+			<Routes>
 					<Route path="/login" element={<LoginPage />} />
 					<Route
 						path="/profile"
@@ -177,7 +172,6 @@ function App() {
 					<Route path="/" element={<Navigate to="/profile" replace />} />
 				</Routes>
 			</BrowserRouter>
-		</QueryClientProvider>
 	);
 }
 

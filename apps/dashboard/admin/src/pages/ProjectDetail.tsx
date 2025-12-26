@@ -98,11 +98,11 @@ export function ProjectDetailPage() {
 								fontSize: "12px",
 								color: "var(--text-primary)"
 							}}>
-								{project.id}
+								{project.public_id}
 							</code>
 							<button
 								type="button"
-								onClick={() => copyToClipboard(project.id)}
+								onClick={() => copyToClipboard(project.public_id)}
 								className="btn btn-ghost btn-sm"
 							>
 								{copied ? (
@@ -185,7 +185,7 @@ export function ProjectDetailPage() {
 								</svg>
 								View Docs
 							</a>
-							<button className="btn btn-secondary" onClick={() => copyToClipboard(project.id)}>
+							<button className="btn btn-secondary" onClick={() => copyToClipboard(project.public_id)}>
 								<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
 								</svg>
@@ -204,7 +204,7 @@ export function ProjectDetailPage() {
 {`import { ProofaAuth } from '@proofa/auth';
 
 const auth = new ProofaAuth({
-  projectId: '${project.id}',
+  projectId: '${project.public_id}',
   redirectUrl: '/dashboard'
 });
 
@@ -288,7 +288,7 @@ await auth.signIn('google');`}
 							</thead>
 							<tbody>
 								{apps.map((app) => (
-									<tr key={app.id}>
+									<tr key={app.public_id}>
 										<td>
 											<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
 												<div style={{
@@ -314,7 +314,7 @@ await auth.signIn('google');`}
 												borderRadius: "var(--radius-sm)",
 												fontFamily: "'JetBrains Mono', monospace",
 												fontSize: "11px"
-											}}>{app.id}</code>
+											}}>{app.public_id}</code>
 										</td>
 										<td>
 											<span style={{ color: "var(--text-secondary)" }}>{app.app_session_ttl_days || 28} days</span>
@@ -371,7 +371,7 @@ await auth.signIn('google');`}
 							</thead>
 							<tbody>
 								{members.map((member) => (
-									<tr key={member.id}>
+									<tr key={member.public_id}>
 										<td>
 											<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
 												<div className="avatar avatar-sm">

@@ -6,13 +6,13 @@ export function ProjectsPage() {
 	const { data: projects, isLoading, error } = useProjects();
 	const createProjectMutation = useCreateProject();
 	const [showForm, setShowForm] = useState(false);
-	const [formData, setFormData] = useState({ name: "", description: "" });
+	const [formData, setFormData] = useState({ name: "", slug: "", description: "" });
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		createProjectMutation.mutate(formData, {
 			onSuccess: () => {
-				setFormData({ name: "", description: "" });
+				setFormData({ name: "", slug: "", description: "" });
 				setShowForm(false);
 			},
 		});
@@ -355,7 +355,7 @@ const user = await auth.getUser();`}
 			{/* Projects Grid */}
 			<div className="projects-grid">
 				{projects.map((project) => (
-					<Link key={project.id} to={`/projects/${project.id}`} className="project-card">
+					<Link key={project.public_id} to={`/projects/${project.public_id}`} className="project-card">
 						<div className="project-card-header">
 							<div className="project-icon">
 								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -372,7 +372,7 @@ const user = await auth.getUser();`}
 							{project.slug && <p className="project-slug">{project.slug}</p>}
 						</div>
 						<div className="project-card-footer">
-							<span className="project-id">{project.id}</span>
+							<span className="project-id">{project.public_id}</span>
 							<svg style={{ width: "16px", height: "16px", color: "var(--text-tertiary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
 							</svg>

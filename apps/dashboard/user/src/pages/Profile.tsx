@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useMe, useUpdateProfile } from "../hooks/api";
+import { useMe } from "../hooks/api";
 
 export function ProfilePage() {
 	const location = useLocation();
-	const { data: user, isLoading } = useMe();
-	const { mutate: updateProfile, isPending, isSuccess } = useUpdateProfile();
+	const { user, isLoading, update, isUpdating } = useMe();
 	const [name, setName] = useState("");
+	const [showSuccess, setShowSuccess] = useState(false);
 
 	React.useEffect(() => {
 		if (user) {
@@ -41,7 +41,12 @@ export function ProfilePage() {
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		updateProfile({ name });
+		update({ name }, {
+			onSuccess: () => {
+				setShowSuccess(true);
+				setTimeout(() => setShowSuccess(false), 3000);
+			},
+		});
 	};
 
 	const initials = user.name
@@ -51,16 +56,8 @@ export function ProfilePage() {
 				.join("")
 				.toUpperCase()
 				.slice(0, 2)
-		: user.email?.charAt(0).toUpperCase() || "U";
+		: user.primary_email?.charAt(0).toUpperCase() || "U";
 
-	const formatDate = (date: string | undefined) => {
-		if (!date) return "Unknown";
-		return new Date(date).toLocaleDateString("en-US", {
-			month: "short",
-			day: "numeric",
-			year: "numeric"
-		});
-	};
 
 	return (
 		<div>
@@ -84,7 +81,7 @@ export function ProfilePage() {
 			<div className="info-grid">
 				<div className="info-item">
 					<div className="info-label">Email</div>
-					<div className="info-value">{user.email}</div>
+						<div className="info-value">{user.primary_email}</div>
 				</div>
 				<div className="info-item">
 					<div className="info-label">Status</div>
@@ -104,7 +101,7 @@ export function ProfilePage() {
 				</div>
 				<div className="info-item">
 					<div className="info-label">Joined</div>
-					<div className="info-value">{formatDate(user.createdAt)}</div>
+					<div className="info-value">{"N/A"}</div>
 				</div>
 			</div>
 
@@ -131,7 +128,7 @@ export function ProfilePage() {
 			</div>
 
 			{/* Success Alert */}
-			{isSuccess && (
+			{showSuccess && (
 				<div className="alert alert-success">
 					<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -150,7 +147,7 @@ export function ProfilePage() {
 						<div className="form-group">
 							<label className="form-label">Email Address</label>
 							<div className="input-group">
-								<input type="email" value={user.email} disabled />
+								<input type="email" value={user.primary_email} disabled />
 								<span className="badge badge-success">Verified</span>
 							</div>
 							<p className="form-hint">Email cannot be changed</p>
@@ -169,8 +166,8 @@ export function ProfilePage() {
 						</div>
 
 						<div className="flex justify-between items-center mt-6">
-							<button type="submit" disabled={isPending} className="btn btn-primary">
-								{isPending ? (
+							<button type="submit" disabled={isUpdating} className="btn btn-primary">
+								{isUpdating ? (
 									<>
 										<div className="spinner" style={{ width: "16px", height: "16px", borderWidth: "2px" }} />
 										Saving...
@@ -202,7 +199,7 @@ export function ProfilePage() {
 								<span>Your unique identifier</span>
 							</div>
 							<div className="info-list-value">
-								<code>{user.id}</code>
+								<code>{user.public_id}</code>
 							</div>
 						</div>
 						<div className="info-list-item">
@@ -211,7 +208,7 @@ export function ProfilePage() {
 								<span>When you first signed up</span>
 							</div>
 							<div className="info-list-value">
-								{formatDate(user.createdAt)}
+								{"N/A"}
 							</div>
 						</div>
 						<div className="info-list-item">

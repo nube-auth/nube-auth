@@ -85,6 +85,9 @@ importers:
 
   apps/dashboard/admin:
     dependencies:
+      '@proofa/client':
+        specifier: workspace:*
+        version: link:../../../packages/client
       '@tanstack/react-query':
         specifier: ^5.90.12
         version: 5.90.12(react@18.3.1)
@@ -157,12 +160,12 @@ importers:
 
   apps/dashboard/user:
     dependencies:
+      '@proofa/react':
+        specifier: workspace:*
+        version: link:../../../packages/react
       '@proofa/shared':
         specifier: workspace:*
         version: link:../../../packages/shared
-      '@tanstack/react-query':
-        specifier: ^5.90.12
-        version: 5.90.12(react@18.3.1)
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -249,6 +252,16 @@ importers:
         specifier: ^5.3.3
         version: 5.9.3
 
+  packages/client:
+    dependencies:
+      pingpong-fetch:
+        specifier: '*'
+        version: 1.2.0
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
   packages/db:
     dependencies:
       '@libsql/client':
@@ -266,6 +279,25 @@ importers:
         version: 0.20.18
       typescript:
         specifier: ^5.3.3
+        version: 5.9.3
+
+  packages/react:
+    dependencies:
+      '@proofa/client':
+        specifier: workspace:*
+        version: link:../client
+      '@tanstack/react-query':
+        specifier: ^5.62.11
+        version: 5.90.12(react@18.3.1)
+    devDependencies:
+      '@types/react':
+        specifier: ^18.3.18
+        version: 18.3.27
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      typescript:
+        specifier: ^5.7.2
         version: 5.9.3
 
   packages/redis:
@@ -3993,6 +4025,14 @@ packages:
     resolution: {integrity: sha512-uB80kBFb/tfd68bVleG9T5GGsGPjJrLAUpR5PZIrhBnIaRTQRjqdJSsIKkOP6OAIFbj7GOrcudc5pNjZ+geV2g==}
     engines: {node: '>=6'}
 
+  pingpong-core@1.1.0:
+    resolution: {integrity: sha512-M+0jlCeF47LsbX/1atckon+Hy4/pIXGuLtiU+KAfJ9+tg7DiiyJv/2SUFuvHh9vNqO2kDmbZryOpfvbfSOOD+w==}
+    engines: {node: '>=18.0.0'}
+
+  pingpong-fetch@1.2.0:
+    resolution: {integrity: sha512-PYwPLLgDx0WaE/lpCQTe1zYxHUMukfvhpcb/2f6LUERpWpndxscCL0q/hRd5iA9SHD9SlKfJwLTbFlqapXuxeA==}
+    engines: {node: '>=18.0.0'}
+
   pino-abstract-transport@2.0.0:
     resolution: {integrity: sha512-F63x5tizV6WCh4R6RHyi2Ml+M70DNRXt/+HANowMflpgGFMAym/VKm6G7ZOQRjqN7XbGxK1Lg9t6ZrtzOaivMw==}
 
@@ -4649,6 +4689,10 @@ packages:
 
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
+
+  undici@7.16.0:
+    resolution: {integrity: sha512-QEg3HPMll0o3t2ourKwOeUAZ159Kn9mx5pnzHRQO8+Wixmh88YdZRiIwat0iNzNNXn0yoEtXJqFpyW7eM8BV7g==}
+    engines: {node: '>=20.18.1'}
 
   unicode-properties@1.4.1:
     resolution: {integrity: sha512-CLjCCLQ6UuMxWnbIylkisbRj31qxHPAurvena/0iwSVbQ2G1VY5/HjV0IRabOEbDHlzZlRdCrD4NhB0JtU40Pg==}
@@ -9216,6 +9260,13 @@ snapshots:
 
   pify@4.0.1: {}
 
+  pingpong-core@1.1.0: {}
+
+  pingpong-fetch@1.2.0:
+    dependencies:
+      pingpong-core: 1.1.0
+      undici: 7.16.0
+
   pino-abstract-transport@2.0.0:
     dependencies:
       split2: 4.2.0
@@ -10040,6 +10091,8 @@ snapshots:
   undici-types@6.21.0: {}
 
   undici-types@7.16.0: {}
+
+  undici@7.16.0: {}
 
   unicode-properties@1.4.1:
     dependencies:
