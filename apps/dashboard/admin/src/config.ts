@@ -5,3 +5,5 @@ export const config = {
 	docsUrl: import.meta.env.VITE_DOCS_URL || "https://docs.proofa.com",
 	coreUrl: import.meta.env.VITE_CORE_URL || "https://api.proofa.dev",
 };
+
+export default config;
