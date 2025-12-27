@@ -67,7 +67,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 				.join("")
 				.toUpperCase()
 				.slice(0, 2)
-		: user?.primary_email?.charAt(0).toUpperCase() || "U";
+		: user?.email?.charAt(0).toUpperCase() || "U";
 
 	const cycleTheme = () => {
 		if (theme === "system") setTheme("light");
@@ -137,7 +137,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
 					<div className="header-user">
 						<div className="header-avatar">{initials}</div>
-						<span className="header-user-name">{user?.name || user?.primary_email?.split("@")[0]}</span>
+						<span className="header-user-name">{user?.name || user?.email?.split("@")[0]}</span>
 					</div>
 				</div>
 			</header>
