@@ -11,4 +11,4 @@ export type {
 	CreateProjectRequest,
 	CreateAppRequest,
 	UpdateAppRequest,
-} from "@proofa/shared/types/schemas";
+} from "@proofa/shared";

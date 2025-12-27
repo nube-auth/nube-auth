@@ -311,7 +311,7 @@ export function AppDetailPage() {
 						<div style={{ gridColumn: "1 / -1" }}>
 							<label className="form-label">Required OAuth Providers *</label>
 							<div style={{ display: "flex", gap: "12px" }}>
-								{["google", "github"].map((provider) => (
+								{["google", "github"].map((provider: string) => (
 									<label key={provider} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
 										<input
 											type="checkbox"
@@ -342,7 +342,7 @@ export function AppDetailPage() {
 								Redirect URIs *
 							</label>
 							<div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
-								{(formData.redirectUris || []).map((uri, index) => (
+								{(formData.redirectUris || []).map((uri: string, index: number) => (
 									<div key={index} style={{ display: "flex", gap: "8px" }}>
 										<input
 											type="url"
@@ -381,7 +381,7 @@ export function AppDetailPage() {
 						<div style={{ gridColumn: "1 / -1" }}>
 							<label className="form-label">Allowed Hosts</label>
 							<div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
-								{(formData.allowedHosts || []).map((host, index) => (
+								{(formData.allowedHosts || []).map((host: string, index: number) => (
 									<div key={index} style={{ display: "flex", gap: "8px" }}>
 										<input
 											type="text"
@@ -531,7 +531,7 @@ export function AppDetailPage() {
 							<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px" }}>OAuth Providers</p>
 							<div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
 								{app.requiredProviders?.length ? (
-									app.requiredProviders.map((provider) => (
+									app.requiredProviders.map((provider: string) => (
 										<span
 											key={provider}
 											style={{
@@ -565,7 +565,7 @@ export function AppDetailPage() {
 							<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px" }}>Redirect URIs</p>
 							<div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
 								{app.redirectUris?.length ? (
-									app.redirectUris.map((uri, index) => (
+									app.redirectUris.map((uri: string, index: number) => (
 										<code
 											key={index}
 											style={{
@@ -590,7 +590,7 @@ export function AppDetailPage() {
 							<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px" }}>Allowed Hosts</p>
 							<div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
 								{app.allowedHosts?.length ? (
-									app.allowedHosts.map((host, index) => (
+									app.allowedHosts.map((host: string, index: number) => (
 										<code
 											key={index}
 											style={{
