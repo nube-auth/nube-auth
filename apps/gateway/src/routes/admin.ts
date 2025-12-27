@@ -339,27 +339,30 @@ adminRoutes.get("/projects/:projectId/apps/:appId", async (c: Context) => {
 			return c.json({ error: "App not found" }, 404);
 		}
 
-		return c.json({
+		// Validate and return response with camelCase
+		const appDTO = AppDTOSchema.parse({
 			id: app.public_id,
-			project_id: project.public_id,
+			projectId: project.public_id,
 			name: app.name,
 			slug: app.slug,
 			description: app.description,
-			allowed_hosts: app.allowed_hosts ? JSON.parse(app.allowed_hosts) : [],
-			redirect_uris: app.redirect_uris ? JSON.parse(app.redirect_uris) : [],
-			required_providers: app.required_providers ? JSON.parse(app.required_providers) : [],
-			is_active: app.is_active,
-			licensing_required: app.licensing_required,
-			default_license_plan: app.default_license_plan,
-			trial_days: app.trial_days,
-			app_session_ttl_days: app.app_session_ttl_days,
-			account_lockout_minutes: app.account_lockout_minutes,
-			cache_ttl_minutes: app.cache_ttl_minutes,
-			cors_allowed_origins: app.cors_allowed_origins ? JSON.parse(app.cors_allowed_origins) : [],
-			rate_limit_requests_per_minute: app.rate_limit_requests_per_minute,
-			created_at: app.created_at,
-			updated_at: app.updated_at,
+			redirectUris: app.redirect_uris ? JSON.parse(app.redirect_uris) : [],
+			allowedHosts: app.allowed_hosts ? JSON.parse(app.allowed_hosts) : [],
+			requiredProviders: app.required_providers ? JSON.parse(app.required_providers) : [],
+			isActive: Boolean(app.is_active),
+			licensingRequired: Boolean(app.licensing_required),
+			defaultLicensePlan: app.default_license_plan,
+			trialDays: app.trial_days,
+			appSessionTtlDays: app.app_session_ttl_days,
+			accountLockoutMinutes: app.account_lockout_minutes,
+			cacheTtlMinutes: app.cache_ttl_minutes,
+			corsAllowedOrigins: app.cors_allowed_origins ? JSON.parse(app.cors_allowed_origins) : [],
+			rateLimitRequestsPerMinute: app.rate_limit_requests_per_minute,
+			createdAt: app.created_at,
+			updatedAt: app.updated_at,
 		});
+
+		return c.json(appDTO);
 	} catch (error) {
 		console.error("Get app error:", error);
 		return c.json({ error: "Failed to get app" }, 500);

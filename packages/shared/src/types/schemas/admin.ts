@@ -31,8 +31,8 @@ export const ProjectDTOSchema = z.object({
 	id: PublicIdSchema,
 	name: NameSchema,
 	slug: SlugSchema,
-	createdAt: z.number(),
-	updatedAt: z.number(),
+	createdAt: z.number().optional(),
+	updatedAt: z.number().optional(),
 });
 
 export const ProjectsListResponseSchema = z.object({
@@ -82,11 +82,12 @@ export const AppDTOSchema = z.object({
 
 export const AppsListResponseSchema = z.object({
 	apps: z.array(
-		AppDTOSchema.omit({
-			redirectUris: true,
-			allowedHosts: true,
-			requiredProviders: true,
-			corsAllowedOrigins: true,
+		z.object({
+			id: PublicIdSchema,
+			name: NameSchema,
+			slug: SlugSchema,
+			description: DescriptionSchema,
+			createdAt: z.number().optional(),
 		}),
 	),
 });
@@ -96,7 +97,7 @@ export const AppsListResponseSchema = z.object({
  */
 
 export const ProjectMemberDTOSchema = z.object({
-	id: z.string(),
+	id: z.union([z.string(), z.number()]),
 	userId: PublicIdSchema,
 	email: EmailSchema.optional(),
 	name: z.string().optional(),

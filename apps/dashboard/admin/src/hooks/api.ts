@@ -36,7 +36,12 @@ async function fetchAPI<T>(path: string, options?: RequestInit, schema?: any): P
 
 	// Validate response with schema if provided
 	if (schema) {
-		return schema.parse(json);
+		try {
+			return schema.parse(json);
+		} catch (error) {
+			console.error("Schema validation error:", error, "Response data:", json);
+			throw new Error(`Validation failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+		}
 	}
 
 	return json as T;

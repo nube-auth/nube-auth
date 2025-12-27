@@ -21,7 +21,7 @@ export const TimestampSchema = z.object({
 /**
  * Common field validators
  */
-export const PublicIdSchema = z.string().regex(/^[A-Z0-9]+$/, "Invalid public ID format");
+export const PublicIdSchema = z.string().regex(/^[A-Za-z0-9]+$/, "Invalid public ID format");
 export const NameSchema = z.string().min(1, "Name is required").max(255);
 export const SlugSchema = z.string().min(1).max(255).regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens");
 export const DescriptionSchema = z.string().max(500).optional();
