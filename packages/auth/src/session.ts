@@ -16,12 +16,16 @@ export function createSessionCookie(
 ): { name: string; value: string; attributes: Record<string, unknown> } {
 	const signed = signSessionId(sessionId);
 
+	// In development (localhost), don't use secure flag
+	const isProduction = process.env.NODE_ENV === "production";
+	const defaultSecure = isProduction;
+
 	return {
 		name: "proofa_session",
 		value: signed,
 		attributes: {
 			httpOnly: true,
-			secure: options?.secure ?? true,
+			secure: options?.secure ?? defaultSecure,
 			sameSite: options?.sameSite ?? "Lax",
 			domain: options?.domain,
 			path: options?.path ?? "/",

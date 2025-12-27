@@ -165,10 +165,12 @@ authRoutes.post("/login", async (c: Context) => {
  */
 authRoutes.post("/logout", async (c: Context) => {
 	try {
+		const isProduction = process.env.NODE_ENV === "production";
+		
 		// Clear session cookie
 		setCookie(c, "proofa_session", "", {
 			httpOnly: true,
-			secure: true,
+			secure: isProduction,
 			sameSite: "Lax",
 			path: "/",
 			maxAge: 0, // Clear cookie

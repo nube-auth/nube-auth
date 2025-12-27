@@ -12,8 +12,22 @@ import { licenseRoutes } from "./routes/v1/license";
 const log = createLogger("core");
 const app = new Hono();
 
-// Global middleware
-app.use("*", cors());
+// Global middleware - CORS with credentials support
+app.use("*", cors({
+	origin: (origin) => {
+		// Allow requests with no origin (e.g., same-origin, server-to-server)
+		if (!origin) return "*";
+		// Allow localhost for development
+		if (origin.startsWith("http://localhost:")) return origin;
+		// Allow proofa.sh domains
+		if (origin.endsWith(".proofa.sh")) return origin;
+		return null;
+	},
+	credentials: true,
+	allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+	allowHeaders: ["Content-Type", "Authorization", "X-Proofa-Service-Token"],
+	exposeHeaders: ["Set-Cookie"],
+}));
 app.use("*", httpLogger(log));
 app.use("*", requestIdMiddleware);
 
