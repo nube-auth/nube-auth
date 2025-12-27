@@ -5,7 +5,7 @@ app = "proofa-gateway"
 primary_region = "bom"
 
 [build]
-  dockerfile = "apps/gateway/Dockerfile"
+  dockerfile = "Dockerfile"
 
 [env]
   NODE_ENV = "production"

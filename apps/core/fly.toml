@@ -5,7 +5,7 @@ app = "proofa-core"
 primary_region = "bom"
 
 [build]
-  dockerfile = "apps/core/Dockerfile"
+  dockerfile = "Dockerfile"
 
 [env]
   NODE_ENV = "production"
