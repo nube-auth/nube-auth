@@ -8,6 +8,16 @@ export function ProfilePage() {
 	const [name, setName] = useState("");
 	const [showSuccess, setShowSuccess] = useState(false);
 
+	const formatDate = (dateString: string) => {
+		const date = new Date(dateString);
+		if (Number.isNaN(date.getTime())) return dateString;
+		return date.toLocaleDateString("en-US", {
+			month: "short",
+			day: "numeric",
+			year: "numeric",
+		});
+	};
+
 	React.useEffect(() => {
 		if (user) {
 			setName(user.name || "");
@@ -101,7 +111,7 @@ export function ProfilePage() {
 				</div>
 				<div className="info-item">
 					<div className="info-label">Joined</div>
-					<div className="info-value">{user.createdAt}</div>
+					<div className="info-value">{formatDate(user.createdAt)}</div>
 				</div>
 			</div>
 
@@ -208,7 +218,7 @@ export function ProfilePage() {
 								<span>When you first signed up</span>
 							</div>
 							<div className="info-list-value">
-								{"N/A"}
+								{formatDate(user.createdAt)}
 							</div>
 						</div>
 						<div className="info-list-item">
