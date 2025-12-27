@@ -1,4 +1,4 @@
-import { appQueries, getDb, licenseQueries, projectMemberQueries, projectQueries, userQueries } from "@proofa/db";
+import { appQueries, getDb, identityQueries, invitationQueries, licenseQueries, projectMemberQueries, projectQueries, userQueries, sessionQueries } from "@proofa/db";
 import { createId } from "@proofa/shared";
 import {
 	ProjectDTOSchema,
@@ -38,7 +38,7 @@ adminRoutes.get("/me", async (c: Context) => {
 
 /**
  * GET /v1/admin/projects
- * List projects for current user
+ * List projects for current user with stats
  */
 adminRoutes.get("/projects", async (c: Context) => {
 	try {
@@ -54,13 +54,47 @@ adminRoutes.get("/projects", async (c: Context) => {
 		// Get projects where user is member
 		const projects = await projectQueries.findByUserId(db, user.id);
 
-		return c.json({
-			projects: projects.map((p) => ({
+		// Get stats for each project
+		const projectsWithStats = await Promise.all(
+			projects.map(async (p) => {
+				// Get all apps for this project
+				const apps = await appQueries.findByProjectId(db, p.id);
+				const appIds = apps.map((app) => app.id);
+
+				// Count total licenses and users across all apps
+				let totalLicenses = 0;
+				let activeLicenses = 0;
+				const uniqueUserIds = new Set<number>();
+
+				for (const appId of appIds) {
+					const licenses = await licenseQueries.findByAppId(db, appId);
+					totalLicenses += licenses.length;
+					activeLicenses += licenses.filter((l) => l.status === "active").length;
+
+					for (const license of licenses) {
+						uniqueUserIds.add(license.user_id);
+					}
+				}
+
+				// Calculate revenue (placeholder for now)
+				const totalRevenue = 0; // TODO: Calculate from payment records
+
+				return {
 				id: p.public_id,
 				name: p.name,
 				slug: p.slug,
 				createdAt: p.created_at,
-			})),
+					totalApps: apps.length,
+					totalUsers: uniqueUserIds.size,
+					totalLicenses,
+					activeLicenses,
+					totalRevenue,
+				};
+			}),
+		);
+
+		return c.json({
+			projects: projectsWithStats,
 		});
 	} catch (error) {
 		console.error("List projects error:", error);
@@ -165,6 +199,82 @@ adminRoutes.get("/projects/:projectId", async (c: Context) => {
 	} catch (error) {
 		console.error("Get project error:", error);
 		return c.json({ error: "Failed to get project" }, 500);
+	}
+});
+
+/**
+ * GET /v1/admin/projects/:projectId/stats
+ * Get aggregated stats for project
+ */
+adminRoutes.get("/projects/:projectId/stats", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+
+		const db = getDb();
+
+		const project = await projectQueries.findByPublicId(db, projectId);
+
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		// Get user by public ID
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Check user is member
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+
+		if (!member) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		// Get all apps for this project
+		const apps = await appQueries.findByProjectId(db, project.id);
+		const appIds = apps.map((app) => app.id);
+
+		// Count total licenses across all apps
+		let totalLicenses = 0;
+		let activeLicenses = 0;
+		const licenseCounts: Record<string, number> = {};
+
+		for (const appId of appIds) {
+			const licenses = await licenseQueries.findByAppId(db, appId);
+			totalLicenses += licenses.length;
+			activeLicenses += licenses.filter((l) => l.status === "active").length;
+
+			// Count by plan
+			for (const license of licenses) {
+				licenseCounts[license.plan] = (licenseCounts[license.plan] || 0) + 1;
+			}
+		}
+
+		// Count total users across all apps (unique users)
+		const uniqueUserIds = new Set<number>();
+		for (const appId of appIds) {
+			const licenses = await licenseQueries.findByAppId(db, appId);
+			for (const license of licenses) {
+				uniqueUserIds.add(license.user_id);
+			}
+		}
+
+		// Calculate revenue (placeholder for now - will be implemented with payment integration)
+		const totalRevenue = 0; // TODO: Calculate from payment records
+
+		return c.json({
+			totalApps: apps.length,
+			totalUsers: uniqueUserIds.size,
+			totalLicenses,
+			activeLicenses,
+			licenseCounts,
+			totalRevenue,
+		});
+	} catch (error) {
+		console.error("Get project stats error:", error);
+		return c.json({ error: "Failed to get project stats" }, 500);
 	}
 });
 
@@ -370,15 +480,14 @@ adminRoutes.get("/projects/:projectId/apps/:appId", async (c: Context) => {
 });
 
 /**
- * PATCH /v1/admin/projects/:projectId/apps/:appId
- * Update app configuration
+ * GET /v1/admin/projects/:projectId/apps/:appId/stats
+ * Get app-specific statistics
  */
-adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
+adminRoutes.get("/projects/:projectId/apps/:appId/stats", async (c: Context) => {
 	try {
 		const auth = getAuth(c);
 		const projectId = c.req.param("projectId");
 		const appId = c.req.param("appId");
-		const updates = (await c.req.json()) as Record<string, unknown>;
 
 		const db = getDb();
 
@@ -394,9 +503,10 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 			return c.json({ error: "User not found" }, 404);
 		}
 
+		// Check user is member
 		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
 
-		if (!member || member.role !== "owner") {
+		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
 
@@ -406,56 +516,538 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 			return c.json({ error: "App not found" }, 404);
 		}
 
-		const now = Math.floor(Date.now() / 1000);
+		// Get all licenses for this app
+		const licenses = await licenseQueries.findByAppId(db, app.id);
+		const uniqueUserIds = new Set(licenses.map((l) => l.user_id));
 
-		// Build update object with JSON serialization for array fields
-		const updateData: Record<string, unknown> = { updated_at: now };
+		// Count active licenses
+		const activeLicenses = licenses.filter((l) => l.status === "active").length;
 
-		if (updates.name) updateData.name = updates.name;
-		if (updates.slug) updateData.slug = updates.slug;
-		if (updates.description) updateData.description = updates.description;
-		if (updates.allowed_hosts) updateData.allowed_hosts = JSON.stringify(updates.allowed_hosts);
-		if (updates.redirect_uris) updateData.redirect_uris = JSON.stringify(updates.redirect_uris);
-		if (updates.required_providers) updateData.required_providers = JSON.stringify(updates.required_providers);
-		if ("is_active" in updates) updateData.is_active = updates.is_active ? true : false;
-		if ("licensing_required" in updates) updateData.licensing_required = updates.licensing_required ? true : false;
-		if (updates.default_license_plan) updateData.default_license_plan = updates.default_license_plan;
-		if (updates.trial_days) updateData.trial_days = updates.trial_days;
-		if (updates.app_session_ttl_days) updateData.app_session_ttl_days = updates.app_session_ttl_days;
-		if (updates.account_lockout_minutes) updateData.account_lockout_minutes = updates.account_lockout_minutes;
-		if (updates.cache_ttl_minutes) updateData.cache_ttl_minutes = updates.cache_ttl_minutes;
-		if (updates.cors_allowed_origins) updateData.cors_allowed_origins = JSON.stringify(updates.cors_allowed_origins);
-		if (updates.rate_limit_requests_per_minute) updateData.rate_limit_requests_per_minute = updates.rate_limit_requests_per_minute;
+		// Count by plan
+		const licenseCounts: Record<string, number> = {};
+		for (const license of licenses) {
+			licenseCounts[license.plan] = (licenseCounts[license.plan] || 0) + 1;
+		}
 
-		const updatedApp = await appQueries.update(db, app.id, updateData);
+		// Count active sessions for users with licenses in this app
+		let totalSessions = 0;
+		for (const userId of uniqueUserIds) {
+			const userSessions = await sessionQueries.findActiveByUserId(db, userId);
+			totalSessions += userSessions.length;
+		}
+
+		// Calculate revenue (placeholder for now - will be implemented with payment integration)
+		const totalRevenue = 0; // TODO: Calculate from payment records
 
 		return c.json({
-			id: updatedApp.public_id,
-			project_id: project.public_id,
-			name: updatedApp.name,
-			slug: updatedApp.slug,
-			description: updatedApp.description,
-			allowed_hosts: updatedApp.allowed_hosts ? JSON.parse(updatedApp.allowed_hosts) : [],
-			redirect_uris: updatedApp.redirect_uris ? JSON.parse(updatedApp.redirect_uris) : [],
-			required_providers: updatedApp.required_providers ? JSON.parse(updatedApp.required_providers) : [],
-			is_active: updatedApp.is_active,
-			licensing_required: updatedApp.licensing_required,
-			default_license_plan: updatedApp.default_license_plan,
-			trial_days: updatedApp.trial_days,
-			app_session_ttl_days: updatedApp.app_session_ttl_days,
-			account_lockout_minutes: updatedApp.account_lockout_minutes,
-			cache_ttl_minutes: updatedApp.cache_ttl_minutes,
-			cors_allowed_origins: updatedApp.cors_allowed_origins ? JSON.parse(updatedApp.cors_allowed_origins) : [],
-			rate_limit_requests_per_minute: updatedApp.rate_limit_requests_per_minute,
-			created_at: updatedApp.created_at,
-			updated_at: updatedApp.updated_at,
+			totalUsers: uniqueUserIds.size,
+			totalLicenses: licenses.length,
+			activeLicenses,
+			licenseCounts,
+			totalSessions,
+			totalRevenue,
 		});
 	} catch (error) {
-		console.error("Update app error:", error);
-		if (error instanceof Error) {
-			console.error("Error details:", error.message, error.stack);
+		console.error("Get app stats error:", error);
+		return c.json({ error: "Failed to get app stats" }, 500);
+	}
+});
+
+/**
+ * GET /v1/admin/projects/:projectId/apps/:appId/users
+ * Get users for a specific app
+ */
+adminRoutes.get("/projects/:projectId/apps/:appId/users", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const appId = c.req.param("appId");
+
+		const db = getDb();
+
+		const project = await projectQueries.findByPublicId(db, projectId);
+
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
 		}
-		return c.json({ error: "Failed to update app" }, 500);
+
+		// Get user by public ID
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Check user is member
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+
+		if (!member) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		const app = await appQueries.findByPublicId(db, appId);
+
+		if (!app || app.project_id !== project.id) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		// Get all licenses for this app
+		const licenses = await licenseQueries.findByAppId(db, app.id);
+
+		// Get user details for each license
+		const usersWithLicenses = await Promise.all(
+			licenses.map(async (license) => {
+				const licenseUser = await userQueries.findById(db, license.user_id);
+				if (!licenseUser) return null;
+
+				return {
+					id: licenseUser.public_id,
+					name: licenseUser.name || null,
+					email: licenseUser.primary_email,
+					avatarUrl: null, // TODO: Add avatar support
+					primaryEmailVerified: Boolean(licenseUser.primary_email_verified),
+					plan: license.plan,
+					status: license.status,
+					createdAt: licenseUser.created_at,
+					licenseValidUntil: license.valid_until,
+				};
+			}),
+		);
+
+		// Filter out null values
+		const users = usersWithLicenses.filter((u) => u !== null);
+
+		return c.json({
+			users,
+			total: users.length,
+		});
+	} catch (error) {
+		console.error("Get app users error:", error);
+		return c.json({ error: "Failed to get app users" }, 500);
+	}
+});
+
+/**
+ * POST /v1/admin/projects/:projectId/apps/:appId/users/invite
+ * Smart invite flow: Check if user exists, grant license or send invitation
+ */
+adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const appId = c.req.param("appId");
+
+		const db = getDb();
+
+		// Verify project exists and user has access
+		const project = await projectQueries.findByPublicId(db, projectId);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		if (!member) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		// Verify app exists and belongs to project
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app || app.project_id !== project.id) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		// Parse request body
+		const body = await c.req.json();
+		const { email, plan, grant_license, license_duration_days, custom_message } = body;
+
+		// Validate email
+		if (!email || typeof email !== "string") {
+			return c.json({ error: "Valid email is required" }, 400);
+		}
+
+		// Validate plan
+		if (grant_license && (!plan || typeof plan !== "string")) {
+			return c.json({ error: "License plan is required when granting license" }, 400);
+		}
+
+		// Validate license duration if provided
+		if (license_duration_days !== null && license_duration_days !== undefined) {
+			if (typeof license_duration_days !== "number" || license_duration_days < 1) {
+				return c.json({ error: "License duration must be a positive number" }, 400);
+			}
+		}
+
+		// Calculate valid_until based on license_duration_days
+		const now = Math.floor(Date.now() / 1000);
+		let validUntil: number | null = null;
+		if (license_duration_days && typeof license_duration_days === "number") {
+			// Calculate valid_until: now + (days * 24 * 60 * 60)
+			validUntil = now + (license_duration_days * 24 * 60 * 60);
+		}
+
+		// SMART FLOW: Check if user exists
+		const existingUser = await userQueries.findByEmail(db, email.toLowerCase());
+
+		if (existingUser) {
+			// User exists - grant or update license
+			const existingLicense = await licenseQueries.findByUserAndApp(db, existingUser.id, app.id);
+
+			if (existingLicense) {
+				// Update existing license
+				if (grant_license && plan) {
+					await licenseQueries.update(db, existingLicense.id, {
+						plan,
+						status: "active",
+						valid_until: validUntil,
+					});
+				}
+
+		return c.json({
+					success: true,
+					user_exists: true,
+					license_granted: true,
+					action: "license_updated",
+					message: "User already exists. License has been updated.",
+					user: {
+						id: existingUser.public_id,
+						email: existingUser.primary_email,
+						name: existingUser.name,
+					},
+				});
+			}
+
+			// Create new license
+			if (grant_license && plan) {
+				await licenseQueries.create(db, {
+					public_id: createId("license"),
+					user_id: existingUser.id,
+					app_id: app.id,
+					plan,
+					status: "active",
+					source: "manual", // Admin manually granting license
+					valid_from: now,
+					valid_until: validUntil,
+					created_at: now,
+					updated_at: now,
+				});
+			}
+
+			return c.json({
+				success: true,
+				user_exists: true,
+				license_granted: grant_license,
+				action: "license_created",
+				message: grant_license
+					? "User already exists. License has been granted."
+					: "User already exists. No license granted.",
+				user: {
+					id: existingUser.public_id,
+					email: existingUser.primary_email,
+					name: existingUser.name,
+				},
+			});
+		}
+
+		// User doesn't exist - create invitation
+		const invitationId = createId("invitation");
+		const expiresAt = now + 7 * 24 * 60 * 60; // 7 days
+
+		// Check for existing pending invitation
+		const existingInvitation = await invitationQueries.findPendingByEmailAndApp(db, email.toLowerCase(), app.id);
+
+		if (existingInvitation) {
+			return c.json({
+				success: true,
+				user_exists: false,
+				invitation_sent: true,
+				action: "invitation_already_exists",
+				message: "An invitation has already been sent to this email.",
+				invitation: {
+					id: existingInvitation.public_id,
+					email: existingInvitation.email,
+					expires_at: existingInvitation.expires_at,
+				},
+			});
+		}
+
+		// Create new invitation
+		const invitation = await invitationQueries.create(db, {
+			public_id: invitationId,
+			email: email.toLowerCase(),
+			app_id: app.id,
+			project_id: project.id,
+			role: null, // Regular app user
+			license_plan: grant_license ? plan : null,
+			license_duration_days: license_duration_days || null,
+			custom_message: custom_message || null,
+			expires_at: expiresAt,
+			created_at: now,
+			consumed_at: null,
+			consumed_by_user_id: null,
+		});
+
+		// TODO: Send invitation email via Resend
+		// For now, we'll just return the invitation details
+		console.log(`Invitation created for ${email} to app ${app.name}. TODO: Send email.`);
+
+		return c.json({
+			success: true,
+			user_exists: false,
+			invitation_sent: true,
+			action: "invitation_created",
+			message: "Invitation has been sent. License will be activated when they sign up.",
+			invitation: {
+				id: invitation.public_id,
+				email: invitation.email,
+				expires_at: invitation.expires_at,
+				invite_link: `https://auth.proofa.com/signup?app_id=${app.public_id}&invite_code=${invitation.public_id}`,
+			},
+		});
+	} catch (error) {
+		console.error("Invite user error:", error);
+		return c.json({ error: "Failed to invite user" }, 500);
+	}
+});
+
+/**
+ * GET /v1/admin/projects/:projectId/apps/:appId/users/:userId
+ * Get detailed information about a specific user
+ */
+adminRoutes.get("/projects/:projectId/apps/:appId/users/:userId", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const appId = c.req.param("appId");
+		const userId = c.req.param("userId");
+
+		const db = getDb();
+
+		// Verify project and access
+		const project = await projectQueries.findByPublicId(db, projectId);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		const adminUser = await userQueries.findByPublicId(db, auth.userId);
+		if (!adminUser) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, adminUser.id);
+		if (!member) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		// Verify app
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app || app.project_id !== project.id) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		// Get target user
+		const targetUser = await userQueries.findByPublicId(db, userId);
+		if (!targetUser) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Get user's license for this app
+		const license = await licenseQueries.findByUserAndApp(db, targetUser.id, app.id);
+		if (!license) {
+			return c.json({ error: "User does not have access to this app" }, 404);
+		}
+
+		// Get user's identities
+		const identities = await identityQueries.findByUserId(db, targetUser.id);
+
+		// Get user's recent sessions (last 10)
+		const sessions = await sessionQueries.findByUserId(db, targetUser.id);
+		const recentSessions = sessions.slice(0, 10);
+
+		return c.json({
+			user: {
+				id: targetUser.public_id,
+				name: targetUser.name,
+				email: targetUser.primary_email,
+				avatar_url: targetUser.avatar_url,
+				primary_email_verified: Boolean(targetUser.primary_email_verified),
+				created_at: targetUser.created_at,
+				updated_at: targetUser.updated_at,
+			},
+			license: {
+				id: license.public_id,
+				plan: license.plan,
+				status: license.status,
+				valid_until: license.valid_until,
+				created_at: license.created_at,
+				updated_at: license.updated_at,
+			},
+			identities: identities.map((identity) => ({
+				provider: identity.provider,
+				provider_user_id: identity.provider_user_id,
+				email: identity.email,
+				created_at: identity.created_at,
+			})),
+			sessions: recentSessions.map((session) => ({
+				id: session.public_id,
+				created_at: session.created_at,
+				expires_at: session.expires_at,
+				last_seen_at: session.last_seen_at,
+			})),
+		});
+	} catch (error) {
+		console.error("Get user detail error:", error);
+		return c.json({ error: "Failed to get user details" }, 500);
+	}
+});
+
+/**
+ * PATCH /v1/admin/projects/:projectId/apps/:appId/users/:userId
+ * Update user information or license
+ */
+adminRoutes.patch("/projects/:projectId/apps/:appId/users/:userId", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const appId = c.req.param("appId");
+		const userId = c.req.param("userId");
+
+		const db = getDb();
+
+		// Verify project and access
+		const project = await projectQueries.findByPublicId(db, projectId);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		const adminUser = await userQueries.findByPublicId(db, auth.userId);
+		if (!adminUser) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, adminUser.id);
+		if (!member) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		// Verify app
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app || app.project_id !== project.id) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		// Get target user
+		const targetUser = await userQueries.findByPublicId(db, userId);
+		if (!targetUser) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Parse request body
+		const body = await c.req.json();
+		const { name, license_plan, license_status } = body;
+
+		// Update user if name is provided
+		if (name !== undefined) {
+			await userQueries.update(db, targetUser.id, { name });
+		}
+
+		// Update license if license fields are provided
+		const license = await licenseQueries.findByUserAndApp(db, targetUser.id, app.id);
+		if (!license) {
+			return c.json({ error: "User does not have a license for this app" }, 404);
+		}
+
+		const licenseUpdates: any = {};
+		if (license_plan !== undefined) licenseUpdates.plan = license_plan;
+		if (license_status !== undefined) licenseUpdates.status = license_status;
+
+		if (Object.keys(licenseUpdates).length > 0) {
+			await licenseQueries.update(db, license.id, licenseUpdates);
+		}
+
+		// Fetch updated data
+		const updatedUser = await userQueries.findById(db, targetUser.id);
+		const updatedLicense = await licenseQueries.findByUserAndApp(db, targetUser.id, app.id);
+
+		return c.json({
+			success: true,
+			user: {
+				id: updatedUser!.public_id,
+				name: updatedUser!.name,
+				email: updatedUser!.primary_email,
+			},
+			license: {
+				id: updatedLicense!.public_id,
+				plan: updatedLicense!.plan,
+				status: updatedLicense!.status,
+			},
+		});
+	} catch (error) {
+		console.error("Update user error:", error);
+		return c.json({ error: "Failed to update user" }, 500);
+	}
+});
+
+/**
+ * DELETE /v1/admin/projects/:projectId/apps/:appId/users/:userId
+ * Remove user's access to the app (revoke license)
+ */
+adminRoutes.delete("/projects/:projectId/apps/:appId/users/:userId", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const appId = c.req.param("appId");
+		const userId = c.req.param("userId");
+
+		const db = getDb();
+
+		// Verify project and access
+		const project = await projectQueries.findByPublicId(db, projectId);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		const adminUser = await userQueries.findByPublicId(db, auth.userId);
+		if (!adminUser) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, adminUser.id);
+		if (!member) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		// Verify app
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app || app.project_id !== project.id) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		// Get target user
+		const targetUser = await userQueries.findByPublicId(db, userId);
+		if (!targetUser) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Get and revoke license
+		const license = await licenseQueries.findByUserAndApp(db, targetUser.id, app.id);
+		if (!license) {
+			return c.json({ error: "User does not have a license for this app" }, 404);
+		}
+
+		// Set license status to 'revoked' instead of actually deleting
+		await licenseQueries.update(db, license.id, { status: "revoked" });
+
+		return c.json({
+			success: true,
+			message: "User access has been revoked",
+		});
+	} catch (error) {
+		console.error("Delete user error:", error);
+		return c.json({ error: "Failed to remove user access" }, 500);
 	}
 });
 
@@ -624,15 +1216,24 @@ adminRoutes.get("/licenses", async (c: Context) => {
 		// Get licenses for user
 		const licenses = await licenseQueries.findByUserId(db, user.id);
 
-		return c.json({
-			licenses: licenses.map((l) => ({
+		// Fetch app details for each license
+		const licensesWithAppDetails = await Promise.all(
+			licenses.map(async (l) => {
+				const app = await appQueries.findById(db, l.app_id);
+				return {
 				id: l.public_id,
-				appId: l.app_id,
+					appId: app?.public_id || null,
+					appName: app?.name || "Unknown App",
 				plan: l.plan,
 				status: l.status,
 				validUntil: l.valid_until,
 				createdAt: l.created_at,
-			})),
+				};
+			})
+		);
+
+		return c.json({
+			licenses: licensesWithAppDetails,
 		});
 	} catch (error) {
 		console.error("List licenses error:", error);

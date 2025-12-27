@@ -1,11 +1,13 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import type React from "react";
 import { useEffect, useState } from "react";
-import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import config from "./config";
 import { useLogout, useProjects } from "./hooks/api";
 import { AppDetailPage } from "./pages/AppDetail";
 import { AppSetupPage } from "./pages/AppSetup";
+import { AppSettingsPage } from "./pages/AppSettings";
+import { AppUsersPage } from "./pages/AppUsers";
 import { LicensesPage } from "./pages/Licenses";
 import { LoginPage } from "./pages/Login";
 import { OnboardingPage } from "./pages/Onboarding";
@@ -73,7 +75,12 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 	const { theme, setTheme } = useTheme();
 	const { mutate: logout, isPending: isLoggingOut } = useLogout();
 	const [showProjectDropdown, setShowProjectDropdown] = useState(false);
-	const [selectedProject, setSelectedProject] = useState<string | null>(null);
+	const navigate = useNavigate();
+	const location = useLocation();
+
+	// Detect current project from URL
+	const urlMatch = location.pathname.match(/\/projects\/([^/]+)/);
+	const selectedProject = urlMatch ? urlMatch[1] : null;
 
 	if (isLoading) {
 		return (
@@ -142,34 +149,29 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 				</div>
 
 				{/* Project Selector Dropdown */}
-				<div className="project-selector" style={{ position: "relative", zIndex: 100 }}>
+				<div style={{ position: "relative", margin: "16px 12px" }}>
 					<button
 						type="button"
 						onClick={() => setShowProjectDropdown(!showProjectDropdown)}
+						className="project-selector"
 						style={{
-							background: "none",
-							border: "none",
 							width: "100%",
 							cursor: "pointer",
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "space-between",
-							padding: "0",
-							color: "var(--sidebar-text)",
+							border: showProjectDropdown ? "1px solid var(--primary)" : "1px solid var(--sidebar-border)",
+							outline: "none",
+							transition: "all 0.2s ease",
 						}}
 					>
 						<div className="project-selector-info">
 							<div className="project-selector-icon">
 								{selectedProject
 									? projects.find((p) => p.id === selectedProject)?.name?.charAt(0).toUpperCase() || "P"
-									: "P"}
+									: "A"}
 							</div>
 							<span className="project-selector-name">
 								{selectedProject
-									? projects.find((p) => p.id === selectedProject)?.name || "Select Project"
-									: projects.length > 0
-										? "Select Project"
-										: "No Projects"}
+									? projects.find((p) => p.id === selectedProject)?.name || "Unknown Project"
+									: "All Projects"}
 							</span>
 						</div>
 						<svg
@@ -193,49 +195,90 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 						<div
 							style={{
 								position: "absolute",
-								top: "100%",
+								top: "calc(100% + 4px)",
 								left: "0",
 								right: "0",
-								backgroundColor: "var(--background-primary)",
-								border: "2px solid var(--primary)",
-								borderRadius: "12px",
-								marginTop: "12px",
-								boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3)",
-								zIndex: 1001,
-								maxHeight: "400px",
+								backgroundColor: "var(--sidebar-bg)",
+								border: "1px solid var(--sidebar-border)",
+								borderRadius: "8px",
+								boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
+								zIndex: 10000,
+								maxHeight: "280px",
 								overflowY: "auto",
-								minWidth: "280px",
+								overflowX: "hidden",
 							}}
 						>
 							{projects.length === 0 ? (
-								<div style={{ padding: "16px", color: "var(--text-secondary)", fontSize: "14px", textAlign: "center" }}>
+								<div style={{ padding: "20px", color: "var(--text-secondary)", fontSize: "13px", textAlign: "center" }}>
 									No projects available
 								</div>
 							) : (
-								projects.map((project, index) => (
+								<>
+									{/* All Projects Option */}
 									<button
-										key={project.id}
 										type="button"
 										onClick={() => {
-											setSelectedProject(project.id);
+											navigate("/projects");
 											setShowProjectDropdown(false);
 										}}
 										style={{
 											width: "100%",
-											padding: "14px 16px",
+											padding: "12px",
 											textAlign: "left",
-											background: selectedProject === project.id ? "var(--primary)" : "transparent",
+											background: !selectedProject ? "rgba(139, 92, 246, 0.15)" : "transparent",
 											border: "none",
-											borderBottom: index < projects.length - 1 ? "1px solid var(--border-secondary)" : "none",
+											borderBottom: "1px solid var(--sidebar-border)",
 											cursor: "pointer",
-											color: selectedProject === project.id ? "white" : "var(--text-primary)",
-											fontSize: "14px",
-											transition: "all 0.2s",
+											color: !selectedProject ? "var(--primary)" : "rgba(255, 255, 255, 0.8)",
+											fontSize: "13px",
+											fontWeight: "500",
+											transition: "all 0.15s ease",
+											display: "flex",
+											alignItems: "center",
+											gap: "10px",
+											outline: "none",
+										}}
+										onMouseEnter={(e) => {
+											if (selectedProject !== null) {
+												(e.currentTarget).style.backgroundColor = "rgba(255, 255, 255, 0.05)";
+											}
+										}}
+										onMouseLeave={(e) => {
+											if (selectedProject !== null) {
+												(e.currentTarget).style.backgroundColor = "transparent";
+											}
+										}}
+									>
+										<svg style={{ width: "16px", height: "16px", flexShrink: 0, opacity: 0.7 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+										</svg>
+										<span>All Projects</span>
+									</button>
+									{projects.map((project) => (
+									<button
+										key={project.id}
+										type="button"
+										onClick={() => {
+											navigate(`/projects/${project.id}`);
+											setShowProjectDropdown(false);
+										}}
+										style={{
+											width: "100%",
+											padding: "10px 12px",
+											textAlign: "left",
+											background: selectedProject === project.id ? "rgba(139, 92, 246, 0.15)" : "transparent",
+											border: "none",
+											borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+											cursor: "pointer",
+											color: selectedProject === project.id ? "var(--primary)" : "rgba(255, 255, 255, 0.8)",
+											fontSize: "13px",
+											transition: "all 0.15s ease",
 											display: "block",
+											outline: "none",
 										}}
 										onMouseEnter={(e) => {
 											if (selectedProject !== project.id) {
-												(e.currentTarget).style.backgroundColor = "var(--surface-hover)";
+												(e.currentTarget).style.backgroundColor = "rgba(255, 255, 255, 0.05)";
 											}
 										}}
 										onMouseLeave={(e) => {
@@ -244,16 +287,54 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 											}
 										}}
 									>
-										<div style={{ fontWeight: selectedProject === project.id ? "700" : "600", marginBottom: "4px" }}>
-											{project.name}
-										</div>
-										{project.slug && (
-											<div style={{ fontSize: "12px", opacity: selectedProject === project.id ? 0.9 : 0.6 }}>
-												{project.slug}
+										<div style={{ 
+											display: "flex", 
+											alignItems: "center", 
+											gap: "10px",
+										}}>
+											<div style={{
+												width: "32px",
+												height: "32px",
+												borderRadius: "6px",
+												background: selectedProject === project.id 
+													? "var(--primary)" 
+													: "rgba(139, 92, 246, 0.2)",
+												display: "flex",
+												alignItems: "center",
+												justifyContent: "center",
+												fontSize: "13px",
+												fontWeight: "600",
+												color: selectedProject === project.id ? "white" : "var(--primary)",
+												flexShrink: 0,
+											}}>
+												{project.name.charAt(0).toUpperCase()}
 											</div>
-										)}
+											<div style={{ flex: 1, minWidth: 0 }}>
+												<div style={{ 
+													fontWeight: "500", 
+													marginBottom: project.slug ? "2px" : "0",
+													overflow: "hidden",
+													textOverflow: "ellipsis",
+													whiteSpace: "nowrap",
+												}}>
+													{project.name}
+												</div>
+												{project.slug && (
+													<div style={{ 
+														fontSize: "11px", 
+														opacity: 0.5,
+														overflow: "hidden",
+														textOverflow: "ellipsis",
+														whiteSpace: "nowrap",
+													}}>
+														{project.slug}
+													</div>
+												)}
+											</div>
+										</div>
 									</button>
-								))
+								))}
+								</>
 							)}
 						</div>
 					)}
@@ -269,7 +350,8 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 							left: 0,
 							right: 0,
 							bottom: 0,
-							zIndex: 1000,
+							zIndex: 9999,
+							background: "transparent",
 						}}
 					/>
 				)}
@@ -431,18 +513,12 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 							{getThemeIcon()}
 							<span className="theme-label">{theme.charAt(0).toUpperCase() + theme.slice(1)}</span>
 						</button>
-						<a href={config.docsUrl} target="_blank" rel="noopener noreferrer" className="header-btn">
-							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-							</svg>
-							Docs
-						</a>
-						<button type="button" className="header-btn header-btn-primary">
-							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-							</svg>
-							New Project
-						</button>
+					<a href={config.docsUrl} target="_blank" rel="noopener noreferrer" className="header-btn">
+						<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+						</svg>
+						Docs
+					</a>
 					</div>
 				</header>
 
@@ -491,6 +567,22 @@ function App() {
 							</ProtectedLayout>
 						}
 					/>
+				<Route
+					path="/projects/:projectId/apps/:appId/users"
+					element={
+						<ProtectedLayout>
+							<AppUsersPage />
+						</ProtectedLayout>
+					}
+				/>
+				<Route
+					path="/projects/:projectId/apps/:appId/settings"
+					element={
+						<ProtectedLayout>
+							<AppSettingsPage />
+						</ProtectedLayout>
+					}
+				/>
 					<Route
 						path="/projects/:projectId/apps/:appId"
 						element={

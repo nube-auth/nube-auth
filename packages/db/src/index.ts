@@ -56,6 +56,7 @@ export {
 	authCodeQueries,
 	emailVerificationQueries,
 	identityQueries,
+	invitationQueries,
 	licenseQueries,
 	projectMemberQueries,
 	projectQueries,

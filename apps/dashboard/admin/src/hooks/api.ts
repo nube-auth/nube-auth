@@ -191,3 +191,60 @@ export function useProjectMembers(projectId: string) {
 		enabled: !!projectId,
 	});
 }
+
+export function useProjectStats(projectId: string) {
+	return useQuery({
+		queryKey: ["project-stats", projectId],
+		queryFn: async () => {
+			return fetchAPI<{
+				totalApps: number;
+				totalUsers: number;
+				totalLicenses: number;
+				activeLicenses: number;
+				licenseCounts: Record<string, number>;
+				totalRevenue: number;
+			}>(`/v1/admin/projects/${projectId}/stats`);
+		},
+		enabled: !!projectId,
+	});
+}
+
+export function useAppStats(projectId: string, appId: string) {
+	return useQuery({
+		queryKey: ["app-stats", projectId, appId],
+		queryFn: async () => {
+			return fetchAPI<{
+				totalUsers: number;
+				totalLicenses: number;
+				activeLicenses: number;
+				licenseCounts: Record<string, number>;
+				totalSessions: number;
+				totalRevenue: number;
+			}>(`/v1/admin/projects/${projectId}/apps/${appId}/stats`);
+		},
+		enabled: !!projectId && !!appId,
+	});
+}
+
+export function useAppUsers(projectId: string, appId: string) {
+	return useQuery({
+		queryKey: ["app-users", projectId, appId],
+		queryFn: async () => {
+			return fetchAPI<{
+				users: Array<{
+					id: string;
+					name: string | null;
+					email: string;
+					avatarUrl: string | null;
+					primaryEmailVerified: boolean;
+					plan: string;
+					status: string;
+					createdAt: number;
+					licenseValidUntil: number | null;
+				}>;
+				total: number;
+			}>(`/v1/admin/projects/${projectId}/apps/${appId}/users`);
+		},
+		enabled: !!projectId && !!appId,
+	});
+}

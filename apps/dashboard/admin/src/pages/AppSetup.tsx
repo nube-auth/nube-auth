@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useCreateApp, useProject } from "../hooks/api";
 
 export function AppSetupPage() {
@@ -111,9 +111,15 @@ export function AppSetupPage() {
 		<div className="space-y-6">
 			{/* Breadcrumb */}
 			<nav style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px" }}>
-				<span style={{ color: "var(--text-secondary)" }}>
+				<Link to="/projects" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>
+					Projects
+				</Link>
+				<svg style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+				</svg>
+				<Link to={`/projects/${projectId}`} style={{ color: "var(--text-secondary)", textDecoration: "none" }}>
 					{project.name}
-				</span>
+				</Link>
 				<svg style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
 				</svg>

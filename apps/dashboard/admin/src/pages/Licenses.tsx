@@ -74,7 +74,7 @@ export function LicensesPage() {
 							<tbody>
 								{licenses.map((license) => {
 									const isActive = license.status === "active" || license.status !== "expired";
-									const expiryDate = license.validUntil || license.validUntil;
+									const expiryDate = license.validUntil;
 									const isExpired = expiryDate && new Date(expiryDate) < new Date();
 									
 									return (
@@ -90,7 +90,7 @@ export function LicensesPage() {
 												</div>
 											</td>
 											<td>
-												<span className="text-gray-600">{license.appId || license.appId || "—"}</span>
+												<span className="text-gray-600">{license.appName || "—"}</span>
 											</td>
 											<td>
 												<span className="badge badge-info capitalize">

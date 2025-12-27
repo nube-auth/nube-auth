@@ -145,6 +145,29 @@ export const apps = sqliteTable(
 		cache_ttl_minutes: integer("cache_ttl_minutes").notNull().default(10),
 		cors_allowed_origins: text("cors_allowed_origins"), // JSON array (optional)
 		rate_limit_requests_per_minute: integer("rate_limit_requests_per_minute").notNull().default(100),
+		// Payment provider fields
+		payment_provider: text("payment_provider"), // 'lemonsqueezy' | 'dodo' | 'stripe' | null
+		payment_test_mode: integer("payment_test_mode").default(1), // 1 = test, 0 = live
+		// LemonSqueezy
+		lemon_squeezy_store_id: text("lemon_squeezy_store_id"),
+		lemon_squeezy_api_key: text("lemon_squeezy_api_key"),
+		lemon_squeezy_webhook_secret: text("lemon_squeezy_webhook_secret"),
+		// Dodo Payments
+		dodo_api_key: text("dodo_api_key"),
+		dodo_secret_key: text("dodo_secret_key"),
+		dodo_webhook_secret: text("dodo_webhook_secret"),
+		// Stripe (optional, future)
+		stripe_publishable_key: text("stripe_publishable_key"),
+		stripe_secret_key: text("stripe_secret_key"),
+		stripe_webhook_secret: text("stripe_webhook_secret"),
+		// Webhook configuration
+		webhook_url: text("webhook_url"),
+		webhook_events: text("webhook_events"), // JSON array
+		// OAuth credentials per app
+		google_client_id: text("google_client_id"),
+		google_client_secret: text("google_client_secret"),
+		github_client_id: text("github_client_id"),
+		github_client_secret: text("github_client_secret"),
 		created_at: integer("created_at").notNull(),
 		updated_at: integer("updated_at").notNull(),
 	},
@@ -271,5 +294,35 @@ export const audit_logs = sqliteTable(
 		projectIdx: index("audit_logs_project_id_idx").on(table.project_id),
 		actionIdx: index("audit_logs_action_idx").on(table.action),
 		createdAtIdx: index("audit_logs_created_at_idx").on(table.created_at),
+	}),
+);
+
+export const invitations = sqliteTable(
+	"invitations",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		public_id: text("public_id").notNull().unique(),
+		email: text("email").notNull(),
+		app_id: integer("app_id")
+			.notNull()
+			.references(() => apps.id),
+		project_id: integer("project_id")
+			.notNull()
+			.references(() => projects.id),
+		role: text("role"), // 'admin' | 'member' | null (for regular app user)
+		license_plan: text("license_plan"), // 'pro' | 'trial' | 'free' | etc.
+		license_duration_days: integer("license_duration_days"),
+		custom_message: text("custom_message"), // optional welcome message
+		expires_at: integer("expires_at").notNull(), // invitation expiry timestamp
+		created_at: integer("created_at").notNull(),
+		consumed_at: integer("consumed_at"), // when user signed up
+		consumed_by_user_id: integer("consumed_by_user_id").references(() => users.id),
+	},
+	(table) => ({
+		emailAppUnique: unique("invitations_email_app_unique").on(table.email, table.app_id),
+		appIdIdx: index("invitations_app_id_idx").on(table.app_id),
+		projectIdIdx: index("invitations_project_id_idx").on(table.project_id),
+		emailIdx: index("invitations_email_idx").on(table.email),
+		expiresAtIdx: index("invitations_expires_at_idx").on(table.expires_at),
 	}),
 );

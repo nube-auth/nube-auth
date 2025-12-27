@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import config from "../config";
-import { useProject, useProjectApps, useProjectMembers } from "../hooks/api";
+import { useProject, useProjectApps, useProjectMembers, useProjectStats } from "../hooks/api";
 
 export function ProjectDetailPage() {
 	const { projectId } = useParams<{ projectId: string }>();
@@ -9,6 +9,7 @@ export function ProjectDetailPage() {
 	const { data: project, isLoading: projectLoading } = useProject(projectId || "");
 	const { data: apps, isLoading: appsLoading } = useProjectApps(projectId || "");
 	const { data: members, isLoading: membersLoading } = useProjectMembers(projectId || "");
+	const { data: stats, isLoading: statsLoading } = useProjectStats(projectId || "");
 	const [copied, setCopied] = useState(false);
 
 	const copyToClipboard = (text: string) => {
@@ -112,7 +113,7 @@ export function ProjectDetailPage() {
 			</div>
 
 			{/* Stats Grid */}
-			<div className="stats-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
+			<div className="stats-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
 				<div className="stat-card">
 					<div className="stat-card-header">
 						<div className="stat-icon blue">
@@ -121,7 +122,7 @@ export function ProjectDetailPage() {
 							</svg>
 						</div>
 					</div>
-					<div className="stat-value">{apps?.length || 0}</div>
+					<div className="stat-value">{statsLoading ? "—" : stats?.totalApps || 0}</div>
 					<div className="stat-label">Applications</div>
 				</div>
 				<div className="stat-card">
@@ -132,8 +133,8 @@ export function ProjectDetailPage() {
 							</svg>
 						</div>
 					</div>
-					<div className="stat-value">{members?.length || 0}</div>
-					<div className="stat-label">Team Members</div>
+					<div className="stat-value">{statsLoading ? "—" : stats?.totalUsers || 0}</div>
+					<div className="stat-label">Total Users</div>
 				</div>
 				<div className="stat-card">
 					<div className="stat-card-header">
@@ -143,11 +144,24 @@ export function ProjectDetailPage() {
 							</svg>
 						</div>
 					</div>
-					<div className="stat-value" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-						<span style={{ width: "8px", height: "8px", background: "var(--success)", borderRadius: "50%" }} />
-						Active
+					<div className="stat-value">{statsLoading ? "—" : stats?.activeLicenses || 0}</div>
+					<div className="stat-label">Active Licenses</div>
+					{!statsLoading && stats && (
+						<div style={{ fontSize: "11px", color: "var(--text-tertiary)", marginTop: "4px" }}>
+							{stats.totalLicenses} total
+						</div>
+					)}
+				</div>
+				<div className="stat-card">
+					<div className="stat-card-header">
+						<div className="stat-icon orange">
+							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+							</svg>
+						</div>
 					</div>
-					<div className="stat-label">Project Status</div>
+					<div className="stat-value">${statsLoading ? "—" : (stats?.totalRevenue || 0).toFixed(2)}</div>
+					<div className="stat-label">Revenue</div>
 				</div>
 			</div>
 
@@ -331,7 +345,7 @@ await auth.signIn('google');`}
 										<td>
 											<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
 												<div className="avatar avatar-sm">
-													{member.userId.charAt(0).toUpperCase()}
+													{member.name?.charAt(0).toUpperCase() || "?"}
 												</div>
 												<span style={{ fontWeight: "500", color: "var(--text-primary)" }}>{member.name}</span>
 											</div>

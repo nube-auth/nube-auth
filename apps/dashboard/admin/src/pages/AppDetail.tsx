@@ -1,117 +1,15 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useApp, useUpdateApp, useProject } from "../hooks/api";
-import { App } from "../types/admin";
+import { useApp, useProject, useAppStats } from "../hooks/api";
 
 export function AppDetailPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
 	const navigate = useNavigate();
 	const { data: project, isLoading: projectLoading } = useProject(projectId || "");
 	const { data: app, isLoading: appLoading } = useApp(projectId || "", appId || "");
-	const updateAppMutation = useUpdateApp(projectId || "", appId || "");
+	const { data: stats, isLoading: statsLoading } = useAppStats(projectId || "", appId || "");
 
-	const [isEditing, setIsEditing] = useState(false);
 	const [copied, setCopied] = useState(false);
-	const [formData, setFormData] = useState<Partial<App> | null>(null);
-
-	// Initialize formData when app data is loaded
-	if (app && !formData) {
-		setFormData({
-			name: app.name,
-			slug: app.slug,
-			description: app.description,
-			redirectUris: app.redirectUris || [],
-			requiredProviders: app.requiredProviders || [],
-			allowedHosts: app.allowedHosts || [],
-			appSessionTtlDays: app.appSessionTtlDays || 28,
-			licensingRequired: app.licensingRequired ?? true,
-			defaultLicensePlan: app.defaultLicensePlan || "free",
-			isActive: app.isActive ?? true,
-		});
-	}
-
-	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-		const { name, value, type } = e.target;
-		if (!formData) return;
-
-		if (type === "checkbox") {
-			setFormData((prev) => ({
-				...prev,
-				[name]: (e.target as HTMLInputElement).checked,
-			}));
-		} else if (type === "number") {
-			setFormData((prev) => ({
-				...prev,
-				[name]: parseInt(value, 10),
-			}));
-		} else {
-			setFormData((prev) => ({
-				...prev,
-				[name]: value,
-			}));
-		}
-	};
-
-	const handleArrayFieldChange = (field: string, index: number, value: string) => {
-		if (!formData) return;
-		setFormData((prev) => {
-			if (!prev) return null;
-			const arr = [...(prev[field as keyof typeof formData] as string[])];
-			arr[index] = value;
-			return {
-				...prev,
-				[field]: arr,
-			};
-		});
-	};
-
-	const addArrayField = (field: string) => {
-		if (!formData) return;
-		setFormData((prev) => {
-			if (!prev) return null;
-			return {
-				...prev,
-				[field]: [...(prev[field as keyof typeof formData] as string[]), ""],
-			};
-		});
-	};
-
-	const removeArrayField = (field: string, index: number) => {
-		if (!formData) return;
-		setFormData((prev) => {
-			if (!prev) return null;
-			const arr = [...(prev[field as keyof typeof formData] as string[])];
-			arr.splice(index, 1);
-			return {
-				...prev,
-				[field]: arr,
-			};
-		});
-	};
-
-	const handleSave = (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!formData) return;
-
-		const dataToSend = {
-			name: formData.name,
-			slug: formData.slug,
-			description: formData.description,
-			redirectUris: (formData.redirectUris || []).filter((uri) => uri.trim()),
-			requiredProviders: (formData.requiredProviders || []).filter((p) => p.trim()),
-			allowedHosts: (formData.allowedHosts || []).filter((host) => host.trim()),
-			appSessionTtlDays: formData.appSessionTtlDays,
-			licensingRequired: Boolean(formData.licensingRequired),
-			defaultLicensePlan: formData.defaultLicensePlan as "free" | "trial",
-			trialDays: formData.trialDays,
-		};
-
-		updateAppMutation.mutate(dataToSend, {
-			onSuccess: () => {
-				setIsEditing(false);
-			},
-		});
-	};
 
 	const copyPublicId = () => {
 		if (app?.id) {
@@ -183,450 +81,347 @@ export function AppDetailPage() {
 			</nav>
 
 			{/* App Header Card */}
-			<div className="card">
-				<div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "24px" }}>
-					<div>
-						<h1 style={{ fontSize: "28px", fontWeight: "700", marginBottom: "8px", color: "var(--text-primary)" }}>
-							{app.name}
-						</h1>
-						<p style={{ color: "var(--text-secondary)" }}>
+			<div className="card" style={{ padding: "24px" }}>
+				<div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px" }}>
+					<div style={{ flex: 1 }}>
+						<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
+							<h1 style={{ fontSize: "24px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
+								{app.name}
+							</h1>
+							<span style={{
+								display: "inline-flex",
+								alignItems: "center",
+								gap: "5px",
+								padding: "4px 10px",
+								borderRadius: "12px",
+								background: app.isActive ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
+								color: app.isActive ? "var(--success)" : "var(--danger)",
+								fontSize: "12px",
+								fontWeight: "600",
+							}}>
+								<span style={{
+									width: "6px",
+									height: "6px",
+									borderRadius: "50%",
+									background: "currentColor",
+								}} />
+								{app.isActive ? "Active" : "Inactive"}
+							</span>
+						</div>
+						<p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 16px 0" }}>
 							{app.description || "No description provided"}
 						</p>
+						<div style={{ display: "flex", alignItems: "center", gap: "20px", flexWrap: "wrap" }}>
+							<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+								<span style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>ID:</span>
+								<code style={{ 
+									background: "var(--surface-secondary)", 
+									padding: "3px 8px", 
+									borderRadius: "4px", 
+									fontFamily: "monospace", 
+									fontSize: "11px",
+									color: "var(--text-primary)",
+								}}>
+									{app.id}
+								</code>
+								<button
+									onClick={copyPublicId}
+									style={{
+										background: "none",
+										border: "none",
+										cursor: "pointer",
+										color: "var(--primary)",
+										fontSize: "11px",
+										fontWeight: "500",
+										padding: "0",
+									}}
+								>
+									{copied ? "✓ Copied" : "Copy"}
+								</button>
+							</div>
+							<div style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+								Created {new Date(app.createdAt).toLocaleDateString()}
+							</div>
+							<div style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+								Updated {new Date(app.updatedAt).toLocaleDateString()}
+							</div>
+						</div>
 					</div>
 					<button
-						onClick={() => setIsEditing(!isEditing)}
-						className="btn btn-primary"
+						onClick={() => navigate(`/projects/${projectId}/apps/${appId}/settings`)}
+						className="btn btn-secondary"
+						style={{ flexShrink: 0 }}
 					>
-						{isEditing ? "Cancel" : "Edit"}
+						<svg style={{ width: "14px", height: "14px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+						</svg>
+						Settings
 					</button>
-				</div>
-
-				<div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", padding: "16px 0", borderTop: "1px solid var(--border-secondary)" }}>
-					<div>
-						<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Public ID</p>
-						<div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
-							<code style={{ background: "var(--content-bg)", padding: "4px 8px", borderRadius: "4px", fontFamily: "monospace", fontSize: "13px" }}>
-								{app.id}
-							</code>
-							<button
-								onClick={copyPublicId}
-								style={{
-									background: "none",
-									border: "none",
-									cursor: "pointer",
-									color: "var(--primary)",
-									fontSize: "13px",
-									fontWeight: "500",
-								}}
-							>
-								{copied ? "Copied!" : "Copy"}
-							</button>
-						</div>
-					</div>
-					<div>
-						<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Status</p>
-						<div style={{
-							display: "inline-flex",
-							alignItems: "center",
-							gap: "6px",
-							padding: "4px 12px",
-							borderRadius: "12px",
-							background: app.isActive ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
-							color: app.isActive ? "rgb(34, 197, 94)" : "rgb(239, 68, 68)",
-							fontSize: "13px",
-							fontWeight: "500",
-						}}>
-							<div style={{
-								width: "8px",
-								height: "8px",
-								borderRadius: "50%",
-								background: app.isActive ? "rgb(34, 197, 94)" : "rgb(239, 68, 68)",
-							}} />
-							{app.isActive ? "Active" : "Inactive"}
-						</div>
-					</div>
-					<div>
-						<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Created</p>
-						<p style={{ fontSize: "13px", color: "var(--text-primary)" }}>
-							{new Date(app.createdAt).toLocaleDateString()}
-						</p>
-					</div>
-					<div>
-						<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Last Updated</p>
-						<p style={{ fontSize: "13px", color: "var(--text-primary)" }}>
-							{new Date(app.updatedAt).toLocaleDateString()}
-						</p>
-					</div>
 				</div>
 			</div>
 
-			{/* Edit Form */}
-			{isEditing && formData && (
-				<form onSubmit={handleSave} className="card">
-					<h2 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "24px", color: "var(--text-primary)" }}>
-						Edit Application
-					</h2>
-
-					<div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px", marginBottom: "24px" }}>
-						<div>
-							<label htmlFor="name" className="form-label">
-								App Name *
-							</label>
-							<input
-								type="text"
-								id="name"
-								name="name"
-								required
-								value={formData.name || ""}
-								onChange={handleInputChange}
-							/>
-						</div>
-
-						<div>
-							<label htmlFor="slug" className="form-label">
-								App Slug
-							</label>
-							<input
-								type="text"
-								id="slug"
-								name="slug"
-								value={formData.slug || ""}
-								onChange={handleInputChange}
-							/>
-						</div>
-
-						<div style={{ gridColumn: "1 / -1" }}>
-							<label htmlFor="description" className="form-label">
-								Description
-							</label>
-							<textarea
-								id="description"
-								name="description"
-								value={formData.description || ""}
-								onChange={handleInputChange}
-								rows={3}
-							/>
-						</div>
-
-						<div style={{ gridColumn: "1 / -1" }}>
-							<label className="form-label">Required OAuth Providers *</label>
-							<div style={{ display: "flex", gap: "12px" }}>
-								{["google", "github"].map((provider: string) => (
-									<label key={provider} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
-										<input
-											type="checkbox"
-											value={provider}
-											checked={(formData.requiredProviders || []).includes(provider)}
-											onChange={(e) => {
-												if (e.target.checked) {
-													setFormData((prev) => ({
-														...prev,
-														requiredProviders: [...(prev?.requiredProviders || []), provider],
-													}));
-												} else {
-													setFormData((prev) => ({
-														...prev,
-														requiredProviders: (prev?.requiredProviders || []).filter((p) => p !== provider),
-													}));
-												}
-											}}
-										/>
-										<span style={{ textTransform: "capitalize", fontWeight: "500" }}>{provider}</span>
-									</label>
-								))}
-							</div>
-						</div>
-
-						<div style={{ gridColumn: "1 / -1" }}>
-							<label className="form-label">
-								Redirect URIs *
-							</label>
-							<div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
-								{(formData.redirectUris || []).map((uri: string, index: number) => (
-									<div key={index} style={{ display: "flex", gap: "8px" }}>
-										<input
-											type="url"
-											placeholder="e.g., http://localhost:3000/callback"
-											value={uri}
-											onChange={(e) => handleArrayFieldChange("redirect_uris", index, e.target.value)}
-											style={{ flex: 1 }}
-										/>
-										{(formData.redirectUris || []).length > 1 && (
-											<button
-												type="button"
-												onClick={() => removeArrayField("redirectUris", index)}
-												className="btn btn-ghost btn-sm"
-												style={{ color: "var(--danger)" }}
-											>
-												<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-												</svg>
-											</button>
-										)}
-									</div>
-								))}
-							</div>
-							<button
-								type="button"
-								onClick={() => addArrayField("redirect_uris")}
-								className="btn btn-secondary btn-sm"
-							>
-								<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+		{/* Stats Grid */}
+				<div className="stats-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)", marginBottom: "24px" }}>
+					<div className="stat-card">
+						<div className="stat-card-header">
+							<div className="stat-icon purple">
+								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
 								</svg>
-								Add URI
-							</button>
-						</div>
-
-						<div style={{ gridColumn: "1 / -1" }}>
-							<label className="form-label">Allowed Hosts</label>
-							<div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
-								{(formData.allowedHosts || []).map((host: string, index: number) => (
-									<div key={index} style={{ display: "flex", gap: "8px" }}>
-										<input
-											type="text"
-											placeholder="e.g., localhost:3000, example.com"
-											value={host}
-											onChange={(e) => handleArrayFieldChange("allowed_hosts", index, e.target.value)}
-											style={{ flex: 1 }}
-										/>
-										{(formData.allowedHosts || []).length > 1 && (
-											<button
-												type="button"
-												onClick={() => removeArrayField("allowedHosts", index)}
-												className="btn btn-ghost btn-sm"
-												style={{ color: "var(--danger)" }}
-											>
-												<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-												</svg>
-											</button>
-										)}
-									</div>
-								))}
 							</div>
-							<button
-								type="button"
-								onClick={() => addArrayField("allowed_hosts")}
-								className="btn btn-secondary btn-sm"
-							>
-								<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+						</div>
+						<div className="stat-value">{statsLoading ? "—" : stats?.totalUsers || 0}</div>
+						<div className="stat-label">Total Users</div>
+					</div>
+					<div className="stat-card">
+						<div className="stat-card-header">
+							<div className="stat-icon green">
+								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
 								</svg>
-								Add Host
-							</button>
+							</div>
 						</div>
-
-						<div>
-							<label htmlFor="app_session_ttl_days" className="form-label">
-								Session TTL (days)
-							</label>
-							<input
-								type="number"
-								id="app_session_ttl_days"
-								name="app_session_ttl_days"
-								min="1"
-								max="365"
-								value={formData.appSessionTtlDays || 28}
-								onChange={handleInputChange}
-							/>
-						</div>
-
-						<div>
-							<label htmlFor="default_license_plan" className="form-label">
-								Default License Plan
-							</label>
-							<select
-								id="default_license_plan"
-								name="default_license_plan"
-								value={formData.defaultLicensePlan || "free"}
-								onChange={handleInputChange}
-							>
-								<option value="free">Free</option>
-								<option value="trial">Trial</option>
-								<option value="pro">Pro</option>
-								<option value="enterprise">Enterprise</option>
-							</select>
-						</div>
-
-						<div style={{ gridColumn: "1 / -1" }}>
-							<label style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer", padding: "12px", background: "var(--content-bg)", borderRadius: "8px" }}>
-								<input
-									type="checkbox"
-									name="licensingRequired"
-									checked={formData.licensingRequired ?? true}
-									onChange={handleInputChange}
-									style={{ cursor: "pointer" }}
-								/>
-								<div>
-									<div style={{ fontWeight: "500", color: "var(--text-primary)" }}>Licensing Required</div>
-									<div style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>
-										Users must have a valid license to access this app
-									</div>
-								</div>
-							</label>
-						</div>
-
-						<div style={{ gridColumn: "1 / -1" }}>
-							<label style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer", padding: "12px", background: "var(--content-bg)", borderRadius: "8px" }}>
-								<input
-									type="checkbox"
-									name="isActive"
-									checked={formData.isActive ?? true}
-									onChange={handleInputChange}
-									style={{ cursor: "pointer" }}
-								/>
-								<div>
-									<div style={{ fontWeight: "500", color: "var(--text-primary)" }}>App Active</div>
-									<div style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>
-										When disabled, users cannot authenticate with this app
-									</div>
-								</div>
-							</label>
-						</div>
+						<div className="stat-value">{statsLoading ? "—" : stats?.activeLicenses || 0}</div>
+						<div className="stat-label">Active Licenses</div>
+						{!statsLoading && stats && (
+							<div style={{ fontSize: "11px", color: "var(--text-tertiary)", marginTop: "4px" }}>
+								{stats.totalLicenses} total
+							</div>
+						)}
 					</div>
-
-					<div style={{ display: "flex", gap: "12px", justifyContent: "flex-end", borderTop: "1px solid var(--border-secondary)", paddingTop: "24px" }}>
-						<button
-							type="button"
-							onClick={() => {
-								setIsEditing(false);
-								setFormData(null);
-							}}
-							className="btn btn-secondary"
-						>
-							Cancel
-						</button>
-						<button
-							type="submit"
-							disabled={updateAppMutation.isPending}
-							className="btn btn-primary"
-						>
-							{updateAppMutation.isPending ? "Saving..." : "Save Changes"}
-						</button>
+					<div className="stat-card">
+						<div className="stat-card-header">
+							<div className="stat-icon blue">
+								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+								</svg>
+							</div>
+						</div>
+						<div className="stat-value">{statsLoading ? "—" : stats?.totalSessions || 0}</div>
+						<div className="stat-label">Active Sessions</div>
 					</div>
-
-					{updateAppMutation.isError && (
-						<div className="alert alert-danger" style={{ marginTop: "16px" }}>
-							<span>Error updating app. Please try again.</span>
-						</div>
-					)}
-					{updateAppMutation.isSuccess && (
-						<div className="alert alert-success" style={{ marginTop: "16px" }}>
-							<span>App updated successfully!</span>
-						</div>
-					)}
-				</form>
-			)}
-
-			{/* Details Grid */}
-			{!isEditing && (
-				<div className="card">
-					<h2 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "24px", color: "var(--text-primary)" }}>
-						Configuration
-					</h2>
-
-					<div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px" }}>
-						<div>
-							<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px" }}>OAuth Providers</p>
-							<div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-								{app.requiredProviders?.length ? (
-									app.requiredProviders.map((provider: string) => (
-										<span
-											key={provider}
-											style={{
-												display: "inline-block",
-												padding: "4px 12px",
-												background: "var(--primary)",
-												color: "white",
-												borderRadius: "12px",
-												fontSize: "13px",
-												fontWeight: "500",
-												textTransform: "capitalize",
-											}}
-										>
-											{provider}
-										</span>
-									))
-								) : (
-									<p style={{ color: "var(--text-tertiary)", fontSize: "13px" }}>Not configured</p>
-								)}
+					<div className="stat-card">
+						<div className="stat-card-header">
+							<div className="stat-icon orange">
+								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+								</svg>
 							</div>
 						</div>
-
-						<div>
-							<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px" }}>Session TTL</p>
-							<p style={{ fontSize: "13px", color: "var(--text-primary)", fontWeight: "500" }}>
-								{app.appSessionTtlDays} days
-							</p>
-						</div>
-
-						<div style={{ gridColumn: "1 / -1" }}>
-							<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px" }}>Redirect URIs</p>
-							<div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-								{app.redirectUris?.length ? (
-									app.redirectUris.map((uri: string, index: number) => (
-										<code
-											key={index}
-											style={{
-												background: "var(--content-bg)",
-												padding: "8px 12px",
-												borderRadius: "4px",
-												fontFamily: "monospace",
-												fontSize: "13px",
-												color: "var(--text-primary)",
-											}}
-										>
-											{uri}
-										</code>
-									))
-								) : (
-									<p style={{ color: "var(--text-tertiary)", fontSize: "13px" }}>Not configured</p>
-								)}
-							</div>
-						</div>
-
-						<div style={{ gridColumn: "1 / -1" }}>
-							<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px" }}>Allowed Hosts</p>
-							<div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-								{app.allowedHosts?.length ? (
-									app.allowedHosts.map((host: string, index: number) => (
-										<code
-											key={index}
-											style={{
-												background: "var(--content-bg)",
-												padding: "8px 12px",
-												borderRadius: "4px",
-												fontFamily: "monospace",
-												fontSize: "13px",
-												color: "var(--text-primary)",
-											}}
-										>
-											{host}
-										</code>
-									))
-								) : (
-									<p style={{ color: "var(--text-tertiary)", fontSize: "13px" }}>Not configured</p>
-								)}
-							</div>
-						</div>
-
-						<div>
-							<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px" }}>License Plan</p>
-							<p style={{ fontSize: "13px", color: "var(--text-primary)", fontWeight: "500", textTransform: "capitalize" }}>
-								{app.defaultLicensePlan}
-							</p>
-						</div>
-
-						<div>
-							<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px" }}>Licensing Required</p>
-							<p style={{ fontSize: "13px", color: "var(--text-primary)", fontWeight: "500" }}>
-								{app.licensingRequired ? "Yes" : "No"}
-							</p>
-						</div>
+						<div className="stat-value">${statsLoading ? "—" : (stats?.totalRevenue || 0).toFixed(2)}</div>
+						<div className="stat-label">Revenue</div>
 					</div>
 				</div>
-			)}
-		</div>
-	);
+
+				{/* Quick Actions */}
+				<div>
+					<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "16px", color: "var(--text-primary)" }}>
+						Quick Actions
+					</h3>
+					<div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
+						<button
+							type="button"
+							onClick={() => navigate(`/projects/${projectId}/apps/${appId}/users`)}
+							style={{
+								background: "var(--card-bg)",
+								border: "1px solid var(--border-secondary)",
+								borderRadius: "12px",
+								padding: "20px",
+								cursor: "pointer",
+								transition: "all 0.2s ease",
+								display: "flex",
+								flexDirection: "column",
+								alignItems: "center",
+								gap: "12px",
+								textAlign: "center",
+							}}
+							onMouseEnter={(e) => {
+								e.currentTarget.style.borderColor = "var(--primary)";
+								e.currentTarget.style.transform = "translateY(-2px)";
+								e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)";
+							}}
+							onMouseLeave={(e) => {
+								e.currentTarget.style.borderColor = "var(--border-secondary)";
+								e.currentTarget.style.transform = "translateY(0)";
+								e.currentTarget.style.boxShadow = "none";
+							}}
+						>
+					<div style={{
+								width: "48px",
+								height: "48px",
+								borderRadius: "12px",
+								background: "linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05))",
+								display: "flex",
+						alignItems: "center",
+								justifyContent: "center",
+							}}>
+								<svg style={{ width: "24px", height: "24px", color: "var(--primary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+								</svg>
+							</div>
+							<div>
+								<div style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "4px" }}>
+									Manage Users
+								</div>
+								<div style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+									View & invite
+								</div>
+							</div>
+						</button>
+
+						<button
+							type="button"
+							onClick={() => alert("License management coming in Phase 4!")}
+							style={{
+								background: "var(--card-bg)",
+								border: "1px solid var(--border-secondary)",
+						borderRadius: "12px",
+								padding: "20px",
+								cursor: "pointer",
+								transition: "all 0.2s ease",
+								display: "flex",
+								flexDirection: "column",
+								alignItems: "center",
+								gap: "12px",
+								textAlign: "center",
+							}}
+							onMouseEnter={(e) => {
+								e.currentTarget.style.borderColor = "var(--primary)";
+								e.currentTarget.style.transform = "translateY(-2px)";
+								e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)";
+							}}
+							onMouseLeave={(e) => {
+								e.currentTarget.style.borderColor = "var(--border-secondary)";
+								e.currentTarget.style.transform = "translateY(0)";
+								e.currentTarget.style.boxShadow = "none";
+							}}
+						>
+							<div style={{
+								width: "48px",
+								height: "48px",
+								borderRadius: "12px",
+								background: "linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05))",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+							}}>
+								<svg style={{ width: "24px", height: "24px", color: "var(--success)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+								</svg>
+							</div>
+							<div>
+								<div style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "4px" }}>
+									Licenses
+								</div>
+								<div style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+									Plans & billing
+								</div>
+							</div>
+						</button>
+
+						<button
+							type="button"
+							onClick={() => navigate(`/projects/${projectId}/apps/${appId}/settings`)}
+							style={{
+								background: "var(--card-bg)",
+								border: "1px solid var(--border-secondary)",
+								borderRadius: "12px",
+								padding: "20px",
+								cursor: "pointer",
+								transition: "all 0.2s ease",
+								display: "flex",
+								flexDirection: "column",
+								alignItems: "center",
+								gap: "12px",
+								textAlign: "center",
+							}}
+							onMouseEnter={(e) => {
+								e.currentTarget.style.borderColor = "var(--primary)";
+								e.currentTarget.style.transform = "translateY(-2px)";
+								e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)";
+							}}
+							onMouseLeave={(e) => {
+								e.currentTarget.style.borderColor = "var(--border-secondary)";
+								e.currentTarget.style.transform = "translateY(0)";
+								e.currentTarget.style.boxShadow = "none";
+							}}
+						>
+							<div style={{
+								width: "48px",
+								height: "48px",
+								borderRadius: "12px",
+								background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05))",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+							}}>
+								<svg style={{ width: "24px", height: "24px", color: "rgb(59, 130, 246)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+								</svg>
+							</div>
+							<div>
+								<div style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "4px" }}>
+									Settings
+								</div>
+								<div style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+									Auth & config
+								</div>
+							</div>
+						</button>
+
+						<button
+							type="button"
+							onClick={() => alert("API Keys management coming in Phase 7!")}
+							style={{
+								background: "var(--card-bg)",
+								border: "1px solid var(--border-secondary)",
+								borderRadius: "12px",
+								padding: "20px",
+								cursor: "pointer",
+								transition: "all 0.2s ease",
+								display: "flex",
+								flexDirection: "column",
+								alignItems: "center",
+								gap: "12px",
+								textAlign: "center",
+							}}
+							onMouseEnter={(e) => {
+								e.currentTarget.style.borderColor = "var(--primary)";
+								e.currentTarget.style.transform = "translateY(-2px)";
+								e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)";
+							}}
+							onMouseLeave={(e) => {
+								e.currentTarget.style.borderColor = "var(--border-secondary)";
+								e.currentTarget.style.transform = "translateY(0)";
+								e.currentTarget.style.boxShadow = "none";
+							}}
+						>
+							<div style={{
+								width: "48px",
+								height: "48px",
+								borderRadius: "12px",
+								background: "linear-gradient(135deg, rgba(251, 146, 60, 0.1), rgba(251, 146, 60, 0.05))",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+							}}>
+								<svg style={{ width: "24px", height: "24px", color: "rgb(251, 146, 60)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+								</svg>
+							</div>
+							<div>
+								<div style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "4px" }}>
+									API Keys
+								</div>
+								<div style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+									Integration
+								</div>
+							</div>
+						</button>
+					</div>
+				</div>
+	</div>
+);
 }

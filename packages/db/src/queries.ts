@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, inArray, isNull } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNull, lt } from "drizzle-orm";
 import type { DbClient } from "./index.js";
 import {
 	apps,
@@ -6,6 +6,7 @@ import {
 	auth_codes,
 	email_verifications,
 	identities,
+	invitations,
 	licenses,
 	project_members,
 	projects,
@@ -74,6 +75,15 @@ export const sessionQueries = {
 
 	async findByPublicId(db: DbClient, publicId: string) {
 		return db.select().from(sessions).where(eq(sessions.public_id, publicId)).get();
+	},
+
+	async findByUserId(db: DbClient, userId: number) {
+		return db
+			.select()
+			.from(sessions)
+			.where(eq(sessions.user_id, userId))
+			.orderBy(desc(sessions.created_at))
+			.all();
 	},
 
 	async findActiveByUserId(db: DbClient, userId: number) {
@@ -239,6 +249,24 @@ export const licenseQueries = {
 		return db.select().from(licenses).where(eq(licenses.user_id, userId)).all();
 	},
 
+	async findByAppId(db: DbClient, appId: number) {
+		return db.select().from(licenses).where(eq(licenses.app_id, appId)).all();
+	},
+
+	async create(db: DbClient, data: typeof licenses.$inferInsert) {
+		return db.insert(licenses).values(data).returning().get();
+	},
+
+	async update(db: DbClient, licenseId: number, data: Partial<typeof licenses.$inferInsert>) {
+		const now = Math.floor(Date.now() / 1000);
+		return db
+			.update(licenses)
+			.set({ ...data, updated_at: now })
+			.where(eq(licenses.id, licenseId))
+			.returning()
+			.get();
+	},
+
 	async upsert(db: DbClient, userId: number, appId: number, data: Partial<typeof licenses.$inferInsert>) {
 		const existing = await licenseQueries.findByUserAndApp(db, userId, appId);
 		const now = Math.floor(Date.now() / 1000);
@@ -327,5 +355,70 @@ export const auditLogQueries = {
 			.orderBy(desc(audit_logs.created_at))
 			.limit(limit)
 			.all();
+	},
+};
+
+/**
+ * Invitation queries
+ */
+export const invitationQueries = {
+	async create(db: DbClient, data: typeof invitations.$inferInsert) {
+		return db.insert(invitations).values(data).returning().get();
+	},
+
+	async findByPublicId(db: DbClient, publicId: string) {
+		return db.select().from(invitations).where(eq(invitations.public_id, publicId)).get();
+	},
+
+	async findByEmailAndApp(db: DbClient, email: string, appId: number) {
+		return db
+			.select()
+			.from(invitations)
+			.where(and(eq(invitations.email, email), eq(invitations.app_id, appId)))
+			.get();
+	},
+
+	async findPendingByEmailAndApp(db: DbClient, email: string, appId: number) {
+		const now = Math.floor(Date.now() / 1000);
+		return db
+			.select()
+			.from(invitations)
+			.where(
+				and(
+					eq(invitations.email, email),
+					eq(invitations.app_id, appId),
+					isNull(invitations.consumed_at),
+					gt(invitations.expires_at, now),
+				),
+			)
+			.get();
+	},
+
+	async findPendingByApp(db: DbClient, appId: number, limit = 100) {
+		const now = Math.floor(Date.now() / 1000);
+		return db
+			.select()
+			.from(invitations)
+			.where(and(eq(invitations.app_id, appId), isNull(invitations.consumed_at), gt(invitations.expires_at, now)))
+			.orderBy(desc(invitations.created_at))
+			.limit(limit)
+			.all();
+	},
+
+	async markConsumed(db: DbClient, invitationId: number, userId: number) {
+		return db
+			.update(invitations)
+			.set({ consumed_at: Math.floor(Date.now() / 1000), consumed_by_user_id: userId })
+			.where(eq(invitations.id, invitationId))
+			.returning()
+			.get();
+	},
+
+	async deleteExpired(db: DbClient) {
+		const now = Math.floor(Date.now() / 1000);
+		return db
+			.delete(invitations)
+			.where(and(isNull(invitations.consumed_at), lt(invitations.expires_at, now)))
+			.returning();
 	},
 };

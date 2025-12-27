@@ -33,6 +33,11 @@ export const ProjectDTOSchema = z.object({
 	slug: SlugSchema,
 	createdAt: z.number().optional(),
 	updatedAt: z.number().optional(),
+	totalApps: z.number().optional(),
+	totalUsers: z.number().optional(),
+	totalLicenses: z.number().optional(),
+	activeLicenses: z.number().optional(),
+	totalRevenue: z.number().optional(),
 });
 
 export const ProjectsListResponseSchema = z.object({
