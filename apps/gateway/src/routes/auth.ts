@@ -85,8 +85,11 @@ authRoutes.get("/callback", async (c: Context) => {
 		const ttlSeconds = 7 * 24 * 60 * 60; // 7 days
 		await sessionStore.setAppSession(sessionId, data.userId, "user-dashboard", ttlSeconds);
 
-		// Create signed cookie
-		const { name, value, attributes } = createSessionCookie(sessionId);
+		// Create signed cookie with domain for cross-subdomain access
+		const cookieDomain = process.env.COOKIE_DOMAIN; // e.g., ".proofa.sh"
+		const { name, value, attributes } = createSessionCookie(sessionId, {
+			domain: cookieDomain,
+		});
 
 		// Set cookie
 		setCookie(c, name, value, {
@@ -94,6 +97,7 @@ authRoutes.get("/callback", async (c: Context) => {
 			secure: attributes.secure as boolean,
 			sameSite: attributes.sameSite as "Strict" | "Lax" | "None",
 			path: attributes.path as string,
+			domain: attributes.domain as string | undefined,
 		});
 
 		// Redirect to user dashboard (or the return_to URL)

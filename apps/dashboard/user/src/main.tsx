@@ -4,9 +4,12 @@ import { ProofaProvider } from "@proofa/react";
 import App from "./App";
 import "./index.css";
 
+// Use direct Gateway URL for API calls (with CORS + credentials)
+const gatewayUrl = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
 	<React.StrictMode>
-		<ProofaProvider config={{ gatewayUrl: "/api" }}>
+		<ProofaProvider config={{ gatewayUrl }}>
 			<App />
 		</ProofaProvider>
 	</React.StrictMode>,

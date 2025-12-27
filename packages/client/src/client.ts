@@ -10,13 +10,13 @@ import type {
 
 export class ProofaClient {
 	private baseUrl: string;
-	private httpClient: HttpClient;
 	private s2sToken?: string;
+	private httpClient: HttpClient;
 
 	constructor(config: ProofaClientConfig) {
 		this.baseUrl = config.gatewayUrl.replace(/\/$/, "");
-		this.httpClient = new HttpClient();
 		this.s2sToken = config.s2sToken;
+		this.httpClient = new HttpClient();
 	}
 
 	private async request<T>(
@@ -28,7 +28,7 @@ export class ProofaClient {
 		// Build headers with optional S2S token for backend usage
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
-			...options?.headers as any,
+			...(options?.headers as Record<string, string>),
 		};
 		
 		// Add S2S token if provided (backend authentication)
@@ -38,15 +38,15 @@ export class ProofaClient {
 		
 		const response = await this.httpClient.send({
 			url,
-			method: (options?.method as any) || "GET",
-			headers: headers as any,
-			body: (options?.body as any) || undefined,
+			method: (options?.method || "GET") as any,
+			headers,
+			body: options?.body as string,
 		});
 
 		if (!response.ok) {
 			let error: ApiError;
 			try {
-				error = await response.json();
+				error = JSON.parse(response.body);
 			} catch {
 				error = {
 					ok: false,
@@ -59,7 +59,7 @@ export class ProofaClient {
 			throw new ProofaError(error.error.message, error.error.code, response.status);
 		}
 
-		return response.json();
+		return JSON.parse(response.body);
 	}
 
 	// Authentication

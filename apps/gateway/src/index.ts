@@ -11,8 +11,31 @@ import { meRoutes } from "./routes/me";
 const log = createLogger("gateway");
 const app = new Hono();
 
-// Middleware
-app.use("*", cors());
+// CORS configuration for cross-subdomain requests with credentials
+const allowedOrigins = [
+	"http://localhost:5173",
+	"http://localhost:5174",
+	"https://user.proofa.sh",
+	"https://manage.proofa.sh",
+	"https://proofa.sh",
+];
+
+app.use("*", cors({
+	origin: (origin) => {
+		// Allow requests with no origin (e.g., same-origin, curl)
+		if (!origin) return "*";
+		// Check if origin is in allowed list
+		if (allowedOrigins.includes(origin)) return origin;
+		// Allow any *.proofa.sh subdomain
+		if (origin.endsWith(".proofa.sh")) return origin;
+		return null;
+	},
+	credentials: true,
+	allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+	allowHeaders: ["Content-Type", "Authorization", "X-Proofa-Service-Token"],
+	exposeHeaders: ["Set-Cookie"],
+}));
+
 app.use("*", httpLogger(log));
 
 // Auth middleware (applies to protected routes)

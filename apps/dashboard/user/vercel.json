@@ -7,7 +7,7 @@
 	"rewrites": [
 		{
 			"source": "/api/:path*",
-			"destination": "https://api.proofa.sh/v1/:path*"
+			"destination": "https://api.proofa.sh/:path*"
 		},
 		{
 			"source": "/((?!assets/).*)",

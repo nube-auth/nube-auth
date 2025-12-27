@@ -33,8 +33,16 @@ load_env() {
         while IFS= read -r line || [ -n "$line" ]; do
             # Skip empty lines and comments
             [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
-            # Export the variable (handles values with special characters)
-            export "$line"
+            # Extract key and value, stripping surrounding quotes from value
+            key="${line%%=*}"
+            value="${line#*=}"
+            # Remove surrounding quotes if present
+            value="${value#\"}"
+            value="${value%\"}"
+            value="${value#\'}"
+            value="${value%\'}"
+            # Export the variable
+            export "$key=$value"
         done < .env
     else
         echo -e "${RED}Error: .env file not found${NC}"

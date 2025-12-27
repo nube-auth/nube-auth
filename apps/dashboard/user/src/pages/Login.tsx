@@ -18,7 +18,8 @@ export function LoginPage() {
 		// Check if already authenticated
 		const checkAuth = async () => {
 			try {
-				const res = await fetch("/api/auth/status", { credentials: "include" });
+				const gatewayUrl = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
+				const res = await fetch(`${gatewayUrl}/v1/auth/status`, { credentials: "include" });
 				if (res.ok) {
 					const data = await res.json();
 					if (data.loggedIn) {

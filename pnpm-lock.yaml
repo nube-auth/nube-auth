@@ -255,8 +255,8 @@ importers:
   packages/client:
     dependencies:
       pingpong-fetch:
-        specifier: '*'
-        version: 1.2.0
+        specifier: ^1.2.1
+        version: 1.2.1
     devDependencies:
       typescript:
         specifier: ^5.7.2
@@ -4029,8 +4029,8 @@ packages:
     resolution: {integrity: sha512-M+0jlCeF47LsbX/1atckon+Hy4/pIXGuLtiU+KAfJ9+tg7DiiyJv/2SUFuvHh9vNqO2kDmbZryOpfvbfSOOD+w==}
     engines: {node: '>=18.0.0'}
 
-  pingpong-fetch@1.2.0:
-    resolution: {integrity: sha512-PYwPLLgDx0WaE/lpCQTe1zYxHUMukfvhpcb/2f6LUERpWpndxscCL0q/hRd5iA9SHD9SlKfJwLTbFlqapXuxeA==}
+  pingpong-fetch@1.2.1:
+    resolution: {integrity: sha512-wPVV/oY76eoL0miS+pwgpPpZ2v0j+6DIBqJM9dzzlYS8dQkFH/jlZm+z75vQ33HXZGb+hnP/GjI3pEAVcdVLdw==}
     engines: {node: '>=18.0.0'}
 
   pino-abstract-transport@2.0.0:
@@ -9262,7 +9262,7 @@ snapshots:
 
   pingpong-core@1.1.0: {}
 
-  pingpong-fetch@1.2.0:
+  pingpong-fetch@1.2.1:
     dependencies:
       pingpong-core: 1.1.0
       undici: 7.16.0

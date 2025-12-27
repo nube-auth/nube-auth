@@ -1,23 +1,32 @@
 import { GitHubOAuthAdapter, GoogleOAuthAdapter } from "@proofa/auth";
 import { getDb, identityQueries, sessionQueries, userQueries } from "@proofa/db";
+import { cache } from "@proofa/redis";
 import { createId, idPatterns } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 
 const router = new Hono();
 
-// In-memory store for OAuth state (in production, use Redis)
-const oauthStateStore = new Map<string, { redirectUri: string; provider: string; expiresAt: number }>();
+// OAuth state storage helpers using Redis
+const OAUTH_STATE_PREFIX = "oauth:state:";
+const OAUTH_STATE_TTL = 600; // 10 minutes
 
-// Cleanup expired states periodically
-setInterval(() => {
-	const now = Date.now();
-	for (const [key, value] of oauthStateStore.entries()) {
-		if (value.expiresAt < now) {
-			oauthStateStore.delete(key);
-		}
-	}
-}, 60000); // Every minute
+interface OAuthStateData {
+	redirectUri: string;
+	provider: string;
+}
+
+async function setOAuthState(state: string, data: OAuthStateData): Promise<void> {
+	await cache.set(`${OAUTH_STATE_PREFIX}${state}`, data, OAUTH_STATE_TTL);
+}
+
+async function getOAuthState(state: string): Promise<OAuthStateData | null> {
+	return cache.get<OAuthStateData>(`${OAUTH_STATE_PREFIX}${state}`);
+}
+
+async function deleteOAuthState(state: string): Promise<void> {
+	await cache.delete(`${OAUTH_STATE_PREFIX}${state}`);
+}
 
 /**
  * GET /v1/auth/start
@@ -52,11 +61,10 @@ router.get("/start", async (c: Context) => {
 		// Generate state for CSRF protection and to store redirect info
 		const oauthState = createId("authCode");
 
-		// Store the redirect_uri and provider for when Google calls back
-		oauthStateStore.set(oauthState, {
+		// Store the redirect_uri and provider in Redis for when Google calls back
+		await setOAuthState(oauthState, {
 			redirectUri,
 			provider,
-			expiresAt: Date.now() + 10 * 60 * 1000, // 10 minutes
 		});
 
 		// Core's own callback URL - Google will redirect here
@@ -89,9 +97,9 @@ router.get("/callback/:provider", async (c: Context) => {
 	// Check for OAuth error
 	if (error) {
 		console.error("OAuth error from provider:", error);
-		const storedState = state ? oauthStateStore.get(state) : null;
+		const storedState = state ? await getOAuthState(state) : null;
 		if (storedState) {
-			oauthStateStore.delete(state!);
+			await deleteOAuthState(state!);
 			const redirectUrl = new URL(storedState.redirectUri);
 			redirectUrl.searchParams.set("error", error);
 			return c.redirect(redirectUrl.toString());
@@ -107,8 +115,8 @@ router.get("/callback/:provider", async (c: Context) => {
 		return c.json({ error: "Missing state" }, 400);
 	}
 
-	// Retrieve stored state
-	const storedState = oauthStateStore.get(state);
+	// Retrieve stored state from Redis
+	const storedState = await getOAuthState(state);
 	if (!storedState) {
 		return c.json({ error: "Invalid or expired state" }, 400);
 	}
@@ -118,8 +126,8 @@ router.get("/callback/:provider", async (c: Context) => {
 		return c.json({ error: "Provider mismatch" }, 400);
 	}
 
-	// Clean up state
-	oauthStateStore.delete(state);
+	// Clean up state from Redis
+	await deleteOAuthState(state);
 
 	try {
 		const db = getDb();
