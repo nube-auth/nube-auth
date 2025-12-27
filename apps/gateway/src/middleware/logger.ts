@@ -1,14 +1,14 @@
 import { serializeError } from "@proofa/shared";
 import type { Context, Next } from "hono";
 import type pino from "pino";
-import { v4 as uuidv4 } from "uuid";
+import { createId } from "@proofa/shared";
 
 /**
  * HTTP request/response logger middleware using pino
  */
 export function httpLogger(log: pino.Logger) {
 	return async (c: Context, next: Next) => {
-		const requestId = c.req.header("x-request-id") || uuidv4();
+		const requestId = c.req.header("x-request-id") || createId("request");
 		const method = c.req.method;
 		const path = c.req.path;
 		const startTime = Date.now();
@@ -45,5 +45,5 @@ export function httpLogger(log: pino.Logger) {
  * Generate unique request ID
  */
 export function generateRequestId(): string {
-	return uuidv4();
+	return createId("request");
 }

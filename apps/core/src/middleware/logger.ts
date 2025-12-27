@@ -1,13 +1,13 @@
 import type { Context, Next } from "hono";
 import type pino from "pino";
-import { v4 as uuidv4 } from "uuid";
+import { createId } from "@proofa/shared";
 
 /**
  * Request ID middleware
  * Adds unique request ID for tracking and logging
  */
 export async function requestIdMiddleware(c: Context, next: Next) {
-	const requestId = c.req.header("x-request-id") || uuidv4();
+	const requestId = c.req.header("x-request-id") || createId("request");
 	c.set("requestId", requestId);
 	await next();
 }
@@ -17,7 +17,7 @@ export async function requestIdMiddleware(c: Context, next: Next) {
  */
 export function httpLogger(log: pino.Logger) {
 	return async (c: Context, next: Next) => {
-		const requestId = c.req.header("x-request-id") || uuidv4();
+		const requestId = c.req.header("x-request-id") || createId("request");
 		const method = c.req.method;
 		const path = c.req.path;
 		const startTime = Date.now();

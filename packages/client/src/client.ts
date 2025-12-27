@@ -16,9 +16,7 @@ export class ProofaClient {
 	constructor(config: ProofaClientConfig) {
 		this.baseUrl = config.gatewayUrl.replace(/\/$/, "");
 		this.s2sToken = config.s2sToken;
-		this.httpClient = new HttpClient({
-			credentials: "include", // Always send cookies with requests
-		});
+		this.httpClient = new HttpClient();
 	}
 
 	private async request<T>(
@@ -38,12 +36,15 @@ export class ProofaClient {
 			headers["X-Proofa-Service-Token"] = this.s2sToken;
 		}
 		
-		const response = await this.httpClient.send({
-			url,
-			method: (options?.method || "GET") as any,
-			headers,
-			body: options?.body as string,
-		});
+		const response = await this.httpClient.send(
+			{
+				url,
+				method: (options?.method || "GET") as any,
+				headers,
+				body: options?.body as string,
+				credentials: "include", // Send cookies with requests (browser-only)
+			} as any
+		); // Cast to any to support credentials option from newer pingpong-fetch
 
 		if (!response.ok) {
 			let error: ApiError;

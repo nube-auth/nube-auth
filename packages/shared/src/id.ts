@@ -48,6 +48,9 @@ export const id = {
 	/** Generate audit log ID (AL0, 12 chars total) */
 	auditLog: () => `AL0${nano9()}`,
 
+	/** Generate Request ID (REQ0, 13 chars total) */
+	request: () => `REQ0${nano11()}`,
+
 	/** Generate OAuth state token (12 chars, no prefix) */
 	state: () => nano12(),
 } as const;
@@ -81,6 +84,7 @@ export const idPatterns = {
 	authCode: /^C0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{12}$/,
 	emailVerification: /^E0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 	auditLog: /^AL0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+	request: /^REQ0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{11}$/,
 	state: /^[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{12}$/,
 } as const;
 
