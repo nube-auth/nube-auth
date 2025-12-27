@@ -23,10 +23,10 @@ export interface AuthStatus {
 }
 
 export interface Session {
-	public_id: string;
-	created_at: number;
-	last_seen_at: number;
-	expires_at: number;
+	id: string;
+    createdAt: string;
+    expiresAt: string;
+    isCurrent?: boolean;
 }
 
 export interface License {

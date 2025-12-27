@@ -16,7 +16,7 @@ export function SessionsPage() {
 		);
 	}
 
-	const activeSessions = sessions?.filter((s) => new Date(s.expires_at * 1000) > new Date()) || [];
+	const activeSessions = sessions?.filter((s) => new Date(s.expiresAt) > new Date()) || [];
 	const currentSession = sessions?.[0];
 
 	const initials = user?.name
@@ -26,7 +26,7 @@ export function SessionsPage() {
 				.join("")
 				.toUpperCase()
 				.slice(0, 2)
-		: user?.primary_email?.charAt(0).toUpperCase() || "U";
+		: user?.email?.charAt(0).toUpperCase() || "U";
 
 const formatDate = (date: string | number) => {
 const timestamp = typeof date === 'number' ? date * 1000 : new Date(date).getTime();
@@ -71,7 +71,7 @@ year: "numeric"
 				<div className="info-item">
 					<div className="info-label">Current Expires</div>
 					<div className="info-value">
-						{currentSession ? formatDate(currentSession.expires_at) : "N/A"}
+						{currentSession ? formatDate(currentSession.expiresAt) : "N/A"}
 					</div>
 				</div>
 				<div className="info-item">
@@ -132,11 +132,11 @@ year: "numeric"
 					<div className="current-session-meta">
 						<div className="current-session-meta-item">
 							<label>Started</label>
-							<span>{new Date(currentSession.created_at).toLocaleString()}</span>
+							<span>{new Date(currentSession.createdAt).toLocaleString()}</span>
 						</div>
 						<div className="current-session-meta-item">
 							<label>Expires</label>
-							<span>{new Date(currentSession.expires_at).toLocaleString()}</span>
+							<span>{new Date(currentSession.expiresAt).toLocaleString()}</span>
 						</div>
 					</div>
 				</div>
@@ -181,9 +181,9 @@ year: "numeric"
 							</thead>
 							<tbody>
 								{sessions.map((session) => {
-									const isExpired = new Date(session.expires_at) < new Date();
+									const isExpired = new Date(session.expiresAt) < new Date();
 									return (
-										<tr key={session.public_id}>
+										<tr key={session.id}>
 											<td>
 												<div className="table-account">
 													<div className="table-account-icon">
@@ -196,16 +196,16 @@ year: "numeric"
 															{false ? "This Device" : "Other Device"}
 														</span>
 														<span className="table-account-email">
-															ID: {session.public_id.slice(0, 12)}...
+															ID: {session.id.slice(0, 12)}...
 														</span>
 													</div>
 												</div>
 											</td>
 											<td className="table-date">
-												{formatDate(session.created_at)}
+												{formatDate(session.createdAt)}
 											</td>
 											<td className="table-date">
-												{formatDate(session.expires_at)}
+												{formatDate(session.expiresAt)}
 											</td>
 											<td>
 												{false ? (
