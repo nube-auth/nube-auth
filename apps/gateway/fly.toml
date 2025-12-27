@@ -4,6 +4,9 @@
 app = "proofa-gateway"
 primary_region = "bom"
 
+[build]
+  dockerfile = "apps/gateway/Dockerfile"
+
 [env]
   NODE_ENV = "production"
   PORT = "8080"
