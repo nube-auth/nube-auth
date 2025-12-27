@@ -258,7 +258,7 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			redirect_uris: JSON.stringify(validatedData.redirectUris || []),
 			required_providers: JSON.stringify(validatedData.requiredProviders || []),
 			app_session_ttl_days: validatedData.appSessionTtlDays || 28,
-			licensing_required: validatedData.licensingRequired ?? true,
+			licensing_required: Number(validatedData.licensingRequired ?? true),
 			default_license_plan: validatedData.defaultLicensePlan || "free",
 			trial_days: validatedData.trialDays,
 			account_lockout_minutes: 30,
@@ -592,7 +592,7 @@ adminRoutes.get("/projects/:projectId/members", async (c: Context) => {
 					return {
 						id: m.id,
 						userId: memberUser?.public_id,
-						email: memberUser?.email,
+						email: memberUser?.primary_email,
 						name: memberUser?.name,
 						role: m.role,
 						createdAt: m.created_at,
