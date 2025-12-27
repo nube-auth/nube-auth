@@ -1,4 +1,4 @@
-import { getDb, userQueries } from "@proofa/db";
+import { getDb, sessionQueries, userQueries } from "@proofa/db";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { getAuth } from "../middleware/auth";
@@ -91,17 +91,28 @@ meRoutes.delete("/sessions", async (c: Context) => {
 meRoutes.get("/sessions", async (c: Context) => {
 	try {
 		const auth = getAuth(c);
+		const db = getDb();
 
-		// This would be fetched from Core, for now return empty
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		const sessionRows = await sessionQueries.findActiveByUserId(db, user.id);
+		sessionRows.sort((a, b) => {
+			const aIsCurrent = a.public_id === auth.sessionId;
+			const bIsCurrent = b.public_id === auth.sessionId;
+			if (aIsCurrent !== bIsCurrent) return aIsCurrent ? -1 : 1;
+			return b.last_seen_at - a.last_seen_at;
+		});
+
 		return c.json({
-			sessions: [
-				{
-					id: auth.appSessionId,
-					createdAt: new Date(),
-					expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-					isCurrent: true,
-				},
-			],
+			sessions: sessionRows.map((s) => ({
+				id: s.public_id,
+				createdAt: new Date(s.created_at * 1000).toISOString(),
+				expiresAt: new Date(s.expires_at * 1000).toISOString(),
+				isCurrent: s.public_id === auth.sessionId,
+			})),
 		});
 	} catch (error) {
 		console.error("Get sessions error:", error);

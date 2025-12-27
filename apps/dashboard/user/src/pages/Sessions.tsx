@@ -182,6 +182,7 @@ year: "numeric"
 							<tbody>
 								{sessions.map((session) => {
 									const isExpired = new Date(session.expiresAt) < new Date();
+									const isCurrent = session.isCurrent === true;
 									return (
 										<tr key={session.id}>
 											<td>
@@ -193,7 +194,7 @@ year: "numeric"
 													</div>
 													<div className="table-account-info">
 														<span className="table-account-name">
-															{false ? "This Device" : "Other Device"}
+															{isCurrent ? "This Device" : "Other Device"}
 														</span>
 														<span className="table-account-email">
 															ID: {session.id.slice(0, 12)}...
@@ -208,7 +209,7 @@ year: "numeric"
 												{formatDate(session.expiresAt)}
 											</td>
 											<td>
-												{false ? (
+												{isCurrent ? (
 													<span className="badge badge-success">
 														<span style={{ 
 															width: "6px", 
