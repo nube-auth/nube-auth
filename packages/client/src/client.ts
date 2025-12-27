@@ -16,7 +16,9 @@ export class ProofaClient {
 	constructor(config: ProofaClientConfig) {
 		this.baseUrl = config.gatewayUrl.replace(/\/$/, "");
 		this.s2sToken = config.s2sToken;
-		this.httpClient = new HttpClient();
+		this.httpClient = new HttpClient({
+			credentials: "include", // Always send cookies with requests
+		});
 	}
 
 	private async request<T>(
