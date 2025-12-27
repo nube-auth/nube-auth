@@ -267,7 +267,7 @@ await auth.signIn('google');`}
 											}}>{app.id}</code>
 										</td>
 										<td>
-											<span style={{ color: "var(--text-secondary)" }}>{app.app_session_ttl_days || 28} days</span>
+											<span style={{ color: "var(--text-secondary)" }}>{app.appSessionTtlDays || 28} days</span>
 										</td>
 										<td>
 											<span className="badge badge-success">Active</span>
@@ -351,7 +351,7 @@ await auth.signIn('google');`}
 											</span>
 										</td>
 										<td style={{ color: "var(--text-secondary)" }}>
-											{new Date(member.created_at).toLocaleDateString()}
+											{new Date(member.createdAt).toLocaleDateString()}
 										</td>
 									</tr>
 								))}

@@ -1,4 +1,21 @@
 // Re-export all types
+export type {
+	ApiResponse,
+	App,
+	AuditLog,
+	AuthCode,
+	AuthContext,
+	EmailVerification,
+	Identity,
+	License,
+	Project,
+	ProjectMember,
+	Session,
+	User,
+} from "./types/index.js";
+
+// Re-export schemas
+export * from "./types/schemas/index.js";
 
 // Re-export constants
 export {
@@ -45,20 +62,6 @@ export {
 export type { IdType } from "./id.js";
 // Re-export ID generators and validation
 export { createId, id, idPatterns, validateId } from "./id.js";
-export type {
-	ApiResponse,
-	App,
-	AuditLog,
-	AuthCode,
-	AuthContext,
-	EmailVerification,
-	Identity,
-	License,
-	Project,
-	ProjectMember,
-	Session,
-	User,
-} from "./types/index.js";
 
 // Re-export utilities
 export {

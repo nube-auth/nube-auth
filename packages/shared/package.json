@@ -10,6 +10,10 @@
 		".": {
 			"import": "./dist/index.js",
 			"types": "./dist/index.d.ts"
+		},
+		"./types/schemas": {
+			"import": "./dist/types/schemas/index.js",
+			"types": "./dist/types/schemas/index.d.ts"
 		}
 	},
 	"scripts": {
@@ -17,7 +21,8 @@
 		"dev": "tsc --watch"
 	},
 	"dependencies": {
-		"pino": "^10.1.0"
+		"pino": "^10.1.0",
+		"zod": "^3.22.4"
 	},
 	"devDependencies": {
 		"typescript": "^5.3.3",

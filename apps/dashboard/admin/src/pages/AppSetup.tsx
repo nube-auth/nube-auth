@@ -13,12 +13,12 @@ export function AppSetupPage() {
 		name: "",
 		slug: "",
 		description: "",
-		redirect_uris: [""],
-		required_providers: ["google"],
-		allowed_hosts: [""],
-		app_session_ttl_days: 28,
-		licensing_required: true,
-		default_license_plan: "free",
+		redirectUris: [""],
+		requiredProviders: ["google"],
+		allowedHosts: [""],
+		appSessionTtlDays: 28,
+		licensingRequired: true,
+		defaultLicensePlan: "free",
 	});
 
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -76,12 +76,12 @@ export function AppSetupPage() {
 			name: formData.name,
 			slug: formData.slug || formData.name.toLowerCase().replace(/\s+/g, "-"),
 			description: formData.description,
-			redirect_uris: formData.redirect_uris.filter((uri) => uri.trim()),
-			required_providers: formData.required_providers.filter((p) => p.trim()),
-			allowed_hosts: formData.allowed_hosts.filter((host) => host.trim()),
-			app_session_ttl_days: formData.app_session_ttl_days,
-			licensing_required: formData.licensing_required,
-			default_license_plan: formData.default_license_plan,
+			redirectUris: formData.redirectUris.filter((uri) => uri.trim()),
+			requiredProviders: formData.requiredProviders.filter((p) => p.trim()),
+			allowedHosts: formData.allowedHosts.filter((host) => host.trim()),
+			appSessionTtlDays: formData.appSessionTtlDays,
+			licensingRequired: formData.licensingRequired,
+			defaultLicensePlan: formData.defaultLicensePlan as "free" | "trial",
 		};
 
 		createAppMutation.mutate(dataToSend, {
@@ -257,17 +257,17 @@ export function AppSetupPage() {
 											<input
 												type="checkbox"
 												value={provider}
-												checked={formData.required_providers.includes(provider)}
+												checked={formData.requiredProviders.includes(provider)}
 												onChange={(e) => {
 													if (e.target.checked) {
 														setFormData((prev) => ({
 															...prev,
-															required_providers: [...prev.required_providers, provider],
+															requiredProviders: [...prev.requiredProviders, provider],
 														}));
 													} else {
 														setFormData((prev) => ({
 															...prev,
-															required_providers: prev.required_providers.filter((p) => p !== provider),
+															requiredProviders: prev.requiredProviders.filter((p) => p !== provider),
 														}));
 													}
 												}}
@@ -286,19 +286,19 @@ export function AppSetupPage() {
 									Redirect URIs *
 								</label>
 								<div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
-									{formData.redirect_uris.map((uri, index) => (
+									{formData.redirectUris.map((uri, index) => (
 										<div key={index} style={{ display: "flex", gap: "8px" }}>
 											<input
 												type="url"
 												placeholder="e.g., http://localhost:3000/callback"
 												value={uri}
-												onChange={(e) => handleArrayFieldChange("redirect_uris", index, e.target.value)}
+												onChange={(e) => handleArrayFieldChange("redirectUris", index, e.target.value)}
 												style={{ flex: 1 }}
 											/>
-											{formData.redirect_uris.length > 1 && (
+											{formData.redirectUris.length > 1 && (
 												<button
 													type="button"
-													onClick={() => removeArrayField("redirect_uris", index)}
+													onClick={() => removeArrayField("redirectUris", index)}
 													className="btn btn-ghost btn-sm"
 													style={{ color: "var(--danger)" }}
 												>
@@ -312,7 +312,7 @@ export function AppSetupPage() {
 								</div>
 								<button
 									type="button"
-									onClick={() => addArrayField("redirect_uris")}
+									onClick={() => addArrayField("redirectUris")}
 									className="btn btn-secondary btn-sm"
 									style={{ marginBottom: "12px" }}
 								>
@@ -331,19 +331,19 @@ export function AppSetupPage() {
 									Allowed Hosts
 								</label>
 								<div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
-									{formData.allowed_hosts.map((host, index) => (
+									{formData.allowedHosts.map((host, index) => (
 										<div key={index} style={{ display: "flex", gap: "8px" }}>
 											<input
 												type="text"
 												placeholder="e.g., localhost:3000, example.com"
 												value={host}
-												onChange={(e) => handleArrayFieldChange("allowed_hosts", index, e.target.value)}
+												onChange={(e) => handleArrayFieldChange("allowedHosts", index, e.target.value)}
 												style={{ flex: 1 }}
 											/>
-											{formData.allowed_hosts.length > 1 && (
+											{formData.allowedHosts.length > 1 && (
 												<button
 													type="button"
-													onClick={() => removeArrayField("allowed_hosts", index)}
+													onClick={() => removeArrayField("allowedHosts", index)}
 													className="btn btn-ghost btn-sm"
 													style={{ color: "var(--danger)" }}
 												>
@@ -357,7 +357,7 @@ export function AppSetupPage() {
 								</div>
 								<button
 									type="button"
-									onClick={() => addArrayField("allowed_hosts")}
+									onClick={() => addArrayField("allowedHosts")}
 									className="btn btn-secondary btn-sm"
 									style={{ marginBottom: "12px" }}
 								>
@@ -383,7 +383,7 @@ export function AppSetupPage() {
 									type="button"
 									onClick={() => setStep(3)}
 									className="btn btn-primary"
-									disabled={formData.redirect_uris.filter((uri) => uri.trim()).length === 0}
+									disabled={formData.redirectUris.filter((uri) => uri.trim()).length === 0}
 								>
 									Next
 								</button>
@@ -395,16 +395,16 @@ export function AppSetupPage() {
 					{step === 3 && (
 						<div className="space-y-6">
 							<div>
-								<label htmlFor="app_session_ttl_days" className="form-label">
+								<label htmlFor="appSessionTtlDays" className="form-label">
 									Session TTL (days)
 								</label>
 								<input
 									type="number"
-									id="app_session_ttl_days"
-									name="app_session_ttl_days"
+									id="appSessionTtlDays"
+									name="appSessionTtlDays"
 									min="1"
 									max="365"
-									value={formData.app_session_ttl_days}
+									value={formData.appSessionTtlDays}
 									onChange={handleInputChange}
 									style={{ marginBottom: "8px" }}
 								/>
@@ -414,13 +414,13 @@ export function AppSetupPage() {
 							</div>
 
 							<div>
-								<label htmlFor="default_license_plan" className="form-label">
+								<label htmlFor="defaultLicensePlan" className="form-label">
 									Default License Plan
 								</label>
 								<select
-									id="default_license_plan"
-									name="default_license_plan"
-									value={formData.default_license_plan}
+									id="defaultLicensePlan"
+									name="defaultLicensePlan"
+									value={formData.defaultLicensePlan}
 									onChange={handleInputChange}
 									style={{ marginBottom: "8px" }}
 								>
@@ -437,13 +437,13 @@ export function AppSetupPage() {
 							<div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", background: "var(--content-bg)", borderRadius: "8px" }}>
 								<input
 									type="checkbox"
-									id="licensing_required"
-									name="licensing_required"
-									checked={formData.licensing_required}
+									id="licensingRequired"
+									name="licensingRequired"
+									checked={formData.licensingRequired}
 									onChange={handleInputChange}
 									style={{ cursor: "pointer" }}
 								/>
-								<label htmlFor="licensing_required" style={{ cursor: "pointer", flex: 1 }}>
+								<label htmlFor="licensingRequired" style={{ cursor: "pointer", flex: 1 }}>
 									<div style={{ fontWeight: "500", color: "var(--text-primary)" }}>Licensing Required</div>
 									<div style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>
 										Users must have a valid license to access this app

@@ -1,5 +1,17 @@
 import { appQueries, getDb, licenseQueries, projectMemberQueries, projectQueries, userQueries } from "@proofa/db";
 import { createId } from "@proofa/shared";
+import {
+	ProjectDTOSchema,
+	ProjectsListResponseSchema,
+	CreateProjectRequestSchema,
+	CreateAppRequestSchema,
+	UpdateAppRequestSchema,
+	AppDTOSchema,
+	AppsListResponseSchema,
+	ProjectMembersListResponseSchema,
+	LicensesListResponseSchema,
+} from "@proofa/shared/types/schemas";
+import { z } from "zod";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { getAuth } from "../middleware/auth";
@@ -63,11 +75,10 @@ adminRoutes.get("/projects", async (c: Context) => {
 adminRoutes.post("/projects", async (c: Context) => {
 	try {
 		const auth = getAuth(c);
-		const { name } = (await c.req.json()) as { name?: string };
+		const body = await c.req.json();
 
-		if (!name) {
-			return c.json({ error: "Project name required" }, 400);
-		}
+		// Validate request
+		const validatedData = CreateProjectRequestSchema.parse(body);
 
 		const db = getDb();
 
@@ -81,8 +92,8 @@ adminRoutes.post("/projects", async (c: Context) => {
 
 		const project = await projectQueries.create(db, {
 			public_id: createId("project"),
-			name,
-			slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+			name: validatedData.name,
+			slug: validatedData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
 			owner_user_id: user.id,
 			created_at: now,
 			updated_at: now,
@@ -96,15 +107,21 @@ adminRoutes.post("/projects", async (c: Context) => {
 			created_at: now,
 		});
 
-		return c.json(
-			{
-				id: project.public_id,
-				name: project.name,
-				slug: project.slug,
-			},
-			201,
-		);
+		// Validate and return response
+		const projectDTO = ProjectDTOSchema.parse({
+			id: project.public_id,
+			name: project.name,
+			slug: project.slug,
+			createdAt: project.created_at,
+			updatedAt: project.updated_at,
+		});
+
+		return c.json(projectDTO, 201);
 	} catch (error) {
+		if (error instanceof z.ZodError) {
+			console.error("Validation error:", error.errors);
+			return c.json({ error: "Invalid request data", details: error.errors }, 400);
+		}
 		console.error("Create project error:", error);
 		return c.json({ error: "Failed to create project" }, 500);
 	}
@@ -204,26 +221,10 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 	try {
 		const auth = getAuth(c);
 		const projectId = c.req.param("projectId");
-		const body = (await c.req.json()) as {
-			name?: string;
-			slug?: string;
-			description?: string;
-			redirect_uris?: string[];
-			allowed_hosts?: string[];
-			required_providers?: string[];
-			app_session_ttl_days?: number;
-			licensing_required?: boolean;
-			default_license_plan?: string;
-			trial_days?: number;
-		};
+		const body = await c.req.json();
 
-		if (!body.name) {
-			return c.json({ error: "App name required" }, 400);
-		}
-
-		if (!body.redirect_uris || body.redirect_uris.length === 0) {
-			return c.json({ error: "At least one redirect URI required" }, 400);
-		}
+		// Validate request
+		const validatedData = CreateAppRequestSchema.parse(body);
 
 		const db = getDb();
 
@@ -250,16 +251,16 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 		const app = await appQueries.create(db, {
 			public_id: createId("app"),
 			project_id: project.id,
-			name: body.name,
-			slug: body.slug || body.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-			description: body.description,
-			allowed_hosts: JSON.stringify(body.allowed_hosts || []),
-			redirect_uris: JSON.stringify(body.redirect_uris || []),
-			required_providers: JSON.stringify(body.required_providers || []),
-			app_session_ttl_days: body.app_session_ttl_days || 28,
-			licensing_required: body.licensing_required ?? true,
-			default_license_plan: body.default_license_plan || "free",
-			trial_days: body.trial_days,
+			name: validatedData.name,
+			slug: validatedData.slug || validatedData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+			description: validatedData.description,
+			allowed_hosts: JSON.stringify(validatedData.allowedHosts || []),
+			redirect_uris: JSON.stringify(validatedData.redirectUris || []),
+			required_providers: JSON.stringify(validatedData.requiredProviders || []),
+			app_session_ttl_days: validatedData.appSessionTtlDays || 28,
+			licensing_required: validatedData.licensingRequired ?? true,
+			default_license_plan: validatedData.defaultLicensePlan || "free",
+			trial_days: validatedData.trialDays,
 			account_lockout_minutes: 30,
 			cache_ttl_minutes: 60,
 			cors_allowed_origins: JSON.stringify(["http://localhost:3001"]),
@@ -268,31 +269,35 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			updated_at: now,
 		});
 
-		return c.json(
-			{
-				id: app.public_id,
-				project_id: project.public_id,
-				name: app.name,
-				slug: app.slug,
-				description: app.description,
-				allowed_hosts: app.allowed_hosts ? JSON.parse(app.allowed_hosts) : [],
-				redirect_uris: app.redirect_uris ? JSON.parse(app.redirect_uris) : [],
-				required_providers: app.required_providers ? JSON.parse(app.required_providers) : [],
-				is_active: app.is_active,
-				licensing_required: app.licensing_required,
-				default_license_plan: app.default_license_plan,
-				trial_days: app.trial_days,
-				app_session_ttl_days: app.app_session_ttl_days,
-				account_lockout_minutes: app.account_lockout_minutes,
-				cache_ttl_minutes: app.cache_ttl_minutes,
-				cors_allowed_origins: app.cors_allowed_origins ? JSON.parse(app.cors_allowed_origins) : [],
-				rate_limit_requests_per_minute: app.rate_limit_requests_per_minute,
-				created_at: app.created_at,
-				updated_at: app.updated_at,
-			},
-			201,
-		);
+		// Validate and return response
+		const appDTO = AppDTOSchema.parse({
+			id: app.public_id,
+			projectId: project.public_id,
+			name: app.name,
+			slug: app.slug,
+			description: app.description,
+			redirectUris: app.redirect_uris ? JSON.parse(app.redirect_uris) : [],
+			allowedHosts: app.allowed_hosts ? JSON.parse(app.allowed_hosts) : [],
+			requiredProviders: app.required_providers ? JSON.parse(app.required_providers) : [],
+			isActive: app.is_active,
+			licensingRequired: app.licensing_required,
+			defaultLicensePlan: app.default_license_plan,
+			trialDays: app.trial_days,
+			appSessionTtlDays: app.app_session_ttl_days,
+			accountLockoutMinutes: app.account_lockout_minutes,
+			cacheTtlMinutes: app.cache_ttl_minutes,
+			corsAllowedOrigins: app.cors_allowed_origins ? JSON.parse(app.cors_allowed_origins) : [],
+			rateLimitRequestsPerMinute: app.rate_limit_requests_per_minute,
+			createdAt: app.created_at,
+			updatedAt: app.updated_at,
+		});
+
+		return c.json(appDTO, 201);
 	} catch (error) {
+		if (error instanceof z.ZodError) {
+			console.error("Validation error:", error.errors);
+			return c.json({ error: "Invalid request data", details: error.errors }, 400);
+		}
 		console.error("Create app error:", error);
 		return c.json({ error: "Failed to create app" }, 500);
 	}
@@ -460,7 +465,10 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 		const auth = getAuth(c);
 		const projectId = c.req.param("projectId");
 		const appId = c.req.param("appId");
-		const updates = (await c.req.json()) as Record<string, unknown>;
+		const body = await c.req.json();
+
+		// Validate request (partial update)
+		const validatedData = UpdateAppRequestSchema.parse(body);
 
 		const db = getDb();
 
@@ -493,46 +501,48 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 		// Build update object with JSON serialization for array fields
 		const updateData: Record<string, unknown> = { updated_at: now };
 
-		if (updates.name) updateData.name = updates.name;
-		if (updates.slug) updateData.slug = updates.slug;
-		if (updates.description) updateData.description = updates.description;
-		if (updates.allowed_hosts) updateData.allowed_hosts = JSON.stringify(updates.allowed_hosts);
-		if (updates.redirect_uris) updateData.redirect_uris = JSON.stringify(updates.redirect_uris);
-		if (updates.required_providers) updateData.required_providers = JSON.stringify(updates.required_providers);
-		if ("is_active" in updates) updateData.is_active = updates.is_active ? true : false;
-		if ("licensing_required" in updates) updateData.licensing_required = updates.licensing_required ? true : false;
-		if (updates.default_license_plan) updateData.default_license_plan = updates.default_license_plan;
-		if (updates.trial_days) updateData.trial_days = updates.trial_days;
-		if (updates.app_session_ttl_days) updateData.app_session_ttl_days = updates.app_session_ttl_days;
-		if (updates.account_lockout_minutes) updateData.account_lockout_minutes = updates.account_lockout_minutes;
-		if (updates.cache_ttl_minutes) updateData.cache_ttl_minutes = updates.cache_ttl_minutes;
-		if (updates.cors_allowed_origins) updateData.cors_allowed_origins = JSON.stringify(updates.cors_allowed_origins);
-		if (updates.rate_limit_requests_per_minute) updateData.rate_limit_requests_per_minute = updates.rate_limit_requests_per_minute;
+		if (validatedData.name) updateData.name = validatedData.name;
+		if (validatedData.slug) updateData.slug = validatedData.slug;
+		if (validatedData.description !== undefined) updateData.description = validatedData.description;
+		if (validatedData.allowedHosts) updateData.allowed_hosts = JSON.stringify(validatedData.allowedHosts);
+		if (validatedData.redirectUris) updateData.redirect_uris = JSON.stringify(validatedData.redirectUris);
+		if (validatedData.requiredProviders) updateData.required_providers = JSON.stringify(validatedData.requiredProviders);
+		if ("licensingRequired" in validatedData) updateData.licensing_required = validatedData.licensingRequired ? true : false;
+		if (validatedData.defaultLicensePlan) updateData.default_license_plan = validatedData.defaultLicensePlan;
+		if (validatedData.trialDays !== undefined) updateData.trial_days = validatedData.trialDays;
+		if (validatedData.appSessionTtlDays) updateData.app_session_ttl_days = validatedData.appSessionTtlDays;
 
 		const updatedApp = await appQueries.update(db, app.id, updateData);
 
-		return c.json({
+		// Validate and return response
+		const appDTO = AppDTOSchema.parse({
 			id: updatedApp.public_id,
-			project_id: project.public_id,
+			projectId: project.public_id,
 			name: updatedApp.name,
 			slug: updatedApp.slug,
 			description: updatedApp.description,
-			allowed_hosts: updatedApp.allowed_hosts ? JSON.parse(updatedApp.allowed_hosts) : [],
-			redirect_uris: updatedApp.redirect_uris ? JSON.parse(updatedApp.redirect_uris) : [],
-			required_providers: updatedApp.required_providers ? JSON.parse(updatedApp.required_providers) : [],
-			is_active: updatedApp.is_active,
-			licensing_required: updatedApp.licensing_required,
-			default_license_plan: updatedApp.default_license_plan,
-			trial_days: updatedApp.trial_days,
-			app_session_ttl_days: updatedApp.app_session_ttl_days,
-			account_lockout_minutes: updatedApp.account_lockout_minutes,
-			cache_ttl_minutes: updatedApp.cache_ttl_minutes,
-			cors_allowed_origins: updatedApp.cors_allowed_origins ? JSON.parse(updatedApp.cors_allowed_origins) : [],
-			rate_limit_requests_per_minute: updatedApp.rate_limit_requests_per_minute,
-			created_at: updatedApp.created_at,
-			updated_at: updatedApp.updated_at,
+			redirectUris: updatedApp.redirect_uris ? JSON.parse(updatedApp.redirect_uris) : [],
+			allowedHosts: updatedApp.allowed_hosts ? JSON.parse(updatedApp.allowed_hosts) : [],
+			requiredProviders: updatedApp.required_providers ? JSON.parse(updatedApp.required_providers) : [],
+			isActive: updatedApp.is_active,
+			licensingRequired: updatedApp.licensing_required,
+			defaultLicensePlan: updatedApp.default_license_plan,
+			trialDays: updatedApp.trial_days,
+			appSessionTtlDays: updatedApp.app_session_ttl_days,
+			accountLockoutMinutes: updatedApp.account_lockout_minutes,
+			cacheTtlMinutes: updatedApp.cache_ttl_minutes,
+			corsAllowedOrigins: updatedApp.cors_allowed_origins ? JSON.parse(updatedApp.cors_allowed_origins) : [],
+			rateLimitRequestsPerMinute: updatedApp.rate_limit_requests_per_minute,
+			createdAt: updatedApp.created_at,
+			updatedAt: updatedApp.updated_at,
 		});
+
+		return c.json(appDTO);
 	} catch (error) {
+		if (error instanceof z.ZodError) {
+			console.error("Validation error:", error.errors);
+			return c.json({ error: "Invalid request data", details: error.errors }, 400);
+		}
 		console.error("Update app error:", error);
 		if (error instanceof Error) {
 			console.error("Error details:", error.message, error.stack);

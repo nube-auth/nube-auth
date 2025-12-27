@@ -74,11 +74,11 @@ export function LicensesPage() {
 							<tbody>
 								{licenses.map((license) => {
 									const isActive = license.status === "active" || license.status !== "expired";
-									const expiryDate = license.valid_until || license.valid_until;
+									const expiryDate = license.validUntil || license.validUntil;
 									const isExpired = expiryDate && new Date(expiryDate) < new Date();
 									
 									return (
-										<tr key={license.public_id}>
+										<tr key={license.id}>
 											<td>
 												<div className="flex items-center gap-3">
 													<div className="w-8 h-8 bg-yellow-50 rounded-lg flex items-center justify-center">
@@ -86,11 +86,11 @@ export function LicensesPage() {
 															<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
 														</svg>
 													</div>
-													<span className="code-inline">{license.public_id}</span>
+													<span className="code-inline">{license.id}</span>
 												</div>
 											</td>
 											<td>
-												<span className="text-gray-600">{license.app_id || license.app_id || "—"}</span>
+												<span className="text-gray-600">{license.appId || license.appId || "—"}</span>
 											</td>
 											<td>
 												<span className="badge badge-info capitalize">

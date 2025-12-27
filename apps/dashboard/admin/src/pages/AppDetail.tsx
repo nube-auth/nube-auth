@@ -20,13 +20,13 @@ export function AppDetailPage() {
 			name: app.name,
 			slug: app.slug,
 			description: app.description,
-			redirect_uris: app.redirect_uris || [],
-			required_providers: app.required_providers || [],
-			allowed_hosts: app.allowed_hosts || [],
-			app_session_ttl_days: app.app_session_ttl_days || 28,
-			licensing_required: app.licensing_required ?? true,
-			default_license_plan: app.default_license_plan || "free",
-			is_active: app.is_active ?? true,
+			redirectUris: app.redirectUris || [],
+			requiredProviders: app.requiredProviders || [],
+			allowedHosts: app.allowedHosts || [],
+			appSessionTtlDays: app.appSessionTtlDays || 28,
+			licensingRequired: app.licensingRequired ?? true,
+			defaultLicensePlan: app.defaultLicensePlan || "free",
+			isActive: app.isActive ?? true,
 		});
 	}
 
@@ -97,14 +97,13 @@ export function AppDetailPage() {
 			name: formData.name,
 			slug: formData.slug,
 			description: formData.description,
-			redirect_uris: (formData.redirect_uris || []).filter((uri) => uri.trim()),
-			required_providers: (formData.required_providers || []).filter((p) => p.trim()),
-			allowed_hosts: (formData.allowed_hosts || []).filter((host) => host.trim()),
-			app_session_ttl_days: formData.app_session_ttl_days,
-			licensing_required: Boolean(formData.licensing_required),
-			default_license_plan: formData.default_license_plan,
-			is_active: Boolean(formData.is_active),
-			trial_days: formData.trial_days,
+			redirectUris: (formData.redirectUris || []).filter((uri) => uri.trim()),
+			requiredProviders: (formData.requiredProviders || []).filter((p) => p.trim()),
+			allowedHosts: (formData.allowedHosts || []).filter((host) => host.trim()),
+			appSessionTtlDays: formData.appSessionTtlDays,
+			licensingRequired: Boolean(formData.licensingRequired),
+			defaultLicensePlan: formData.defaultLicensePlan as "free" | "trial",
+			trialDays: formData.trialDays,
 		};
 
 		updateAppMutation.mutate(dataToSend, {
@@ -115,8 +114,8 @@ export function AppDetailPage() {
 	};
 
 	const copyPublicId = () => {
-		if (app?.public_id) {
-			navigator.clipboard.writeText(app.public_id);
+		if (app?.id) {
+			navigator.clipboard.writeText(app.id);
 			setCopied(true);
 			setTimeout(() => setCopied(false), 2000);
 		}
@@ -207,7 +206,7 @@ export function AppDetailPage() {
 						<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Public ID</p>
 						<div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
 							<code style={{ background: "var(--content-bg)", padding: "4px 8px", borderRadius: "4px", fontFamily: "monospace", fontSize: "13px" }}>
-								{app.public_id}
+								{app.id}
 							</code>
 							<button
 								onClick={copyPublicId}
@@ -232,8 +231,8 @@ export function AppDetailPage() {
 							gap: "6px",
 							padding: "4px 12px",
 							borderRadius: "12px",
-							background: app.is_active ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
-							color: app.is_active ? "rgb(34, 197, 94)" : "rgb(239, 68, 68)",
+							background: app.isActive ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
+							color: app.isActive ? "rgb(34, 197, 94)" : "rgb(239, 68, 68)",
 							fontSize: "13px",
 							fontWeight: "500",
 						}}>
@@ -241,21 +240,21 @@ export function AppDetailPage() {
 								width: "8px",
 								height: "8px",
 								borderRadius: "50%",
-								background: app.is_active ? "rgb(34, 197, 94)" : "rgb(239, 68, 68)",
+								background: app.isActive ? "rgb(34, 197, 94)" : "rgb(239, 68, 68)",
 							}} />
-							{app.is_active ? "Active" : "Inactive"}
+							{app.isActive ? "Active" : "Inactive"}
 						</div>
 					</div>
 					<div>
 						<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Created</p>
 						<p style={{ fontSize: "13px", color: "var(--text-primary)" }}>
-							{new Date(app.created_at).toLocaleDateString()}
+							{new Date(app.createdAt).toLocaleDateString()}
 						</p>
 					</div>
 					<div>
 						<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Last Updated</p>
 						<p style={{ fontSize: "13px", color: "var(--text-primary)" }}>
-							{new Date(app.updated_at).toLocaleDateString()}
+							{new Date(app.updatedAt).toLocaleDateString()}
 						</p>
 					</div>
 				</div>
@@ -317,17 +316,17 @@ export function AppDetailPage() {
 										<input
 											type="checkbox"
 											value={provider}
-											checked={(formData.required_providers || []).includes(provider)}
+											checked={(formData.requiredProviders || []).includes(provider)}
 											onChange={(e) => {
 												if (e.target.checked) {
 													setFormData((prev) => ({
 														...prev,
-														required_providers: [...(prev?.required_providers || []), provider],
+														requiredProviders: [...(prev?.requiredProviders || []), provider],
 													}));
 												} else {
 													setFormData((prev) => ({
 														...prev,
-														required_providers: (prev?.required_providers || []).filter((p) => p !== provider),
+														requiredProviders: (prev?.requiredProviders || []).filter((p) => p !== provider),
 													}));
 												}
 											}}
@@ -343,7 +342,7 @@ export function AppDetailPage() {
 								Redirect URIs *
 							</label>
 							<div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
-								{(formData.redirect_uris || []).map((uri, index) => (
+								{(formData.redirectUris || []).map((uri, index) => (
 									<div key={index} style={{ display: "flex", gap: "8px" }}>
 										<input
 											type="url"
@@ -352,10 +351,10 @@ export function AppDetailPage() {
 											onChange={(e) => handleArrayFieldChange("redirect_uris", index, e.target.value)}
 											style={{ flex: 1 }}
 										/>
-										{(formData.redirect_uris || []).length > 1 && (
+										{(formData.redirectUris || []).length > 1 && (
 											<button
 												type="button"
-												onClick={() => removeArrayField("redirect_uris", index)}
+												onClick={() => removeArrayField("redirectUris", index)}
 												className="btn btn-ghost btn-sm"
 												style={{ color: "var(--danger)" }}
 											>
@@ -382,7 +381,7 @@ export function AppDetailPage() {
 						<div style={{ gridColumn: "1 / -1" }}>
 							<label className="form-label">Allowed Hosts</label>
 							<div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
-								{(formData.allowed_hosts || []).map((host, index) => (
+								{(formData.allowedHosts || []).map((host, index) => (
 									<div key={index} style={{ display: "flex", gap: "8px" }}>
 										<input
 											type="text"
@@ -391,10 +390,10 @@ export function AppDetailPage() {
 											onChange={(e) => handleArrayFieldChange("allowed_hosts", index, e.target.value)}
 											style={{ flex: 1 }}
 										/>
-										{(formData.allowed_hosts || []).length > 1 && (
+										{(formData.allowedHosts || []).length > 1 && (
 											<button
 												type="button"
-												onClick={() => removeArrayField("allowed_hosts", index)}
+												onClick={() => removeArrayField("allowedHosts", index)}
 												className="btn btn-ghost btn-sm"
 												style={{ color: "var(--danger)" }}
 											>
@@ -428,7 +427,7 @@ export function AppDetailPage() {
 								name="app_session_ttl_days"
 								min="1"
 								max="365"
-								value={formData.app_session_ttl_days || 28}
+								value={formData.appSessionTtlDays || 28}
 								onChange={handleInputChange}
 							/>
 						</div>
@@ -440,7 +439,7 @@ export function AppDetailPage() {
 							<select
 								id="default_license_plan"
 								name="default_license_plan"
-								value={formData.default_license_plan || "free"}
+								value={formData.defaultLicensePlan || "free"}
 								onChange={handleInputChange}
 							>
 								<option value="free">Free</option>
@@ -454,8 +453,8 @@ export function AppDetailPage() {
 							<label style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer", padding: "12px", background: "var(--content-bg)", borderRadius: "8px" }}>
 								<input
 									type="checkbox"
-									name="licensing_required"
-									checked={formData.licensing_required ?? true}
+									name="licensingRequired"
+									checked={formData.licensingRequired ?? true}
 									onChange={handleInputChange}
 									style={{ cursor: "pointer" }}
 								/>
@@ -472,8 +471,8 @@ export function AppDetailPage() {
 							<label style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer", padding: "12px", background: "var(--content-bg)", borderRadius: "8px" }}>
 								<input
 									type="checkbox"
-									name="is_active"
-									checked={formData.is_active ?? true}
+									name="isActive"
+									checked={formData.isActive ?? true}
 									onChange={handleInputChange}
 									style={{ cursor: "pointer" }}
 								/>
@@ -531,8 +530,8 @@ export function AppDetailPage() {
 						<div>
 							<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px" }}>OAuth Providers</p>
 							<div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-								{app.required_providers?.length ? (
-									app.required_providers.map((provider) => (
+								{app.requiredProviders?.length ? (
+									app.requiredProviders.map((provider) => (
 										<span
 											key={provider}
 											style={{
@@ -558,15 +557,15 @@ export function AppDetailPage() {
 						<div>
 							<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px" }}>Session TTL</p>
 							<p style={{ fontSize: "13px", color: "var(--text-primary)", fontWeight: "500" }}>
-								{app.app_session_ttl_days} days
+								{app.appSessionTtlDays} days
 							</p>
 						</div>
 
 						<div style={{ gridColumn: "1 / -1" }}>
 							<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px" }}>Redirect URIs</p>
 							<div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-								{app.redirect_uris?.length ? (
-									app.redirect_uris.map((uri, index) => (
+								{app.redirectUris?.length ? (
+									app.redirectUris.map((uri, index) => (
 										<code
 											key={index}
 											style={{
@@ -590,8 +589,8 @@ export function AppDetailPage() {
 						<div style={{ gridColumn: "1 / -1" }}>
 							<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px" }}>Allowed Hosts</p>
 							<div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-								{app.allowed_hosts?.length ? (
-									app.allowed_hosts.map((host, index) => (
+								{app.allowedHosts?.length ? (
+									app.allowedHosts.map((host, index) => (
 										<code
 											key={index}
 											style={{
@@ -615,14 +614,14 @@ export function AppDetailPage() {
 						<div>
 							<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px" }}>License Plan</p>
 							<p style={{ fontSize: "13px", color: "var(--text-primary)", fontWeight: "500", textTransform: "capitalize" }}>
-								{app.default_license_plan}
+								{app.defaultLicensePlan}
 							</p>
 						</div>
 
 						<div>
 							<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px" }}>Licensing Required</p>
 							<p style={{ fontSize: "13px", color: "var(--text-primary)", fontWeight: "500" }}>
-								{app.licensing_required ? "Yes" : "No"}
+								{app.licensingRequired ? "Yes" : "No"}
 							</p>
 						</div>
 					</div>
