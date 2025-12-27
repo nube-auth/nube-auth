@@ -28,7 +28,7 @@ export function LoginPage() {
 						method: "POST",
 						credentials: "include",
 						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ coreSessionId: code }),
+						body: JSON.stringify({ coreSessionId: code, audience: "admin" }),
 					});
 
 					if (res.ok) {
@@ -50,7 +50,7 @@ export function LoginPage() {
 
 			// Check if already authenticated before showing login
 			try {
-				const meRes = await fetch("/api/me", { credentials: "include" });
+				const meRes = await fetch("/api/admin/me", { credentials: "include" });
 				if (meRes.ok) {
 					// Already logged in, redirect to projects
 					navigate("/projects", { replace: true });

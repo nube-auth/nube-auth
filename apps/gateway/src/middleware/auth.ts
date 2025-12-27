@@ -5,6 +5,9 @@ import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 import { coreClient } from "../lib/core-client";
 
+const USER_SESSION_COOKIE = "proofa_user_session";
+const ADMIN_SESSION_COOKIE = "proofa_admin_session";
+
 /**
  * Auth context with user and session info
  */
@@ -26,7 +29,9 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 		return next();
 	}
 
-	const cookieValue = getCookie(c, "proofa_session");
+	const isAdminRoute = c.req.path.startsWith("/v1/admin");
+	const cookieName = isAdminRoute ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
+	const cookieValue = getCookie(c, cookieName);
 
 	if (!cookieValue) {
 		return c.json({ error: "Unauthorized" }, 401);

@@ -8,6 +8,20 @@ import { getEnv } from "../config/env";
 
 export const authRoutes = new Hono();
 
+const USER_SESSION_COOKIE = "proofa_user_session";
+const ADMIN_SESSION_COOKIE = "proofa_admin_session";
+const LEGACY_SESSION_COOKIE = "proofa_session";
+
+function inferAudience(c: Context): "user" | "admin" {
+	const audience = c.req.query("audience");
+	if (audience === "admin") return "admin";
+	if (audience === "user") return "user";
+
+	const origin = c.req.header("origin") || "";
+	if (origin.includes("manage.proofa.") || origin.includes("admin.proofa.")) return "admin";
+	return "user";
+}
+
 /**
  * GET /v1/auth/start
  * Start OAuth flow - redirects to Core which then redirects to OAuth provider
@@ -87,17 +101,18 @@ authRoutes.get("/callback", async (c: Context) => {
 
 		// Create signed cookie with domain for cross-subdomain access
 		const cookieDomain = process.env.COOKIE_DOMAIN; // e.g., ".proofa.sh"
-		const { name, value, attributes } = createSessionCookie(sessionId, {
+		const { value, attributes } = createSessionCookie(sessionId, {
 			domain: cookieDomain,
 		});
 
 		// Set cookie
-		setCookie(c, name, value, {
+		setCookie(c, USER_SESSION_COOKIE, value, {
 			httpOnly: attributes.httpOnly as boolean,
 			secure: attributes.secure as boolean,
 			sameSite: attributes.sameSite as "Strict" | "Lax" | "None",
 			path: attributes.path as string,
 			domain: attributes.domain as string | undefined,
+			maxAge: attributes.maxAge as number | undefined,
 		});
 
 		// Redirect to user dashboard (or the return_to URL)
@@ -117,7 +132,7 @@ authRoutes.get("/callback", async (c: Context) => {
  */
 authRoutes.post("/login", async (c: Context) => {
 	try {
-		const { coreSessionId } = (await c.req.json()) as { coreSessionId?: string };
+		const { coreSessionId, audience } = (await c.req.json()) as { coreSessionId?: string; audience?: "user" | "admin" };
 
 		if (!coreSessionId) {
 			return c.json({ error: "Core session ID required" }, 400);
@@ -132,17 +147,27 @@ authRoutes.post("/login", async (c: Context) => {
 
 		// Store app session in Redis (7-day TTL for now)
 		const ttlSeconds = 7 * 24 * 60 * 60; // 7 days
-		await sessionStore.setAppSession(coreSessionId, user.userId, "gateway", ttlSeconds);
+		const resolvedAudience = audience === "admin" ? "admin" : "user";
+		await sessionStore.setAppSession(
+			coreSessionId,
+			user.userId,
+			resolvedAudience === "admin" ? "admin-dashboard" : "user-dashboard",
+			ttlSeconds,
+		);
 
 		// Create signed cookie
-		const { name, value, attributes } = createSessionCookie(coreSessionId);
+		const cookieDomain = process.env.COOKIE_DOMAIN; // e.g., ".proofa.sh"
+		const { value, attributes } = createSessionCookie(coreSessionId, { domain: cookieDomain });
+		const cookieName = resolvedAudience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
 
 		// Set cookie
-		setCookie(c, name, value, {
+		setCookie(c, cookieName, value, {
 			httpOnly: attributes.httpOnly as boolean,
 			secure: attributes.secure as boolean,
 			sameSite: attributes.sameSite as "Strict" | "Lax" | "None",
 			path: attributes.path as string,
+			domain: attributes.domain as string | undefined,
+			maxAge: attributes.maxAge as number | undefined,
 		});
 
 		return c.json({
@@ -166,15 +191,30 @@ authRoutes.post("/login", async (c: Context) => {
 authRoutes.post("/logout", async (c: Context) => {
 	try {
 		const isProduction = process.env.NODE_ENV === "production";
-		
-		// Clear session cookie
-		setCookie(c, "proofa_session", "", {
+		const audience = inferAudience(c);
+		const cookieDomain = process.env.COOKIE_DOMAIN;
+
+		const cookieName = audience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
+		setCookie(c, cookieName, "", {
 			httpOnly: true,
 			secure: isProduction,
 			sameSite: "Lax",
 			path: "/",
+			domain: cookieDomain,
 			maxAge: 0, // Clear cookie
 		});
+
+		// Back-compat: clear legacy cookie when logging out of user session.
+		if (audience === "user") {
+			setCookie(c, LEGACY_SESSION_COOKIE, "", {
+				httpOnly: true,
+				secure: isProduction,
+				sameSite: "Lax",
+				path: "/",
+				domain: cookieDomain,
+				maxAge: 0,
+			});
+		}
 
 		return c.json({ message: "Logged out successfully" });
 	} catch (error) {
@@ -189,7 +229,9 @@ authRoutes.post("/logout", async (c: Context) => {
  */
 authRoutes.get("/status", async (c: Context) => {
 	try {
-		const cookie = getCookie(c, "proofa_session");
+		const audience = inferAudience(c);
+		const isAdmin = audience === "admin";
+		const cookie = getCookie(c, isAdmin ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE);
 
 		if (!cookie) {
 			return c.json({ loggedIn: false });

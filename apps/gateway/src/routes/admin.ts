@@ -7,6 +7,24 @@ import { getAuth } from "../middleware/auth";
 export const adminRoutes = new Hono();
 
 /**
+ * GET /v1/admin/me
+ * Check admin-dashboard session (separate cookie)
+ */
+adminRoutes.get("/me", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		return c.json({
+			id: auth.userId,
+			email: auth.email,
+			name: auth.name,
+		});
+	} catch (error) {
+		console.error("Get admin me error:", error);
+		return c.json({ error: "Failed to get profile" }, 500);
+	}
+});
+
+/**
  * GET /v1/admin/projects
  * List projects for current user
  */
