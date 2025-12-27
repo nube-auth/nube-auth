@@ -1,30 +1,15 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import config from "../config";
-import { useCreateApp, useProject, useProjectApps, useProjectMembers } from "../hooks/api";
+import { useProject, useProjectApps, useProjectMembers } from "../hooks/api";
 
 export function ProjectDetailPage() {
 	const { projectId } = useParams<{ projectId: string }>();
+	const navigate = useNavigate();
 	const { data: project, isLoading: projectLoading } = useProject(projectId || "");
 	const { data: apps, isLoading: appsLoading } = useProjectApps(projectId || "");
 	const { data: members, isLoading: membersLoading } = useProjectMembers(projectId || "");
-	const createAppMutation = useCreateApp(projectId || "");
-	const [showAppForm, setShowAppForm] = useState(false);
-	const [appName, setAppName] = useState("");
 	const [copied, setCopied] = useState(false);
-
-	const handleCreateApp = (e: React.FormEvent) => {
-		e.preventDefault();
-		createAppMutation.mutate(
-			{ name: appName },
-			{
-				onSuccess: () => {
-					setAppName("");
-					setShowAppForm(false);
-				},
-			},
-		);
-	};
 
 	const copyToClipboard = (text: string) => {
 		navigator.clipboard.writeText(text);
@@ -225,51 +210,15 @@ await auth.signIn('google');`}
 					</div>
 					<button
 						type="button"
-						onClick={() => setShowAppForm(!showAppForm)}
+						onClick={() => navigate(`/projects/${projectId}/apps/new`)}
 						className="btn btn-primary"
 					>
-						{showAppForm ? (
-							<>
-								<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-								</svg>
-								Cancel
-							</>
-						) : (
-							<>
-								<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-								</svg>
-								New App
-							</>
-						)}
+						<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+						</svg>
+						New App
 					</button>
 				</div>
-
-				{showAppForm && (
-					<div style={{ padding: "16px 20px", background: "var(--content-bg)", borderBottom: "1px solid var(--card-border)" }}>
-						<form onSubmit={handleCreateApp} style={{ display: "flex", gap: "12px", alignItems: "flex-end" }}>
-							<div style={{ flex: 1 }}>
-								<label htmlFor="appName" className="form-label">App Name</label>
-								<input
-									type="text"
-									id="appName"
-									placeholder="e.g., Web App, Mobile App"
-									required
-									value={appName}
-									onChange={(e) => setAppName(e.target.value)}
-								/>
-							</div>
-							<button
-								type="submit"
-								disabled={createAppMutation.isPending}
-								className="btn btn-primary"
-							>
-								{createAppMutation.isPending ? "Creating..." : "Create App"}
-							</button>
-						</form>
-					</div>
-				)}
 
 				{appsLoading ? (
 					<div className="loading">
@@ -284,11 +233,12 @@ await auth.signIn('google');`}
 									<th>App ID</th>
 									<th>Session TTL</th>
 									<th>Status</th>
+									<th style={{ width: "32px" }}></th>
 								</tr>
 							</thead>
 							<tbody>
 								{apps.map((app) => (
-									<tr key={app.id}>
+									<tr key={app.id} style={{ cursor: "pointer" }} onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}>
 										<td>
 											<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
 												<div style={{
@@ -322,6 +272,11 @@ await auth.signIn('google');`}
 										<td>
 											<span className="badge badge-success">Active</span>
 										</td>
+										<td style={{ textAlign: "right", paddingRight: "16px" }}>
+											<svg style={{ width: "16px", height: "16px", color: "var(--text-tertiary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+											</svg>
+										</td>
 									</tr>
 								))}
 							</tbody>
@@ -336,7 +291,7 @@ await auth.signIn('google');`}
 						</div>
 						<h3 className="empty-state-title">No applications yet</h3>
 						<p className="empty-state-desc">Create your first app to start managing authentication.</p>
-						<button type="button" onClick={() => setShowAppForm(true)} className="btn btn-primary">
+						<button type="button" onClick={() => navigate(`/projects/${projectId}/apps/new`)} className="btn btn-primary">
 							<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
 							</svg>
@@ -365,6 +320,7 @@ await auth.signIn('google');`}
 							<thead>
 								<tr>
 									<th>User</th>
+									<th>User Id</th>
 									<th>Role</th>
 									<th>Joined</th>
 								</tr>
@@ -375,16 +331,19 @@ await auth.signIn('google');`}
 										<td>
 											<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
 												<div className="avatar avatar-sm">
-													{member.user_id.charAt(0).toUpperCase()}
+													{member.userId.charAt(0).toUpperCase()}
 												</div>
-												<code style={{
+												<span style={{ fontWeight: "500", color: "var(--text-primary)" }}>{member.name}</span>
+											</div>
+										</td>
+										<td>
+											<code style={{
 													padding: "4px 8px",
 													background: "var(--content-bg)",
 													borderRadius: "var(--radius-sm)",
 													fontFamily: "'JetBrains Mono', monospace",
 													fontSize: "11px"
-												}}>{member.user_id}</code>
-											</div>
+												}}>{member.userId}</code>
 										</td>
 										<td>
 											<span className={`badge ${member.role === "owner" ? "badge-info" : "badge-success"}`}>

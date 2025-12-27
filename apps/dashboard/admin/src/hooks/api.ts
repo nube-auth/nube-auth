@@ -93,13 +93,50 @@ export function useProjectApps(projectId: string) {
 export function useCreateApp(projectId: string) {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: async (data: { name: string; slug?: string }) => {
+		mutationFn: async (data: {
+			name: string;
+			slug?: string;
+			description?: string;
+			redirect_uris?: string[];
+			allowed_hosts?: string[];
+			required_providers?: string[];
+			app_session_ttl_days?: number;
+			licensing_required?: boolean;
+			default_license_plan?: string;
+			trial_days?: number;
+		}) => {
 			return fetchAPI<App>(`/v1/admin/projects/${projectId}/apps`, {
 				method: "POST",
 				body: JSON.stringify(data),
 			});
 		},
 		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["project-apps", projectId] });
+		},
+	});
+}
+
+export function useApp(projectId: string, appId: string) {
+	return useQuery({
+		queryKey: ["app", appId],
+		queryFn: async () => {
+			return fetchAPI<App>(`/v1/admin/projects/${projectId}/apps/${appId}`);
+		},
+		enabled: !!projectId && !!appId,
+	});
+}
+
+export function useUpdateApp(projectId: string, appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (data: Partial<App>) => {
+			return fetchAPI<App>(`/v1/admin/projects/${projectId}/apps/${appId}`, {
+				method: "PATCH",
+				body: JSON.stringify(data),
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["app", appId] });
 			queryClient.invalidateQueries({ queryKey: ["project-apps", projectId] });
 		},
 	});

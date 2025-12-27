@@ -24,6 +24,7 @@
 		"clean": "rm -rf dist",
 		"db:generate": "drizzle-kit generate:sqlite",
 		"db:push": "drizzle-kit push:sqlite",
+		"db:migrate": "drizzle-kit push:sqlite",
 		"db:studio": "drizzle-kit studio"
 	},
 	"dependencies": {

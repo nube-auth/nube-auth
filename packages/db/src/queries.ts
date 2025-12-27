@@ -195,6 +195,10 @@ export const appQueries = {
 	async create(db: DbClient, data: typeof apps.$inferInsert) {
 		return db.insert(apps).values(data).returning().get();
 	},
+
+	async update(db: DbClient, appId: number, data: Partial<typeof apps.$inferInsert>) {
+		return db.update(apps).set(data).where(eq(apps.id, appId)).returning().get();
+	},
 };
 
 /**

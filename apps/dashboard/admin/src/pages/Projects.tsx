@@ -148,7 +148,7 @@ export function ProjectsPage() {
 							{project.slug && <p className="project-slug">{project.slug}</p>}
 						</div>
 						<div className="project-card-footer">
-							<span className="project-id">{project.public_id}</span>
+							<span className="project-id">{project.id.substring(0, 8)}</span>
 							<svg style={{ width: "16px", height: "16px", color: "var(--text-tertiary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
 							</svg>

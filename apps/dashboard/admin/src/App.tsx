@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import config from "./config";
 import { useLogout, useProjects } from "./hooks/api";
+import { AppDetailPage } from "./pages/AppDetail";
+import { AppSetupPage } from "./pages/AppSetup";
 import { LicensesPage } from "./pages/Licenses";
 import { LoginPage } from "./pages/Login";
 import { OnboardingPage } from "./pages/Onboarding";
@@ -478,6 +480,22 @@ function App() {
 						element={
 							<ProtectedLayout>
 								<ProjectDetailPage />
+							</ProtectedLayout>
+						}
+					/>
+					<Route
+						path="/projects/:projectId/apps/new"
+						element={
+							<ProtectedLayout>
+								<AppSetupPage />
+							</ProtectedLayout>
+						}
+					/>
+					<Route
+						path="/projects/:projectId/apps/:appId"
+						element={
+							<ProtectedLayout>
+								<AppDetailPage />
 							</ProtectedLayout>
 						}
 					/>

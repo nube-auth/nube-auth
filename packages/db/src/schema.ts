@@ -132,6 +132,7 @@ export const apps = sqliteTable(
 			.references(() => projects.id),
 		name: text("name").notNull(),
 		slug: text("slug").notNull(),
+		description: text("description"), // optional app description
 		allowed_hosts: text("allowed_hosts").notNull(), // JSON array
 		redirect_uris: text("redirect_uris").notNull(), // JSON array
 		required_providers: text("required_providers").notNull(), // JSON array
