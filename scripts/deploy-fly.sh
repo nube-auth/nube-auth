@@ -18,9 +18,11 @@ CORE_APP="proofa-core"
 GATEWAY_APP="proofa-gateway"
 
 # Production URLs
-CORE_PUBLIC_URL="https://api.proofa.sh"
+# Core handles OAuth with providers, Gateway handles app-facing API
+CORE_PUBLIC_URL="https://auth.proofa.sh"
 GATEWAY_PUBLIC_URL="https://api.proofa.sh"
-USER_DASHBOARD_URL="https://app.proofa.sh"
+USER_DASHBOARD_URL="https://user.proofa.sh"
+ADMIN_DASHBOARD_URL="https://manage.proofa.sh"
 COOKIE_DOMAIN=".proofa.sh"
 
 # Load secrets from .env file if it exists
@@ -135,14 +137,14 @@ deploy_gateway() {
 add_domains() {
     echo -e "${BLUE}Adding custom domains...${NC}"
     
-    echo "Adding api.proofa.sh to $CORE_APP..."
-    fly certs add api.proofa.sh --app "$CORE_APP" || true
+    echo "Adding auth.proofa.sh to $CORE_APP..."
+    fly certs add auth.proofa.sh --app "$CORE_APP" || true
     
     echo "Adding api.proofa.sh to $GATEWAY_APP..."
     fly certs add api.proofa.sh --app "$GATEWAY_APP" || true
     
     echo -e "${GREEN}Domains added. Configure DNS:${NC}"
-    echo "  api.proofa.sh      -> CNAME to $CORE_APP.fly.dev"
+    echo "  auth.proofa.sh -> CNAME to $CORE_APP.fly.dev"
     echo "  api.proofa.sh  -> CNAME to $GATEWAY_APP.fly.dev"
 }
 

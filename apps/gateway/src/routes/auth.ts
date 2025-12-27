@@ -41,12 +41,12 @@ authRoutes.get("/callback", async (c: Context) => {
 	if (error) {
 		console.error("OAuth error:", error);
 		// Redirect to dashboard with error
-		const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:3001";
+		const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:5173";
 		return c.redirect(`${dashboardUrl}/login?error=${encodeURIComponent(error)}`);
 	}
 
 	if (!code) {
-		const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:3001";
+		const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:5173";
 		return c.redirect(`${dashboardUrl}/login?error=missing_code`);
 	}
 
@@ -69,7 +69,7 @@ authRoutes.get("/callback", async (c: Context) => {
 		if (!response.ok) {
 			const errorData = await response.json().catch(() => ({}));
 			console.error("Code exchange failed:", response.status, errorData);
-			const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:3001";
+			const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:5173";
 			return c.redirect(`${dashboardUrl}/login?error=exchange_failed`);
 		}
 
@@ -97,12 +97,12 @@ authRoutes.get("/callback", async (c: Context) => {
 		});
 
 		// Redirect to user dashboard (or the return_to URL)
-		const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:3001";
+		const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:5173";
 		const redirectUrl = state.startsWith("/") ? `${dashboardUrl}${state}` : dashboardUrl;
 		return c.redirect(redirectUrl);
 	} catch (error) {
 		console.error("Auth callback error:", error);
-		const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:3001";
+		const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:5173";
 		return c.redirect(`${dashboardUrl}/login?error=internal_error`);
 	}
 });

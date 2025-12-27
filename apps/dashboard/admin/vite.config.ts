@@ -4,7 +4,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
 	plugins: [react()],
 	server: {
-		port: 3002,
+		port: 5174,
 		proxy: {
 			"/api": {
 				target: "http://localhost:3004",
@@ -14,8 +14,9 @@ export default defineConfig({
 		},
 	},
 	define: {
-		"import.meta.env.VITE_CORE_URL": JSON.stringify(process.env.VITE_CORE_URL || "https://api.proofa.sh"),
+		"import.meta.env.VITE_GATEWAY_URL": JSON.stringify(process.env.VITE_GATEWAY_URL || "https://api.proofa.sh"),
+		"import.meta.env.VITE_CORE_URL": JSON.stringify(process.env.VITE_CORE_URL || "https://auth.proofa.sh"),
 		"import.meta.env.VITE_HOME_URL": JSON.stringify(process.env.VITE_HOME_URL || "https://proofa.sh"),
-		"import.meta.env.VITE_DOCS_URL": JSON.stringify(process.env.VITE_DOCS_URL || "https://docs.proofa.com"),
+		"import.meta.env.VITE_DOCS_URL": JSON.stringify(process.env.VITE_DOCS_URL || "https://docs.proofa.sh"),
 	},
 });
