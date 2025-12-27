@@ -6,6 +6,7 @@ import config from "./config";
 import { useLogout } from "./hooks/api";
 import { LicensesPage } from "./pages/Licenses";
 import { LoginPage } from "./pages/Login";
+import { OnboardingPage } from "./pages/Onboarding";
 import { ProjectDetailPage } from "./pages/ProjectDetail";
 import { ProjectsPage } from "./pages/Projects";
 
@@ -172,6 +173,16 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 							Projects
 						</SidebarLink>
 						<SidebarLink
+							to="/onboarding"
+							icon={
+								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+								</svg>
+							}
+						>
+							Getting Started
+						</SidebarLink>
+						<SidebarLink
 							to="/licenses"
 							icon={
 								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -319,6 +330,14 @@ function App() {
 			<BrowserRouter>
 				<Routes>
 					<Route path="/login" element={<LoginPage />} />
+					<Route
+						path="/onboarding"
+						element={
+							<ProtectedLayout>
+								<OnboardingPage />
+							</ProtectedLayout>
+						}
+					/>
 					<Route
 						path="/projects"
 						element={
