@@ -56,7 +56,7 @@ export function ProfilePage() {
 				.join("")
 				.toUpperCase()
 				.slice(0, 2)
-		: user.primary_email?.charAt(0).toUpperCase() || "U";
+		: user.email?.charAt(0).toUpperCase() || "U";
 
 
 	return (
@@ -81,7 +81,7 @@ export function ProfilePage() {
 			<div className="info-grid">
 				<div className="info-item">
 					<div className="info-label">Email</div>
-						<div className="info-value">{user.primary_email}</div>
+						<div className="info-value">{user.email}</div>
 				</div>
 				<div className="info-item">
 					<div className="info-label">Status</div>
@@ -101,7 +101,7 @@ export function ProfilePage() {
 				</div>
 				<div className="info-item">
 					<div className="info-label">Joined</div>
-					<div className="info-value">{"N/A"}</div>
+					<div className="info-value">{user.createdAt}</div>
 				</div>
 			</div>
 
@@ -147,7 +147,7 @@ export function ProfilePage() {
 						<div className="form-group">
 							<label className="form-label">Email Address</label>
 							<div className="input-group">
-								<input type="email" value={user.primary_email} disabled />
+								<input type="email" value={user.email} disabled />
 								<span className="badge badge-success">Verified</span>
 							</div>
 							<p className="form-hint">Email cannot be changed</p>
@@ -199,7 +199,7 @@ export function ProfilePage() {
 								<span>Your unique identifier</span>
 							</div>
 							<div className="info-list-value">
-								<code>{user.public_id}</code>
+								<code>{user.id}</code>
 							</div>
 						</div>
 						<div className="info-list-item">

@@ -9,11 +9,12 @@ export interface ProofaClientConfig {
 }
 
 export interface User {
-	public_id: string;
-	primary_email: string;
-	primary_email_verified: boolean;
-	name: string | null;
-	avatar_url: string | null;
+    id: string;
+    email: string;
+    name: string | null;
+    createdAt: string;
+    avatar_url?: string | null;
+    emailVerified?: boolean;
 }
 
 export interface AuthStatus {
