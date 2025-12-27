@@ -1,7 +1,7 @@
 // Environment-based configuration
 // For local dev, set VITE_HOME_URL, VITE_DOCS_URL, VITE_GATEWAY_URL to localhost
 export const config = {
-	homeUrl: import.meta.env.VITE_HOME_URL || "https://proofa.sh",
-	docsUrl: import.meta.env.VITE_DOCS_URL || "https://docs.proofa.sh",
-	gatewayUrl: import.meta.env.VITE_GATEWAY_URL || "https://api.proofa.sh",
+	homeUrl: import.meta.env.VITE_HOME_URL || "http://localhost:4321",
+	docsUrl: import.meta.env.VITE_DOCS_URL || "http://localhost:4322",
+	gatewayUrl: import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004",
 };

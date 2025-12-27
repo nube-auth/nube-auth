@@ -1,5 +1,5 @@
 export interface Project {
-	public_id: string;
+	id: string;
 	name: string;
 	slug?: string;
 	description?: string;
@@ -8,7 +8,7 @@ export interface Project {
 }
 
 export interface App {
-	public_id: string;
+	id: string;
 	project_id: string;
 	name: string;
 	slug?: string;
@@ -18,7 +18,7 @@ export interface App {
 }
 
 export interface ProjectMember {
-	public_id: string;
+	id: string;
 	project_id: string;
 	user_id: string;
 	role: string;
@@ -26,7 +26,7 @@ export interface ProjectMember {
 }
 
 export interface License {
-	public_id: string;
+	id: string;
 	project_id: string;
 	app_id?: string;
 	user_id?: string;

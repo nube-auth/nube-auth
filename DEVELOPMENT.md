@@ -77,6 +77,12 @@ DATABASE_AUTH_TOKEN=
 UPSTASH_REDIS_REST_URL=http://localhost:8079
 UPSTASH_REDIS_REST_TOKEN=local-dev-token
 
+# Frontend URLs (Dashboard Services)
+VITE_GATEWAY_URL=http://localhost:3004
+VITE_CORE_URL=http://localhost:3003
+VITE_HOME_URL=http://localhost:4321
+VITE_DOCS_URL=http://localhost:4322
+
 # OAuth - Google (Required)
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
@@ -257,6 +263,29 @@ openssl rand -hex 32
 # Find and kill process on port
 lsof -ti :3003 | xargs kill -9
 ```
+
+### API Calls Going to Production Instead of Localhost
+
+**Symptom:** Dashboards are calling `https://api.proofa.sh` instead of `http://localhost:3004`
+
+**Root Cause:** Frontend environment variables are not set during development
+
+**Solution:** Make sure `.env.local` has these variables set:
+```env
+VITE_GATEWAY_URL=http://localhost:3004
+VITE_CORE_URL=http://localhost:3003
+VITE_HOME_URL=http://localhost:4321
+VITE_DOCS_URL=http://localhost:4322
+```
+
+Then restart the dev server:
+```bash
+pnpm dev
+```
+
+**Verification:** Open browser DevTools → Network tab and check that API requests go to `localhost:3004`, not `api.proofa.sh`.
+
+See [LOCAL_SETUP_ANALYSIS.md](LOCAL_SETUP_ANALYSIS.md) for detailed technical explanation.
 
 ### Docker Services Not Running
 

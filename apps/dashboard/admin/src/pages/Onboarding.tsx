@@ -1,5 +1,4 @@
-import { useState } from "react";
-import config from "../config";
+import { useState } from "react"
 import { useCreateProject } from "../hooks/api";
 
 export function OnboardingPage() {

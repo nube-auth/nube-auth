@@ -3,7 +3,7 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import config from "./config";
-import { useLogout } from "./hooks/api";
+import { useLogout, useProjects } from "./hooks/api";
 import { LicensesPage } from "./pages/Licenses";
 import { LoginPage } from "./pages/Login";
 import { OnboardingPage } from "./pages/Onboarding";
@@ -67,8 +67,11 @@ function SidebarLink({ to, children, icon }: { to: string; children: React.React
 
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
 	const { data, isLoading } = useMe();
+	const { data: projects = [] } = useProjects();
 	const { theme, setTheme } = useTheme();
 	const { mutate: logout, isPending: isLoggingOut } = useLogout();
+	const [showProjectDropdown, setShowProjectDropdown] = useState(false);
+	const [selectedProject, setSelectedProject] = useState<string | null>(null);
 
 	if (isLoading) {
 		return (
@@ -136,14 +139,138 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 					</Link>
 				</div>
 
-				{/* Project Selector */}
-				<div className="project-selector">
-					<div className="project-selector-info">
-						<div className="project-selector-icon">P</div>
-						<span className="project-selector-name">All Projects</span>
-					</div>
-					<div className="project-selector-env">Development</div>
+				{/* Project Selector Dropdown */}
+				<div className="project-selector" style={{ position: "relative", zIndex: 100 }}>
+					<button
+						type="button"
+						onClick={() => setShowProjectDropdown(!showProjectDropdown)}
+						style={{
+							background: "none",
+							border: "none",
+							width: "100%",
+							cursor: "pointer",
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "space-between",
+							padding: "0",
+							color: "var(--sidebar-text)",
+						}}
+					>
+						<div className="project-selector-info">
+							<div className="project-selector-icon">
+								{selectedProject
+									? projects.find((p) => p.id === selectedProject)?.name?.charAt(0).toUpperCase() || "P"
+									: "P"}
+							</div>
+							<span className="project-selector-name">
+								{selectedProject
+									? projects.find((p) => p.id === selectedProject)?.name || "Select Project"
+									: projects.length > 0
+										? "Select Project"
+										: "No Projects"}
+							</span>
+						</div>
+						<svg
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+							style={{
+								width: "16px",
+								height: "16px",
+								transition: "transform 0.2s",
+								transform: showProjectDropdown ? "rotate(180deg)" : "rotate(0deg)",
+								color: "var(--text-tertiary)",
+							}}
+						>
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+						</svg>
+					</button>
+
+					{/* Dropdown Menu */}
+					{showProjectDropdown && (
+						<div
+							style={{
+								position: "absolute",
+								top: "100%",
+								left: "0",
+								right: "0",
+								backgroundColor: "var(--background-primary)",
+								border: "2px solid var(--primary)",
+								borderRadius: "12px",
+								marginTop: "12px",
+								boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3)",
+								zIndex: 1001,
+								maxHeight: "400px",
+								overflowY: "auto",
+								minWidth: "280px",
+							}}
+						>
+							{projects.length === 0 ? (
+								<div style={{ padding: "16px", color: "var(--text-secondary)", fontSize: "14px", textAlign: "center" }}>
+									No projects available
+								</div>
+							) : (
+								projects.map((project, index) => (
+									<button
+										key={project.id}
+										type="button"
+										onClick={() => {
+											setSelectedProject(project.id);
+											setShowProjectDropdown(false);
+										}}
+										style={{
+											width: "100%",
+											padding: "14px 16px",
+											textAlign: "left",
+											background: selectedProject === project.id ? "var(--primary)" : "transparent",
+											border: "none",
+											borderBottom: index < projects.length - 1 ? "1px solid var(--border-secondary)" : "none",
+											cursor: "pointer",
+											color: selectedProject === project.id ? "white" : "var(--text-primary)",
+											fontSize: "14px",
+											transition: "all 0.2s",
+											display: "block",
+										}}
+										onMouseEnter={(e) => {
+											if (selectedProject !== project.id) {
+												(e.currentTarget).style.backgroundColor = "var(--surface-hover)";
+											}
+										}}
+										onMouseLeave={(e) => {
+											if (selectedProject !== project.id) {
+												(e.currentTarget).style.backgroundColor = "transparent";
+											}
+										}}
+									>
+										<div style={{ fontWeight: selectedProject === project.id ? "700" : "600", marginBottom: "4px" }}>
+											{project.name}
+										</div>
+										{project.slug && (
+											<div style={{ fontSize: "12px", opacity: selectedProject === project.id ? 0.9 : 0.6 }}>
+												{project.slug}
+											</div>
+										)}
+									</button>
+								))
+							)}
+						</div>
+					)}
 				</div>
+
+				{/* Close dropdown when clicking outside */}
+				{showProjectDropdown && (
+					<div
+						onClick={() => setShowProjectDropdown(false)}
+						style={{
+							position: "fixed",
+							top: 0,
+							left: 0,
+							right: 0,
+							bottom: 0,
+							zIndex: 1000,
+						}}
+					/>
+				)}
 
 				<nav className="sidebar-nav">
 					<div className="sidebar-section">
@@ -171,16 +298,6 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 							}
 						>
 							Projects
-						</SidebarLink>
-						<SidebarLink
-							to="/onboarding"
-							icon={
-								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-								</svg>
-							}
-						>
-							Getting Started
 						</SidebarLink>
 						<SidebarLink
 							to="/licenses"
@@ -230,6 +347,16 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
 					<div className="sidebar-section">
 						<div className="sidebar-section-title">Support</div>
+						<SidebarLink
+							to="/onboarding"
+							icon={
+								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+								</svg>
+							}
+						>
+							Getting Started
+						</SidebarLink>
 						<SidebarLink
 							to="/support"
 							icon={

@@ -131,7 +131,7 @@ export function ProjectsPage() {
 			{/* Projects Grid */}
 			<div className="projects-grid">
 				{projects.map((project) => (
-					<Link key={project.public_id} to={`/projects/${project.public_id}`} className="project-card">
+					<Link key={project.id} to={`/projects/${project.id}`} className="project-card">
 						<div className="project-card-header">
 							<div className="project-icon">
 								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
