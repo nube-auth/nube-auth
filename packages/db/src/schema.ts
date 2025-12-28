@@ -138,8 +138,7 @@ export const apps = sqliteTable(
 		required_providers: text("required_providers").notNull(), // JSON array
 		is_active: integer("is_active").notNull().default(1),
 		licensing_required: integer("licensing_required").notNull().default(1),
-		default_license_plan: text("default_license_plan").notNull().default("free"), // 'free' or 'trial'
-		trial_days: integer("trial_days"), // null unless plan = 'trial'
+		default_plan_id: integer("default_plan_id"), // FK to plans table, nullable (FK enforced at DB level)
 		app_session_ttl_days: integer("app_session_ttl_days").notNull().default(28),
 		account_lockout_minutes: integer("account_lockout_minutes").notNull().default(15),
 		cache_ttl_minutes: integer("cache_ttl_minutes").notNull().default(10),
@@ -175,6 +174,7 @@ export const apps = sqliteTable(
 		projectSlugUnique: unique("apps_project_slug_unique").on(table.project_id, table.slug),
 		projectIdx: index("apps_project_id_idx").on(table.project_id),
 		isActiveIdx: index("apps_is_active_idx").on(table.is_active),
+		defaultPlanIdx: index("apps_default_plan_id_idx").on(table.default_plan_id),
 	}),
 );
 
@@ -222,7 +222,9 @@ export const licenses = sqliteTable(
 		app_id: integer("app_id")
 			.notNull()
 			.references(() => apps.id),
-		plan: text("plan").notNull(), // 'free', 'trial', 'pro', 'team', 'enterprise'
+		plan_id: integer("plan_id")
+			.notNull()
+			.references(() => plans.id), // FK to plans table
 		status: text("status").notNull(), // 'active', 'expired', 'canceled', 'suspended'
 		source: text("source").notNull(), // 'manual', 'promo', 'stripe', 'lemonsqueezy', 'internal'
 		valid_from: integer("valid_from").notNull(),
@@ -238,6 +240,7 @@ export const licenses = sqliteTable(
 		userAppUnique: unique("licenses_user_app_unique").on(table.user_id, table.app_id),
 		userIdx: index("licenses_user_id_idx").on(table.user_id),
 		appIdx: index("licenses_app_id_idx").on(table.app_id),
+		planIdx: index("licenses_plan_id_idx").on(table.plan_id),
 		statusIdx: index("licenses_status_idx").on(table.status),
 		validUntilIdx: index("licenses_valid_until_idx").on(table.valid_until),
 	}),
@@ -310,7 +313,9 @@ export const invitations = sqliteTable(
 			.notNull()
 			.references(() => projects.id),
 		role: text("role"), // 'admin' | 'member' | null (for regular app user)
-		license_plan: text("license_plan"), // 'pro' | 'trial' | 'free' | etc.
+		plan_id: integer("plan_id")
+			.notNull()
+			.references(() => plans.id), // FK to plans table
 		license_duration_days: integer("license_duration_days"),
 		custom_message: text("custom_message"), // optional welcome message
 		expires_at: integer("expires_at").notNull(), // invitation expiry timestamp
@@ -322,7 +327,38 @@ export const invitations = sqliteTable(
 		emailAppUnique: unique("invitations_email_app_unique").on(table.email, table.app_id),
 		appIdIdx: index("invitations_app_id_idx").on(table.app_id),
 		projectIdIdx: index("invitations_project_id_idx").on(table.project_id),
+		planIdx: index("invitations_plan_id_idx").on(table.plan_id),
 		emailIdx: index("invitations_email_idx").on(table.email),
 		expiresAtIdx: index("invitations_expires_at_idx").on(table.expires_at),
+	}),
+);
+
+export const plans = sqliteTable(
+	"plans",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		public_id: text("public_id").notNull().unique(),
+		app_id: integer("app_id")
+			.notNull()
+			.references(() => apps.id),
+		name: text("name").notNull(), // 'Free', 'Pro', 'Enterprise', etc.
+		slug: text("slug").notNull(), // 'free', 'pro', 'enterprise'
+		description: text("description"),
+		monthly_price: integer("monthly_price"), // in cents (e.g., 999 = $9.99)
+		yearly_price: integer("yearly_price"), // in cents
+		one_time_price: integer("one_time_price"), // in cents - one-time payment for lifetime access
+		trial_enabled: integer("trial_enabled").notNull().default(0), // 0 = false, 1 = true
+		trial_days: integer("trial_days"),
+		features: text("features"), // JSON array of feature strings
+		status: text("status").notNull().default("active"), // 'active' | 'inactive'
+		display_order: integer("display_order").notNull().default(0),
+		created_at: integer("created_at").notNull(),
+		updated_at: integer("updated_at").notNull(),
+	},
+	(table) => ({
+		appIdIdx: index("plans_app_id_idx").on(table.app_id),
+		slugIdx: index("plans_slug_idx").on(table.slug),
+		statusIdx: index("plans_status_idx").on(table.status),
+		appSlugUnique: unique("plans_app_slug_unique").on(table.app_id, table.slug),
 	}),
 );

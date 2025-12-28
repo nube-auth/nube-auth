@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface InviteUserModalProps {
 	isOpen: boolean;
@@ -8,15 +8,66 @@ interface InviteUserModalProps {
 	appId: string;
 }
 
+interface Plan {
+	id: number; // Internal numeric ID
+	public_id: string;
+	name: string;
+	slug: string;
+	monthlyPrice: number | null;
+	yearlyPrice: number | null;
+}
+
 export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }: InviteUserModalProps) {
 	const [email, setEmail] = useState("");
-	const [plan, setPlan] = useState("free");
+	const [planId, setPlanId] = useState<number | null>(null);
+	const [plans, setPlans] = useState<Plan[]>([]);
+	const [plansLoading, setPlansLoading] = useState(false);
 	const [grantLicense, setGrantLicense] = useState(true);
 	const [licenseDuration, setLicenseDuration] = useState<string>(""); // empty = no expiry
 	const [customMessage, setCustomMessage] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState<{ message: string; action: string } | null>(null);
+
+	// Fetch plans when modal opens
+	useEffect(() => {
+		if (isOpen) {
+			fetchPlans();
+		}
+	}, [isOpen, projectId, appId]);
+
+	const fetchPlans = async () => {
+		setPlansLoading(true);
+		try {
+			const response = await fetch(
+				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/plans`,
+				{
+					method: "GET",
+					credentials: "include",
+				},
+			);
+
+			if (!response.ok) {
+				throw new Error("Failed to fetch plans");
+			}
+
+			const data = await response.json();
+			setPlans(data.plans || []);
+			
+			// Set default plan to first active plan if available
+			if (data.plans && data.plans.length > 0) {
+				// Find first plan (internal ID, not public_id)
+				// We need to convert public_id to internal id, but API should return internal id
+				// For now, assume plans[0] is the default
+				setPlanId(data.plans[0].id);
+			}
+		} catch (err) {
+			console.error("Failed to fetch plans:", err);
+			setError("Failed to load plans. Please try again.");
+		} finally {
+			setPlansLoading(false);
+		}
+	};
 
 	if (!isOpen) return null;
 
@@ -35,13 +86,13 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 						"Content-Type": "application/json",
 					},
 					credentials: "include",
-					body: JSON.stringify({
-						email,
-						plan: grantLicense ? plan : null,
-						grant_license: grantLicense,
-						license_duration_days: licenseDuration ? Number.parseInt(licenseDuration, 10) : null,
-						custom_message: customMessage || null,
-					}),
+				body: JSON.stringify({
+					email,
+					plan_id: grantLicense ? planId : null,
+					grant_license: grantLicense,
+					license_duration_days: licenseDuration ? Number.parseInt(licenseDuration, 10) : null,
+					custom_message: customMessage || null,
+				}),
 				},
 			);
 
@@ -59,7 +110,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 
 			// Reset form
 			setEmail("");
-			setPlan("free");
+			setPlanId(plans.length > 0 ? plans[0].id : null);
 			setGrantLicense(true);
 			setLicenseDuration("");
 			setCustomMessage("");
@@ -79,7 +130,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 	const handleClose = () => {
 		if (loading) return;
 		setEmail("");
-		setPlan("free");
+		setPlanId(plans.length > 0 ? plans[0].id : null);
 		setGrantLicense(true);
 		setLicenseDuration("");
 		setCustomMessage("");
@@ -315,9 +366,9 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 								<select
 									id="plan"
 									required
-									value={plan}
-									onChange={(e) => setPlan(e.target.value)}
-									disabled={loading}
+									value={planId || ""}
+									onChange={(e) => setPlanId(Number(e.target.value))}
+									disabled={loading || plansLoading}
 									style={{
 										width: "100%",
 										padding: "10px 12px",
@@ -327,7 +378,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 										color: "var(--text-primary)",
 										fontSize: "14px",
 										outline: "none",
-										cursor: loading ? "not-allowed" : "pointer",
+										cursor: loading || plansLoading ? "not-allowed" : "pointer",
 										transition: "all 0.2s ease",
 									}}
 									onFocus={(e) => {
@@ -339,10 +390,22 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 										e.currentTarget.style.boxShadow = "none";
 									}}
 								>
-									<option value="free">Free</option>
-									<option value="trial">Trial</option>
-									<option value="pro">Pro</option>
-									<option value="enterprise">Enterprise</option>
+									{plansLoading ? (
+										<option value="">Loading plans...</option>
+									) : plans.length === 0 ? (
+										<option value="">No plans available</option>
+									) : (
+										plans.map((plan) => (
+											<option key={plan.id} value={plan.id}>
+												{plan.name}
+												{plan.monthlyPrice !== null && plan.monthlyPrice > 0
+													? ` ($${(plan.monthlyPrice / 100).toFixed(2)}/mo)`
+													: plan.yearlyPrice !== null && plan.yearlyPrice > 0
+														? ` ($${(plan.yearlyPrice / 100).toFixed(2)}/yr)`
+														: " (Free)"}
+											</option>
+										))
+									)}
 								</select>
 							</div>
 

@@ -5,6 +5,7 @@ import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate 
 import config from "./config";
 import { useLogout, useProjects } from "./hooks/api";
 import { AppDetailPage } from "./pages/AppDetail";
+import { AppLicensesPage } from "./pages/AppLicenses";
 import { AppSetupPage } from "./pages/AppSetup";
 import { AppSettingsPage } from "./pages/AppSettings";
 import { AppUsersPage } from "./pages/AppUsers";
@@ -580,6 +581,14 @@ function App() {
 					element={
 						<ProtectedLayout>
 							<AppSettingsPage />
+						</ProtectedLayout>
+					}
+				/>
+				<Route
+					path="/projects/:projectId/apps/:appId/licenses"
+					element={
+						<ProtectedLayout>
+							<AppLicensesPage />
 						</ProtectedLayout>
 					}
 				/>

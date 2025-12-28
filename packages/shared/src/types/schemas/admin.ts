@@ -56,9 +56,7 @@ export const CreateAppRequestSchema = z.object({
 	allowedHosts: AllowedHostsSchema,
 	requiredProviders: ProvidersSchema,
 	appSessionTtlDays: AppSessionTtlDaysSchema,
-	licensingRequired: z.boolean().default(true),
-	defaultLicensePlan: LicensePlanSchema,
-	trialDays: TrialDaysSchema,
+	licensingRequired: z.boolean().default(false),
 });
 
 export const UpdateAppRequestSchema = CreateAppRequestSchema.partial();
@@ -74,8 +72,12 @@ export const AppDTOSchema = z.object({
 	requiredProviders: z.array(z.string()),
 	isActive: z.boolean(),
 	licensingRequired: z.boolean(),
-	defaultLicensePlan: z.string(),
-	trialDays: z.number().nullable().optional(),
+	defaultPlanId: PublicIdSchema.nullable().optional(),
+	defaultPlan: z.object({
+		id: PublicIdSchema,
+		name: z.string(),
+		slug: z.string(),
+	}).nullable().optional(),
 	appSessionTtlDays: z.number(),
 	accountLockoutMinutes: z.number(),
 	cacheTtlMinutes: z.number(),

@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, inArray, isNull, lt } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNull, lt, sql } from "drizzle-orm";
 import type { DbClient } from "./index.js";
 import {
 	apps,
@@ -8,6 +8,7 @@ import {
 	identities,
 	invitations,
 	licenses,
+	plans,
 	project_members,
 	projects,
 	sessions,
@@ -420,5 +421,68 @@ export const invitationQueries = {
 			.delete(invitations)
 			.where(and(isNull(invitations.consumed_at), lt(invitations.expires_at, now)))
 			.returning();
+	},
+};
+
+/**
+ * Plan queries
+ */
+export const planQueries = {
+	async create(db: DbClient, data: typeof plans.$inferInsert) {
+		return db.insert(plans).values(data).returning().get();
+	},
+
+	async findByPublicId(db: DbClient, publicId: string) {
+		return db.select().from(plans).where(eq(plans.public_id, publicId)).get();
+	},
+
+	async findById(db: DbClient, id: number) {
+		return db.select().from(plans).where(eq(plans.id, id)).get();
+	},
+
+	async findByAppId(db: DbClient, appId: number) {
+		return db
+			.select()
+			.from(plans)
+			.where(eq(plans.app_id, appId))
+			.orderBy(plans.display_order)
+			.all();
+	},
+
+	async findByAppAndSlug(db: DbClient, appId: number, slug: string) {
+		return db.select().from(plans).where(and(eq(plans.app_id, appId), eq(plans.slug, slug))).get();
+	},
+
+	async findActiveByAppId(db: DbClient, appId: number) {
+		return db
+			.select()
+			.from(plans)
+			.where(and(eq(plans.app_id, appId), eq(plans.status, "active")))
+			.orderBy(plans.display_order)
+			.all();
+	},
+
+	async update(db: DbClient, planId: number, data: Partial<typeof plans.$inferInsert>) {
+		const now = Math.floor(Date.now() / 1000);
+		return db
+			.update(plans)
+			.set({ ...data, updated_at: now })
+			.where(eq(plans.id, planId))
+			.returning()
+			.get();
+	},
+
+	async delete(db: DbClient, planId: number) {
+		return db.delete(plans).where(eq(plans.id, planId)).returning().get();
+	},
+
+	async countLicensesByPlan(db: DbClient, planId: number) {
+		const result = await db
+			.select({ count: sql<number>`count(*)` })
+			.from(licenses)
+			.where(eq(licenses.plan_id, planId))
+			.get();
+
+		return result?.count || 0;
 	},
 };

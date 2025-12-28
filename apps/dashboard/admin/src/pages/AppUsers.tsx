@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useApp, useProject, useAppUsers } from "../hooks/api";
@@ -16,8 +16,45 @@ export function AppUsersPage() {
 	const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 	const [showInviteModal, setShowInviteModal] = useState(false);
 	const [editingUser, setEditingUser] = useState<any>(null);
+	const [editLicensePlan, setEditLicensePlan] = useState<number | null>(null);
+	const [plans, setPlans] = useState<any[]>([]);
+	const [plansLoading, setPlansLoading] = useState(false);
+	const [editLicenseStatus, setEditLicenseStatus] = useState("");
+	const [isUpdating, setIsUpdating] = useState(false);
+	const [updateError, setUpdateError] = useState<string | null>(null);
 
 	const users = data?.users || [];
+
+	// Fetch plans when editing user
+	useEffect(() => {
+		if (editingUser && projectId && appId) {
+			fetchPlans();
+		}
+	}, [editingUser, projectId, appId]);
+
+	const fetchPlans = async () => {
+		setPlansLoading(true);
+		try {
+			const response = await fetch(
+				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/plans`,
+				{
+					method: "GET",
+					credentials: "include",
+				},
+			);
+
+			if (!response.ok) {
+				throw new Error("Failed to fetch plans");
+			}
+
+			const data = await response.json();
+			setPlans(data.plans || []);
+		} catch (err) {
+			console.error("Failed to fetch plans:", err);
+		} finally {
+			setPlansLoading(false);
+		}
+	};
 
 	// Filter users based on search and status
 	const filteredUsers = users.filter((user) => {
@@ -31,6 +68,89 @@ export function AppUsersPage() {
 
 		return matchesSearch && matchesStatus;
 	});
+
+	// Handler for Suspend/Activate toggle
+	const handleSuspendToggle = async (userId: string, currentStatus: string) => {
+		const newStatus = currentStatus === "active" ? "suspended" : "active";
+		
+		try {
+			const response = await fetch(
+				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/users/${userId}`,
+				{
+					method: "PATCH",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					credentials: "include",
+					body: JSON.stringify({
+						license_status: newStatus,
+					}),
+				}
+			);
+
+			if (!response.ok) {
+				const data = await response.json();
+				throw new Error(data.error || "Failed to update user status");
+			}
+
+			// Refresh users list
+			queryClient.invalidateQueries({ queryKey: ["appUsers", projectId, appId] });
+		} catch (err) {
+			console.error("Failed to update user status:", err);
+			alert(err instanceof Error ? err.message : "Failed to update user status");
+		}
+	};
+
+	// Handler for Edit modal save
+	const handleEditSave = async () => {
+		if (!editingUser) return;
+
+		setIsUpdating(true);
+		setUpdateError(null);
+
+		try {
+			const response = await fetch(
+				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/users/${editingUser.id}`,
+				{
+					method: "PATCH",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					credentials: "include",
+					body: JSON.stringify({
+						plan_id: editLicensePlan,
+						license_status: editLicenseStatus,
+					}),
+				}
+			);
+
+			if (!response.ok) {
+				const data = await response.json();
+				throw new Error(data.error || "Failed to update user");
+			}
+
+			// Refresh users list
+			queryClient.invalidateQueries({ queryKey: ["appUsers", projectId, appId] });
+			
+			// Close modal
+			setEditingUser(null);
+			setEditLicensePlan(null);
+			setEditLicenseStatus("");
+		} catch (err) {
+			console.error("Failed to update user:", err);
+			setUpdateError(err instanceof Error ? err.message : "Failed to update user");
+		} finally {
+			setIsUpdating(false);
+		}
+	};
+
+	// Handler for opening Edit modal (initialize form values)
+	const handleOpenEditModal = (user: any) => {
+		setEditingUser(user);
+		setEditLicensePlan(user.plan_id || null);
+		setEditLicenseStatus(user.status || "active");
+		setUpdateError(null);
+	};
 
 	if (projectLoading || appLoading) {
 		return (
@@ -439,8 +559,7 @@ export function AppUsersPage() {
 												type="button"
 												onClick={(e) => {
 													e.stopPropagation();
-													// TODO: Implement quick toggle API call
-													alert(`${user.status === "active" ? "Suspend" : "Activate"} functionality coming soon!`);
+													handleSuspendToggle(user.id, user.status);
 												}}
 												style={{
 													padding: "6px 10px",
@@ -497,7 +616,7 @@ export function AppUsersPage() {
 												type="button"
 												onClick={(e) => {
 													e.stopPropagation();
-													setEditingUser(user);
+													handleOpenEditModal(user);
 												}}
 												style={{
 													padding: "6px 12px",
@@ -585,12 +704,38 @@ export function AppUsersPage() {
 							Update license plan and status for {editingUser.name || editingUser.email}
 						</p>
 
+						{/* Error Message */}
+						{updateError && (
+							<div
+								style={{
+									background: "rgba(239, 68, 68, 0.1)",
+									border: "1px solid var(--danger)",
+									borderRadius: "8px",
+									padding: "12px 16px",
+									marginBottom: "20px",
+									display: "flex",
+									alignItems: "center",
+									gap: "12px",
+								}}
+							>
+								<svg style={{ width: "20px", height: "20px", color: "var(--danger)", flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+								</svg>
+								<p style={{ fontSize: "14px", color: "var(--danger)", margin: 0 }}>
+									{updateError}
+								</p>
+							</div>
+						)}
+
 						{/* Edit form content */}
 						<div style={{ marginBottom: "24px" }}>
 							<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "8px" }}>
 								License Plan
 							</label>
 							<select
+								value={editLicensePlan || ""}
+								onChange={(e) => setEditLicensePlan(Number(e.target.value))}
+								disabled={isUpdating || plansLoading}
 								style={{
 									width: "100%",
 									padding: "10px 12px",
@@ -599,11 +744,26 @@ export function AppUsersPage() {
 									background: "var(--content-bg)",
 									color: "var(--text-primary)",
 									fontSize: "14px",
+									cursor: isUpdating || plansLoading ? "not-allowed" : "pointer",
+									opacity: isUpdating || plansLoading ? 0.6 : 1,
 								}}
 							>
-								<option value="free">Free</option>
-								<option value="pro">Pro</option>
-								<option value="enterprise">Enterprise</option>
+								{plansLoading ? (
+									<option value="">Loading plans...</option>
+								) : plans.length === 0 ? (
+									<option value="">No plans available</option>
+								) : (
+									plans.map((plan) => (
+										<option key={plan.id} value={plan.id}>
+											{plan.name}
+											{plan.monthlyPrice !== null && plan.monthlyPrice > 0
+												? ` ($${(plan.monthlyPrice / 100).toFixed(2)}/mo)`
+												: plan.yearlyPrice !== null && plan.yearlyPrice > 0
+													? ` ($${(plan.yearlyPrice / 100).toFixed(2)}/yr)`
+													: " (Free)"}
+										</option>
+									))
+								)}
 							</select>
 						</div>
 
@@ -612,6 +772,9 @@ export function AppUsersPage() {
 								Status
 							</label>
 							<select
+								value={editLicenseStatus}
+								onChange={(e) => setEditLicenseStatus(e.target.value)}
+								disabled={isUpdating}
 								style={{
 									width: "100%",
 									padding: "10px 12px",
@@ -620,6 +783,8 @@ export function AppUsersPage() {
 									background: "var(--content-bg)",
 									color: "var(--text-primary)",
 									fontSize: "14px",
+									cursor: isUpdating ? "not-allowed" : "pointer",
+									opacity: isUpdating ? 0.6 : 1,
 								}}
 							>
 								<option value="active">Active</option>
@@ -631,21 +796,48 @@ export function AppUsersPage() {
 						<div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
 							<button
 								type="button"
-								onClick={() => setEditingUser(null)}
+								onClick={() => {
+									setEditingUser(null);
+									setUpdateError(null);
+								}}
+								disabled={isUpdating}
 								className="btn btn-secondary"
+								style={{
+									opacity: isUpdating ? 0.6 : 1,
+									cursor: isUpdating ? "not-allowed" : "pointer",
+								}}
 							>
 								Cancel
 							</button>
 							<button
 								type="button"
-								onClick={() => {
-									// TODO: Implement update API call
-									alert("Update functionality coming soon!");
-									setEditingUser(null);
-								}}
+								onClick={handleEditSave}
+								disabled={isUpdating}
 								className="btn btn-primary"
+								style={{
+									opacity: isUpdating ? 0.6 : 1,
+									cursor: isUpdating ? "not-allowed" : "pointer",
+									display: "flex",
+									alignItems: "center",
+									gap: "8px",
+								}}
 							>
-								Save Changes
+								{isUpdating && (
+									<svg
+										style={{ width: "16px", height: "16px", animation: "spin 1s linear infinite" }}
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+										/>
+									</svg>
+								)}
+								{isUpdating ? "Saving..." : "Save Changes"}
 							</button>
 						</div>
 					</div>

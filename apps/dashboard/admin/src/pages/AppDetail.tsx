@@ -270,55 +270,55 @@ export function AppDetailPage() {
 							</div>
 						</button>
 
-						<button
-							type="button"
-							onClick={() => alert("License management coming in Phase 4!")}
-							style={{
-								background: "var(--card-bg)",
-								border: "1px solid var(--border-secondary)",
-						borderRadius: "12px",
-								padding: "20px",
-								cursor: "pointer",
-								transition: "all 0.2s ease",
-								display: "flex",
-								flexDirection: "column",
-								alignItems: "center",
-								gap: "12px",
-								textAlign: "center",
-							}}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.borderColor = "var(--primary)";
-								e.currentTarget.style.transform = "translateY(-2px)";
-								e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)";
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.borderColor = "var(--border-secondary)";
-								e.currentTarget.style.transform = "translateY(0)";
-								e.currentTarget.style.boxShadow = "none";
-							}}
-						>
-							<div style={{
-								width: "48px",
-								height: "48px",
-								borderRadius: "12px",
-								background: "linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05))",
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-							}}>
-								<svg style={{ width: "24px", height: "24px", color: "var(--success)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-								</svg>
+					<button
+						type="button"
+						onClick={() => navigate(`/projects/${projectId}/apps/${appId}/licenses`)}
+						style={{
+							background: "var(--card-bg)",
+							border: "1px solid var(--border-secondary)",
+					borderRadius: "12px",
+							padding: "20px",
+							cursor: "pointer",
+							transition: "all 0.2s ease",
+							display: "flex",
+							flexDirection: "column",
+							alignItems: "center",
+							gap: "12px",
+							textAlign: "center",
+						}}
+						onMouseEnter={(e) => {
+							e.currentTarget.style.borderColor = "var(--primary)";
+							e.currentTarget.style.transform = "translateY(-2px)";
+							e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)";
+						}}
+						onMouseLeave={(e) => {
+							e.currentTarget.style.borderColor = "var(--border-secondary)";
+							e.currentTarget.style.transform = "translateY(0)";
+							e.currentTarget.style.boxShadow = "none";
+						}}
+					>
+						<div style={{
+							width: "48px",
+							height: "48px",
+							borderRadius: "12px",
+							background: "linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05))",
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+						}}>
+							<svg style={{ width: "24px", height: "24px", color: "var(--success)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+							</svg>
+						</div>
+						<div>
+							<div style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "4px" }}>
+								Licenses
 							</div>
-							<div>
-								<div style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "4px" }}>
-									Licenses
-								</div>
-								<div style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
-									Plans & billing
-								</div>
+							<div style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+								Plans & billing
 							</div>
-						</button>
+						</div>
+					</button>
 
 						<button
 							type="button"

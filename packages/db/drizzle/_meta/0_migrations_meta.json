@@ -5,9 +5,9 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1735339200000,
-      "tag": "0001_add_app_description",
-      "name": "0001_add_app_description"
+      "when": 1735401600000,
+      "tag": "0000_initial",
+      "breakpoints": true
     }
   ]
 }

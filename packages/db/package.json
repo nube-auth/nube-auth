@@ -25,7 +25,10 @@
 		"db:generate": "drizzle-kit generate:sqlite",
 		"db:push": "drizzle-kit push:sqlite",
 		"db:migrate": "drizzle-kit push:sqlite",
-		"db:studio": "drizzle-kit studio"
+		"db:studio": "drizzle-kit studio",
+		"db:drop": "tsx scripts/drop-tables.ts",
+		"db:reset": "pnpm run db:drop && pnpm run db:push",
+		"db:check": "tsx scripts/check-apps.ts"
 	},
 	"dependencies": {
 		"@libsql/client": "^0.4.2",
@@ -33,7 +36,9 @@
 		"drizzle-orm": "^0.29.1"
 	},
 	"devDependencies": {
+		"dotenv": "^16.3.1",
 		"drizzle-kit": "^0.20.12",
+		"tsx": "^4.7.0",
 		"typescript": "^5.3.3"
 	}
 }

@@ -24,7 +24,7 @@ export function AppSettingsPage() {
 			allowedHosts: app.allowedHosts || [],
 			appSessionTtlDays: app.appSessionTtlDays || 28,
 			licensingRequired: app.licensingRequired ?? true,
-			defaultLicensePlan: app.defaultLicensePlan || "free",
+			defaultPlanId: app.defaultPlanId,
 			isActive: app.isActive ?? true,
 		});
 	}
@@ -101,8 +101,6 @@ export function AppSettingsPage() {
 			allowedHosts: (formData.allowedHosts || []).filter((host) => host.trim()),
 			appSessionTtlDays: formData.appSessionTtlDays,
 			licensingRequired: Boolean(formData.licensingRequired),
-			defaultLicensePlan: formData.defaultLicensePlan as "free" | "trial",
-			trialDays: formData.trialDays,
 		};
 
 		updateAppMutation.mutate(dataToSend, {
@@ -403,7 +401,7 @@ export function AppSettingsPage() {
 							}}>
 								<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "6px", textTransform: "uppercase", fontWeight: "600", letterSpacing: "0.5px" }}>Default License Plan</p>
 								<p style={{ fontSize: "15px", color: "var(--text-primary)", fontWeight: "600", textTransform: "capitalize", margin: 0 }}>
-									{app.defaultLicensePlan || "—"}
+									{app.defaultPlan?.name || "—"}
 								</p>
 							</div>
 							<div style={{ 
@@ -821,43 +819,7 @@ export function AppSettingsPage() {
 							/>
 						</div>
 
-						{/* Default License Plan */}
-						<div style={{ marginTop: "8px" }}>
-							<label htmlFor="default_license_plan" style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "8px" }}>
-								Default License Plan
-							</label>
-							<select
-								id="default_license_plan"
-								name="defaultLicensePlan"
-								value={formData.defaultLicensePlan || "free"}
-								onChange={handleInputChange}
-								style={{
-									width: "100%",
-									padding: "10px 12px",
-									border: "1px solid var(--card-border)",
-									borderRadius: "8px",
-									background: "var(--content-bg)",
-									color: "var(--text-primary)",
-									fontSize: "14px",
-									outline: "none",
-									cursor: "pointer",
-									transition: "all 0.2s ease",
-								}}
-								onFocus={(e) => {
-									e.currentTarget.style.borderColor = "var(--primary)";
-									e.currentTarget.style.boxShadow = "0 0 0 3px rgba(139, 92, 246, 0.1)";
-								}}
-								onBlur={(e) => {
-									e.currentTarget.style.borderColor = "var(--card-border)";
-									e.currentTarget.style.boxShadow = "none";
-								}}
-							>
-								<option value="free">Free</option>
-								<option value="trial">Trial</option>
-								<option value="pro">Pro</option>
-								<option value="enterprise">Enterprise</option>
-							</select>
-						</div>
+						{/* Note: Default License Plan is managed automatically and shown in Licenses section */}
 
 						{/* Licensing Required */}
 						<div style={{ gridColumn: "1 / -1", marginTop: "16px" }}>

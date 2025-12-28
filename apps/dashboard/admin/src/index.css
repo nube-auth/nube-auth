@@ -1100,6 +1100,31 @@ textarea::placeholder {
   color: var(--text-tertiary);
 }
 
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 13px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  transition: all var(--transition);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-control::placeholder {
+  color: var(--text-tertiary);
+}
+
+input[type="url"].form-control {
+  font-family: inherit;
+}
+
 /* ==========================================================================
    CODE INLINE
    ========================================================================== */

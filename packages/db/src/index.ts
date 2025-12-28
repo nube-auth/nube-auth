@@ -58,6 +58,7 @@ export {
 	identityQueries,
 	invitationQueries,
 	licenseQueries,
+	planQueries,
 	projectMemberQueries,
 	projectQueries,
 	sessionQueries,

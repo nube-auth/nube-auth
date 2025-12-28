@@ -887,6 +887,91 @@ Build a **project-based** admin dashboard where:
 
 ---
 
+## 🔧 Technical Improvements (Post-MVP)
+
+### API Refactoring: Foreign Key Data Inclusion
+
+**Goal**: Refactor all API endpoints to include related entity data inline, eliminating unnecessary additional API calls.
+
+**Current Issue**: 
+- Most APIs only return foreign key IDs (e.g., `app_id`, `user_id`, `plan_id`)
+- Frontend must make additional API calls to fetch related entity details
+- This leads to N+1 query problems and slower page loads
+
+**Solution**:
+Include basic foreign key entity data directly in API responses, similar to what was done for `app.defaultPlan`.
+
+**Example** (already implemented):
+```typescript
+// Before:
+{
+  "defaultPlanId": "PLN0abc123"
+}
+
+// After:
+{
+  "defaultPlanId": "PLN0abc123",
+  "defaultPlan": {
+    "id": "PLN0abc123",
+    "name": "Free",
+    "slug": "my-app-free"
+  }
+}
+```
+
+**APIs to Refactor**:
+
+- [ ] **User APIs** (`/v1/admin/apps/:appId/users`)
+  - Include: `app { id, name, slug }`
+  - Include: `license.plan { id, name, slug }` (if has license)
+
+- [ ] **License APIs** (`/v1/admin/apps/:appId/licenses`)
+  - Include: `user { id, name, email, avatarUrl }`
+  - Include: `plan { id, name, slug, monthlyPrice, yearlyPrice }`
+  - Include: `app { id, name, slug }`
+
+- [ ] **Invitation APIs** (`/v1/admin/apps/:appId/invitations`)
+  - Include: `app { id, name, slug }`
+  - Include: `invitedBy { id, name, email }`
+  - Include: `plan { id, name, slug }` (if queued license)
+
+- [ ] **Session APIs** (`/v1/admin/apps/:appId/users/:userId/sessions`)
+  - Include: `user { id, name, email, avatarUrl }`
+  - Include: `app { id, name, slug }`
+
+- [ ] **Project Members APIs** (`/v1/admin/projects/:projectId/members`)
+  - Include: `user { id, name, email, avatarUrl }`
+  - Include: `project { id, name, slug }`
+
+- [ ] **Apps List APIs** (`/v1/admin/projects/:projectId/apps`)
+  - Include: `project { id, name, slug }`
+  - Include: `defaultPlan { id, name, slug }` (if set)
+  - Include basic stats: `{ userCount, licenseCount, revenue }`
+
+- [ ] **Audit Logs APIs** (future)
+  - Include: `user { id, name, email }`
+  - Include: `app { id, name }` or `project { id, name }`
+
+**Benefits**:
+- ✅ Reduced API calls (better performance)
+- ✅ Faster page loads (no sequential fetching)
+- ✅ Better developer experience
+- ✅ More efficient React Query caching
+- ✅ Easier frontend code (no need to join data client-side)
+
+**Implementation Guidelines**:
+1. Only include essential fields (id, name, slug, etc.)
+2. Keep responses lightweight (avoid nested objects beyond 2 levels)
+3. Update Zod schemas to include nested entity types
+4. Use database JOINs on backend (not N+1 queries)
+5. Document the response format in API docs
+
+**Time Estimate**: 2-3 days (can be done incrementally per API)
+
+**Priority**: Medium (improves UX but not blocking)
+
+---
+
 ## 📦 Out of Scope (Post-MVP)
 
 These features are important but NOT required for MVP:

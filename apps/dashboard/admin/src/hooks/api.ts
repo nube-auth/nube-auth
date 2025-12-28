@@ -248,3 +248,26 @@ export function useAppUsers(projectId: string, appId: string) {
 		enabled: !!projectId && !!appId,
 	});
 }
+
+export function useAppPlans(projectId: string, appId: string) {
+	return useQuery({
+		queryKey: ["app-plans", projectId, appId],
+		queryFn: async () => {
+			return fetchAPI<Array<{
+				id: string;
+				name: string;
+				slug: string;
+				description: string | null;
+				monthlyPrice: number | null;
+				yearlyPrice: number | null;
+				oneTimePrice: number | null;
+				trialEnabled: boolean;
+				trialDays: number | null;
+				features: string[];
+				status: string;
+				displayOrder: number;
+			}>>(`/v1/admin/projects/${projectId}/apps/${appId}/plans`);
+		},
+		enabled: !!projectId && !!appId,
+	});
+}
