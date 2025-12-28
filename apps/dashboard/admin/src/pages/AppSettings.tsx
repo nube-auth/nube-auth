@@ -40,17 +40,17 @@ export function AppSettingsPage() {
 		if (!formData) return;
 
 		if (type === "checkbox") {
-			setFormData((prev) => ({
+			setFormData((prev: Partial<App> | null) => ({
 				...prev,
 				[name]: (e.target as HTMLInputElement).checked,
 			}));
 		} else if (type === "number") {
-			setFormData((prev) => ({
+			setFormData((prev: Partial<App> | null) => ({
 				...prev,
 				[name]: parseInt(value, 10),
 			}));
 		} else {
-			setFormData((prev) => ({
+			setFormData((prev: Partial<App> | null) => ({
 				...prev,
 				[name]: value,
 			}));
@@ -59,7 +59,7 @@ export function AppSettingsPage() {
 
 	const handleArrayFieldChange = (field: string, index: number, value: string) => {
 		if (!formData) return;
-		setFormData((prev) => {
+		setFormData((prev: Partial<App> | null) => {
 			if (!prev) return null;
 			const arr = [...(prev[field as keyof typeof formData] as string[])];
 			arr[index] = value;
@@ -72,7 +72,7 @@ export function AppSettingsPage() {
 
 	const addArrayField = (field: string) => {
 		if (!formData) return;
-		setFormData((prev) => {
+		setFormData((prev: Partial<App> | null) => {
 			if (!prev) return null;
 			return {
 				...prev,
@@ -83,7 +83,7 @@ export function AppSettingsPage() {
 
 	const removeArrayField = (field: string, index: number) => {
 		if (!formData) return;
-		setFormData((prev) => {
+		setFormData((prev: Partial<App> | null) => {
 			if (!prev) return null;
 			const arr = [...(prev[field as keyof typeof formData] as string[])];
 			arr.splice(index, 1);
@@ -97,10 +97,10 @@ export function AppSettingsPage() {
 	const handleProviderToggle = (provider: string) => {
 		if (!formData) return;
 		const providers = formData.requiredProviders || [];
-		setFormData((prev) => ({
+		setFormData((prev: Partial<App> | null) => ({
 			...prev,
 			requiredProviders: providers.includes(provider)
-				? providers.filter((p) => p !== provider)
+				? providers.filter((p: string) => p !== provider)
 				: [...providers, provider],
 		}));
 	};
@@ -115,9 +115,9 @@ export function AppSettingsPage() {
 			name: formData.name,
 			slug: formData.slug,
 			description: formData.description,
-			redirectUris: (formData.redirectUris || []).filter((uri) => uri.trim()),
-			requiredProviders: (formData.requiredProviders || []).filter((p) => p.trim()),
-			allowedHosts: (formData.allowedHosts || []).filter((host) => host.trim()),
+			redirectUris: (formData.redirectUris || []).filter((uri: string) => uri.trim()),
+			requiredProviders: (formData.requiredProviders || []).filter((p: string) => p.trim()),
+			allowedHosts: (formData.allowedHosts || []).filter((host: string) => host.trim()),
 			appSessionTtlDays: formData.appSessionTtlDays || 28,
 			accountLockoutMinutes: formData.accountLockoutMinutes || 15,
 			cacheTtlMinutes: formData.cacheTtlMinutes || 10,
@@ -345,7 +345,7 @@ export function AppSettingsPage() {
 								Allowed callback URLs after successful authentication
 							</p>
 
-							{(formData.redirectUris || []).map((uri, index) => (
+							{(formData.redirectUris || []).map((uri: string, index: number) => (
 								<div key={index} style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
 									<input
 										type="url"
@@ -381,7 +381,7 @@ export function AppSettingsPage() {
 								Domains allowed to make requests to your app
 							</p>
 
-							{(formData.allowedHosts || []).map((host, index) => (
+							{(formData.allowedHosts || []).map((host: string, index: number) => (
 								<div key={index} style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
 									<input
 										type="text"
