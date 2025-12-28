@@ -82,6 +82,7 @@ export const projects = sqliteTable(
 		public_id: text("public_id").notNull().unique(),
 		name: text("name").notNull(),
 		slug: text("slug").notNull(),
+		description: text("description"),
 		owner_user_id: integer("owner_user_id")
 			.notNull()
 			.references(() => users.id),
@@ -115,6 +116,34 @@ export const project_members = sqliteTable(
 		projectUserUnique: unique("project_members_project_user_unique").on(table.project_id, table.user_id),
 		projectIdx: index("project_members_project_id_idx").on(table.project_id),
 		userIdx: index("project_members_user_id_idx").on(table.user_id),
+	}),
+);
+
+/**
+ * Project Invitations table
+ * Pending invitations to join a project
+ */
+export const project_invitations = sqliteTable(
+	"project_invitations",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		public_id: text("public_id").notNull().unique(),
+		project_id: integer("project_id")
+			.notNull()
+			.references(() => projects.id),
+		email: text("email").notNull(),
+		role: text("role").notNull(), // 'admin', 'member'
+		invited_by_user_id: integer("invited_by_user_id")
+			.notNull()
+			.references(() => users.id),
+		status: text("status").notNull(), // 'pending', 'accepted', 'expired', 'cancelled'
+		created_at: integer("created_at").notNull(),
+		expires_at: integer("expires_at").notNull(),
+	},
+	(table) => ({
+		projectEmailUnique: unique("project_invitations_project_email_unique").on(table.project_id, table.email),
+		projectIdx: index("project_invitations_project_id_idx").on(table.project_id),
+		emailIdx: index("project_invitations_email_idx").on(table.email),
 	}),
 );
 
@@ -167,6 +196,9 @@ export const apps = sqliteTable(
 		google_client_secret: text("google_client_secret"),
 		github_client_id: text("github_client_id"),
 		github_client_secret: text("github_client_secret"),
+		// App API Keys for developers
+		client_secret: text("client_secret").notNull(), // For server-to-server auth
+		service_token: text("service_token").notNull(), // For API calls
 		created_at: integer("created_at").notNull(),
 		updated_at: integer("updated_at").notNull(),
 	},

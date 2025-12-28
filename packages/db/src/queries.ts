@@ -9,6 +9,7 @@ import {
 	invitations,
 	licenses,
 	plans,
+	project_invitations,
 	project_members,
 	projects,
 	sessions,
@@ -152,12 +153,25 @@ export const projectQueries = {
 	async create(db: DbClient, data: typeof projects.$inferInsert) {
 		return db.insert(projects).values(data).returning().get();
 	},
+
+	async update(db: DbClient, projectId: number, data: Partial<typeof projects.$inferInsert>) {
+		return db
+			.update(projects)
+			.set({ ...data, updated_at: Math.floor(Date.now() / 1000) })
+			.where(eq(projects.id, projectId))
+			.returning()
+			.get();
+	},
 };
 
 /**
  * ProjectMember queries
  */
 export const projectMemberQueries = {
+	async findById(db: DbClient, id: number) {
+		return db.select().from(project_members).where(eq(project_members.id, id)).get();
+	},
+
 	async findByProjectAndUser(db: DbClient, projectId: number, userId: number) {
 		return db
 			.select()
@@ -184,6 +198,65 @@ export const projectMemberQueries = {
 
 	async delete(db: DbClient, id: number) {
 		return db.delete(project_members).where(eq(project_members.id, id)).returning().get();
+	},
+};
+
+/**
+ * Project Invitation queries
+ */
+export const projectInvitationQueries = {
+	async findById(db: DbClient, id: number) {
+		return db.select().from(project_invitations).where(eq(project_invitations.id, id)).get();
+	},
+
+	async findByPublicId(db: DbClient, publicId: string) {
+		return db.select().from(project_invitations).where(eq(project_invitations.public_id, publicId)).get();
+	},
+
+	async findByProjectAndEmail(db: DbClient, projectId: number, email: string) {
+		return db
+			.select()
+			.from(project_invitations)
+			.where(and(eq(project_invitations.project_id, projectId), eq(project_invitations.email, email)))
+			.get();
+	},
+
+	async findByProjectId(db: DbClient, projectId: number) {
+		return db
+			.select()
+			.from(project_invitations)
+			.where(and(eq(project_invitations.project_id, projectId), eq(project_invitations.status, "pending")))
+			.all();
+	},
+
+	async findByEmail(db: DbClient, email: string) {
+		return db
+			.select()
+			.from(project_invitations)
+			.where(and(eq(project_invitations.email, email), eq(project_invitations.status, "pending")))
+			.all();
+	},
+
+	async create(db: DbClient, data: typeof project_invitations.$inferInsert) {
+		return db.insert(project_invitations).values(data).returning().get();
+	},
+
+	async update(db: DbClient, id: number, data: Partial<typeof project_invitations.$inferInsert>) {
+		return db.update(project_invitations).set(data).where(eq(project_invitations.id, id)).returning().get();
+	},
+
+	async delete(db: DbClient, id: number) {
+		return db.delete(project_invitations).where(eq(project_invitations.id, id)).returning().get();
+	},
+
+	async cleanupExpired(db: DbClient) {
+		const now = Math.floor(Date.now() / 1000);
+		return db
+			.update(project_invitations)
+			.set({ status: "expired" })
+			.where(and(eq(project_invitations.status, "pending"), lt(project_invitations.expires_at, now)))
+			.returning()
+			.all();
 	},
 };
 

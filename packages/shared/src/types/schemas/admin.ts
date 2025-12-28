@@ -31,6 +31,7 @@ export const ProjectDTOSchema = z.object({
 	id: PublicIdSchema,
 	name: NameSchema,
 	slug: SlugSchema,
+	description: z.string().optional(),
 	createdAt: z.number().optional(),
 	updatedAt: z.number().optional(),
 	totalApps: z.number().optional(),
@@ -78,6 +79,8 @@ export const AppDTOSchema = z.object({
 		name: z.string(),
 		slug: z.string(),
 	}).nullable().optional(),
+	clientSecret: z.string(), // Masked in API response
+	serviceToken: z.string(), // Masked in API response
 	appSessionTtlDays: z.number(),
 	accountLockoutMinutes: z.number(),
 	cacheTtlMinutes: z.number(),

@@ -59,6 +59,7 @@ CREATE TABLE "projects" (
     "public_id" text NOT NULL UNIQUE,
     "name" text NOT NULL,
     "slug" text NOT NULL,
+    "description" text,
     "owner_user_id" integer NOT NULL,
     "created_at" integer NOT NULL,
     "updated_at" integer NOT NULL,
@@ -81,6 +82,24 @@ CREATE TABLE "project_members" (
 CREATE UNIQUE INDEX "project_members_project_user_unique" ON "project_members" ("project_id", "user_id");
 CREATE INDEX "project_members_project_id_idx" ON "project_members" ("project_id");
 CREATE INDEX "project_members_user_id_idx" ON "project_members" ("user_id");
+
+CREATE TABLE "project_invitations" (
+    "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "public_id" text NOT NULL UNIQUE,
+    "project_id" integer NOT NULL,
+    "email" text NOT NULL,
+    "role" text NOT NULL,
+    "invited_by_user_id" integer NOT NULL,
+    "status" text NOT NULL,
+    "created_at" integer NOT NULL,
+    "expires_at" integer NOT NULL,
+    FOREIGN KEY ("project_id") REFERENCES "projects"("id"),
+    FOREIGN KEY ("invited_by_user_id") REFERENCES "users"("id")
+);
+
+CREATE UNIQUE INDEX "project_invitations_project_email_unique" ON "project_invitations" ("project_id", "email");
+CREATE INDEX "project_invitations_project_id_idx" ON "project_invitations" ("project_id");
+CREATE INDEX "project_invitations_email_idx" ON "project_invitations" ("email");
 
 CREATE TABLE "apps" (
     "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -123,6 +142,9 @@ CREATE TABLE "apps" (
     "google_client_secret" text,
     "github_client_id" text,
     "github_client_secret" text,
+    -- App API Keys
+    "client_secret" text NOT NULL,
+    "service_token" text NOT NULL,
     "created_at" integer NOT NULL,
     "updated_at" integer NOT NULL,
     FOREIGN KEY ("project_id") REFERENCES "projects"("id"),

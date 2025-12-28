@@ -93,6 +93,22 @@ export function useCreateProject() {
 	});
 }
 
+export function useUpdateProject(projectId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (data: { name: string; slug: string; description?: string }) => {
+			return fetchAPI<Project>(`/v1/admin/projects/${projectId}`, {
+				method: "PATCH",
+				body: JSON.stringify(data),
+			}, ProjectDTOSchema);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["projects"] });
+			queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+		},
+	});
+}
+
 export function useProject(projectId: string) {
 	return useQuery({
 		queryKey: ["project", projectId],
@@ -269,5 +285,112 @@ export function useAppPlans(projectId: string, appId: string) {
 			}>>(`/v1/admin/projects/${projectId}/apps/${appId}/plans`);
 		},
 		enabled: !!projectId && !!appId,
+	});
+}
+
+// Team Member Management
+export function useInviteTeamMember(projectId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (data: { email: string; role?: string }) => {
+			return fetchAPI<
+				| {
+						type: "member";
+						id: number;
+						userId: string;
+						email: string;
+						name: string | null;
+						role: string;
+						createdAt: number;
+				  }
+				| {
+						type: "invitation";
+						id: number;
+						invitationId: string;
+						email: string;
+						role: string;
+						status: string;
+						createdAt: number;
+						expiresAt: number;
+				  }
+			>(`/v1/admin/projects/${projectId}/members`, {
+				method: "POST",
+				body: JSON.stringify(data),
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["project-members", projectId] });
+			queryClient.invalidateQueries({ queryKey: ["project-invitations", projectId] });
+		},
+	});
+}
+
+export function useProjectInvitations(projectId: string) {
+	return useQuery({
+		queryKey: ["project-invitations", projectId],
+		queryFn: async () => {
+			return fetchAPI<{
+				invitations: Array<{
+					id: number;
+					invitationId: string;
+					email: string;
+					role: string;
+					status: string;
+					createdAt: number;
+					expiresAt: number;
+				}>;
+			}>(`/v1/admin/projects/${projectId}/invitations`);
+		},
+		enabled: !!projectId,
+	});
+}
+
+export function useCancelInvitation(projectId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (invitationId: number) => {
+			return fetchAPI<{ success: boolean }>(`/v1/admin/projects/${projectId}/invitations/${invitationId}`, {
+				method: "DELETE",
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["project-invitations", projectId] });
+		},
+	});
+}
+
+export function useUpdateTeamMember(projectId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async ({ memberId, role }: { memberId: number; role: string }) => {
+			return fetchAPI<{
+				id: number;
+				userId: string;
+				email: string;
+				name: string | null;
+				role: string;
+				createdAt: number;
+			}>(`/v1/admin/projects/${projectId}/members/${memberId}`, {
+				method: "PATCH",
+				body: JSON.stringify({ role }),
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["project-members", projectId] });
+		},
+	});
+}
+
+export function useRemoveTeamMember(projectId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (memberId: number) => {
+			return fetchAPI<{ success: boolean }>(`/v1/admin/projects/${projectId}/members/${memberId}`, {
+				method: "DELETE",
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["project-members", projectId] });
+		},
 	});
 }

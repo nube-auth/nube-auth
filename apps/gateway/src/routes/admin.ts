@@ -1,5 +1,6 @@
-import { appQueries, getDb, identityQueries, invitationQueries, licenseQueries, planQueries, projectMemberQueries, projectQueries, userQueries, sessionQueries } from "@proofa/db";
+import { appQueries, getDb, identityQueries, invitationQueries, licenseQueries, planQueries, projectInvitationQueries, projectMemberQueries, projectQueries, userQueries, sessionQueries } from "@proofa/db";
 import { createId } from "@proofa/shared";
+import { nanoid } from "nanoid";
 import {
 	ProjectDTOSchema,
 	ProjectsListResponseSchema,
@@ -17,6 +18,17 @@ import { Hono } from "hono";
 import { getAuth } from "../middleware/auth";
 
 export const adminRoutes = new Hono();
+
+/**
+ * Helper function to mask sensitive keys
+ * Shows only last 4 characters: sk_...abc1
+ */
+function maskApiKey(key: string): string {
+	if (!key || key.length < 8) return "••••••••";
+	const prefix = key.substring(0, 3); // sk_ or st_
+	const suffix = key.substring(key.length - 4);
+	return `${prefix}...${suffix}`;
+}
 
 /**
  * GET /v1/admin/me
@@ -195,10 +207,80 @@ adminRoutes.get("/projects/:projectId", async (c: Context) => {
 			id: project.public_id,
 			name: project.name,
 			slug: project.slug,
+			description: project.description || null,
+			createdAt: project.created_at,
+			updatedAt: project.updated_at,
 		});
 	} catch (error) {
 		console.error("Get project error:", error);
 		return c.json({ error: "Failed to get project" }, 500);
+	}
+});
+
+/**
+ * PATCH /v1/admin/projects/:projectId
+ * Update project details
+ */
+adminRoutes.patch("/projects/:projectId", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const body = await c.req.json();
+
+		const db = getDb();
+
+		const project = await projectQueries.findByPublicId(db, projectId);
+
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		// Get user by public ID
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Check user is member with owner or admin role
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+
+		if (!member || (member.role !== "owner" && member.role !== "admin")) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		// Update project
+		const now = Math.floor(Date.now() / 1000);
+		const updateData: Record<string, string | number> = {
+			updated_at: now,
+		};
+
+		if (body.name !== undefined) {
+			updateData.name = body.name;
+		}
+		if (body.slug !== undefined) {
+			updateData.slug = body.slug;
+		}
+		if (body.description !== undefined) {
+			updateData.description = body.description;
+		}
+
+		const updatedProject = await projectQueries.update(db, project.id, updateData);
+
+		if (!updatedProject) {
+			return c.json({ error: "Failed to update project" }, 500);
+		}
+
+		return c.json({
+			id: updatedProject.public_id,
+			name: updatedProject.name,
+			slug: updatedProject.slug,
+			description: updatedProject.description || null,
+			createdAt: updatedProject.created_at,
+			updatedAt: updatedProject.updated_at,
+		});
+	} catch (error) {
+		console.error("Update project error:", error);
+		return c.json({ error: "Failed to update project" }, 500);
 	}
 });
 
@@ -362,6 +444,10 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 		const appSlug = validatedData.slug || validatedData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
 		// Step 1: Create the app (without default_plan_id initially)
+		// Generate secure API keys for developers
+		const clientSecret = `sk_${nanoid(48)}`; // Secret key for server-to-server auth
+		const serviceToken = `st_${nanoid(48)}`; // Service token for API calls
+
 		const app = await appQueries.create(db, {
 			public_id: createId("app"),
 			project_id: project.id,
@@ -374,6 +460,8 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			app_session_ttl_days: validatedData.appSessionTtlDays || 28,
 			licensing_required: Number(validatedData.licensingRequired ?? false),
 			default_plan_id: null, // Will be set below if licensing is enabled
+			client_secret: clientSecret,
+			service_token: serviceToken,
 			account_lockout_minutes: 30,
 			cache_ttl_minutes: 60,
 			cors_allowed_origins: JSON.stringify(["http://localhost:3001"]),
@@ -428,6 +516,8 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 				name: defaultPlan.name,
 				slug: defaultPlan.slug,
 			} : null,
+			clientSecret: maskApiKey(app.client_secret),
+			serviceToken: maskApiKey(app.service_token),
 			appSessionTtlDays: app.app_session_ttl_days,
 			accountLockoutMinutes: app.account_lockout_minutes,
 			cacheTtlMinutes: app.cache_ttl_minutes,
@@ -508,6 +598,8 @@ adminRoutes.get("/projects/:projectId/apps/:appId", async (c: Context) => {
 				name: defaultPlan.name,
 				slug: defaultPlan.slug,
 			} : null,
+			clientSecret: maskApiKey(app.client_secret),
+			serviceToken: maskApiKey(app.service_token),
 			appSessionTtlDays: app.app_session_ttl_days,
 			accountLockoutMinutes: app.account_lockout_minutes,
 			cacheTtlMinutes: app.cache_ttl_minutes,
@@ -1218,6 +1310,8 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 				name: defaultPlan.name,
 				slug: defaultPlan.slug,
 			} : null,
+			clientSecret: maskApiKey(updatedApp.client_secret),
+			serviceToken: maskApiKey(updatedApp.service_token),
 			appSessionTtlDays: updatedApp.app_session_ttl_days,
 			accountLockoutMinutes: updatedApp.account_lockout_minutes,
 			cacheTtlMinutes: updatedApp.cache_ttl_minutes,
@@ -1238,6 +1332,151 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 			console.error("Error details:", error.message, error.stack);
 		}
 		return c.json({ error: "Failed to update app" }, 500);
+	}
+});
+
+/**
+ * GET /v1/admin/projects/:projectId/apps/:appId/api-keys
+ * Get app API keys (unmasked for copying)
+ */
+adminRoutes.get("/projects/:projectId/apps/:appId/api-keys", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const appId = c.req.param("appId");
+
+		const db = getDb();
+
+		const project = await projectQueries.findByPublicId(db, projectId);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		if (!member || member.role !== "owner") {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app || app.project_id !== project.id) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		return c.json({
+			appId: app.public_id,
+			clientSecret: app.client_secret,
+			serviceToken: app.service_token,
+		});
+	} catch (error) {
+		console.error("Get API keys error:", error);
+		return c.json({ error: "Failed to get API keys" }, 500);
+	}
+});
+
+/**
+ * POST /v1/admin/projects/:projectId/apps/:appId/regenerate-secret
+ * Regenerate client secret
+ */
+adminRoutes.post("/projects/:projectId/apps/:appId/regenerate-secret", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const appId = c.req.param("appId");
+
+		const db = getDb();
+
+		const project = await projectQueries.findByPublicId(db, projectId);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		if (!member || member.role !== "owner") {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app || app.project_id !== project.id) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		// Generate new client secret
+		const newClientSecret = `sk_${nanoid(48)}`;
+		const now = Math.floor(Date.now() / 1000);
+
+		await appQueries.update(db, app.id, {
+			client_secret: newClientSecret,
+			updated_at: now,
+		});
+
+		return c.json({
+			clientSecret: newClientSecret,
+			message: "Client secret regenerated successfully",
+		});
+	} catch (error) {
+		console.error("Regenerate client secret error:", error);
+		return c.json({ error: "Failed to regenerate client secret" }, 500);
+	}
+});
+
+/**
+ * POST /v1/admin/projects/:projectId/apps/:appId/regenerate-token
+ * Regenerate service token
+ */
+adminRoutes.post("/projects/:projectId/apps/:appId/regenerate-token", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const appId = c.req.param("appId");
+
+		const db = getDb();
+
+		const project = await projectQueries.findByPublicId(db, projectId);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		if (!member || member.role !== "owner") {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app || app.project_id !== project.id) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		// Generate new service token
+		const newServiceToken = `st_${nanoid(48)}`;
+		const now = Math.floor(Date.now() / 1000);
+
+		await appQueries.update(db, app.id, {
+			service_token: newServiceToken,
+			updated_at: now,
+		});
+
+		return c.json({
+			serviceToken: newServiceToken,
+			message: "Service token regenerated successfully",
+		});
+	} catch (error) {
+		console.error("Regenerate service token error:", error);
+		return c.json({ error: "Failed to regenerate service token" }, 500);
 	}
 });
 
@@ -1290,6 +1529,342 @@ adminRoutes.get("/projects/:projectId/members", async (c: Context) => {
 	} catch (error) {
 		console.error("List project members error:", error);
 		return c.json({ error: "Failed to list project members" }, 500);
+	}
+});
+
+/**
+ * POST /v1/admin/projects/:projectId/members
+ * Invite a team member to the project
+ */
+adminRoutes.post("/projects/:projectId/members", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const body = await c.req.json();
+
+		const { email, role = "admin" } = body;
+
+		if (!email) {
+			return c.json({ error: "Email is required" }, 400);
+		}
+
+		// Validate role
+		const validRoles = ["owner", "admin", "member"];
+		if (!validRoles.includes(role)) {
+			return c.json({ error: "Invalid role. Must be owner, admin, or member" }, 400);
+		}
+
+		const db = getDb();
+
+		const project = await projectQueries.findByPublicId(db, projectId);
+
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		// Get requesting user
+		const requestingUser = await userQueries.findByPublicId(db, auth.userId);
+		if (!requestingUser) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Check if requesting user has permission (must be owner or admin)
+		const requestingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
+
+		if (!requestingMember || (requestingMember.role !== "owner" && requestingMember.role !== "admin")) {
+			return c.json({ error: "Access denied. Only owners and admins can invite members" }, 403);
+		}
+
+		// Smart invite logic: check if user exists
+		const targetUser = await userQueries.findByEmail(db, email);
+		const now = Math.floor(Date.now() / 1000);
+
+		if (targetUser) {
+			// User exists - check if already a member
+			const existingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, targetUser.id);
+
+			if (existingMember) {
+				return c.json({ error: "User is already a member of this project" }, 400);
+			}
+
+			// Add user as project member immediately
+			const newMember = await projectMemberQueries.create(db, {
+				project_id: project.id,
+				user_id: targetUser.id,
+				role: role,
+				created_at: now,
+			});
+
+			return c.json({
+				type: "member",
+				id: newMember.id,
+				userId: targetUser.public_id,
+				email: targetUser.primary_email,
+				name: targetUser.name,
+				role: newMember.role,
+				createdAt: newMember.created_at,
+			});
+		}
+
+		// User doesn't exist - create invitation
+		const existingInvitation = await projectInvitationQueries.findByProjectAndEmail(db, project.id, email);
+
+		if (existingInvitation && existingInvitation.status === "pending") {
+			return c.json({ error: "An invitation for this email already exists" }, 400);
+		}
+
+		// Create invitation (expires in 7 days)
+		const expiresAt = now + 7 * 24 * 60 * 60;
+		const invitation = await projectInvitationQueries.create(db, {
+			public_id: createId("invitation"),
+			project_id: project.id,
+			email: email,
+			role: role,
+			invited_by_user_id: requestingUser.id,
+			status: "pending",
+			created_at: now,
+			expires_at: expiresAt,
+		});
+
+		// TODO: Send invitation email here
+		// For now, the invitation is created and will be checked when user signs up
+
+		return c.json({
+			type: "invitation",
+			id: invitation.id,
+			invitationId: invitation.public_id,
+			email: invitation.email,
+			role: invitation.role,
+			status: invitation.status,
+			createdAt: invitation.created_at,
+			expiresAt: invitation.expires_at,
+		});
+	} catch (error) {
+		console.error("Invite project member error:", error);
+		return c.json({ error: "Failed to invite project member" }, 500);
+	}
+});
+
+/**
+ * PATCH /v1/admin/projects/:projectId/members/:memberId
+ * Update a team member's role
+ */
+adminRoutes.patch("/projects/:projectId/members/:memberId", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const memberId = Number.parseInt(c.req.param("memberId"), 10);
+		const body = await c.req.json();
+
+		const { role } = body;
+
+		if (!role) {
+			return c.json({ error: "Role is required" }, 400);
+		}
+
+		// Validate role
+		const validRoles = ["owner", "admin", "member"];
+		if (!validRoles.includes(role)) {
+			return c.json({ error: "Invalid role. Must be owner, admin, or member" }, 400);
+		}
+
+		const db = getDb();
+
+		const project = await projectQueries.findByPublicId(db, projectId);
+
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		// Get requesting user
+		const requestingUser = await userQueries.findByPublicId(db, auth.userId);
+		if (!requestingUser) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Check if requesting user has permission (must be owner)
+		const requestingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
+
+		if (!requestingMember || requestingMember.role !== "owner") {
+			return c.json({ error: "Access denied. Only owners can change member roles" }, 403);
+		}
+
+		// Get the member to update
+		const memberToUpdate = await projectMemberQueries.findById(db, memberId);
+
+		if (!memberToUpdate || memberToUpdate.project_id !== project.id) {
+			return c.json({ error: "Member not found" }, 404);
+		}
+
+		// Update the member's role
+		const updatedMember = await projectMemberQueries.update(db, memberId, { role });
+
+		if (!updatedMember) {
+			return c.json({ error: "Failed to update member role" }, 500);
+		}
+
+		const memberUser = await userQueries.findById(db, updatedMember.user_id);
+
+		return c.json({
+			id: updatedMember.id,
+			userId: memberUser?.public_id,
+			email: memberUser?.primary_email,
+			name: memberUser?.name,
+			role: updatedMember.role,
+			createdAt: updatedMember.created_at,
+		});
+	} catch (error) {
+		console.error("Update member role error:", error);
+		return c.json({ error: "Failed to update member role" }, 500);
+	}
+});
+
+/**
+ * DELETE /v1/admin/projects/:projectId/members/:memberId
+ * Remove a team member from the project
+ */
+adminRoutes.delete("/projects/:projectId/members/:memberId", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const memberId = Number.parseInt(c.req.param("memberId"), 10);
+
+		const db = getDb();
+
+		const project = await projectQueries.findByPublicId(db, projectId);
+
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		// Get requesting user
+		const requestingUser = await userQueries.findByPublicId(db, auth.userId);
+		if (!requestingUser) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Check if requesting user has permission (must be owner or admin)
+		const requestingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
+
+		if (!requestingMember || (requestingMember.role !== "owner" && requestingMember.role !== "admin")) {
+			return c.json({ error: "Access denied. Only owners and admins can remove members" }, 403);
+		}
+
+		// Get the member to remove
+		const memberToRemove = await projectMemberQueries.findById(db, memberId);
+
+		if (!memberToRemove || memberToRemove.project_id !== project.id) {
+			return c.json({ error: "Member not found" }, 404);
+		}
+
+		// Prevent removing the owner
+		if (memberToRemove.role === "owner") {
+			return c.json({ error: "Cannot remove the project owner" }, 400);
+		}
+
+		// Remove the member
+		await projectMemberQueries.delete(db, memberId);
+
+		return c.json({ success: true });
+	} catch (error) {
+		console.error("Remove member error:", error);
+		return c.json({ error: "Failed to remove member" }, 500);
+	}
+});
+
+/**
+ * GET /v1/admin/projects/:projectId/invitations
+ * List project invitations
+ */
+adminRoutes.get("/projects/:projectId/invitations", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+
+		const db = getDb();
+
+		const project = await projectQueries.findByPublicId(db, projectId);
+
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		// Get user by public ID
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+
+		if (!member) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		const invitations = await projectInvitationQueries.findByProjectId(db, project.id);
+
+		return c.json({
+			invitations: invitations.map((inv) => ({
+				id: inv.id,
+				invitationId: inv.public_id,
+				email: inv.email,
+				role: inv.role,
+				status: inv.status,
+				createdAt: inv.created_at,
+				expiresAt: inv.expires_at,
+			})),
+		});
+	} catch (error) {
+		console.error("List project invitations error:", error);
+		return c.json({ error: "Failed to list project invitations" }, 500);
+	}
+});
+
+/**
+ * DELETE /v1/admin/projects/:projectId/invitations/:invitationId
+ * Cancel a project invitation
+ */
+adminRoutes.delete("/projects/:projectId/invitations/:invitationId", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const invitationIdParam = Number.parseInt(c.req.param("invitationId"), 10);
+
+		const db = getDb();
+
+		const project = await projectQueries.findByPublicId(db, projectId);
+
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		// Get requesting user
+		const requestingUser = await userQueries.findByPublicId(db, auth.userId);
+		if (!requestingUser) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Check if requesting user has permission (must be owner or admin)
+		const requestingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
+
+		if (!requestingMember || (requestingMember.role !== "owner" && requestingMember.role !== "admin")) {
+			return c.json({ error: "Access denied. Only owners and admins can cancel invitations" }, 403);
+		}
+
+		// Get the invitation
+		const invitation = await projectInvitationQueries.findById(db, invitationIdParam);
+
+		if (!invitation || invitation.project_id !== project.id) {
+			return c.json({ error: "Invitation not found" }, 404);
+		}
+
+		// Update invitation status to cancelled
+		await projectInvitationQueries.update(db, invitationIdParam, { status: "cancelled" });
+
+		return c.json({ success: true });
+	} catch (error) {
+		console.error("Cancel invitation error:", error);
+		return c.json({ error: "Failed to cancel invitation" }, 500);
 	}
 });
 

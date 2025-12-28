@@ -3,6 +3,8 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { useApp, useUpdateApp, useProject } from "../hooks/api";
 import { App } from "../types/admin";
 
+type SettingsTab = "general" | "authentication" | "licensing" | "security" | "danger";
+
 export function AppSettingsPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
 	const navigate = useNavigate();
@@ -10,8 +12,9 @@ export function AppSettingsPage() {
 	const { data: app, isLoading: appLoading } = useApp(projectId || "", appId || "");
 	const updateAppMutation = useUpdateApp(projectId || "", appId || "");
 
-	const [isEditing, setIsEditing] = useState(false);
+	const [activeTab, setActiveTab] = useState<SettingsTab>("general");
 	const [formData, setFormData] = useState<Partial<App> | null>(null);
+	const [isSaving, setIsSaving] = useState(false);
 
 	// Initialize formData when app data is loaded
 	if (app && !formData) {
@@ -23,6 +26,9 @@ export function AppSettingsPage() {
 			requiredProviders: app.requiredProviders || [],
 			allowedHosts: app.allowedHosts || [],
 			appSessionTtlDays: app.appSessionTtlDays || 28,
+			accountLockoutMinutes: app.accountLockoutMinutes || 15,
+			cacheTtlMinutes: app.cacheTtlMinutes || 10,
+			rateLimitRequestsPerMinute: app.rateLimitRequestsPerMinute || 100,
 			licensingRequired: app.licensingRequired ?? true,
 			defaultPlanId: app.defaultPlanId,
 			isActive: app.isActive ?? true,
@@ -88,9 +94,22 @@ export function AppSettingsPage() {
 		});
 	};
 
-	const handleSave = (e: React.FormEvent) => {
+	const handleProviderToggle = (provider: string) => {
+		if (!formData) return;
+		const providers = formData.requiredProviders || [];
+		setFormData((prev) => ({
+			...prev,
+			requiredProviders: providers.includes(provider)
+				? providers.filter((p) => p !== provider)
+				: [...providers, provider],
+		}));
+	};
+
+	const handleSave = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!formData) return;
+
+		setIsSaving(true);
 
 		const dataToSend = {
 			name: formData.name,
@@ -99,15 +118,23 @@ export function AppSettingsPage() {
 			redirectUris: (formData.redirectUris || []).filter((uri) => uri.trim()),
 			requiredProviders: (formData.requiredProviders || []).filter((p) => p.trim()),
 			allowedHosts: (formData.allowedHosts || []).filter((host) => host.trim()),
-			appSessionTtlDays: formData.appSessionTtlDays,
-			licensingRequired: Boolean(formData.licensingRequired),
+			appSessionTtlDays: formData.appSessionTtlDays || 28,
+			accountLockoutMinutes: formData.accountLockoutMinutes || 15,
+			cacheTtlMinutes: formData.cacheTtlMinutes || 10,
+			rateLimitRequestsPerMinute: formData.rateLimitRequestsPerMinute || 100,
+			licensingRequired: formData.licensingRequired ?? true,
+			isActive: formData.isActive ?? true,
 		};
 
-		updateAppMutation.mutate(dataToSend, {
-			onSuccess: () => {
-				setIsEditing(false);
-			},
-		});
+		try {
+			await updateAppMutation.mutateAsync(dataToSend);
+			// Success feedback (you can add a toast notification here)
+		} catch (error) {
+			console.error("Failed to update app:", error);
+			// Error feedback (you can add a toast notification here)
+		} finally {
+			setIsSaving(false);
+		}
 	};
 
 	if (projectLoading || appLoading) {
@@ -118,833 +145,492 @@ export function AppSettingsPage() {
 		);
 	}
 
-	if (!project || !app) {
-		return (
-			<div className="alert alert-danger">
-				<span>Project or App not found</span>
-			</div>
-		);
+	if (!project || !app || !formData) {
+		return <div className="error-state">App not found</div>;
 	}
 
-	return (
-		<div className="space-y-6">
-			{/* Breadcrumb */}
-			<nav style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px" }}>
-				<Link to="/projects" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>
-					Projects
-				</Link>
-				<svg style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-				</svg>
-				<Link to={`/projects/${projectId}`} style={{ color: "var(--text-secondary)", textDecoration: "none" }}>
-					{project.name}
-				</Link>
-				<svg style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-				</svg>
-				<Link to={`/projects/${projectId}/apps/${appId}`} style={{ color: "var(--text-secondary)", textDecoration: "none" }}>
-					{app.name}
-				</Link>
-				<svg style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-				</svg>
-				<span style={{ color: "var(--text-primary)", fontWeight: "500" }}>Settings</span>
-			</nav>
+	const tabs: { id: SettingsTab; label: string }[] = [
+		{ id: "general", label: "General" },
+		{ id: "authentication", label: "Authentication" },
+		{ id: "licensing", label: "Licensing" },
+		{ id: "security", label: "Security" },
+		{ id: "danger", label: "Danger Zone" },
+	];
 
-			{/* Header */}
-			<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-				<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-					<button
-						onClick={() => navigate(`/projects/${projectId}/apps/${appId}`)}
-						style={{
-							background: "none",
-							border: "1px solid var(--border-secondary)",
-							borderRadius: "8px",
-							padding: "8px",
-							cursor: "pointer",
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							color: "var(--text-secondary)",
-							transition: "all 0.2s ease",
-						}}
-						onMouseEnter={(e) => {
-							e.currentTarget.style.borderColor = "var(--primary)";
-							e.currentTarget.style.color = "var(--primary)";
-						}}
-						onMouseLeave={(e) => {
-							e.currentTarget.style.borderColor = "var(--border-secondary)";
-							e.currentTarget.style.color = "var(--text-secondary)";
-						}}
-					>
-						<svg style={{ width: "18px", height: "18px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-						</svg>
-					</button>
-					<h2 style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
-						Application Settings
-					</h2>
+	return (
+		<div className="page">
+			{/* Breadcrumb */}
+			<div style={{ marginBottom: "24px" }}>
+				<div style={{ display: "flex", gap: "8px", alignItems: "center", fontSize: "13px", color: "var(--text-tertiary)" }}>
+					<Link to="/projects" style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+						Projects
+					</Link>
+					<span>›</span>
+					<Link to={`/projects/${projectId}`} style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+						{project.name}
+					</Link>
+					<span>›</span>
+					<Link to={`/projects/${projectId}/apps/${appId}`} style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+						{app.name}
+					</Link>
+					<span>›</span>
+					<span style={{ color: "var(--text-primary)" }}>Settings</span>
 				</div>
-				{!isEditing && (
-					<button
-						onClick={() => setIsEditing(true)}
-						className="btn btn-primary"
-					>
-						Edit Settings
-					</button>
-				)}
 			</div>
 
-			{/* Display Mode (non-editing) */}
-			{!isEditing && (
-				<div style={{ display: "grid", gap: "20px" }}>
-					{/* Basic Information Card */}
-					<div className="card" style={{ padding: "24px" }}>
-						<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
-							<div style={{
-								width: "40px",
-								height: "40px",
-								borderRadius: "10px",
-								background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05))",
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-							}}>
-								<svg style={{ width: "20px", height: "20px", color: "rgb(59, 130, 246)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-								</svg>
-							</div>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--text-primary)", margin: 0 }}>
-								Basic Information
-							</h3>
-						</div>
-						<div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" }}>
-							<div>
-								<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "6px", textTransform: "uppercase", fontWeight: "600", letterSpacing: "0.5px" }}>App Name</p>
-								<p style={{ fontSize: "15px", color: "var(--text-primary)", fontWeight: "500" }}>{app.name}</p>
-							</div>
-							<div>
-								<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "6px", textTransform: "uppercase", fontWeight: "600", letterSpacing: "0.5px" }}>Slug</p>
-								<code style={{ 
-									fontSize: "13px", 
-									color: "var(--primary)", 
-									fontWeight: "500",
-									background: "rgba(139, 92, 246, 0.1)",
-									padding: "4px 8px",
-									borderRadius: "6px",
-								}}>
-									{app.slug}
-								</code>
-							</div>
-						</div>
-						{app.description && (
-							<div style={{ marginTop: "20px", paddingTop: "20px", borderTop: "1px solid var(--card-border)" }}>
-								<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "6px", textTransform: "uppercase", fontWeight: "600", letterSpacing: "0.5px" }}>Description</p>
-								<p style={{ fontSize: "14px", color: "var(--text-secondary)", lineHeight: "1.6" }}>{app.description}</p>
-							</div>
-						)}
-					</div>
+			{/* Page Header */}
+			<div style={{ marginBottom: "32px" }}>
+				<h1 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>App Settings</h1>
+				<p style={{ fontSize: "14px", color: "var(--text-tertiary)" }}>
+					Configure your application settings and preferences
+				</p>
+			</div>
 
-					{/* OAuth Configuration Card */}
-					<div className="card" style={{ padding: "24px" }}>
-						<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
-							<div style={{
-								width: "40px",
-								height: "40px",
-								borderRadius: "10px",
-								background: "linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05))",
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-							}}>
-								<svg style={{ width: "20px", height: "20px", color: "var(--success)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-								</svg>
-							</div>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--text-primary)", margin: 0 }}>
-								OAuth Configuration
-							</h3>
-						</div>
-						<div style={{ display: "grid", gap: "20px" }}>
-							<div>
-								<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "8px", textTransform: "uppercase", fontWeight: "600", letterSpacing: "0.5px" }}>Redirect URIs</p>
-								<div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-									{app.redirectUris && app.redirectUris.length > 0 ? (
-										app.redirectUris.map((uri, idx) => (
-											<div key={idx} style={{ 
-												display: "flex", 
-												alignItems: "center", 
-												gap: "8px",
-												background: "var(--content-bg)",
-												padding: "10px 12px",
-												borderRadius: "8px",
-												border: "1px solid var(--card-border)",
-											}}>
-												<svg style={{ width: "14px", height: "14px", color: "var(--text-tertiary)", flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-												</svg>
-												<code style={{ fontSize: "13px", color: "var(--text-primary)", fontFamily: "monospace" }}>
-													{uri}
-												</code>
-											</div>
-										))
-									) : (
-										<div style={{ 
-											padding: "16px", 
-											background: "var(--content-bg)", 
-											borderRadius: "8px",
-											textAlign: "center",
-											color: "var(--text-tertiary)",
-											fontSize: "13px",
-										}}>
-											No redirect URIs configured
-										</div>
-									)}
-								</div>
-							</div>
-							<div>
-								<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "8px", textTransform: "uppercase", fontWeight: "600", letterSpacing: "0.5px" }}>Allowed Hosts</p>
-								<div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-									{app.allowedHosts && app.allowedHosts.length > 0 ? (
-										app.allowedHosts.map((host, idx) => (
-											<div key={idx} style={{ 
-												display: "flex", 
-												alignItems: "center", 
-												gap: "8px",
-												background: "var(--content-bg)",
-												padding: "10px 12px",
-												borderRadius: "8px",
-												border: "1px solid var(--card-border)",
-											}}>
-												<svg style={{ width: "14px", height: "14px", color: "var(--text-tertiary)", flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-												</svg>
-												<code style={{ fontSize: "13px", color: "var(--text-primary)", fontFamily: "monospace" }}>
-													{host}
-												</code>
-											</div>
-										))
-									) : (
-										<div style={{ 
-											padding: "16px", 
-											background: "var(--content-bg)", 
-											borderRadius: "8px",
-											textAlign: "center",
-											color: "var(--text-tertiary)",
-											fontSize: "13px",
-										}}>
-											No allowed hosts configured
-										</div>
-									)}
-								</div>
-							</div>
-						</div>
-					</div>
-
-					{/* Licensing & Sessions Card */}
-					<div className="card" style={{ padding: "24px" }}>
-						<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
-							<div style={{
-								width: "40px",
-								height: "40px",
-								borderRadius: "10px",
-								background: "linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05))",
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-							}}>
-								<svg style={{ width: "20px", height: "20px", color: "var(--primary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-								</svg>
-							</div>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--text-primary)", margin: 0 }}>
-								Licensing & Sessions
-							</h3>
-						</div>
-						<div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" }}>
-							<div style={{ 
-								padding: "16px", 
-								background: "var(--surface-secondary)", 
-								borderRadius: "10px",
-								border: "1px solid var(--border-secondary)",
-							}}>
-								<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "6px", textTransform: "uppercase", fontWeight: "600", letterSpacing: "0.5px" }}>Licensing Required</p>
-								<div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-									<span style={{
-										display: "inline-flex",
-										alignItems: "center",
-										justifyContent: "center",
-										width: "20px",
-										height: "20px",
-										borderRadius: "50%",
-										background: app.licensingRequired ? "rgba(34, 197, 94, 0.1)" : "rgba(156, 163, 175, 0.1)",
-										color: app.licensingRequired ? "var(--success)" : "var(--text-tertiary)",
-									}}>
-										<svg style={{ width: "12px", height: "12px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											{app.licensingRequired ? (
-												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-											) : (
-												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-											)}
-										</svg>
-									</span>
-									<p style={{ fontSize: "15px", color: "var(--text-primary)", fontWeight: "600", margin: 0 }}>
-										{app.licensingRequired ? "Yes" : "No"}
-									</p>
-								</div>
-							</div>
-							<div style={{ 
-								padding: "16px", 
-								background: "var(--surface-secondary)", 
-								borderRadius: "10px",
-								border: "1px solid var(--border-secondary)",
-							}}>
-								<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "6px", textTransform: "uppercase", fontWeight: "600", letterSpacing: "0.5px" }}>Default License Plan</p>
-								<p style={{ fontSize: "15px", color: "var(--text-primary)", fontWeight: "600", textTransform: "capitalize", margin: 0 }}>
-									{app.defaultPlan?.name || "—"}
-								</p>
-							</div>
-							<div style={{ 
-								padding: "16px", 
-								background: "var(--surface-secondary)", 
-								borderRadius: "10px",
-								border: "1px solid var(--border-secondary)",
-							}}>
-								<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "6px", textTransform: "uppercase", fontWeight: "600", letterSpacing: "0.5px" }}>App Session TTL</p>
-								<p style={{ fontSize: "15px", color: "var(--text-primary)", fontWeight: "600", margin: 0 }}>
-									{app.appSessionTtlDays} days
-								</p>
-							</div>
-							{app.trialDays && (
-								<div style={{ 
-									padding: "16px", 
-									background: "var(--content-bg)", 
-									borderRadius: "10px",
-									border: "1px solid var(--card-border)",
-								}}>
-									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "6px", textTransform: "uppercase", fontWeight: "600", letterSpacing: "0.5px" }}>Trial Days</p>
-									<p style={{ fontSize: "15px", color: "var(--text-primary)", fontWeight: "600", margin: 0 }}>
-										{app.trialDays} days
-									</p>
-								</div>
-							)}
-						</div>
-					</div>
+			{/* Tabs */}
+			<div style={{ borderBottom: "1px solid var(--border-primary)", marginBottom: "32px" }}>
+				<div style={{ display: "flex", gap: "32px" }}>
+					{tabs.map((tab) => (
+						<button
+							key={tab.id}
+							type="button"
+							onClick={() => setActiveTab(tab.id)}
+							style={{
+								padding: "12px 0",
+								fontSize: "14px",
+								fontWeight: "600",
+								color: activeTab === tab.id ? "var(--primary)" : "var(--text-tertiary)",
+								background: "none",
+								border: "none",
+								borderBottom: activeTab === tab.id ? "2px solid var(--primary)" : "2px solid transparent",
+								cursor: "pointer",
+								transition: "all 0.2s ease",
+							}}
+						>
+							{tab.label}
+						</button>
+					))}
 				</div>
-			)}
+			</div>
 
-			{/* Edit Form */}
-			{isEditing && formData && (
-				<form onSubmit={handleSave} className="card" style={{ padding: "32px" }}>
-					<h2 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "28px", color: "var(--text-primary)" }}>
-						Edit Application
-					</h2>
+			{/* Tab Content */}
+			<form onSubmit={handleSave}>
+				{/* General Tab */}
+				{activeTab === "general" && (
+					<div>
+						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
+							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>Basic Information</h3>
 
-					<div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px" }}>
-						{/* App Name */}
-						<div>
-							<label htmlFor="name" style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "8px" }}>
-								App Name <span style={{ color: "var(--danger)" }}>*</span>
-							</label>
-							<input
-								type="text"
-								id="name"
-								name="name"
-								required
-								value={formData.name || ""}
-								onChange={handleInputChange}
-								style={{
-									width: "100%",
-									padding: "10px 12px",
-									border: "1px solid var(--card-border)",
-									borderRadius: "8px",
-									background: "var(--content-bg)",
-									color: "var(--text-primary)",
-									fontSize: "14px",
-									outline: "none",
-									transition: "all 0.2s ease",
-								}}
-								onFocus={(e) => {
-									e.currentTarget.style.borderColor = "var(--primary)";
-									e.currentTarget.style.boxShadow = "0 0 0 3px rgba(139, 92, 246, 0.1)";
-								}}
-								onBlur={(e) => {
-									e.currentTarget.style.borderColor = "var(--card-border)";
-									e.currentTarget.style.boxShadow = "none";
-								}}
-							/>
-						</div>
+							<div style={{ display: "grid", gap: "20px" }}>
+								<div>
+									<label className="form-label">App Name *</label>
+									<input
+										type="text"
+										name="name"
+										className="form-control"
+										value={formData.name || ""}
+										onChange={handleInputChange}
+										required
+										placeholder="My Awesome App"
+									/>
+									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+										The public name of your application
+									</p>
+								</div>
 
-						{/* App Slug */}
-						<div>
-							<label htmlFor="slug" style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "8px" }}>
-								App Slug
-							</label>
-							<input
-								type="text"
-								id="slug"
-								name="slug"
-								value={formData.slug || ""}
-								onChange={handleInputChange}
-								style={{
-									width: "100%",
-									padding: "10px 12px",
-									border: "1px solid var(--card-border)",
-									borderRadius: "8px",
-									background: "var(--content-bg)",
-									color: "var(--text-primary)",
-									fontSize: "14px",
-									outline: "none",
-									transition: "all 0.2s ease",
-								}}
-								onFocus={(e) => {
-									e.currentTarget.style.borderColor = "var(--primary)";
-									e.currentTarget.style.boxShadow = "0 0 0 3px rgba(139, 92, 246, 0.1)";
-								}}
-								onBlur={(e) => {
-									e.currentTarget.style.borderColor = "var(--card-border)";
-									e.currentTarget.style.boxShadow = "none";
-								}}
-							/>
-						</div>
+								<div>
+									<label className="form-label">App Slug *</label>
+									<input
+										type="text"
+										name="slug"
+										className="form-control"
+										value={formData.slug || ""}
+										onChange={handleInputChange}
+										required
+										pattern="[a-z0-9-]+"
+										placeholder="my-awesome-app"
+									/>
+									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+										URL-friendly identifier (lowercase, hyphens only)
+									</p>
+								</div>
 
-						{/* Description */}
-						<div style={{ gridColumn: "1 / -1" }}>
-							<label htmlFor="description" style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "8px" }}>
-								Description
-							</label>
-							<textarea
-								id="description"
-								name="description"
-								value={formData.description || ""}
-								onChange={handleInputChange}
-								rows={3}
-								style={{
-									width: "100%",
-									padding: "10px 12px",
-									border: "1px solid var(--card-border)",
-									borderRadius: "8px",
-									background: "var(--content-bg)",
-									color: "var(--text-primary)",
-									fontSize: "14px",
-									outline: "none",
-									transition: "all 0.2s ease",
-									resize: "vertical",
-									fontFamily: "inherit",
-								}}
-								onFocus={(e) => {
-									e.currentTarget.style.borderColor = "var(--primary)";
-									e.currentTarget.style.boxShadow = "0 0 0 3px rgba(139, 92, 246, 0.1)";
-								}}
-								onBlur={(e) => {
-									e.currentTarget.style.borderColor = "var(--card-border)";
-									e.currentTarget.style.boxShadow = "none";
-								}}
-							/>
-						</div>
+								<div>
+									<label className="form-label">Description</label>
+									<textarea
+										name="description"
+										className="form-control"
+										value={formData.description || ""}
+										onChange={handleInputChange}
+										rows={3}
+										placeholder="A brief description of your application..."
+										style={{ resize: "vertical" }}
+									/>
+									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+										Optional description for internal reference
+									</p>
+								</div>
 
-						{/* OAuth Providers */}
-						<div style={{ gridColumn: "1 / -1" }}>
-							<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "12px" }}>
-								Required OAuth Providers <span style={{ color: "var(--danger)" }}>*</span>
-							</label>
-							<div style={{ display: "flex", gap: "16px" }}>
-								{["google", "github"].map((provider: string) => (
-									<label key={provider} style={{ 
-										display: "flex", 
-										alignItems: "center", 
-										gap: "10px", 
-										cursor: "pointer",
-										padding: "12px 16px",
-										background: (formData.requiredProviders || []).includes(provider) ? "rgba(139, 92, 246, 0.1)" : "var(--surface-secondary)",
-										border: `1px solid ${(formData.requiredProviders || []).includes(provider) ? "var(--primary)" : "var(--border-secondary)"}`,
-										borderRadius: "8px",
-										transition: "all 0.2s ease",
-									}}>
+								<div>
+									<label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
 										<input
 											type="checkbox"
-											value={provider}
-											checked={(formData.requiredProviders || []).includes(provider)}
-											onChange={(e) => {
-												if (e.target.checked) {
-													setFormData((prev) => ({
-														...prev,
-														requiredProviders: [...(prev?.requiredProviders || []), provider],
-													}));
-												} else {
-													setFormData((prev) => ({
-														...prev,
-														requiredProviders: (prev?.requiredProviders || []).filter((p) => p !== provider),
-													}));
-												}
-											}}
-											style={{ cursor: "pointer", width: "16px", height: "16px" }}
+											name="isActive"
+											checked={formData.isActive ?? true}
+											onChange={handleInputChange}
+											style={{ width: "18px", height: "18px", cursor: "pointer" }}
 										/>
-										<span style={{ textTransform: "capitalize", fontWeight: "500", fontSize: "14px", color: "var(--text-primary)" }}>
-											{provider}
+										<span style={{ fontSize: "14px", fontWeight: "500", color: "var(--text-primary)" }}>
+											App is Active
 										</span>
 									</label>
-								))}
+									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px", marginLeft: "26px" }}>
+										Inactive apps cannot accept new logins or API requests
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				)}
+
+				{/* Authentication Tab */}
+				{activeTab === "authentication" && (
+					<div>
+						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
+							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>OAuth Providers</h3>
+							<p style={{ fontSize: "14px", color: "var(--text-tertiary)", marginBottom: "20px" }}>
+								Select which authentication providers users can use to sign in
+							</p>
+
+							<div style={{ display: "grid", gap: "16px" }}>
+								<label style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", background: "var(--surface-secondary)", borderRadius: "8px", cursor: "pointer" }}>
+									<input
+										type="checkbox"
+										checked={(formData.requiredProviders || []).includes("google")}
+										onChange={() => handleProviderToggle("google")}
+										style={{ width: "18px", height: "18px", cursor: "pointer" }}
+									/>
+									<svg style={{ width: "24px", height: "24px" }} viewBox="0 0 24 24">
+										<path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+										<path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+										<path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+										<path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+									</svg>
+									<div>
+										<div style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>Google</div>
+										<div style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>Sign in with Google account</div>
+									</div>
+								</label>
+
+								<label style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", background: "var(--surface-secondary)", borderRadius: "8px", cursor: "pointer" }}>
+									<input
+										type="checkbox"
+										checked={(formData.requiredProviders || []).includes("github")}
+										onChange={() => handleProviderToggle("github")}
+										style={{ width: "18px", height: "18px", cursor: "pointer" }}
+									/>
+									<svg style={{ width: "24px", height: "24px" }} viewBox="0 0 24 24">
+										<path fill="currentColor" d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+									</svg>
+									<div>
+										<div style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>GitHub</div>
+										<div style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>Sign in with GitHub account</div>
+									</div>
+								</label>
 							</div>
 						</div>
 
-						{/* Redirect URIs */}
-						<div style={{ gridColumn: "1 / -1", marginTop: "8px" }}>
-							<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "12px" }}>
-								Redirect URIs <span style={{ color: "var(--danger)" }}>*</span>
-							</label>
-							<div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-								{(formData.redirectUris || []).map((uri, index) => (
-									<div key={index} style={{ display: "flex", gap: "10px" }}>
-										<input
-											type="url"
-											value={uri}
-											onChange={(e) => handleArrayFieldChange("redirectUris", index, e.target.value)}
-											placeholder="https://example.com/callback"
-											style={{
-												flex: 1,
-												padding: "10px 12px",
-												border: "1px solid var(--card-border)",
-												borderRadius: "8px",
-												background: "var(--content-bg)",
-												color: "var(--text-primary)",
-												fontSize: "14px",
-												outline: "none",
-												fontFamily: "monospace",
-											}}
-											onFocus={(e) => {
-												e.currentTarget.style.borderColor = "var(--primary)";
-												e.currentTarget.style.boxShadow = "0 0 0 3px rgba(139, 92, 246, 0.1)";
-											}}
-											onBlur={(e) => {
-												e.currentTarget.style.borderColor = "var(--card-border)";
-												e.currentTarget.style.boxShadow = "none";
-											}}
-										/>
-										<button
-											type="button"
-											onClick={() => removeArrayField("redirectUris", index)}
-											style={{
-												padding: "10px 12px",
-												border: "1px solid var(--card-border)",
-												borderRadius: "8px",
-												background: "transparent",
-												color: "var(--danger)",
-												cursor: "pointer",
-												display: "flex",
-												alignItems: "center",
-												justifyContent: "center",
-												transition: "all 0.2s ease",
-											}}
-											onMouseEnter={(e) => {
-												e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
-												e.currentTarget.style.borderColor = "var(--danger)";
-											}}
-											onMouseLeave={(e) => {
-												e.currentTarget.style.background = "transparent";
-												e.currentTarget.style.borderColor = "var(--card-border)";
-											}}
-										>
-											<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-											</svg>
-										</button>
-									</div>
-								))}
-							</div>
+						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
+							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>Redirect URIs</h3>
+							<p style={{ fontSize: "14px", color: "var(--text-tertiary)", marginBottom: "16px" }}>
+								Allowed callback URLs after successful authentication
+							</p>
+
+							{(formData.redirectUris || []).map((uri, index) => (
+								<div key={index} style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+									<input
+										type="url"
+										className="form-control"
+										value={uri}
+										onChange={(e) => handleArrayFieldChange("redirectUris", index, e.target.value)}
+										placeholder="https://myapp.com/callback"
+										style={{ flex: 1 }}
+									/>
+									<button
+										type="button"
+										onClick={() => removeArrayField("redirectUris", index)}
+										className="btn btn-danger-outline btn-sm"
+									>
+										Remove
+									</button>
+								</div>
+							))}
+
 							<button
 								type="button"
 								onClick={() => addArrayField("redirectUris")}
-								style={{
-									marginTop: "12px",
-									padding: "8px 14px",
-									border: "1px solid var(--card-border)",
-									borderRadius: "8px",
-									background: "var(--content-bg)",
-									color: "var(--text-primary)",
-									cursor: "pointer",
-									display: "inline-flex",
-									alignItems: "center",
-									gap: "6px",
-									fontSize: "13px",
-									fontWeight: "500",
-									transition: "all 0.2s ease",
-								}}
-								onMouseEnter={(e) => {
-									e.currentTarget.style.borderColor = "var(--primary)";
-									e.currentTarget.style.color = "var(--primary)";
-								}}
-								onMouseLeave={(e) => {
-									e.currentTarget.style.borderColor = "var(--card-border)";
-									e.currentTarget.style.color = "var(--text-primary)";
-								}}
+								className="btn btn-secondary-outline btn-sm"
+								style={{ marginTop: "8px" }}
 							>
-								<svg style={{ width: "14px", height: "14px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-								</svg>
-								Add URI
+								+ Add Redirect URI
 							</button>
 						</div>
 
-						{/* Allowed Hosts */}
-						<div style={{ gridColumn: "1 / -1", marginTop: "8px" }}>
-							<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "12px" }}>
-								Allowed Hosts
-							</label>
-							<div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-								{(formData.allowedHosts || []).map((host, index) => (
-									<div key={index} style={{ display: "flex", gap: "10px" }}>
-										<input
-											type="text"
-											value={host}
-											onChange={(e) => handleArrayFieldChange("allowedHosts", index, e.target.value)}
-											placeholder="example.com"
-											style={{
-												flex: 1,
-												padding: "10px 12px",
-												border: "1px solid var(--card-border)",
-												borderRadius: "8px",
-												background: "var(--content-bg)",
-												color: "var(--text-primary)",
-												fontSize: "14px",
-												outline: "none",
-												fontFamily: "monospace",
-											}}
-											onFocus={(e) => {
-												e.currentTarget.style.borderColor = "var(--primary)";
-												e.currentTarget.style.boxShadow = "0 0 0 3px rgba(139, 92, 246, 0.1)";
-											}}
-											onBlur={(e) => {
-												e.currentTarget.style.borderColor = "var(--card-border)";
-												e.currentTarget.style.boxShadow = "none";
-											}}
-										/>
-										<button
-											type="button"
-											onClick={() => removeArrayField("allowedHosts", index)}
-											style={{
-												padding: "10px 12px",
-												border: "1px solid var(--card-border)",
-												borderRadius: "8px",
-												background: "transparent",
-												color: "var(--danger)",
-												cursor: "pointer",
-												display: "flex",
-												alignItems: "center",
-												justifyContent: "center",
-												transition: "all 0.2s ease",
-											}}
-											onMouseEnter={(e) => {
-												e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
-												e.currentTarget.style.borderColor = "var(--danger)";
-											}}
-											onMouseLeave={(e) => {
-												e.currentTarget.style.background = "transparent";
-												e.currentTarget.style.borderColor = "var(--card-border)";
-											}}
-										>
-											<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-											</svg>
-										</button>
-									</div>
-								))}
-							</div>
+						<div className="card" style={{ padding: "24px" }}>
+							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>Allowed Hosts</h3>
+							<p style={{ fontSize: "14px", color: "var(--text-tertiary)", marginBottom: "16px" }}>
+								Domains allowed to make requests to your app
+							</p>
+
+							{(formData.allowedHosts || []).map((host, index) => (
+								<div key={index} style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+									<input
+										type="text"
+										className="form-control"
+										value={host}
+										onChange={(e) => handleArrayFieldChange("allowedHosts", index, e.target.value)}
+										placeholder="myapp.com or localhost:3000"
+										style={{ flex: 1 }}
+									/>
+									<button
+										type="button"
+										onClick={() => removeArrayField("allowedHosts", index)}
+										className="btn btn-danger-outline btn-sm"
+									>
+										Remove
+									</button>
+								</div>
+							))}
+
 							<button
 								type="button"
 								onClick={() => addArrayField("allowedHosts")}
-								style={{
-									marginTop: "12px",
-									padding: "8px 14px",
-									border: "1px solid var(--card-border)",
-									borderRadius: "8px",
-									background: "var(--content-bg)",
-									color: "var(--text-primary)",
-									cursor: "pointer",
-									display: "inline-flex",
-									alignItems: "center",
-									gap: "6px",
-									fontSize: "13px",
-									fontWeight: "500",
-									transition: "all 0.2s ease",
-								}}
-								onMouseEnter={(e) => {
-									e.currentTarget.style.borderColor = "var(--primary)";
-									e.currentTarget.style.color = "var(--primary)";
-								}}
-								onMouseLeave={(e) => {
-									e.currentTarget.style.borderColor = "var(--card-border)";
-									e.currentTarget.style.color = "var(--text-primary)";
-								}}
+								className="btn btn-secondary-outline btn-sm"
+								style={{ marginTop: "8px" }}
 							>
-								<svg style={{ width: "14px", height: "14px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-								</svg>
-								Add Host
+								+ Add Allowed Host
 							</button>
 						</div>
+					</div>
+				)}
 
-						{/* Session TTL */}
-						<div style={{ marginTop: "8px" }}>
-							<label htmlFor="app_session_ttl_days" style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "8px" }}>
-								Session TTL (days)
-							</label>
-							<input
-								type="number"
-								id="app_session_ttl_days"
-								name="appSessionTtlDays"
-								min="1"
-								max="365"
-								value={formData.appSessionTtlDays || 28}
-								onChange={handleInputChange}
-								style={{
-									width: "100%",
-									padding: "10px 12px",
-									border: "1px solid var(--card-border)",
-									borderRadius: "8px",
-									background: "var(--content-bg)",
-									color: "var(--text-primary)",
-									fontSize: "14px",
-									outline: "none",
-									transition: "all 0.2s ease",
-								}}
-								onFocus={(e) => {
-									e.currentTarget.style.borderColor = "var(--primary)";
-									e.currentTarget.style.boxShadow = "0 0 0 3px rgba(139, 92, 246, 0.1)";
-								}}
-								onBlur={(e) => {
-									e.currentTarget.style.borderColor = "var(--card-border)";
-									e.currentTarget.style.boxShadow = "none";
-								}}
-							/>
-						</div>
+				{/* Licensing Tab */}
+				{activeTab === "licensing" && (
+					<div>
+						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
+							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>License Management</h3>
 
-						{/* Note: Default License Plan is managed automatically and shown in Licenses section */}
-
-						{/* Licensing Required */}
-						<div style={{ gridColumn: "1 / -1", marginTop: "16px" }}>
-							<label style={{ 
-								display: "flex", 
-								alignItems: "flex-start", 
-								gap: "14px", 
-								cursor: "pointer", 
-								padding: "16px", 
-								background: "var(--surface-secondary)", 
-								borderRadius: "10px",
-								border: "1px solid var(--border-secondary)",
-								transition: "all 0.2s ease",
-							}}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.borderColor = "var(--primary-light)";
-								e.currentTarget.style.background = "rgba(139, 92, 246, 0.05)";
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.borderColor = "var(--border-secondary)";
-								e.currentTarget.style.background = "var(--surface-secondary)";
-							}}
-							>
-								<input
-									type="checkbox"
-									name="licensingRequired"
-									checked={formData.licensingRequired ?? true}
-									onChange={handleInputChange}
-									style={{ cursor: "pointer", width: "18px", height: "18px", marginTop: "2px" }}
-								/>
+							<div style={{ display: "grid", gap: "20px" }}>
 								<div>
-									<div style={{ fontWeight: "600", color: "var(--text-primary)", fontSize: "14px", marginBottom: "4px" }}>
-										Licensing Required
-									</div>
-									<div style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.5" }}>
-										Users must have a valid license to access this app
-									</div>
+									<label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+										<input
+											type="checkbox"
+											name="licensingRequired"
+											checked={formData.licensingRequired ?? true}
+											onChange={handleInputChange}
+											style={{ width: "18px", height: "18px", cursor: "pointer" }}
+										/>
+										<span style={{ fontSize: "14px", fontWeight: "500", color: "var(--text-primary)" }}>
+											Enable License Management
+										</span>
+									</label>
+									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px", marginLeft: "26px" }}>
+										Require users to have an active license to access the app
+									</p>
 								</div>
-							</label>
-						</div>
 
-						{/* App Active */}
-						<div style={{ gridColumn: "1 / -1" }}>
-							<label style={{ 
-								display: "flex", 
-								alignItems: "flex-start", 
-								gap: "14px", 
-								cursor: "pointer", 
-								padding: "16px", 
-								background: "var(--surface-secondary)", 
-								borderRadius: "10px",
-								border: "1px solid var(--border-secondary)",
-								transition: "all 0.2s ease",
-							}}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.borderColor = "var(--primary-light)";
-								e.currentTarget.style.background = "rgba(139, 92, 246, 0.05)";
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.borderColor = "var(--border-secondary)";
-								e.currentTarget.style.background = "var(--surface-secondary)";
-							}}
-							>
-								<input
-									type="checkbox"
-									name="isActive"
-									checked={formData.isActive ?? true}
-									onChange={handleInputChange}
-									style={{ cursor: "pointer", width: "18px", height: "18px", marginTop: "2px" }}
-								/>
+								{formData.licensingRequired && app.defaultPlan && (
+									<div>
+										<label className="form-label">Default License Plan</label>
+										<div style={{ 
+											padding: "12px 16px", 
+											background: "var(--surface-secondary)", 
+											borderRadius: "8px",
+											border: "1px solid var(--border-primary)",
+										}}>
+											<div style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)", textTransform: "capitalize" }}>
+												{app.defaultPlan.name}
+											</div>
+											<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "4px" }}>
+												Slug: {app.defaultPlan.slug}
+											</div>
+										</div>
+										<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+											To change the default plan, go to{" "}
+											<Link to={`/projects/${projectId}/apps/${appId}/licenses`} style={{ color: "var(--primary)" }}>
+												Licenses & Plans
+											</Link>
+										</p>
+									</div>
+								)}
+
 								<div>
-									<div style={{ fontWeight: "600", color: "var(--text-primary)", fontSize: "14px", marginBottom: "4px" }}>
-										App Active
-									</div>
-									<div style={{ fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.5" }}>
-										When disabled, users cannot authenticate with this app
-									</div>
+									<label className="form-label">Session TTL (Days)</label>
+									<input
+										type="number"
+										name="appSessionTtlDays"
+										className="form-control"
+										value={formData.appSessionTtlDays || 28}
+										onChange={handleInputChange}
+										min={1}
+										max={365}
+										required
+									/>
+									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+										How long users stay logged in (1-365 days)
+									</p>
 								</div>
-							</label>
+							</div>
 						</div>
 					</div>
+				)}
 
-					{/* Form Actions */}
-					<div style={{ 
-						display: "flex", 
-						gap: "12px", 
-						justifyContent: "flex-end", 
-						marginTop: "32px",
-						paddingTop: "24px",
-						borderTop: "1px solid var(--card-border)",
-					}}>
+				{/* Security Tab */}
+				{activeTab === "security" && (
+					<div>
+						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
+							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>Security Settings</h3>
+
+							<div style={{ display: "grid", gap: "20px" }}>
+								<div>
+									<label className="form-label">Account Lockout Duration (Minutes)</label>
+									<input
+										type="number"
+										name="accountLockoutMinutes"
+										className="form-control"
+										value={formData.accountLockoutMinutes || 15}
+										onChange={handleInputChange}
+										min={5}
+										max={120}
+										required
+									/>
+									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+										Duration to lock accounts after failed login attempts (5-120 minutes)
+									</p>
+								</div>
+
+								<div>
+									<label className="form-label">Cache TTL (Minutes)</label>
+									<input
+										type="number"
+										name="cacheTtlMinutes"
+										className="form-control"
+										value={formData.cacheTtlMinutes || 10}
+										onChange={handleInputChange}
+										min={1}
+										max={60}
+										required
+									/>
+									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+										How long to cache user session data (1-60 minutes)
+									</p>
+								</div>
+
+								<div>
+									<label className="form-label">Rate Limit (Requests Per Minute)</label>
+									<input
+										type="number"
+										name="rateLimitRequestsPerMinute"
+										className="form-control"
+										value={formData.rateLimitRequestsPerMinute || 100}
+										onChange={handleInputChange}
+										min={10}
+										max={1000}
+										required
+									/>
+									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+										Maximum API requests per minute per user (10-1000)
+									</p>
+								</div>
+							</div>
+						</div>
+
+						<div style={{
+							padding: "16px",
+							background: "var(--info-bg)",
+							border: "1px solid var(--info-border)",
+							borderRadius: "8px",
+							fontSize: "14px",
+							color: "var(--info-text)",
+						}}>
+							<strong>💡 Pro Tip:</strong> Adjust these settings based on your app's needs. Higher values provide better UX but may increase security risks.
+						</div>
+					</div>
+				)}
+
+				{/* Danger Zone Tab */}
+				{activeTab === "danger" && (
+					<div>
+						<div className="card" style={{ padding: "24px", borderColor: "var(--danger)", borderWidth: "2px" }}>
+							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px", color: "var(--danger)" }}>
+								⚠️ Danger Zone
+							</h3>
+							<p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "20px" }}>
+								These actions are permanent and cannot be undone.
+							</p>
+
+							<div style={{ padding: "20px", background: "rgba(239, 68, 68, 0.05)", borderRadius: "8px", border: "1px solid rgba(239, 68, 68, 0.2)" }}>
+								<h4 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "8px", color: "var(--danger)" }}>
+									Delete This App
+								</h4>
+								<p style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "16px" }}>
+									Once you delete an app, there is no going back. This will:
+								</p>
+								<ul style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "16px", paddingLeft: "20px" }}>
+									<li>Delete all user data and sessions</li>
+									<li>Revoke all active licenses</li>
+									<li>Remove all API keys and integrations</li>
+									<li>Cancel all active subscriptions</li>
+								</ul>
+								<button
+									type="button"
+									onClick={() => {
+										const confirmed = window.confirm(
+											`Are you sure you want to delete "${app.name}"?\n\nThis action cannot be undone. Type the app name to confirm.`
+										);
+										if (confirmed) {
+											const typedName = prompt(`Type "${app.name}" to confirm deletion:`);
+											if (typedName === app.name) {
+												alert("App deletion is not yet implemented in the backend.");
+												// TODO: Implement delete app endpoint
+												// deleteAppMutation.mutate();
+											} else {
+												alert("App name didn't match. Deletion cancelled.");
+											}
+										}
+									}}
+									className="btn btn-danger"
+								>
+									Delete App
+								</button>
+							</div>
+						</div>
+					</div>
+				)}
+
+				{/* Save Button (shown for all tabs except danger zone) */}
+				{activeTab !== "danger" && (
+					<div style={{ marginTop: "24px", display: "flex", gap: "12px" }}>
+						<button
+							type="submit"
+							disabled={isSaving || updateAppMutation.isPending}
+							className="btn btn-primary"
+							style={{
+								opacity: isSaving || updateAppMutation.isPending ? 0.6 : 1,
+								cursor: isSaving || updateAppMutation.isPending ? "not-allowed" : "pointer",
+							}}
+						>
+							{isSaving || updateAppMutation.isPending ? "Saving..." : "Save Changes"}
+						</button>
 						<button
 							type="button"
-							onClick={() => {
-								setIsEditing(false);
-								setFormData(null);
-							}}
-							className="btn btn-secondary"
-							style={{ minWidth: "100px" }}
+							onClick={() => navigate(`/projects/${projectId}/apps/${appId}`)}
+							className="btn btn-secondary-outline"
 						>
 							Cancel
 						</button>
-						<button
-							type="submit"
-							disabled={updateAppMutation.isPending}
-							className="btn btn-primary"
-							style={{ minWidth: "140px" }}
-						>
-							{updateAppMutation.isPending ? "Saving..." : "Save Changes"}
-						</button>
 					</div>
-
-					{/* Status Messages */}
-					{updateAppMutation.isError && (
-						<div className="alert alert-danger" style={{ marginTop: "20px" }}>
-							<span>Error updating app. Please try again.</span>
-						</div>
-					)}
-					{updateAppMutation.isSuccess && (
-						<div className="alert alert-success" style={{ marginTop: "20px" }}>
-							<span>App updated successfully!</span>
-						</div>
-					)}
-				</form>
-			)}
+				)}
+			</form>
 		</div>
 	);
 }

@@ -373,7 +373,7 @@ export function AppDetailPage() {
 
 						<button
 							type="button"
-							onClick={() => alert("API Keys management coming in Phase 7!")}
+							onClick={() => navigate(`/projects/${projectId}/apps/${appId}/api-keys`)}
 							style={{
 								background: "var(--card-bg)",
 								border: "1px solid var(--border-secondary)",

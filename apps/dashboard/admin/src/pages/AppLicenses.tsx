@@ -59,8 +59,8 @@ export function AppLicensesPage() {
 
 	// Calculate stats
 	const activeLicenses = users.filter((u) => u.status === "active").length;
-	const freeUsers = users.filter((u) => u.licensePlan === "free" && u.status === "active").length;
-	const paidUsers = users.filter((u) => u.licensePlan !== "free" && u.status === "active").length;
+	const freeUsers = users.filter((u) => u.plan === "free" && u.status === "active").length;
+	const paidUsers = users.filter((u) => u.plan !== "free" && u.status === "active").length;
 
 	// Fetch plans when section is expanded
 	useEffect(() => {
@@ -740,13 +740,13 @@ export function AppLicensesPage() {
 												display: "inline-block",
 												padding: "4px 10px",
 												borderRadius: "6px",
-												fontSize: "12px",
-												fontWeight: "600",
-												textTransform: "capitalize",
-												background: user.licensePlan === "free" ? "rgba(107, 114, 128, 0.1)" : "rgba(139, 92, 246, 0.1)",
-												color: user.licensePlan === "free" ? "#6b7280" : "var(--primary)",
-											}}>
-												{user.licensePlan || "free"}
+											fontSize: "12px",
+											fontWeight: "600",
+											textTransform: "capitalize",
+											background: user.plan === "free" ? "rgba(107, 114, 128, 0.1)" : "rgba(139, 92, 246, 0.1)",
+											color: user.plan === "free" ? "#6b7280" : "var(--primary)",
+										}}>
+											{user.plan || "free"}
 											</span>
 										</td>
 										<td style={{ padding: "14px 16px", textAlign: "center" }}>
@@ -770,12 +770,12 @@ export function AppLicensesPage() {
 										</td>
 										<td style={{ padding: "14px 16px", textAlign: "right" }}>
 											<button
-												type="button"
-												onClick={() => {
-													setChangingLicense(user);
-													setNewPlan(user.licensePlan || "free");
-												}}
-												className="btn btn-secondary-outline btn-sm"
+											type="button"
+											onClick={() => {
+												setChangingLicense(user);
+												setNewPlan(user.plan || "free");
+											}}
+											className="btn btn-secondary-outline btn-sm"
 											>
 												Change Plan
 											</button>
@@ -881,17 +881,17 @@ export function AppLicensesPage() {
 							>
 								Cancel
 							</button>
-							<button
-								type="button"
-								onClick={handleChangePlan}
-								disabled={isUpdating || newPlan === changingLicense.licensePlan}
-								className="btn btn-primary"
-								style={{
-									opacity: isUpdating || newPlan === changingLicense.licensePlan ? 0.6 : 1,
-									cursor: isUpdating || newPlan === changingLicense.licensePlan ? "not-allowed" : "pointer",
-								}}
-							>
-								{isUpdating ? "Saving..." : "Save Changes"}
+						<button
+							type="button"
+							onClick={handleChangePlan}
+							disabled={isUpdating || newPlan === changingLicense.plan}
+							className="btn btn-primary"
+							style={{
+								opacity: isUpdating || newPlan === changingLicense.plan ? 0.6 : 1,
+								cursor: isUpdating || newPlan === changingLicense.plan ? "not-allowed" : "pointer",
+							}}
+						>
+							{isUpdating ? "Saving..." : "Save Changes"}
 							</button>
 						</div>
 					</div>

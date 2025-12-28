@@ -90,7 +90,7 @@ export function LicensesPage() {
 												</div>
 											</td>
 											<td>
-												<span className="text-gray-600">{license.appName || "—"}</span>
+												<span className="text-gray-600">{license.appId || "—"}</span>
 											</td>
 											<td>
 												<span className="badge badge-info capitalize">
