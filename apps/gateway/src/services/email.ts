@@ -9,6 +9,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const SEND_EMAILS = process.env.SEND_EMAILS === "true";
 const DEFAULT_FROM = process.env.EMAIL_FROM || "Proofa <noreply@proofa.sh>";
+const ADMIN_DASHBOARD_URL = process.env.ADMIN_DASHBOARD_URL || "http://localhost:5174";
 
 interface EmailOptions {
 	to: string;
@@ -159,11 +160,12 @@ interface ProjectTeamInvitationEmailData {
 	projectName: string;
 	inviterName: string;
 	role: string;
+	invitationCode: string;
 	expiresInDays: number;
 }
 
 export function generateProjectTeamInvitationEmail(data: ProjectTeamInvitationEmailData): string {
-	const { inviteeEmail, projectName, inviterName, role, expiresInDays } = data;
+	const { inviteeEmail, projectName, inviterName, role, invitationCode, expiresInDays } = data;
 
 	return `
 <!DOCTYPE html>
@@ -197,12 +199,18 @@ export function generateProjectTeamInvitationEmail(data: ProjectTeamInvitationEm
 							<table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
 								<tr>
 									<td align="center">
-										<a href="https://admin.proofa.sh/login" style="display: inline-block; padding: 14px 32px; background-color: #8b5cf6; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
+										<a href="${ADMIN_DASHBOARD_URL}/login?invite=${invitationCode}" style="display: inline-block; padding: 14px 32px; background-color: #8b5cf6; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
 											Sign In to Accept
 										</a>
 									</td>
 								</tr>
 							</table>
+							<p style="margin: 0 0 10px; color: #6b7280; font-size: 14px; line-height: 1.6;">
+								Or copy and paste this link into your browser:
+							</p>
+							<p style="margin: 0 0 20px; padding: 12px; background-color: #f9fafb; border-radius: 4px; word-break: break-all; font-size: 13px; color: #8b5cf6;">
+								${ADMIN_DASHBOARD_URL}/login?invite=${invitationCode}
+							</p>
 							<p style="margin: 0 0 20px; color: #6b7280; font-size: 14px; line-height: 1.6;">
 								Once you sign in with <strong>${inviteeEmail}</strong>, you'll automatically be added to the project team.
 							</p>

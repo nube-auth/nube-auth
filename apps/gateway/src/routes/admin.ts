@@ -1840,6 +1840,7 @@ adminRoutes.post("/projects/:projectId/members", async (c: Context) => {
 					projectName: project.name,
 					inviterName: requestingUser.name || requestingUser.primary_email || "A team member",
 					role: role,
+					invitationCode: invitation.public_id,
 					expiresInDays: 7,
 				}),
 			});
@@ -2035,6 +2036,97 @@ adminRoutes.get("/projects/:projectId/invitations", async (c: Context) => {
 	} catch (error) {
 		console.error("List project invitations error:", error);
 		return c.json({ error: "Failed to list project invitations" }, 500);
+	}
+});
+
+/**
+ * POST /v1/admin/invitations/:invitationCode/accept
+ * Accept a project invitation (public endpoint, requires auth)
+ */
+adminRoutes.post("/invitations/:invitationCode/accept", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const invitationCode = c.req.param("invitationCode");
+
+		const db = getDb();
+
+		// Get the invitation
+		const invitation = await projectInvitationQueries.findByPublicId(db, invitationCode);
+
+		if (!invitation) {
+			return c.json({ error: "Invitation not found" }, 404);
+		}
+
+		// Check if invitation is still valid
+		if (invitation.status !== "pending") {
+			return c.json({ error: `Invitation is ${invitation.status}` }, 400);
+		}
+
+		const now = Math.floor(Date.now() / 1000);
+		if (invitation.expires_at < now) {
+			await projectInvitationQueries.updateByPublicId(db, invitationCode, { status: "expired" });
+			return c.json({ error: "Invitation has expired" }, 400);
+		}
+
+		// Get the user
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Check if email matches
+		if (user.primary_email.toLowerCase() !== invitation.email.toLowerCase()) {
+			return c.json({ error: "This invitation is for a different email address" }, 403);
+		}
+
+		// Get the project
+		const project = await projectQueries.findById(db, invitation.project_id);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		// Check if user is already a member
+		const existingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		if (existingMember) {
+			// Mark invitation as accepted anyway
+			await projectInvitationQueries.updateByPublicId(db, invitationCode, { status: "accepted" });
+			return c.json({
+				success: true,
+				message: "You are already a member of this project",
+				project: {
+					id: project.public_id,
+					name: project.name,
+				},
+			});
+		}
+
+		// Add user as project member
+		const newMember = await projectMemberQueries.create(db, {
+			public_id: createId("projectMember"),
+			project_id: project.id,
+			user_id: user.id,
+			role: invitation.role,
+			created_at: now,
+		});
+
+		// Mark invitation as accepted
+		await projectInvitationQueries.updateByPublicId(db, invitationCode, { status: "accepted" });
+
+		return c.json({
+			success: true,
+			message: "Invitation accepted successfully",
+			project: {
+				id: project.public_id,
+				name: project.name,
+			},
+			member: {
+				id: newMember.public_id,
+				role: newMember.role,
+			},
+		});
+	} catch (error) {
+		console.error("Accept invitation error:", error);
+		return c.json({ error: "Failed to accept invitation" }, 500);
 	}
 });
 

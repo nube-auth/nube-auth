@@ -32,6 +32,29 @@ export function LoginPage() {
 					});
 
 					if (res.ok) {
+						// Check if there's an invitation code to accept
+						const inviteCode = searchParams.get("invite");
+						if (inviteCode) {
+							try {
+								const inviteRes = await fetch(`/api/admin/invitations/${inviteCode}/accept`, {
+									method: "POST",
+									credentials: "include",
+								});
+								
+								if (inviteRes.ok) {
+									const inviteData = await inviteRes.json();
+									// Redirect to the project they were invited to
+									if (inviteData.project?.id) {
+										navigate(`/projects/${inviteData.project.id}`, { replace: true });
+										return;
+									}
+								}
+							} catch (inviteErr) {
+								console.error("Failed to accept invitation:", inviteErr);
+								// Continue to projects page even if invitation acceptance fails
+							}
+						}
+						
 						navigate("/projects", { replace: true });
 						return;
 					}
@@ -52,6 +75,29 @@ export function LoginPage() {
 			try {
 				const meRes = await fetch("/api/admin/me", { credentials: "include" });
 				if (meRes.ok) {
+					// Already logged in - check for invitation code
+					const inviteCode = searchParams.get("invite");
+					if (inviteCode) {
+						try {
+							const inviteRes = await fetch(`/api/admin/invitations/${inviteCode}/accept`, {
+								method: "POST",
+								credentials: "include",
+							});
+							
+							if (inviteRes.ok) {
+								const inviteData = await inviteRes.json();
+								// Redirect to the project they were invited to
+								if (inviteData.project?.id) {
+									navigate(`/projects/${inviteData.project.id}`, { replace: true });
+									return;
+								}
+							}
+						} catch (inviteErr) {
+							console.error("Failed to accept invitation:", inviteErr);
+							// Continue to projects page even if invitation acceptance fails
+						}
+					}
+					
 					// Already logged in, redirect to projects
 					navigate("/projects", { replace: true });
 					return;
@@ -69,7 +115,12 @@ export function LoginPage() {
 
 	const handleGoogleLogin = () => {
 		setStatus("redirecting");
-		const coreAuthUrl = `${import.meta.env.VITE_CORE_URL || "http://localhost:3003"}/v1/auth/start?provider=google&redirect_uri=${encodeURIComponent(`${window.location.origin}/login`)}`;
+		// Preserve invite code in redirect
+		const inviteCode = searchParams.get("invite");
+		const redirectUri = inviteCode 
+			? `${window.location.origin}/login?invite=${inviteCode}`
+			: `${window.location.origin}/login`;
+		const coreAuthUrl = `${import.meta.env.VITE_CORE_URL || "http://localhost:3003"}/v1/auth/start?provider=google&redirect_uri=${encodeURIComponent(redirectUri)}`;
 		window.location.href = coreAuthUrl;
 	};
 
