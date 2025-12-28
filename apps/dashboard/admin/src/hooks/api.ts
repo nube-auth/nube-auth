@@ -305,8 +305,7 @@ export function useInviteTeamMember(projectId: string) {
 				  }
 				| {
 						type: "invitation";
-						id: number;
-						invitationId: string;
+						id: string;
 						email: string;
 						role: string;
 						status: string;
@@ -331,8 +330,7 @@ export function useProjectInvitations(projectId: string) {
 		queryFn: async () => {
 			return fetchAPI<{
 				invitations: Array<{
-					id: number;
-					invitationId: string;
+					id: string;
 					email: string;
 					role: string;
 					status: string;
@@ -348,7 +346,7 @@ export function useProjectInvitations(projectId: string) {
 export function useCancelInvitation(projectId: string) {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: async (invitationId: number) => {
+		mutationFn: async (invitationId: string) => {
 			return fetchAPI<{ success: boolean }>(`/v1/admin/projects/${projectId}/invitations/${invitationId}`, {
 				method: "DELETE",
 			});
@@ -362,9 +360,9 @@ export function useCancelInvitation(projectId: string) {
 export function useUpdateTeamMember(projectId: string) {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: async ({ memberId, role }: { memberId: number; role: string }) => {
+		mutationFn: async ({ memberId, role }: { memberId: string; role: string }) => {
 			return fetchAPI<{
-				id: number;
+				id: string;
 				userId: string;
 				email: string;
 				name: string | null;
@@ -384,7 +382,7 @@ export function useUpdateTeamMember(projectId: string) {
 export function useRemoveTeamMember(projectId: string) {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: async (memberId: number) => {
+		mutationFn: async (memberId: string) => {
 			return fetchAPI<{ success: boolean }>(`/v1/admin/projects/${projectId}/members/${memberId}`, {
 				method: "DELETE",
 			});

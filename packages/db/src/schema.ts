@@ -103,6 +103,7 @@ export const project_members = sqliteTable(
 	"project_members",
 	{
 		id: integer("id").primaryKey({ autoIncrement: true }),
+		public_id: text("public_id").notNull().unique(),
 		project_id: integer("project_id")
 			.notNull()
 			.references(() => projects.id),
@@ -116,6 +117,7 @@ export const project_members = sqliteTable(
 		projectUserUnique: unique("project_members_project_user_unique").on(table.project_id, table.user_id),
 		projectIdx: index("project_members_project_id_idx").on(table.project_id),
 		userIdx: index("project_members_user_id_idx").on(table.user_id),
+		publicIdIdx: index("project_members_public_id_idx").on(table.public_id),
 	}),
 );
 

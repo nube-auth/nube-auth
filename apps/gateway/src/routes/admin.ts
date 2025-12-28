@@ -147,6 +147,7 @@ adminRoutes.post("/projects", async (c: Context) => {
 
 		// Add user as project owner
 		await projectMemberQueries.create(db, {
+			public_id: createId("projectMember"),
 			project_id: project.id,
 			user_id: user.id,
 			role: "owner",
@@ -1516,7 +1517,7 @@ adminRoutes.get("/projects/:projectId/members", async (c: Context) => {
 				members.map(async (m) => {
 					const memberUser = await userQueries.findById(db, m.user_id);
 					return {
-						id: m.id,
+						id: m.public_id,
 						userId: memberUser?.public_id,
 						email: memberUser?.primary_email,
 						name: memberUser?.name,
@@ -1589,6 +1590,7 @@ adminRoutes.post("/projects/:projectId/members", async (c: Context) => {
 
 			// Add user as project member immediately
 			const newMember = await projectMemberQueries.create(db, {
+				public_id: createId("projectMember"),
 				project_id: project.id,
 				user_id: targetUser.id,
 				role: role,
@@ -1597,7 +1599,7 @@ adminRoutes.post("/projects/:projectId/members", async (c: Context) => {
 
 			return c.json({
 				type: "member",
-				id: newMember.id,
+				id: newMember.public_id,
 				userId: targetUser.public_id,
 				email: targetUser.primary_email,
 				name: targetUser.name,
@@ -1653,7 +1655,7 @@ adminRoutes.patch("/projects/:projectId/members/:memberId", async (c: Context) =
 	try {
 		const auth = getAuth(c);
 		const projectId = c.req.param("projectId");
-		const memberId = Number.parseInt(c.req.param("memberId"), 10);
+		const memberId = c.req.param("memberId");
 		const body = await c.req.json();
 
 		const { role } = body;
@@ -1690,14 +1692,14 @@ adminRoutes.patch("/projects/:projectId/members/:memberId", async (c: Context) =
 		}
 
 		// Get the member to update
-		const memberToUpdate = await projectMemberQueries.findById(db, memberId);
+		const memberToUpdate = await projectMemberQueries.findByPublicId(db, memberId);
 
 		if (!memberToUpdate || memberToUpdate.project_id !== project.id) {
 			return c.json({ error: "Member not found" }, 404);
 		}
 
 		// Update the member's role
-		const updatedMember = await projectMemberQueries.update(db, memberId, { role });
+		const updatedMember = await projectMemberQueries.updateByPublicId(db, memberId, { role });
 
 		if (!updatedMember) {
 			return c.json({ error: "Failed to update member role" }, 500);
@@ -1706,7 +1708,7 @@ adminRoutes.patch("/projects/:projectId/members/:memberId", async (c: Context) =
 		const memberUser = await userQueries.findById(db, updatedMember.user_id);
 
 		return c.json({
-			id: updatedMember.id,
+			id: updatedMember.public_id,
 			userId: memberUser?.public_id,
 			email: memberUser?.primary_email,
 			name: memberUser?.name,
@@ -1727,7 +1729,7 @@ adminRoutes.delete("/projects/:projectId/members/:memberId", async (c: Context) 
 	try {
 		const auth = getAuth(c);
 		const projectId = c.req.param("projectId");
-		const memberId = Number.parseInt(c.req.param("memberId"), 10);
+		const memberId = c.req.param("memberId");
 
 		const db = getDb();
 
@@ -1751,7 +1753,7 @@ adminRoutes.delete("/projects/:projectId/members/:memberId", async (c: Context) 
 		}
 
 		// Get the member to remove
-		const memberToRemove = await projectMemberQueries.findById(db, memberId);
+		const memberToRemove = await projectMemberQueries.findByPublicId(db, memberId);
 
 		if (!memberToRemove || memberToRemove.project_id !== project.id) {
 			return c.json({ error: "Member not found" }, 404);
@@ -1763,7 +1765,7 @@ adminRoutes.delete("/projects/:projectId/members/:memberId", async (c: Context) 
 		}
 
 		// Remove the member
-		await projectMemberQueries.delete(db, memberId);
+		await projectMemberQueries.deleteByPublicId(db, memberId);
 
 		return c.json({ success: true });
 	} catch (error) {
@@ -1805,8 +1807,7 @@ adminRoutes.get("/projects/:projectId/invitations", async (c: Context) => {
 
 		return c.json({
 			invitations: invitations.map((inv) => ({
-				id: inv.id,
-				invitationId: inv.public_id,
+				id: inv.public_id,
 				email: inv.email,
 				role: inv.role,
 				status: inv.status,
@@ -1828,7 +1829,7 @@ adminRoutes.delete("/projects/:projectId/invitations/:invitationId", async (c: C
 	try {
 		const auth = getAuth(c);
 		const projectId = c.req.param("projectId");
-		const invitationIdParam = Number.parseInt(c.req.param("invitationId"), 10);
+		const invitationId = c.req.param("invitationId");
 
 		const db = getDb();
 
@@ -1852,14 +1853,14 @@ adminRoutes.delete("/projects/:projectId/invitations/:invitationId", async (c: C
 		}
 
 		// Get the invitation
-		const invitation = await projectInvitationQueries.findById(db, invitationIdParam);
+		const invitation = await projectInvitationQueries.findByPublicId(db, invitationId);
 
 		if (!invitation || invitation.project_id !== project.id) {
 			return c.json({ error: "Invitation not found" }, 404);
 		}
 
 		// Update invitation status to cancelled
-		await projectInvitationQueries.update(db, invitationIdParam, { status: "cancelled" });
+		await projectInvitationQueries.updateByPublicId(db, invitationId, { status: "cancelled" });
 
 		return c.json({ success: true });
 	} catch (error) {

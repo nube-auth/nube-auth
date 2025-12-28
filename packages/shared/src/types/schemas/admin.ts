@@ -107,7 +107,7 @@ export const AppsListResponseSchema = z.object({
  */
 
 export const ProjectMemberDTOSchema = z.object({
-	id: z.union([z.string(), z.number()]),
+	id: PublicIdSchema, // Now only accepts public_id strings (like MEM0xxx)
 	userId: PublicIdSchema,
 	email: EmailSchema.optional(),
 	name: z.string().optional(),

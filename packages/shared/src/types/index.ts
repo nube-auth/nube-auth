@@ -63,6 +63,7 @@ export interface Project {
  */
 export interface ProjectMember {
 	id: number; // internal only
+	public_id: string; // PM0xxx
 	project_id: number;
 	user_id: number;
 	role: "owner" | "admin" | "member";

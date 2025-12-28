@@ -172,6 +172,10 @@ export const projectMemberQueries = {
 		return db.select().from(project_members).where(eq(project_members.id, id)).get();
 	},
 
+	async findByPublicId(db: DbClient, publicId: string) {
+		return db.select().from(project_members).where(eq(project_members.public_id, publicId)).get();
+	},
+
 	async findByProjectAndUser(db: DbClient, projectId: number, userId: number) {
 		return db
 			.select()
@@ -196,8 +200,21 @@ export const projectMemberQueries = {
 		return db.update(project_members).set(data).where(eq(project_members.id, id)).returning().get();
 	},
 
+	async updateByPublicId(db: DbClient, publicId: string, data: Partial<typeof project_members.$inferInsert>) {
+		return db
+			.update(project_members)
+			.set(data)
+			.where(eq(project_members.public_id, publicId))
+			.returning()
+			.get();
+	},
+
 	async delete(db: DbClient, id: number) {
 		return db.delete(project_members).where(eq(project_members.id, id)).returning().get();
+	},
+
+	async deleteByPublicId(db: DbClient, publicId: string) {
+		return db.delete(project_members).where(eq(project_members.public_id, publicId)).returning().get();
 	},
 };
 
@@ -245,8 +262,16 @@ export const projectInvitationQueries = {
 		return db.update(project_invitations).set(data).where(eq(project_invitations.id, id)).returning().get();
 	},
 
+	async updateByPublicId(db: DbClient, publicId: string, data: Partial<typeof project_invitations.$inferInsert>) {
+		return db.update(project_invitations).set(data).where(eq(project_invitations.public_id, publicId)).returning().get();
+	},
+
 	async delete(db: DbClient, id: number) {
 		return db.delete(project_invitations).where(eq(project_invitations.id, id)).returning().get();
+	},
+
+	async deleteByPublicId(db: DbClient, publicId: string) {
+		return db.delete(project_invitations).where(eq(project_invitations.public_id, publicId)).returning().get();
 	},
 
 	async cleanupExpired(db: DbClient) {

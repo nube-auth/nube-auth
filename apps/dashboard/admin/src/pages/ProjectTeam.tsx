@@ -13,7 +13,7 @@ export function ProjectTeamPage() {
 	const cancelInvitationMutation = useCancelInvitation(projectId || "");
 
 	const [showInviteModal, setShowInviteModal] = useState(false);
-	const [editingMember, setEditingMember] = useState<{ id: number; currentRole: string } | null>(null);
+	const [editingMember, setEditingMember] = useState<{ id: string; currentRole: string } | null>(null);
 
 	const invitations = invitationsData?.invitations || [];
 
