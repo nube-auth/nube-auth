@@ -8,7 +8,7 @@ import {
 	AppsListResponseSchema,
 	ProjectMembersListResponseSchema,
 	LicensesListResponseSchema,
-} from "@proofa/shared/types/schemas";
+} from "@proofa/shared";
 
 const client = new ProofaClient({
 	gatewayUrl: import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004",
