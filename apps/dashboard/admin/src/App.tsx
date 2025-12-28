@@ -14,6 +14,7 @@ import { AppUsersPage } from "./pages/AppUsers";
 import { LicensesPage } from "./pages/Licenses";
 import { LoginPage } from "./pages/Login";
 import { OnboardingPage } from "./pages/Onboarding";
+import { ProfilePage } from "./pages/Profile";
 import { ProjectDetailPage } from "./pages/ProjectDetail";
 import { ProjectsPage } from "./pages/Projects";
 import { ProjectAppsPage } from "./pages/ProjectApps";
@@ -528,7 +529,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
 				{/* Sidebar Footer - User */}
 				<div className="sidebar-footer">
-					<div className="sidebar-user">
+					<Link to="/profile" className="sidebar-user" style={{ textDecoration: "none", cursor: "pointer" }}>
 						<div className="sidebar-avatar">{initials}</div>
 						<div className="sidebar-user-info">
 							<div className="sidebar-user-name">{data.name || "Admin"}</div>
@@ -536,7 +537,11 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 						</div>
 						<button 
 							type="button"
-							onClick={() => logout()} 
+							onClick={(e) => {
+								e.preventDefault();
+								e.stopPropagation();
+								logout();
+							}} 
 							disabled={isLoggingOut}
 							title="Logout" 
 							style={{ 
@@ -552,7 +557,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
 							</svg>
 						</button>
-					</div>
+					</Link>
 				</div>
 			</aside>
 
@@ -602,6 +607,14 @@ function App() {
 						element={
 							<ProtectedLayout>
 								<OnboardingPage />
+							</ProtectedLayout>
+						}
+					/>
+					<Route
+						path="/profile"
+						element={
+							<ProtectedLayout>
+								<ProfilePage />
 							</ProtectedLayout>
 						}
 					/>

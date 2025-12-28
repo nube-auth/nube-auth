@@ -392,3 +392,28 @@ export function useRemoveTeamMember(projectId: string) {
 		},
 	});
 }
+
+// License Management
+export function useRenewLicense(projectId: string, appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (userId: string) => {
+			return fetchAPI<{
+				success: boolean;
+				message: string;
+				license: {
+					id: string;
+					plan: string;
+					status: string;
+					validUntil: number | null;
+				};
+			}>(`/v1/admin/projects/${projectId}/apps/${appId}/users/${userId}/renew`, {
+				method: "POST",
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["app-users", projectId, appId] });
+			queryClient.invalidateQueries({ queryKey: ["app-user", projectId, appId] });
+		},
+	});
+}

@@ -145,6 +145,10 @@ CREATE TABLE "apps" (
     -- App API Keys
     "client_secret" text NOT NULL,
     "service_token" text NOT NULL,
+    -- Email configuration
+    "email_from_name" text,
+    "email_from_address" text,
+    "email_reply_to" text,
     "created_at" integer NOT NULL,
     "updated_at" integer NOT NULL,
     FOREIGN KEY ("project_id") REFERENCES "projects"("id"),
@@ -170,6 +174,7 @@ CREATE TABLE "plans" (
     "monthly_price" integer,
     "yearly_price" integer,
     "one_time_price" integer,
+    "duration_days" integer,
     "trial_enabled" integer NOT NULL DEFAULT 0,
     "trial_days" integer,
     "features" text,

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { useApp, useProject, useAppUsers } from "../hooks/api";
+import { useApp, useProject, useAppUsers, useRenewLicense } from "../hooks/api";
 import { InviteUserModal } from "../components/InviteUserModal";
 
 export function AppUsersPage() {
@@ -10,6 +10,7 @@ export function AppUsersPage() {
 	const { data: project, isLoading: projectLoading } = useProject(projectId || "");
 	const { data: app, isLoading: appLoading } = useApp(projectId || "", appId || "");
 	const { data, isLoading: usersLoading } = useAppUsers(projectId || "", appId || "");
+	const renewLicenseMutation = useRenewLicense(projectId || "", appId || "");
 	
 	const [searchQuery, setSearchQuery] = useState("");
 	const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -150,6 +151,23 @@ export function AppUsersPage() {
 		setEditLicensePlan(user.plan_id || null);
 		setEditLicenseStatus(user.status || "active");
 		setUpdateError(null);
+	};
+
+	const handleRenewLicense = async (userId: string) => {
+		if (!window.confirm("Renew this user's license? This will extend their access based on the plan duration.")) {
+			return;
+		}
+
+		try {
+			const result = await renewLicenseMutation.mutateAsync(userId);
+			alert(result.message);
+		} catch (error: unknown) {
+			if (error && typeof error === "object" && "message" in error) {
+				alert(`Failed to renew license: ${(error as { message: string }).message}`);
+			} else {
+				alert("Failed to renew license");
+			}
+		}
 	};
 
 	if (projectLoading || appLoading) {
@@ -547,10 +565,53 @@ export function AppUsersPage() {
 									<td style={{ padding: "16px", textAlign: "center", fontSize: "13px", color: "var(--text-secondary)" }}>
 										{new Date(user.createdAt * 1000).toLocaleDateString()}
 									</td>
-									<td style={{ padding: "16px", textAlign: "center", fontSize: "13px", color: "var(--text-secondary)" }}>
-										{user.licenseValidUntil 
-											? new Date(user.licenseValidUntil * 1000).toLocaleDateString()
-											: "—"}
+									<td style={{ padding: "16px", textAlign: "center", fontSize: "13px" }}>
+										{user.licenseValidUntil ? (
+											(() => {
+												const now = Math.floor(Date.now() / 1000);
+												const daysUntilExpiry = Math.floor((user.licenseValidUntil - now) / (24 * 60 * 60));
+												const isExpired = daysUntilExpiry < 0;
+												const isExpiringSoon = daysUntilExpiry >= 0 && daysUntilExpiry <= 7;
+												
+												return (
+													<div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+														<span style={{ 
+															color: isExpired ? "var(--danger)" : isExpiringSoon ? "var(--warning)" : "var(--text-secondary)"
+														}}>
+															{new Date(user.licenseValidUntil * 1000).toLocaleDateString()}
+														</span>
+														{isExpired && (
+															<span style={{
+																padding: "2px 6px",
+																background: "rgba(239, 68, 68, 0.1)",
+																border: "1px solid rgba(239, 68, 68, 0.2)",
+																borderRadius: "4px",
+																color: "var(--danger)",
+																fontSize: "11px",
+																fontWeight: "600",
+															}}>
+																EXPIRED
+															</span>
+														)}
+														{isExpiringSoon && !isExpired && (
+															<span style={{
+																padding: "2px 6px",
+																background: "rgba(245, 158, 11, 0.1)",
+																border: "1px solid rgba(245, 158, 11, 0.2)",
+																borderRadius: "4px",
+																color: "var(--warning)",
+																fontSize: "11px",
+																fontWeight: "600",
+															}}>
+																{daysUntilExpiry}d left
+															</span>
+														)}
+													</div>
+												);
+											})()
+										) : (
+											<span style={{ color: "var(--text-tertiary)" }}>Lifetime</span>
+										)}
 									</td>
 									<td style={{ padding: "16px", textAlign: "right" }}>
 										<div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", alignItems: "center" }}>
@@ -610,6 +671,44 @@ export function AppUsersPage() {
 													</>
 												)}
 											</button>
+
+											{/* Renew License Button */}
+											{user.licenseValidUntil && (
+												<button
+													type="button"
+													onClick={(e) => {
+														e.stopPropagation();
+														handleRenewLicense(user.id);
+													}}
+													style={{
+														padding: "6px 10px",
+														background: "rgba(139, 92, 246, 0.1)",
+														border: "1px solid rgba(139, 92, 246, 0.2)",
+														borderRadius: "6px",
+														color: "var(--primary)",
+														fontSize: "13px",
+														fontWeight: "500",
+														cursor: "pointer",
+														display: "inline-flex",
+														alignItems: "center",
+														gap: "4px",
+														transition: "all 0.15s ease",
+													}}
+													onMouseEnter={(e) => {
+														e.currentTarget.style.background = "rgba(139, 92, 246, 0.15)";
+														e.currentTarget.style.borderColor = "var(--primary)";
+													}}
+													onMouseLeave={(e) => {
+														e.currentTarget.style.background = "rgba(139, 92, 246, 0.1)";
+														e.currentTarget.style.borderColor = "rgba(139, 92, 246, 0.2)";
+													}}
+												>
+													<svg style={{ width: "14px", height: "14px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+													</svg>
+													Renew
+												</button>
+											)}
 
 											{/* Edit Button */}
 											<button

@@ -11,6 +11,7 @@ interface Plan {
 	monthlyPrice?: number;
 	yearlyPrice?: number;
 	oneTimePrice?: number;
+	durationDays?: number | null;
 	trialEnabled: boolean;
 	trialDays?: number;
 	features: string[];
@@ -47,6 +48,7 @@ export function AppLicensesPage() {
 		monthlyPrice: "",
 		yearlyPrice: "",
 		oneTimePrice: "",
+		durationDays: null as number | null,
 		trialEnabled: false,
 		trialDays: "",
 		features: [] as string[],
@@ -103,6 +105,7 @@ export function AppLicensesPage() {
 			monthlyPrice: "",
 			yearlyPrice: "",
 			oneTimePrice: "",
+			durationDays: null,
 			trialEnabled: false,
 			trialDays: "",
 			features: [],
@@ -123,6 +126,7 @@ export function AppLicensesPage() {
 			monthlyPrice: plan.monthlyPrice ? (plan.monthlyPrice / 100).toString() : "",
 			yearlyPrice: plan.yearlyPrice ? (plan.yearlyPrice / 100).toString() : "",
 			oneTimePrice: plan.oneTimePrice ? (plan.oneTimePrice / 100).toString() : "",
+			durationDays: plan.durationDays || null,
 			trialEnabled: plan.trialEnabled,
 			trialDays: plan.trialDays?.toString() || "",
 			features: [...plan.features],
@@ -158,6 +162,7 @@ export function AppLicensesPage() {
 				monthly_price: planForm.monthlyPrice ? Math.round(parseFloat(planForm.monthlyPrice) * 100) : null,
 				yearly_price: planForm.yearlyPrice ? Math.round(parseFloat(planForm.yearlyPrice) * 100) : null,
 				one_time_price: planForm.oneTimePrice ? Math.round(parseFloat(planForm.oneTimePrice) * 100) : null,
+				duration_days: planForm.durationDays || null,
 				trial_enabled: planForm.trialEnabled,
 				trial_days: planForm.trialDays ? parseInt(planForm.trialDays, 10) : null,
 				features: planForm.features,
@@ -1108,6 +1113,33 @@ export function AppLicensesPage() {
 										}}
 									/>
 								</div>
+							</div>
+
+							{/* Duration */}
+							<div style={{ marginBottom: "20px" }}>
+								<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "8px" }}>
+									License Duration (Days)
+								</label>
+								<input
+									type="number"
+									min="1"
+									value={planForm.durationDays || ""}
+									onChange={(e) => setPlanForm({ ...planForm, durationDays: e.target.value ? parseInt(e.target.value) : null })}
+									disabled={isUpdating}
+									placeholder="e.g., 30, 365 (leave empty for lifetime)"
+									style={{
+										width: "100%",
+										padding: "10px 12px",
+										border: "1px solid var(--border-primary)",
+										borderRadius: "8px",
+										background: "var(--content-bg)",
+										color: "var(--text-primary)",
+										fontSize: "14px",
+									}}
+								/>
+								<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+									How long the license is valid after activation. Leave empty for lifetime access.
+								</p>
 							</div>
 
 							{/* Trial */}

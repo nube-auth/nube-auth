@@ -25,6 +25,7 @@ import {
 
 export const CreateProjectRequestSchema = z.object({
 	name: NameSchema,
+	description: DescriptionSchema.optional(),
 });
 
 export const ProjectDTOSchema = z.object({
@@ -60,7 +61,11 @@ export const CreateAppRequestSchema = z.object({
 	licensingRequired: z.boolean().default(false),
 });
 
-export const UpdateAppRequestSchema = CreateAppRequestSchema.partial();
+export const UpdateAppRequestSchema = CreateAppRequestSchema.partial().extend({
+	emailFromName: z.string().optional(),
+	emailFromAddress: z.string().email().optional(),
+	emailReplyTo: z.string().email().optional(),
+});
 
 export const AppDTOSchema = z.object({
 	id: PublicIdSchema,
@@ -86,6 +91,9 @@ export const AppDTOSchema = z.object({
 	cacheTtlMinutes: z.number(),
 	corsAllowedOrigins: z.array(z.string()),
 	rateLimitRequestsPerMinute: z.number(),
+	emailFromName: z.string().optional(),
+	emailFromAddress: z.string().optional(),
+	emailReplyTo: z.string().optional(),
 	createdAt: z.number(),
 	updatedAt: z.number(),
 });

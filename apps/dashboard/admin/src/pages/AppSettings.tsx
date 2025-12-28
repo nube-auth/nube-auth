@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { useApp, useUpdateApp, useProject } from "../hooks/api";
 import { App } from "../types/admin";
 
-type SettingsTab = "general" | "authentication" | "licensing" | "security" | "danger";
+type SettingsTab = "general" | "authentication" | "licensing" | "email" | "security" | "danger";
 
 export function AppSettingsPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -32,6 +32,9 @@ export function AppSettingsPage() {
 			licensingRequired: app.licensingRequired ?? true,
 			defaultPlanId: app.defaultPlanId,
 			isActive: app.isActive ?? true,
+			emailFromName: app.emailFromName || "",
+			emailFromAddress: app.emailFromAddress || "",
+			emailReplyTo: app.emailReplyTo || "",
 		});
 	}
 
@@ -153,6 +156,7 @@ export function AppSettingsPage() {
 		{ id: "general", label: "General" },
 		{ id: "authentication", label: "Authentication" },
 		{ id: "licensing", label: "Licensing" },
+		{ id: "email", label: "Email" },
 		{ id: "security", label: "Security" },
 		{ id: "danger", label: "Danger Zone" },
 	];
@@ -480,6 +484,88 @@ export function AppSettingsPage() {
 									</p>
 								</div>
 							</div>
+						</div>
+					</div>
+				)}
+
+				{/* Email Tab */}
+				{activeTab === "email" && (
+					<div>
+						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
+							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>Email Configuration</h3>
+							<p style={{ fontSize: "14px", color: "var(--text-tertiary)", marginBottom: "24px" }}>
+								Customize the sender information for emails sent from your app (invitations, notifications, etc.)
+							</p>
+
+							<div style={{ display: "grid", gap: "20px" }}>
+								<div>
+									<label className="form-label">From Name</label>
+									<input
+										type="text"
+										name="emailFromName"
+										className="form-control"
+										value={formData.emailFromName || ""}
+										onChange={handleInputChange}
+										placeholder={`${app.name} (default)`}
+									/>
+									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+										The name that appears in the "From" field of emails. Leave empty to use app name.
+									</p>
+								</div>
+
+								<div>
+									<label className="form-label">From Email Address</label>
+									<input
+										type="email"
+										name="emailFromAddress"
+										className="form-control"
+										value={formData.emailFromAddress || ""}
+										onChange={handleInputChange}
+										placeholder="noreply@proofa.sh (default)"
+									/>
+									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+										The email address that appears in the "From" field. Leave empty to use default.
+									</p>
+								</div>
+
+								<div>
+									<label className="form-label">Reply-To Email Address</label>
+									<input
+										type="email"
+										name="emailReplyTo"
+										className="form-control"
+										value={formData.emailReplyTo || ""}
+										onChange={handleInputChange}
+										placeholder="support@yourcompany.com (optional)"
+									/>
+									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+										Where replies to automated emails should go. Optional.
+									</p>
+								</div>
+							</div>
+						</div>
+
+						<div style={{
+							padding: "16px",
+							background: "var(--warning-bg)",
+							border: "1px solid var(--warning-border)",
+							borderRadius: "8px",
+							fontSize: "14px",
+							color: "var(--warning-text)",
+							marginBottom: "16px",
+						}}>
+							<strong>⚠️ Note:</strong> Custom email templates are coming soon. Currently, all emails use the default Proofa templates with your branding.
+						</div>
+
+						<div style={{
+							padding: "16px",
+							background: "var(--info-bg)",
+							border: "1px solid var(--info-border)",
+							borderRadius: "8px",
+							fontSize: "14px",
+							color: "var(--info-text)",
+						}}>
+							<strong>💡 Pro Tip:</strong> To use a custom "From" email address, you'll need to verify your domain with Resend. Contact support for assistance.
 						</div>
 					</div>
 				)}

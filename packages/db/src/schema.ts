@@ -201,6 +201,10 @@ export const apps = sqliteTable(
 		// App API Keys for developers
 		client_secret: text("client_secret").notNull(), // For server-to-server auth
 		service_token: text("service_token").notNull(), // For API calls
+		// Email configuration
+		email_from_name: text("email_from_name"), // Custom "From" name for emails
+		email_from_address: text("email_from_address"), // Custom "From" email address
+		email_reply_to: text("email_reply_to"), // Custom "Reply-To" email address
 		created_at: integer("created_at").notNull(),
 		updated_at: integer("updated_at").notNull(),
 	},
@@ -381,6 +385,7 @@ export const plans = sqliteTable(
 		monthly_price: integer("monthly_price"), // in cents (e.g., 999 = $9.99)
 		yearly_price: integer("yearly_price"), // in cents
 		one_time_price: integer("one_time_price"), // in cents - one-time payment for lifetime access
+		duration_days: integer("duration_days"), // How long the license is valid (e.g., 30, 365, null = lifetime)
 		trial_enabled: integer("trial_enabled").notNull().default(0), // 0 = false, 1 = true
 		trial_days: integer("trial_days"),
 		features: text("features"), // JSON array of feature strings

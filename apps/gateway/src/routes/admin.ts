@@ -1,6 +1,7 @@
 import { appQueries, getDb, identityQueries, invitationQueries, licenseQueries, planQueries, projectInvitationQueries, projectMemberQueries, projectQueries, userQueries, sessionQueries } from "@proofa/db";
 import { createId } from "@proofa/shared";
 import { nanoid } from "nanoid";
+import { sendEmail, generateAppUserInvitationEmail, generateLicenseGrantedEmail, generateProjectTeamInvitationEmail } from "../services/email.js";
 import {
 	ProjectDTOSchema,
 	ProjectsListResponseSchema,
@@ -45,6 +46,48 @@ adminRoutes.get("/me", async (c: Context) => {
 	} catch (error) {
 		console.error("Get admin me error:", error);
 		return c.json({ error: "Failed to get profile" }, 500);
+	}
+});
+
+/**
+ * PATCH /v1/admin/me
+ * Update admin profile
+ */
+adminRoutes.patch("/me", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const db = getDb();
+		const body = await c.req.json();
+
+		// Validate input
+		if (!body.name || typeof body.name !== "string" || !body.name.trim()) {
+			return c.json({ error: "Name is required" }, 400);
+		}
+
+		// Get user by public ID
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Update user name
+		await userQueries.update(db, user.id, {
+			name: body.name.trim(),
+		});
+
+		// Return updated profile
+		const updatedUser = await userQueries.findById(db, user.id);
+		if (!updatedUser) {
+			return c.json({ error: "User not found" }, 404);
+		}
+		return c.json({
+			id: updatedUser.public_id,
+			email: updatedUser.primary_email,
+			name: updatedUser.name,
+		});
+	} catch (error) {
+		console.error("Update admin profile error:", error);
+		return c.json({ error: "Failed to update profile" }, 500);
 	}
 });
 
@@ -140,6 +183,7 @@ adminRoutes.post("/projects", async (c: Context) => {
 			public_id: createId("project"),
 			name: validatedData.name,
 			slug: validatedData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+			description: validatedData.description,
 			owner_user_id: user.id,
 			created_at: now,
 			updated_at: now,
@@ -159,6 +203,7 @@ adminRoutes.post("/projects", async (c: Context) => {
 			id: project.public_id,
 			name: project.name,
 			slug: project.slug,
+			description: project.description,
 			createdAt: project.created_at,
 			updatedAt: project.updated_at,
 		});
@@ -606,6 +651,9 @@ adminRoutes.get("/projects/:projectId/apps/:appId", async (c: Context) => {
 			cacheTtlMinutes: app.cache_ttl_minutes,
 			corsAllowedOrigins: app.cors_allowed_origins ? JSON.parse(app.cors_allowed_origins) : [],
 			rateLimitRequestsPerMinute: app.rate_limit_requests_per_minute,
+			emailFromName: app.email_from_name || undefined,
+			emailFromAddress: app.email_from_address || undefined,
+			emailReplyTo: app.email_reply_to || undefined,
 			createdAt: app.created_at,
 			updatedAt: app.updated_at,
 		});
@@ -849,8 +897,26 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 					});
 				}
 
-				// TODO: Send email notification about license update
-				console.log(`License updated for existing user ${email}. TODO: Send email notification.`);
+				// Send email notification about license update
+				const plan = await planQueries.findById(db, plan_id);
+				const validUntilDate = validUntil ? new Date(validUntil * 1000).toLocaleDateString() : undefined;
+				
+				try {
+					await sendEmail({
+						to: email,
+						subject: `Your ${app.name} license has been updated`,
+						html: generateLicenseGrantedEmail({
+							userName: existingUser.name || existingUser.primary_email || "there",
+							appName: app.name,
+							planName: plan?.name || "Unknown Plan",
+							validUntil: validUntilDate,
+							dashboardUrl: `https://auth.proofa.sh/login?app_id=${app.public_id}`,
+						}),
+					});
+				} catch (emailError) {
+					console.error("Failed to send license update email:", emailError);
+					// Don't fail the request if email fails
+				}
 
 		return c.json({
 					success: true,
@@ -906,8 +972,28 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 				consumed_by_user_id: null,
 			});
 
-			// TODO: Send invitation email
-			console.log(`Invitation created for existing user ${email} who hasn't logged into app ${app.name}. TODO: Send email.`);
+			// Send invitation email
+			const plan = plan_id ? await planQueries.findById(db, plan_id) : null;
+			const inviteLink = `https://auth.proofa.sh/login?app_id=${app.public_id}&invite_code=${invitation.public_id}`;
+			
+			try {
+				await sendEmail({
+					to: email,
+					subject: `You've been invited to ${app.name}`,
+					html: generateAppUserInvitationEmail({
+						inviteeEmail: email,
+						appName: app.name,
+						inviterName: user.name || user.primary_email || "A team member",
+						planName: plan?.name,
+						customMessage: custom_message,
+						inviteLink,
+						expiresInDays: 7,
+					}),
+				});
+			} catch (emailError) {
+				console.error("Failed to send invitation email:", emailError);
+				// Don't fail the request if email fails
+			}
 
 			return c.json({
 				success: true,
@@ -962,9 +1048,28 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 			consumed_by_user_id: null,
 		});
 
-		// TODO: Send invitation email via Resend
-		// For now, we'll just return the invitation details
-		console.log(`Invitation created for ${email} to app ${app.name}. TODO: Send email.`);
+		// Send invitation email
+		const plan = plan_id ? await planQueries.findById(db, plan_id) : null;
+		const inviteLink = `https://auth.proofa.sh/signup?app_id=${app.public_id}&invite_code=${invitation.public_id}`;
+		
+		try {
+			await sendEmail({
+				to: email,
+				subject: `You've been invited to ${app.name}`,
+				html: generateAppUserInvitationEmail({
+					inviteeEmail: email,
+					appName: app.name,
+					inviterName: user.name || user.primary_email || "A team member",
+					planName: plan?.name,
+					customMessage: custom_message,
+					inviteLink,
+					expiresInDays: 7,
+				}),
+			});
+		} catch (emailError) {
+			console.error("Failed to send invitation email:", emailError);
+			// Don't fail the request if email fails
+		}
 
 		return c.json({
 			success: true,
@@ -1232,6 +1337,97 @@ adminRoutes.delete("/projects/:projectId/apps/:appId/users/:userId", async (c: C
 });
 
 /**
+ * POST /v1/admin/projects/:projectId/apps/:appId/users/:userId/renew
+ * Renew user's license by extending valid_until based on plan duration
+ */
+adminRoutes.post("/projects/:projectId/apps/:appId/users/:userId/renew", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const appId = c.req.param("appId");
+		const userId = c.req.param("userId");
+
+		const db = getDb();
+
+		// Verify project and access
+		const project = await projectQueries.findByPublicId(db, projectId);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		const adminUser = await userQueries.findByPublicId(db, auth.userId);
+		if (!adminUser) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, adminUser.id);
+		if (!member) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		// Verify app
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app || app.project_id !== project.id) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		// Get target user
+		const targetUser = await userQueries.findByPublicId(db, userId);
+		if (!targetUser) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Get user's license
+		const license = await licenseQueries.findByUserAndApp(db, targetUser.id, app.id);
+		if (!license) {
+			return c.json({ error: "User does not have a license for this app" }, 404);
+		}
+
+		// Get plan to determine duration
+		const plan = await planQueries.findById(db, license.plan_id);
+		if (!plan) {
+			return c.json({ error: "Plan not found" }, 404);
+		}
+
+		// Calculate new valid_until
+		const now = Math.floor(Date.now() / 1000);
+		let newValidUntil: number | null = null;
+
+		if (plan.duration_days) {
+			// Start from current valid_until if it's in the future, otherwise start from now
+			const startFrom = license.valid_until && license.valid_until > now ? license.valid_until : now;
+			newValidUntil = startFrom + (plan.duration_days * 24 * 60 * 60);
+		}
+		// If plan.duration_days is null, newValidUntil stays null (lifetime)
+
+		// Update license
+		await licenseQueries.update(db, license.id, {
+			valid_until: newValidUntil,
+			status: "active", // Reactivate if it was expired
+		});
+
+		// Fetch updated license
+		const updatedLicense = await licenseQueries.findByUserAndApp(db, targetUser.id, app.id);
+
+		return c.json({
+			success: true,
+			message: plan.duration_days 
+				? `License renewed for ${plan.duration_days} days`
+				: "License renewed (lifetime access)",
+			license: {
+				id: updatedLicense?.public_id,
+				plan: plan.name,
+				status: updatedLicense?.status,
+				validUntil: updatedLicense?.valid_until,
+			},
+		});
+	} catch (error) {
+		console.error("Renew license error:", error);
+		return c.json({ error: "Failed to renew license" }, 500);
+	}
+});
+
+/**
  * PATCH /v1/admin/projects/:projectId/apps/:appId
  * Update app configuration
  */
@@ -1284,6 +1480,9 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 		if (validatedData.requiredProviders) updateData.required_providers = JSON.stringify(validatedData.requiredProviders);
 		if ("licensingRequired" in validatedData) updateData.licensing_required = Number(validatedData.licensingRequired ?? false);
 		if (validatedData.appSessionTtlDays) updateData.app_session_ttl_days = validatedData.appSessionTtlDays;
+		if (validatedData.emailFromName !== undefined) updateData.email_from_name = validatedData.emailFromName;
+		if (validatedData.emailFromAddress !== undefined) updateData.email_from_address = validatedData.emailFromAddress;
+		if (validatedData.emailReplyTo !== undefined) updateData.email_reply_to = validatedData.emailReplyTo;
 
 		const updatedApp = await appQueries.update(db, app.id, updateData);
 
@@ -1318,6 +1517,9 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 			cacheTtlMinutes: updatedApp.cache_ttl_minutes,
 			corsAllowedOrigins: updatedApp.cors_allowed_origins ? JSON.parse(updatedApp.cors_allowed_origins) : [],
 			rateLimitRequestsPerMinute: updatedApp.rate_limit_requests_per_minute,
+			emailFromName: updatedApp.email_from_name || undefined,
+			emailFromAddress: updatedApp.email_from_address || undefined,
+			emailReplyTo: updatedApp.email_reply_to || undefined,
 			createdAt: updatedApp.created_at,
 			updatedAt: updatedApp.updated_at,
 		});
@@ -1628,8 +1830,23 @@ adminRoutes.post("/projects/:projectId/members", async (c: Context) => {
 			expires_at: expiresAt,
 		});
 
-		// TODO: Send invitation email here
-		// For now, the invitation is created and will be checked when user signs up
+		// Send invitation email
+		try {
+			await sendEmail({
+				to: email,
+				subject: `You've been invited to join ${project.name}`,
+				html: generateProjectTeamInvitationEmail({
+					inviteeEmail: email,
+					projectName: project.name,
+					inviterName: requestingUser.name || requestingUser.primary_email || "A team member",
+					role: role,
+					expiresInDays: 7,
+				}),
+			});
+		} catch (emailError) {
+			console.error("Failed to send team invitation email:", emailError);
+			// Don't fail the request if email fails
+		}
 
 		return c.json({
 			type: "invitation",
@@ -2124,6 +2341,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId/plans", async (c: Context) => 
 				monthlyPrice: plan.monthly_price,
 				yearlyPrice: plan.yearly_price,
 				oneTimePrice: plan.one_time_price,
+				durationDays: plan.duration_days,
 				trialEnabled: plan.trial_enabled === 1,
 				trialDays: plan.trial_days,
 				features: plan.features ? JSON.parse(plan.features) : [],
@@ -2175,7 +2393,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/plans", async (c: Context) =>
 
 		// Parse request body
 		const body = await c.req.json();
-		const { name, slug, description, monthly_price, yearly_price, one_time_price, trial_enabled, trial_days, features, display_order } = body;
+		const { name, slug, description, monthly_price, yearly_price, one_time_price, duration_days, trial_enabled, trial_days, features, display_order } = body;
 
 		// Validate required fields
 		if (!name || typeof name !== "string") {
@@ -2203,6 +2421,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/plans", async (c: Context) =>
 			monthly_price: monthly_price || null,
 			yearly_price: yearly_price || null,
 			one_time_price: one_time_price || null,
+			duration_days: duration_days || null,
 			trial_enabled: trial_enabled ? 1 : 0,
 			trial_days: trial_days || null,
 			features: features ? JSON.stringify(features) : null,
@@ -2222,6 +2441,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/plans", async (c: Context) =>
 				monthlyPrice: plan.monthly_price,
 				yearlyPrice: plan.yearly_price,
 				oneTimePrice: plan.one_time_price,
+				durationDays: plan.duration_days,
 				trialEnabled: plan.trial_enabled === 1,
 				trialDays: plan.trial_days,
 				features: plan.features ? JSON.parse(plan.features) : [],
@@ -2280,7 +2500,7 @@ adminRoutes.patch("/projects/:projectId/apps/:appId/plans/:planId", async (c: Co
 
 		// Parse request body
 		const body = await c.req.json();
-		const { name, description, monthly_price, yearly_price, one_time_price, trial_enabled, trial_days, features, status, display_order } = body;
+		const { name, description, monthly_price, yearly_price, one_time_price, duration_days, trial_enabled, trial_days, features, status, display_order } = body;
 
 		// Build update object
 		const updates: any = {};
@@ -2289,6 +2509,7 @@ adminRoutes.patch("/projects/:projectId/apps/:appId/plans/:planId", async (c: Co
 		if (monthly_price !== undefined) updates.monthly_price = monthly_price;
 		if (yearly_price !== undefined) updates.yearly_price = yearly_price;
 		if (one_time_price !== undefined) updates.one_time_price = one_time_price;
+		if (duration_days !== undefined) updates.duration_days = duration_days;
 		if (trial_enabled !== undefined) updates.trial_enabled = trial_enabled ? 1 : 0;
 		if (trial_days !== undefined) updates.trial_days = trial_days;
 		if (features !== undefined) updates.features = JSON.stringify(features);
@@ -2308,6 +2529,7 @@ adminRoutes.patch("/projects/:projectId/apps/:appId/plans/:planId", async (c: Co
 				monthlyPrice: updatedPlan.monthly_price,
 				yearlyPrice: updatedPlan.yearly_price,
 				oneTimePrice: updatedPlan.one_time_price,
+				durationDays: updatedPlan.duration_days,
 				trialEnabled: updatedPlan.trial_enabled === 1,
 				trialDays: updatedPlan.trial_days,
 				features: updatedPlan.features ? JSON.parse(updatedPlan.features) : [],
