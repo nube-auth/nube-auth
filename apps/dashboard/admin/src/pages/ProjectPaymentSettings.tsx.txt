@@ -1,0 +1,691 @@
+import { useState } from "react";
+import { useParams } from "react-router-dom";
+import { useProject, useProjectPaymentConfig, useSaveProjectPaymentConfig } from "../hooks/api";
+import { useToast } from "../components/Toast";
+
+type Provider = "lemonsqueezy" | "dodo" | "stripe";
+
+interface LemonSqueezyConfig {
+	storeId: string;
+	apiKey: string;
+}
+
+interface DodoConfig {
+	apiKey: string;
+	webhookSecret: string;
+}
+
+interface StripeConfig {
+	publishableKey: string;
+	secretKey: string;
+	webhookSecret: string;
+}
+
+export default function ProjectPaymentSettingsPage() {
+	const { projectId } = useParams<{ projectId: string }>();
+	const { showToast } = useToast();
+
+	const { data: project, isLoading: projectLoading } = useProject(projectId!);
+	const { data: paymentConfig, isLoading: configLoading } = useProjectPaymentConfig(projectId!);
+	const saveConfigMutation = useSaveProjectPaymentConfig(projectId!);
+
+	const [selectedProvider, setSelectedProvider] = useState<Provider>("lemonsqueezy");
+	const [testMode, setTestMode] = useState(true);
+	const [configForm, setConfigForm] = useState<LemonSqueezyConfig | DodoConfig | StripeConfig>({
+		storeId: "",
+		apiKey: "",
+	});
+
+	const isLoading = projectLoading || configLoading;
+	const isConfigured = paymentConfig?.configured;
+
+	const handleProviderChange = (provider: Provider) => {
+		setSelectedProvider(provider);
+		// Reset form based on provider
+		switch (provider) {
+			case "lemonsqueezy":
+				setConfigForm({ storeId: "", apiKey: "" });
+				break;
+			case "dodo":
+				setConfigForm({ apiKey: "", webhookSecret: "" });
+				break;
+			case "stripe":
+				setConfigForm({ publishableKey: "", secretKey: "", webhookSecret: "" });
+				break;
+		}
+	};
+
+	const handleSave = async () => {
+		// Validate
+		if (selectedProvider === "lemonsqueezy") {
+			const config = configForm as LemonSqueezyConfig;
+			if (!config.storeId || !config.apiKey) {
+				showToast("Please fill in all fields", "error");
+				return;
+			}
+		} else if (selectedProvider === "dodo") {
+			const config = configForm as DodoConfig;
+			if (!config.apiKey || !config.webhookSecret) {
+				showToast("Please fill in all fields", "error");
+				return;
+			}
+		} else if (selectedProvider === "stripe") {
+			const config = configForm as StripeConfig;
+			if (!config.publishableKey || !config.secretKey || !config.webhookSecret) {
+				showToast("Please fill in all fields", "error");
+				return;
+			}
+		}
+
+		try {
+			await saveConfigMutation.mutateAsync({
+				provider: selectedProvider,
+				testMode,
+				config: configForm,
+			});
+			showToast("Payment configuration saved successfully", "success");
+		} catch (error: any) {
+			showToast(error.message || "Failed to save payment configuration", "error");
+		}
+	};
+
+	if (isLoading) {
+		return (
+			<div className="p-6">
+				<div className="animate-pulse">
+					<div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+					<div className="h-4 bg-gray-200 rounded w-2/3"></div>
+				</div>
+			</div>
+		);
+	}
+
+	return (
+		<div className="space-y-6">
+			{/* Page Header */}
+			<div className="page-header">
+				<div>
+					<h1 className="page-title">Payment Settings</h1>
+					<p className="page-description">
+						Configure payment provider for <strong>{project?.name}</strong>
+					</p>
+				</div>
+			</div>
+
+			{/* Current Status */}
+			{isConfigured && (
+				<div className="alert alert-success">
+					<svg fill="currentColor" viewBox="0 0 20 20">
+						<path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+					</svg>
+					<div>
+						<strong>Payment provider configured: {paymentConfig.provider}</strong>
+						<br />
+						<small>Mode: {paymentConfig.testMode ? "Test" : "Production"}</small>
+					</div>
+				</div>
+			)}
+
+			{/* Provider Selection */}
+			<div className="card">
+				<div className="card-header">
+					<div>
+						<h2 className="card-title">Select Payment Provider</h2>
+						<p className="card-desc">Choose your preferred payment processing solution</p>
+					</div>
+				</div>
+				<div className="card-body">
+					<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
+						{[
+							{ value: 'lemonsqueezy', icon: '🍋', name: 'Lemon Squeezy', desc: 'Merchant of Record' },
+							{ value: 'dodo', icon: '🦤', name: 'Dodo Payments', desc: 'Indian Payment Gateway' },
+							{ value: 'stripe', icon: '💳', name: 'Stripe', desc: 'Global Payments' }
+						].map((provider) => (
+							<button
+								key={provider.value}
+								onClick={() => handleProviderChange(provider.value as Provider)}
+								className="btn btn-secondary"
+								style={{
+									padding: "16px",
+									textAlign: "left",
+									display: "flex",
+									alignItems: "center",
+									gap: "12px",
+									background: selectedProvider === provider.value ? "var(--primary-light)" : "var(--card-bg)",
+									borderColor: selectedProvider === provider.value ? "var(--primary)" : "var(--card-border)",
+									borderWidth: "2px",
+									position: "relative"
+								}}
+							>
+								<span style={{ fontSize: "24px" }}>{provider.icon}</span>
+								<div>
+									<div className="font-medium">{provider.name}</div>
+									<div className="text-sm" style={{ color: "var(--text-secondary)" }}>{provider.desc}</div>
+								</div>
+								{selectedProvider === provider.value && (
+									<div style={{ marginLeft: "auto" }}>
+										<svg style={{ width: "20px", height: "20px", color: "var(--primary)" }} fill="currentColor" viewBox="0 0 20 20">
+											<path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+										</svg>
+									</div>
+								)}
+							</button>
+						))}
+					</div>
+				</div>
+			</div>
+
+			{/* Configuration Form */}
+			<div className="card">
+				<div className="card-header">
+					<div>
+						<h2 className="card-title">Provider Configuration</h2>
+						<p className="card-desc">Enter your {selectedProvider} credentials</p>
+					</div>
+				</div>
+				<div className="card-body">
+					{/* Test Mode Toggle */}
+					<div className="form-group">
+						<label className="flex items-center gap-3">
+							<input
+								type="checkbox"
+								id="testMode"
+								checked={testMode}
+								onChange={(e) => setTestMode(e.target.checked)}
+							/>
+							<div>
+								<span className="form-label">Test Mode</span>
+								<div className="text-xs" style={{ color: "var(--text-tertiary)" }}>
+									{testMode ? "🧪 Use test API keys for development" : "🚀 Use production API keys for live transactions"}
+								</div>
+							</div>
+						</label>
+					</div>
+
+					{/* Lemon Squeezy Fields */}
+					{selectedProvider === "lemonsqueezy" && (
+						<div className="space-y-4">
+							<div className="form-group">
+								<label className="form-label">🏪 Store ID</label>
+								<input
+									type="text"
+									value={(configForm as LemonSqueezyConfig).storeId}
+									onChange={(e) =>
+										setConfigForm({ ...configForm, storeId: e.target.value } as LemonSqueezyConfig)
+									}
+									placeholder="12345"
+									className="form-control"
+								/>
+								<small style={{ color: "var(--text-tertiary)" }}>
+									Find this in your Lemon Squeezy dashboard under Settings → Stores
+								</small>
+							</div>
+
+							<div className="form-group">
+								<label className="form-label">🔑 API Key</label>
+								<input
+									type="password"
+									value={(configForm as LemonSqueezyConfig).apiKey}
+									onChange={(e) =>
+										setConfigForm({ ...configForm, apiKey: e.target.value } as LemonSqueezyConfig)
+									}
+									placeholder="lmsq_api_..."
+									className="form-control"
+								/>
+								<small style={{ color: "var(--text-tertiary)" }}>
+									Generate an API key in Settings → API
+								</small>
+							</div>
+						</div>
+					)}
+
+					{/* Dodo Payments Fields */}
+					{selectedProvider === "dodo" && (
+						<div className="space-y-4">
+							<div className="form-group">
+								<label className="form-label">🔑 API Key</label>
+								<input
+									type="password"
+									value={(configForm as DodoConfig).apiKey}
+									onChange={(e) =>
+										setConfigForm({ ...configForm, apiKey: e.target.value } as DodoConfig)
+									}
+									placeholder="dodo_..."
+									className="form-control"
+								/>
+							</div>
+
+							<div className="form-group">
+								<label className="form-label">🛡️ Webhook Secret</label>
+								<input
+									type="password"
+									value={(configForm as DodoConfig).webhookSecret}
+									onChange={(e) =>
+										setConfigForm({ ...configForm, webhookSecret: e.target.value } as DodoConfig)
+									}
+									placeholder="whsec_..."
+									className="form-control"
+								/>
+								<small style={{ color: "var(--text-tertiary)" }}>
+									Used to verify webhook signatures for secure payment processing
+								</small>
+							</div>
+						</div>
+					)}
+
+					{/* Stripe Fields */}
+					{selectedProvider === "stripe" && (
+						<div className="space-y-4">
+							<div className="form-group">
+								<label className="form-label">👁️ Publishable Key</label>
+								<input
+									type="text"
+									value={(configForm as StripeConfig).publishableKey}
+									onChange={(e) =>
+										setConfigForm({ ...configForm, publishableKey: e.target.value } as StripeConfig)
+									}
+									placeholder="pk_test_..."
+									className="form-control"
+								/>
+							</div>
+
+							<div className="form-group">
+								<label className="form-label">🔑 Secret Key</label>
+								<input
+									type="password"
+									value={(configForm as StripeConfig).secretKey}
+									onChange={(e) =>
+										setConfigForm({ ...configForm, secretKey: e.target.value } as StripeConfig)
+									}
+									placeholder="sk_test_..."
+									className="form-control"
+								/>
+							</div>
+
+							<div className="form-group">
+								<label className="form-label">🛡️ Webhook Secret</label>
+								<input
+									type="password"
+									value={(configForm as StripeConfig).webhookSecret}
+									onChange={(e) =>
+										setConfigForm({ ...configForm, webhookSecret: e.target.value } as StripeConfig)
+									}
+									placeholder="whsec_..."
+									className="form-control"
+								/>
+							</div>
+						</div>
+					)}
+				</div>
+			</div>
+
+			{/* Save Button */}
+			<div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
+				<button
+					type="button"
+					onClick={handleSave}
+					disabled={saveConfigMutation.isPending}
+					className="btn btn-primary"
+					style={{ padding: "12px 24px" }}
+				>
+					{saveConfigMutation.isPending ? (
+						<>
+							<div className="spinner" style={{ width: "16px", height: "16px" }} />
+							Saving...
+						</>
+					) : (
+						<>
+							<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+							</svg>
+							{isConfigured ? "Update Configuration" : "Save Configuration"}
+						</>
+					)}
+				</button>
+			</div>
+		</div>
+	);
+}
+						<div className="p-2 bg-indigo-100 rounded-lg">
+							<svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+							</svg>
+						</div>
+						<h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+							Payment Settings
+						</h1>
+					</div>
+					<p className="text-base text-gray-600 mb-2">
+						Configure payment provider for <span className="font-semibold text-gray-900">{project?.name}</span>
+					</p>
+					<p className="text-sm text-gray-500">
+						💡 This configuration will be inherited by all apps in this project unless overridden at the app level.
+				</p>			</div>
+			{/* Current Status */}
+			{isConfigured && (
+				<div className="mb-8 relative overflow-hidden">
+					<div className="absolute inset-0 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl"></div>
+					<div className="relative p-6 border border-green-200/60 rounded-xl backdrop-blur-sm">
+						<div className="flex items-center justify-between">
+							<div className="flex items-center gap-4">
+								<div className="p-3 bg-green-100 rounded-full">
+									<svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+										<path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+									</svg>
+								</div>
+								<div>
+									<h3 className="text-lg font-semibold text-green-800 mb-1">
+										✅ Payment Provider Configured
+									</h3>
+									<div className="flex items-center gap-3 text-sm text-green-700">
+										<span className="font-medium capitalize">{paymentConfig.provider}</span>
+										<span className="w-1 h-1 bg-green-500 rounded-full"></span>
+										<span className={`px-2 py-1 rounded-full text-xs font-medium ${
+											paymentConfig.testMode ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'
+										}`}>
+											{paymentConfig.testMode ? '🧪 Test Mode' : '🚀 Production Mode'}
+										</span>
+									</div>
+								</div>
+							</div>
+							<div className="text-green-600">
+								<svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+								</svg>
+							</div>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{/* Provider Selection */}
+			<div className="bg-white border border-gray-200/60 rounded-xl p-8 mb-8 shadow-sm">
+				<div className="mb-6">
+					<h2 className="text-lg font-semibold text-gray-900 mb-2">Select Payment Provider</h2>
+					<p className="text-sm text-gray-600">Choose your preferred payment processing solution</p>
+				</div>
+				
+				{/* Provider Cards */}
+				<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+					{[
+						{ value: 'lemonsqueezy', icon: '🍋', name: 'Lemon Squeezy', desc: 'Merchant of Record' },
+						{ value: 'dodo', icon: '🦤', name: 'Dodo Payments', desc: 'Indian Payment Gateway' },
+						{ value: 'stripe', icon: '💳', name: 'Stripe', desc: 'Global Payments' }
+					].map((provider) => (
+						<button
+							key={provider.value}
+							onClick={() => handleProviderChange(provider.value as Provider)}
+							className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+								selectedProvider === provider.value
+									? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200'
+									: 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
+							}`}
+						>
+							<div className="flex items-center gap-3">
+								<span className="text-2xl">{provider.icon}</span>
+								<div>
+									<div className="font-medium text-gray-900">{provider.name}</div>
+									<div className="text-sm text-gray-500">{provider.desc}</div>
+								</div>
+								{selectedProvider === provider.value && (
+									<div className="ml-auto">
+										<svg className="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+											<path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+										</svg>
+									</div>
+								)}
+							</div>
+						</button>
+					))}
+				</div>
+			</div>
+
+			{/* Configuration Form */}
+			<div className="bg-white border border-gray-200/60 rounded-xl p-8 mb-8 shadow-sm">
+				<div className="mb-6">
+					<h2 className="text-lg font-semibold text-gray-900 mb-2">Provider Configuration</h2>
+					<p className="text-sm text-gray-600">Enter your {selectedProvider} credentials</p>
+				</div>
+				
+				{/* Test Mode Toggle */}
+				<div className="mb-6 p-4 bg-gray-50 rounded-xl">
+					<label className="flex items-center gap-3 cursor-pointer">
+						<div className="relative">
+							<input
+								type="checkbox"
+								id="testMode"
+								checked={testMode}
+								onChange={(e) => setTestMode(e.target.checked)}
+								className="sr-only"
+							/>
+							<div className={`w-11 h-6 rounded-full transition-colors duration-200 ${
+								testMode ? 'bg-indigo-600' : 'bg-gray-300'
+							}`}>
+								<div className={`w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+									testMode ? 'translate-x-5' : 'translate-x-0.5'
+								} mt-0.5`}></div>
+							</div>
+						</div>
+						<div>
+							<div className="text-sm font-medium text-gray-900">Test Mode</div>
+							<div className="text-xs text-gray-600">
+								{testMode ? '🧪 Use test API keys for development' : '🚀 Use production API keys for live transactions'}
+							</div>
+						</div>
+					</label>
+				</div>
+
+				{/* Lemon Squeezy Fields */}
+				{selectedProvider === "lemonsqueezy" && (
+					<div className="space-y-6">
+						<div className="group">
+							<label className="block text-sm font-semibold text-gray-900 mb-2">Store ID</label>
+							<div className="relative">
+								<input
+									type="text"
+									value={(configForm as LemonSqueezyConfig).storeId}
+									onChange={(e) =>
+										setConfigForm({ ...configForm, storeId: e.target.value } as LemonSqueezyConfig)
+									}
+									placeholder="12345"
+									className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-white"
+								/>
+								<div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+									<span className="text-gray-400 text-sm">🏪</span>
+								</div>
+							</div>
+							<div className="flex items-start gap-2 mt-2">
+								<svg className="w-4 h-4 text-blue-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+									<path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+								</svg>
+								<p className="text-xs text-gray-600">
+									Find this in your Lemon Squeezy dashboard under <span className="font-medium">Settings → Stores</span>
+								</p>
+							</div>
+						</div>
+
+						<div className="group">
+							<label className="block text-sm font-semibold text-gray-900 mb-2">API Key</label>
+							<div className="relative">
+								<input
+									type="password"
+									value={(configForm as LemonSqueezyConfig).apiKey}
+									onChange={(e) =>
+										setConfigForm({ ...configForm, apiKey: e.target.value } as LemonSqueezyConfig)
+									}
+									placeholder="lmsq_api_..."
+									className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-white"
+								/>
+								<div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+									<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+									</svg>
+								</div>
+							</div>
+							<div className="flex items-start gap-2 mt-2">
+								<svg className="w-4 h-4 text-blue-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+									<path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+								</svg>
+								<p className="text-xs text-gray-600">
+									Generate an API key in <span className="font-medium">Settings → API</span>
+								</p>
+							</div>
+						</div>
+					</div>
+				)}
+
+				{/* Dodo Payments Fields */}
+				{selectedProvider === "dodo" && (
+					<div className="space-y-6">
+						<div className="group">
+							<label className="block text-sm font-semibold text-gray-900 mb-2">API Key</label>
+							<div className="relative">
+								<input
+									type="password"
+									value={(configForm as DodoConfig).apiKey}
+									onChange={(e) =>
+										setConfigForm({ ...configForm, apiKey: e.target.value } as DodoConfig)
+									}
+									placeholder="dodo_..."
+									className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-white"
+								/>
+								<div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+									<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+									</svg>
+								</div>
+							</div>
+						</div>
+
+						<div className="group">
+							<label className="block text-sm font-semibold text-gray-900 mb-2">Webhook Secret</label>
+							<div className="relative">
+								<input
+									type="password"
+									value={(configForm as DodoConfig).webhookSecret}
+									onChange={(e) =>
+										setConfigForm({ ...configForm, webhookSecret: e.target.value } as DodoConfig)
+									}
+									placeholder="whsec_..."
+									className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-white"
+								/>
+								<div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+									<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+									</svg>
+								</div>
+							</div>
+							<div className="flex items-start gap-2 mt-2">
+								<svg className="w-4 h-4 text-blue-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+									<path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+								</svg>
+								<p className="text-xs text-gray-600">
+									Used to verify webhook signatures for secure payment processing
+								</p>
+							</div>
+						</div>
+					</div>
+				)}
+
+				{/* Stripe Fields */}
+				{selectedProvider === "stripe" && (
+					<div className="space-y-6">
+						<div className="group">
+							<label className="block text-sm font-semibold text-gray-900 mb-2">Publishable Key</label>
+							<div className="relative">
+								<input
+									type="text"
+									value={(configForm as StripeConfig).publishableKey}
+									onChange={(e) =>
+										setConfigForm({ ...configForm, publishableKey: e.target.value } as StripeConfig)
+									}
+									placeholder="pk_test_..."
+									className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-white"
+								/>
+								<div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+									<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+									</svg>
+								</div>
+							</div>
+						</div>
+
+						<div className="group">
+							<label className="block text-sm font-semibold text-gray-900 mb-2">Secret Key</label>
+							<div className="relative">
+								<input
+									type="password"
+									value={(configForm as StripeConfig).secretKey}
+									onChange={(e) =>
+										setConfigForm({ ...configForm, secretKey: e.target.value } as StripeConfig)
+									}
+									placeholder="sk_test_..."
+									className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-white"
+								/>
+								<div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+									<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+									</svg>
+								</div>
+							</div>
+						</div>
+
+						<div className="group">
+							<label className="block text-sm font-semibold text-gray-900 mb-2">Webhook Secret</label>
+							<div className="relative">
+								<input
+									type="password"
+									value={(configForm as StripeConfig).webhookSecret}
+									onChange={(e) =>
+										setConfigForm({ ...configForm, webhookSecret: e.target.value } as StripeConfig)
+									}
+									placeholder="whsec_..."
+									className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-white"
+								/>
+								<div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+									<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+									</svg>
+								</div>
+							</div>
+						</div>
+					</div>
+				)}
+			</div>
+
+			{/* Save Button */}
+			<div className="bg-white border border-gray-200/60 rounded-xl p-6 shadow-sm">
+				<div className="flex items-center justify-between">
+					<div className="text-sm text-gray-600">
+						{isConfigured ? 'Update your payment configuration below' : 'Ready to save your payment configuration?'}
+					</div>
+					<div className="flex gap-3">
+						<button
+							type="button"
+							onClick={handleSave}
+							disabled={saveConfigMutation.isPending}
+							className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl hover:from-indigo-700 hover:to-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
+						>
+							{saveConfigMutation.isPending ? (
+								<>
+									<svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+									</svg>
+									Saving...
+								</>
+							) : (
+								<>
+									<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+									</svg>
+									{isConfigured ? "Update Configuration" : "Save Configuration"}
+								</>
+							)}
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+}

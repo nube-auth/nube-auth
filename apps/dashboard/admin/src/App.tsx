@@ -446,7 +446,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 							>
 								Team
 							</SidebarLink>
-							<SidebarLink
+							{/* <SidebarLink
 								to={`/projects/${selectedProject}/payment`}
 								icon={
 									<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -455,7 +455,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 								}
 							>
 								Payment
-							</SidebarLink>
+							</SidebarLink> */}
 							<SidebarLink
 								to={`/projects/${selectedProject}/settings`}
 								icon={
@@ -525,7 +525,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 							>
 								OAuth Config
 							</SidebarLink>
-							<SidebarLink
+							{/* <SidebarLink
 								to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}/payment`}
 								icon={
 									<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -534,7 +534,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 								}
 							>
 								Payment Config
-							</SidebarLink>
+							</SidebarLink> */}
 							<SidebarLink
 								to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}/developers`}
 								icon={
