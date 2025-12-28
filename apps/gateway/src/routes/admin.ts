@@ -1,5 +1,5 @@
 import { appQueries, getDb, identityQueries, invitationQueries, licenseQueries, planQueries, projectInvitationQueries, projectMemberQueries, projectQueries, userQueries, sessionQueries } from "@proofa/db";
-import { createId } from "@proofa/shared";
+import { createId, encrypt, decrypt, isEncrypted, maskSecret } from "@proofa/shared";
 import { nanoid } from "nanoid";
 import { sendEmail, generateAppUserInvitationEmail, generateLicenseGrantedEmail, generateProjectTeamInvitationEmail } from "../services/email.js";
 import {
@@ -482,8 +482,8 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 
 		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
 
-		if (!member || member.role !== "owner") {
-			return c.json({ error: "Access denied" }, 403);
+		if (!member || (member.role !== "owner" && member.role !== "admin")) {
+			return c.json({ error: "Access denied. Only owners and admins can create apps" }, 403);
 		}
 
 		const now = Math.floor(Date.now() / 1000);
@@ -654,6 +654,10 @@ adminRoutes.get("/projects/:projectId/apps/:appId", async (c: Context) => {
 			emailFromName: app.email_from_name || undefined,
 			emailFromAddress: app.email_from_address || undefined,
 			emailReplyTo: app.email_reply_to || undefined,
+			googleClientId: app.google_client_id || undefined,
+			googleClientSecret: app.google_client_secret ? maskSecret(app.google_client_secret) : undefined,
+			githubClientId: app.github_client_id || undefined,
+			githubClientSecret: app.github_client_secret ? maskSecret(app.github_client_secret) : undefined,
 			createdAt: app.created_at,
 			updatedAt: app.updated_at,
 		});
@@ -1484,6 +1488,18 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 		if (validatedData.emailFromAddress !== undefined) updateData.email_from_address = validatedData.emailFromAddress;
 		if (validatedData.emailReplyTo !== undefined) updateData.email_reply_to = validatedData.emailReplyTo;
 
+		// Handle OAuth credentials with encryption
+		if (validatedData.googleClientId !== undefined) updateData.google_client_id = validatedData.googleClientId;
+		if (validatedData.googleClientSecret !== undefined) {
+			// Encrypt the secret before storing
+			updateData.google_client_secret = validatedData.googleClientSecret ? encrypt(validatedData.googleClientSecret) : null;
+		}
+		if (validatedData.githubClientId !== undefined) updateData.github_client_id = validatedData.githubClientId;
+		if (validatedData.githubClientSecret !== undefined) {
+			// Encrypt the secret before storing
+			updateData.github_client_secret = validatedData.githubClientSecret ? encrypt(validatedData.githubClientSecret) : null;
+		}
+
 		const updatedApp = await appQueries.update(db, app.id, updateData);
 
 		// Fetch default plan if set
@@ -1520,6 +1536,10 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 			emailFromName: updatedApp.email_from_name || undefined,
 			emailFromAddress: updatedApp.email_from_address || undefined,
 			emailReplyTo: updatedApp.email_reply_to || undefined,
+			googleClientId: updatedApp.google_client_id || undefined,
+			googleClientSecret: updatedApp.google_client_secret ? maskSecret(updatedApp.google_client_secret) : undefined,
+			githubClientId: updatedApp.github_client_id || undefined,
+			githubClientSecret: updatedApp.github_client_secret ? maskSecret(updatedApp.github_client_secret) : undefined,
 			createdAt: updatedApp.created_at,
 			updatedAt: updatedApp.updated_at,
 		});
@@ -2075,7 +2095,7 @@ adminRoutes.post("/invitations/:invitationCode/accept", async (c: Context) => {
 		}
 
 		// Check if email matches
-		if (user.primary_email.toLowerCase() !== invitation.email.toLowerCase()) {
+		if (user.primary_email?.toLowerCase() !== invitation.email.toLowerCase()) {
 			return c.json({ error: "This invitation is for a different email address" }, 403);
 		}
 
@@ -2224,15 +2244,86 @@ adminRoutes.get("/licenses", async (c: Context) => {
 });
 
 /**
- * DELETE /admin/projects/:project_id
- * Delete a project
+ * DELETE /v1/admin/projects/:projectId
+ * Delete a project (soft delete - marks as deleted)
  */
-adminRoutes.delete("/projects/:project_id", async (c: Context) => {
+adminRoutes.delete("/projects/:projectId", async (c: Context) => {
 	try {
-		const projectId = c.req.param("project_id");
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
 
-		// TODO: implement project deletion
-		return c.json({ message: "Project deleted", projectId });
+		const db = getDb();
+
+		// Verify project exists
+		const project = await projectQueries.findByPublicId(db, projectId);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		// Get user by public ID
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Check if user is the owner
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		if (!member || member.role !== "owner") {
+			return c.json({ error: "Access denied. Only the project owner can delete the project" }, 403);
+		}
+
+		// Soft delete: Mark project as inactive
+		// In a production system, you might want to:
+		// 1. Mark all apps in this project as inactive
+		// 2. Revoke all licenses for all apps
+		// 3. Delete all sessions
+		// 4. Remove all team members
+		// 5. Cancel all invitations
+		// 6. Add a deleted_at timestamp
+		
+		// For now, we'll mark it as inactive
+		await projectQueries.update(db, project.id, {
+			is_active: 0,
+			updated_at: Math.floor(Date.now() / 1000),
+		});
+
+		// Mark all apps in this project as inactive
+		const apps = await appQueries.findByProjectId(db, project.id);
+		for (const app of apps) {
+			await appQueries.update(db, app.id, {
+				is_active: 0,
+				updated_at: Math.floor(Date.now() / 1000),
+			});
+
+			// Revoke all active licenses for each app
+			const licenses = await licenseQueries.findByAppId(db, app.id);
+			for (const license of licenses) {
+				if (license.status === "active") {
+					await licenseQueries.update(db, license.id, { status: "revoked" });
+				}
+			}
+		}
+
+		// Remove all team members (except owner)
+		const members = await projectMemberQueries.findByProjectId(db, project.id);
+		for (const projectMember of members) {
+			if (projectMember.role !== "owner") {
+				await projectMemberQueries.delete(db, projectMember.id);
+			}
+		}
+
+		// Cancel all pending invitations
+		const invitations = await projectInvitationQueries.findByProjectId(db, project.id);
+		for (const invitation of invitations) {
+			if (invitation.status === "pending") {
+				await projectInvitationQueries.update(db, invitation.id, { status: "cancelled" });
+			}
+		}
+
+		return c.json({
+			success: true,
+			message: "Project has been deleted successfully",
+		});
 	} catch (error) {
 		console.error("Delete project error:", error);
 		return c.json({ error: "Failed to delete project" }, 500);
@@ -2289,15 +2380,66 @@ adminRoutes.patch("/apps/:app_id", async (c: Context) => {
 });
 
 /**
- * DELETE /admin/apps/:app_id
- * Delete an app
+ * DELETE /v1/admin/projects/:projectId/apps/:appId
+ * Delete an app (soft delete - marks as deleted)
  */
-adminRoutes.delete("/apps/:app_id", async (c: Context) => {
+adminRoutes.delete("/projects/:projectId/apps/:appId", async (c: Context) => {
 	try {
-		const appId = c.req.param("app_id");
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const appId = c.req.param("appId");
 
-		// TODO: implement app deletion
-		return c.json({ message: "App deleted", appId });
+		const db = getDb();
+
+		// Verify project exists
+		const project = await projectQueries.findByPublicId(db, projectId);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		// Get user by public ID
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Check if user has permission (must be owner or admin)
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		if (!member || (member.role !== "owner" && member.role !== "admin")) {
+			return c.json({ error: "Access denied. Only owners and admins can delete apps" }, 403);
+		}
+
+		// Verify app exists and belongs to project
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app || app.project_id !== project.id) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		// Soft delete: Mark app as inactive
+		// In a production system, you might want to:
+		// 1. Archive all related data
+		// 2. Revoke all active licenses
+		// 3. Delete all sessions
+		// 4. Mark app as deleted with a deleted_at timestamp
+		
+		// For now, we'll mark it as inactive
+		await appQueries.update(db, app.id, {
+			is_active: 0,
+			updated_at: Math.floor(Date.now() / 1000),
+		});
+
+		// Optionally: Revoke all active licenses for this app
+		const licenses = await licenseQueries.findByAppId(db, app.id);
+		for (const license of licenses) {
+			if (license.status === "active") {
+				await licenseQueries.update(db, license.id, { status: "revoked" });
+			}
+		}
+
+		return c.json({
+			success: true,
+			message: "App has been deleted successfully",
+		});
 	} catch (error) {
 		console.error("Delete app error:", error);
 		return c.json({ error: "Failed to delete app" }, 500);

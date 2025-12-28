@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useInviteTeamMember } from "../hooks/api";
+import { useToast } from "./Toast";
 
 interface InviteTeamMemberModalProps {
 	projectId: string;
@@ -10,28 +11,29 @@ export function InviteTeamMemberModal({ projectId, onClose }: InviteTeamMemberMo
 	const [email, setEmail] = useState("");
 	const [role, setRole] = useState("admin");
 	const inviteMutation = useInviteTeamMember(projectId);
+	const { showToast } = useToast();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		
 		if (!email) {
-			alert("Please enter an email address");
+			showToast("Please enter an email address", "warning");
 			return;
 		}
 
 		try {
 			const result = await inviteMutation.mutateAsync({ email, role });
 			if (result.type === "member") {
-				alert("User added to project successfully!");
+				showToast("User added to project successfully!", "success");
 			} else {
-				alert("Invitation sent! The user will be added when they sign up with this email.");
+				showToast("Invitation sent! The user will be added when they sign up with this email.", "success");
 			}
 			onClose();
 		} catch (error: unknown) {
 			if (error && typeof error === "object" && "message" in error) {
-				alert(`Failed to invite team member: ${error.message}`);
+				showToast(`Failed to invite team member: ${(error as { message: string }).message}`, "error");
 			} else {
-				alert("Failed to invite team member");
+				showToast("Failed to invite team member", "error");
 			}
 		}
 	};

@@ -2,6 +2,8 @@ import { Link, useParams } from "react-router-dom";
 import { useState } from "react";
 import { useProject, useProjectMembers, useProjectInvitations, useUpdateTeamMember, useRemoveTeamMember, useCancelInvitation } from "../hooks/api";
 import { InviteTeamMemberModal } from "../components/InviteTeamMemberModal";
+import { ConfirmModal } from "../components/ConfirmModal";
+import { useToast } from "../components/Toast";
 
 export function ProjectTeamPage() {
 	const { projectId } = useParams<{ projectId: string }>();
@@ -14,6 +16,9 @@ export function ProjectTeamPage() {
 
 	const [showInviteModal, setShowInviteModal] = useState(false);
 	const [editingMember, setEditingMember] = useState<{ id: string; currentRole: string } | null>(null);
+	const [memberToRemove, setMemberToRemove] = useState<{ id: string; name: string; email: string } | null>(null);
+	const [invitationToCancel, setInvitationToCancel] = useState<{ id: string; email: string } | null>(null);
+	const { showToast } = useToast();
 
 	const invitations = invitationsData?.invitations || [];
 
@@ -136,20 +141,7 @@ export function ProjectTeamPage() {
 													<button
 														type="button"
 														className="btn btn-danger-outline btn-sm"
-														onClick={async () => {
-															if (window.confirm(`Are you sure you want to remove ${member.name || member.email} from this project?`)) {
-																try {
-																	await removeMemberMutation.mutateAsync(member.id);
-																	alert("Member removed successfully");
-																} catch (error: unknown) {
-																	if (error && typeof error === "object" && "message" in error) {
-																		alert(`Failed to remove member: ${error.message}`);
-																	} else {
-																		alert("Failed to remove member");
-																	}
-																}
-															}
-														}}
+														onClick={() => setMemberToRemove({ id: member.id, name: member.name || "", email: member.email || "" })}
 														disabled={updateMemberMutation.isPending || removeMemberMutation.isPending}
 													>
 														Remove
@@ -259,20 +251,7 @@ export function ProjectTeamPage() {
 											<button
 												type="button"
 												className="btn btn-danger-outline btn-sm"
-												onClick={async () => {
-													if (window.confirm(`Cancel invitation for ${invitation.email}?`)) {
-														try {
-															await cancelInvitationMutation.mutateAsync(invitation.id);
-															alert("Invitation cancelled");
-														} catch (error: unknown) {
-															if (error && typeof error === "object" && "message" in error) {
-																alert(`Failed to cancel invitation: ${(error as { message: string }).message}`);
-															} else {
-																alert("Failed to cancel invitation");
-															}
-														}
-													}
-												}}
+												onClick={() => setInvitationToCancel({ id: invitation.id, email: invitation.email })}
 												disabled={cancelInvitationMutation.isPending}
 											>
 												Cancel
@@ -366,13 +345,13 @@ export function ProjectTeamPage() {
 											memberId: editingMember.id,
 											role: newRole,
 										});
-										alert("Member role updated successfully");
+										showToast("Member role updated successfully", "success");
 										setEditingMember(null);
 									} catch (error: unknown) {
 										if (error && typeof error === "object" && "message" in error) {
-											alert(`Failed to update role: ${error.message}`);
+											showToast(`Failed to update role: ${(error as { message: string }).message}`, "error");
 										} else {
-											alert("Failed to update role");
+											showToast("Failed to update role", "error");
 										}
 									}
 								}}
@@ -394,6 +373,57 @@ export function ProjectTeamPage() {
 					</div>
 				</div>
 			)}
+
+			{/* Remove Member Confirmation Modal with Captcha */}
+			<ConfirmModal
+				isOpen={!!memberToRemove}
+				onClose={() => setMemberToRemove(null)}
+				onConfirm={async () => {
+					if (!memberToRemove) return;
+					try {
+						await removeMemberMutation.mutateAsync(memberToRemove.id);
+						showToast("Member removed successfully", "success");
+						setMemberToRemove(null);
+					} catch (error: unknown) {
+						if (error && typeof error === "object" && "message" in error) {
+							showToast(`Failed to remove member: ${(error as { message: string }).message}`, "error");
+						} else {
+							showToast("Failed to remove member", "error");
+						}
+					}
+				}}
+				title="Remove Team Member"
+				message={`Are you sure you want to remove ${memberToRemove?.name || memberToRemove?.email} from this project? They will lose access to all project resources.`}
+				confirmText="Remove Member"
+				variant="danger"
+				requireCaptcha={true}
+				isLoading={removeMemberMutation.isPending}
+			/>
+
+			{/* Cancel Invitation Confirmation Modal */}
+			<ConfirmModal
+				isOpen={!!invitationToCancel}
+				onClose={() => setInvitationToCancel(null)}
+				onConfirm={async () => {
+					if (!invitationToCancel) return;
+					try {
+						await cancelInvitationMutation.mutateAsync(invitationToCancel.id);
+						showToast("Invitation cancelled", "success");
+						setInvitationToCancel(null);
+					} catch (error: unknown) {
+						if (error && typeof error === "object" && "message" in error) {
+							showToast(`Failed to cancel invitation: ${(error as { message: string }).message}`, "error");
+						} else {
+							showToast("Failed to cancel invitation", "error");
+						}
+					}
+				}}
+				title="Cancel Invitation"
+				message={`Cancel the invitation for ${invitationToCancel?.email}? They will no longer be able to join using this invitation link.`}
+				confirmText="Cancel Invitation"
+				variant="warning"
+				isLoading={cancelInvitationMutation.isPending}
+			/>
 		</div>
 	);
 }

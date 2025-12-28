@@ -86,3 +86,10 @@ export {
 	validateSecret,
 	validateSecrets,
 } from "./utils/secrets.js";
+// Re-export encryption utilities
+export {
+	encrypt,
+	decrypt,
+	isEncrypted,
+	maskSecret,
+} from "./utils/encryption.js";

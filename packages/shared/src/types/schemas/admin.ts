@@ -65,6 +65,10 @@ export const UpdateAppRequestSchema = CreateAppRequestSchema.partial().extend({
 	emailFromName: z.string().optional(),
 	emailFromAddress: z.string().email().optional(),
 	emailReplyTo: z.string().email().optional(),
+	googleClientId: z.string().optional(),
+	googleClientSecret: z.string().optional(),
+	githubClientId: z.string().optional(),
+	githubClientSecret: z.string().optional(),
 });
 
 export const AppDTOSchema = z.object({
@@ -94,6 +98,10 @@ export const AppDTOSchema = z.object({
 	emailFromName: z.string().optional(),
 	emailFromAddress: z.string().optional(),
 	emailReplyTo: z.string().optional(),
+	googleClientId: z.string().optional(),
+	googleClientSecret: z.string().optional(), // Masked in API response
+	githubClientId: z.string().optional(),
+	githubClientSecret: z.string().optional(), // Masked in API response
 	createdAt: z.number(),
 	updatedAt: z.number(),
 });

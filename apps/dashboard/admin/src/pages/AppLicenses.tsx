@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useApp, useProject, useAppUsers } from "../hooks/api";
+import { useToast } from "../components/Toast";
 
 interface Plan {
 	id: string;
@@ -32,6 +33,7 @@ export function AppLicensesPage() {
 	const [changingLicense, setChangingLicense] = useState<any>(null);
 	const [newPlan, setNewPlan] = useState("");
 	const [isUpdating, setIsUpdating] = useState(false);
+	const { showToast } = useToast();
 
 	// Plans state
 	const [plans, setPlans] = useState<Plan[]>([]);
@@ -225,7 +227,7 @@ export function AppLicensesPage() {
 			// Close dialog
 			setDeletingPlan(null);
 		} catch (err) {
-			alert(err instanceof Error ? err.message : "Failed to delete plan");
+			showToast(err instanceof Error ? err.message : "Failed to delete plan", "error");
 		} finally {
 			setIsUpdating(false);
 		}
@@ -295,7 +297,7 @@ export function AppLicensesPage() {
 			setNewPlan("");
 		} catch (err) {
 			console.error("Failed to update license plan:", err);
-			alert(err instanceof Error ? err.message : "Failed to update license plan");
+			showToast(err instanceof Error ? err.message : "Failed to update license plan", "error");
 		} finally {
 			setIsUpdating(false);
 		}

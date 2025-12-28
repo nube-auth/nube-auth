@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useApp, useProject } from "../hooks/api";
+import { ConfirmModal } from "../components/ConfirmModal";
+import { useToast } from "../components/Toast";
 
 export function AppApiKeysPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -14,6 +16,10 @@ export function AppApiKeysPage() {
 		serviceToken?: string;
 	}>({});
 	const [copying, setCopying] = useState<string | null>(null);
+	const [showRegenerateSecretModal, setShowRegenerateSecretModal] = useState(false);
+	const [showRegenerateTokenModal, setShowRegenerateTokenModal] = useState(false);
+	const [isRegenerating, setIsRegenerating] = useState(false);
+	const { showToast } = useToast();
 
 	const handleRevealKeys = async () => {
 		try {
@@ -30,11 +36,11 @@ export function AppApiKeysPage() {
 				setShowSecret(true);
 				setShowToken(true);
 			} else {
-				alert("Failed to retrieve keys");
+				showToast("Failed to retrieve keys", "error");
 			}
 		} catch (error) {
 			console.error("Error revealing keys:", error);
-			alert("Failed to retrieve keys");
+			showToast("Failed to retrieve keys", "error");
 		}
 	};
 
@@ -49,10 +55,7 @@ export function AppApiKeysPage() {
 	};
 
 	const handleRegenerateSecret = async () => {
-		if (!confirm("⚠️ WARNING: This will break existing integrations using the current secret. Continue?")) {
-			return;
-		}
-
+		setIsRegenerating(true);
 		try {
 			const response = await fetch(
 				`/api/admin/projects/${projectId}/apps/${appId}/regenerate-secret`,
@@ -66,21 +69,21 @@ export function AppApiKeysPage() {
 				const data = await response.json();
 				setRevealedKeys((prev) => ({ ...prev, clientSecret: data.clientSecret }));
 				setShowSecret(true);
-				alert("✅ Client Secret regenerated successfully");
+				showToast("Client Secret regenerated successfully", "success");
+				setShowRegenerateSecretModal(false);
 			} else {
-				alert("Failed to regenerate secret");
+				showToast("Failed to regenerate secret", "error");
 			}
 		} catch (error) {
 			console.error("Error regenerating secret:", error);
-			alert("Failed to regenerate secret");
+			showToast("Failed to regenerate secret", "error");
+		} finally {
+			setIsRegenerating(false);
 		}
 	};
 
 	const handleRegenerateToken = async () => {
-		if (!confirm("⚠️ WARNING: This will break existing integrations using the current token. Continue?")) {
-			return;
-		}
-
+		setIsRegenerating(true);
 		try {
 			const response = await fetch(
 				`/api/admin/projects/${projectId}/apps/${appId}/regenerate-token`,
@@ -94,13 +97,16 @@ export function AppApiKeysPage() {
 				const data = await response.json();
 				setRevealedKeys((prev) => ({ ...prev, serviceToken: data.serviceToken }));
 				setShowToken(true);
-				alert("✅ Service Token regenerated successfully");
+				showToast("Service Token regenerated successfully", "success");
+				setShowRegenerateTokenModal(false);
 			} else {
-				alert("Failed to regenerate token");
+				showToast("Failed to regenerate token", "error");
 			}
 		} catch (error) {
 			console.error("Error regenerating token:", error);
-			alert("Failed to regenerate token");
+			showToast("Failed to regenerate token", "error");
+		} finally {
+			setIsRegenerating(false);
 		}
 	};
 
@@ -246,7 +252,7 @@ export function AppApiKeysPage() {
 				</div>
 				<button
 					type="button"
-					onClick={handleRegenerateSecret}
+					onClick={() => setShowRegenerateSecretModal(true)}
 					className="btn btn-danger-outline btn-sm"
 				>
 					Regenerate Secret
@@ -297,7 +303,7 @@ export function AppApiKeysPage() {
 				</div>
 				<button
 					type="button"
-					onClick={handleRegenerateToken}
+					onClick={() => setShowRegenerateTokenModal(true)}
 					className="btn btn-danger-outline btn-sm"
 				>
 					Regenerate Token
@@ -326,6 +332,32 @@ export function AppApiKeysPage() {
 					</Link>
 				</div>
 			</div>
+
+			{/* Regenerate Secret Confirmation Modal with Captcha */}
+			<ConfirmModal
+				isOpen={showRegenerateSecretModal}
+				onClose={() => setShowRegenerateSecretModal(false)}
+				onConfirm={handleRegenerateSecret}
+				title="Regenerate Client Secret"
+				message="⚠️ WARNING: This will break all existing integrations using the current secret. Make sure to update your applications with the new secret immediately."
+				confirmText="Regenerate Secret"
+				variant="danger"
+				requireCaptcha={true}
+				isLoading={isRegenerating}
+			/>
+
+			{/* Regenerate Token Confirmation Modal with Captcha */}
+			<ConfirmModal
+				isOpen={showRegenerateTokenModal}
+				onClose={() => setShowRegenerateTokenModal(false)}
+				onConfirm={handleRegenerateToken}
+				title="Regenerate Service Token"
+				message="⚠️ WARNING: This will break all existing integrations using the current token. Make sure to update your backend services with the new token immediately."
+				confirmText="Regenerate Token"
+				variant="danger"
+				requireCaptcha={true}
+				isLoading={isRegenerating}
+			/>
 		</div>
 	);
 }

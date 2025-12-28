@@ -86,6 +86,7 @@ export const projects = sqliteTable(
 		owner_user_id: integer("owner_user_id")
 			.notNull()
 			.references(() => users.id),
+		is_active: integer("is_active").notNull().default(1),
 		created_at: integer("created_at").notNull(),
 		updated_at: integer("updated_at").notNull(),
 	},

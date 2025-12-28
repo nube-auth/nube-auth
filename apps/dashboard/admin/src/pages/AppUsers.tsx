@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useApp, useProject, useAppUsers, useRenewLicense } from "../hooks/api";
 import { InviteUserModal } from "../components/InviteUserModal";
+import { ConfirmModal } from "../components/ConfirmModal";
+import { useToast } from "../components/Toast";
 
 export function AppUsersPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -23,6 +25,8 @@ export function AppUsersPage() {
 	const [editLicenseStatus, setEditLicenseStatus] = useState("");
 	const [isUpdating, setIsUpdating] = useState(false);
 	const [updateError, setUpdateError] = useState<string | null>(null);
+	const [userToRenew, setUserToRenew] = useState<{ id: string; name: string; email: string } | null>(null);
+	const { showToast } = useToast();
 
 	const users = data?.users || [];
 
@@ -98,7 +102,7 @@ export function AppUsersPage() {
 			queryClient.invalidateQueries({ queryKey: ["appUsers", projectId, appId] });
 		} catch (err) {
 			console.error("Failed to update user status:", err);
-			alert(err instanceof Error ? err.message : "Failed to update user status");
+			showToast(err instanceof Error ? err.message : "Failed to update user status", "error");
 		}
 	};
 
@@ -153,19 +157,18 @@ export function AppUsersPage() {
 		setUpdateError(null);
 	};
 
-	const handleRenewLicense = async (userId: string) => {
-		if (!window.confirm("Renew this user's license? This will extend their access based on the plan duration.")) {
-			return;
-		}
+	const handleRenewLicense = async () => {
+		if (!userToRenew) return;
 
 		try {
-			const result = await renewLicenseMutation.mutateAsync(userId);
-			alert(result.message);
+			const result = await renewLicenseMutation.mutateAsync(userToRenew.id);
+			showToast(result.message, "success");
+			setUserToRenew(null);
 		} catch (error: unknown) {
 			if (error && typeof error === "object" && "message" in error) {
-				alert(`Failed to renew license: ${(error as { message: string }).message}`);
+				showToast(`Failed to renew license: ${(error as { message: string }).message}`, "error");
 			} else {
-				alert("Failed to renew license");
+				showToast("Failed to renew license", "error");
 			}
 		}
 	};
@@ -678,7 +681,7 @@ export function AppUsersPage() {
 													type="button"
 													onClick={(e) => {
 														e.stopPropagation();
-														handleRenewLicense(user.id);
+														setUserToRenew({ id: user.id, name: user.name || "", email: user.email });
 													}}
 													style={{
 														padding: "6px 10px",
@@ -942,6 +945,18 @@ export function AppUsersPage() {
 					</div>
 				</div>
 			)}
+
+			{/* Renew License Confirmation Modal */}
+			<ConfirmModal
+				isOpen={!!userToRenew}
+				onClose={() => setUserToRenew(null)}
+				onConfirm={handleRenewLicense}
+				title="Renew License"
+				message={`Renew the license for ${userToRenew?.name || userToRenew?.email}? This will extend their access based on the plan duration.`}
+				confirmText="Renew License"
+				variant="info"
+				isLoading={renewLicenseMutation.isPending}
+			/>
 		</div>
 	);
 }

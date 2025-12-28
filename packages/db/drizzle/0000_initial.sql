@@ -61,6 +61,7 @@ CREATE TABLE "projects" (
     "slug" text NOT NULL,
     "description" text,
     "owner_user_id" integer NOT NULL,
+    "is_active" integer NOT NULL DEFAULT 1,
     "created_at" integer NOT NULL,
     "updated_at" integer NOT NULL,
     FOREIGN KEY ("owner_user_id") REFERENCES "users"("id")

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useProject, useUpdateProject } from "../hooks/api";
+import { ConfirmModal } from "../components/ConfirmModal";
+import { useToast } from "../components/Toast";
 
 export function ProjectSettingsPage() {
 	const { projectId } = useParams<{ projectId: string }>();
@@ -13,6 +15,8 @@ export function ProjectSettingsPage() {
 		slug: string;
 		description?: string;
 	} | null>(null);
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const { showToast } = useToast();
 
 	// Initialize form data when project loads
 	if (project && !formData) {
@@ -181,20 +185,7 @@ export function ProjectSettingsPage() {
 							</ul>
 							<button
 								type="button"
-								onClick={() => {
-									const confirmed = window.confirm(
-										`Are you sure you want to delete "${project.name}"?\n\nThis action cannot be undone.`
-									);
-									if (confirmed) {
-										const typedName = prompt(`Type "${project.name}" to confirm deletion:`);
-										if (typedName === project.name) {
-											alert("Project deletion is not yet implemented in the backend.");
-											// TODO: Implement delete project endpoint
-										} else {
-											alert("Project name didn't match. Deletion cancelled.");
-										}
-									}
-								}}
+								onClick={() => setShowDeleteModal(true)}
 								className="btn btn-danger"
 							>
 								Delete Project
@@ -291,6 +282,38 @@ export function ProjectSettingsPage() {
 					</form>
 				</>
 			)}
+
+			{/* Delete Confirmation Modal with Captcha */}
+			<ConfirmModal
+				isOpen={showDeleteModal}
+				onClose={() => setShowDeleteModal(false)}
+				onConfirm={async () => {
+					try {
+						const response = await fetch(`/api/admin/projects/${projectId}`, {
+							method: "DELETE",
+							credentials: "include",
+						});
+
+						if (!response.ok) {
+							const data = await response.json();
+							throw new Error(data.error || "Failed to delete project");
+						}
+
+						showToast("Project deleted successfully", "success");
+						setShowDeleteModal(false);
+						
+						// Redirect to projects list
+						window.location.href = "/projects";
+					} catch (error) {
+						showToast(error instanceof Error ? error.message : "Failed to delete project", "error");
+					}
+				}}
+				title="Delete Project"
+				message={`Are you sure you want to delete "${project?.name}"? This action cannot be undone and will permanently delete all apps, user data, sessions, licenses, and team members.`}
+				confirmText="Delete Project"
+				variant="danger"
+				requireCaptcha={true}
+			/>
 		</div>
 	);
 }

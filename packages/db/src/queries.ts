@@ -29,7 +29,7 @@ export const userQueries = {
 	},
 
 	async findByEmail(db: DbClient, email: string) {
-		return db.select().from(users).where(eq(users.primary_email, email)).get();
+		return db.select().from(users).where(eq(users.primary_email, email.toLowerCase())).get();
 	},
 
 	async create(db: DbClient, data: typeof users.$inferInsert) {
@@ -125,15 +125,15 @@ export const sessionQueries = {
  */
 export const projectQueries = {
 	async findById(db: DbClient, projectId: number) {
-		return db.select().from(projects).where(eq(projects.id, projectId)).get();
+		return db.select().from(projects).where(and(eq(projects.id, projectId), eq(projects.is_active, 1))).get();
 	},
 
 	async findByPublicId(db: DbClient, publicId: string) {
-		return db.select().from(projects).where(eq(projects.public_id, publicId)).get();
+		return db.select().from(projects).where(and(eq(projects.public_id, publicId), eq(projects.is_active, 1))).get();
 	},
 
 	async findByOwnerId(db: DbClient, userId: number) {
-		return db.select().from(projects).where(eq(projects.owner_user_id, userId)).all();
+		return db.select().from(projects).where(and(eq(projects.owner_user_id, userId), eq(projects.is_active, 1))).all();
 	},
 
 	async findByUserId(db: DbClient, userId: number) {
@@ -147,7 +147,7 @@ export const projectQueries = {
 		if (memberProjects.length === 0) return [];
 
 		const projectIds = memberProjects.map((m) => m.project_id);
-		return db.select().from(projects).where(inArray(projects.id, projectIds)).all();
+		return db.select().from(projects).where(and(inArray(projects.id, projectIds), eq(projects.is_active, 1))).all();
 	},
 
 	async create(db: DbClient, data: typeof projects.$inferInsert) {

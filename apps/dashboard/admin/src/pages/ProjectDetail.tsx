@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import config from "../config";
 import { useProject, useProjectApps, useProjectMembers, useProjectStats } from "../hooks/api";
 
 export function ProjectDetailPage() {
@@ -162,56 +161,6 @@ export function ProjectDetailPage() {
 					</div>
 					<div className="stat-value">${statsLoading ? "—" : (stats?.totalRevenue || 0).toFixed(2)}</div>
 					<div className="stat-label">Revenue</div>
-				</div>
-			</div>
-
-			{/* Quick Integration Guide */}
-			<div className="card get-started-card">
-				<div className="get-started-content">
-					<div className="get-started-text">
-						<span className="badge badge-info" style={{ marginBottom: "12px" }}>Quick Integration</span>
-						<h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px", color: "var(--text-primary)" }}>
-							Integrate authentication in minutes
-						</h2>
-						<p style={{ color: "var(--text-secondary)", marginBottom: "20px", lineHeight: "1.6", fontSize: "14px" }}>
-							Add Proofa to your app with just a few lines of code. Our SDK handles sessions, 
-							tokens, and user management automatically.
-						</p>
-						<div style={{ display: "flex", gap: "12px" }}>
-							<a href={config.docsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
-								<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-								</svg>
-								View Docs
-							</a>
-							<button className="btn btn-secondary" onClick={() => copyToClipboard(project.id)}>
-								<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-								</svg>
-								Copy Project ID
-							</button>
-						</div>
-					</div>
-					<div className="get-started-preview">
-						<div className="code-preview">
-							<div className="code-preview-header">
-								<span className="code-preview-dot" style={{ background: "#ff5f57" }} />
-								<span className="code-preview-dot" style={{ background: "#febc2e" }} />
-								<span className="code-preview-dot" style={{ background: "#28c840" }} />
-							</div>
-							<pre className="code-preview-content">
-{`import { ProofaAuth } from '@proofa/auth';
-
-const auth = new ProofaAuth({
-  projectId: '${project.id}',
-  redirectUrl: '/dashboard'
-});
-
-// Start OAuth flow
-await auth.signIn('google');`}
-							</pre>
-						</div>
-					</div>
 				</div>
 			</div>
 

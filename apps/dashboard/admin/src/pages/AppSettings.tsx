@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useApp, useUpdateApp, useProject } from "../hooks/api";
 import { App } from "../types/admin";
+import { ConfirmModal } from "../components/ConfirmModal";
+import { useToast } from "../components/Toast";
 
 type SettingsTab = "general" | "authentication" | "licensing" | "email" | "security" | "danger";
 
@@ -15,6 +17,8 @@ export function AppSettingsPage() {
 	const [activeTab, setActiveTab] = useState<SettingsTab>("general");
 	const [formData, setFormData] = useState<Partial<App> | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const { showToast } = useToast();
 
 	// Initialize formData when app data is loaded
 	if (app && !formData) {
@@ -669,21 +673,7 @@ export function AppSettingsPage() {
 								</ul>
 								<button
 									type="button"
-									onClick={() => {
-										const confirmed = window.confirm(
-											`Are you sure you want to delete "${app.name}"?\n\nThis action cannot be undone. Type the app name to confirm.`
-										);
-										if (confirmed) {
-											const typedName = prompt(`Type "${app.name}" to confirm deletion:`);
-											if (typedName === app.name) {
-												alert("App deletion is not yet implemented in the backend.");
-												// TODO: Implement delete app endpoint
-												// deleteAppMutation.mutate();
-											} else {
-												alert("App name didn't match. Deletion cancelled.");
-											}
-										}
-									}}
+									onClick={() => setShowDeleteModal(true)}
 									className="btn btn-danger"
 								>
 									Delete App
@@ -717,6 +707,38 @@ export function AppSettingsPage() {
 					</div>
 				)}
 			</form>
+
+			{/* Delete Confirmation Modal with Captcha */}
+			<ConfirmModal
+				isOpen={showDeleteModal}
+				onClose={() => setShowDeleteModal(false)}
+				onConfirm={async () => {
+					try {
+						const response = await fetch(`/api/admin/projects/${projectId}/apps/${appId}`, {
+							method: "DELETE",
+							credentials: "include",
+						});
+
+						if (!response.ok) {
+							const data = await response.json();
+							throw new Error(data.error || "Failed to delete app");
+						}
+
+						showToast("App deleted successfully", "success");
+						setShowDeleteModal(false);
+						
+						// Redirect to project apps page
+						window.location.href = `/projects/${projectId}/apps`;
+					} catch (error) {
+						showToast(error instanceof Error ? error.message : "Failed to delete app", "error");
+					}
+				}}
+				title="Delete Application"
+				message={`Are you sure you want to delete "${app?.name}"? This action cannot be undone and will permanently delete all user data, sessions, licenses, API keys, and integrations.`}
+				confirmText="Delete App"
+				variant="danger"
+				requireCaptcha={true}
+			/>
 		</div>
 	);
 }
