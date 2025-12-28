@@ -402,3 +402,41 @@ export const plans = sqliteTable(
 		appSlugUnique: unique("plans_app_slug_unique").on(table.app_id, table.slug),
 	}),
 );
+
+/**
+ * Payment Configurations table
+ * Stores payment provider configurations for projects and apps
+ */
+export const payment_configurations = sqliteTable(
+	"payment_configurations",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		public_id: text("public_id").notNull().unique(),
+		
+		// Scope: what this config applies to
+		scope_type: text("scope_type").notNull(), // 'project' | 'app'
+		scope_id: integer("scope_id").notNull(), // project.id or app.id
+		
+		// Provider info
+		provider: text("provider").notNull(), // 'lemonsqueezy' | 'dodo' | 'stripe' | etc.
+		is_active: integer("is_active").notNull().default(1),
+		test_mode: integer("test_mode").notNull().default(1),
+		
+		// Encrypted configuration JSON
+		config: text("config").notNull(), // Encrypted JSON with provider-specific fields
+		
+		// Metadata
+		created_at: integer("created_at").notNull(),
+		updated_at: integer("updated_at").notNull(),
+	},
+	(table) => ({
+		scopeIdx: index("payment_configurations_scope_idx").on(table.scope_type, table.scope_id),
+		providerIdx: index("payment_configurations_provider_idx").on(table.provider),
+		// One config per provider per scope
+		scopeProviderUnique: unique("payment_configurations_scope_provider_unique").on(
+			table.scope_type,
+			table.scope_id,
+			table.provider
+		),
+	}),
+);

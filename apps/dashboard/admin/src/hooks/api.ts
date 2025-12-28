@@ -417,3 +417,98 @@ export function useRenewLicense(projectId: string, appId: string) {
 		},
 	});
 }
+
+// Payment Configuration
+export function useProjectPaymentConfig(projectId: string) {
+	return useQuery({
+		queryKey: ["project-payment-config", projectId],
+		queryFn: async () => {
+			return fetchAPI<{
+				configured: boolean;
+				id?: string;
+				provider?: string;
+				testMode?: boolean;
+				isActive?: boolean;
+				createdAt?: number;
+				updatedAt?: number;
+			}>(`/v1/admin/projects/${projectId}/payment-config`);
+		},
+		enabled: !!projectId,
+	});
+}
+
+export function useSaveProjectPaymentConfig(projectId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (data: { provider: string; testMode: boolean; config: any }) => {
+			return fetchAPI<{
+				success: boolean;
+				id: string;
+				provider: string;
+				testMode: boolean;
+			}>(`/v1/admin/projects/${projectId}/payment-config`, {
+				method: "POST",
+				body: JSON.stringify(data),
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["project-payment-config", projectId] });
+		},
+	});
+}
+
+export function useAppPaymentConfig(projectId: string, appId: string) {
+	return useQuery({
+		queryKey: ["app-payment-config", projectId, appId],
+		queryFn: async () => {
+			return fetchAPI<{
+				configured: boolean;
+				source?: "project" | "app";
+				id?: string;
+				provider?: string;
+				testMode?: boolean;
+				isActive?: boolean;
+				createdAt?: number;
+				updatedAt?: number;
+			}>(`/v1/admin/projects/${projectId}/apps/${appId}/payment-config`);
+		},
+		enabled: !!projectId && !!appId,
+	});
+}
+
+export function useSaveAppPaymentConfig(projectId: string, appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (data: { provider: string; testMode: boolean; config: any }) => {
+			return fetchAPI<{
+				success: boolean;
+				id: string;
+				provider: string;
+				testMode: boolean;
+			}>(`/v1/admin/projects/${projectId}/apps/${appId}/payment-config`, {
+				method: "POST",
+				body: JSON.stringify(data),
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["app-payment-config", projectId, appId] });
+		},
+	});
+}
+
+export function useDeleteAppPaymentConfig(projectId: string, appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async () => {
+			return fetchAPI<{
+				success: boolean;
+				message: string;
+			}>(`/v1/admin/projects/${projectId}/apps/${appId}/payment-config`, {
+				method: "DELETE",
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["app-payment-config", projectId, appId] });
+		},
+	});
+}

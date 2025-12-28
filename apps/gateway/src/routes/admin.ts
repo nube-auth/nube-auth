@@ -1,4 +1,4 @@
-import { appQueries, getDb, identityQueries, invitationQueries, licenseQueries, planQueries, projectInvitationQueries, projectMemberQueries, projectQueries, userQueries, sessionQueries } from "@proofa/db";
+import { appQueries, getDb, identityQueries, invitationQueries, licenseQueries, paymentConfigQueries, planQueries, projectInvitationQueries, projectMemberQueries, projectQueries, userQueries, sessionQueries } from "@proofa/db";
 import { createId, encrypt, decrypt, isEncrypted, maskSecret } from "@proofa/shared";
 import { nanoid } from "nanoid";
 import { sendEmail, generateAppUserInvitationEmail, generateLicenseGrantedEmail, generateProjectTeamInvitationEmail } from "../services/email.js";
@@ -2838,5 +2838,378 @@ adminRoutes.delete("/projects/:projectId/apps/:appId/plans/:planId", async (c: C
 	} catch (error) {
 		console.error("Delete plan error:", error);
 		return c.json({ error: "Failed to delete plan" }, 500);
+	}
+});
+
+/**
+ * Helper: Resolve payment configuration for an app
+ * Checks app-level config first, falls back to project-level
+ */
+async function resolvePaymentConfig(db: any, appId: number) {
+	// 1. Try app-level config first
+	const appConfig = await paymentConfigQueries.findByScope(db, 'app', appId);
+	
+	if (appConfig) {
+		return {
+			provider: appConfig.provider,
+			testMode: Boolean(appConfig.test_mode),
+			config: JSON.parse(decrypt(appConfig.config)),
+			source: 'app'
+		};
+	}
+	
+	// 2. Fall back to project-level config
+	const app = await appQueries.findById(db, appId);
+	if (!app) return null;
+	
+	const projectConfig = await paymentConfigQueries.findByScope(db, 'project', app.project_id);
+	
+	if (projectConfig) {
+		return {
+			provider: projectConfig.provider,
+			testMode: Boolean(projectConfig.test_mode),
+			config: JSON.parse(decrypt(projectConfig.config)),
+			source: 'project'
+		};
+	}
+	
+	return null;
+}
+
+/**
+ * GET /v1/admin/projects/:projectId/payment-config
+ * Get project payment configuration
+ */
+adminRoutes.get("/projects/:projectId/payment-config", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		
+		const db = getDb();
+		
+		// Verify project access
+		const project = await projectQueries.findByPublicId(db, projectId);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+		
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+		
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		if (!member) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+		
+		// Get payment config
+		const config = await paymentConfigQueries.findByScope(db, 'project', project.id);
+		
+		if (!config) {
+			return c.json({ configured: false });
+		}
+		
+		// Return masked config (don't decrypt for display)
+		return c.json({
+			configured: true,
+			id: config.public_id,
+			provider: config.provider,
+			testMode: Boolean(config.test_mode),
+			isActive: Boolean(config.is_active),
+			createdAt: config.created_at,
+			updatedAt: config.updated_at,
+		});
+	} catch (error) {
+		console.error("Get project payment config error:", error);
+		return c.json({ error: "Failed to get payment configuration" }, 500);
+	}
+});
+
+/**
+ * POST /v1/admin/projects/:projectId/payment-config
+ * Create/Update project payment configuration
+ */
+adminRoutes.post("/projects/:projectId/payment-config", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const body = await c.req.json();
+		
+		const { provider, testMode, config: configData } = body;
+		
+		// Validate
+		if (!provider || !configData) {
+			return c.json({ error: "Provider and config are required" }, 400);
+		}
+		
+		const db = getDb();
+		
+		// Verify project access (owner only)
+		const project = await projectQueries.findByPublicId(db, projectId);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+		
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+		
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		if (!member || member.role !== "owner") {
+			return c.json({ error: "Access denied. Only project owners can configure payments" }, 403);
+		}
+		
+		
+		// Check if config exists
+		const existing = await paymentConfigQueries.findByScopeAndProvider(db, 'project', project.id, provider);
+		
+		const now = Math.floor(Date.now() / 1000);
+		const encryptedConfig = encrypt(JSON.stringify(configData));
+		
+		let result;
+		if (existing) {
+			// Update existing
+			result = await paymentConfigQueries.update(db, existing.id, {
+				test_mode: testMode ? 1 : 0,
+				config: encryptedConfig,
+				updated_at: now,
+			});
+		} else {
+			// Create new
+			result = await paymentConfigQueries.create(db, {
+				public_id: createId("paymentConfig"),
+				scope_type: 'project',
+				scope_id: project.id,
+				provider,
+				test_mode: testMode ? 1 : 0,
+				is_active: 1,
+				config: encryptedConfig,
+				created_at: now,
+				updated_at: now,
+			});
+		}
+		
+		return c.json({
+			success: true,
+			id: result.public_id,
+			provider: result.provider,
+			testMode: Boolean(result.test_mode),
+		});
+	} catch (error) {
+		console.error("Save project payment config error:", error);
+		return c.json({ error: "Failed to save payment configuration" }, 500);
+	}
+});
+
+/**
+ * GET /v1/admin/projects/:projectId/apps/:appId/payment-config
+ * Get app payment configuration (with resolution)
+ */
+adminRoutes.get("/projects/:projectId/apps/:appId/payment-config", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const appId = c.req.param("appId");
+		
+		const db = getDb();
+		
+		// Verify access
+		const project = await projectQueries.findByPublicId(db, projectId);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+		
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+		
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		if (!member) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+		
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app || app.project_id !== project.id) {
+			return c.json({ error: "App not found" }, 404);
+		}
+		
+		// Get resolved config
+		
+		// Check app-level config
+		const appConfig = await paymentConfigQueries.findByScope(db, 'app', app.id);
+		
+		if (appConfig) {
+			return c.json({
+				configured: true,
+				source: 'app',
+				id: appConfig.public_id,
+				provider: appConfig.provider,
+				testMode: Boolean(appConfig.test_mode),
+				isActive: Boolean(appConfig.is_active),
+				createdAt: appConfig.created_at,
+				updatedAt: appConfig.updated_at,
+			});
+		}
+		
+		// Check project-level config
+		const projectConfig = await paymentConfigQueries.findByScope(db, 'project', project.id);
+		
+		if (projectConfig) {
+			return c.json({
+				configured: true,
+				source: 'project',
+				id: projectConfig.public_id,
+				provider: projectConfig.provider,
+				testMode: Boolean(projectConfig.test_mode),
+				isActive: Boolean(projectConfig.is_active),
+				createdAt: projectConfig.created_at,
+				updatedAt: projectConfig.updated_at,
+			});
+		}
+		
+		return c.json({ configured: false });
+	} catch (error) {
+		console.error("Get app payment config error:", error);
+		return c.json({ error: "Failed to get payment configuration" }, 500);
+	}
+});
+
+/**
+ * POST /v1/admin/projects/:projectId/apps/:appId/payment-config
+ * Create/Update app payment configuration (override)
+ */
+adminRoutes.post("/projects/:projectId/apps/:appId/payment-config", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const appId = c.req.param("appId");
+		const body = await c.req.json();
+		
+		const { provider, testMode, config: configData } = body;
+		
+		// Validate
+		if (!provider || !configData) {
+			return c.json({ error: "Provider and config are required" }, 400);
+		}
+		
+		const db = getDb();
+		
+		// Verify access (owner only)
+		const project = await projectQueries.findByPublicId(db, projectId);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+		
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+		
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		if (!member || member.role !== "owner") {
+			return c.json({ error: "Access denied. Only project owners can configure payments" }, 403);
+		}
+		
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app || app.project_id !== project.id) {
+			return c.json({ error: "App not found" }, 404);
+		}
+		
+		
+		// Check if config exists
+		const existing = await paymentConfigQueries.findByScopeAndProvider(db, 'app', app.id, provider);
+		
+		const now = Math.floor(Date.now() / 1000);
+		const encryptedConfig = encrypt(JSON.stringify(configData));
+		
+		let result;
+		if (existing) {
+			// Update existing
+			result = await paymentConfigQueries.update(db, existing.id, {
+				test_mode: testMode ? 1 : 0,
+				config: encryptedConfig,
+				updated_at: now,
+			});
+		} else {
+			// Create new
+			result = await paymentConfigQueries.create(db, {
+				public_id: createId("paymentConfig"),
+				scope_type: 'app',
+				scope_id: app.id,
+				provider,
+				test_mode: testMode ? 1 : 0,
+				is_active: 1,
+				config: encryptedConfig,
+				created_at: now,
+				updated_at: now,
+			});
+		}
+		
+		return c.json({
+			success: true,
+			id: result.public_id,
+			provider: result.provider,
+			testMode: Boolean(result.test_mode),
+		});
+	} catch (error) {
+		console.error("Save app payment config error:", error);
+		return c.json({ error: "Failed to save payment configuration" }, 500);
+	}
+});
+
+/**
+ * DELETE /v1/admin/projects/:projectId/apps/:appId/payment-config
+ * Delete app payment configuration (revert to project-level)
+ */
+adminRoutes.delete("/projects/:projectId/apps/:appId/payment-config", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const appId = c.req.param("appId");
+		
+		const db = getDb();
+		
+		// Verify access (owner only)
+		const project = await projectQueries.findByPublicId(db, projectId);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+		
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+		
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		if (!member || member.role !== "owner") {
+			return c.json({ error: "Access denied" }, 403);
+		}
+		
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app || app.project_id !== project.id) {
+			return c.json({ error: "App not found" }, 404);
+		}
+		
+		
+		// Get app-level config
+		const config = await paymentConfigQueries.findByScope(db, 'app', app.id);
+		
+		if (!config) {
+			return c.json({ error: "No app-level configuration found" }, 404);
+		}
+		
+		// Delete it
+		await paymentConfigQueries.delete(db, config.id);
+		
+		return c.json({
+			success: true,
+			message: "App payment configuration removed. Now using project-level configuration.",
+		});
+	} catch (error) {
+		console.error("Delete app payment config error:", error);
+		return c.json({ error: "Failed to delete payment configuration" }, 500);
 	}
 });

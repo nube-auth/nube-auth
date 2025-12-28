@@ -315,3 +315,26 @@ CREATE INDEX "audit_logs_app_id_idx" ON "audit_logs" ("app_id");
 CREATE INDEX "audit_logs_project_id_idx" ON "audit_logs" ("project_id");
 CREATE INDEX "audit_logs_action_idx" ON "audit_logs" ("action");
 CREATE INDEX "audit_logs_created_at_idx" ON "audit_logs" ("created_at");
+
+
+-- ============================================
+-- Payment Configurations Table
+-- ============================================
+
+CREATE TABLE "payment_configurations" (
+    "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "public_id" text NOT NULL UNIQUE,
+    "scope_type" text NOT NULL,
+    "scope_id" integer NOT NULL,
+    "provider" text NOT NULL,
+    "is_active" integer NOT NULL DEFAULT 1,
+    "test_mode" integer NOT NULL DEFAULT 1,
+    "config" text NOT NULL,
+    "created_at" integer NOT NULL,
+    "updated_at" integer NOT NULL
+);
+
+CREATE INDEX "payment_configurations_scope_idx" ON "payment_configurations" ("scope_type", "scope_id");
+CREATE INDEX "payment_configurations_provider_idx" ON "payment_configurations" ("provider");
+CREATE UNIQUE INDEX "payment_configurations_scope_provider_unique" ON "payment_configurations" ("scope_type", "scope_id", "provider");
+

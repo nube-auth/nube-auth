@@ -8,6 +8,7 @@ import {
 	identities,
 	invitations,
 	licenses,
+	payment_configurations,
 	plans,
 	project_invitations,
 	project_members,
@@ -582,5 +583,65 @@ export const planQueries = {
 			.get();
 
 		return result?.count || 0;
+	},
+};
+
+/**
+ * Payment Configuration queries
+ */
+export const paymentConfigQueries = {
+	async findByScope(db: DbClient, scopeType: 'project' | 'app', scopeId: number) {
+		return db
+			.select()
+			.from(payment_configurations)
+			.where(
+				and(
+					eq(payment_configurations.scope_type, scopeType),
+					eq(payment_configurations.scope_id, scopeId),
+					eq(payment_configurations.is_active, 1)
+				)
+			)
+			.get();
+	},
+
+	async findByScopeAndProvider(db: DbClient, scopeType: 'project' | 'app', scopeId: number, provider: string) {
+		return db
+			.select()
+			.from(payment_configurations)
+			.where(
+				and(
+					eq(payment_configurations.scope_type, scopeType),
+					eq(payment_configurations.scope_id, scopeId),
+					eq(payment_configurations.provider, provider),
+					eq(payment_configurations.is_active, 1)
+				)
+			)
+			.get();
+	},
+
+	async findByPublicId(db: DbClient, publicId: string) {
+		return db
+			.select()
+			.from(payment_configurations)
+			.where(eq(payment_configurations.public_id, publicId))
+			.get();
+	},
+
+	async create(db: DbClient, data: typeof payment_configurations.$inferInsert) {
+		return db.insert(payment_configurations).values(data).returning().get();
+	},
+
+	async update(db: DbClient, id: number, data: Partial<typeof payment_configurations.$inferInsert>) {
+		const now = Math.floor(Date.now() / 1000);
+		return db
+			.update(payment_configurations)
+			.set({ ...data, updated_at: now })
+			.where(eq(payment_configurations.id, id))
+			.returning()
+			.get();
+	},
+
+	async delete(db: DbClient, id: number) {
+		return db.delete(payment_configurations).where(eq(payment_configurations.id, id)).returning().get();
 	},
 };
