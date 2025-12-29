@@ -25,7 +25,7 @@ router.post("/license/grant", async (c: Context) => {
 
 	try {
 		const db = getDb();
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 
 		// Validate user exists
 		const userResult = await userQueries.findByPublicId(db, userId);

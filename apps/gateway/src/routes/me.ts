@@ -26,7 +26,7 @@ meRoutes.get("/", async (c: Context) => {
 			id: auth.userId,
 			email: auth.email,
 			name: auth.name,
-			createdAt: user?.created_at ? new Date(user.created_at * 1000).toISOString() : null,
+			createdAt: user?.created_at ? new Date(user.created_at).toISOString() : null,
 		});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get me error:");
@@ -108,14 +108,14 @@ meRoutes.get("/sessions", async (c: Context) => {
 			const aIsCurrent = a.public_id === auth.sessionId;
 			const bIsCurrent = b.public_id === auth.sessionId;
 			if (aIsCurrent !== bIsCurrent) return aIsCurrent ? -1 : 1;
-			return b.last_seen_at - a.last_seen_at;
+			return new Date(b.last_seen_at).getTime() - new Date(a.last_seen_at).getTime();
 		});
 
 		return c.json({
 			sessions: sessionRows.map((s) => ({
 				id: s.public_id,
-				createdAt: new Date(s.created_at * 1000).toISOString(),
-				expiresAt: new Date(s.expires_at * 1000).toISOString(),
+				createdAt: new Date(s.created_at).toISOString(),
+				expiresAt: new Date(s.expires_at).toISOString(),
 				isCurrent: s.public_id === auth.sessionId,
 			})),
 		});

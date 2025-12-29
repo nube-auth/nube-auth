@@ -29,7 +29,7 @@ router.post("/start", async (c: Context) => {
 
 	try {
 		const db = getDb();
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 
 		// Check if email has verification record and is locked out
 		const emailVerification = await emailVerificationQueries.findByEmail(db, email);
@@ -109,7 +109,7 @@ router.post("/verify", async (c: Context) => {
 
 	try {
 		const db = getDb();
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 
 		const emailVerification = await emailVerificationQueries.findByEmail(db, email);
 

@@ -29,20 +29,20 @@ emailRoutes.post("/start", async (c: Context) => {
 
 	try {
 		const db = getDb();
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 
 		// Check if email has verification record and is locked out
 		const emailVerification = await emailVerificationQueries.findByEmail(db, email);
 
 		if (emailVerification?.locked_until && emailVerification.locked_until > now) {
-			const remainingMinutes = Math.ceil((emailVerification.locked_until - now) / 60);
+			const remainingMinutes = Math.ceil((new Date(emailVerification.locked_until).getTime() - now.getTime()) / 60000);
 			return c.json({ error: `Account locked. Try again in ${remainingMinutes} minutes.` }, 429);
 		}
 
 		// Generate OTP
 		const otp = generateOTP();
 		const otpHash = hashOTP(otp);
-		const expiresAt = now + 10 * 60; // 10 minutes
+		const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
 		// Save or update OTP record
 		if (emailVerification) {
@@ -109,7 +109,7 @@ emailRoutes.post("/verify", async (c: Context) => {
 
 	try {
 		const db = getDb();
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 
 		const emailVerification = await emailVerificationQueries.findByEmail(db, email);
 
@@ -136,7 +136,7 @@ emailRoutes.post("/verify", async (c: Context) => {
 
 			if (newAttempts >= OTP_MAX_ATTEMPTS) {
 				// Lock account for 30 minutes
-				const lockedUntil = now + OTP_LOCKOUT_MINUTES * 60;
+				const lockedUntil = new Date(Date.now() + OTP_LOCKOUT_MINUTES * 60 * 1000);
 				await emailVerificationQueries.update(db, emailVerification.id, {
 					attempts: newAttempts,
 					locked_until: lockedUntil,

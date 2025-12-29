@@ -196,7 +196,7 @@ adminRoutes.post("/projects", async (c: Context) => {
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 
 		const project = await projectQueries.create(db, {
 			public_id: createId("project"),
@@ -329,7 +329,7 @@ adminRoutes.patch("/projects/:projectId", async (c: Context) => {
 		}
 
 		// Update project
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 		const updateData: Record<string, string | number> = {
 			updated_at: now,
 		};
@@ -404,7 +404,7 @@ adminRoutes.patch("/projects/:projectId/oauth", async (c: Context) => {
 		}).parse(body);
 
 		// Update project OAuth credentials
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 		const updateData: Record<string, string | number | null> = {
 			updated_at: now,
 		};
@@ -596,7 +596,7 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			return c.json({ error: "Access denied. Only owners and admins can create apps" }, 403);
 		}
 
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 		const appSlug = validatedData.slug || validatedData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
 		// Step 1: Create the app (without default_plan_id initially)
@@ -610,9 +610,9 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			name: validatedData.name,
 			slug: appSlug,
 			description: validatedData.description,
-			allowed_hosts: JSON.stringify(validatedData.allowedHosts || []),
-			redirect_uris: JSON.stringify(validatedData.redirectUris || []),
-			required_providers: JSON.stringify(validatedData.requiredProviders || []),
+			allowed_hosts: validatedData.allowedHosts || [],
+			redirect_uris: validatedData.redirectUris || [],
+			required_providers: validatedData.requiredProviders || [],
 			app_session_ttl_days: validatedData.appSessionTtlDays || 28,
 			licensing_required: Number(validatedData.licensingRequired ?? false),
 			default_plan_id: null, // Will be set below if licensing is enabled
@@ -620,7 +620,7 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			service_token: serviceToken,
 			account_lockout_minutes: 30,
 			cache_ttl_minutes: 60,
-			cors_allowed_origins: JSON.stringify(["http://localhost:3001"]),
+			cors_allowed_origins: ["http://localhost:3001"],
 			rate_limit_requests_per_minute: 100,
 			oauth_inherit_source: "proofa", // Default to inheriting from Proofa
 			created_at: now,
@@ -639,7 +639,7 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 				monthly_price: null,
 				yearly_price: null,
 				one_time_price: null,
-				trial_enabled: 0,
+				trial_enabled: false,
 				trial_days: null,
 				features: JSON.stringify([]),
 				status: "active",
@@ -662,9 +662,9 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			name: app.name,
 			slug: app.slug,
 			description: app.description,
-			redirectUris: app.redirect_uris ? JSON.parse(app.redirect_uris) : [],
-			allowedHosts: app.allowed_hosts ? JSON.parse(app.allowed_hosts) : [],
-			requiredProviders: app.required_providers ? JSON.parse(app.required_providers) : [],
+			redirectUris: app.redirect_uris || [],
+			allowedHosts: app.allowed_hosts || [],
+			requiredProviders: app.required_providers || [],
 			isActive: Boolean(app.is_active),
 			licensingRequired: Boolean(app.licensing_required),
 			defaultPlanId: defaultPlan ? defaultPlan.public_id : null,
@@ -678,7 +678,7 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			appSessionTtlDays: app.app_session_ttl_days,
 			accountLockoutMinutes: app.account_lockout_minutes,
 			cacheTtlMinutes: app.cache_ttl_minutes,
-			corsAllowedOrigins: app.cors_allowed_origins ? JSON.parse(app.cors_allowed_origins) : [],
+			corsAllowedOrigins: app.cors_allowed_origins ? JSON.parse(app.cors_allowed_origins) || [],
 			rateLimitRequestsPerMinute: app.rate_limit_requests_per_minute,
 			createdAt: app.created_at,
 			updatedAt: app.updated_at,
@@ -744,9 +744,9 @@ adminRoutes.get("/projects/:projectId/apps/:appId", async (c: Context) => {
 			name: app.name,
 			slug: app.slug,
 			description: app.description,
-			redirectUris: app.redirect_uris ? JSON.parse(app.redirect_uris) : [],
-			allowedHosts: app.allowed_hosts ? JSON.parse(app.allowed_hosts) : [],
-			requiredProviders: app.required_providers ? JSON.parse(app.required_providers) : [],
+			redirectUris: app.redirect_uris || [],
+			allowedHosts: app.allowed_hosts || [],
+			requiredProviders: app.required_providers || [],
 			isActive: Boolean(app.is_active),
 			licensingRequired: Boolean(app.licensing_required),
 			defaultPlanId: defaultPlan ? defaultPlan.public_id : null,
@@ -760,7 +760,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId", async (c: Context) => {
 			appSessionTtlDays: app.app_session_ttl_days,
 			accountLockoutMinutes: app.account_lockout_minutes,
 			cacheTtlMinutes: app.cache_ttl_minutes,
-			corsAllowedOrigins: app.cors_allowed_origins ? JSON.parse(app.cors_allowed_origins) : [],
+			corsAllowedOrigins: app.cors_allowed_origins ? JSON.parse(app.cors_allowed_origins) || [],
 			rateLimitRequestsPerMinute: app.rate_limit_requests_per_minute,
 			emailFromName: app.email_from_name || undefined,
 			emailFromAddress: app.email_from_address || undefined,
@@ -978,7 +978,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 		}
 
 		// Calculate valid_until based on license_duration_days
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 		let validUntil: number | null = null;
 		if (license_duration_days && typeof license_duration_days === "number") {
 			// Calculate valid_until: now + (days * 24 * 60 * 60)
@@ -1495,7 +1495,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/:userId/renew", async (
 		}
 
 		// Calculate new valid_until
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 		let newValidUntil: number | null = null;
 
 		if (plan.duration_days) {
@@ -1572,7 +1572,7 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 			return c.json({ error: "App not found" }, 404);
 		}
 
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 
 		// Build update object with JSON serialization for array fields
 		const updateData: Record<string, unknown> = { updated_at: now };
@@ -1580,9 +1580,9 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 		if (validatedData.name) updateData.name = validatedData.name;
 		if (validatedData.slug) updateData.slug = validatedData.slug;
 		if (validatedData.description !== undefined) updateData.description = validatedData.description;
-		if (validatedData.allowedHosts) updateData.allowed_hosts = JSON.stringify(validatedData.allowedHosts);
-		if (validatedData.redirectUris) updateData.redirect_uris = JSON.stringify(validatedData.redirectUris);
-		if (validatedData.requiredProviders) updateData.required_providers = JSON.stringify(validatedData.requiredProviders);
+		if (validatedData.allowedHosts) updateData.allowed_hosts = validatedData.allowedHosts;
+		if (validatedData.redirectUris) updateData.redirect_uris = validatedData.redirectUris;
+		if (validatedData.requiredProviders) updateData.required_providers = validatedData.requiredProviders;
 		if ("licensingRequired" in validatedData) updateData.licensing_required = Number(validatedData.licensingRequired ?? false);
 		if (validatedData.appSessionTtlDays) updateData.app_session_ttl_days = validatedData.appSessionTtlDays;
 		if (validatedData.emailFromName !== undefined) updateData.email_from_name = validatedData.emailFromName;
@@ -1630,9 +1630,9 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 			name: updatedApp.name,
 			slug: updatedApp.slug,
 			description: updatedApp.description,
-			redirectUris: updatedApp.redirect_uris ? JSON.parse(updatedApp.redirect_uris) : [],
-			allowedHosts: updatedApp.allowed_hosts ? JSON.parse(updatedApp.allowed_hosts) : [],
-			requiredProviders: updatedApp.required_providers ? JSON.parse(updatedApp.required_providers) : [],
+			redirectUris: updatedApp.redirect_uris || [],
+			allowedHosts: updatedApp.allowed_hosts || [],
+			requiredProviders: updatedApp.required_providers || [],
 			isActive: Boolean(updatedApp.is_active),
 			licensingRequired: Boolean(updatedApp.licensing_required),
 			defaultPlanId: defaultPlan ? defaultPlan.public_id : null,
@@ -1646,7 +1646,7 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 			appSessionTtlDays: updatedApp.app_session_ttl_days,
 			accountLockoutMinutes: updatedApp.account_lockout_minutes,
 			cacheTtlMinutes: updatedApp.cache_ttl_minutes,
-			corsAllowedOrigins: updatedApp.cors_allowed_origins ? JSON.parse(updatedApp.cors_allowed_origins) : [],
+			corsAllowedOrigins: updatedApp.cors_allowed_origins ? JSON.parse(updatedApp.cors_allowed_origins) || [],
 			rateLimitRequestsPerMinute: updatedApp.rate_limit_requests_per_minute,
 			emailFromName: updatedApp.email_from_name || undefined,
 			emailFromAddress: updatedApp.email_from_address || undefined,
@@ -1751,7 +1751,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/regenerate-secret", async (c:
 
 		// Generate new client secret
 		const newClientSecret = `sk_${nanoid(48)}`;
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 
 		await appQueries.update(db, app.id, {
 			client_secret: newClientSecret,
@@ -1802,7 +1802,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/regenerate-token", async (c: 
 
 		// Generate new service token
 		const newServiceToken = `st_${nanoid(48)}`;
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 
 		await appQueries.update(db, app.id, {
 			service_token: newServiceToken,
@@ -1916,7 +1916,7 @@ adminRoutes.post("/projects/:projectId/members", async (c: Context) => {
 
 		// Smart invite logic: check if user exists
 		const targetUser = await userQueries.findByEmail(db, email);
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 
 		if (targetUser) {
 			// User exists - check if already a member
@@ -2198,7 +2198,7 @@ adminRoutes.post("/invitations/:invitationCode/accept", async (c: Context) => {
 			return c.json({ error: `Invitation is ${invitation.status}` }, 400);
 		}
 
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 		if (invitation.expires_at < now) {
 			await projectInvitationQueries.updateByPublicId(db, invitationCode, { status: "expired" });
 			return c.json({ error: "Invitation has expired" }, 400);
@@ -2399,16 +2399,16 @@ adminRoutes.delete("/projects/:projectId", async (c: Context) => {
 		
 		// For now, we'll mark it as inactive
 		await projectQueries.update(db, project.id, {
-			is_active: 0,
-			updated_at: Math.floor(Date.now() / 1000),
+			is_active: false,
+			updated_at: new Date(),
 		});
 
 		// Mark all apps in this project as inactive
 		const apps = await appQueries.findByProjectId(db, project.id);
 		for (const app of apps) {
 			await appQueries.update(db, app.id, {
-				is_active: 0,
-				updated_at: Math.floor(Date.now() / 1000),
+				is_active: false,
+				updated_at: new Date(),
 			});
 
 			// Revoke all active licenses for each app
@@ -2540,8 +2540,8 @@ adminRoutes.delete("/projects/:projectId/apps/:appId", async (c: Context) => {
 		
 		// For now, we'll mark it as inactive
 		await appQueries.update(db, app.id, {
-			is_active: 0,
-			updated_at: Math.floor(Date.now() / 1000),
+			is_active: false,
+			updated_at: new Date(),
 		});
 
 		// Optionally: Revoke all active licenses for this app
@@ -2694,7 +2694,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId/plans", async (c: Context) => 
 				durationDays: plan.duration_days,
 				trialEnabled: plan.trial_enabled === 1,
 				trialDays: plan.trial_days,
-				features: plan.features ? JSON.parse(plan.features) : [],
+				features: plan.features || [],
 				status: plan.status,
 				displayOrder: plan.display_order,
 				createdAt: plan.created_at,
@@ -2761,7 +2761,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/plans", async (c: Context) =>
 		}
 
 		// Create plan
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 		const plan = await planQueries.create(db, {
 			public_id: createId("plan"),
 			app_id: app.id,
@@ -2772,9 +2772,9 @@ adminRoutes.post("/projects/:projectId/apps/:appId/plans", async (c: Context) =>
 			yearly_price: yearly_price || null,
 			one_time_price: one_time_price || null,
 			duration_days: duration_days || null,
-			trial_enabled: trial_enabled ? 1 : 0,
+			trial_enabled: trial_enabled,
 			trial_days: trial_days || null,
-			features: features ? JSON.stringify(features) : null,
+			features: features || null,
 			status: "active",
 			display_order: display_order || 0,
 			created_at: now,
@@ -2794,7 +2794,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/plans", async (c: Context) =>
 				durationDays: plan.duration_days,
 				trialEnabled: plan.trial_enabled === 1,
 				trialDays: plan.trial_days,
-				features: plan.features ? JSON.parse(plan.features) : [],
+				features: plan.features || [],
 				status: plan.status,
 				displayOrder: plan.display_order,
 				createdAt: plan.created_at,
@@ -2860,9 +2860,9 @@ adminRoutes.patch("/projects/:projectId/apps/:appId/plans/:planId", async (c: Co
 		if (yearly_price !== undefined) updates.yearly_price = yearly_price;
 		if (one_time_price !== undefined) updates.one_time_price = one_time_price;
 		if (duration_days !== undefined) updates.duration_days = duration_days;
-		if (trial_enabled !== undefined) updates.trial_enabled = trial_enabled ? 1 : 0;
+		if (trial_enabled !== undefined) updates.trial_enabled = trial_enabled;
 		if (trial_days !== undefined) updates.trial_days = trial_days;
-		if (features !== undefined) updates.features = JSON.stringify(features);
+		if (features !== undefined) updates.features = features;
 		if (status !== undefined) updates.status = status;
 		if (display_order !== undefined) updates.display_order = display_order;
 
@@ -2882,7 +2882,7 @@ adminRoutes.patch("/projects/:projectId/apps/:appId/plans/:planId", async (c: Co
 				durationDays: updatedPlan.duration_days,
 				trialEnabled: updatedPlan.trial_enabled === 1,
 				trialDays: updatedPlan.trial_days,
-				features: updatedPlan.features ? JSON.parse(updatedPlan.features) : [],
+				features: updatedPlan.features || [],
 				status: updatedPlan.status,
 				displayOrder: updatedPlan.display_order,
 				createdAt: updatedPlan.created_at,
@@ -3081,14 +3081,14 @@ adminRoutes.post("/projects/:projectId/payment-config", async (c: Context) => {
 		// Check if config exists
 		const existing = await paymentConfigQueries.findByScopeAndProvider(db, 'project', project.id, provider);
 		
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 		const encryptedConfig = encrypt(JSON.stringify(configData));
 		
 		let result;
 		if (existing) {
 			// Update existing
 			result = await paymentConfigQueries.update(db, existing.id, {
-				test_mode: testMode ? 1 : 0,
+				test_mode: testMode,
 				config: encryptedConfig,
 				updated_at: now,
 			});
@@ -3099,8 +3099,8 @@ adminRoutes.post("/projects/:projectId/payment-config", async (c: Context) => {
 				scope_type: 'project',
 				scope_id: project.id,
 				provider,
-				test_mode: testMode ? 1 : 0,
-				is_active: 1,
+				test_mode: testMode,
+				is_active: true,
 				config: encryptedConfig,
 				created_at: now,
 				updated_at: now,
@@ -3238,14 +3238,14 @@ adminRoutes.post("/projects/:projectId/apps/:appId/payment-config", async (c: Co
 		// Check if config exists
 		const existing = await paymentConfigQueries.findByScopeAndProvider(db, 'app', app.id, provider);
 		
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 		const encryptedConfig = encrypt(JSON.stringify(configData));
 		
 		let result;
 		if (existing) {
 			// Update existing
 			result = await paymentConfigQueries.update(db, existing.id, {
-				test_mode: testMode ? 1 : 0,
+				test_mode: testMode,
 				config: encryptedConfig,
 				updated_at: now,
 			});
@@ -3256,8 +3256,8 @@ adminRoutes.post("/projects/:projectId/apps/:appId/payment-config", async (c: Co
 				scope_type: 'app',
 				scope_id: app.id,
 				provider,
-				test_mode: testMode ? 1 : 0,
-				is_active: 1,
+				test_mode: testMode,
+				is_active: true,
 				config: encryptedConfig,
 				created_at: now,
 				updated_at: now,

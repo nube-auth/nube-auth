@@ -70,14 +70,14 @@ export function verifySessionId(signed: string): string {
 /**
  * Check if session is expired
  */
-export function isSessionExpired(session: { expires_at: number }): boolean {
-	return new Date() > new Date(session.expires_at * 1000);
+export function isSessionExpired(session: { expires_at: Date }): boolean {
+	return new Date() > session.expires_at;
 }
 
 /**
  * Get remaining TTL in milliseconds
  */
-export function getSessionTTL(session: { expires_at: number }): number {
-	const remaining = session.expires_at * 1000 - Date.now();
-	return Math.max(0, remaining);
-}
+export function getSessionTTL(session: { expires_at: Date | number }): number {
+	// Handle both Date objects (from PostgreSQL) and Unix timestamps (legacy)
+	const expiresAtMs = session.expires_at instanceof Date ? }): number {
+	const remaining = session.expires_at.getTime()

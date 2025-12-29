@@ -18,7 +18,7 @@ router.get("/", async (c: Context) => {
 
 	try {
 		const db = getDb();
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) {
@@ -30,7 +30,7 @@ router.get("/", async (c: Context) => {
 		return c.json({
 			appId,
 			status: "active",
-			validUntil: now + 365 * 24 * 60 * 60, // 1 year from now
+			validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year from now
 			plan: "pro",
 		});
 	} catch (error) {
@@ -57,7 +57,7 @@ router.post("/grant", async (c: Context) => {
 
 	try {
 		const db = getDb();
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 
 		// Validate user exists
 		const user = await userQueries.findByPublicId(db, userId);

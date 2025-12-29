@@ -157,8 +157,8 @@ authRoutes.get("/callback/:provider", async (c: Context) => {
 				primary_email: profile.email,
 				name: profile.name,
 				avatar_url: profile.avatar_url || null,
-				created_at: Math.floor(Date.now() / 1000),
-				updated_at: Math.floor(Date.now() / 1000),
+				created_at: new Date(),
+				updated_at: new Date(),
 			});
 			userId = newUser.id;
 			createdUser = true;
@@ -170,7 +170,7 @@ authRoutes.get("/callback/:provider", async (c: Context) => {
 				provider,
 				provider_user_id: profile.id,
 				email: profile.email,
-				created_at: Math.floor(Date.now() / 1000),
+				created_at: new Date(),
 			});
 		}
 
@@ -178,9 +178,9 @@ authRoutes.get("/callback/:provider", async (c: Context) => {
 		const sessionData = {
 			public_id: id.session(),
 			user_id: userId,
-			created_at: Math.floor(Date.now() / 1000),
-			last_seen_at: Math.floor(Date.now() / 1000),
-			expires_at: Math.floor((Date.now() + 7 * 24 * 60 * 60 * 1000) / 1000),
+			created_at: new Date(),
+			last_seen_at: new Date(),
+			expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
 		};
 
 		const session = await sessionQueries.create(db, sessionData);
@@ -230,7 +230,7 @@ authRoutes.post("/exchange", async (c: Context) => {
 			return c.json({ error: "Session not found" }, 404);
 		}
 
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 		if (session.expires_at < now) {
 			return c.json({ error: "Session expired" }, 401);
 		}

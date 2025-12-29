@@ -112,6 +112,11 @@ export class AuditLogger {
 	log(event: AuditEvent): void {
 		const logLevel = this.getLogLevel(event.severity);
 		
+		// Ensure timestamp is a Date object
+		const timestamp = event.timestamp instanceof Date 
+			? event.timestamp 
+			: new Date(event.timestamp);
+		
 		this.logger[logLevel]({
 			audit: true,
 			event_type: event.type,
@@ -120,7 +125,7 @@ export class AuditLogger {
 			resource: event.resource,
 			action: event.action,
 			metadata: event.metadata,
-			timestamp: event.timestamp.toISOString(),
+			timestamp: timestamp.toISOString(),
 		}, `Audit: ${event.action}`);
 	}
 
