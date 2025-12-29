@@ -11,7 +11,7 @@ import { getRedisClient } from "./client.js";
  * @returns true if rate limited, false otherwise
  */
 export async function rateLimit(key: string, limit: number, window: number): Promise<boolean> {
-	const redis = getRedisClient();
+	const redis = await getRedisClient();
 	const fullKey = `ratelimit:${key}`;
 
 	try {
@@ -36,7 +36,7 @@ export async function rateLimit(key: string, limit: number, window: number): Pro
  * @returns Cached value or null
  */
 export async function cacheGet<T = unknown>(key: string): Promise<T | null> {
-	const redis = getRedisClient();
+	const redis = await getRedisClient();
 	const fullKey = `cache:${key}`;
 
 	try {
@@ -56,12 +56,12 @@ export async function cacheGet<T = unknown>(key: string): Promise<T | null> {
  * @param ttlSeconds TTL in seconds
  */
 export async function cacheSet<T = unknown>(key: string, value: T, ttlSeconds: number): Promise<void> {
-	const redis = getRedisClient();
+	const redis = await getRedisClient();
 	const fullKey = `cache:${key}`;
 
 	try {
 		const serialized = typeof value === "string" ? value : JSON.stringify(value);
-		await redis.setex(fullKey, ttlSeconds, serialized);
+		await redis.setEx(fullKey, ttlSeconds, serialized);
 	} catch (error) {
 		console.error("Cache set failed:", error);
 	}
@@ -74,7 +74,7 @@ export async function cacheSet<T = unknown>(key: string, value: T, ttlSeconds: n
  * @returns Session data or null
  */
 export async function sessionGet(sessionId: string): Promise<Session | null> {
-	const redis = getRedisClient();
+	const redis = await getRedisClient();
 	const fullKey = `session:${sessionId}`;
 
 	try {
@@ -94,12 +94,12 @@ export async function sessionGet(sessionId: string): Promise<Session | null> {
  * @param ttlSeconds TTL in seconds
  */
 export async function sessionSet(sessionId: string, session: Session, ttlSeconds: number): Promise<void> {
-	const redis = getRedisClient();
+	const redis = await getRedisClient();
 	const fullKey = `session:${sessionId}`;
 
 	try {
 		const serialized = JSON.stringify(session);
-		await redis.setex(fullKey, ttlSeconds, serialized);
+		await redis.setEx(fullKey, ttlSeconds, serialized);
 	} catch (error) {
 		console.error("Session set failed:", error);
 	}

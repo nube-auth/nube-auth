@@ -81,7 +81,7 @@ Build a production-ready, end-to-end SaaS authentication and admin system with C
 1. **@proofa/shared** - ID system, types, constants
 2. **@proofa/db** - Drizzle ORM + 100+ queries
 3. **@proofa/auth** - OAuth, crypto, sessions
-4. **@proofa/redis** - Cache, rate limit, sessions
+4. **@proofa/cache** - Cache, rate limit, sessions
 
 ### Applications (4)
 1. **@proofa/core** - Identity service (port 3001)

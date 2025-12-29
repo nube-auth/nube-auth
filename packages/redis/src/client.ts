@@ -45,6 +45,18 @@ export const cache = {
 		}
 	},
 
+	async getMany<T>(keys: string[]): Promise<(T | null)[]> {
+		try {
+			if (keys.length === 0) return [];
+			const client = await getRedisClient();
+			const values = await client.mGet(keys);
+			return values.map((v) => (v ? JSON.parse(v) as T : null));
+		} catch (error) {
+			console.error(`Cache getMany error:`, error);
+			return keys.map(() => null);
+		}
+	},
+
 	async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
 		try {
 			const client = await getRedisClient();
@@ -56,6 +68,21 @@ export const cache = {
 			}
 		} catch (error) {
 			console.error(`Cache set error for key ${key}:`, error);
+		}
+	},
+
+	async setNX<T>(key: string, value: T, ttlSeconds?: number): Promise<boolean> {
+		try {
+			const client = await getRedisClient();
+			const serialized = JSON.stringify(value);
+			const result = await client.set(key, serialized, {
+				NX: true,
+				...(ttlSeconds ? { EX: ttlSeconds } : {}),
+			});
+			return result === "OK";
+		} catch (error) {
+			console.error(`Cache setNX error for key ${key}:`, error);
+			return false;
 		}
 	},
 
@@ -75,6 +102,107 @@ export const cache = {
 			await client.del(keys);
 		} catch (error) {
 			console.error(`Cache deleteMany error:`, error);
+		}
+	},
+
+	async exists(key: string): Promise<boolean> {
+		try {
+			const client = await getRedisClient();
+			const result = await client.exists(key);
+			return result === 1;
+		} catch (error) {
+			console.error(`Cache exists error for key ${key}:`, error);
+			return false;
+		}
+	},
+
+	async increment(key: string, by: number = 1): Promise<number> {
+		try {
+			const client = await getRedisClient();
+			return await client.incrBy(key, by);
+		} catch (error) {
+			console.error(`Cache increment error for key ${key}:`, error);
+			return 0;
+		}
+	},
+
+	async decrement(key: string, by: number = 1): Promise<number> {
+		try {
+			const client = await getRedisClient();
+			return await client.decrBy(key, by);
+		} catch (error) {
+			console.error(`Cache decrement error for key ${key}:`, error);
+			return 0;
+		}
+	},
+
+	async expire(key: string, seconds: number): Promise<boolean> {
+		try {
+			const client = await getRedisClient();
+			const result = await client.expire(key, seconds);
+			return result;
+		} catch (error) {
+			console.error(`Cache expire error for key ${key}:`, error);
+			return false;
+		}
+	},
+
+	async ttl(key: string): Promise<number> {
+		try {
+			const client = await getRedisClient();
+			return await client.ttl(key);
+		} catch (error) {
+			console.error(`Cache ttl error for key ${key}:`, error);
+			return -1;
+		}
+	},
+
+	async keys(pattern: string): Promise<string[]> {
+		try {
+			const client = await getRedisClient();
+			return await client.keys(pattern);
+		} catch (error) {
+			console.error(`Cache keys error for pattern ${pattern}:`, error);
+			return [];
+		}
+	},
+
+	async scan(cursor: number, pattern: string, count: number = 100): Promise<{ cursor: number; keys: string[] }> {
+		try {
+			const client = await getRedisClient();
+			const result = await client.scan(cursor, {
+				MATCH: pattern,
+				COUNT: count,
+			});
+			return { cursor: result.cursor, keys: result.keys };
+		} catch (error) {
+			console.error(`Cache scan error:`, error);
+			return { cursor: 0, keys: [] };
+		}
+	},
+
+	async clear(pattern?: string): Promise<void> {
+		try {
+			const client = await getRedisClient();
+			if (!pattern) {
+				await client.flushDb();
+				return;
+			}
+
+			// Use SCAN instead of KEYS for production safety
+			let cursor = 0;
+			do {
+				const result = await client.scan(cursor, {
+					MATCH: pattern,
+					COUNT: 100,
+				});
+				cursor = result.cursor;
+				if (result.keys.length > 0) {
+					await client.del(result.keys);
+				}
+			} while (cursor !== 0);
+		} catch (error) {
+			console.error(`Cache clear error:`, error);
 		}
 	},
 };

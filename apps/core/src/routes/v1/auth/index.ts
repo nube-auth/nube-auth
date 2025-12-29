@@ -1,6 +1,6 @@
 import { GitHubOAuthAdapter, GoogleOAuthAdapter } from "@proofa/auth";
 import { getDb, identityQueries, sessionQueries, userQueries } from "@proofa/db";
-import { cache } from "@proofa/redis";
+import { cache } from "@proofa/cache";
 import { createId, idPatterns } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";

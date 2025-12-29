@@ -138,7 +138,7 @@ proofa/
 - `@proofa/shared` — types, constants, ID generator
 - `@proofa/db` — Drizzle schema (for Core only, initially)
 - `@proofa/auth` — Provider adapters
-- `@proofa/redis` — Redis helpers
+- `@proofa/cache` — Cache helpers (Redis/Upstash)
 
 ---
 
@@ -165,7 +165,7 @@ Foreign keys reference internal `id`. Public IDs are for API responses and loggi
 | `primary_email_verified` | BOOLEAN | NO | DEFAULT false | |
 | `name` | TEXT | YES | | Display name |
 | `avatar_url` | TEXT | YES | | Profile picture URL |
-| `is_admin` | BOOLEAN | NO | DEFAULT false | Bootstrap admins via env var |
+| `is_admin` | BOOLEAN | NO | DEFAULT false | Admin flag for authorization |
 | `created_at` | INTEGER | NO | | Epoch seconds |
 | `updated_at` | INTEGER | NO | | Epoch seconds |
 
@@ -1297,14 +1297,6 @@ Sets:
 
 ## 11. Admin Access Control
 
-### Bootstrap Admins
-
-Environment variable: `ADMIN_EMAILS=admin1@example.com,admin2@example.com`
-
-On Core startup:
-- Lookup users by email
-- Set `is_admin = true` in DB
-
 ### Project Roles
 
 Each project member has a role:
@@ -1575,7 +1567,6 @@ GITHUB_CLIENT_SECRET=...
 RESEND_API_KEY=...
 CORE_SESSION_SECRET=<32+ char>
 X_PROOFA_SERVICE_TOKEN=<32+ char>
-ADMIN_EMAILS=admin1@example.com,admin2@example.com
 LOG_LEVEL=info
 ```
 

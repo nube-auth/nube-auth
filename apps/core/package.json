@@ -16,7 +16,7 @@
 		"@hono/node-server": "^1.19.7",
 		"@proofa/auth": "workspace:*",
 		"@proofa/db": "workspace:*",
-		"@proofa/redis": "workspace:*",
+		"@proofa/cache": "workspace:*",
 		"@proofa/shared": "workspace:*",
 		"hono": "^4.0.0",
 		"resend": "^2.0.0"

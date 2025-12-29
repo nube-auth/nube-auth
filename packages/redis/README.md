@@ -1,4 +1,4 @@
-# @proofa/redis
+# @proofa/cache
 
 **Redis Client & Utilities for Proofa Platform**
 
@@ -21,7 +21,7 @@ Type-safe Redis client with helpers for caching, rate limiting, and session stor
 ## Installation
 
 ```bash
-pnpm add @proofa/redis
+pnpm add @proofa/cache
 ```
 
 ---
@@ -31,7 +31,7 @@ pnpm add @proofa/redis
 ### Basic Operations
 
 ```typescript
-import { cache, rateLimit, sessionStore } from "@proofa/redis";
+import { cache, rateLimit, sessionStore } from "@proofa/cache";
 
 // Cache operations
 await cache.set("user:123", userData, 300); // 5 minutes TTL
@@ -61,7 +61,7 @@ await sessionStore.revokeUserSessions(userId);
 ### Direct Client Access
 
 ```typescript
-import { getRedisClient } from "@proofa/redis";
+import { getRedisClient } from "@proofa/cache";
 
 const client = await getRedisClient();
 await client.set("key", "value");
@@ -262,7 +262,7 @@ redis-cli CONFIG SET maxmemory-policy allkeys-lru
 
 ### Monitoring
 ```typescript
-import { getRedisClient } from "@proofa/redis";
+import { getRedisClient } from "@proofa/cache";
 
 const client = await getRedisClient();
 
@@ -299,7 +299,7 @@ pnpm typecheck
 ## Testing
 
 ```typescript
-import { cache, rateLimit } from "@proofa/redis";
+import { cache, rateLimit } from "@proofa/cache";
 
 describe("Cache Operations", () => {
   it("sets and gets values", async () => {

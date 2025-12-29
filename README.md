@@ -131,7 +131,7 @@ pnpm run db:push
 # Build packages
 cd ../..
 pnpm --filter @proofa/db run build
-pnpm --filter @proofa/redis run build
+pnpm --filter @proofa/cache run build
 pnpm --filter @proofa/shared run build
 
 # Start development
@@ -274,7 +274,7 @@ pnpm --filter @proofa/client test
 
 ### Core Packages
 - **`@proofa/db`** - Database schema & queries (Drizzle ORM)
-- **`@proofa/redis`** - Redis client & caching utilities
+- **`@proofa/cache`** - Cache client & utilities (Redis/Upstash)
 - **`@proofa/shared`** - Shared types, utilities, & encryption
 - **`@proofa/auth`** - Authentication logic & helpers
 

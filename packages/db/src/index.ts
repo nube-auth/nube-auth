@@ -64,3 +64,10 @@ export {
 } from "./queries.js";
 // Export schema for migrations and types
 export * from "./schema.js";
+
+// Export transaction utilities
+export {
+	withTransaction,
+	executeAtomic,
+	withRetry,
+} from "./utils/transaction.js";

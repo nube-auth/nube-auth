@@ -238,7 +238,7 @@ cd packages/db && pnpm run db:push && cd ../..
 
 # 5. Build
 pnpm --filter @proofa/db run build
-pnpm --filter @proofa/redis run build
+pnpm --filter @proofa/cache run build
 pnpm --filter @proofa/shared run build
 
 # 6. Develop

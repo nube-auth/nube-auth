@@ -45,12 +45,12 @@ importers:
       '@proofa/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@proofa/cache':
+        specifier: workspace:*
+        version: link:../../packages/redis
       '@proofa/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@proofa/redis':
-        specifier: workspace:*
-        version: link:../../packages/redis
       '@proofa/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -197,12 +197,12 @@ importers:
       '@proofa/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@proofa/cache':
+        specifier: workspace:*
+        version: link:../../packages/redis
       '@proofa/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@proofa/redis':
-        specifier: workspace:*
-        version: link:../../packages/redis
       '@proofa/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -321,6 +321,12 @@ importers:
 
   packages/shared:
     dependencies:
+      '@proofa/cache':
+        specifier: workspace:*
+        version: link:../redis
+      hono:
+        specifier: ^4.6.14
+        version: 4.11.1
       pino:
         specifier: ^10.1.0
         version: 10.1.0

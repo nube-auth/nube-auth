@@ -410,7 +410,7 @@ redis-cli -u $REDIS_URL ping
 pnpm run clean
 pnpm install
 pnpm --filter @proofa/db run build
-pnpm --filter @proofa/redis run build
+pnpm --filter @proofa/cache run build
 pnpm --filter @proofa/shared run build
 ```
 

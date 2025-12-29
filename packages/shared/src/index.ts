@@ -100,3 +100,55 @@ export {
 	getOptionalEnv,
 	validateEnv,
 } from "./env-loader.js";
+
+// Re-export error handling utilities
+export {
+	AppError,
+	createErrorResponse,
+	createSuccessResponse,
+	type ErrorCode,
+	type ErrorResponse,
+	ErrorResponses,
+	getErrorCodeFromStatus,
+	isErrorResponse,
+	isSuccessResponse,
+	type SuccessResponse,
+	type ApiResponse,
+} from "./utils/errors.js";
+
+// Re-export validation utilities
+export {
+	booleanSchema,
+	dateRangeSchema,
+	emailSchema,
+	formatValidationErrors,
+	nonNegativeIntSchema,
+	paginationSchema,
+	positiveIntSchema,
+	publicIdSchema,
+	slugSchema,
+	urlSchema,
+	validateBody,
+	validateParams,
+	validateQuery,
+	validateRequest,
+} from "./utils/validation.js";
+
+// Re-export middleware
+export {
+	corsMiddleware,
+	setAppCorsOrigins,
+} from "./middleware/cors.js";
+
+export {
+	checkLockout,
+	clearLockout,
+	DEFAULT_LOCKOUT_CONFIG,
+	getAttemptCount,
+	getEmailFromBody,
+	getIpFromRequest,
+	lockAccount,
+	lockoutMiddleware,
+	type LockoutConfig,
+	recordFailedAttempt,
+} from "./middleware/lockout.js";

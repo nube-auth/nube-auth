@@ -1,5 +1,5 @@
 import { parseSessionCookie } from "@proofa/auth";
-import { sessionStore } from "@proofa/redis";
+import { sessionStore } from "@proofa/cache";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";

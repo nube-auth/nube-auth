@@ -317,7 +317,7 @@ pnpm build
 # Build specific package
 pnpm --filter @proofa/db run build
 pnpm --filter @proofa/shared run build
-pnpm --filter @proofa/redis run build
+pnpm --filter @proofa/cache run build
 
 # Watch mode for development
 pnpm --filter @proofa/shared dev

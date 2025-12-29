@@ -21,6 +21,8 @@
 		"dev": "tsc --watch"
 	},
 	"dependencies": {
+		"@proofa/cache": "workspace:*",
+		"hono": "^4.6.14",
 		"pino": "^10.1.0",
 		"zod": "^3.22.4"
 	},

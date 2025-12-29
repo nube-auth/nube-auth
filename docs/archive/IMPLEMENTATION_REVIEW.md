@@ -81,7 +81,7 @@ export const id = {
 - ✅ TypeScript throughout
 - ✅ Drizzle ORM + Turso
 - ✅ Hono framework
-- ✅ Package separation (`@proofa/shared`, `@proofa/db`, `@proofa/auth`, `@proofa/redis`)
+- ✅ Package separation (`@proofa/shared`, `@proofa/db`, `@proofa/auth`, `@proofa/cache`)
 
 ### ✅ Email OTP Flow (90%)
 

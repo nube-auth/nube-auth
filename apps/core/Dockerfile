@@ -17,7 +17,7 @@ RUN pnpm install --frozen-lockfile
 # Build packages and core
 RUN pnpm --filter @proofa/shared build
 RUN pnpm --filter @proofa/db build
-RUN pnpm --filter @proofa/redis build
+RUN pnpm --filter @proofa/cache build
 RUN pnpm --filter @proofa/auth build
 RUN pnpm --filter @proofa/core build
 

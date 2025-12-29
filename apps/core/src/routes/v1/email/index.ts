@@ -1,6 +1,6 @@
 import { generateOTP, hashOTP, verifyOTP } from "@proofa/auth";
 import { emailVerificationQueries, getDb, identityQueries, sessionQueries, userQueries } from "@proofa/db";
-import { rateLimit } from "@proofa/redis";
+import { rateLimit } from "@proofa/cache";
 import { createId, OTP_LENGTH, OTP_LOCKOUT_MINUTES, OTP_MAX_ATTEMPTS } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
