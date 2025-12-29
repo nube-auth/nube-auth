@@ -58,16 +58,6 @@ await sessionStore.revokeAppSession(sessionId);
 await sessionStore.revokeUserSessions(userId);
 ```
 
-### Direct Client Access
-
-```typescript
-import { getRedisClient } from "@proofa/cache";
-
-const client = await getRedisClient();
-await client.set("key", "value");
-const value = await client.get("key");
-```
-
 ---
 
 ## API Reference
@@ -261,20 +251,8 @@ redis-cli CONFIG SET maxmemory-policy allkeys-lru
 ```
 
 ### Monitoring
-```typescript
-import { getRedisClient } from "@proofa/cache";
 
-const client = await getRedisClient();
-
-// Monitor commands
-await client.monitor((time, args, source) => {
-  console.log(`${time}: ${args.join(" ")} from ${source}`);
-});
-
-// Get server info
-const info = await client.info();
-console.log(info);
-```
+For advanced Redis operations or monitoring, the internal client is accessible only within the Redis package. Application code should use the exported utilities (`cache`, `rateLimit`, `sessionStore`).
 
 ---
 

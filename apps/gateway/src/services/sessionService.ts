@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { createLogger, serializeError } from "@proofa/shared";
-import { redisClient } from "@proofa/cache";
+import { cache } from "@proofa/cache";
 import { SESSION_TTL } from "../config/constants";
 
 const log = createLogger("session");
@@ -55,7 +55,7 @@ export const sessionService = {
 		const token = this.generateSessionToken();
 		const key = `gateway:session:${token}`;
 
-		await redisClient.setex(key, SESSION_TTL, JSON.stringify(session));
+		await cache.set(key, session, SESSION_TTL);
 
 		log.info(
 			{ userId, ipAddress, userAgent: userAgent?.substring(0, 50) },
@@ -74,22 +74,20 @@ export const sessionService = {
 		currentUserAgent?: string,
 	): Promise<GatewaySession | null> {
 		const key = `gateway:session:${token}`;
-		const data = await redisClient.get(key);
+		const session = await cache.get<GatewaySession>(key);
 
-		if (!data || typeof data !== "string") {
+		if (!session) {
 			return null;
 		}
 
 		try {
-			const session = JSON.parse(data) as GatewaySession;
 			
-			// Update last activity
 			session.lastActivity = new Date().toISOString();
 			session.requestCount = (session.requestCount || 0) + 1;
 			session.lastIpAddress = currentIpAddress;
 			session.lastUserAgent = currentUserAgent;
-			
-			await redisClient.setex(key, SESSION_TTL, JSON.stringify(session));
+			await cache.set(key, session, SESSION_TTL);
+
 			return session;
 		} catch (error) {
 			log.error({ err: serializeError(error as Error), key }, "Failed to parse session");
@@ -195,7 +193,7 @@ export const sessionService = {
 	 */
 	async deleteSession(token: string): Promise<void> {
 		const key = `gateway:session:${token}`;
-		await redisClient.del(key);
+		await cache.delete(key);
 	},
 
 	/**

@@ -7,9 +7,10 @@ import { createClient, type RedisClientType } from "redis";
 let redisInstance: RedisClientType | null = null;
 
 /**
- * Get or create Redis client instance
+ * Get or create Redis client instance (internal use only)
+ * Application code should use cache/rateLimit/sessionStore utilities
  */
-export async function getRedisClient(): Promise<RedisClientType> {
+async function getRedisClient(): Promise<RedisClientType> {
 	if (redisInstance && redisInstance.isOpen) {
 		return redisInstance;
 	}
@@ -349,29 +350,3 @@ export const sessionStore = {
 		}
 	},
 };
-
-/**
- * Type-safe Redis client wrapper
- */
-export class RedisClient {
-	private client: RedisClientType | null = null;
-
-	async getClient(): Promise<RedisClientType> {
-		if (!this.client || !this.client.isOpen) {
-			this.client = await getRedisClient();
-		}
-		return this.client;
-	}
-
-	/**
-	 * Get raw client instance
-	 */
-	async getRawClient(): Promise<RedisClientType> {
-		return this.getClient();
-	}
-}
-
-/**
- * Create and export singleton instance
- */
-export const redisClient = new RedisClient();

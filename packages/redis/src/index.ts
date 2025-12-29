@@ -1,10 +1,7 @@
 // Re-export client and helpers
 export {
 	cache,
-	getRedisClient,
-	RedisClient,
 	rateLimit,
-	redisClient,
 	sessionStore,
 } from "./client.js";
 
