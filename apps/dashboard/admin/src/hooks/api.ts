@@ -109,6 +109,24 @@ export function useUpdateProject(projectId: string) {
 	});
 }
 
+export function useUpdateProjectOAuth(projectId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (data: { googleClientId?: string; googleClientSecret?: string; githubClientId?: string; githubClientSecret?: string }) => {
+			return fetchAPI<{ googleClientId?: string; googleClientSecret?: string; githubClientId?: string; githubClientSecret?: string }>(
+				`/v1/admin/projects/${projectId}/oauth`,
+				{
+					method: "PATCH",
+					body: JSON.stringify(data),
+				}
+			);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+		},
+	});
+}
+
 export function useProject(projectId: string) {
 	return useQuery({
 		queryKey: ["project", projectId],

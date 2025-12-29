@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useApp, useUpdateApp } from "../hooks/api";
+import { useProject, useUpdateProjectOAuth } from "../hooks/api";
 import { useToast } from "../components/Toast";
 
-export default function AppOAuthPage() {
-	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
+export default function ProjectOAuthPage() {
+	const { projectId } = useParams<{ projectId: string }>();
 	const { showToast } = useToast();
 
-	const { data: app, isLoading, error } = useApp(projectId!, appId!);
-	const updateAppMutation = useUpdateApp(projectId!, appId!);
+	const { data: project, isLoading, error } = useProject(projectId!);
+	const updateProjectOAuthMutation = useUpdateProjectOAuth(projectId!);
 
 	const [isEditing, setIsEditing] = useState(false);
 	const [oauthForm, setOauthForm] = useState({
@@ -18,37 +18,37 @@ export default function AppOAuthPage() {
 		githubClientSecret: "",
 	});
 
-	// Initialize form when app data loads
+	// Initialize form when project data loads
 	useEffect(() => {
-		if (app) {
+		if (project) {
 			setOauthForm({
-				googleClientId: app.googleClientId || "",
+				googleClientId: project.googleClientId || "",
 				googleClientSecret: "", // Don't populate secrets for security
-				githubClientId: app.githubClientId || "",
+				githubClientId: project.githubClientId || "",
 				githubClientSecret: "", // Don't populate secrets for security
 			});
 		}
-	}, [app]);
+	}, [project]);
 
 	const handleSave = async () => {
 		try {
 			// Only send fields that have values
 			const updates: any = {};
-			if (oauthForm.googleClientId !== (app?.googleClientId || "")) {
+			if (oauthForm.googleClientId !== (project?.googleClientId || "")) {
 				updates.googleClientId = oauthForm.googleClientId || null;
 			}
 			if (oauthForm.googleClientSecret) {
 				updates.googleClientSecret = oauthForm.googleClientSecret;
 			}
-			if (oauthForm.githubClientId !== (app?.githubClientId || "")) {
+			if (oauthForm.githubClientId !== (project?.githubClientId || "")) {
 				updates.githubClientId = oauthForm.githubClientId || null;
 			}
 			if (oauthForm.githubClientSecret) {
 				updates.githubClientSecret = oauthForm.githubClientSecret;
 			}
 
-			await updateAppMutation.mutateAsync(updates);
-			showToast("OAuth credentials updated successfully", "success");
+			await updateProjectOAuthMutation.mutateAsync(updates);
+			showToast("Project OAuth credentials updated successfully", "success");
 			setIsEditing(false);
 			// Clear secret fields after save
 			setOauthForm((prev) => ({
@@ -57,19 +57,19 @@ export default function AppOAuthPage() {
 				githubClientSecret: "",
 			}));
 		} catch (error) {
-			console.error("Failed to update OAuth credentials:", error);
-			showToast("Failed to update OAuth credentials", "error");
+			console.error("Failed to update project OAuth credentials:", error);
+			showToast("Failed to update project OAuth credentials", "error");
 		}
 	};
 
 	const handleCancel = () => {
 		setIsEditing(false);
-		// Reset form to app data
-		if (app) {
+		// Reset form to project data
+		if (project) {
 			setOauthForm({
-				googleClientId: app.googleClientId || "",
+				googleClientId: project.googleClientId || "",
 				googleClientSecret: "",
-				githubClientId: app.githubClientId || "",
+				githubClientId: project.githubClientId || "",
 				githubClientSecret: "",
 			});
 		}
@@ -83,10 +83,10 @@ export default function AppOAuthPage() {
 		);
 	}
 
-	if (error || !app) {
+	if (error || !project) {
 		return (
 			<div className="flex items-center justify-center h-64">
-				<div className="text-red-500">Failed to load OAuth configuration</div>
+				<div className="text-red-500">Failed to load project OAuth configuration</div>
 			</div>
 		);
 	}
@@ -101,11 +101,7 @@ export default function AppOAuthPage() {
 					</Link>
 					<span>›</span>
 					<Link to={`/projects/${projectId}`} style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
-						Project
-					</Link>
-					<span>›</span>
-					<Link to={`/projects/${projectId}/apps/${appId}`} style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
-						{app.name}
+						{project.name}
 					</Link>
 					<span>›</span>
 					<span style={{ color: "var(--text-primary)" }}>OAuth</span>
@@ -117,7 +113,10 @@ export default function AppOAuthPage() {
 				<div>
 					<h1 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>OAuth Configuration</h1>
 					<p style={{ fontSize: "14px", color: "var(--text-tertiary)" }}>
-						Configure OAuth providers for <strong>{app.name}</strong>
+						Configure OAuth providers for <strong>{project.name}</strong>
+					</p>
+					<p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "8px" }}>
+						This configuration will be inherited by all apps in this project unless overridden at the app level.
 					</p>
 				</div>
 				{!isEditing ? (
@@ -140,10 +139,10 @@ export default function AppOAuthPage() {
 						<button
 							type="button"
 							onClick={handleSave}
-							disabled={updateAppMutation.isPending}
+							disabled={updateProjectOAuthMutation.isPending}
 							className="btn btn-primary"
 						>
-							{updateAppMutation.isPending ? "Saving..." : "Save"}
+							{updateProjectOAuthMutation.isPending ? "Saving..." : "Save"}
 						</button>
 					</div>
 				)}
@@ -188,7 +187,7 @@ export default function AppOAuthPage() {
 							/>
 						) : (
 							<div style={{ padding: "10px 14px", background: "var(--content-bg)", border: "1px solid var(--card-border)", borderRadius: "var(--radius)", fontSize: "13px", fontFamily: "monospace", color: "var(--text-primary)" }}>
-								{app.googleClientId || <span style={{ color: "var(--text-tertiary)" }}>Not configured</span>}
+								{project.googleClientId || <span style={{ color: "var(--text-tertiary)" }}>Not configured</span>}
 							</div>
 						)}
 					</div>
@@ -201,10 +200,10 @@ export default function AppOAuthPage() {
 									id="googleClientSecret"
 									value={oauthForm.googleClientSecret}
 									onChange={(e) => setOauthForm({ ...oauthForm, googleClientSecret: e.target.value })}
-									placeholder={app.googleClientSecret ? "Enter new secret to update" : "Enter Google Client Secret"}
+									placeholder={project.googleClientSecret ? "Enter new secret to update" : "Enter Google Client Secret"}
 									className="form-control"
 								/>
-								{app.googleClientSecret && (
+								{project.googleClientSecret && (
 									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
 										Leave empty to keep existing secret
 									</p>
@@ -212,7 +211,7 @@ export default function AppOAuthPage() {
 							</div>
 						) : (
 							<div style={{ padding: "10px 14px", background: "var(--content-bg)", border: "1px solid var(--card-border)", borderRadius: "var(--radius)", fontSize: "13px", fontFamily: "monospace", color: "var(--text-primary)" }}>
-								{app.googleClientSecret ? "••••••••••••" : <span style={{ color: "var(--text-tertiary)" }}>Not configured</span>}
+								{project.googleClientSecret ? "••••••••••••" : <span style={{ color: "var(--text-tertiary)" }}>Not configured</span>}
 							</div>
 						)}
 					</div>
@@ -243,7 +242,7 @@ export default function AppOAuthPage() {
 							/>
 						) : (
 							<div style={{ padding: "10px 14px", background: "var(--content-bg)", border: "1px solid var(--card-border)", borderRadius: "var(--radius)", fontSize: "13px", fontFamily: "monospace", color: "var(--text-primary)" }}>
-								{app.githubClientId || <span style={{ color: "var(--text-tertiary)" }}>Not configured</span>}
+								{project.githubClientId || <span style={{ color: "var(--text-tertiary)" }}>Not configured</span>}
 							</div>
 						)}
 					</div>
@@ -256,10 +255,10 @@ export default function AppOAuthPage() {
 									id="githubClientSecret"
 									value={oauthForm.githubClientSecret}
 									onChange={(e) => setOauthForm({ ...oauthForm, githubClientSecret: e.target.value })}
-									placeholder={app.githubClientSecret ? "Enter new secret to update" : "Enter GitHub Client Secret"}
+									placeholder={project.githubClientSecret ? "Enter new secret to update" : "Enter GitHub Client Secret"}
 									className="form-control"
 								/>
-								{app.githubClientSecret && (
+								{project.githubClientSecret && (
 									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
 										Leave empty to keep existing secret
 									</p>
@@ -267,7 +266,7 @@ export default function AppOAuthPage() {
 							</div>
 						) : (
 							<div style={{ padding: "10px 14px", background: "var(--content-bg)", border: "1px solid var(--card-border)", borderRadius: "var(--radius)", fontSize: "13px", fontFamily: "monospace", color: "var(--text-primary)" }}>
-								{app.githubClientSecret ? "••••••••••••" : <span style={{ color: "var(--text-tertiary)" }}>Not configured</span>}
+								{project.githubClientSecret ? "••••••••••••" : <span style={{ color: "var(--text-tertiary)" }}>Not configured</span>}
 							</div>
 						)}
 					</div>
@@ -284,12 +283,12 @@ export default function AppOAuthPage() {
 					/>
 				</svg>
 				<div style={{ fontSize: "13px" }}>
-					<p style={{ fontWeight: "600", marginBottom: "8px" }}>Security Note</p>
+					<p style={{ fontWeight: "600", marginBottom: "8px" }}>Inheritance Note</p>
 					<ul style={{ listStyle: "disc", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "4px" }}>
+						<li>This configuration will be inherited by all apps in this project</li>
+						<li>Apps can override this configuration if needed</li>
+						<li>If not configured here, apps will inherit from Proofa defaults</li>
 						<li>Client secrets are encrypted before storage</li>
-						<li>Existing secrets are masked and cannot be viewed</li>
-						<li>Leave secret fields empty to keep existing values</li>
-						<li>Only enter new secrets when you need to update them</li>
 					</ul>
 				</div>
 			</div>

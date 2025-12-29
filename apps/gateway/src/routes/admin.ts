@@ -254,6 +254,10 @@ adminRoutes.get("/projects/:projectId", async (c: Context) => {
 			name: project.name,
 			slug: project.slug,
 			description: project.description || null,
+			googleClientId: project.google_client_id || undefined,
+			googleClientSecret: project.google_client_secret ? maskSecret(project.google_client_secret) : undefined,
+			githubClientId: project.github_client_id || undefined,
+			githubClientSecret: project.github_client_secret ? maskSecret(project.github_client_secret) : undefined,
 			createdAt: project.created_at,
 			updatedAt: project.updated_at,
 		});
@@ -327,6 +331,82 @@ adminRoutes.patch("/projects/:projectId", async (c: Context) => {
 	} catch (error) {
 		console.error("Update project error:", error);
 		return c.json({ error: "Failed to update project" }, 500);
+	}
+});
+
+/**
+ * PATCH /v1/admin/projects/:projectId/oauth
+ * Update project OAuth configuration
+ */
+adminRoutes.patch("/projects/:projectId/oauth", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const projectId = c.req.param("projectId");
+		const body = await c.req.json();
+
+		const db = getDb();
+
+		const project = await projectQueries.findByPublicId(db, projectId);
+
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		// Get user by public ID
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Check user is member with owner or admin role
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+
+		if (!member || (member.role !== "owner" && member.role !== "admin")) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		// Validate request
+		const validatedData = z.object({
+			googleClientId: z.string().optional(),
+			googleClientSecret: z.string().optional(),
+			githubClientId: z.string().optional(),
+			githubClientSecret: z.string().optional(),
+		}).parse(body);
+
+		// Update project OAuth credentials
+		const now = Math.floor(Date.now() / 1000);
+		const updateData: Record<string, string | number | null> = {
+			updated_at: now,
+		};
+
+		if (validatedData.googleClientId !== undefined) updateData.google_client_id = validatedData.googleClientId || null;
+		if (validatedData.googleClientSecret !== undefined) {
+			updateData.google_client_secret = validatedData.googleClientSecret ? encrypt(validatedData.googleClientSecret) : null;
+		}
+		if (validatedData.githubClientId !== undefined) updateData.github_client_id = validatedData.githubClientId || null;
+		if (validatedData.githubClientSecret !== undefined) {
+			updateData.github_client_secret = validatedData.githubClientSecret ? encrypt(validatedData.githubClientSecret) : null;
+		}
+
+		const updatedProject = await projectQueries.update(db, project.id, updateData);
+
+		if (!updatedProject) {
+			return c.json({ error: "Failed to update project OAuth configuration" }, 500);
+		}
+
+		return c.json({
+			googleClientId: updatedProject.google_client_id || undefined,
+			googleClientSecret: updatedProject.google_client_secret ? maskSecret(updatedProject.google_client_secret) : undefined,
+			githubClientId: updatedProject.github_client_id || undefined,
+			githubClientSecret: updatedProject.github_client_secret ? maskSecret(updatedProject.github_client_secret) : undefined,
+		});
+	} catch (error) {
+		if (error instanceof z.ZodError) {
+			console.error("Validation error:", error.errors);
+			return c.json({ error: "Invalid request data", details: error.errors }, 400);
+		}
+		console.error("Update project OAuth error:", error);
+		return c.json({ error: "Failed to update project OAuth configuration" }, 500);
 	}
 });
 
@@ -512,6 +592,7 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			cache_ttl_minutes: 60,
 			cors_allowed_origins: JSON.stringify(["http://localhost:3001"]),
 			rate_limit_requests_per_minute: 100,
+			oauth_inherit_source: "proofa", // Default to inheriting from Proofa
 			created_at: now,
 			updated_at: now,
 		});
@@ -654,6 +735,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId", async (c: Context) => {
 			emailFromName: app.email_from_name || undefined,
 			emailFromAddress: app.email_from_address || undefined,
 			emailReplyTo: app.email_reply_to || undefined,
+			oauthInheritSource: (app.oauth_inherit_source || "proofa") as "proofa" | "project" | "app",
 			googleClientId: app.google_client_id || undefined,
 			googleClientSecret: app.google_client_secret ? maskSecret(app.google_client_secret) : undefined,
 			githubClientId: app.github_client_id || undefined,
@@ -1488,16 +1570,30 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 		if (validatedData.emailFromAddress !== undefined) updateData.email_from_address = validatedData.emailFromAddress;
 		if (validatedData.emailReplyTo !== undefined) updateData.email_reply_to = validatedData.emailReplyTo;
 
-		// Handle OAuth credentials with encryption
-		if (validatedData.googleClientId !== undefined) updateData.google_client_id = validatedData.googleClientId;
-		if (validatedData.googleClientSecret !== undefined) {
-			// Encrypt the secret before storing
-			updateData.google_client_secret = validatedData.googleClientSecret ? encrypt(validatedData.googleClientSecret) : null;
+		// Handle OAuth inheritance source
+		const newInheritSource = validatedData.oauthInheritSource ?? app.oauth_inherit_source ?? "proofa";
+		if (validatedData.oauthInheritSource !== undefined) {
+			updateData.oauth_inherit_source = validatedData.oauthInheritSource;
 		}
-		if (validatedData.githubClientId !== undefined) updateData.github_client_id = validatedData.githubClientId;
-		if (validatedData.githubClientSecret !== undefined) {
-			// Encrypt the secret before storing
-			updateData.github_client_secret = validatedData.githubClientSecret ? encrypt(validatedData.githubClientSecret) : null;
+
+		// Handle OAuth credentials with encryption (only if inherit_source is 'app')
+		if (newInheritSource === "app") {
+			if (validatedData.googleClientId !== undefined) updateData.google_client_id = validatedData.googleClientId;
+			if (validatedData.googleClientSecret !== undefined) {
+				// Encrypt the secret before storing
+				updateData.google_client_secret = validatedData.googleClientSecret ? encrypt(validatedData.googleClientSecret) : null;
+			}
+			if (validatedData.githubClientId !== undefined) updateData.github_client_id = validatedData.githubClientId;
+			if (validatedData.githubClientSecret !== undefined) {
+				// Encrypt the secret before storing
+				updateData.github_client_secret = validatedData.githubClientSecret ? encrypt(validatedData.githubClientSecret) : null;
+			}
+		} else if (validatedData.oauthInheritSource !== undefined && validatedData.oauthInheritSource !== "app") {
+			// If switching away from 'app', clear app-specific OAuth credentials
+			updateData.google_client_id = null;
+			updateData.google_client_secret = null;
+			updateData.github_client_id = null;
+			updateData.github_client_secret = null;
 		}
 
 		const updatedApp = await appQueries.update(db, app.id, updateData);
@@ -1536,6 +1632,7 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 			emailFromName: updatedApp.email_from_name || undefined,
 			emailFromAddress: updatedApp.email_from_address || undefined,
 			emailReplyTo: updatedApp.email_reply_to || undefined,
+			oauthInheritSource: (updatedApp.oauth_inherit_source || "proofa") as "proofa" | "project" | "app",
 			googleClientId: updatedApp.google_client_id || undefined,
 			googleClientSecret: updatedApp.google_client_secret ? maskSecret(updatedApp.google_client_secret) : undefined,
 			githubClientId: updatedApp.github_client_id || undefined,

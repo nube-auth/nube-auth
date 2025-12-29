@@ -57,6 +57,9 @@ export const id = {
 	/** Generate invitation ID (INV0, 13 chars total) */
 	invitation: () => `INV0${nano9()}`,
 
+	/** Generate payment config ID (CFG0, 13 chars total) */
+	paymentConfig: () => `CFG0${nano9()}`,
+
 	/** Generate OAuth state token (STA0, 13 chars total) */
 	state: () => `STA0${nano9()}`,
 } as const;
@@ -95,6 +98,7 @@ export const idPatterns = {
 	request: /^REQ0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 	invitation: /^INV0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 	state: /^STA0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+	paymentConfig: /^CFG0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 } as const;
 
 /**

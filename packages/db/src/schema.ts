@@ -87,6 +87,11 @@ export const projects = sqliteTable(
 			.notNull()
 			.references(() => users.id),
 		is_active: integer("is_active").notNull().default(1),
+		// OAuth credentials per project
+		google_client_id: text("google_client_id"),
+		google_client_secret: text("google_client_secret"),
+		github_client_id: text("github_client_id"),
+		github_client_secret: text("github_client_secret"),
 		created_at: integer("created_at").notNull(),
 		updated_at: integer("updated_at").notNull(),
 	},
@@ -195,6 +200,7 @@ export const apps = sqliteTable(
 		webhook_url: text("webhook_url"),
 		webhook_events: text("webhook_events"), // JSON array
 		// OAuth credentials per app
+		oauth_inherit_source: text("oauth_inherit_source").notNull().default("proofa"), // 'proofa' | 'project' | 'app'
 		google_client_id: text("google_client_id"),
 		google_client_secret: text("google_client_secret"),
 		github_client_id: text("github_client_id"),

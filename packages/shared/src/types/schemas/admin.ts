@@ -33,6 +33,10 @@ export const ProjectDTOSchema = z.object({
 	name: NameSchema,
 	slug: SlugSchema,
 	description: z.string().optional(),
+	googleClientId: z.string().optional(),
+	googleClientSecret: z.string().optional(), // Masked in API response
+	githubClientId: z.string().optional(),
+	githubClientSecret: z.string().optional(), // Masked in API response
 	createdAt: z.number().optional(),
 	updatedAt: z.number().optional(),
 	totalApps: z.number().optional(),
@@ -65,6 +69,14 @@ export const UpdateAppRequestSchema = CreateAppRequestSchema.partial().extend({
 	emailFromName: z.string().optional(),
 	emailFromAddress: z.string().email().optional(),
 	emailReplyTo: z.string().email().optional(),
+	oauthInheritSource: z.enum(["proofa", "project", "app"]).optional(),
+	googleClientId: z.string().optional(),
+	googleClientSecret: z.string().optional(),
+	githubClientId: z.string().optional(),
+	githubClientSecret: z.string().optional(),
+});
+
+export const UpdateProjectOAuthRequestSchema = z.object({
 	googleClientId: z.string().optional(),
 	googleClientSecret: z.string().optional(),
 	githubClientId: z.string().optional(),
@@ -98,6 +110,7 @@ export const AppDTOSchema = z.object({
 	emailFromName: z.string().optional(),
 	emailFromAddress: z.string().optional(),
 	emailReplyTo: z.string().optional(),
+	oauthInheritSource: z.enum(["proofa", "project", "app"]).optional(),
 	googleClientId: z.string().optional(),
 	googleClientSecret: z.string().optional(), // Masked in API response
 	githubClientId: z.string().optional(),
@@ -162,6 +175,7 @@ export type ProjectsListResponse = z.infer<typeof ProjectsListResponseSchema>;
 
 export type CreateAppRequest = z.infer<typeof CreateAppRequestSchema>;
 export type UpdateAppRequest = z.infer<typeof UpdateAppRequestSchema>;
+export type UpdateProjectOAuthRequest = z.infer<typeof UpdateProjectOAuthRequestSchema>;
 export type AppDTO = z.infer<typeof AppDTOSchema>;
 export type AppsListResponse = z.infer<typeof AppsListResponseSchema>;
 
