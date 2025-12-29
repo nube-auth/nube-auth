@@ -14,19 +14,22 @@ import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import pg from "pg";
 
-const scriptDir = dirname(fileURLToPath(import.meta.url));
-const rootDir = resolve(scriptDir, "../../../");
+const configDir =
+	typeof __dirname === "string"
+		? __dirname
+		: dirname(fileURLToPath(import.meta.url));
 
-// Load environment variables
-dotenv.config({ path: resolve(rootDir, ".env") });
+// Load .env and .env.local from workspace root
+dotenv.config({ path: resolve(configDir, "../../../.env") });
+dotenv.config({ path: resolve(configDir, "../../../.env.local"), override: true });
 
-const DATABASE_URL = "postgresql://proofa:proofa@localhost:5432/proofa";
-const DATABASE_SCHEMA = process.env.DATABASE_SCHEMA ?? "public";
-
+const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
 	console.error("❌ DATABASE_URL environment variable is required");
 	process.exit(1);
 }
+
+const DATABASE_SCHEMA = process.env.DATABASE_SCHEMA ?? "public";
 
 console.log("⚠️  WARNING: This will DELETE ALL TABLES and DATA!");
 console.log(`📍 Database: ${DATABASE_URL}`);
@@ -53,7 +56,7 @@ async function dropAllTables() {
 	const { Client } = pg;
 	const client = new Client({
 		connectionString: DATABASE_URL,
-		ssl: shouldUseSsl(DATABASE_URL) ? { rejectUnauthorized: false } : undefined,
+		ssl: DATABASE_URL ? (shouldUseSsl(DATABASE_URL) ? { rejectUnauthorized: false } : undefined) : undefined,
 	});
 
 	try {

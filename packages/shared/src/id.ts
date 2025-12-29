@@ -68,6 +68,9 @@ export const id = {
 
 	/** Generate payment provider ID (PAP0, 13 chars total) */
 	paymentProvider: () => `PAP0${nano9()}`,
+
+	/** Generate app OAuth selection ID (AOS0, 13 chars total) */
+	appOAuthSelection: () => `AOS0${nano9()}`,
 } as const;
 
 /** Type representing valid ID entity types */

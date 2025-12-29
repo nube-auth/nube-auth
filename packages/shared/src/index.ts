@@ -109,10 +109,10 @@ export {
 	type PaymentCredentials,
 } from "./utils/credentials.js";
 // Re-export environment utilities (Node.js only - not for browser)
-// Note: These are exported but should only be used in Node.js environments
-// Browser builds should not import these
-export type { } from "./env-loader.js"; // Type-only export to prevent bundling
-// Actual exports available via direct import: import { loadEnv } from "@proofa/shared/env-loader"
+// Note: These functions use Node.js APIs and should NOT be imported in browser code
+// Backend services should import directly: import { loadEnv } from "@proofa/shared/dist/env-loader.js"
+// Type-only export to prevent bundling in browser builds
+export type { } from "./env-loader.js";
 
 // Re-export error handling utilities
 export {
@@ -146,24 +146,10 @@ export {
 	validateRequest,
 } from "./utils/validation.js";
 
-// Re-export middleware
-export {
-	corsMiddleware,
-	setAppCorsOrigins,
-} from "./middleware/cors.js";
-
-export {
-	checkLockout,
-	clearLockout,
-	DEFAULT_LOCKOUT_CONFIG,
-	getAttemptCount,
-	getEmailFromBody,
-	getIpFromRequest,
-	lockAccount,
-	lockoutMiddleware,
-	type LockoutConfig,
-	recordFailedAttempt,
-} from "./middleware/lockout.js";
+// Re-export middleware (Node.js only - uses Redis)
+// Browser builds should not import these
+// Backend services should import directly if needed
+export type { LockoutConfig } from "./middleware/lockout.js";
 
 // Re-export audit logging
 export {

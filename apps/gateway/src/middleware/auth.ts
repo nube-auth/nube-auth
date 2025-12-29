@@ -53,8 +53,15 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 			return c.json({ error: "Session not found" }, 401);
 		}
 
-		// Get user info from Core
-		const coreSession = await coreClient.exchangeSession(sessionId);
+		// Get Core session ID from metadata (stored during login)
+		const coreSessionId = appSession.metadata?.coreSessionId as string | undefined;
+
+		if (!coreSessionId) {
+			return c.json({ error: "Core session not found" }, 401);
+		}
+
+		// Get user info from Core using Core session ID
+		const coreSession = await coreClient.exchangeSession(coreSessionId);
 
 		if (!coreSession) {
 			return c.json({ error: "Invalid session" }, 401);

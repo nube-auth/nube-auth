@@ -131,7 +131,8 @@ router.get("/callback/:provider", async (c: Context) => {
 
 	try {
 		const db = getDb();
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
+		const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
 		let adapter;
 		if (provider === "google") {
@@ -160,41 +161,40 @@ router.get("/callback/:provider", async (c: Context) => {
 
 		if (!userId) {
 			// Create new user
-			const newUser = await userQueries.create(db, {
-				public_id: createId("user"),
-				primary_email: profile.email,
-				name: profile.name,
-				avatar_url: profile.picture || null,
-				created_at: now,
-				updated_at: now,
-			});
-			userId = newUser.id;
-			userPublicId = newUser.public_id;
+		const userData = {
+			public_id: createId("user"),
+			primary_email: profile.email,
+			name: profile.name,
+			avatar_url: profile.picture || null,
+			// created_at and updated_at auto-set by .defaultNow() in schema
+		};
+		const newUser = await userQueries.create(db, userData);
+		userId = newUser.id;
+		userPublicId = newUser.public_id;
 
-			// Create identity
-			await identityQueries.create(db, {
-				public_id: createId("identity"),
-				user_id: userId,
-				provider,
-				provider_user_id: profile.id,
-				email: profile.email,
-				created_at: now,
-			});
+		// Create identity
+		const identityData = {
+			public_id: createId("identity"),
+			user_id: userId,
+			provider,
+			provider_user_id: profile.id,
+			email: profile.email,
+			// created_at auto-set by .defaultNow() in schema
+		};
+		await identityQueries.create(db, identityData);
 		} else {
 			const user = await userQueries.findById(db, userId);
 			userPublicId = user?.public_id || createId("user");
 		}
 
-		// Create core session
-		const sessionData = {
-			public_id: createId("session"),
-			user_id: userId,
-			created_at: now,
-			last_seen_at: now,
-			expires_at: now + 7 * 24 * 60 * 60, // 7 days
-		};
-
-		const session = await sessionQueries.create(db, sessionData);
+	// Create core session
+	const sessionData = {
+		public_id: createId("session"),
+		user_id: userId,
+		// created_at and last_seen_at will be set automatically by .defaultNow() in schema
+		expires_at: expiresAt,
+	};
+	const session = await sessionQueries.create(db, sessionData);
 
 		// Redirect to Gateway callback with session ID as code
 		const redirectUrl = new URL(storedState.redirectUri);
@@ -224,7 +224,7 @@ router.post("/exchange", async (c: Context) => {
 
 	try {
 		const db = getDb();
-		const now = Math.floor(Date.now() / 1000);
+		const now = new Date();
 
 		const session = await sessionQueries.findByPublicId(db, sessionId);
 

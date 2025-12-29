@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { createId } from "@proofa/shared";
 import type { DbClient } from "./index.js";
 import { apps, oauth_providers, app_oauth_selections, payment_providers, projects } from "./schema.js";
@@ -172,6 +172,7 @@ export const oauthProviderQueries = {
 		return db
 			.insert(app_oauth_selections)
 			.values({
+				public_id: createId("appOAuthSelection"),
 				app_id: data.app_id,
 				oauth_provider_id: data.oauth_provider_id,
 				is_enabled: true,
@@ -282,30 +283,20 @@ export const paymentProviderQueries = {
 	 * Returns the single payment provider selected for this app
 	 */
 	async getPaymentProvider(db: DbClient, appId: number) {
-		const appResults = await db
-			.select({
-				selected_payment_provider_id: apps.selected_payment_provider_id,
-			})
-			.from(apps)
-			.where(eq(apps.id, appId))
-			;
-
-		const app = appResults[0];
-		if (!app?.selected_payment_provider_id) return null;
-
 		const providerResults = await db
 			.select()
 			.from(payment_providers)
 			.where(
 				and(
-					eq(payment_providers.id, app.selected_payment_provider_id),
+					eq(payment_providers.entity_type, "app"),
+					eq(payment_providers.entity_id, appId),
 					eq(payment_providers.is_active, true),
 					isNull(payment_providers.deleted_at),
 				),
 			)
-			;
-
-		return providerResults[0];
+			.orderBy(desc(payment_providers.created_at))
+			.limit(1);
+		return providerResults[0] || null;
 	},
 
 	/**
@@ -411,14 +402,27 @@ export const paymentProviderQueries = {
 
 	/**
 	 * Select a payment provider for an app
+	 * Marks the selected provider as active and all others as inactive
 	 */
 	async selectProviderForApp(db: DbClient, app_id: number, payment_provider_id: number) {
-		return db
-			.update(apps)
-			.set({ selected_payment_provider_id: payment_provider_id })
-			.where(eq(apps.id, app_id))
-			.returning()
-			;
+		// Deactivate all other providers for this app
+		await db
+			.update(payment_providers)
+			.set({ is_active: false, updated_at: new Date() })
+			.where(
+				and(
+					eq(payment_providers.entity_type, "app"),
+					eq(payment_providers.entity_id, app_id),
+				),
+			);
+
+		// Activate the selected provider
+		const results = await db
+			.update(payment_providers)
+			.set({ is_active: true, updated_at: new Date() })
+			.where(eq(payment_providers.id, payment_provider_id))
+			.returning();
+		return results[0];
 	},
 
 	/**

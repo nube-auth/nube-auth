@@ -28,13 +28,15 @@ router.post("/license/grant", async (c: Context) => {
 		const now = Math.floor(Date.now() / 1000);
 
 		// Validate user exists
-		const user = await userQueries.findByPublicId(db, userId);
+		const userResult = await userQueries.findByPublicId(db, userId);
+		const user = userResult;
 		if (!user) {
 			return c.json({ error: "User not found" }, 404);
 		}
 
 		// Validate app exists
-		const app = await appQueries.findByPublicId(db, appId);
+		const appResult = await appQueries.findByPublicId(db, appId);
+		const app = appResult;
 		if (!app) {
 			return c.json({ error: "App not found" }, 404);
 		}
@@ -79,7 +81,8 @@ router.get("/licenses/:userId", async (c: Context) => {
 		const db = getDb();
 
 		// Validate user exists
-		const user = await userQueries.findByPublicId(db, userId);
+		const userResult = await userQueries.findByPublicId(db, userId);
+		const user = userResult[0];
 		if (!user) {
 			return c.json({ error: "User not found" }, 404);
 		}

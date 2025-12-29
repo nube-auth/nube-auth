@@ -69,6 +69,8 @@ authRoutes.get("/callback", async (c: Context) => {
 	}
 
 	try {
+		// Determine audience (admin vs user) from origin or query param
+		const audience = inferAudience(c);
 
 		// Exchange session ID with Core (S2S call)
 		// Note: Core's callback sends the session ID as "code" parameter
@@ -86,7 +88,9 @@ authRoutes.get("/callback", async (c: Context) => {
 		if (!response.ok) {
 			const errorData = await response.json().catch(() => ({}));
 			log.error({ err: serializeError(error as Error) }, "Code exchange failed:", response.status, errorData);
-			const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:5173";
+			const dashboardUrl = audience === "admin" 
+				? (process.env.ADMIN_DASHBOARD_URL || "http://localhost:5174")
+				: (process.env.USER_DASHBOARD_URL || "http://localhost:5173");
 			return c.redirect(`${dashboardUrl}/login?error=exchange_failed`);
 		}
 
@@ -103,10 +107,11 @@ authRoutes.get("/callback", async (c: Context) => {
 		
 		// Store app session in Redis with Gateway session ID
 		// Store Core session ID in metadata for exchange if needed
+		const appId = audience === "admin" ? "admin-dashboard" : "user-dashboard";
 		await sessionStore.setAppSession(
 			gatewaySessionId, 
 			data.userId, 
-			"user-dashboard", 
+			appId, 
 			ttlSeconds,
 			{ coreSessionId: code } // Store Core session in metadata
 		);
@@ -117,8 +122,9 @@ authRoutes.get("/callback", async (c: Context) => {
 			domain: cookieDomain,
 		});
 
-		// Set cookie
-		setCookie(c, USER_SESSION_COOKIE, value, {
+		// Set appropriate cookie based on audience
+		const cookieName = audience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
+		setCookie(c, cookieName, value, {
 			httpOnly: attributes.httpOnly as boolean,
 			secure: attributes.secure as boolean,
 			sameSite: attributes.sameSite as "Strict" | "Lax" | "None",
@@ -127,13 +133,20 @@ authRoutes.get("/callback", async (c: Context) => {
 			maxAge: attributes.maxAge as number | undefined,
 		});
 
-		// Redirect to user dashboard (or the return_to URL)
-		const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:5173";
+		// Redirect to appropriate dashboard
+		const dashboardUrl = audience === "admin"
+			? (process.env.ADMIN_DASHBOARD_URL || "http://localhost:5174")
+			: (process.env.USER_DASHBOARD_URL || "http://localhost:5173");
 		const redirectUrl = state.startsWith("/") ? `${dashboardUrl}${state}` : dashboardUrl;
+		
+		log.info({ audience, appId, cookieName, dashboardUrl }, "Login successful, redirecting");
 		return c.redirect(redirectUrl);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Auth callback error:");
-		const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:5173";
+		const audience = inferAudience(c);
+		const dashboardUrl = audience === "admin"
+			? (process.env.ADMIN_DASHBOARD_URL || "http://localhost:5174")
+			: (process.env.USER_DASHBOARD_URL || "http://localhost:5173");
 		return c.redirect(`${dashboardUrl}/login?error=internal_error`);
 	}
 });

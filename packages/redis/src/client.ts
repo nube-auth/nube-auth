@@ -147,6 +147,17 @@ export const cache = {
 		}
 	},
 
+	async setTTL(key: string, seconds: number): Promise<boolean> {
+		try {
+			const client = await getRedisClient();
+			const result = await client.expire(key, seconds);
+			return result;
+		} catch (error) {
+			console.error(`Cache setTTL error for key ${key}:`, error);
+			return false;
+		}
+	},
+
 	async ttl(key: string): Promise<number> {
 		try {
 			const client = await getRedisClient();
@@ -270,17 +281,24 @@ export const rateLimit = {
  * Session store operations for app sessions (Gateway)
  */
 export const sessionStore = {
-	async setAppSession(sessionId: string, userId: string, appId: string, ttlSeconds: number): Promise<void> {
+	async setAppSession(
+		sessionId: string,
+		userId: string,
+		appId: string,
+		ttlSeconds: number,
+		metadata?: Record<string, unknown>,
+	): Promise<void> {
 		try {
 			const client = await getRedisClient();
 			const key = `session:app:${sessionId}`;
-			await client.setEx(key, ttlSeconds, JSON.stringify({ userId, appId }));
+			const sessionData = { userId, appId, metadata };
+			await client.setEx(key, ttlSeconds, JSON.stringify(sessionData));
 		} catch (error) {
 			console.error(`Session store setAppSession error:`, error);
 		}
 	},
 
-	async getAppSession(sessionId: string): Promise<{ userId: string; appId: string } | null> {
+	async getAppSession(sessionId: string): Promise<{ userId: string; appId: string; metadata?: Record<string, unknown> } | null> {
 		try {
 			const client = await getRedisClient();
 			const key = `session:app:${sessionId}`;

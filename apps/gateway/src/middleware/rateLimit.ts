@@ -1,6 +1,6 @@
 import type { Context, Next } from "hono";
 import { createMiddleware } from "hono/factory";
-import { redisClient } from "@proofa/cache";
+import { cache } from "@proofa/cache";
 import { createLogger } from "@proofa/shared";
 
 const log = createLogger("rate-limit");
@@ -51,15 +51,15 @@ export function rateLimitMiddleware(options: RateLimitOptions) {
 			const key = `${keyPrefix}:${id}:${path}`;
 
 			// Increment counter
-			const current = await redisClient.incr(key);
+			const current = await cache.increment(key, 1);
 
 			// Set expiry on first request
 			if (current === 1) {
-				await redisClient.expire(key, windowSeconds);
+				await cache.setTTL(key, windowSeconds);
 			}
 
 			// Get TTL for rate limit reset time
-			const ttl = await redisClient.ttl(key);
+			const ttl = await cache.ttl(key);
 			const resetTime = Date.now() + ttl * 1000;
 
 			// Set rate limit headers
@@ -162,8 +162,8 @@ export async function checkRateLimit(
 	keyPrefix: string,
 ): Promise<{ current: number; remaining: number; resetAt: number }> {
 	const key = `${keyPrefix}:${identifier}`;
-	const current = parseInt((await redisClient.get(key)) || "0", 10);
-	const ttl = await redisClient.ttl(key);
+	const current = parseInt((await cache.get(key)) || "0", 10);
+	const ttl = await cache.ttl(key);
 	const resetAt = Date.now() + ttl * 1000;
 
 	return {
@@ -179,10 +179,10 @@ export async function checkRateLimit(
  */
 export async function clearRateLimit(identifier: string, keyPrefix: string): Promise<void> {
 	const pattern = `${keyPrefix}:${identifier}:*`;
-	const keys = await redisClient.keys(pattern);
+	const keys = await cache.keys(pattern);
 	
 	if (keys.length > 0) {
-		await redisClient.del(...keys);
+		await cache.deleteMany(keys);
 		log.info({ identifier, keyPrefix, count: keys.length }, "Rate limits cleared");
 	}
 }

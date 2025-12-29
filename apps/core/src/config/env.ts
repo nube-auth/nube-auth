@@ -3,6 +3,11 @@
  * Ensures all required environment variables are present at startup
  */
 
+import { loadEnv } from "@proofa/shared/env-loader";
+
+// Load .env.local first, then .env (will skip if already loaded)
+loadEnv();
+
 export interface Environment {
 	NODE_ENV: "development" | "staging" | "production";
 	PORT: number;
