@@ -77,7 +77,9 @@ export function isSessionExpired(session: { expires_at: Date }): boolean {
 /**
  * Get remaining TTL in milliseconds
  */
-export function getSessionTTL(session: { expires_at: Date | number }): number {
+export function getSessionTTL(session: { expires_at: Date }): number {
 	// Handle both Date objects (from PostgreSQL) and Unix timestamps (legacy)
-	const expiresAtMs = session.expires_at instanceof Date ? }): number {
-	const remaining = session.expires_at.getTime()
+	const expiresAtMs = session.expires_at.getTime();
+	const remaining = expiresAtMs - Date.now();
+	return Math.max(0, remaining);
+}
