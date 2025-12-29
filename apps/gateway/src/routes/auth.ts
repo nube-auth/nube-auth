@@ -1,10 +1,15 @@
 import { createSessionCookie, parseSessionCookie } from "@proofa/auth";
+import { createLogger, serializeError, GatewayLoginRequestSchema } from "@proofa/shared";
 import { sessionStore } from "@proofa/cache";
+import crypto from "node:crypto";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { coreClient } from "../lib/core-client";
 import { env } from "../config/env";
+import { sessionService } from "../services/sessionService";
+
+const log = createLogger("auth-routes");
 
 export const authRoutes = new Hono();
 
@@ -52,7 +57,7 @@ authRoutes.get("/callback", async (c: Context) => {
 	const error = c.req.query("error");
 
 	if (error) {
-		console.error("OAuth error:", error);
+		log.error({ err: serializeError(error as Error) }, "OAuth error:");
 		// Redirect to dashboard with error
 		const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:5173";
 		return c.redirect(`${dashboardUrl}/login?error=${encodeURIComponent(error)}`);
@@ -80,7 +85,7 @@ authRoutes.get("/callback", async (c: Context) => {
 
 		if (!response.ok) {
 			const errorData = await response.json().catch(() => ({}));
-			console.error("Code exchange failed:", response.status, errorData);
+			log.error({ err: serializeError(error as Error) }, "Code exchange failed:", response.status, errorData);
 			const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:5173";
 			return c.redirect(`${dashboardUrl}/login?error=exchange_failed`);
 		}
@@ -91,15 +96,24 @@ authRoutes.get("/callback", async (c: Context) => {
 			name?: string;
 		};
 
-		// Store app session in Redis (7-day TTL for now)
-		// Note: "code" is actually the session ID from Core
-		const sessionId = code;
+		// Generate NEW session ID for Gateway (session fixation protection)
+		// Don't reuse the Core's session ID
+		const gatewaySessionId = crypto.randomBytes(32).toString("hex");
 		const ttlSeconds = 7 * 24 * 60 * 60; // 7 days
-		await sessionStore.setAppSession(sessionId, data.userId, "user-dashboard", ttlSeconds);
+		
+		// Store app session in Redis with Gateway session ID
+		// Store Core session ID in metadata for exchange if needed
+		await sessionStore.setAppSession(
+			gatewaySessionId, 
+			data.userId, 
+			"user-dashboard", 
+			ttlSeconds,
+			{ coreSessionId: code } // Store Core session in metadata
+		);
 
 		// Create signed cookie with domain for cross-subdomain access
 		const cookieDomain = process.env.COOKIE_DOMAIN; // e.g., ".proofa.sh"
-		const { value, attributes } = createSessionCookie(sessionId, {
+		const { value, attributes } = createSessionCookie(gatewaySessionId, {
 			domain: cookieDomain,
 		});
 
@@ -118,7 +132,7 @@ authRoutes.get("/callback", async (c: Context) => {
 		const redirectUrl = state.startsWith("/") ? `${dashboardUrl}${state}` : dashboardUrl;
 		return c.redirect(redirectUrl);
 	} catch (error) {
-		console.error("Auth callback error:", error);
+		log.error({ err: serializeError(error as Error) }, "Auth callback error:");
 		const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:5173";
 		return c.redirect(`${dashboardUrl}/login?error=internal_error`);
 	}
@@ -130,11 +144,9 @@ authRoutes.get("/callback", async (c: Context) => {
  */
 authRoutes.post("/login", async (c: Context) => {
 	try {
-		const { coreSessionId, audience } = (await c.req.json()) as { coreSessionId?: string; audience?: "user" | "admin" };
-
-		if (!coreSessionId) {
-			return c.json({ error: "Core session ID required" }, 400);
-		}
+		const body = await c.req.json();
+		const validatedData = GatewayLoginRequestSchema.parse(body);
+		const { coreSessionId, audience } = validatedData;
 
 		// Get user info from Core
 		const user = await coreClient.exchangeSession(coreSessionId);
@@ -143,19 +155,23 @@ authRoutes.post("/login", async (c: Context) => {
 			return c.json({ error: "Invalid session" }, 401);
 		}
 
-		// Store app session in Redis (7-day TTL for now)
+		// Generate NEW session ID for Gateway (session fixation protection)
+		const gatewaySessionId = crypto.randomBytes(32).toString("hex");
 		const ttlSeconds = 7 * 24 * 60 * 60; // 7 days
 		const resolvedAudience = audience === "admin" ? "admin" : "user";
+		
+		// Store app session with Gateway session ID
 		await sessionStore.setAppSession(
-			coreSessionId,
+			gatewaySessionId,
 			user.userId,
 			resolvedAudience === "admin" ? "admin-dashboard" : "user-dashboard",
 			ttlSeconds,
+			{ coreSessionId } // Store Core session in metadata
 		);
 
-		// Create signed cookie
+		// Create signed cookie with Gateway session ID
 		const cookieDomain = process.env.COOKIE_DOMAIN; // e.g., ".proofa.sh"
-		const { value, attributes } = createSessionCookie(coreSessionId, { domain: cookieDomain });
+		const { value, attributes } = createSessionCookie(gatewaySessionId, { domain: cookieDomain });
 		const cookieName = resolvedAudience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
 
 		// Set cookie
@@ -177,7 +193,7 @@ authRoutes.post("/login", async (c: Context) => {
 			},
 		});
 	} catch (error) {
-		console.error("Login error:", error);
+		log.error({ err: serializeError(error as Error) }, "Login error:");
 		return c.json({ error: "Failed to login" }, 500);
 	}
 });
@@ -192,7 +208,17 @@ authRoutes.post("/logout", async (c: Context) => {
 		const audience = inferAudience(c);
 		const cookieDomain = process.env.COOKIE_DOMAIN;
 
+		// Get the session token from cookie before clearing it
 		const cookieName = audience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
+		const sessionToken = getCookie(c, cookieName);
+
+		// Delete session from Redis if it exists
+		if (sessionToken) {
+			await sessionService.deleteSession(sessionToken);
+			log.info({ sessionToken: sessionToken.substring(0, 8) + "..." }, "Session deleted from Redis");
+		}
+
+		// Clear the session cookie
 		setCookie(c, cookieName, "", {
 			httpOnly: true,
 			secure: isProduction,
@@ -216,7 +242,7 @@ authRoutes.post("/logout", async (c: Context) => {
 
 		return c.json({ message: "Logged out successfully" });
 	} catch (error) {
-		console.error("Logout error:", error);
+		log.error({ err: serializeError(error as Error) }, "Logout error:");
 		return c.json({ error: "Failed to logout" }, 500);
 	}
 });
@@ -266,7 +292,7 @@ authRoutes.get("/status", async (c: Context) => {
 			return c.json({ loggedIn: false });
 		}
 	} catch (error) {
-		console.error("Status check error:", error);
+		log.error({ err: serializeError(error as Error) }, "Status check error:");
 		return c.json({ loggedIn: false });
 	}
 });

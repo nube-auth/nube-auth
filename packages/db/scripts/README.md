@@ -4,7 +4,7 @@ Utility scripts for database management.
 
 ## drop-tables.ts
 
-Drops all tables from the database in the correct order (respecting foreign key constraints).
+Drops all tables from a Postgres schema (uses `CASCADE` to handle foreign key constraints).
 
 **⚠️ WARNING**: This will delete ALL data in your database!
 
@@ -17,14 +17,15 @@ pnpm run db:drop
 
 ### What it does
 
-1. Reads `drizzle/drop_all_tables.sql`
-2. Connects to your database using `DATABASE_URL` from `.env`
-3. Executes DROP TABLE statements in reverse dependency order
+1. Connects to your database using `DATABASE_URL` from `.env`
+2. Lists tables in `DATABASE_SCHEMA` (defaults to `public`)
+3. Executes `DROP TABLE ... CASCADE` for each table
 4. Confirms successful completion
 
 ### Requirements
 
 - `DATABASE_URL` must be set in your `.env` file at project root
+- Optional: `DATABASE_SCHEMA` (defaults to `public`)
 - Database must be accessible
 
 ### Safety
@@ -39,19 +40,18 @@ Follow this pattern for new database utility scripts:
 
 ```typescript
 #!/usr/bin/env node
-import { createClient } from "@libsql/client";
 import dotenv from "dotenv";
+import pg from "pg";
 
 dotenv.config({ path: "../../.env" });
 
-const db = createClient({
-  url: process.env.DATABASE_URL!,
-  authToken: process.env.DATABASE_AUTH_TOKEN,
-});
+const { Client } = pg;
+const client = new Client({ connectionString: process.env.DATABASE_URL! });
+await client.connect();
 
 // Your script logic here
 
-db.close();
+await client.end();
 ```
 
 Then add to `package.json`:

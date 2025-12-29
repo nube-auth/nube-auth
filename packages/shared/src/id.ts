@@ -62,6 +62,12 @@ export const id = {
 
 	/** Generate OAuth state token (STA0, 13 chars total) */
 	state: () => `STA0${nano9()}`,
+
+	/** Generate OAuth provider ID (OAP0, 13 chars total) */
+	oauthProvider: () => `OAP0${nano9()}`,
+
+	/** Generate payment provider ID (PAP0, 13 chars total) */
+	paymentProvider: () => `PAP0${nano9()}`,
 } as const;
 
 /** Type representing valid ID entity types */

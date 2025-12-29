@@ -39,7 +39,9 @@ export function AppApiKeysPage() {
 				showToast("Failed to retrieve keys", "error");
 			}
 		} catch (error) {
-			console.error("Error revealing keys:", error);
+			if (import.meta.env.DEV) {
+				console.error("Error revealing keys:", error);
+			}
 			showToast("Failed to retrieve keys", "error");
 		}
 	};
@@ -50,7 +52,10 @@ export function AppApiKeysPage() {
 			setCopying(type);
 			setTimeout(() => setCopying(null), 2000);
 		} catch (error) {
-			console.error("Copy failed:", error);
+			if (import.meta.env.DEV) {
+				console.error("Copy failed:", error);
+			}
+			showToast("Copy failed", "error");
 		}
 	};
 
@@ -75,7 +80,9 @@ export function AppApiKeysPage() {
 				showToast("Failed to regenerate secret", "error");
 			}
 		} catch (error) {
-			console.error("Error regenerating secret:", error);
+			if (import.meta.env.DEV) {
+				console.error("Error regenerating secret:", error);
+			}
 			showToast("Failed to regenerate secret", "error");
 		} finally {
 			setIsRegenerating(false);
@@ -103,7 +110,9 @@ export function AppApiKeysPage() {
 				showToast("Failed to regenerate token", "error");
 			}
 		} catch (error) {
-			console.error("Error regenerating token:", error);
+			if (import.meta.env.DEV) {
+				console.error("Error regenerating token:", error);
+			}
 			showToast("Failed to regenerate token", "error");
 		} finally {
 			setIsRegenerating(false);

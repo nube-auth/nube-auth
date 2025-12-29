@@ -46,5 +46,45 @@ export const RateLimitSchema = z.number().int().min(1).max(10000).default(100);
 export const TrialDaysSchema = z.number().int().min(0).max(365).nullable().optional();
 export const LicensePlanSchema = z.enum(["free", "trial"]).default("free");
 
+/**
+ * Security & Validation Helpers
+ */
+
+// Sanitize string input (remove control characters, trim)
+export const SanitizedStringSchema = z.string().transform((val) => 
+	val.replace(/[\x00-\x1F\x7F]/g, "").trim()
+);
+
+// URL validation with protocol requirement
+export const SecureUrlSchema = z.string().url().refine(
+	(url) => url.startsWith("https://") || url.startsWith("http://localhost"),
+	{ message: "URL must use HTTPS or be localhost" }
+);
+
+// JSON string that can be parsed
+export const JsonStringSchema = z.string().refine(
+	(val) => {
+		try {
+			JSON.parse(val);
+			return true;
+		} catch {
+			return false;
+		}
+	},
+	{ message: "Invalid JSON string" }
+);
+
+// ISO date string
+export const IsoDateSchema = z.string().datetime();
+
+// Positive integer
+export const PositiveIntSchema = z.number().int().positive();
+
+// Non-negative integer (includes 0)
+export const NonNegativeIntSchema = z.number().int().min(0);
+
+// Currency amount (2 decimal places max)
+export const CurrencySchema = z.number().min(0).max(999999.99).multipleOf(0.01);
+
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
 export type Pagination = z.infer<typeof PaginationSchema>;

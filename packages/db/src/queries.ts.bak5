@@ -101,7 +101,7 @@ export const sessionQueries = {
 		return db.insert(sessions).values(data).returning();
 	},
 
-	async updateLastSeen(db: DbClient, sessionId: number, lastSeenAt: Date) {
+	async updateLastSeen(db: DbClient, sessionId: number, lastSeenAt: number) {
 		return db
 			.update(sessions)
 			.set({ last_seen_at: lastSeenAt })
@@ -414,8 +414,7 @@ export const emailVerificationQueries = {
 	},
 
 	async incrementAttempts(db: DbClient, id: number) {
-		const recordResults = await db.select().from(email_verifications).where(eq(email_verifications.id, id));
-		const record = recordResults[0];
+		const record = await db.select().from(email_verifications).where(eq(email_verifications.id, id));
 		if (!record) throw new Error("Email verification not found");
 
 		const newAttempts = record.attempts + 1;
@@ -423,7 +422,7 @@ export const emailVerificationQueries = {
 
 		// Lock after 3 failed attempts
 		if (newAttempts >= 3) {
-			updateData.locked_until = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+			updateData.locked_until = new Date() + 30 * 60; // 30 minutes
 		}
 
 		return db.update(email_verifications).set(updateData).where(eq(email_verifications.id, id)).returning();

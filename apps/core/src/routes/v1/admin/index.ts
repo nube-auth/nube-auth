@@ -2,6 +2,7 @@ import { appQueries, getDb, licenseQueries, userQueries } from "@proofa/db";
 import { createId } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
+import * as providers from "./providers.js";
 
 const router = new Hono();
 
@@ -122,5 +123,22 @@ router.delete("/licenses/:licenseId", async (c: Context) => {
 		return c.json({ error: "Failed to revoke license" }, 500);
 	}
 });
+
+// OAuth Provider Routes
+router.get("/apps/:appId/oauth/available", providers.getAvailableOAuthProviders);
+router.get("/apps/:appId/oauth/selected", providers.getSelectedOAuthProviders);
+router.post("/oauth-providers", providers.createOAuthProvider);
+router.patch("/oauth-providers/:providerId", providers.updateOAuthProvider);
+router.delete("/oauth-providers/:providerId", providers.deleteOAuthProvider);
+router.post("/apps/:appId/oauth/select", providers.selectOAuthProvider);
+router.delete("/apps/:appId/oauth/:providerId/deselect", providers.deselectOAuthProvider);
+
+// Payment Provider Routes
+router.get("/apps/:appId/payment/available", providers.getAvailablePaymentProviders);
+router.get("/apps/:appId/payment/selected", providers.getSelectedPaymentProvider);
+router.post("/payment-providers", providers.createPaymentProvider);
+router.patch("/payment-providers/:providerId", providers.updatePaymentProvider);
+router.delete("/payment-providers/:providerId", providers.deletePaymentProvider);
+router.post("/apps/:appId/payment/select", providers.selectPaymentProvider);
 
 export const adminRoutes = router;

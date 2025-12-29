@@ -39,7 +39,10 @@ async function fetchAPI<T>(path: string, options?: RequestInit, schema?: any): P
 		try {
 			return schema.parse(json);
 		} catch (error) {
-			console.error("Schema validation error:", error, "Response data:", json);
+			// Only log in development
+			if (import.meta.env.DEV) {
+				console.error("Schema validation error:", error, "Response data:", json);
+			}
 			throw new Error(`Validation failed: ${error instanceof Error ? error.message : "Unknown error"}`);
 		}
 	}
@@ -527,6 +530,259 @@ export function useDeleteAppPaymentConfig(projectId: string, appId: string) {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["app-payment-config", projectId, appId] });
+		},
+	});
+}
+
+// ===== OAuth Provider Hooks =====
+
+/**
+ * Get available OAuth providers for an app
+ */
+export function useAvailableOAuthProviders(appId: string) {
+	return useQuery({
+		queryKey: ["oauth-providers", "available", appId],
+		queryFn: async () => {
+			const data = await fetchAPI<{ providers: any[] }>(`/v1/admin/apps/${appId}/oauth/available`);
+			return data.providers;
+		},
+		enabled: !!appId,
+	});
+}
+
+/**
+ * Get selected OAuth providers for an app
+ */
+export function useSelectedOAuthProviders(appId: string) {
+	return useQuery({
+		queryKey: ["oauth-providers", "selected", appId],
+		queryFn: async () => {
+			const data = await fetchAPI<{ providers: any[] }>(`/v1/admin/apps/${appId}/oauth/selected`);
+			return data.providers;
+		},
+		enabled: !!appId,
+	});
+}
+
+/**
+ * Create OAuth provider
+ */
+export function useCreateOAuthProvider() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (data: {
+			entityType: "platform" | "project" | "app";
+			entityId: number | null;
+			provider: string;
+			credentials: {
+				client_id: string;
+				client_secret: string;
+				redirect_uri?: string;
+			};
+		}) => {
+			return fetchAPI<{ provider: any }>("/v1/admin/oauth-providers", {
+				method: "POST",
+				body: JSON.stringify(data),
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["oauth-providers"] });
+		},
+	});
+}
+
+/**
+ * Update OAuth provider
+ */
+export function useUpdateOAuthProvider(providerId: number) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (data: {
+			credentials?: {
+				client_id: string;
+				client_secret: string;
+				redirect_uri?: string;
+			};
+			isActive?: boolean;
+		}) => {
+			return fetchAPI<{ success: boolean }>(`/v1/admin/oauth-providers/${providerId}`, {
+				method: "PATCH",
+				body: JSON.stringify(data),
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["oauth-providers"] });
+		},
+	});
+}
+
+/**
+ * Delete OAuth provider
+ */
+export function useDeleteOAuthProvider() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (providerId: number) => {
+			return fetchAPI<{ success: boolean }>(`/v1/admin/oauth-providers/${providerId}`, {
+				method: "DELETE",
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["oauth-providers"] });
+		},
+	});
+}
+
+/**
+ * Select OAuth provider for app
+ */
+export function useSelectOAuthProvider(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (data: {
+			oauthProviderId: number;
+			displayOrder?: number;
+			customButtonText?: string;
+		}) => {
+			return fetchAPI<{ selection: any }>(`/v1/admin/apps/${appId}/oauth/select`, {
+				method: "POST",
+				body: JSON.stringify(data),
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["oauth-providers", "selected", appId] });
+		},
+	});
+}
+
+/**
+ * Deselect OAuth provider for app
+ */
+export function useDeselectOAuthProvider(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (providerId: number) => {
+			return fetchAPI<{ success: boolean }>(`/v1/admin/apps/${appId}/oauth/${providerId}/deselect`, {
+				method: "DELETE",
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["oauth-providers", "selected", appId] });
+		},
+	});
+}
+
+// ===== Payment Provider Hooks =====
+
+/**
+ * Get available payment providers for an app
+ */
+export function useAvailablePaymentProviders(appId: string, environment: "test" | "production" = "test") {
+	return useQuery({
+		queryKey: ["payment-providers", "available", appId, environment],
+		queryFn: async () => {
+			const data = await fetchAPI<{ providers: any[] }>(
+				`/v1/admin/apps/${appId}/payment/available?environment=${environment}`,
+			);
+			return data.providers;
+		},
+		enabled: !!appId,
+	});
+}
+
+/**
+ * Get selected payment provider for an app
+ */
+export function useSelectedPaymentProvider(appId: string) {
+	return useQuery({
+		queryKey: ["payment-providers", "selected", appId],
+		queryFn: async () => {
+			const data = await fetchAPI<{ provider: any | null }>(`/v1/admin/apps/${appId}/payment/selected`);
+			return data.provider;
+		},
+		enabled: !!appId,
+	});
+}
+
+/**
+ * Create payment provider
+ */
+export function useCreatePaymentProvider() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (data: {
+			entityType: "platform" | "project" | "app";
+			entityId: number | null;
+			provider: string;
+			environment: "test" | "production";
+			credentials: Record<string, string>;
+			webhookSecret?: string;
+		}) => {
+			return fetchAPI<{ provider: any }>("/v1/admin/payment-providers", {
+				method: "POST",
+				body: JSON.stringify(data),
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["payment-providers"] });
+		},
+	});
+}
+
+/**
+ * Update payment provider
+ */
+export function useUpdatePaymentProvider(providerId: number) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (data: {
+			credentials?: Record<string, string>;
+			webhookSecret?: string;
+			isActive?: boolean;
+			environment?: "test" | "production";
+		}) => {
+			return fetchAPI<{ success: boolean }>(`/v1/admin/payment-providers/${providerId}`, {
+				method: "PATCH",
+				body: JSON.stringify(data),
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["payment-providers"] });
+		},
+	});
+}
+
+/**
+ * Delete payment provider
+ */
+export function useDeletePaymentProvider() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (providerId: number) => {
+			return fetchAPI<{ success: boolean }>(`/v1/admin/payment-providers/${providerId}`, {
+				method: "DELETE",
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["payment-providers"] });
+		},
+	});
+}
+
+/**
+ * Select payment provider for app
+ */
+export function useSelectPaymentProvider(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (paymentProviderId: number) => {
+			return fetchAPI<{ success: boolean }>(`/v1/admin/apps/${appId}/payment/select`, {
+				method: "POST",
+				body: JSON.stringify({ paymentProviderId }),
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["payment-providers", "selected", appId] });
 		},
 	});
 }

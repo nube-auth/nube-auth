@@ -1,5 +1,18 @@
-import type { Session } from "@proofa/shared";
 import { getRedisClient } from "./client.js";
+
+/**
+ * Session type (Core Session)
+ * Represents a user's global session across all apps
+ */
+export interface Session {
+	id: number; // internal only
+	public_id: string; // S0xxx
+	user_id: number;
+	created_at: number; // epoch seconds
+	last_seen_at: number; // epoch seconds
+	expires_at: number; // epoch seconds
+	revoked_at: number | null; // null if active
+}
 
 /**
  * Rate limit check

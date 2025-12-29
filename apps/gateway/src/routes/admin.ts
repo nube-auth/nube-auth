@@ -1,7 +1,26 @@
 import { appQueries, getDb, identityQueries, invitationQueries, licenseQueries, paymentConfigQueries, planQueries, projectInvitationQueries, projectMemberQueries, projectQueries, userQueries, sessionQueries } from "@proofa/db";
-import { createId, encrypt, decrypt, isEncrypted, maskSecret } from "@proofa/shared";
+import { createId, encrypt, decrypt, isEncrypted, maskSecret, createLogger, serializeError, AuditEventType } from "@proofa/shared";
+import { 
+	InviteAppUserRequestSchema, 
+	InviteProjectMemberRequestSchema,
+	GrantLicenseRequestSchema,
+	UpdateLicenseRequestSchema,
+	CreatePlanRequestSchema,
+	UpdatePlanRequestSchema,
+	CreatePaymentConfigRequestSchema,
+	UpdatePaymentConfigRequestSchema,
+	ListQuerySchema,
+	ProjectIdParamSchema,
+	AppIdParamSchema,
+	UserIdParamSchema,
+	LicenseIdParamSchema,
+	PlanIdParamSchema
+} from "@proofa/shared";
 import { nanoid } from "nanoid";
 import { sendEmail, generateAppUserInvitationEmail, generateLicenseGrantedEmail, generateProjectTeamInvitationEmail } from "../services/email.js";
+import { auditLogger } from "../utils/logger.js";
+
+const log = createLogger("admin-routes");
 import {
 	ProjectDTOSchema,
 	ProjectsListResponseSchema,
@@ -44,7 +63,7 @@ adminRoutes.get("/me", async (c: Context) => {
 			name: auth.name,
 		});
 	} catch (error) {
-		console.error("Get admin me error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get admin me error");
 		return c.json({ error: "Failed to get profile" }, 500);
 	}
 });
@@ -86,7 +105,7 @@ adminRoutes.patch("/me", async (c: Context) => {
 			name: updatedUser.name,
 		});
 	} catch (error) {
-		console.error("Update admin profile error:", error);
+		log.error({ err: serializeError(error as Error) }, "Update admin profile error");
 		return c.json({ error: "Failed to update profile" }, 500);
 	}
 });
@@ -152,7 +171,7 @@ adminRoutes.get("/projects", async (c: Context) => {
 			projects: projectsWithStats,
 		});
 	} catch (error) {
-		console.error("List projects error:", error);
+		log.error({ err: serializeError(error as Error) }, "List projects error:");
 		return c.json({ error: "Failed to list projects" }, 500);
 	}
 });
@@ -198,6 +217,17 @@ adminRoutes.post("/projects", async (c: Context) => {
 			created_at: now,
 		});
 
+		// Audit log
+		auditLogger.logCreate(
+			"project",
+			project.public_id,
+			project.name,
+			auth.userId,
+			user.primary_email,
+			c.req.header("x-forwarded-for") || c.req.header("x-real-ip"),
+			{ slug: project.slug }
+		);
+
 		// Validate and return response
 		const projectDTO = ProjectDTOSchema.parse({
 			id: project.public_id,
@@ -211,10 +241,10 @@ adminRoutes.post("/projects", async (c: Context) => {
 		return c.json(projectDTO, 201);
 	} catch (error) {
 		if (error instanceof z.ZodError) {
-			console.error("Validation error:", error.errors);
+			log.warn({ errors: error.errors }, "Validation error in create project");
 			return c.json({ error: "Invalid request data", details: error.errors }, 400);
 		}
-		console.error("Create project error:", error);
+		log.error({ err: serializeError(error as Error) }, "Create project error");
 		return c.json({ error: "Failed to create project" }, 500);
 	}
 });
@@ -262,7 +292,7 @@ adminRoutes.get("/projects/:projectId", async (c: Context) => {
 			updatedAt: project.updated_at,
 		});
 	} catch (error) {
-		console.error("Get project error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get project error:");
 		return c.json({ error: "Failed to get project" }, 500);
 	}
 });
@@ -329,7 +359,7 @@ adminRoutes.patch("/projects/:projectId", async (c: Context) => {
 			updatedAt: updatedProject.updated_at,
 		});
 	} catch (error) {
-		console.error("Update project error:", error);
+		log.error({ err: serializeError(error as Error) }, "Update project error:");
 		return c.json({ error: "Failed to update project" }, 500);
 	}
 });
@@ -402,10 +432,10 @@ adminRoutes.patch("/projects/:projectId/oauth", async (c: Context) => {
 		});
 	} catch (error) {
 		if (error instanceof z.ZodError) {
-			console.error("Validation error:", error.errors);
+			log.warn({ errors: error.errors }, "Validation error");
 			return c.json({ error: "Invalid request data", details: error.errors }, 400);
 		}
-		console.error("Update project OAuth error:", error);
+		log.error({ err: serializeError(error as Error) }, "Update project OAuth error:");
 		return c.json({ error: "Failed to update project OAuth configuration" }, 500);
 	}
 });
@@ -483,7 +513,7 @@ adminRoutes.get("/projects/:projectId/stats", async (c: Context) => {
 			totalRevenue,
 		});
 	} catch (error) {
-		console.error("Get project stats error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get project stats error:");
 		return c.json({ error: "Failed to get project stats" }, 500);
 	}
 });
@@ -528,7 +558,7 @@ adminRoutes.get("/projects/:projectId/apps", async (c: Context) => {
 			})),
 		});
 	} catch (error) {
-		console.error("List apps error:", error);
+		log.error({ err: serializeError(error as Error) }, "List apps error:");
 		return c.json({ error: "Failed to list apps" }, 500);
 	}
 });
@@ -657,10 +687,10 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 		return c.json(appDTO, 201);
 	} catch (error) {
 		if (error instanceof z.ZodError) {
-			console.error("Validation error:", error.errors);
+			log.warn({ errors: error.errors }, "Validation error");
 			return c.json({ error: "Invalid request data", details: error.errors }, 400);
 		}
-		console.error("Create app error:", error);
+		log.error({ err: serializeError(error as Error) }, "Create app error:");
 		return c.json({ error: "Failed to create app" }, 500);
 	}
 });
@@ -746,7 +776,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId", async (c: Context) => {
 
 		return c.json(appDTO);
 	} catch (error) {
-		console.error("Get app error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get app error:");
 		return c.json({ error: "Failed to get app" }, 500);
 	}
 });
@@ -822,7 +852,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId/stats", async (c: Context) => 
 			totalRevenue,
 		});
 	} catch (error) {
-		console.error("Get app stats error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get app stats error:");
 		return c.json({ error: "Failed to get app stats" }, 500);
 	}
 });
@@ -898,7 +928,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId/users", async (c: Context) => 
 			total: users.length,
 		});
 	} catch (error) {
-		console.error("Get app users error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get app users error:");
 		return c.json({ error: "Failed to get app users" }, 500);
 	}
 });
@@ -937,25 +967,14 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 			return c.json({ error: "App not found" }, 404);
 		}
 
-		// Parse request body
+		// Parse and validate request body
 		const body = await c.req.json();
-		const { email, plan_id, grant_license, license_duration_days, custom_message } = body;
+		const validatedData = InviteAppUserRequestSchema.parse(body);
+		const { email, plan_id, grant_license, license_duration_days, custom_message } = validatedData;
 
-		// Validate email
-		if (!email || typeof email !== "string") {
-			return c.json({ error: "Valid email is required" }, 400);
-		}
-
-		// Validate plan_id
-		if (grant_license && (!plan_id || typeof plan_id !== "number")) {
+		// Additional validation: plan_id required when granting license
+		if (grant_license && !plan_id) {
 			return c.json({ error: "Plan ID (plan_id) is required when granting license" }, 400);
-		}
-
-		// Validate license duration if provided
-		if (license_duration_days !== null && license_duration_days !== undefined) {
-			if (typeof license_duration_days !== "number" || license_duration_days < 1) {
-				return c.json({ error: "License duration must be a positive number" }, 400);
-			}
 		}
 
 		// Calculate valid_until based on license_duration_days
@@ -1000,7 +1019,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 						}),
 					});
 				} catch (emailError) {
-					console.error("Failed to send license update email:", emailError);
+					log.error({ err: serializeError(error as Error) }, "Failed to send license update email:", emailError);
 					// Don't fail the request if email fails
 				}
 
@@ -1077,7 +1096,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 					}),
 				});
 			} catch (emailError) {
-				console.error("Failed to send invitation email:", emailError);
+				log.error({ err: serializeError(error as Error) }, "Failed to send invitation email:", emailError);
 				// Don't fail the request if email fails
 			}
 
@@ -1153,7 +1172,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 				}),
 			});
 		} catch (emailError) {
-			console.error("Failed to send invitation email:", emailError);
+			log.error({ err: serializeError(error as Error) }, "Failed to send invitation email:", emailError);
 			// Don't fail the request if email fails
 		}
 
@@ -1171,7 +1190,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 			},
 		});
 	} catch (error) {
-		console.error("Invite user error:", error);
+		log.error({ err: serializeError(error as Error) }, "Invite user error:");
 		return c.json({ error: "Failed to invite user" }, 500);
 	}
 });
@@ -1266,7 +1285,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId/users/:userId", async (c: Cont
 			})),
 		});
 	} catch (error) {
-		console.error("Get user detail error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get user detail error:");
 		return c.json({ error: "Failed to get user details" }, 500);
 	}
 });
@@ -1357,7 +1376,7 @@ adminRoutes.patch("/projects/:projectId/apps/:appId/users/:userId", async (c: Co
 			},
 		});
 	} catch (error) {
-		console.error("Update user error:", error);
+		log.error({ err: serializeError(error as Error) }, "Update user error:");
 		return c.json({ error: "Failed to update user" }, 500);
 	}
 });
@@ -1417,7 +1436,7 @@ adminRoutes.delete("/projects/:projectId/apps/:appId/users/:userId", async (c: C
 			message: "User access has been revoked",
 		});
 	} catch (error) {
-		console.error("Delete user error:", error);
+		log.error({ err: serializeError(error as Error) }, "Delete user error:");
 		return c.json({ error: "Failed to remove user access" }, 500);
 	}
 });
@@ -1508,7 +1527,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/:userId/renew", async (
 			},
 		});
 	} catch (error) {
-		console.error("Renew license error:", error);
+		log.error({ err: serializeError(error as Error) }, "Renew license error:");
 		return c.json({ error: "Failed to renew license" }, 500);
 	}
 });
@@ -1644,12 +1663,12 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 		return c.json(appDTO);
 	} catch (error) {
 		if (error instanceof z.ZodError) {
-			console.error("Validation error:", error.errors);
+			log.warn({ errors: error.errors }, "Validation error");
 			return c.json({ error: "Invalid request data", details: error.errors }, 400);
 		}
-		console.error("Update app error:", error);
+		log.error({ err: serializeError(error as Error) }, "Update app error:");
 		if (error instanceof Error) {
-			console.error("Error details:", error.message, error.stack);
+			log.error({ err: serializeError(error as Error) }, "Error details:", error.message, error.stack);
 		}
 		return c.json({ error: "Failed to update app" }, 500);
 	}
@@ -1693,7 +1712,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId/api-keys", async (c: Context) 
 			serviceToken: app.service_token,
 		});
 	} catch (error) {
-		console.error("Get API keys error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get API keys error:");
 		return c.json({ error: "Failed to get API keys" }, 500);
 	}
 });
@@ -1744,7 +1763,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/regenerate-secret", async (c:
 			message: "Client secret regenerated successfully",
 		});
 	} catch (error) {
-		console.error("Regenerate client secret error:", error);
+		log.error({ err: serializeError(error as Error) }, "Regenerate client secret error:");
 		return c.json({ error: "Failed to regenerate client secret" }, 500);
 	}
 });
@@ -1795,7 +1814,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/regenerate-token", async (c: 
 			message: "Service token regenerated successfully",
 		});
 	} catch (error) {
-		console.error("Regenerate service token error:", error);
+		log.error({ err: serializeError(error as Error) }, "Regenerate service token error:");
 		return c.json({ error: "Failed to regenerate service token" }, 500);
 	}
 });
@@ -1847,7 +1866,7 @@ adminRoutes.get("/projects/:projectId/members", async (c: Context) => {
 			),
 		});
 	} catch (error) {
-		console.error("List project members error:", error);
+		log.error({ err: serializeError(error as Error) }, "List project members error:");
 		return c.json({ error: "Failed to list project members" }, 500);
 	}
 });
@@ -1962,7 +1981,7 @@ adminRoutes.post("/projects/:projectId/members", async (c: Context) => {
 				}),
 			});
 		} catch (emailError) {
-			console.error("Failed to send team invitation email:", emailError);
+			log.error({ err: serializeError(error as Error) }, "Failed to send team invitation email:", emailError);
 			// Don't fail the request if email fails
 		}
 
@@ -1977,7 +1996,7 @@ adminRoutes.post("/projects/:projectId/members", async (c: Context) => {
 			expiresAt: invitation.expires_at,
 		});
 	} catch (error) {
-		console.error("Invite project member error:", error);
+		log.error({ err: serializeError(error as Error) }, "Invite project member error:");
 		return c.json({ error: "Failed to invite project member" }, 500);
 	}
 });
@@ -2051,7 +2070,7 @@ adminRoutes.patch("/projects/:projectId/members/:memberId", async (c: Context) =
 			createdAt: updatedMember.created_at,
 		});
 	} catch (error) {
-		console.error("Update member role error:", error);
+		log.error({ err: serializeError(error as Error) }, "Update member role error:");
 		return c.json({ error: "Failed to update member role" }, 500);
 	}
 });
@@ -2104,7 +2123,7 @@ adminRoutes.delete("/projects/:projectId/members/:memberId", async (c: Context) 
 
 		return c.json({ success: true });
 	} catch (error) {
-		console.error("Remove member error:", error);
+		log.error({ err: serializeError(error as Error) }, "Remove member error:");
 		return c.json({ error: "Failed to remove member" }, 500);
 	}
 });
@@ -2151,7 +2170,7 @@ adminRoutes.get("/projects/:projectId/invitations", async (c: Context) => {
 			})),
 		});
 	} catch (error) {
-		console.error("List project invitations error:", error);
+		log.error({ err: serializeError(error as Error) }, "List project invitations error:");
 		return c.json({ error: "Failed to list project invitations" }, 500);
 	}
 });
@@ -2242,7 +2261,7 @@ adminRoutes.post("/invitations/:invitationCode/accept", async (c: Context) => {
 			},
 		});
 	} catch (error) {
-		console.error("Accept invitation error:", error);
+		log.error({ err: serializeError(error as Error) }, "Accept invitation error:");
 		return c.json({ error: "Failed to accept invitation" }, 500);
 	}
 });
@@ -2290,7 +2309,7 @@ adminRoutes.delete("/projects/:projectId/invitations/:invitationId", async (c: C
 
 		return c.json({ success: true });
 	} catch (error) {
-		console.error("Cancel invitation error:", error);
+		log.error({ err: serializeError(error as Error) }, "Cancel invitation error:");
 		return c.json({ error: "Failed to cancel invitation" }, 500);
 	}
 });
@@ -2335,7 +2354,7 @@ adminRoutes.get("/licenses", async (c: Context) => {
 			licenses: licensesWithAppDetails,
 		});
 	} catch (error) {
-		console.error("List licenses error:", error);
+		log.error({ err: serializeError(error as Error) }, "List licenses error:");
 		return c.json({ error: "Failed to list licenses" }, 500);
 	}
 });
@@ -2422,7 +2441,7 @@ adminRoutes.delete("/projects/:projectId", async (c: Context) => {
 			message: "Project has been deleted successfully",
 		});
 	} catch (error) {
-		console.error("Delete project error:", error);
+		log.error({ err: serializeError(error as Error) }, "Delete project error:");
 		return c.json({ error: "Failed to delete project" }, 500);
 	}
 });
@@ -2440,7 +2459,7 @@ adminRoutes.post("/apps", async (c: Context) => {
 		// TODO: implement app creation
 		return c.json({ message: "App created", data: body }, 201);
 	} catch (error) {
-		console.error("Create app error:", error);
+		log.error({ err: serializeError(error as Error) }, "Create app error:");
 		return c.json({ error: "Failed to create app" }, 500);
 	}
 });
@@ -2454,7 +2473,7 @@ adminRoutes.get("/apps", async (c: Context) => {
 		// TODO: implement apps listing
 		return c.json({ message: "Apps list", apps: [] });
 	} catch (error) {
-		console.error("Get apps error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get apps error:");
 		return c.json({ error: "Failed to get apps" }, 500);
 	}
 });
@@ -2471,7 +2490,7 @@ adminRoutes.patch("/apps/:app_id", async (c: Context) => {
 		// TODO: implement app update
 		return c.json({ message: "App updated", appId, data: body });
 	} catch (error) {
-		console.error("Update app error:", error);
+		log.error({ err: serializeError(error as Error) }, "Update app error:");
 		return c.json({ error: "Failed to update app" }, 500);
 	}
 });
@@ -2538,7 +2557,7 @@ adminRoutes.delete("/projects/:projectId/apps/:appId", async (c: Context) => {
 			message: "App has been deleted successfully",
 		});
 	} catch (error) {
-		console.error("Delete app error:", error);
+		log.error({ err: serializeError(error as Error) }, "Delete app error:");
 		return c.json({ error: "Failed to delete app" }, 500);
 	}
 });
@@ -2556,7 +2575,7 @@ adminRoutes.post("/members", async (c: Context) => {
 		// TODO: implement member addition
 		return c.json({ message: "Member added", data: body }, 201);
 	} catch (error) {
-		console.error("Add member error:", error);
+		log.error({ err: serializeError(error as Error) }, "Add member error:");
 		return c.json({ error: "Failed to add member" }, 500);
 	}
 });
@@ -2570,7 +2589,7 @@ adminRoutes.get("/members", async (c: Context) => {
 		// TODO: implement members listing
 		return c.json({ message: "Members list", members: [] });
 	} catch (error) {
-		console.error("Get members error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get members error:");
 		return c.json({ error: "Failed to get members" }, 500);
 	}
 });
@@ -2586,7 +2605,7 @@ adminRoutes.delete("/members/:member_id", async (c: Context) => {
 		// TODO: implement member removal
 		return c.json({ message: "Member removed", memberId });
 	} catch (error) {
-		console.error("Remove member error:", error);
+		log.error({ err: serializeError(error as Error) }, "Remove member error:");
 		return c.json({ error: "Failed to remove member" }, 500);
 	}
 });
@@ -2602,7 +2621,7 @@ adminRoutes.get("/licenses", async (c: Context) => {
 		// TODO: implement licenses listing from Core cache
 		return c.json({ message: "Licenses list", licenses: [] });
 	} catch (error) {
-		console.error("Get licenses error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get licenses error:");
 		return c.json({ error: "Failed to get licenses" }, 500);
 	}
 });
@@ -2619,7 +2638,7 @@ adminRoutes.patch("/licenses/:license_id", async (c: Context) => {
 		// TODO: implement license update
 		return c.json({ message: "License updated", licenseId, data: body });
 	} catch (error) {
-		console.error("Update license error:", error);
+		log.error({ err: serializeError(error as Error) }, "Update license error:");
 		return c.json({ error: "Failed to update license" }, 500);
 	}
 });
@@ -2683,7 +2702,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId/plans", async (c: Context) => 
 			})),
 		});
 	} catch (error) {
-		console.error("Get plans error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get plans error:");
 		return c.json({ error: "Failed to get plans" }, 500);
 	}
 });
@@ -2783,7 +2802,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/plans", async (c: Context) =>
 			},
 		});
 	} catch (error) {
-		console.error("Create plan error:", error);
+		log.error({ err: serializeError(error as Error) }, "Create plan error:");
 		return c.json({ error: "Failed to create plan" }, 500);
 	}
 });
@@ -2871,7 +2890,7 @@ adminRoutes.patch("/projects/:projectId/apps/:appId/plans/:planId", async (c: Co
 			},
 		});
 	} catch (error) {
-		console.error("Update plan error:", error);
+		log.error({ err: serializeError(error as Error) }, "Update plan error:");
 		return c.json({ error: "Failed to update plan" }, 500);
 	}
 });
@@ -2933,7 +2952,7 @@ adminRoutes.delete("/projects/:projectId/apps/:appId/plans/:planId", async (c: C
 			message: "Plan deleted successfully",
 		});
 	} catch (error) {
-		console.error("Delete plan error:", error);
+		log.error({ err: serializeError(error as Error) }, "Delete plan error:");
 		return c.json({ error: "Failed to delete plan" }, 500);
 	}
 });
@@ -3018,7 +3037,7 @@ adminRoutes.get("/projects/:projectId/payment-config", async (c: Context) => {
 			updatedAt: config.updated_at,
 		});
 	} catch (error) {
-		console.error("Get project payment config error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get project payment config error:");
 		return c.json({ error: "Failed to get payment configuration" }, 500);
 	}
 });
@@ -3095,7 +3114,7 @@ adminRoutes.post("/projects/:projectId/payment-config", async (c: Context) => {
 			testMode: Boolean(result.test_mode),
 		});
 	} catch (error) {
-		console.error("Save project payment config error:", error);
+		log.error({ err: serializeError(error as Error) }, "Save project payment config error:");
 		return c.json({ error: "Failed to save payment configuration" }, 500);
 	}
 });
@@ -3169,7 +3188,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId/payment-config", async (c: Con
 		
 		return c.json({ configured: false });
 	} catch (error) {
-		console.error("Get app payment config error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get app payment config error:");
 		return c.json({ error: "Failed to get payment configuration" }, 500);
 	}
 });
@@ -3252,7 +3271,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/payment-config", async (c: Co
 			testMode: Boolean(result.test_mode),
 		});
 	} catch (error) {
-		console.error("Save app payment config error:", error);
+		log.error({ err: serializeError(error as Error) }, "Save app payment config error:");
 		return c.json({ error: "Failed to save payment configuration" }, 500);
 	}
 });
@@ -3306,7 +3325,7 @@ adminRoutes.delete("/projects/:projectId/apps/:appId/payment-config", async (c: 
 			message: "App payment configuration removed. Now using project-level configuration.",
 		});
 	} catch (error) {
-		console.error("Delete app payment config error:", error);
+		log.error({ err: serializeError(error as Error) }, "Delete app payment config error:");
 		return c.json({ error: "Failed to delete payment configuration" }, 500);
 	}
 });

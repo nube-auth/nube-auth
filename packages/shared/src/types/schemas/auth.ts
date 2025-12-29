@@ -41,6 +41,26 @@ export const LoginResponseSchema = z.object({
 });
 
 /**
+ * Gateway Auth Schemas
+ */
+
+export const GatewayLoginRequestSchema = z.object({
+	coreSessionId: z.string().min(1, "Core session ID is required"),
+	audience: z.enum(["user", "admin"]).default("user"),
+});
+
+export const OAuthCallbackQuerySchema = z.object({
+	code: z.string().min(1, "Authorization code is required"),
+	state: z.string().min(1, "State parameter is required"),
+});
+
+export const OAuthInitiateQuerySchema = z.object({
+	provider: z.enum(["google", "github"]),
+	app_id: z.string().optional(),
+	redirect_uri: z.string().url().optional(),
+});
+
+/**
  * Type Exports
  */
 

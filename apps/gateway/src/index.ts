@@ -2,11 +2,16 @@ import { serve } from "@hono/node-server";
 import { createLogger, serializeError } from "@proofa/shared";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { secureHeaders } from "hono/secure-headers";
+import { csrf } from "hono/csrf";
 import { authMiddleware } from "./middleware/auth";
 import { httpLogger } from "./middleware/logger";
+import { rateLimitPresets } from "./middleware/rateLimit";
+import { adminSecurityCheck } from "./middleware/adminSecurityCheck";
 import { adminRoutes } from "./routes/admin";
 import { authRoutes } from "./routes/auth";
 import { meRoutes } from "./routes/me";
+import { env } from "./config/env";
 
 const log = createLogger("gateway");
 const app = new Hono();
@@ -20,6 +25,31 @@ const allowedOrigins = [
 	"https://proofa.sh",
 ];
 
+// Security headers middleware
+app.use("*", secureHeaders({
+	contentSecurityPolicy: {
+		defaultSrc: ["'self'"],
+		scriptSrc: ["'self'", "'unsafe-inline'"],
+		styleSrc: ["'self'", "'unsafe-inline'"],
+		imgSrc: ["'self'", "data:", "https:"],
+		connectSrc: ["'self'", "https://api.proofa.sh"],
+		fontSrc: ["'self'"],
+		objectSrc: ["'none'"],
+		mediaSrc: ["'self'"],
+		frameSrc: ["'none'"],
+	},
+	strictTransportSecurity: "max-age=31536000; includeSubDomains",
+	xFrameOptions: "DENY",
+	xContentTypeOptions: "nosniff",
+	referrerPolicy: "strict-origin-when-cross-origin",
+	permissionsPolicy: {
+		camera: ["none"],
+		microphone: ["none"],
+		geolocation: ["none"],
+	},
+}));
+
+// CORS configuration
 app.use("*", cors({
 	origin: (origin) => {
 		// Allow requests with no origin (e.g., same-origin, curl)
@@ -36,10 +66,27 @@ app.use("*", cors({
 	exposeHeaders: ["Set-Cookie"],
 }));
 
+// HTTP request logging
 app.use("*", httpLogger(log));
 
 // Auth middleware (applies to protected routes)
 app.use("*", authMiddleware);
+
+// CSRF Protection for sensitive admin operations
+app.use(
+	"/v1/admin/*",
+	csrf({
+		origin: allowedOrigins,
+	})
+);
+
+// Rate limiting
+// Apply strict rate limiting to auth endpoints
+app.use("/v1/auth/*", rateLimitPresets.auth);
+
+// Apply standard rate limiting to API endpoints
+app.use("/v1/admin/*", rateLimitPresets.api);
+app.use("/v1/me/*", rateLimitPresets.api);
 
 // Routes
 app.route("/v1/auth", authRoutes);
@@ -57,10 +104,23 @@ app.notFound((c) => {
 	return c.json({ error: "Not found" }, 404);
 });
 
-// Error handler
+// Error handler with production sanitization
 app.onError((err, c) => {
-	log.error({ err: serializeError(err), path: c.req.path }, "Unhandled error");
-	return c.json({ error: "Internal server error" }, 500);
+	const isProduction = process.env.NODE_ENV === "production";
+	
+	// Log the full error internally
+	log.error({ 
+		err: serializeError(err), 
+		path: c.req.path,
+		method: c.req.method,
+	}, "Unhandled error");
+	
+	// Sanitize error message for production
+	const errorMessage = isProduction 
+		? "Internal server error" 
+		: err.message || "Internal server error";
+	
+	return c.json({ error: errorMessage }, 500);
 });
 
 // Start server

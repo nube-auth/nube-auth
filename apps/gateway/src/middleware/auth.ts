@@ -4,6 +4,7 @@ import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 import { coreClient } from "../lib/core-client";
+import { loggers, serializeError } from "../utils/logger";
 
 const USER_SESSION_COOKIE = "proofa_user_session";
 const ADMIN_SESSION_COOKIE = "proofa_admin_session";
@@ -71,7 +72,7 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 		c.set("auth", auth);
 		return next();
 	} catch (error) {
-		console.error("Auth middleware error:", error);
+		loggers.auth.error({ err: serializeError(error as Error) }, "Auth middleware error");
 		return c.json({ error: "Unauthorized" }, 401);
 	}
 });

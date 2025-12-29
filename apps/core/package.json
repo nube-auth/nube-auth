@@ -15,17 +15,19 @@
 	"dependencies": {
 		"@hono/node-server": "^1.19.7",
 		"@proofa/auth": "workspace:*",
-		"@proofa/db": "workspace:*",
 		"@proofa/cache": "workspace:*",
+		"@proofa/db": "workspace:*",
 		"@proofa/shared": "workspace:*",
 		"hono": "^4.0.0",
 		"resend": "^2.0.0"
 	},
 	"devDependencies": {
+		"@hono/zod-validator": "^0.7.6",
 		"@types/node": "^20.10.0",
 		"tsup": "^8.0.0",
 		"tsx": "^4.7.0",
 		"typescript": "^5.3.0",
-		"vitest": "^1.0.0"
+		"vitest": "^1.0.0",
+		"zod": "^4.2.1"
 	}
 }

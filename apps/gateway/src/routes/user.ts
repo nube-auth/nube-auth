@@ -1,5 +1,10 @@
 import type { Context } from "hono";
+import { createLogger, serializeError } from "@proofa/shared";
+
+const log = createLogger("user-routes");
 import { Hono } from "hono";
+import { createLogger, serializeError } from "@proofa/shared";
+
 import { getCookie } from "hono/cookie";
 
 const userRouter = new Hono();
@@ -20,7 +25,7 @@ userRouter.get("/", async (c: Context) => {
 			message: "User profile",
 		});
 	} catch (error) {
-		console.error("Get user error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get user error:");
 		return c.json({ error: "Failed to get user profile" }, 500);
 	}
 });
@@ -39,7 +44,7 @@ userRouter.get("/profile", async (c: Context) => {
 			message: "User profile details",
 		});
 	} catch (error) {
-		console.error("Get profile error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get profile error:");
 		return c.json({ error: "Failed to get profile" }, 500);
 	}
 });
@@ -60,7 +65,7 @@ userRouter.patch("/profile", async (c: Context) => {
 			data: body,
 		});
 	} catch (error) {
-		console.error("Update profile error:", error);
+		log.error({ err: serializeError(error as Error) }, "Update profile error:");
 		return c.json({ error: "Failed to update profile" }, 500);
 	}
 });
@@ -80,7 +85,7 @@ userRouter.get("/sessions", async (c: Context) => {
 			message: "User sessions",
 		});
 	} catch (error) {
-		console.error("Get sessions error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get sessions error:");
 		return c.json({ error: "Failed to get sessions" }, 500);
 	}
 });
@@ -101,7 +106,7 @@ userRouter.delete("/sessions/:session_id", async (c: Context) => {
 			message: "Session revoked",
 		});
 	} catch (error) {
-		console.error("Revoke session error:", error);
+		log.error({ err: serializeError(error as Error) }, "Revoke session error:");
 		return c.json({ error: "Failed to revoke session" }, 500);
 	}
 });
@@ -124,7 +129,7 @@ userRouter.post("/logout", async (c: Context) => {
 			message: "User logged out",
 		});
 	} catch (error) {
-		console.error("Logout error:", error);
+		log.error({ err: serializeError(error as Error) }, "Logout error:");
 		return c.json({ error: "Failed to logout" }, 500);
 	}
 });

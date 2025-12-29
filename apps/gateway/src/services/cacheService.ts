@@ -1,5 +1,5 @@
 import { CACHE_TTL } from "../config/constants";
-import { redisClient } from "../redis/client";
+import { cache } from "@proofa/cache";
 import { coreService } from "./coreService";
 
 /**
@@ -14,14 +14,14 @@ export const cacheService = {
 		const key = `gateway:user:${userId}`;
 
 		// Try to get from cache
-		const cached = await redisClient.get(key);
-		if (cached && typeof cached === "string") {
-			return JSON.parse(cached);
+		const cached = await cache.get(key);
+		if (cached) {
+			return cached;
 		}
 
 		// Fetch from Core and cache
 		const user = await coreService.getUser(userId);
-		await redisClient.setex(key, CACHE_TTL, JSON.stringify(user));
+		await cache.set(key, user, CACHE_TTL);
 
 		return user;
 	},
@@ -33,14 +33,14 @@ export const cacheService = {
 		const key = `gateway:license:${appId}`;
 
 		// Try to get from cache
-		const cached = await redisClient.get(key);
-		if (cached && typeof cached === "string") {
-			return JSON.parse(cached);
+		const cached = await cache.get(key);
+		if (cached) {
+			return cached;
 		}
 
 		// Fetch from Core and cache
 		const license = await coreService.getLicense(appId);
-		await redisClient.setex(key, CACHE_TTL, JSON.stringify(license));
+		await cache.set(key, license, CACHE_TTL);
 
 		return license;
 	},
@@ -52,9 +52,9 @@ export const cacheService = {
 		const key = `gateway:project:${projectId}`;
 
 		// Try to get from cache
-		const cached = await redisClient.get(key);
-		if (cached && typeof cached === "string") {
-			return JSON.parse(cached);
+		const cached = await cache.get(key);
+		if (cached) {
+			return cached;
 		}
 
 		// Fetch from Core and cache
@@ -62,7 +62,7 @@ export const cacheService = {
 			method: "GET",
 			path: `/v1/projects/${projectId}`,
 		});
-		await redisClient.setex(key, CACHE_TTL, JSON.stringify(project));
+		await cache.set(key, project, CACHE_TTL);
 
 		return project;
 	},
@@ -72,7 +72,7 @@ export const cacheService = {
 	 */
 	async invalidateUser(userId: string): Promise<void> {
 		const key = `gateway:user:${userId}`;
-		await redisClient.del(key);
+		await cache.delete(key);
 	},
 
 	/**
@@ -80,7 +80,7 @@ export const cacheService = {
 	 */
 	async invalidateLicense(appId: string): Promise<void> {
 		const key = `gateway:license:${appId}`;
-		await redisClient.del(key);
+		await cache.delete(key);
 	},
 
 	/**
@@ -88,6 +88,6 @@ export const cacheService = {
 	 */
 	async invalidateProject(projectId: string): Promise<void> {
 		const key = `gateway:project:${projectId}`;
-		await redisClient.del(key);
+		await cache.delete(key);
 	},
 };

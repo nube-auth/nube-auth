@@ -1,50 +1,46 @@
 /**
- * Drizzle ORM Migration Instructions
+ * Drizzle ORM Migration Instructions (PostgreSQL)
  *
  * To generate migrations from schema changes:
  *
- * 1. Install drizzle-kit CLI:
- *    npm install -g drizzle-kit
+ * 1. Update schema in ./src/schema.ts
  *
- * 2. Create drizzle.config.ts in project root:
- *    export default defineConfig({
- *      schema: "./packages/db/src/schema.ts",
- *      out: "./packages/db/migrations",
- *      driver: "turso",
- *      dbCredentials: {
- *        url: process.env.DATABASE_URL!,
- *        authToken: process.env.DATABASE_AUTH_TOKEN!,
- *      },
- *    });
+ * 2. Generate migration:
+ *    pnpm run db:generate
  *
- * 3. Generate migration:
- *    drizzle-kit generate:sqlite
- *
- * 4. Apply migration to database:
- *    drizzle-kit push:sqlite
+ * 3. Apply migration to database:
+ *    pnpm run db:push
  *
  * For development, use:
- *    drizzle-kit studio
+ *    pnpm run db:studio
  *
- * This opens Drizzle Studio at localhost:3000 to inspect your database.
+ * This opens Drizzle Studio at localhost:4983 to inspect your database.
  */
 
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+import pg from "pg";
 import * as schema from "./schema.js";
+
+const { Pool } = pg;
 
 /**
  * Run migrations on application startup
  */
 export async function runMigrations() {
-	const client = createClient({
-		url: process.env.DATABASE_URL!,
-		authToken: process.env.DATABASE_AUTH_TOKEN!,
+	if (!process.env.DATABASE_URL) {
+		throw new Error("DATABASE_URL environment variable is required");
+	}
+
+	const pool = new Pool({
+		connectionString: process.env.DATABASE_URL,
 	});
 
-	drizzle(client, { schema });
+	const db = drizzle(pool, { schema });
 
-	// Migrations are auto-applied on connection
-	// Drizzle runs any pending migrations in the migrations/ folder
+	console.log("Running database migrations...");
+	await migrate(db, { migrationsFolder: "./drizzle" });
 	console.log("✅ Database migrations completed");
+
+	await pool.end();
 }

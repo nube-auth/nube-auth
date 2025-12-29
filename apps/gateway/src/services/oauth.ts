@@ -1,108 +1,122 @@
-import type { Database } from "@proofa/db";
-import { appQueries, projectQueries } from "@proofa/db";
-import { decrypt, isEncrypted } from "@proofa/shared";
+import type { DbClient } from "@proofa/db";
+import { oauthProviderQueries, appQueries } from "@proofa/db";
+import { decryptOAuthCredentials, type OAuthCredentials as SharedOAuthCredentials } from "@proofa/shared";
 
-export interface OAuthCredentials {
-	googleClientId?: string;
-	googleClientSecret?: string;
-	githubClientId?: string;
-	githubClientSecret?: string;
-	source: "proofa" | "project" | "app";
+export interface OAuthProvider {
+	provider: string;
+	credentials: SharedOAuthCredentials;
+	source: "platform" | "project" | "app";
+	custom_button_text?: string;
+	display_order: number;
 }
 
 /**
- * Resolve OAuth credentials for an app following the inheritance chain:
- * app -> project -> proofa
+ * Get all available OAuth providers for an app
+ * Returns providers from all hierarchy levels (platform, project, app)
  *
  * @param db Database instance
  * @param appId Internal app ID
- * @returns Resolved OAuth credentials with source information
+ * @returns Array of available OAuth providers with their credentials
  */
-export async function resolveOAuthCredentials(
-	db: Database,
+export async function getAvailableOAuthProviders(
+	db: DbClient,
 	appId: number,
-): Promise<OAuthCredentials> {
-	// Get the app
-	const app = await appQueries.findById(db, appId);
-	if (!app) {
-		throw new Error("App not found");
+): Promise<OAuthProvider[]> {
+	const providers = await oauthProviderQueries.getAvailableOAuthProviders(db, appId);
+
+	return providers.map((p) => ({
+		provider: p.provider,
+		credentials: decryptOAuthCredentials(p.credentials),
+		source: p.entity_type as "platform" | "project" | "app",
+		custom_button_text: undefined,
+		display_order: 0,
+	}));
+}
+
+/**
+ * Get selected OAuth providers for an app
+ * Returns only the providers the app has explicitly enabled
+ *
+ * @param db Database instance
+ * @param appId Internal app ID
+ * @returns Array of selected OAuth providers with their credentials
+ */
+export async function getOAuthProviders(
+	db: DbClient,
+	appId: number,
+): Promise<OAuthProvider[]> {
+	const selections = await oauthProviderQueries.getOAuthProviders(db, appId);
+
+	return selections.map((s) => ({
+		provider: s.provider,
+		credentials: decryptOAuthCredentials(s.credentials),
+		source: s.entity_type as "platform" | "project" | "app",
+		custom_button_text: s.custom_button_text || undefined,
+		display_order: s.display_order,
+	}));
+}
+
+/**
+ * Get OAuth provider by name for an app
+ * Returns the credentials for a specific provider if the app has it enabled
+ *
+ * @param db Database instance
+ * @param appId Internal app ID
+ * @param providerName Name of the provider (e.g., "google", "github")
+ * @returns OAuth provider with credentials or null if not found
+ */
+export async function getOAuthProvider(
+	db: DbClient,
+	appId: number,
+	providerName: string,
+): Promise<OAuthProvider | null> {
+	const provider = await oauthProviderQueries.getOAuthProviderByName(db, appId, providerName);
+
+	if (!provider) {
+		return null;
 	}
 
-	const inheritSource = app.oauth_inherit_source || "proofa";
-
-	// If app-specific, return app credentials
-	if (inheritSource === "app") {
-		return {
-			googleClientId: app.google_client_id || undefined,
-			googleClientSecret: app.google_client_secret
-				? isEncrypted(app.google_client_secret)
-					? decrypt(app.google_client_secret)
-					: app.google_client_secret
-				: undefined,
-			githubClientId: app.github_client_id || undefined,
-			githubClientSecret: app.github_client_secret
-				? isEncrypted(app.github_client_secret)
-					? decrypt(app.github_client_secret)
-					: app.github_client_secret
-				: undefined,
-			source: "app",
-		};
-	}
-
-	// If project-level, get project credentials
-	if (inheritSource === "project") {
-		const project = await projectQueries.findById(db, app.project_id);
-		if (!project) {
-			throw new Error("Project not found");
-		}
-
-		// If project has credentials, return them
-		if (project.google_client_id || project.github_client_id) {
-			return {
-				googleClientId: project.google_client_id || undefined,
-				googleClientSecret: project.google_client_secret
-					? isEncrypted(project.google_client_secret)
-						? decrypt(project.google_client_secret)
-						: project.google_client_secret
-					: undefined,
-				githubClientId: project.github_client_id || undefined,
-				githubClientSecret: project.github_client_secret
-					? isEncrypted(project.github_client_secret)
-						? decrypt(project.github_client_secret)
-						: project.github_client_secret
-					: undefined,
-				source: "project",
-			};
-		}
-
-		// If project doesn't have credentials, fall back to Proofa
-	}
-
-	// Default: Use Proofa credentials (from environment variables)
 	return {
-		googleClientId: process.env.GOOGLE_CLIENT_ID,
-		googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
-		githubClientId: process.env.GITHUB_CLIENT_ID,
-		githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
-		source: "proofa",
+		provider: provider.provider,
+		credentials: decryptOAuthCredentials(provider.credentials),
+		source: provider.entity_type as "platform" | "project" | "app",
+		custom_button_text: provider.custom_button_text || undefined,
+		display_order: provider.display_order,
 	};
 }
 
 /**
- * Resolve OAuth credentials by app public ID
+ * Get OAuth providers by app public ID
  *
  * @param db Database instance
  * @param appPublicId Public app ID
- * @returns Resolved OAuth credentials with source information
+ * @returns Array of OAuth providers with credentials
  */
-export async function resolveOAuthCredentialsByPublicId(
-	db: Database,
+export async function getOAuthProvidersByPublicId(
+	db: DbClient,
 	appPublicId: string,
-): Promise<OAuthCredentials> {
+): Promise<OAuthProvider[]> {
 	const app = await appQueries.findByPublicId(db, appPublicId);
 	if (!app) {
 		throw new Error("App not found");
 	}
 
-	return resolveOAuthCredentials(db, app.id);
+	return getOAuthProviders(db, app.id);
+}
+
+/**
+ * Check if an app has a specific OAuth provider enabled
+ *
+ * @param db Database instance
+ * @param appId Internal app ID
+ * @param providerName Name of the provider (e.g., "google", "github")
+ * @returns True if the provider is enabled for the app
+ */
+export async function hasOAuthProvider(
+	db: DbClient,
+	appId: number,
+	providerName: string,
+): Promise<boolean> {
+	const provider = await getOAuthProvider(db, appId, providerName);
+	return provider !== null;
 }

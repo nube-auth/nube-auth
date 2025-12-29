@@ -14,12 +14,27 @@ export function createDbClient() {
 		throw new Error("DATABASE_URL environment variable is not set");
 	}
 
-	// Log URL format for debugging (not the full URL for security)
-	const urlPrefix = url.substring(0, Math.min(20, url.length));
-	console.log(`Connecting to database: ${urlPrefix}...`);
+	// Log database connection (sanitized - no credentials)
+	try {
+		const parsed = new URL(url);
+		// Only log protocol, host, and database name - no credentials
+		const sanitized = `${parsed.protocol}//${parsed.host}${parsed.pathname}`;
+		console.log(`Connecting to database: ${sanitized}`);
+	} catch (error) {
+		// Fallback if URL parsing fails
+		console.log("Connecting to database...");
+	}
 
 	const pool = new Pool({
 		connectionString: url,
+		// Connection pool configuration for optimal performance
+		max: 20, // Maximum number of clients in the pool
+		min: 5, // Minimum number of clients in the pool
+		idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+		connectionTimeoutMillis: 2000, // Timeout for new connections
+		// Enable keep-alive to detect broken connections
+		keepAlive: true,
+		keepAliveInitialDelayMillis: 10000,
 	});
 
 	return drizzle(pool, { schema });
@@ -54,7 +69,6 @@ export {
 	identityQueries,
 	invitationQueries,
 	licenseQueries,
-	paymentConfigQueries,
 	planQueries,
 	projectInvitationQueries,
 	projectMemberQueries,
@@ -62,6 +76,8 @@ export {
 	sessionQueries,
 	userQueries,
 } from "./queries.js";
+// Export provider helpers
+export { oauthProviderQueries, paymentProviderQueries } from "./providers.js";
 // Export schema for migrations and types
 export * from "./schema.js";
 

@@ -93,13 +93,26 @@ export {
 	isEncrypted,
 	maskSecret,
 } from "./utils/encryption.js";
-// Re-export environment utilities
+// Re-export credential utilities
 export {
-	loadEnv,
-	getRequiredEnv,
-	getOptionalEnv,
-	validateEnv,
-} from "./env-loader.js";
+	encryptOAuthCredentials,
+	decryptOAuthCredentials,
+	encryptPaymentCredentials,
+	decryptPaymentCredentials,
+	maskOAuthCredentials,
+	maskPaymentCredentials,
+	validateOAuthCredentials,
+	validatePaymentCredentials,
+	safeDecryptOAuthCredentials,
+	safeDecryptPaymentCredentials,
+	type OAuthCredentials,
+	type PaymentCredentials,
+} from "./utils/credentials.js";
+// Re-export environment utilities (Node.js only - not for browser)
+// Note: These are exported but should only be used in Node.js environments
+// Browser builds should not import these
+export type { } from "./env-loader.js"; // Type-only export to prevent bundling
+// Actual exports available via direct import: import { loadEnv } from "@proofa/shared/env-loader"
 
 // Re-export error handling utilities
 export {
@@ -113,7 +126,6 @@ export {
 	isErrorResponse,
 	isSuccessResponse,
 	type SuccessResponse,
-	type ApiResponse,
 } from "./utils/errors.js";
 
 // Re-export validation utilities
@@ -152,3 +164,12 @@ export {
 	type LockoutConfig,
 	recordFailedAttempt,
 } from "./middleware/lockout.js";
+
+// Re-export audit logging
+export {
+	AuditEventType,
+	AuditSeverity,
+	type AuditEvent,
+	AuditLogger,
+	createAuditLogger,
+} from "./audit.js";

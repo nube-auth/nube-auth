@@ -87,10 +87,6 @@ export const projects = pgTable(
 			.notNull()
 			.references(() => users.id),
 		is_active: boolean("is_active").notNull().default(true),
-		google_client_id: text("google_client_id"),
-		google_client_secret: text("google_client_secret"),
-		github_client_id: text("github_client_id"),
-		github_client_secret: text("github_client_secret"),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 		updated_at: timestamp("updated_at").notNull().defaultNow(),
 	},
@@ -188,6 +184,109 @@ export const plans = pgTable(
 );
 
 /**
+ * OAuth Providers table
+ * Stores OAuth provider configurations at platform, project, and app levels
+ */
+export const oauth_providers = pgTable(
+	"oauth_providers",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		entity_type: varchar("entity_type", { length: 20 }).notNull(),
+		entity_id: integer("entity_id"),
+		provider: varchar("provider", { length: 50 }).notNull(),
+		is_active: boolean("is_active").notNull().default(true),
+		credentials: text("credentials").notNull(),
+		previous_credentials: text("previous_credentials"),
+		credentials_rotated_at: timestamp("credentials_rotated_at"),
+		metadata: jsonb("metadata"),
+		created_by_user_id: integer("created_by_user_id").references(() => users.id),
+		updated_by_user_id: integer("updated_by_user_id").references(() => users.id),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+		deleted_at: timestamp("deleted_at"),
+	},
+	(table) => ({
+		entityIdx: index("oauth_providers_entity_idx").on(table.entity_type, table.entity_id),
+		providerIdx: index("oauth_providers_provider_idx").on(table.provider),
+		isActiveIdx: index("oauth_providers_is_active_idx").on(table.is_active),
+		deletedAtIdx: index("oauth_providers_deleted_at_idx").on(table.deleted_at),
+		entityProviderUnique: unique("oauth_providers_entity_provider_unique").on(
+			table.entity_type,
+			table.entity_id,
+			table.provider
+		),
+	}),
+);
+
+/**
+ * Payment Providers table
+ * Stores payment provider configurations at platform, project, and app levels
+ */
+export const payment_providers = pgTable(
+	"payment_providers",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		entity_type: varchar("entity_type", { length: 20 }).notNull(),
+		entity_id: integer("entity_id"),
+		provider: varchar("provider", { length: 50 }).notNull(),
+		is_active: boolean("is_active").notNull().default(true),
+		environment: varchar("environment", { length: 20 }).notNull().default("test"),
+		credentials: text("credentials").notNull(),
+		previous_credentials: text("previous_credentials"),
+		credentials_rotated_at: timestamp("credentials_rotated_at"),
+		webhook_secret: text("webhook_secret"),
+		metadata: jsonb("metadata"),
+		created_by_user_id: integer("created_by_user_id").references(() => users.id),
+		updated_by_user_id: integer("updated_by_user_id").references(() => users.id),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+		deleted_at: timestamp("deleted_at"),
+	},
+	(table) => ({
+		entityIdx: index("payment_providers_entity_idx").on(table.entity_type, table.entity_id),
+		providerIdx: index("payment_providers_provider_idx").on(table.provider),
+		environmentIdx: index("payment_providers_environment_idx").on(table.environment),
+		isActiveIdx: index("payment_providers_is_active_idx").on(table.is_active),
+		deletedAtIdx: index("payment_providers_deleted_at_idx").on(table.deleted_at),
+		entityProviderEnvUnique: unique("payment_providers_entity_provider_env_unique").on(
+			table.entity_type,
+			table.entity_id,
+			table.provider,
+			table.environment
+		),
+	}),
+);
+
+/**
+ * App OAuth Selections table
+ * Junction table for apps to select which OAuth providers to enable
+ */
+export const app_oauth_selections = pgTable(
+	"app_oauth_selections",
+	{
+		id: serial("id").primaryKey(),
+		app_id: integer("app_id")
+			.notNull()
+			.references(() => apps.id, { onDelete: "cascade" }),
+		oauth_provider_id: integer("oauth_provider_id")
+			.notNull()
+			.references(() => oauth_providers.id, { onDelete: "cascade" }),
+		is_enabled: boolean("is_enabled").notNull().default(true),
+		display_order: integer("display_order").notNull().default(0),
+		custom_button_text: varchar("custom_button_text", { length: 100 }),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => ({
+		appOAuthUnique: unique("app_oauth_selections_app_oauth_unique").on(table.app_id, table.oauth_provider_id),
+		appIdIdx: index("app_oauth_selections_app_id_idx").on(table.app_id),
+		isEnabledIdx: index("app_oauth_selections_is_enabled_idx").on(table.is_enabled),
+	}),
+);
+
+/**
  * Apps table
  * Applications within projects
  */
@@ -213,24 +312,8 @@ export const apps = pgTable(
 		cache_ttl_minutes: integer("cache_ttl_minutes").notNull().default(10),
 		cors_allowed_origins: jsonb("cors_allowed_origins"),
 		rate_limit_requests_per_minute: integer("rate_limit_requests_per_minute").notNull().default(100),
-		payment_provider: varchar("payment_provider", { length: 50 }),
-		payment_test_mode: boolean("payment_test_mode").default(true),
-		lemon_squeezy_store_id: text("lemon_squeezy_store_id"),
-		lemon_squeezy_api_key: text("lemon_squeezy_api_key"),
-		lemon_squeezy_webhook_secret: text("lemon_squeezy_webhook_secret"),
-		dodo_api_key: text("dodo_api_key"),
-		dodo_secret_key: text("dodo_secret_key"),
-		dodo_webhook_secret: text("dodo_webhook_secret"),
-		stripe_publishable_key: text("stripe_publishable_key"),
-		stripe_secret_key: text("stripe_secret_key"),
-		stripe_webhook_secret: text("stripe_webhook_secret"),
-		webhook_url: text("webhook_url"),
-		webhook_events: jsonb("webhook_events"),
-		oauth_inherit_source: varchar("oauth_inherit_source", { length: 50 }).notNull().default("proofa"),
-		google_client_id: text("google_client_id"),
-		google_client_secret: text("google_client_secret"),
-		github_client_id: text("github_client_id"),
-		github_client_secret: text("github_client_secret"),
+		selected_payment_provider_id: integer("selected_payment_provider_id").references(() => payment_providers.id),
+		webhook_base_url: text("webhook_base_url"),
 		client_secret: text("client_secret").notNull(),
 		service_token: text("service_token").notNull(),
 		email_from_name: varchar("email_from_name", { length: 255 }),
@@ -244,6 +327,7 @@ export const apps = pgTable(
 		projectIdx: index("apps_project_id_idx").on(table.project_id),
 		isActiveIdx: index("apps_is_active_idx").on(table.is_active),
 		defaultPlanIdx: index("apps_default_plan_id_idx").on(table.default_plan_id),
+		selectedPaymentProviderIdx: index("apps_selected_payment_provider_id_idx").on(table.selected_payment_provider_id),
 	}),
 );
 
@@ -407,30 +491,29 @@ export const invitations = pgTable(
 );
 
 /**
- * Payment Configurations table
- * Stores payment provider configurations for projects and apps
+ * Provider Usage Logs table
+ * Tracks usage of OAuth and payment providers for monitoring and debugging
  */
-export const payment_configurations = pgTable(
-	"payment_configurations",
+export const provider_usage_logs = pgTable(
+	"provider_usage_logs",
 	{
 		id: serial("id").primaryKey(),
-		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
-		scope_type: varchar("scope_type", { length: 50 }).notNull(),
-		scope_id: integer("scope_id").notNull(),
-		provider: varchar("provider", { length: 50 }).notNull(),
-		is_active: boolean("is_active").notNull().default(true),
-		test_mode: boolean("test_mode").notNull().default(true),
-		config: text("config").notNull(),
+		provider_type: varchar("provider_type", { length: 20 }).notNull(),
+		provider_id: integer("provider_id").notNull(),
+		app_id: integer("app_id").references(() => apps.id),
+		user_id: integer("user_id").references(() => users.id),
+		operation: varchar("operation", { length: 50 }).notNull(),
+		status: varchar("status", { length: 20 }).notNull(),
+		error_message: text("error_message"),
+		metadata: jsonb("metadata"),
+		ip_address: varchar("ip_address", { length: 50 }),
 		created_at: timestamp("created_at").notNull().defaultNow(),
-		updated_at: timestamp("updated_at").notNull().defaultNow(),
 	},
 	(table) => ({
-		scopeIdx: index("payment_configurations_scope_idx").on(table.scope_type, table.scope_id),
-		providerIdx: index("payment_configurations_provider_idx").on(table.provider),
-		scopeProviderUnique: unique("payment_configurations_scope_provider_unique").on(
-			table.scope_type,
-			table.scope_id,
-			table.provider
-		),
+		providerIdIdx: index("provider_usage_logs_provider_id_idx").on(table.provider_id),
+		appIdIdx: index("provider_usage_logs_app_id_idx").on(table.app_id),
+		createdAtIdx: index("provider_usage_logs_created_at_idx").on(table.created_at),
+		statusIdx: index("provider_usage_logs_status_idx").on(table.status),
+		providerTypeOperationIdx: index("provider_usage_logs_type_operation_idx").on(table.provider_type, table.operation),
 	}),
 );

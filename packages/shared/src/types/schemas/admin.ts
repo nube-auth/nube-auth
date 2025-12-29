@@ -83,6 +83,118 @@ export const UpdateProjectOAuthRequestSchema = z.object({
 	githubClientSecret: z.string().optional(),
 });
 
+/**
+ * User Invitation Schemas
+ */
+
+export const InviteAppUserRequestSchema = z.object({
+	email: EmailSchema,
+	plan_id: z.number().int().positive().optional(),
+	grant_license: z.boolean().default(false),
+	license_duration_days: z.number().int().min(1).max(3650).optional().nullable(),
+	custom_message: z.string().max(1000).optional(),
+});
+
+export const InviteProjectMemberRequestSchema = z.object({
+	email: EmailSchema,
+	role: RoleSchema,
+	custom_message: z.string().max(1000).optional(),
+});
+
+/**
+ * License Management Schemas
+ */
+
+export const GrantLicenseRequestSchema = z.object({
+	user_id: PublicIdSchema,
+	plan_id: z.number().int().positive(),
+	duration_days: z.number().int().min(1).max(3650).optional().nullable(),
+	metadata: z.record(z.any()).optional(),
+});
+
+export const UpdateLicenseRequestSchema = z.object({
+	status: z.enum(["active", "expired", "revoked"]).optional(),
+	valid_until: z.number().int().positive().optional().nullable(),
+	metadata: z.record(z.any()).optional(),
+});
+
+/**
+ * Plan Management Schemas
+ */
+
+export const CreatePlanRequestSchema = z.object({
+	name: NameSchema,
+	slug: SlugSchema.optional(),
+	description: DescriptionSchema,
+	price: z.number().min(0).max(999999.99),
+	currency: z.string().length(3).regex(/^[A-Z]{3}$/, "Currency must be 3-letter ISO code"),
+	billing_period: z.enum(["monthly", "yearly", "lifetime", "custom"]),
+	trial_days: TrialDaysSchema,
+	features: z.record(z.any()).optional(),
+	is_active: z.boolean().default(true),
+});
+
+export const UpdatePlanRequestSchema = CreatePlanRequestSchema.partial();
+
+/**
+ * Payment Configuration Schemas
+ */
+
+export const CreatePaymentConfigRequestSchema = z.object({
+	provider: z.enum(["stripe", "razorpay", "paypal"]),
+	test_mode: z.boolean().default(true),
+	is_active: z.boolean().default(true),
+	config: z.record(z.string()).refine(
+		(config) => {
+			// Validate required fields based on provider
+			if (config.provider === "stripe") {
+				return config.secret_key && config.publishable_key;
+			}
+			if (config.provider === "razorpay") {
+				return config.key_id && config.key_secret;
+			}
+			if (config.provider === "paypal") {
+				return config.client_id && config.client_secret;
+			}
+			return true;
+		},
+		{ message: "Missing required configuration fields for provider" }
+	),
+});
+
+export const UpdatePaymentConfigRequestSchema = CreatePaymentConfigRequestSchema.partial();
+
+/**
+ * Query Parameter Schemas
+ */
+
+export const ListQuerySchema = z.object({
+	page: z.coerce.number().int().positive().default(1),
+	limit: z.coerce.number().int().positive().max(100).default(20),
+	search: z.string().max(255).optional(),
+	status: z.enum(["active", "inactive", "all"]).optional(),
+});
+
+export const ProjectIdParamSchema = z.object({
+	projectId: PublicIdSchema,
+});
+
+export const AppIdParamSchema = z.object({
+	appId: PublicIdSchema,
+});
+
+export const UserIdParamSchema = z.object({
+	userId: PublicIdSchema,
+});
+
+export const LicenseIdParamSchema = z.object({
+	licenseId: PublicIdSchema,
+});
+
+export const PlanIdParamSchema = z.object({
+	planId: PublicIdSchema,
+});
+
 export const AppDTOSchema = z.object({
 	id: PublicIdSchema,
 	projectId: PublicIdSchema,

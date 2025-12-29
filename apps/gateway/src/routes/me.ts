@@ -1,5 +1,10 @@
 import { getDb, sessionQueries, userQueries } from "@proofa/db";
+import { createLogger, serializeError } from "@proofa/shared";
+
+const log = createLogger("me-routes");
 import type { Context } from "hono";
+import { createLogger, serializeError } from "@proofa/shared";
+
 import { Hono } from "hono";
 import { getAuth } from "../middleware/auth";
 
@@ -24,7 +29,7 @@ meRoutes.get("/", async (c: Context) => {
 			createdAt: user?.created_at ? new Date(user.created_at * 1000).toISOString() : null,
 		});
 	} catch (error) {
-		console.error("Get me error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get me error:");
 		return c.json({ error: "Failed to get profile" }, 500);
 	}
 });
@@ -62,7 +67,7 @@ meRoutes.patch("/", async (c: Context) => {
 			name: updated.name,
 		});
 	} catch (error) {
-		console.error("Update profile error:", error);
+		log.error({ err: serializeError(error as Error) }, "Update profile error:");
 		return c.json({ error: "Failed to update profile" }, 500);
 	}
 });
@@ -79,7 +84,7 @@ meRoutes.delete("/sessions", async (c: Context) => {
 
 		return c.json({ message: "Logged out" });
 	} catch (error) {
-		console.error("Logout error:", error);
+		log.error({ err: serializeError(error as Error) }, "Logout error:");
 		return c.json({ error: "Failed to logout" }, 500);
 	}
 });
@@ -115,7 +120,7 @@ meRoutes.get("/sessions", async (c: Context) => {
 			})),
 		});
 	} catch (error) {
-		console.error("Get sessions error:", error);
+		log.error({ err: serializeError(error as Error) }, "Get sessions error:");
 		return c.json({ error: "Failed to get sessions" }, 500);
 	}
 });

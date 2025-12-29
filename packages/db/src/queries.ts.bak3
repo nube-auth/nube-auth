@@ -39,7 +39,7 @@ export const userQueries = {
 	async update(db: DbClient, userId: number, data: Partial<typeof users.$inferInsert>) {
 		return db
 			.update(users)
-			.set({ ...data, updated_at: new Date() })
+			.set({ ...data, updated_at: Math.floor(Date.now() / 1000) })
 			.where(eq(users.id, userId))
 			.returning()
 			;
@@ -59,7 +59,7 @@ export const identityQueries = {
 	},
 
 	async findByUserId(db: DbClient, userId: number) {
-		return db.select().from(identities).where(eq(identities.user_id, userId));
+		return db.select().from(identities).where(eq(identities.user_id, userId)).all();
 	},
 
 	async create(db: DbClient, data: typeof identities.$inferInsert) {
@@ -85,23 +85,23 @@ export const sessionQueries = {
 			.from(sessions)
 			.where(eq(sessions.user_id, userId))
 			.orderBy(desc(sessions.created_at))
-			;
+			.all();
 	},
 
 	async findActiveByUserId(db: DbClient, userId: number) {
-		const now = new Date();
+		const now = Math.floor(Date.now() / 1000);
 		return db
 			.select()
 			.from(sessions)
 			.where(and(eq(sessions.user_id, userId), isNull(sessions.revoked_at), gt(sessions.expires_at, now)))
-			;
+			.all();
 	},
 
 	async create(db: DbClient, data: typeof sessions.$inferInsert) {
 		return db.insert(sessions).values(data).returning();
 	},
 
-	async updateLastSeen(db: DbClient, sessionId: number, lastSeenAt: Date) {
+	async updateLastSeen(db: DbClient, sessionId: number, lastSeenAt: number) {
 		return db
 			.update(sessions)
 			.set({ last_seen_at: lastSeenAt })
@@ -113,7 +113,7 @@ export const sessionQueries = {
 	async revoke(db: DbClient, sessionId: number) {
 		return db
 			.update(sessions)
-			.set({ revoked_at: new Date() })
+			.set({ revoked_at: Math.floor(Date.now() / 1000) })
 			.where(eq(sessions.id, sessionId))
 			.returning()
 			;
@@ -125,15 +125,15 @@ export const sessionQueries = {
  */
 export const projectQueries = {
 	async findById(db: DbClient, projectId: number) {
-		return db.select().from(projects).where(and(eq(projects.id, projectId), eq(projects.is_active, true)));
+		return db.select().from(projects).where(and(eq(projects.id, projectId), eq(projects.is_active, 1)));
 	},
 
 	async findByPublicId(db: DbClient, publicId: string) {
-		return db.select().from(projects).where(and(eq(projects.public_id, publicId), eq(projects.is_active, true)));
+		return db.select().from(projects).where(and(eq(projects.public_id, publicId), eq(projects.is_active, 1)));
 	},
 
 	async findByOwnerId(db: DbClient, userId: number) {
-		return db.select().from(projects).where(and(eq(projects.owner_user_id, userId), eq(projects.is_active, true)));
+		return db.select().from(projects).where(and(eq(projects.owner_user_id, userId), eq(projects.is_active, 1))).all();
 	},
 
 	async findByUserId(db: DbClient, userId: number) {
@@ -142,12 +142,12 @@ export const projectQueries = {
 			.select({ project_id: project_members.project_id })
 			.from(project_members)
 			.where(eq(project_members.user_id, userId))
-			;
+			.all();
 
 		if (memberProjects.length === 0) return [];
 
 		const projectIds = memberProjects.map((m) => m.project_id);
-		return db.select().from(projects).where(and(inArray(projects.id, projectIds), eq(projects.is_active, true)));
+		return db.select().from(projects).where(and(inArray(projects.id, projectIds), eq(projects.is_active, 1))).all();
 	},
 
 	async create(db: DbClient, data: typeof projects.$inferInsert) {
@@ -157,7 +157,7 @@ export const projectQueries = {
 	async update(db: DbClient, projectId: number, data: Partial<typeof projects.$inferInsert>) {
 		return db
 			.update(projects)
-			.set({ ...data, updated_at: new Date() })
+			.set({ ...data, updated_at: Math.floor(Date.now() / 1000) })
 			.where(eq(projects.id, projectId))
 			.returning()
 			;
@@ -185,11 +185,11 @@ export const projectMemberQueries = {
 	},
 
 	async findByProjectId(db: DbClient, projectId: number) {
-		return db.select().from(project_members).where(eq(project_members.project_id, projectId));
+		return db.select().from(project_members).where(eq(project_members.project_id, projectId)).all();
 	},
 
 	async findByUserId(db: DbClient, userId: number) {
-		return db.select().from(project_members).where(eq(project_members.user_id, userId));
+		return db.select().from(project_members).where(eq(project_members.user_id, userId)).all();
 	},
 
 	async create(db: DbClient, data: typeof project_members.$inferInsert) {
@@ -243,7 +243,7 @@ export const projectInvitationQueries = {
 			.select()
 			.from(project_invitations)
 			.where(and(eq(project_invitations.project_id, projectId), eq(project_invitations.status, "pending")))
-			;
+			.all();
 	},
 
 	async findByEmail(db: DbClient, email: string) {
@@ -251,7 +251,7 @@ export const projectInvitationQueries = {
 			.select()
 			.from(project_invitations)
 			.where(and(eq(project_invitations.email, email), eq(project_invitations.status, "pending")))
-			;
+			.all();
 	},
 
 	async create(db: DbClient, data: typeof project_invitations.$inferInsert) {
@@ -275,13 +275,13 @@ export const projectInvitationQueries = {
 	},
 
 	async cleanupExpired(db: DbClient) {
-		const now = new Date();
+		const now = Math.floor(Date.now() / 1000);
 		return db
 			.update(project_invitations)
 			.set({ status: "expired" })
 			.where(and(eq(project_invitations.status, "pending"), lt(project_invitations.expires_at, now)))
 			.returning()
-			;
+			.all();
 	},
 };
 
@@ -298,7 +298,7 @@ export const appQueries = {
 	},
 
 	async findByProjectId(db: DbClient, projectId: number) {
-		return db.select().from(apps).where(eq(apps.project_id, projectId));
+		return db.select().from(apps).where(eq(apps.project_id, projectId)).all();
 	},
 
 	async create(db: DbClient, data: typeof apps.$inferInsert) {
@@ -321,7 +321,7 @@ export const authCodeQueries = {
 	async markConsumed(db: DbClient, codeId: number) {
 		return db
 			.update(auth_codes)
-			.set({ consumed_at: new Date() })
+			.set({ consumed_at: Math.floor(Date.now() / 1000) })
 			.where(eq(auth_codes.id, codeId))
 			.returning()
 			;
@@ -345,11 +345,11 @@ export const licenseQueries = {
 	},
 
 	async findByUserId(db: DbClient, userId: number) {
-		return db.select().from(licenses).where(eq(licenses.user_id, userId));
+		return db.select().from(licenses).where(eq(licenses.user_id, userId)).all();
 	},
 
 	async findByAppId(db: DbClient, appId: number) {
-		return db.select().from(licenses).where(eq(licenses.app_id, appId));
+		return db.select().from(licenses).where(eq(licenses.app_id, appId)).all();
 	},
 
 	async create(db: DbClient, data: typeof licenses.$inferInsert) {
@@ -357,7 +357,7 @@ export const licenseQueries = {
 	},
 
 	async update(db: DbClient, licenseId: number, data: Partial<typeof licenses.$inferInsert>) {
-		const now = new Date();
+		const now = Math.floor(Date.now() / 1000);
 		return db
 			.update(licenses)
 			.set({ ...data, updated_at: now })
@@ -368,7 +368,7 @@ export const licenseQueries = {
 
 	async upsert(db: DbClient, userId: number, appId: number, data: Partial<typeof licenses.$inferInsert>) {
 		const existing = await licenseQueries.findByUserAndApp(db, userId, appId);
-		const now = new Date();
+		const now = Math.floor(Date.now() / 1000);
 
 		if (existing) {
 			return db
@@ -414,8 +414,7 @@ export const emailVerificationQueries = {
 	},
 
 	async incrementAttempts(db: DbClient, id: number) {
-		const recordResults = await db.select().from(email_verifications).where(eq(email_verifications.id, id));
-		const record = recordResults[0];
+		const record = await db.select().from(email_verifications).where(eq(email_verifications.id, id));
 		if (!record) throw new Error("Email verification not found");
 
 		const newAttempts = record.attempts + 1;
@@ -423,7 +422,7 @@ export const emailVerificationQueries = {
 
 		// Lock after 3 failed attempts
 		if (newAttempts >= 3) {
-			updateData.locked_until = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+			updateData.locked_until = Math.floor(Date.now() / 1000) + 30 * 60; // 30 minutes
 		}
 
 		return db.update(email_verifications).set(updateData).where(eq(email_verifications.id, id)).returning();
@@ -432,7 +431,7 @@ export const emailVerificationQueries = {
 	async markConsumed(db: DbClient, id: number) {
 		return db
 			.update(email_verifications)
-			.set({ consumed_at: new Date() })
+			.set({ consumed_at: Math.floor(Date.now() / 1000) })
 			.where(eq(email_verifications.id, id))
 			.returning()
 			;
@@ -454,7 +453,7 @@ export const auditLogQueries = {
 			.where(eq(audit_logs.project_id, projectId))
 			.orderBy(desc(audit_logs.created_at))
 			.limit(limit)
-			;
+			.all();
 	},
 };
 
@@ -479,7 +478,7 @@ export const invitationQueries = {
 	},
 
 	async findPendingByEmailAndApp(db: DbClient, email: string, appId: number) {
-		const now = new Date();
+		const now = Math.floor(Date.now() / 1000);
 		return db
 			.select()
 			.from(invitations)
@@ -495,20 +494,20 @@ export const invitationQueries = {
 	},
 
 	async findPendingByApp(db: DbClient, appId: number, limit = 100) {
-		const now = new Date();
+		const now = Math.floor(Date.now() / 1000);
 		return db
 			.select()
 			.from(invitations)
 			.where(and(eq(invitations.app_id, appId), isNull(invitations.consumed_at), gt(invitations.expires_at, now)))
 			.orderBy(desc(invitations.created_at))
 			.limit(limit)
-			;
+			.all();
 	},
 
 	async markConsumed(db: DbClient, invitationId: number, userId: number) {
 		const results = await db
 			.update(invitations)
-			.set({ consumed_at: new Date(), consumed_by_user_id: userId })
+			.set({ consumed_at: Math.floor(Date.now() / 1000), consumed_by_user_id: userId })
 			.where(eq(invitations.id, invitationId))
 			.returning();
 		return results[0];
@@ -564,7 +563,7 @@ export const planQueries = {
 	},
 
 	async update(db: DbClient, planId: number, data: Partial<typeof plans.$inferInsert>) {
-		const now = new Date();
+		const now = Math.floor(Date.now() / 1000);
 		const results = await db
 			.update(plans)
 			.set({ ...data, updated_at: now } as any)
