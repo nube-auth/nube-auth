@@ -1,419 +1,369 @@
-<p align="center">
-  <img src="assets/icon-transparent.png" alt="Proofa" width="80" height="80" />
-</p>
+# Proofa Core
 
-<h1 align="center">Proofa Core</h1>
+**Open-source Authentication, Licensing & User Management Platform**
 
-<p align="center">
-  Enterprise-grade multi-tenant authentication and licensing system built with TypeScript, Hono, and React.
-</p>
+Proofa is a complete SaaS infrastructure platform that handles authentication, user management, licensing, and payments so you can focus on building your product.
 
-## 📋 Table of Contents
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)](https://www.typescriptlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-7-red)](https://redis.io/)
 
-- [Features](#-features)
-- [Architecture](#-architecture)
-- [Tech Stack](#-tech-stack)
-- [Quick Start](#-quick-start)
-- [Project Structure](#-project-structure)
-- [API Reference](#-api-reference)
-- [Database Schema](#-database-schema)
-- [Security](#-security)
-- [Development](#-development)
-- [Deployment](#-deployment)
+---
 
 ## ✨ Features
 
 ### Authentication
-- ✅ OAuth 2.0 (Google, GitHub)
-- ✅ Email/OTP with 3-attempt lockout
-- ✅ Compact ID format (11-14 chars)
-- ✅ Session management with per-app TTL (1-365 days)
-- ✅ S2S authentication for service-to-service calls
-- ✅ Auth-code exchange flow (secure token exchange)
+- 🔐 **OAuth 2.0** - Google & GitHub (extensible to more providers)
+- 📧 **Magic Links** - Passwordless email authentication
+- 🔑 **Multi-level OAuth Configuration** - Configure at platform, project, or app level
+- 🎫 **Session Management** - Secure session handling with Redis
+- 🔄 **Token Refresh** - Automatic token rotation
 
-### Core Service
-- ✅ Identity provider management
-- ✅ User creation/management
-- ✅ Session lifecycle management
-- ✅ Rate limiting (5 OTP/hour, 5 verify/5min)
-- ✅ 30-minute account lockout after 3 OTP failures
-- ✅ License auto-provisioning
+### User Management
+- 👥 **Team Management** - Projects, members, roles (owner, admin, member)
+- 📨 **Smart Invitations** - Email invitations with automatic user provisioning
+- 👤 **User Profiles** - Comprehensive user data management
+- 📋 **Audit Logs** - Complete activity tracking
 
-### Gateway BFF
-- ✅ Session bridge between Core and Apps
-- ✅ User profile CRUD
-- ✅ Session management (list, logout)
-- ✅ Admin CRUD (projects, apps, licenses, members)
-- ✅ Access control with project member validation
+### Licensing & Plans
+- 📦 **Flexible Plans** - Monthly, yearly, one-time, or trial subscriptions
+- 🎟️ **License Management** - Grant, revoke, renew licenses
+- ⏰ **Expiration Handling** - Automatic license status management
+- 🎁 **Trial Support** - Built-in trial period functionality
 
-### Dashboards
-- ✅ User Dashboard (profile, session management)
-- ✅ Admin Dashboard (projects, apps, members, licenses)
-- ✅ Home Page (Astro landing page)
-- ✅ Protected routes with auth checks
-- ✅ Real-time data fetching with TanStack Query
+### Payments
+- 💳 **Multi-Provider Support** - Lemon Squeezy, Dodo Payments, Stripe
+- 🔧 **Flexible Configuration** - Project-level defaults, app-level overrides
+- 🧪 **Test Mode** - Separate test/production configurations
+- 🔐 **Encrypted Storage** - AES-256-GCM encryption for credentials
 
-## 🏗 Architecture
+### Developer Experience
+- 🚀 **REST API** - Complete REST API for all operations
+- 📚 **Type-Safe** - Full TypeScript support
+- 🔌 **SDK Support** - Official client libraries
+- 📖 **Documentation** - Comprehensive API documentation
+- 🎨 **Admin Dashboard** - Beautiful React admin interface
 
+---
+
+## 🏗️ Architecture
+
+### Monorepo Structure
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      Client (Browser)                        │
-├──────────────┬──────────────┬──────────────┬───────────────┤
-│ User Dashboard│Admin Dashboard│  Home Page  │ Client Apps   │
-│  (Port 3001) │  (Port 3002)  │ (Port 4321) │               │
-└──────────────┴───────┬───────┴──────────────┴───────────────┘
-                       │ HTTPS
-            ┌──────────┴──────────┐
-            │    Gateway BFF      │
-            │    (Port 3004)      │ ← Session management
-            │                     │ ← Profile CRUD
-            │                     │ ← Admin routes
-            └──────────┬──────────┘
-                       │ HTTP (S2S)
-            ┌──────────┴──────────┐
-            │   Core Service      │
-            │    (Port 3003)      │ ← OAuth flows
-            │                     │ ← Email/OTP
-            │                     │ ← Session lifecycle
-            └──────────┬──────────┘
-                       │
-            ┌──────────┴──────────┐
-            │ Database (Turso)    │
-            │ Redis (Upstash)     │
-            │ Email (Resend)      │
-            └─────────────────────┘
+proofa-core/
+├── apps/
+│   ├── gateway/          # API Gateway (Hono.js)
+│   ├── dashboard/
+│   │   ├── admin/        # Admin Dashboard (React)
+│   │   ├── user/         # User Portal (React)
+│   │   ├── home/         # Marketing Site (Astro)
+│   │   └── docs/         # Documentation (Starlight)
+│   └── core/             # Legacy (being phased out)
+├── packages/
+│   ├── db/               # Database (Drizzle ORM + PostgreSQL)
+│   ├── redis/            # Redis client & utilities
+│   ├── shared/           # Shared utilities & types
+│   ├── auth/             # Authentication logic
+│   ├── client/           # JavaScript SDK
+│   └── react/            # React SDK
+└── docs/                 # Additional documentation
 ```
 
-### Port Summary
+### Tech Stack
+- **Backend**: Hono.js, Node.js
+- **Database**: PostgreSQL 16 (Drizzle ORM)
+- **Cache**: Redis 7
+- **Frontend**: React 18, React Router, TanStack Query
+- **Styling**: Tailwind CSS
+- **Build**: Turborepo, TypeScript, tsup, Vite
+- **Email**: Resend
+- **Deployment**: Docker, Fly.io ready
 
-| Service | Port | Description |
-|---------|------|-------------|
-| User Dashboard | 3001 | User profile & session management UI |
-| Admin Dashboard | 3002 | Project/app/license admin UI |
-| Core | 3003 | Authentication & identity service |
-| Gateway | 3004 | BFF for apps & dashboards |
-| Home | 4321 | Astro landing page |
-
-## 🛠 Tech Stack
-
-### Backend
-- **Node.js** 22+ with TypeScript 5.x
-- **Hono** - Lightweight web framework
-- **Turso** - SQLite via libSQL
-- **Drizzle ORM** - Type-safe database queries
-- **Upstash Redis** - Serverless caching & rate limiting
-- **Resend** - Email service
-- **Pino** - Structured logging
-
-### Frontend
-- **React** 18
-- **Vite** - Build tool
-- **Astro** - Home page (static site)
-- **React Router** v6 - Navigation
-- **TanStack Query** 5 - Server state management
-- **TypeScript** - Type safety
-
-### Infrastructure
-- **pnpm** - Package manager
-- **Turbo** 2.7 - Monorepo build system
-- **Biome** 2.3 - Linting & formatting
-- **Docker Compose** - Local development services
+---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
+- Node.js 20+
+- PostgreSQL 16+
+- Redis 7+
+- pnpm 9+
 
-- Node.js 22+ (see `.nvmrc`)
-- pnpm 8+
-- Docker (for local Redis & LibSQL)
-- OAuth apps (Google + GitHub)
-
-### 1. Install Dependencies
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/proofa-core.git
+cd proofa-core
+
+# Install dependencies
 pnpm install
-```
 
-### 2. Start Local Services
+# Set up environment variables
+cp ENV_SETUP.md .env
+# Edit .env with your configuration
 
-```bash
-# Start Redis and LibSQL
-pnpm docker:up
+# Start PostgreSQL and Redis (using Docker)
+docker run --name proofa-postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=proofa -p 5432:5432 -d postgres:16
+docker run --name proofa-redis -p 6379:6379 -d redis:7-alpine
 
-# Or with debug tools (Redis Commander, Mailpit)
-pnpm docker:up:all
-```
+# Run database migrations
+cd packages/db
+pnpm run db:push
 
-### 3. Configure Environment
+# Build packages
+cd ../..
+pnpm --filter @proofa/db run build
+pnpm --filter @proofa/redis run build
+pnpm --filter @proofa/shared run build
 
-```bash
-cp .env.example .env.local
-# Edit .env.local with your OAuth credentials
-```
-
-### 4. Run Migrations
-
-```bash
-pnpm db:migrate
-```
-
-### 5. Start Development
-
-```bash
-# Start all services
+# Start development
 pnpm dev
-
-# Or start individually:
-pnpm --filter @proofa/core dev        # Port 3003
-pnpm --filter @proofa/gateway dev     # Port 3004
-pnpm --filter @proofa/dashboard-user dev   # Port 3001
-pnpm --filter @proofa/dashboard-admin dev  # Port 3002
-pnpm --filter @proofa/dashboard-home dev   # Port 4321
 ```
 
-### Access Points
+The services will be available at:
+- **Gateway API**: http://localhost:3000
+- **Admin Dashboard**: http://localhost:5173
+- **User Portal**: http://localhost:5174
+- **Documentation**: http://localhost:4321
 
-- **User Dashboard**: http://localhost:3001
-- **Admin Dashboard**: http://localhost:3002
-- **Core API**: http://localhost:3003
-- **Gateway API**: http://localhost:3004
-- **Home Page**: http://localhost:4321
+For detailed setup instructions, see [QUICKSTART.md](./QUICKSTART.md).
 
-## 📁 Project Structure
+---
 
+## 📚 Documentation
+
+- **[Quick Start Guide](./QUICKSTART.md)** - Get up and running quickly
+- **[Environment Setup](./ENV_SETUP.md)** - Detailed environment configuration
+- **[Migration Guide](./MIGRATION_SUMMARY.md)** - PostgreSQL & Redis migration notes
+- **[API Documentation](./apps/dashboard/docs/)** - Complete API reference
+- **[Architecture](./docs/PRODUCT_SPEC.md)** - System architecture & design
+
+---
+
+## 🔑 Core Concepts
+
+### Projects & Apps
+- **Projects** are top-level containers for your applications
+- **Apps** are individual applications within a project
+- Each app has its own OAuth configuration, licensing, and users
+
+### OAuth Inheritance
 ```
-proofa-core/
-├── apps/
-│   ├── core/                  # Auth service (OAuth, OTP, sessions)
-│   ├── gateway/               # BFF (profile, admin, session bridge)
-│   └── dashboard/
-│       ├── user/              # User profile UI
-│       ├── admin/             # Admin CRUD UI
-│       └── home/              # Astro landing page
-├── packages/
-│   ├── shared/                # Types, constants, ID generators
-│   ├── db/                    # Drizzle schema + queries
-│   ├── auth/                  # OAuth adapters, crypto, sessions
-│   └── redis/                 # Cache, rate limiting, session store
-├── docs/                      # Documentation
-│   ├── PRODUCT_SPEC_FINAL.md  # Source of truth specification
-│   ├── QUICKSTART.md          # Quick start guide
-│   └── TECHNICAL_DEBT.md      # Technical debt tracker
-├── docker-compose.yml         # Local development services
-├── turbo.json                 # Turbo build configuration
-└── biome.json                 # Linting configuration
+Proofa (Platform Defaults)
+  └── Project (Project-level OAuth)
+       └── App (App-specific OAuth override)
 ```
+OAuth credentials cascade down with the option to override at each level.
 
-## 📡 API Reference
-
-### Core Service (Port 3003)
-
-#### OAuth Flow
-```http
-GET /v1/auth/start?provider=google&app_id=xxx&redirect_uri=...
-  → Returns OAuth authorization URL
-
-GET /v1/auth/callback/:provider?code=...
-  → Exchanges OAuth code, creates auth_code
-  → Redirects to Gateway with auth_code
-
-POST /v1/auth/exchange (S2S only)
-  Body: { code, app_id, redirect_uri }
-  → Returns: { user, license }
+### Payment Configuration
 ```
-
-#### Email/OTP
-```http
-POST /v1/email/start
-  Body: { email }
-  → Sends 6-digit OTP via email
-  → Rate limit: 5 per hour per email
-
-POST /v1/email/verify
-  Body: { email, code }
-  → Verifies OTP code
-  → Rate limit: 5 per 5 minutes
-  → Lockout: 3 failures = 30-min ban
+Project (Default payment provider)
+  └── App (Optional override)
 ```
+Set default payment provider at project level, override per app if needed.
 
-### Gateway (Port 3004)
+### User Licenses
+- Users get licenses to access apps
+- Licenses are tied to plans (free, paid, trial)
+- Automatic expiration and renewal support
 
-#### Authentication
-```http
-GET  /auth/start         → Redirect to Core OAuth
-GET  /auth/callback      → Exchange code, create session
-POST /v1/auth/logout     → Clear session
-GET  /v1/auth/status     → Check login status
+---
+
+## 🔧 Configuration
+
+### Required Environment Variables
+```bash
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/proofa
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# Email
+RESEND_API_KEY=your_resend_api_key
+
+# Encryption (32-byte hex string)
+ENCRYPTION_KEY=your_64_character_hex_string
+
+# OAuth Providers (Platform defaults)
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
 ```
 
-#### User Profile
-```http
-GET   /v1/me             → User profile + license
-PATCH /v1/me             → Update name/picture
-GET   /v1/me/sessions    → List active sessions
-DELETE /v1/me/sessions   → Logout all sessions
+Generate encryption key:
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-#### Admin Routes
-```http
-GET/POST /v1/admin/projects
-GET      /v1/admin/projects/:id
-GET/POST /v1/admin/projects/:id/apps
-GET      /v1/admin/projects/:id/members
-GET      /v1/admin/licenses
-```
+---
 
-## 🗄 Database Schema
+## 🛠️ Development
 
-### Core Tables
-
-| Table | Purpose |
-|-------|---------|
-| `users` | User accounts (email, name, avatar) |
-| `identities` | OAuth identities (provider, provider_user_id) |
-| `sessions` | Core sessions (7-day rolling TTL) |
-| `projects` | Multi-tenant projects |
-| `project_members` | Project membership & roles |
-| `apps` | Application configuration |
-| `licenses` | Per-user, per-app licenses |
-| `auth_codes` | Short-lived auth codes (120s TTL) |
-| `email_verifications` | OTP tracking with lockout |
-| `audit_logs` | Admin action audit trail |
-
-### ID Format
-
-All public IDs use a compact format: `[Letter][Digit][nanoid]`
-
-| Entity | Example | Length |
-|--------|---------|--------|
-| User | `U0sFFDmgde` | 11 chars |
-| Session | `S0mK9pQxCa` | 13 chars |
-| Project | `P0kMn7pQx2` | 11 chars |
-| App | `A0xKmP9n5d` | 11 chars |
-| Auth Code | `C0pN7mKqXc9A` | 14 chars |
-
-## 🔐 Security
-
-### Authentication
-- ✅ OAuth-only signup (no passwords)
-- ✅ OTP for email verification (6-digit, 10-min TTL)
-- ✅ PBKDF2-SHA256 for OTP hashing (100k iterations)
-- ✅ HMAC-SHA256 for cookie signing
-- ✅ Auth-code exchange (120s single-use tokens)
-- ✅ S2S token validation (X-Proofa-Service-Token)
-
-### Rate Limiting
-- ✅ OTP request: 5 per hour per email
-- ✅ OTP verification: 5 per 5 minutes per email
-- ✅ Account lockout: 3 failures = 30-minute ban
-
-### Session Management
-- ✅ Core session: 7 days rolling TTL
-- ✅ App session: 1-365 days (configurable per app)
-- ✅ HttpOnly + Secure cookies
-- ✅ SameSite=Lax (CSRF protection)
-
-### Access Control
-- ✅ Project member validation
-- ✅ Role-based access (owner/admin/member)
-- ✅ Protected routes with auth middleware
-
-## 💻 Development
-
-### Commands
-
+### Project Commands
 ```bash
 # Install dependencies
 pnpm install
 
-# Start Docker services
-pnpm docker:up
-
-# Start development
+# Development (all services)
 pnpm dev
 
 # Build all packages
 pnpm build
 
-# Type checking
-pnpm typecheck
-
-# Linting & formatting
+# Lint & format
 pnpm lint
 pnpm format
 
-# Run migrations
-pnpm db:migrate
+# Type check
+pnpm typecheck
+
+# Clean build artifacts
+pnpm clean
 ```
 
-### Environment Variables
-
-**Required:**
-```env
-# Database
-DATABASE_URL=http://localhost:8080
-DATABASE_AUTH_TOKEN=
-
-# Redis
-UPSTASH_REDIS_REST_URL=http://localhost:8079
-UPSTASH_REDIS_REST_TOKEN=local-dev-token
-
-# OAuth (at least one required)
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
-GITHUB_CLIENT_ID=...
-GITHUB_CLIENT_SECRET=...
-
-# Secrets (generate with: openssl rand -hex 32)
-JWT_SECRET=...
-SESSION_SECRET=...
-S2S_SECRET=...
-```
-
-See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed setup instructions.
-
-## 📦 Deployment
-
-### Build
-
+### Database Commands
 ```bash
-pnpm build
+cd packages/db
+
+# Generate migrations
+pnpm run db:generate
+
+# Apply migrations
+pnpm run db:push
+
+# Open Drizzle Studio
+pnpm run db:studio
 ```
 
-### Services
+### Package-specific Commands
+```bash
+# Build specific package
+pnpm --filter @proofa/db run build
 
-| Service | Command | Output |
-|---------|---------|--------|
-| Core | `node dist/apps/core/src/index.js` | Hono server |
-| Gateway | `node dist/apps/gateway/src/index.js` | Hono server |
-| Dashboards | Static files | `dist/apps/dashboard/*/dist/` |
+# Develop specific app
+pnpm --filter @proofa/gateway dev
 
-### Environment
-
-Set these in your deployment environment:
+# Test specific package
+pnpm --filter @proofa/client test
 ```
-DATABASE_URL
-DATABASE_AUTH_TOKEN
-UPSTASH_REDIS_REST_URL
-UPSTASH_REDIS_REST_TOKEN
-GOOGLE_CLIENT_ID
-GOOGLE_CLIENT_SECRET
-JWT_SECRET
-SESSION_SECRET
-S2S_SECRET
-```
-
-## 📚 Documentation
-
-- [DEVELOPMENT.md](DEVELOPMENT.md) - Detailed development setup
-- [docs/PRODUCT_SPEC_FINAL.md](docs/PRODUCT_SPEC_FINAL.md) - Full specification
-- [docs/QUICKSTART.md](docs/QUICKSTART.md) - Quick start guide
-- [docs/TECHNICAL_DEBT.md](docs/TECHNICAL_DEBT.md) - Technical debt tracker
-
-## 📄 License
-
-This project is proprietary and confidential.
 
 ---
 
-Built with ❤️ using TypeScript, Hono, and React
+## 📦 Packages
+
+### Core Packages
+- **`@proofa/db`** - Database schema & queries (Drizzle ORM)
+- **`@proofa/redis`** - Redis client & caching utilities
+- **`@proofa/shared`** - Shared types, utilities, & encryption
+- **`@proofa/auth`** - Authentication logic & helpers
+
+### Client Libraries
+- **`@proofa/client`** - JavaScript/TypeScript SDK
+- **`@proofa/react`** - React hooks & components
+
+### Applications
+- **`@proofa/gateway`** - REST API Gateway
+- **`@proofa/dashboard-admin`** - Admin Dashboard
+- **`@proofa/dashboard-user`** - User Portal
+
+---
+
+## 🚢 Deployment
+
+### Docker
+```bash
+# Build Docker images
+docker-compose build
+
+# Run services
+docker-compose up -d
+```
+
+### Fly.io
+```bash
+# Deploy gateway
+fly deploy --config apps/gateway/fly.toml
+
+# Deploy admin dashboard
+fly deploy --config apps/dashboard/admin/fly.toml
+```
+
+### Environment Variables
+Make sure to set all required environment variables in your deployment platform:
+- PostgreSQL connection string
+- Redis connection string
+- Resend API key
+- Encryption key
+- OAuth credentials (optional, can be configured per project)
+
+---
+
+## 🔒 Security
+
+- **AES-256-GCM** encryption for all secrets
+- **OAuth 2.0** standard authentication
+- **CORS** protection
+- **Rate limiting** on authentication endpoints
+- **SQL injection** protection (parameterized queries)
+- **XSS** protection
+- **Session security** with HTTP-only cookies
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our contributing guidelines (coming soon).
+
+### Development Workflow
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Write/update tests
+5. Submit a pull request
+
+---
+
+## 📄 License
+
+MIT License - see [LICENSE](./LICENSE) for details.
+
+---
+
+## 🆘 Support
+
+- **Documentation**: [docs/](./apps/dashboard/docs/)
+- **Issues**: [GitHub Issues](https://github.com/yourusername/proofa-core/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/yourusername/proofa-core/discussions)
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] Additional OAuth providers (Microsoft, Apple, etc.)
+- [ ] Webhook system for events
+- [ ] Advanced analytics dashboard
+- [ ] Multi-tenancy support
+- [ ] API rate limiting per app
+- [ ] Custom email templates
+- [ ] Two-factor authentication
+- [ ] SSO (SAML, OIDC)
+- [ ] Mobile SDKs (React Native, Flutter)
+
+---
+
+## 🙏 Acknowledgments
+
+Built with amazing open-source tools:
+- [Hono](https://hono.dev/) - Ultra-fast web framework
+- [Drizzle ORM](https://orm.drizzle.team/) - TypeScript ORM
+- [React](https://react.dev/) - UI library
+- [TanStack Query](https://tanstack.com/query) - Data synchronization
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS
+
+---
+
+**Made with ❤️ by the Proofa team**

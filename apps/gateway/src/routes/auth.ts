@@ -4,7 +4,7 @@ import type { Context } from "hono";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { coreClient } from "../lib/core-client";
-import { getEnv } from "../config/env";
+import { env } from "../config/env";
 
 export const authRoutes = new Hono();
 
@@ -29,7 +29,6 @@ function inferAudience(c: Context): "user" | "admin" {
 authRoutes.get("/start", async (c: Context) => {
 	const provider = c.req.query("provider") || "google";
 	const returnTo = c.req.query("return_to") || "/";
-	const env = getEnv();
 
 	// Gateway's callback URL - Core will redirect here after OAuth
 	const gatewayCallbackUrl = `${process.env.GATEWAY_PUBLIC_URL || "http://localhost:3004"}/v1/auth/callback`;
@@ -65,7 +64,6 @@ authRoutes.get("/callback", async (c: Context) => {
 	}
 
 	try {
-		const env = getEnv();
 
 		// Exchange session ID with Core (S2S call)
 		// Note: Core's callback sends the session ID as "code" parameter

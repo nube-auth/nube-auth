@@ -15,7 +15,6 @@
 		"@proofa/db": "workspace:*",
 		"@proofa/redis": "workspace:*",
 		"@proofa/shared": "workspace:*",
-		"@upstash/redis": "^1.25.0",
 		"hono": "^4.0.0",
 		"nanoid": "^5.0.0",
 		"resend": "^3.2.0",

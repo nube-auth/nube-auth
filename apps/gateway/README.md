@@ -1,209 +1,256 @@
-# Proofa Gateway
+# @proofa/gateway
 
-Backend-for-Frontend (BFF) gateway service that sits between the user/admin dashboards and the Core service. Handles authentication, session management, caching, and orchestrates requests to Core APIs.
+**REST API Gateway for Proofa Platform**
 
-## Overview
+The Proofa Gateway is a high-performance API server built with Hono.js that handles all backend operations for the Proofa platform.
 
-The Gateway service provides:
-- **Session Management**: Redis-backed session storage with secure cookie validation
-- **Authentication**: Gateway-level session validation and user authentication
-- **Caching**: Distributed caching layer for licenses, user data, and project information
-- **S2S Communication**: Secure service-to-service communication with Core using `X-Proofa-Service-Token`
-- **Multi-tenant Support**: App resolution from hostname or query parameters
-- **Request Logging**: Structured logging with request IDs for debugging
+---
+
+## Features
+
+- 🚀 **High Performance** - Built on Hono.js for maximum speed
+- 🔐 **Complete Authentication** - OAuth 2.0, Magic Links, Session Management
+- 👥 **User Management** - Projects, teams, roles, invitations
+- 📦 **Licensing** - Plans, licenses, entitlements
+- 💳 **Payment Integration** - Multi-provider support (Lemon Squeezy, Dodo, Stripe)
+- 🔒 **Security** - Rate limiting, CORS, encryption, audit logging
+- 📊 **Analytics** - Statistics and metrics endpoints
+- 🎯 **Type-Safe** - Full TypeScript support
+
+---
 
 ## Architecture
 
-### Session Storage (Redis)
+### Tech Stack
+- **Framework**: Hono.js
+- **Runtime**: Node.js 20+
+- **Database**: PostgreSQL 16 (via Drizzle ORM)
+- **Cache**: Redis 7
+- **Email**: Resend
+- **Encryption**: AES-256-GCM
 
-Sessions are stored in Redis with the following structure:
+### Structure
 ```
-gateway:session:{sessionToken} → {userId, appId, expiresAt, metadata}
-```
-
-TTL: Configurable per environment (default: 24 hours)
-
-### Caching Layer
-
-- **User Data**: `gateway:user:{userId}` (2-minute TTL)
-- **Licenses**: `gateway:license:{appId}` (2-minute TTL)
-- **Projects**: `gateway:project:{projectId}` (2-minute TTL)
-
-### Middleware Stack
-
-1. **Request ID**: Assigns unique ID to each request for tracing
-2. **Logger**: Logs incoming requests and responses
-3. **CORS**: Scoped to configured allowed hosts
-4. **App Resolver**: Extracts app from hostname or query param
-5. **Session Validation**: Validates session tokens from cookies
-6. **Error Handler**: Centralized error handling with proper HTTP responses
-
-## Quick Start
-
-### Setup
-
-1. Install dependencies:
-```bash
-pnpm install
+src/
+├── index.ts              # Main entry point
+├── config/
+│   └── env.ts           # Environment configuration
+├── middleware/
+│   ├── auth.ts          # Authentication middleware
+│   ├── cors.ts          # CORS configuration
+│   └── errorHandler.ts  # Error handling
+├── routes/
+│   ├── admin.ts         # Admin API endpoints
+│   ├── auth.ts          # Authentication endpoints
+│   └── user.ts          # User API endpoints
+├── services/
+│   ├── cacheService.ts  # Redis caching
+│   ├── oauth.ts         # OAuth resolver
+│   └── sessionService.ts# Session management
+└── redis/
+    ├── client.ts        # Redis client
+    └── constants.ts     # Redis key patterns
 ```
 
-2. Configure environment variables:
-```bash
-cp .env.example .env
-```
-
-Update the following in `.env`:
-- `CORE_URL`: URL of the Core service
-- `X_PROOFA_SERVICE_TOKEN`: Service-to-service authentication token
-- `GATEWAY_SESSION_SECRET`: Secret for signing session tokens
-- `UPSTASH_REDIS_REST_URL`: Redis instance endpoint
-- `UPSTASH_REDIS_REST_TOKEN`: Redis authentication token
-
-### Running Locally
-
-Development mode with auto-reload:
-```bash
-pnpm dev
-```
-
-Production build:
-```bash
-pnpm build
-pnpm preview
-```
-
-Run tests:
-```bash
-pnpm test
-pnpm test:ui
-```
+---
 
 ## API Endpoints
 
-### Authentication Routes (`/auth`)
-- `GET /auth/start` - Initiate OAuth flow
-- `GET /auth/callback` - Handle OAuth callback
+### Authentication
+- `POST /v1/auth/oauth/google` - Google OAuth initiation
+- `POST /v1/auth/oauth/github` - GitHub OAuth initiation
+- `GET /v1/auth/oauth/callback` - OAuth callback handler
+- `POST /v1/auth/magic-link` - Send magic link
+- `POST /v1/auth/magic-link/verify` - Verify magic link
+- `POST /v1/auth/exchange` - Exchange auth code for tokens
+- `POST /v1/auth/refresh` - Refresh access token
+- `POST /v1/auth/logout` - Logout user
 
-### User Routes (`/me`)
-- `GET /me` - Get current user profile
-- `GET /me/profile` - Get user profile details
-- `PATCH /me/profile` - Update user profile
-- `GET /me/sessions` - List active sessions
-- `DELETE /me/sessions/:session_id` - Revoke specific session
-- `POST /me/logout` - Logout (revoke current session)
+### Admin API
+#### Projects
+- `GET /v1/admin/projects` - List all projects
+- `POST /v1/admin/projects` - Create new project
+- `GET /v1/admin/projects/:projectId` - Get project details
+- `PATCH /v1/admin/projects/:projectId` - Update project
+- `DELETE /v1/admin/projects/:projectId` - Delete project (soft delete)
 
-### Admin Routes (`/admin`)
-- `POST /admin/projects` - Create project
-- `GET /admin/projects` - List projects
-- `PATCH /admin/projects/:project_id` - Update project
-- `DELETE /admin/projects/:project_id` - Delete project
-- `POST /admin/apps` - Create app
-- `GET /admin/apps` - List apps
-- `PATCH /admin/apps/:app_id` - Update app
-- `DELETE /admin/apps/:app_id` - Delete app
-- `POST /admin/members` - Add member
-- `GET /admin/members` - List members
-- `DELETE /admin/members/:member_id` - Remove member
-- `GET /admin/licenses` - List licenses
-- `PATCH /admin/licenses/:license_id` - Update license
+#### OAuth Configuration
+- `GET /v1/admin/projects/:projectId/oauth` - Get project OAuth config
+- `PATCH /v1/admin/projects/:projectId/oauth` - Update project OAuth config
 
-## Calling Core via S2S
+#### Apps
+- `GET /v1/admin/projects/:projectId/apps` - List apps
+- `POST /v1/admin/projects/:projectId/apps` - Create app
+- `GET /v1/admin/projects/:projectId/apps/:appId` - Get app details
+- `PATCH /v1/admin/projects/:projectId/apps/:appId` - Update app
+- `DELETE /v1/admin/projects/:projectId/apps/:appId` - Delete app (soft delete)
 
-All requests to Core are made using the `coreService`:
+#### Payment Configuration
+- `GET /v1/admin/projects/:projectId/payment-config` - Get project payment config
+- `POST /v1/admin/projects/:projectId/payment-config` - Set project payment config
+- `GET /v1/admin/projects/:projectId/apps/:appId/payment-config` - Get app payment config
+- `POST /v1/admin/projects/:projectId/apps/:appId/payment-config` - Set app payment config
+- `DELETE /v1/admin/projects/:projectId/apps/:appId/payment-config` - Remove app override
 
-```typescript
-import { coreService } from './services/coreService';
+#### Team Management
+- `GET /v1/admin/projects/:projectId/members` - List team members
+- `POST /v1/admin/projects/:projectId/members/invite` - Invite team member
+- `PATCH /v1/admin/projects/:projectId/members/:memberId` - Update member role
+- `DELETE /v1/admin/projects/:projectId/members/:memberId` - Remove member
 
-// Calls http://CORE_URL/v1/auth/exchange with X-Proofa-Service-Token header
-const token = await coreService.exchangeToken(code);
-```
+#### Users & Licenses
+- `GET /v1/admin/projects/:projectId/apps/:appId/users` - List app users
+- `POST /v1/admin/projects/:projectId/apps/:appId/users/invite` - Invite user
+- `GET /v1/admin/projects/:projectId/apps/:appId/users/:userId` - Get user details
+- `PATCH /v1/admin/projects/:projectId/apps/:appId/users/:userId` - Update user
+- `DELETE /v1/admin/projects/:projectId/apps/:appId/users/:userId` - Revoke access
+- `POST /v1/admin/projects/:projectId/apps/:appId/users/:userId/renew` - Renew license
 
-The service automatically includes the `X-Proofa-Service-Token` header for authentication.
+#### Plans
+- `GET /v1/admin/projects/:projectId/apps/:appId/plans` - List plans
+- `POST /v1/admin/projects/:projectId/apps/:appId/plans` - Create plan
+- `PATCH /v1/admin/projects/:projectId/apps/:appId/plans/:planId` - Update plan
+- `DELETE /v1/admin/projects/:projectId/apps/:appId/plans/:planId` - Delete plan
 
-## Environment Setup
+#### Statistics
+- `GET /v1/admin/projects/:projectId/stats` - Project statistics
+- `GET /v1/admin/projects/:projectId/apps/:appId/stats` - App statistics
 
-### Redis
+### User API
+- `GET /v1/user/profile` - Get user profile
+- `PATCH /v1/user/profile` - Update user profile
+- `GET /v1/user/sessions` - List active sessions
+- `DELETE /v1/user/sessions/:sessionId` - Revoke session
 
-Upstash Redis is recommended for production. Set up:
-1. Create an Upstash account
-2. Create a Redis database
-3. Copy the REST URL and token to environment variables
+---
 
-### Service Token
+## Environment Variables
 
-The `X_PROOFA_SERVICE_TOKEN` should match the token configured in Core service.
-
-### Session Secret
-
-Generate a random 32-character string for `GATEWAY_SESSION_SECRET`:
 ```bash
-openssl rand -hex 16
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/proofa
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# Email
+RESEND_API_KEY=your_resend_api_key
+
+# Encryption (32-byte hex string)
+ENCRYPTION_KEY=your_64_character_hex_string
+
+# OAuth Providers (Platform defaults)
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+
+# Application URLs
+GATEWAY_URL=http://localhost:3000
+DASHBOARD_URL=http://localhost:5173
 ```
 
-## Local Development
+---
 
-### Debugging
-
-1. Use `Request-ID` header in responses to trace logs
-2. Check `NODE_ENV=development` for verbose logging
-3. Use `pnpm test` to run unit tests
-
-### Multi-tenant Testing
+## Development
 
 ```bash
-# Test with app in hostname
-curl http://app1.localhost:3002/me
+# Install dependencies
+pnpm install
 
-# Test with app in query param
-curl http://localhost:3002/me?app=app1
+# Development mode with hot reload
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Start production server
+pnpm start
+
+# Type checking
+pnpm typecheck
+
+# Linting
+pnpm lint
 ```
 
-## Project Structure
+---
 
-```
-src/
-├── index.ts                 # Main Hono application
-├── config/
-│   ├── env.ts              # Environment variable validation
-│   ├── constants.ts        # TTLs, limits, route definitions
-│   └── appHosts.ts         # Hostname to app_id mapping
-├── middleware/
-│   ├── auth.ts             # Session validation
-│   ├── s2s.ts              # Service-to-service auth
-│   ├── error.ts            # Error handling
-│   ├── logger.ts           # Request logging
-│   └── appResolver.ts      # App extraction from request
-├── routes/
-│   ├── auth.ts             # OAuth flow endpoints
-│   ├── user.ts             # User profile endpoints
-│   └── admin.ts            # Admin CRUD endpoints
-├── services/
-│   ├── coreService.ts      # Core API calls
-│   ├── sessionService.ts   # Session management
-│   └── cacheService.ts     # Redis caching
-├── redis/
-│   ├── client.ts           # Redis client setup
-│   └── constants.ts        # Redis key patterns
-├── types/
-│   ├── session.ts          # Session types
-│   └── index.ts            # Type exports
-└── utils/
-    ├── cookies.ts          # Cookie handling
-    └── token.ts            # Token generation
-```
+## Security
+
+### Rate Limiting
+- **Authentication endpoints**: 5 requests per minute per IP
+- **API endpoints**: 100 requests per minute per user
+- **Admin endpoints**: 60 requests per minute per user
+
+### Encryption
+- OAuth credentials encrypted with AES-256-GCM
+- Payment credentials encrypted with AES-256-GCM
+- Secrets never exposed in API responses
+
+### Session Security
+- HTTP-only cookies
+- Secure flag in production
+- SameSite=Lax
+- 7-day expiration
+- Redis-backed storage
+
+### CORS
+- Configurable allowed origins
+- Credentials support
+- Preflight caching
+
+---
 
 ## Deployment
 
-1. Build the application:
+### Docker
 ```bash
-pnpm build
+# Build image
+docker build -t proofa-gateway .
+
+# Run container
+docker run -p 3000:3000 \
+  -e DATABASE_URL="..." \
+  -e REDIS_URL="..." \
+  proofa-gateway
 ```
 
-2. Deploy the `dist` directory to your hosting platform
-
-3. Set environment variables in your hosting environment
-
-4. Run with:
+### Fly.io
 ```bash
-node dist/index.js
+fly deploy --config fly.toml
 ```
+
+### Environment Setup
+See [ENV_SETUP.md](../../ENV_SETUP.md) for detailed configuration.
+
+---
+
+## Monitoring
+
+### Health Check
+```bash
+curl http://localhost:3000/health
+```
+
+### Redis Health
+```bash
+curl http://localhost:3000/health/redis
+```
+
+### Database Health
+```bash
+curl http://localhost:3000/health/database
+```
+
+---
+
+## Contributing
+
+See the main [README.md](../../README.md) for contributing guidelines.
+
+---
+
+## License
+
+MIT License - see [LICENSE](../../LICENSE)

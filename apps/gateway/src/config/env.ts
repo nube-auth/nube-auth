@@ -1,29 +1,28 @@
-import type { Context } from "hono";
-
-interface Environment {
-	CORE_URL: string;
-	CORE_S2S_TOKEN: string;
-	SESSION_SECRET: string;
-	UPSTASH_REDIS_REST_URL: string;
-	UPSTASH_REDIS_REST_TOKEN: string;
-	NODE_ENV: "development" | "production" | "test";
-	PORT?: string;
+export interface Env {
+	DATABASE_URL: string;
+	DATABASE_AUTH_TOKEN?: string;
+	REDIS_URL: string;
+	RESEND_API_KEY: string;
+	GOOGLE_CLIENT_ID?: string;
+	GOOGLE_CLIENT_SECRET?: string;
+	GITHUB_CLIENT_ID?: string;
+	GITHUB_CLIENT_SECRET?: string;
+	ENCRYPTION_KEY: string;
 }
 
-function validateEnv(): Environment {
-	const requiredVars = [
-		"CORE_URL",
-		"CORE_S2S_TOKEN",
-		"SESSION_SECRET",
-		"UPSTASH_REDIS_REST_URL",
-		"UPSTASH_REDIS_REST_TOKEN",
-	];
+const requiredEnvVars = [
+	"DATABASE_URL",
+	"REDIS_URL",
+	"RESEND_API_KEY",
+	"ENCRYPTION_KEY",
+] as const;
 
+function validateEnv(): Env {
 	const missing: string[] = [];
 
-	for (const varName of requiredVars) {
-		if (!process.env[varName]) {
-			missing.push(varName);
+	for (const key of requiredEnvVars) {
+		if (!process.env[key]) {
+			missing.push(key);
 		}
 	}
 
@@ -32,25 +31,16 @@ function validateEnv(): Environment {
 	}
 
 	return {
-		CORE_URL: process.env.CORE_URL!,
-		CORE_S2S_TOKEN: process.env.CORE_S2S_TOKEN!,
-		SESSION_SECRET: process.env.SESSION_SECRET!,
-		UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL!,
-		UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN!,
-		NODE_ENV: (process.env.NODE_ENV || "development") as Environment["NODE_ENV"],
-		PORT: process.env.PORT || "3004",
+		DATABASE_URL: process.env.DATABASE_URL!,
+		DATABASE_AUTH_TOKEN: process.env.DATABASE_AUTH_TOKEN,
+		REDIS_URL: process.env.REDIS_URL!,
+		RESEND_API_KEY: process.env.RESEND_API_KEY!,
+		GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+		GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+		GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
+		GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
+		ENCRYPTION_KEY: process.env.ENCRYPTION_KEY!,
 	};
 }
 
-let env: Environment | null = null;
-
-export function getEnv(): Environment {
-	if (!env) {
-		env = validateEnv();
-	}
-	return env;
-}
-
-export function getEnvFromContext(_c: Context): Environment {
-	return getEnv();
-}
+export const env = validateEnv();

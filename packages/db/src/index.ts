@@ -1,32 +1,28 @@
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
+import { drizzle } from "drizzle-orm/node-postgres";
+import pg from "pg";
 import * as schema from "./schema.js";
 
+const { Pool } = pg;
+
 /**
- * Initialize Turso/LibSQL client and Drizzle ORM
+ * Initialize PostgreSQL client and Drizzle ORM
  */
 export function createDbClient() {
 	const url = process.env.DATABASE_URL;
-	const authToken = process.env.DATABASE_AUTH_TOKEN;
 
 	if (!url) {
 		throw new Error("DATABASE_URL environment variable is not set");
-	}
-
-	if (!authToken) {
-		throw new Error("DATABASE_AUTH_TOKEN environment variable is not set");
 	}
 
 	// Log URL format for debugging (not the full URL for security)
 	const urlPrefix = url.substring(0, Math.min(20, url.length));
 	console.log(`Connecting to database: ${urlPrefix}...`);
 
-	const client = createClient({
-		url,
-		authToken,
+	const pool = new Pool({
+		connectionString: url,
 	});
 
-	return drizzle(client, { schema });
+	return drizzle(pool, { schema });
 }
 
 /**

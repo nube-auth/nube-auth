@@ -1,30 +1,30 @@
-import { Redis } from "@upstash/redis";
+import { createClient, type RedisClientType } from "redis";
 
 /**
  * Redis singleton instance
  * Lazily initialized on first use
  */
-let redisInstance: Redis | null = null;
+let redisInstance: RedisClientType | null = null;
 
 /**
  * Get or create Redis client instance
  */
-export function getRedisClient(): Redis {
-	if (redisInstance) {
+export async function getRedisClient(): Promise<RedisClientType> {
+	if (redisInstance && redisInstance.isOpen) {
 		return redisInstance;
 	}
 
-	const url = process.env.UPSTASH_REDIS_REST_URL;
-	const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+	const url = process.env.REDIS_URL || "redis://localhost:6379";
 
-	if (!url || !token) {
-		throw new Error("Redis configuration missing. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN");
-	}
-
-	redisInstance = new Redis({
+	redisInstance = createClient({
 		url,
-		token,
 	});
+
+	redisInstance.on("error", (err) => {
+		console.error("Redis Client Error:", err);
+	});
+
+	await redisInstance.connect();
 
 	return redisInstance;
 }
@@ -35,9 +35,10 @@ export function getRedisClient(): Redis {
 export const cache = {
 	async get<T>(key: string): Promise<T | null> {
 		try {
-			const client = getRedisClient();
-			const value = await client.get<T>(key);
-			return value ?? null;
+			const client = await getRedisClient();
+			const value = await client.get(key);
+			if (!value) return null;
+			return JSON.parse(value) as T;
 		} catch (error) {
 			console.error(`Cache get error for key ${key}:`, error);
 			return null;
@@ -46,11 +47,12 @@ export const cache = {
 
 	async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
 		try {
-			const client = getRedisClient();
+			const client = await getRedisClient();
+			const serialized = JSON.stringify(value);
 			if (ttlSeconds) {
-				await client.setex(key, ttlSeconds, JSON.stringify(value));
+				await client.setEx(key, ttlSeconds, serialized);
 			} else {
-				await client.set(key, JSON.stringify(value));
+				await client.set(key, serialized);
 			}
 		} catch (error) {
 			console.error(`Cache set error for key ${key}:`, error);
@@ -59,7 +61,7 @@ export const cache = {
 
 	async delete(key: string): Promise<void> {
 		try {
-			const client = getRedisClient();
+			const client = await getRedisClient();
 			await client.del(key);
 		} catch (error) {
 			console.error(`Cache delete error for key ${key}:`, error);
@@ -69,8 +71,8 @@ export const cache = {
 	async deleteMany(keys: string[]): Promise<void> {
 		try {
 			if (keys.length === 0) return;
-			const client = getRedisClient();
-			await client.del(...keys);
+			const client = await getRedisClient();
+			await client.del(keys);
 		} catch (error) {
 			console.error(`Cache deleteMany error:`, error);
 		}
@@ -87,7 +89,7 @@ export const rateLimit = {
 
 	async checkLimit(identifier: string, bucket: string, limit: number, windowSeconds: number): Promise<boolean> {
 		try {
-			const client = getRedisClient();
+			const client = await getRedisClient();
 			const key = this.getBucketKey(identifier, bucket);
 			const count = await client.incr(key);
 
@@ -104,10 +106,10 @@ export const rateLimit = {
 
 	async getCount(identifier: string, bucket: string): Promise<number> {
 		try {
-			const client = getRedisClient();
+			const client = await getRedisClient();
 			const key = this.getBucketKey(identifier, bucket);
-			const count = await client.get<number>(key);
-			return count ?? 0;
+			const count = await client.get(key);
+			return count ? Number.parseInt(count, 10) : 0;
 		} catch (error) {
 			console.error(`Rate limit getCount error:`, error);
 			return 0;
@@ -116,7 +118,7 @@ export const rateLimit = {
 
 	async reset(identifier: string, bucket: string): Promise<void> {
 		try {
-			const client = getRedisClient();
+			const client = await getRedisClient();
 			const key = this.getBucketKey(identifier, bucket);
 			await client.del(key);
 		} catch (error) {
@@ -126,7 +128,7 @@ export const rateLimit = {
 
 	async getTTL(identifier: string, bucket: string): Promise<number> {
 		try {
-			const client = getRedisClient();
+			const client = await getRedisClient();
 			const key = this.getBucketKey(identifier, bucket);
 			return await client.ttl(key);
 		} catch (error) {
@@ -142,9 +144,9 @@ export const rateLimit = {
 export const sessionStore = {
 	async setAppSession(sessionId: string, userId: string, appId: string, ttlSeconds: number): Promise<void> {
 		try {
-			const client = getRedisClient();
+			const client = await getRedisClient();
 			const key = `session:app:${sessionId}`;
-			await client.setex(key, ttlSeconds, JSON.stringify({ userId, appId }));
+			await client.setEx(key, ttlSeconds, JSON.stringify({ userId, appId }));
 		} catch (error) {
 			console.error(`Session store setAppSession error:`, error);
 		}
@@ -152,10 +154,10 @@ export const sessionStore = {
 
 	async getAppSession(sessionId: string): Promise<{ userId: string; appId: string } | null> {
 		try {
-			const client = getRedisClient();
+			const client = await getRedisClient();
 			const key = `session:app:${sessionId}`;
-			const session = await client.get<{ userId: string; appId: string }>(key);
-			return session ?? null;
+			const session = await client.get(key);
+			return session ? JSON.parse(session) : null;
 		} catch (error) {
 			console.error(`Session store getAppSession error:`, error);
 			return null;
@@ -164,7 +166,7 @@ export const sessionStore = {
 
 	async revokeAppSession(sessionId: string): Promise<void> {
 		try {
-			const client = getRedisClient();
+			const client = await getRedisClient();
 			const key = `session:app:${sessionId}`;
 			await client.del(key);
 		} catch (error) {
@@ -174,15 +176,28 @@ export const sessionStore = {
 
 	async revokeUserSessions(userId: string): Promise<void> {
 		try {
-			const client = getRedisClient();
-			const keys = await client.keys(`session:app:*`);
-
-			for (const key of keys) {
-				const session = await client.get<{ userId: string; appId: string }>(key);
-				if (session?.userId === userId) {
-					await client.del(key);
+			const client = await getRedisClient();
+			const pattern = `session:app:*`;
+			
+			// Use SCAN instead of KEYS for production
+			let cursor = 0;
+			do {
+				const result = await client.scan(cursor, {
+					MATCH: pattern,
+					COUNT: 100,
+				});
+				cursor = result.cursor;
+				
+				for (const key of result.keys) {
+					const session = await client.get(key);
+					if (session) {
+						const parsed = JSON.parse(session);
+						if (parsed.userId === userId) {
+							await client.del(key);
+						}
+					}
 				}
-			}
+			} while (cursor !== 0);
 		} catch (error) {
 			console.error(`Session store revokeUserSessions error:`, error);
 		}
@@ -193,17 +208,20 @@ export const sessionStore = {
  * Type-safe Redis client wrapper
  */
 export class RedisClient {
-	private client: Redis;
+	private client: RedisClientType | null = null;
 
-	constructor() {
-		this.client = getRedisClient();
+	async getClient(): Promise<RedisClientType> {
+		if (!this.client || !this.client.isOpen) {
+			this.client = await getRedisClient();
+		}
+		return this.client;
 	}
 
 	/**
 	 * Get raw client instance
 	 */
-	getRawClient(): Redis {
-		return this.client;
+	async getRawClient(): Promise<RedisClientType> {
+		return this.getClient();
 	}
 }
 

@@ -17,7 +17,7 @@
 		"dev": "tsc --watch"
 	},
 	"dependencies": {
-		"@upstash/redis": "^1.25.0",
+		"redis": "^4.7.0",
 		"@proofa/shared": "workspace:*"
 	},
 	"devDependencies": {

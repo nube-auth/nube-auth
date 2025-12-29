@@ -22,22 +22,23 @@
 		"build": "tsc",
 		"dev": "tsc --watch",
 		"clean": "rm -rf dist",
-		"db:generate": "drizzle-kit generate:sqlite",
-		"db:push": "drizzle-kit push:sqlite",
-		"db:migrate": "drizzle-kit push:sqlite",
+		"db:generate": "drizzle-kit generate:pg",
+		"db:push": "drizzle-kit push:pg",
+		"db:migrate": "drizzle-kit push:pg",
 		"db:studio": "drizzle-kit studio",
 		"db:drop": "tsx scripts/drop-tables.ts",
 		"db:reset": "pnpm run db:drop && pnpm run db:push",
 		"db:check": "tsx scripts/check-apps.ts"
 	},
 	"dependencies": {
-		"@libsql/client": "^0.4.2",
 		"@proofa/shared": "workspace:*",
-		"drizzle-orm": "^0.29.1"
+		"drizzle-orm": "^0.29.5",
+		"pg": "^8.13.1"
 	},
 	"devDependencies": {
+		"@types/pg": "^8.11.10",
 		"dotenv": "^16.3.1",
-		"drizzle-kit": "^0.20.12",
+		"drizzle-kit": "^0.20.18",
 		"tsx": "^4.7.0",
 		"typescript": "^5.3.3"
 	}
