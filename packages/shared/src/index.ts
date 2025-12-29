@@ -93,3 +93,10 @@ export {
 	isEncrypted,
 	maskSecret,
 } from "./utils/encryption.js";
+// Re-export environment utilities
+export {
+	loadEnv,
+	getRequiredEnv,
+	getOptionalEnv,
+	validateEnv,
+} from "./env-loader.js";

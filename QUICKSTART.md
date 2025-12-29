@@ -83,40 +83,38 @@ docker-compose up -d
 
 ## Step 3: Configure Environment
 
-Create a `.env` file in the project root:
+### Quick Setup (Recommended)
 
 ```bash
-# Database
-DATABASE_URL=postgresql://proofa:proofa@localhost:5432/proofa
+# Copy environment templates
+cp .env.example .env
+cp .env.local.example .env.local
 
-# Redis
-REDIS_URL=redis://localhost:6379
-
-# Email Service (Get free API key from https://resend.com)
-RESEND_API_KEY=re_your_api_key_here
-
-# Encryption Key (Generate using command below)
-ENCRYPTION_KEY=your_64_character_hex_string_here
-
-# OAuth Providers (Optional - Platform defaults)
-# Get credentials from Google Cloud Console & GitHub OAuth Apps
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-GITHUB_CLIENT_ID=your_github_client_id
-GITHUB_CLIENT_SECRET=your_github_client_secret
-
-# Application URLs (defaults for development)
-GATEWAY_URL=http://localhost:3000
-DASHBOARD_URL=http://localhost:5173
-```
-
-### Generate Encryption Key
-
-```bash
+# Generate encryption key
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+# Copy the output
 ```
 
-Copy the output and paste it as `ENCRYPTION_KEY` in your `.env` file.
+Edit `.env` and set these required values:
+```bash
+ENCRYPTION_KEY=<paste_generated_key_here>
+RESEND_API_KEY=re_your_api_key_here  # Get from https://resend.com
+```
+
+The `.env` file contains base configuration (team defaults).  
+The `.env.local` file is for your personal overrides (gitignored).
+
+### Environment Files
+
+- **`.env`** - Base configuration (loaded first)
+- **`.env.local`** - Local overrides (loaded second, takes precedence)
+
+Values in `.env.local` override values in `.env`. Use `.env.local` for personal settings like:
+- Different database/Redis connections
+- Personal OAuth credentials for testing
+- Debug settings
+
+See [LOCAL_DEVELOPMENT.md](./LOCAL_DEVELOPMENT.md) for detailed environment configuration.
 
 ---
 
@@ -166,7 +164,25 @@ This will start:
 
 ---
 
-## Step 7: Create Your First Project
+## Step 7: Automated Setup (Alternative)
+
+Want to automate steps 2-6? Run our setup script:
+
+```bash
+./scripts/dev-setup.sh
+```
+
+This script will:
+- Check prerequisites
+- Install dependencies
+- Create environment files
+- Start Docker services
+- Run database migrations
+- Build core packages
+
+---
+
+## Step 8: Create Your First Project
 
 1. Open the Admin Dashboard: http://localhost:5173
 2. Sign in with OAuth (or magic link)

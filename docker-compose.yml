@@ -1,4 +1,23 @@
 services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: proofa-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: proofa
+      POSTGRES_USER: proofa
+      POSTGRES_PASSWORD: proofa
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U proofa"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   # Redis for caching, rate limiting, and session storage
   redis:
     image: redis:7-alpine
@@ -13,21 +32,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
-
-  # Redis REST API Proxy (Upstash-compatible HTTP interface for local dev)
-  redis-rest:
-    image: hiett/serverless-redis-http:latest
-    container_name: proofa-redis-rest
-    ports:
-      - "8079:80"
-    environment:
-      - SRH_MODE=env
-      - SRH_TOKEN=local-dev-token
-      - SRH_CONNECTION_STRING=redis://redis:6379
-    depends_on:
-      redis:
-        condition: service_healthy
     restart: unless-stopped
 
   # Redis Commander - Web UI for Redis (optional, for debugging)
@@ -45,24 +49,6 @@ services:
     profiles:
       - debug
 
-  # LibSQL Server (Turso-compatible SQLite)
-  libsql:
-    image: ghcr.io/tursodatabase/libsql-server:latest
-    container_name: proofa-libsql
-    ports:
-      - "8080:8080"   # HTTP API
-      - "5001:5001"   # gRPC
-    volumes:
-      - libsql_data:/var/lib/sqld
-    environment:
-      - SQLD_NODE=primary
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
   # Mailpit - Local email testing (catches all outgoing emails)
   mailpit:
     image: axllent/mailpit:latest
@@ -79,9 +65,9 @@ services:
       - email
 
 volumes:
-  redis_data:
+  postgres_data:
     driver: local
-  libsql_data:
+  redis_data:
     driver: local
 
 networks:

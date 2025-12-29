@@ -1,3 +1,8 @@
+import { loadEnv, validateEnv as validateEnvVars } from "@proofa/shared";
+
+// Load environment variables from .env and .env.local
+loadEnv();
+
 export interface Env {
 	DATABASE_URL: string;
 	DATABASE_AUTH_TOKEN?: string;
@@ -18,17 +23,8 @@ const requiredEnvVars = [
 ] as const;
 
 function validateEnv(): Env {
-	const missing: string[] = [];
-
-	for (const key of requiredEnvVars) {
-		if (!process.env[key]) {
-			missing.push(key);
-		}
-	}
-
-	if (missing.length > 0) {
-		throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
-	}
+	// Validate required environment variables
+	validateEnvVars(requiredEnvVars);
 
 	return {
 		DATABASE_URL: process.env.DATABASE_URL!,

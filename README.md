@@ -92,6 +92,21 @@ proofa-core/
 
 ### Installation
 
+#### Option 1: Automated Setup (Recommended)
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/proofa-core.git
+cd proofa-core
+
+# Run setup script
+./scripts/dev-setup.sh
+
+# Edit .env with your values (ENCRYPTION_KEY, RESEND_API_KEY)
+# Then start development
+pnpm dev
+```
+
+#### Option 2: Manual Setup
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/proofa-core.git
@@ -100,13 +115,14 @@ cd proofa-core
 # Install dependencies
 pnpm install
 
-# Set up environment variables
-cp ENV_SETUP.md .env
+# Set up environment files
+cp .env.example .env
+cp .env.local.example .env.local
+# Generate encryption key: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 # Edit .env with your configuration
 
 # Start PostgreSQL and Redis (using Docker)
-docker run --name proofa-postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=proofa -p 5432:5432 -d postgres:16
-docker run --name proofa-redis -p 6379:6379 -d redis:7-alpine
+docker compose up -d
 
 # Run database migrations
 cd packages/db
@@ -128,13 +144,14 @@ The services will be available at:
 - **User Portal**: http://localhost:5174
 - **Documentation**: http://localhost:4321
 
-For detailed setup instructions, see [QUICKSTART.md](./QUICKSTART.md).
+For detailed setup instructions, see [QUICKSTART.md](./QUICKSTART.md) or [LOCAL_DEVELOPMENT.md](./LOCAL_DEVELOPMENT.md).
 
 ---
 
 ## 📚 Documentation
 
-- **[Quick Start Guide](./QUICKSTART.md)** - Get up and running quickly
+- **[Quick Start Guide](./QUICKSTART.md)** - Get up and running in 10 minutes
+- **[Local Development](./LOCAL_DEVELOPMENT.md)** - Complete local setup guide with Docker
 - **[Environment Setup](./ENV_SETUP.md)** - Detailed environment configuration
 - **[Migration Guide](./MIGRATION_SUMMARY.md)** - PostgreSQL & Redis migration notes
 - **[API Documentation](./apps/dashboard/docs/)** - Complete API reference
