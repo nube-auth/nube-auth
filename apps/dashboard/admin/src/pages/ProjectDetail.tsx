@@ -230,7 +230,7 @@ export function ProjectDetailPage() {
 											}}>{app.id}</code>
 										</td>
 										<td>
-											<span style={{ color: "var(--text-secondary)" }}>{app.appSessionTtlDays || 28} days</span>
+											<span style={{ color: "var(--text-secondary)" }}>{app.sessionTtlDays || 28} days</span>
 										</td>
 										<td>
 											<span className="badge badge-success">Active</span>

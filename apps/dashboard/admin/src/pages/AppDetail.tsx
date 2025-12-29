@@ -88,25 +88,6 @@ export function AppDetailPage() {
 							<h1 style={{ fontSize: "24px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>
 								{app.name}
 							</h1>
-							<span style={{
-								display: "inline-flex",
-								alignItems: "center",
-								gap: "5px",
-								padding: "4px 10px",
-								borderRadius: "12px",
-								background: app.isActive ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
-								color: app.isActive ? "var(--success)" : "var(--danger)",
-								fontSize: "12px",
-								fontWeight: "600",
-							}}>
-								<span style={{
-									width: "6px",
-									height: "6px",
-									borderRadius: "50%",
-									background: "currentColor",
-								}} />
-								{app.isActive ? "Active" : "Inactive"}
-							</span>
 						</div>
 						<p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 16px 0" }}>
 							{app.description || "No description provided"}

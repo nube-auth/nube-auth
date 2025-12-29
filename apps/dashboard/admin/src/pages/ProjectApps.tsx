@@ -160,9 +160,6 @@ export function ProjectAppsPage() {
 										{app.slug}
 									</p>
 								</div>
-								<span className={`badge ${app.isActive ? "badge-success" : "badge-secondary"}`}>
-									{app.isActive ? "Active" : "Inactive"}
-								</span>
 							</div>
 
 							{app.description && (
@@ -193,9 +190,7 @@ export function ProjectAppsPage() {
 									Application
 								</th>
 								<th style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-									Status
-								</th>
-								<th style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+
 									Users
 								</th>
 								<th style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
@@ -248,11 +243,6 @@ export function ProjectAppsPage() {
 											</div>
 										</div>
 									</td>
-									<td style={{ padding: "14px 16px" }}>
-										<span className={`badge ${app.isActive ? "badge-success" : "badge-secondary"}`}>
-											{app.isActive ? "Active" : "Inactive"}
-										</span>
-									</td>
 									<td style={{ padding: "14px 16px", fontSize: "14px", color: "var(--text-secondary)" }}>
 										0
 									</td>
@@ -260,7 +250,7 @@ export function ProjectAppsPage() {
 										0
 									</td>
 									<td style={{ padding: "14px 16px", fontSize: "14px", color: "var(--text-secondary)" }}>
-										{new Date(app.createdAt * 1000).toLocaleDateString()}
+									{new Date(app.createdAt).toLocaleDateString()}
 									</td>
 									<td style={{ padding: "14px 16px", textAlign: "right" }}>
 										<button

@@ -273,7 +273,8 @@ adminRoutes.get("/projects/:projectId", async (c: Context) => {
 		}
 
 		// Check user is member
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
@@ -322,7 +323,8 @@ adminRoutes.patch("/projects/:projectId", async (c: Context) => {
 		}
 
 		// Check user is member with owner or admin role
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 
 		if (!member || (member.role !== "owner" && member.role !== "admin")) {
 			return c.json({ error: "Access denied" }, 403);
@@ -330,7 +332,7 @@ adminRoutes.patch("/projects/:projectId", async (c: Context) => {
 
 		// Update project
 		const now = new Date();
-		const updateData: Record<string, string | number> = {
+		const updateData: Record<string, any> = {
 			updated_at: now,
 		};
 
@@ -344,7 +346,8 @@ adminRoutes.patch("/projects/:projectId", async (c: Context) => {
 			updateData.description = body.description;
 		}
 
-		const updatedProject = await projectQueries.update(db, project.id, updateData);
+		const updatedProjects = await projectQueries.update(db, project.id, updateData);
+		const updatedProject = updatedProjects[0];
 
 		if (!updatedProject) {
 			return c.json({ error: "Failed to update project" }, 500);
@@ -389,7 +392,8 @@ adminRoutes.patch("/projects/:projectId/oauth", async (c: Context) => {
 		}
 
 		// Check user is member with owner or admin role
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 
 		if (!member || (member.role !== "owner" && member.role !== "admin")) {
 			return c.json({ error: "Access denied" }, 403);
@@ -418,7 +422,8 @@ adminRoutes.patch("/projects/:projectId/oauth", async (c: Context) => {
 			updateData.github_client_secret = validatedData.githubClientSecret ? encrypt(validatedData.githubClientSecret) : null;
 		}
 
-		const updatedProject = await projectQueries.update(db, project.id, updateData);
+		const updatedProjects = await projectQueries.update(db, project.id, updateData);
+		const updatedProject = updatedProjects[0];
 
 		if (!updatedProject) {
 			return c.json({ error: "Failed to update project OAuth configuration" }, 500);
@@ -464,7 +469,8 @@ adminRoutes.get("/projects/:projectId/stats", async (c: Context) => {
 		}
 
 		// Check user is member
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
@@ -541,7 +547,8 @@ adminRoutes.get("/projects/:projectId/apps", async (c: Context) => {
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
@@ -590,7 +597,8 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 
 		if (!member || (member.role !== "owner" && member.role !== "admin")) {
 			return c.json({ error: "Access denied. Only owners and admins can create apps" }, 403);
@@ -612,48 +620,17 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			description: validatedData.description,
 			allowed_hosts: validatedData.allowedHosts || [],
 			redirect_uris: validatedData.redirectUris || [],
-			required_providers: validatedData.requiredProviders || [],
-			app_session_ttl_days: validatedData.appSessionTtlDays || 28,
-			licensing_required: Number(validatedData.licensingRequired ?? false),
-			default_plan_id: null, // Will be set below if licensing is enabled
+			session_ttl_days: validatedData.sessionTtlDays || 28,
 			client_secret: clientSecret,
 			service_token: serviceToken,
 			account_lockout_minutes: 30,
 			cache_ttl_minutes: 60,
-			cors_allowed_origins: ["http://localhost:3001"],
-			rate_limit_requests_per_minute: 100,
+			cors_origins: ["http://localhost:3001"],
+			rate_limit: 100,
 			oauth_inherit_source: "proofa", // Default to inheriting from Proofa
 			created_at: now,
 			updated_at: now,
 		});
-
-		// Step 2: If licensing is required, auto-create a "Free" plan and set it as default
-		let defaultPlan = null;
-		if (validatedData.licensingRequired) {
-			defaultPlan = await planQueries.create(db, {
-				public_id: createId("plan"),
-				app_id: app.id,
-				name: "Free",
-				slug: `${appSlug}-free`,
-				description: "Free plan with basic features",
-				monthly_price: null,
-				yearly_price: null,
-				one_time_price: null,
-				trial_enabled: false,
-				trial_days: null,
-				features: JSON.stringify([]),
-				status: "active",
-				display_order: 0,
-				created_at: now,
-				updated_at: now,
-			});
-
-			// Update app with default_plan_id
-			await appQueries.update(db, app.id, {
-				default_plan_id: defaultPlan.id,
-				updated_at: now,
-			});
-		}
 
 		// Validate and return response
 		const appDTO = AppDTOSchema.parse({
@@ -664,22 +641,18 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			description: app.description,
 			redirectUris: app.redirect_uris || [],
 			allowedHosts: app.allowed_hosts || [],
-			requiredProviders: app.required_providers || [],
-			isActive: Boolean(app.is_active),
-			licensingRequired: Boolean(app.licensing_required),
-			defaultPlanId: defaultPlan ? defaultPlan.public_id : null,
-			defaultPlan: defaultPlan ? {
-				id: defaultPlan.public_id,
-				name: defaultPlan.name,
-				slug: defaultPlan.slug,
-			} : null,
+			corsOrigins: app.cors_origins || [],
 			clientSecret: maskApiKey(app.client_secret),
 			serviceToken: maskApiKey(app.service_token),
-			appSessionTtlDays: app.app_session_ttl_days,
+			sessionTtlDays: app.session_ttl_days,
 			accountLockoutMinutes: app.account_lockout_minutes,
 			cacheTtlMinutes: app.cache_ttl_minutes,
-			corsAllowedOrigins: app.cors_allowed_origins ? JSON.parse(app.cors_allowed_origins) || [],
-			rateLimitRequestsPerMinute: app.rate_limit_requests_per_minute,
+			rateLimit: app.rate_limit,
+			oauthInheritSource: (app.oauth_inherit_source || "proofa") as "proofa" | "project" | "app",
+			googleClientId: app.google_client_id || undefined,
+			googleClientSecret: app.google_client_secret ? maskSecret(app.google_client_secret) : undefined,
+			githubClientId: app.github_client_id || undefined,
+			githubClientSecret: app.github_client_secret ? maskSecret(app.github_client_secret) : undefined,
 			createdAt: app.created_at,
 			updatedAt: app.updated_at,
 		});
@@ -719,7 +692,8 @@ adminRoutes.get("/projects/:projectId/apps/:appId", async (c: Context) => {
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
@@ -731,12 +705,6 @@ adminRoutes.get("/projects/:projectId/apps/:appId", async (c: Context) => {
 			return c.json({ error: "App not found" }, 404);
 		}
 
-		// Fetch default plan if set
-		let defaultPlan = null;
-		if (app.default_plan_id) {
-			defaultPlan = await planQueries.findById(db, app.default_plan_id);
-		}
-
 		// Validate and return response with camelCase
 		const appDTO = AppDTOSchema.parse({
 			id: app.public_id,
@@ -746,25 +714,13 @@ adminRoutes.get("/projects/:projectId/apps/:appId", async (c: Context) => {
 			description: app.description,
 			redirectUris: app.redirect_uris || [],
 			allowedHosts: app.allowed_hosts || [],
-			requiredProviders: app.required_providers || [],
-			isActive: Boolean(app.is_active),
-			licensingRequired: Boolean(app.licensing_required),
-			defaultPlanId: defaultPlan ? defaultPlan.public_id : null,
-			defaultPlan: defaultPlan ? {
-				id: defaultPlan.public_id,
-				name: defaultPlan.name,
-				slug: defaultPlan.slug,
-			} : null,
+			corsOrigins: app.cors_origins || [],
 			clientSecret: maskApiKey(app.client_secret),
 			serviceToken: maskApiKey(app.service_token),
-			appSessionTtlDays: app.app_session_ttl_days,
+			sessionTtlDays: app.session_ttl_days,
 			accountLockoutMinutes: app.account_lockout_minutes,
 			cacheTtlMinutes: app.cache_ttl_minutes,
-			corsAllowedOrigins: app.cors_allowed_origins ? JSON.parse(app.cors_allowed_origins) || [],
-			rateLimitRequestsPerMinute: app.rate_limit_requests_per_minute,
-			emailFromName: app.email_from_name || undefined,
-			emailFromAddress: app.email_from_address || undefined,
-			emailReplyTo: app.email_reply_to || undefined,
+			rateLimit: app.rate_limit,
 			oauthInheritSource: (app.oauth_inherit_source || "proofa") as "proofa" | "project" | "app",
 			googleClientId: app.google_client_id || undefined,
 			googleClientSecret: app.google_client_secret ? maskSecret(app.google_client_secret) : undefined,
@@ -806,7 +762,8 @@ adminRoutes.get("/projects/:projectId/apps/:appId/stats", async (c: Context) => 
 		}
 
 		// Check user is member
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
@@ -882,7 +839,8 @@ adminRoutes.get("/projects/:projectId/apps/:appId/users", async (c: Context) => 
 		}
 
 		// Check user is member
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
@@ -956,7 +914,8 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -979,10 +938,10 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 
 		// Calculate valid_until based on license_duration_days
 		const now = new Date();
-		let validUntil: number | null = null;
+		let validUntil: Date | null = null;
 		if (license_duration_days && typeof license_duration_days === "number") {
-			// Calculate valid_until: now + (days * 24 * 60 * 60)
-			validUntil = now + (license_duration_days * 24 * 60 * 60);
+			// Calculate valid_until: now + (days * 24 * 60 * 60 * 1000)
+			validUntil = new Date(Date.now() + (license_duration_days * 24 * 60 * 60 * 1000));
 		}
 
 		// SMART FLOW: Check if user exists
@@ -1003,8 +962,9 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 				}
 
 				// Send email notification about license update
-				const plan = await planQueries.findById(db, plan_id);
-				const validUntilDate = validUntil ? new Date(validUntil * 1000).toLocaleDateString() : undefined;
+				if (plan_id) {
+					const plan = await planQueries.findById(db, plan_id);
+					const validUntilDate = validUntil ? validUntil.toLocaleDateString() : undefined;
 				
 				try {
 					await sendEmail({
@@ -1022,6 +982,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 					log.error({ err: serializeError(error as Error) }, "Failed to send license update email:", emailError);
 					// Don't fail the request if email fails
 				}
+		}
 
 		return c.json({
 					success: true,
@@ -1040,7 +1001,8 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 
 			// Case 2: User exists but hasn't logged into the app (no license) - create invitation
 			// Check for existing pending invitation
-			const existingInvitation = await invitationQueries.findPendingByEmailAndApp(db, email.toLowerCase(), app.id);
+			const existingInvitations = await invitationQueries.findPendingByEmailAndApp(db, email.toLowerCase(), app.id);
+			const existingInvitation = existingInvitations[0];
 
 			if (existingInvitation) {
 				return c.json({
@@ -1219,7 +1181,8 @@ adminRoutes.get("/projects/:projectId/apps/:appId/users/:userId", async (c: Cont
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, adminUser.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, adminUser.id);
+	const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -1314,7 +1277,8 @@ adminRoutes.patch("/projects/:projectId/apps/:appId/users/:userId", async (c: Co
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, adminUser.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, adminUser.id);
+	const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -1405,7 +1369,8 @@ adminRoutes.delete("/projects/:projectId/apps/:appId/users/:userId", async (c: C
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, adminUser.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, adminUser.id);
+	const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -1465,7 +1430,8 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/:userId/renew", async (
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, adminUser.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, adminUser.id);
+	const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -1560,7 +1526,8 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 
 		if (!member || member.role !== "owner") {
 			return c.json({ error: "Access denied" }, 403);
@@ -1582,12 +1549,11 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 		if (validatedData.description !== undefined) updateData.description = validatedData.description;
 		if (validatedData.allowedHosts) updateData.allowed_hosts = validatedData.allowedHosts;
 		if (validatedData.redirectUris) updateData.redirect_uris = validatedData.redirectUris;
-		if (validatedData.requiredProviders) updateData.required_providers = validatedData.requiredProviders;
-		if ("licensingRequired" in validatedData) updateData.licensing_required = Number(validatedData.licensingRequired ?? false);
-		if (validatedData.appSessionTtlDays) updateData.app_session_ttl_days = validatedData.appSessionTtlDays;
-		if (validatedData.emailFromName !== undefined) updateData.email_from_name = validatedData.emailFromName;
-		if (validatedData.emailFromAddress !== undefined) updateData.email_from_address = validatedData.emailFromAddress;
-		if (validatedData.emailReplyTo !== undefined) updateData.email_reply_to = validatedData.emailReplyTo;
+		if (validatedData.sessionTtlDays) updateData.session_ttl_days = validatedData.sessionTtlDays;
+		if (validatedData.corsOrigins) updateData.cors_origins = validatedData.corsOrigins;
+		if (validatedData.rateLimit) updateData.rate_limit = validatedData.rateLimit;
+		if (validatedData.accountLockoutMinutes) updateData.account_lockout_minutes = validatedData.accountLockoutMinutes;
+		if (validatedData.cacheTtlMinutes) updateData.cache_ttl_minutes = validatedData.cacheTtlMinutes;
 
 		// Handle OAuth inheritance source
 		const newInheritSource = validatedData.oauthInheritSource ?? app.oauth_inherit_source ?? "proofa";
@@ -1615,12 +1581,11 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 			updateData.github_client_secret = null;
 		}
 
-		const updatedApp = await appQueries.update(db, app.id, updateData);
+		const updatedApps = await appQueries.update(db, app.id, updateData);
+		const updatedApp = updatedApps[0];
 
-		// Fetch default plan if set
-		let defaultPlan = null;
-		if (updatedApp.default_plan_id) {
-			defaultPlan = await planQueries.findById(db, updatedApp.default_plan_id);
+		if (!updatedApp) {
+			return c.json({ error: "Failed to update app" }, 500);
 		}
 
 		// Validate and return response
@@ -1632,25 +1597,13 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 			description: updatedApp.description,
 			redirectUris: updatedApp.redirect_uris || [],
 			allowedHosts: updatedApp.allowed_hosts || [],
-			requiredProviders: updatedApp.required_providers || [],
-			isActive: Boolean(updatedApp.is_active),
-			licensingRequired: Boolean(updatedApp.licensing_required),
-			defaultPlanId: defaultPlan ? defaultPlan.public_id : null,
-			defaultPlan: defaultPlan ? {
-				id: defaultPlan.public_id,
-				name: defaultPlan.name,
-				slug: defaultPlan.slug,
-			} : null,
+			corsOrigins: updatedApp.cors_origins || [],
 			clientSecret: maskApiKey(updatedApp.client_secret),
 			serviceToken: maskApiKey(updatedApp.service_token),
-			appSessionTtlDays: updatedApp.app_session_ttl_days,
+			sessionTtlDays: updatedApp.session_ttl_days,
 			accountLockoutMinutes: updatedApp.account_lockout_minutes,
 			cacheTtlMinutes: updatedApp.cache_ttl_minutes,
-			corsAllowedOrigins: updatedApp.cors_allowed_origins ? JSON.parse(updatedApp.cors_allowed_origins) || [],
-			rateLimitRequestsPerMinute: updatedApp.rate_limit_requests_per_minute,
-			emailFromName: updatedApp.email_from_name || undefined,
-			emailFromAddress: updatedApp.email_from_address || undefined,
-			emailReplyTo: updatedApp.email_reply_to || undefined,
+			rateLimit: updatedApp.rate_limit,
 			oauthInheritSource: (updatedApp.oauth_inherit_source || "proofa") as "proofa" | "project" | "app",
 			googleClientId: updatedApp.google_client_id || undefined,
 			googleClientSecret: updatedApp.google_client_secret ? maskSecret(updatedApp.google_client_secret) : undefined,
@@ -1696,7 +1649,8 @@ adminRoutes.get("/projects/:projectId/apps/:appId/api-keys", async (c: Context) 
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 		if (!member || member.role !== "owner") {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -1739,7 +1693,8 @@ adminRoutes.post("/projects/:projectId/apps/:appId/regenerate-secret", async (c:
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 		if (!member || member.role !== "owner") {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -1790,7 +1745,8 @@ adminRoutes.post("/projects/:projectId/apps/:appId/regenerate-token", async (c: 
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 		if (!member || member.role !== "owner") {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -1842,17 +1798,18 @@ adminRoutes.get("/projects/:projectId/members", async (c: Context) => {
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
 
-		const members = await projectMemberQueries.findByProjectId(db, project.id);
+		const allMembers = await projectMemberQueries.findByProjectId(db, project.id);
 
 		return c.json({
 			members: await Promise.all(
-				members.map(async (m) => {
+				allMembers.map(async (m) => {
 					const memberUser = await userQueries.findById(db, m.user_id);
 					return {
 						id: m.public_id,
@@ -2053,7 +2010,8 @@ adminRoutes.patch("/projects/:projectId/members/:memberId", async (c: Context) =
 		}
 
 		// Update the member's role
-		const updatedMember = await projectMemberQueries.updateByPublicId(db, memberId, { role });
+		const updatedMembers = await projectMemberQueries.updateByPublicId(db, memberId, { role });
+		const updatedMember = updatedMembers[0];
 
 		if (!updatedMember) {
 			return c.json({ error: "Failed to update member role" }, 500);
@@ -2151,7 +2109,8 @@ adminRoutes.get("/projects/:projectId/invitations", async (c: Context) => {
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
@@ -2383,7 +2342,8 @@ adminRoutes.delete("/projects/:projectId", async (c: Context) => {
 		}
 
 		// Check if user is the owner
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 		if (!member || member.role !== "owner") {
 			return c.json({ error: "Access denied. Only the project owner can delete the project" }, 403);
 		}
@@ -2421,8 +2381,8 @@ adminRoutes.delete("/projects/:projectId", async (c: Context) => {
 		}
 
 		// Remove all team members (except owner)
-		const members = await projectMemberQueries.findByProjectId(db, project.id);
-		for (const projectMember of members) {
+		const allMembers = await projectMemberQueries.findByProjectId(db, project.id);
+		for (const projectMember of allMembers) {
 			if (projectMember.role !== "owner") {
 				await projectMemberQueries.delete(db, projectMember.id);
 			}
@@ -2520,7 +2480,8 @@ adminRoutes.delete("/projects/:projectId/apps/:appId", async (c: Context) => {
 		}
 
 		// Check if user has permission (must be owner or admin)
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 		if (!member || (member.role !== "owner" && member.role !== "admin")) {
 			return c.json({ error: "Access denied. Only owners and admins can delete apps" }, 403);
 		}
@@ -2668,7 +2629,8 @@ adminRoutes.get("/projects/:projectId/apps/:appId/plans", async (c: Context) => 
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -2730,7 +2692,8 @@ adminRoutes.post("/projects/:projectId/apps/:appId/plans", async (c: Context) =>
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -2831,7 +2794,8 @@ adminRoutes.patch("/projects/:projectId/apps/:appId/plans/:planId", async (c: Co
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -2867,7 +2831,12 @@ adminRoutes.patch("/projects/:projectId/apps/:appId/plans/:planId", async (c: Co
 		if (display_order !== undefined) updates.display_order = display_order;
 
 		// Update plan
-		const updatedPlan = await planQueries.update(db, plan.id, updates);
+		const updatedPlans = await planQueries.update(db, plan.id, updates);
+		const updatedPlan = updatedPlans[0];
+
+		if (!updatedPlan) {
+			return c.json({ error: "Failed to update plan" }, 500);
+		}
 
 		return c.json({
 			success: true,
@@ -2919,7 +2888,8 @@ adminRoutes.delete("/projects/:projectId/apps/:appId/plans/:planId", async (c: C
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -3014,7 +2984,8 @@ adminRoutes.get("/projects/:projectId/payment-config", async (c: Context) => {
 			return c.json({ error: "User not found" }, 404);
 		}
 		
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -3072,7 +3043,8 @@ adminRoutes.post("/projects/:projectId/payment-config", async (c: Context) => {
 			return c.json({ error: "User not found" }, 404);
 		}
 		
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 		if (!member || member.role !== "owner") {
 			return c.json({ error: "Access denied. Only project owners can configure payments" }, 403);
 		}
@@ -3142,7 +3114,8 @@ adminRoutes.get("/projects/:projectId/apps/:appId/payment-config", async (c: Con
 			return c.json({ error: "User not found" }, 404);
 		}
 		
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -3224,7 +3197,8 @@ adminRoutes.post("/projects/:projectId/apps/:appId/payment-config", async (c: Co
 			return c.json({ error: "User not found" }, 404);
 		}
 		
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 		if (!member || member.role !== "owner") {
 			return c.json({ error: "Access denied. Only project owners can configure payments" }, 403);
 		}
@@ -3299,7 +3273,8 @@ adminRoutes.delete("/projects/:projectId/apps/:appId/payment-config", async (c: 
 			return c.json({ error: "User not found" }, 404);
 		}
 		
-		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+	const member = members[0];
 		if (!member || member.role !== "owner") {
 			return c.json({ error: "Access denied" }, 403);
 		}
