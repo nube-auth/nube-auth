@@ -14,6 +14,6 @@ export default {
 	out: "./drizzle",
 	dialect: "postgresql",
 	dbCredentials: {
-		url: process.env.DATABASE_URL!,
+		url: "postgresql://proofa:proofa@localhost:5432/proofa"
 	},
 } satisfies Config;

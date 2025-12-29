@@ -1,21 +1,21 @@
-import { index, integer, sqliteTable, text, unique } from "drizzle-orm/sqlite-core";
+import { pgTable, serial, text, varchar, integer, timestamp, boolean, index, unique, jsonb } from "drizzle-orm/pg-core";
 
 /**
  * Users table
  * Stores platform users
  */
-export const users = sqliteTable(
+export const users = pgTable(
 	"users",
 	{
-		id: integer("id").primaryKey({ autoIncrement: true }),
-		public_id: text("public_id").notNull().unique(),
-		primary_email: text("primary_email"),
-		primary_email_verified: integer("primary_email_verified").notNull().default(0),
-		name: text("name"),
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		primary_email: varchar("primary_email", { length: 255 }),
+		primary_email_verified: boolean("primary_email_verified").notNull().default(false),
+		name: varchar("name", { length: 255 }),
 		avatar_url: text("avatar_url"),
-		is_admin: integer("is_admin").notNull().default(0),
-		created_at: integer("created_at").notNull(), // epoch seconds
-		updated_at: integer("updated_at").notNull(), // epoch seconds
+		is_admin: boolean("is_admin").notNull().default(false),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
 	},
 	(table) => ({
 		emailIdx: index("users_primary_email_idx").on(table.primary_email),
@@ -27,19 +27,19 @@ export const users = sqliteTable(
  * Identities table
  * OAuth/provider identities linked to users
  */
-export const identities = sqliteTable(
+export const identities = pgTable(
 	"identities",
 	{
-		id: integer("id").primaryKey({ autoIncrement: true }),
-		public_id: text("public_id").notNull().unique(),
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
 		user_id: integer("user_id")
 			.notNull()
 			.references(() => users.id),
-		provider: text("provider").notNull(), // 'google', 'github', etc.
-		provider_user_id: text("provider_user_id").notNull(),
-		email: text("email"),
-		email_verified: integer("email_verified").notNull().default(0),
-		created_at: integer("created_at").notNull(),
+		provider: varchar("provider", { length: 50 }).notNull(),
+		provider_user_id: varchar("provider_user_id", { length: 255 }).notNull(),
+		email: varchar("email", { length: 255 }),
+		email_verified: boolean("email_verified").notNull().default(false),
+		created_at: timestamp("created_at").notNull().defaultNow(),
 	},
 	(table) => ({
 		providerUnique: unique("identities_provider_user_id_unique").on(table.provider, table.provider_user_id),
@@ -52,18 +52,18 @@ export const identities = sqliteTable(
  * Sessions table (Core Sessions)
  * Global user sessions across all apps
  */
-export const sessions = sqliteTable(
+export const sessions = pgTable(
 	"sessions",
 	{
-		id: integer("id").primaryKey({ autoIncrement: true }),
-		public_id: text("public_id").notNull().unique(),
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
 		user_id: integer("user_id")
 			.notNull()
 			.references(() => users.id),
-		created_at: integer("created_at").notNull(),
-		last_seen_at: integer("last_seen_at").notNull(),
-		expires_at: integer("expires_at").notNull(),
-		revoked_at: integer("revoked_at"), // null = active
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		last_seen_at: timestamp("last_seen_at").notNull().defaultNow(),
+		expires_at: timestamp("expires_at").notNull(),
+		revoked_at: timestamp("revoked_at"),
 	},
 	(table) => ({
 		userIdIdx: index("sessions_user_id_idx").on(table.user_id),
@@ -75,25 +75,24 @@ export const sessions = sqliteTable(
  * Projects table
  * Projects owned by users
  */
-export const projects = sqliteTable(
+export const projects = pgTable(
 	"projects",
 	{
-		id: integer("id").primaryKey({ autoIncrement: true }),
-		public_id: text("public_id").notNull().unique(),
-		name: text("name").notNull(),
-		slug: text("slug").notNull(),
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		name: varchar("name", { length: 255 }).notNull(),
+		slug: varchar("slug", { length: 255 }).notNull(),
 		description: text("description"),
 		owner_user_id: integer("owner_user_id")
 			.notNull()
 			.references(() => users.id),
-		is_active: integer("is_active").notNull().default(1),
-		// OAuth credentials per project
+		is_active: boolean("is_active").notNull().default(true),
 		google_client_id: text("google_client_id"),
 		google_client_secret: text("google_client_secret"),
 		github_client_id: text("github_client_id"),
 		github_client_secret: text("github_client_secret"),
-		created_at: integer("created_at").notNull(),
-		updated_at: integer("updated_at").notNull(),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
 	},
 	(table) => ({
 		slugUnique: unique("projects_slug_unique").on(table.slug),
@@ -105,19 +104,19 @@ export const projects = sqliteTable(
  * ProjectMembers table
  * User memberships in projects
  */
-export const project_members = sqliteTable(
+export const project_members = pgTable(
 	"project_members",
 	{
-		id: integer("id").primaryKey({ autoIncrement: true }),
-		public_id: text("public_id").notNull().unique(),
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
 		project_id: integer("project_id")
 			.notNull()
 			.references(() => projects.id),
 		user_id: integer("user_id")
 			.notNull()
 			.references(() => users.id),
-		role: text("role").notNull(), // 'owner', 'admin', 'member'
-		created_at: integer("created_at").notNull(),
+		role: varchar("role", { length: 50 }).notNull(),
+		created_at: timestamp("created_at").notNull().defaultNow(),
 	},
 	(table) => ({
 		projectUserUnique: unique("project_members_project_user_unique").on(table.project_id, table.user_id),
@@ -131,22 +130,22 @@ export const project_members = sqliteTable(
  * Project Invitations table
  * Pending invitations to join a project
  */
-export const project_invitations = sqliteTable(
+export const project_invitations = pgTable(
 	"project_invitations",
 	{
-		id: integer("id").primaryKey({ autoIncrement: true }),
-		public_id: text("public_id").notNull().unique(),
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
 		project_id: integer("project_id")
 			.notNull()
 			.references(() => projects.id),
-		email: text("email").notNull(),
-		role: text("role").notNull(), // 'admin', 'member'
+		email: varchar("email", { length: 255 }).notNull(),
+		role: varchar("role", { length: 50 }).notNull(),
 		invited_by_user_id: integer("invited_by_user_id")
 			.notNull()
 			.references(() => users.id),
-		status: text("status").notNull(), // 'pending', 'accepted', 'expired', 'cancelled'
-		created_at: integer("created_at").notNull(),
-		expires_at: integer("expires_at").notNull(),
+		status: varchar("status", { length: 50 }).notNull(),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		expires_at: timestamp("expires_at").notNull(),
 	},
 	(table) => ({
 		projectEmailUnique: unique("project_invitations_project_email_unique").on(table.project_id, table.email),
@@ -156,64 +155,89 @@ export const project_invitations = sqliteTable(
 );
 
 /**
+ * Plans table
+ * Subscription plans for apps
+ */
+export const plans = pgTable(
+	"plans",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		app_id: integer("app_id").notNull(),
+		name: varchar("name", { length: 255 }).notNull(),
+		slug: varchar("slug", { length: 255 }).notNull(),
+		description: text("description"),
+		monthly_price: integer("monthly_price"),
+		yearly_price: integer("yearly_price"),
+		one_time_price: integer("one_time_price"),
+		duration_days: integer("duration_days"),
+		trial_enabled: boolean("trial_enabled").notNull().default(false),
+		trial_days: integer("trial_days"),
+		features: jsonb("features"),
+		status: varchar("status", { length: 50 }).notNull().default("active"),
+		display_order: integer("display_order").notNull().default(0),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => ({
+		appIdIdx: index("plans_app_id_idx").on(table.app_id),
+		slugIdx: index("plans_slug_idx").on(table.slug),
+		statusIdx: index("plans_status_idx").on(table.status),
+		appSlugUnique: unique("plans_app_slug_unique").on(table.app_id, table.slug),
+	}),
+);
+
+/**
  * Apps table
  * Applications within projects
  */
-export const apps = sqliteTable(
+export const apps = pgTable(
 	"apps",
 	{
-		id: integer("id").primaryKey({ autoIncrement: true }),
-		public_id: text("public_id").notNull().unique(),
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
 		project_id: integer("project_id")
 			.notNull()
 			.references(() => projects.id),
-		name: text("name").notNull(),
-		slug: text("slug").notNull(),
-		description: text("description"), // optional app description
-		allowed_hosts: text("allowed_hosts").notNull(), // JSON array
-		redirect_uris: text("redirect_uris").notNull(), // JSON array
-		required_providers: text("required_providers").notNull(), // JSON array
-		is_active: integer("is_active").notNull().default(1),
-		licensing_required: integer("licensing_required").notNull().default(1),
-		default_plan_id: integer("default_plan_id"), // FK to plans table, nullable (FK enforced at DB level)
+		name: varchar("name", { length: 255 }).notNull(),
+		slug: varchar("slug", { length: 255 }).notNull(),
+		description: text("description"),
+		allowed_hosts: jsonb("allowed_hosts").notNull(),
+		redirect_uris: jsonb("redirect_uris").notNull(),
+		required_providers: jsonb("required_providers").notNull(),
+		is_active: boolean("is_active").notNull().default(true),
+		licensing_required: boolean("licensing_required").notNull().default(true),
+		default_plan_id: integer("default_plan_id").references(() => plans.id),
 		app_session_ttl_days: integer("app_session_ttl_days").notNull().default(28),
 		account_lockout_minutes: integer("account_lockout_minutes").notNull().default(15),
 		cache_ttl_minutes: integer("cache_ttl_minutes").notNull().default(10),
-		cors_allowed_origins: text("cors_allowed_origins"), // JSON array (optional)
+		cors_allowed_origins: jsonb("cors_allowed_origins"),
 		rate_limit_requests_per_minute: integer("rate_limit_requests_per_minute").notNull().default(100),
-		// Payment provider fields
-		payment_provider: text("payment_provider"), // 'lemonsqueezy' | 'dodo' | 'stripe' | null
-		payment_test_mode: integer("payment_test_mode").default(1), // 1 = test, 0 = live
-		// LemonSqueezy
+		payment_provider: varchar("payment_provider", { length: 50 }),
+		payment_test_mode: boolean("payment_test_mode").default(true),
 		lemon_squeezy_store_id: text("lemon_squeezy_store_id"),
 		lemon_squeezy_api_key: text("lemon_squeezy_api_key"),
 		lemon_squeezy_webhook_secret: text("lemon_squeezy_webhook_secret"),
-		// Dodo Payments
 		dodo_api_key: text("dodo_api_key"),
 		dodo_secret_key: text("dodo_secret_key"),
 		dodo_webhook_secret: text("dodo_webhook_secret"),
-		// Stripe (optional, future)
 		stripe_publishable_key: text("stripe_publishable_key"),
 		stripe_secret_key: text("stripe_secret_key"),
 		stripe_webhook_secret: text("stripe_webhook_secret"),
-		// Webhook configuration
 		webhook_url: text("webhook_url"),
-		webhook_events: text("webhook_events"), // JSON array
-		// OAuth credentials per app
-		oauth_inherit_source: text("oauth_inherit_source").notNull().default("proofa"), // 'proofa' | 'project' | 'app'
+		webhook_events: jsonb("webhook_events"),
+		oauth_inherit_source: varchar("oauth_inherit_source", { length: 50 }).notNull().default("proofa"),
 		google_client_id: text("google_client_id"),
 		google_client_secret: text("google_client_secret"),
 		github_client_id: text("github_client_id"),
 		github_client_secret: text("github_client_secret"),
-		// App API Keys for developers
-		client_secret: text("client_secret").notNull(), // For server-to-server auth
-		service_token: text("service_token").notNull(), // For API calls
-		// Email configuration
-		email_from_name: text("email_from_name"), // Custom "From" name for emails
-		email_from_address: text("email_from_address"), // Custom "From" email address
-		email_reply_to: text("email_reply_to"), // Custom "Reply-To" email address
-		created_at: integer("created_at").notNull(),
-		updated_at: integer("updated_at").notNull(),
+		client_secret: text("client_secret").notNull(),
+		service_token: text("service_token").notNull(),
+		email_from_name: varchar("email_from_name", { length: 255 }),
+		email_from_address: varchar("email_from_address", { length: 255 }),
+		email_reply_to: varchar("email_reply_to", { length: 255 }),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
 	},
 	(table) => ({
 		projectSlugUnique: unique("apps_project_slug_unique").on(table.project_id, table.slug),
@@ -227,12 +251,12 @@ export const apps = sqliteTable(
  * AuthCodes table
  * Single-use authorization codes
  */
-export const auth_codes = sqliteTable(
+export const auth_codes = pgTable(
 	"auth_codes",
 	{
-		id: integer("id").primaryKey({ autoIncrement: true }),
-		public_id: text("public_id").notNull().unique(),
-		code: text("code").notNull().unique(),
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		code: varchar("code", { length: 255 }).notNull().unique(),
 		user_id: integer("user_id")
 			.notNull()
 			.references(() => users.id),
@@ -240,9 +264,9 @@ export const auth_codes = sqliteTable(
 			.notNull()
 			.references(() => apps.id),
 		redirect_uri: text("redirect_uri").notNull(),
-		created_at: integer("created_at").notNull(),
-		expires_at: integer("expires_at").notNull(),
-		consumed_at: integer("consumed_at"), // null = unused
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		expires_at: timestamp("expires_at").notNull(),
+		consumed_at: timestamp("consumed_at"),
 	},
 	(table) => ({
 		userIdx: index("auth_codes_user_id_idx").on(table.user_id),
@@ -256,11 +280,11 @@ export const auth_codes = sqliteTable(
  * Licenses table
  * User licenses for apps
  */
-export const licenses = sqliteTable(
+export const licenses = pgTable(
 	"licenses",
 	{
-		id: integer("id").primaryKey({ autoIncrement: true }),
-		public_id: text("public_id").notNull().unique(),
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
 		user_id: integer("user_id")
 			.notNull()
 			.references(() => users.id),
@@ -269,17 +293,17 @@ export const licenses = sqliteTable(
 			.references(() => apps.id),
 		plan_id: integer("plan_id")
 			.notNull()
-			.references(() => plans.id), // FK to plans table
-		status: text("status").notNull(), // 'active', 'expired', 'canceled', 'suspended'
-		source: text("source").notNull(), // 'manual', 'promo', 'stripe', 'lemonsqueezy', 'internal'
-		valid_from: integer("valid_from").notNull(),
-		valid_until: integer("valid_until"), // null = lifetime
-		entitlements: text("entitlements"), // JSON object
-		provider: text("provider"), // payment provider
-		provider_ref_id: text("provider_ref_id"), // provider ID
-		metadata: text("metadata"), // JSON object
-		created_at: integer("created_at").notNull(),
-		updated_at: integer("updated_at").notNull(),
+			.references(() => plans.id),
+		status: varchar("status", { length: 50 }).notNull(),
+		source: varchar("source", { length: 50 }).notNull(),
+		valid_from: timestamp("valid_from").notNull(),
+		valid_until: timestamp("valid_until"),
+		entitlements: jsonb("entitlements"),
+		provider: varchar("provider", { length: 50 }),
+		provider_ref_id: varchar("provider_ref_id", { length: 255 }),
+		metadata: jsonb("metadata"),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
 	},
 	(table) => ({
 		userAppUnique: unique("licenses_user_app_unique").on(table.user_id, table.app_id),
@@ -295,18 +319,18 @@ export const licenses = sqliteTable(
  * EmailVerifications table
  * OTP codes for email verification
  */
-export const email_verifications = sqliteTable(
+export const email_verifications = pgTable(
 	"email_verifications",
 	{
-		id: integer("id").primaryKey({ autoIncrement: true }),
-		public_id: text("public_id").notNull().unique(),
-		email: text("email").notNull(),
-		otp_hash: text("otp_hash").notNull(), // bcrypt hashed
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		email: varchar("email", { length: 255 }).notNull(),
+		otp_hash: text("otp_hash").notNull(),
 		attempts: integer("attempts").notNull().default(0),
-		expires_at: integer("expires_at").notNull(),
-		locked_until: integer("locked_until"), // null = not locked
-		consumed_at: integer("consumed_at"), // null = unused
-		created_at: integer("created_at").notNull(),
+		expires_at: timestamp("expires_at").notNull(),
+		locked_until: timestamp("locked_until"),
+		consumed_at: timestamp("consumed_at"),
+		created_at: timestamp("created_at").notNull().defaultNow(),
 	},
 	(table) => ({
 		emailIdx: index("email_verifications_email_idx").on(table.email),
@@ -319,22 +343,22 @@ export const email_verifications = sqliteTable(
  * AuditLogs table
  * Audit trail for all state-changing actions
  */
-export const audit_logs = sqliteTable(
+export const audit_logs = pgTable(
 	"audit_logs",
 	{
-		id: integer("id").primaryKey({ autoIncrement: true }),
-		public_id: text("public_id").notNull().unique(),
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
 		user_id: integer("user_id")
 			.notNull()
 			.references(() => users.id),
-		app_id: integer("app_id").references(() => apps.id), // nullable
-		project_id: integer("project_id").references(() => projects.id), // nullable
-		action: text("action").notNull(), // 'create', 'update', 'delete', 'grant', 'revoke', 'login', 'logout'
-		entity_type: text("entity_type").notNull(), // 'user', 'app', 'project', 'license', etc.
-		entity_id: text("entity_id"), // ID of changed entity
-		changes: text("changes"), // JSON object (before/after)
-		ip_address: text("ip_address"), // requester IP
-		created_at: integer("created_at").notNull(),
+		app_id: integer("app_id").references(() => apps.id),
+		project_id: integer("project_id").references(() => projects.id),
+		action: varchar("action", { length: 50 }).notNull(),
+		entity_type: varchar("entity_type", { length: 50 }).notNull(),
+		entity_id: varchar("entity_id", { length: 255 }),
+		changes: jsonb("changes"),
+		ip_address: varchar("ip_address", { length: 50 }),
+		created_at: timestamp("created_at").notNull().defaultNow(),
 	},
 	(table) => ({
 		userIdx: index("audit_logs_user_id_idx").on(table.user_id),
@@ -345,27 +369,31 @@ export const audit_logs = sqliteTable(
 	}),
 );
 
-export const invitations = sqliteTable(
+/**
+ * Invitations table
+ * User invitations to apps
+ */
+export const invitations = pgTable(
 	"invitations",
 	{
-		id: integer("id").primaryKey({ autoIncrement: true }),
-		public_id: text("public_id").notNull().unique(),
-		email: text("email").notNull(),
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		email: varchar("email", { length: 255 }).notNull(),
 		app_id: integer("app_id")
 			.notNull()
 			.references(() => apps.id),
 		project_id: integer("project_id")
 			.notNull()
 			.references(() => projects.id),
-		role: text("role"), // 'admin' | 'member' | null (for regular app user)
+		role: varchar("role", { length: 50 }),
 		plan_id: integer("plan_id")
 			.notNull()
-			.references(() => plans.id), // FK to plans table
+			.references(() => plans.id),
 		license_duration_days: integer("license_duration_days"),
-		custom_message: text("custom_message"), // optional welcome message
-		expires_at: integer("expires_at").notNull(), // invitation expiry timestamp
-		created_at: integer("created_at").notNull(),
-		consumed_at: integer("consumed_at"), // when user signed up
+		custom_message: text("custom_message"),
+		expires_at: timestamp("expires_at").notNull(),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		consumed_at: timestamp("consumed_at"),
 		consumed_by_user_id: integer("consumed_by_user_id").references(() => users.id),
 	},
 	(table) => ({
@@ -378,67 +406,27 @@ export const invitations = sqliteTable(
 	}),
 );
 
-export const plans = sqliteTable(
-	"plans",
-	{
-		id: integer("id").primaryKey({ autoIncrement: true }),
-		public_id: text("public_id").notNull().unique(),
-		app_id: integer("app_id")
-			.notNull()
-			.references(() => apps.id),
-		name: text("name").notNull(), // 'Free', 'Pro', 'Enterprise', etc.
-		slug: text("slug").notNull(), // 'free', 'pro', 'enterprise'
-		description: text("description"),
-		monthly_price: integer("monthly_price"), // in cents (e.g., 999 = $9.99)
-		yearly_price: integer("yearly_price"), // in cents
-		one_time_price: integer("one_time_price"), // in cents - one-time payment for lifetime access
-		duration_days: integer("duration_days"), // How long the license is valid (e.g., 30, 365, null = lifetime)
-		trial_enabled: integer("trial_enabled").notNull().default(0), // 0 = false, 1 = true
-		trial_days: integer("trial_days"),
-		features: text("features"), // JSON array of feature strings
-		status: text("status").notNull().default("active"), // 'active' | 'inactive'
-		display_order: integer("display_order").notNull().default(0),
-		created_at: integer("created_at").notNull(),
-		updated_at: integer("updated_at").notNull(),
-	},
-	(table) => ({
-		appIdIdx: index("plans_app_id_idx").on(table.app_id),
-		slugIdx: index("plans_slug_idx").on(table.slug),
-		statusIdx: index("plans_status_idx").on(table.status),
-		appSlugUnique: unique("plans_app_slug_unique").on(table.app_id, table.slug),
-	}),
-);
-
 /**
  * Payment Configurations table
  * Stores payment provider configurations for projects and apps
  */
-export const payment_configurations = sqliteTable(
+export const payment_configurations = pgTable(
 	"payment_configurations",
 	{
-		id: integer("id").primaryKey({ autoIncrement: true }),
-		public_id: text("public_id").notNull().unique(),
-		
-		// Scope: what this config applies to
-		scope_type: text("scope_type").notNull(), // 'project' | 'app'
-		scope_id: integer("scope_id").notNull(), // project.id or app.id
-		
-		// Provider info
-		provider: text("provider").notNull(), // 'lemonsqueezy' | 'dodo' | 'stripe' | etc.
-		is_active: integer("is_active").notNull().default(1),
-		test_mode: integer("test_mode").notNull().default(1),
-		
-		// Encrypted configuration JSON
-		config: text("config").notNull(), // Encrypted JSON with provider-specific fields
-		
-		// Metadata
-		created_at: integer("created_at").notNull(),
-		updated_at: integer("updated_at").notNull(),
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		scope_type: varchar("scope_type", { length: 50 }).notNull(),
+		scope_id: integer("scope_id").notNull(),
+		provider: varchar("provider", { length: 50 }).notNull(),
+		is_active: boolean("is_active").notNull().default(true),
+		test_mode: boolean("test_mode").notNull().default(true),
+		config: text("config").notNull(),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
 	},
 	(table) => ({
 		scopeIdx: index("payment_configurations_scope_idx").on(table.scope_type, table.scope_id),
 		providerIdx: index("payment_configurations_provider_idx").on(table.provider),
-		// One config per provider per scope
 		scopeProviderUnique: unique("payment_configurations_scope_provider_unique").on(
 			table.scope_type,
 			table.scope_id,

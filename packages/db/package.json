@@ -22,9 +22,9 @@
 		"build": "tsc",
 		"dev": "tsc --watch",
 		"clean": "rm -rf dist",
-		"db:generate": "drizzle-kit generate:pg",
-		"db:push": "drizzle-kit push:pg",
-		"db:migrate": "drizzle-kit push:pg",
+		"db:generate": "drizzle-kit generate",
+		"db:push": "drizzle-kit push",
+		"db:migrate": "drizzle-kit push",
 		"db:studio": "drizzle-kit studio",
 		"db:drop": "tsx scripts/drop-tables.ts",
 		"db:reset": "pnpm run db:drop && pnpm run db:push",
@@ -32,13 +32,13 @@
 	},
 	"dependencies": {
 		"@proofa/shared": "workspace:*",
-		"drizzle-orm": "^0.29.5",
+		"drizzle-orm": "^0.36.0",
 		"pg": "^8.13.1"
 	},
 	"devDependencies": {
 		"@types/pg": "^8.11.10",
 		"dotenv": "^16.3.1",
-		"drizzle-kit": "^0.20.18",
+		"drizzle-kit": "^0.30.0",
 		"tsx": "^4.7.0",
 		"typescript": "^5.3.3"
 	}
