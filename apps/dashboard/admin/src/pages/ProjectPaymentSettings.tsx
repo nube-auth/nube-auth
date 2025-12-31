@@ -38,7 +38,6 @@ export default function ProjectPaymentSettingsPage() {
 		storeId: "",
 		apiKey: "",
 	});
-	const [showCredentials, setShowCredentials] = useState(false);
 	const [isEditMode, setIsEditMode] = useState(false);
 
 	const isLoading = projectLoading || configLoading;
@@ -53,7 +52,6 @@ export default function ProjectPaymentSettingsPage() {
 			setConfigSlug(paymentConfig.slug || "");
 			// Don't load encrypted config values for security
 			setIsEditMode(false);
-			setShowCredentials(false);
 		}
 	}, [paymentConfig]);
 
@@ -74,14 +72,12 @@ export default function ProjectPaymentSettingsPage() {
 
 	const handleEdit = () => {
 		setIsEditMode(true);
-		setShowCredentials(false);
 		// Reset form to empty values when editing
 		handleProviderChange(selectedProvider);
 	};
 
 	const handleCancel = () => {
 		setIsEditMode(false);
-		setShowCredentials(false);
 		handleProviderChange(selectedProvider);
 	};
 
@@ -125,12 +121,6 @@ export default function ProjectPaymentSettingsPage() {
 		} catch (error: any) {
 			showToast(error.message || "Failed to save payment configuration", "error");
 		}
-	};
-
-	const maskValue = (value: string) => {
-		if (!value) return "";
-		if (value.length <= 8) return "••••••••";
-		return value.substring(0, 4) + "••••••••" + value.substring(value.length - 4);
 	};
 
 	if (isLoading) {

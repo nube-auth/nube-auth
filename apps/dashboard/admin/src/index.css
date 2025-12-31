@@ -1317,6 +1317,10 @@ input[type="url"].form-control {
     margin-left: 0;
   }
   
+  .modal-overlay {
+    left: 0;
+  }
+  
   .integrations-grid {
     grid-template-columns: 1fr;
   }
@@ -1601,15 +1605,15 @@ input[type="url"].form-control {
 .modal-overlay {
   position: fixed;
   top: 0;
-  left: 0;
+  left: 260px;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
-  backdrop-filter: blur(4px);
+  padding: 32px;
 }
 
 .modal {
@@ -1617,10 +1621,10 @@ input[type="url"].form-control {
   border: 1px solid var(--card-border);
   border-radius: var(--radius-lg);
   width: 100%;
-  max-width: 480px;
-  max-height: 90vh;
+  max-width: 900px;
+  max-height: calc(100vh - 64px);
   overflow-y: auto;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
 }
 
 .modal-header {

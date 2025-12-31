@@ -1,5 +1,5 @@
 {
-  "id": "54d6f887-18a3-4beb-b6bd-e2bd18f69a5f",
+  "id": "c951c8b8-5996-4946-8cea-4705e72426e3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -277,6 +277,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": 100
+        },
+        "selected_payment_provider_id": {
+          "name": "selected_payment_provider_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -1393,6 +1399,18 @@
           "primaryKey": false,
           "notNull": true
         },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
         "entity_type": {
           "name": "entity_type",
           "type": "varchar(20)",
@@ -1580,6 +1598,18 @@
           "primaryKey": false,
           "notNull": true
         },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
         "scope_type": {
           "name": "scope_type",
           "type": "varchar(20)",
@@ -1710,6 +1740,18 @@
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
         },
         "entity_type": {
           "name": "entity_type",
@@ -2894,6 +2936,13 @@
         },
         "created_at": {
           "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,

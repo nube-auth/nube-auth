@@ -22,6 +22,7 @@ import { ProjectsPage } from "./pages/Projects";
 import { ProjectAppsPage } from "./pages/ProjectApps";
 import { ProjectSettingsPage } from "./pages/ProjectSettings";
 import ProjectPaymentSettingsPage from "./pages/ProjectPaymentSettings";
+import ProjectPaymentProvidersPage from "./pages/ProjectPaymentProviders";
 import ProjectOAuthPage from "./pages/ProjectOAuth";
 import AppPaymentSettingsPage from "./pages/AppPaymentSettings";
 import { ProjectStatsPage } from "./pages/ProjectStats";
@@ -447,26 +448,16 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 							>
 								Team
 							</SidebarLink>
-							<SidebarLink
-								to={`/projects/${selectedProject}/payment`}
-								icon={
-									<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-									</svg>
-								}
-							>
-								Payment
-							</SidebarLink>
-							<SidebarLink
-								to={`/projects/${selectedProject}/oauth`}
-								icon={
-									<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-									</svg>
-								}
-							>
-								OAuth
-							</SidebarLink>
+						<SidebarLink
+							to={`/projects/${selectedProject}/payment-providers`}
+							icon={
+								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+								</svg>
+							}
+						>
+							Payment Providers
+						</SidebarLink>
 							<SidebarLink
 								to={`/projects/${selectedProject}/settings`}
 								icon={
@@ -717,6 +708,14 @@ function App() {
 					element={
 						<ProtectedLayout>
 							<ProjectPaymentSettingsPage />
+						</ProtectedLayout>
+					}
+				/>
+				<Route
+					path="/projects/:projectId/payment-providers"
+					element={
+						<ProtectedLayout>
+							<ProjectPaymentProvidersPage />
 						</ProtectedLayout>
 					}
 				/>

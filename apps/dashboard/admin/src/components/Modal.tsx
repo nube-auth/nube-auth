@@ -31,23 +31,22 @@ export function Modal({ isOpen, onClose, children, size = "md" }: ModalProps) {
 
 	if (!isOpen) return null;
 
-	const maxWidth = size === "sm" ? "400px" : size === "lg" ? "800px" : "500px";
+	const maxWidth = size === "sm" ? "600px" : size === "lg" ? "1200px" : "900px";
 
 	return (
 		<div
 			style={{
 				position: "fixed",
 				top: 0,
-				left: 0,
+				left: "260px",
 				right: 0,
 				bottom: 0,
 				background: "rgba(0, 0, 0, 0.6)",
-				backdropFilter: "blur(4px)",
 				display: "flex",
 				alignItems: "center",
 				justifyContent: "center",
 				zIndex: 9999,
-				padding: "20px",
+				padding: "32px",
 			}}
 			onClick={onClose}
 		>
@@ -57,7 +56,7 @@ export function Modal({ isOpen, onClose, children, size = "md" }: ModalProps) {
 					borderRadius: "12px",
 					maxWidth,
 					width: "100%",
-					maxHeight: "90vh",
+					maxHeight: "calc(100vh - 64px)",
 					overflow: "auto",
 					boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)",
 					border: "1px solid var(--border-primary)",

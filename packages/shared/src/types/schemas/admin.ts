@@ -214,6 +214,7 @@ export const AppDTOSchema = z.object({
 	googleClientSecret: z.string().optional(), // Masked in API response
 	githubClientId: z.string().optional(),
 	githubClientSecret: z.string().optional(), // Masked in API response
+	selectedPaymentProviderId: z.number().nullable().optional(),
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
 });

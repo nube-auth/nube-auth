@@ -88,3 +88,6 @@ export {
 	executeAtomic,
 	withRetry,
 } from "./utils/transaction.js";
+
+// Export drizzle-orm operators for queries
+export { and, eq, isNull, desc, asc, or, inArray, sql } from "drizzle-orm";

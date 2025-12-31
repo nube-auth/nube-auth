@@ -147,15 +147,15 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 			style={{
 				position: "fixed",
 				top: 0,
-				left: 0,
+				left: "260px",
 				right: 0,
 				bottom: 0,
-				background: "rgba(0, 0, 0, 0.5)",
+				background: "rgba(0, 0, 0, 0.6)",
 				display: "flex",
 				alignItems: "center",
 				justifyContent: "center",
 				zIndex: 1000,
-				backdropFilter: "blur(4px)",
+				padding: "32px",
 			}}
 		>
 			<div
@@ -163,13 +163,13 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 				onClick={(e) => e.stopPropagation()}
 				style={{
 					background: "var(--card-bg)",
-					borderRadius: "16px",
+					borderRadius: "12px",
 					padding: "32px",
-					maxWidth: "520px",
-					width: "90%",
-					maxHeight: "90vh",
+					maxWidth: "900px",
+					width: "100%",
+					maxHeight: "calc(100vh - 64px)",
 					overflowY: "auto",
-					boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
+					boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)",
 					border: "1px solid var(--card-border)",
 				}}
 			>

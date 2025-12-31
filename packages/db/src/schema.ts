@@ -200,6 +200,8 @@ export const oauth_providers = pgTable(
 	{
 		id: serial("id").primaryKey(),
 		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		name: varchar("name", { length: 255 }),
+		slug: varchar("slug", { length: 255 }),
 		entity_type: varchar("entity_type", { length: 20 }).notNull(), // 'platform', 'project', 'app'
 		entity_id: integer("entity_id"), // null for platform, project_id or app_id
 		provider: varchar("provider", { length: 50 }).notNull(), // 'google', 'github', etc.
@@ -234,6 +236,8 @@ export const payment_providers = pgTable(
 	{
 		id: serial("id").primaryKey(),
 		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		name: varchar("name", { length: 255 }),
+		slug: varchar("slug", { length: 255 }),
 		entity_type: varchar("entity_type", { length: 20 }).notNull(), // 'platform', 'project', 'app'
 		entity_id: integer("entity_id"), // null for platform, project_id or app_id
 		provider: varchar("provider", { length: 50 }).notNull(), // 'stripe', 'lemonsqueezy', 'dodo'

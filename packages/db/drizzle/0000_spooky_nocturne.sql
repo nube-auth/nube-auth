@@ -33,6 +33,7 @@ CREATE TABLE "apps" (
 	"account_lockout_minutes" integer DEFAULT 30 NOT NULL,
 	"cache_ttl_minutes" integer DEFAULT 60 NOT NULL,
 	"rate_limit" integer DEFAULT 100 NOT NULL,
+	"selected_payment_provider_id" integer,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "apps_public_id_unique" UNIQUE("public_id"),
@@ -131,6 +132,8 @@ CREATE TABLE "licenses" (
 CREATE TABLE "oauth_providers" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"public_id" varchar(255) NOT NULL,
+	"name" varchar(255),
+	"slug" varchar(255),
 	"entity_type" varchar(20) NOT NULL,
 	"entity_id" integer,
 	"provider" varchar(50) NOT NULL,
@@ -151,6 +154,8 @@ CREATE TABLE "oauth_providers" (
 CREATE TABLE "payment_configurations" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"public_id" varchar(255) NOT NULL,
+	"name" varchar(255),
+	"slug" varchar(255),
 	"scope_type" varchar(20) NOT NULL,
 	"scope_id" integer NOT NULL,
 	"provider" varchar(50) NOT NULL,
@@ -166,6 +171,8 @@ CREATE TABLE "payment_configurations" (
 CREATE TABLE "payment_providers" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"public_id" varchar(255) NOT NULL,
+	"name" varchar(255),
+	"slug" varchar(255),
 	"entity_type" varchar(20) NOT NULL,
 	"entity_id" integer,
 	"provider" varchar(50) NOT NULL,
@@ -287,6 +294,7 @@ CREATE TABLE "users" (
 	"avatar_url" text,
 	"is_admin" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "users_public_id_unique" UNIQUE("public_id")
 );
 --> statement-breakpoint

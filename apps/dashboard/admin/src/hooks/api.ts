@@ -541,7 +541,7 @@ export function useDeleteAppPaymentConfig(projectId: string, appId: string) {
 // ===== OAuth Provider Hooks =====
 
 /**
- * Get available OAuth providers for an app
+ * Get available OAuth providers for an app (from platform level)
  */
 export function useAvailableOAuthProviders(appId: string) {
 	return useQuery({
@@ -565,75 +565,6 @@ export function useSelectedOAuthProviders(appId: string) {
 			return data.providers;
 		},
 		enabled: !!appId,
-	});
-}
-
-/**
- * Create OAuth provider
- */
-export function useCreateOAuthProvider() {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: async (data: {
-			entityType: "platform" | "project" | "app";
-			entityId: number | null;
-			provider: string;
-			credentials: {
-				client_id: string;
-				client_secret: string;
-				redirect_uri?: string;
-			};
-		}) => {
-			return fetchAPI<{ provider: any }>("/v1/admin/oauth-providers", {
-				method: "POST",
-				body: JSON.stringify(data),
-			});
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["oauth-providers"] });
-		},
-	});
-}
-
-/**
- * Update OAuth provider
- */
-export function useUpdateOAuthProvider(providerId: number) {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: async (data: {
-			credentials?: {
-				client_id: string;
-				client_secret: string;
-				redirect_uri?: string;
-			};
-			isActive?: boolean;
-		}) => {
-			return fetchAPI<{ success: boolean }>(`/v1/admin/oauth-providers/${providerId}`, {
-				method: "PATCH",
-				body: JSON.stringify(data),
-			});
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["oauth-providers"] });
-		},
-	});
-}
-
-/**
- * Delete OAuth provider
- */
-export function useDeleteOAuthProvider() {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: async (providerId: number) => {
-			return fetchAPI<{ success: boolean }>(`/v1/admin/oauth-providers/${providerId}`, {
-				method: "DELETE",
-			});
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["oauth-providers"] });
-		},
 	});
 }
 
@@ -679,6 +610,20 @@ export function useDeselectOAuthProvider(appId: string) {
 // ===== Payment Provider Hooks =====
 
 /**
+ * Get all payment providers for a project
+ */
+export function useProjectPaymentProviders(projectId: string) {
+	return useQuery({
+		queryKey: ["payment-providers", "project", projectId],
+		queryFn: async () => {
+			const data = await fetchAPI<{ providers: any[] }>(`/v1/admin/projects/${projectId}/payment-providers`);
+			return data.providers;
+		},
+		enabled: !!projectId,
+	});
+}
+
+/**
  * Get available payment providers for an app
  */
 export function useAvailablePaymentProviders(appId: string, environment: "test" | "production" = "test") {
@@ -715,20 +660,26 @@ export function useCreatePaymentProvider() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async (data: {
-			entityType: "platform" | "project" | "app";
-			entityId: number | null;
-			provider: string;
-			environment: "test" | "production";
-			credentials: Record<string, string>;
-			webhookSecret?: string;
+			projectId: string;
+			data: {
+				name: string;
+				slug?: string;
+				entityType: "platform" | "project" | "app";
+				entityId?: number | null;
+				projectId?: string;
+				provider: string;
+				environment: "test" | "production";
+				credentials: Record<string, string>;
+				webhookSecret?: string;
+			};
 		}) => {
 			return fetchAPI<{ provider: any }>("/v1/admin/payment-providers", {
 				method: "POST",
-				body: JSON.stringify(data),
+				body: JSON.stringify(data.data),
 			});
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["payment-providers"] });
+		onSuccess: (_, variables) => {
+			queryClient.invalidateQueries({ queryKey: ["payment-providers", "project", variables.projectId] });
 		},
 	});
 }
@@ -736,22 +687,28 @@ export function useCreatePaymentProvider() {
 /**
  * Update payment provider
  */
-export function useUpdatePaymentProvider(providerId: number) {
+export function useUpdatePaymentProvider() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async (data: {
-			credentials?: Record<string, string>;
-			webhookSecret?: string;
-			isActive?: boolean;
-			environment?: "test" | "production";
+			projectId: string;
+			providerId: string;
+			data: {
+				name?: string;
+				slug?: string;
+				credentials?: Record<string, string>;
+				webhookSecret?: string;
+				isActive?: boolean;
+				environment?: "test" | "production";
+			};
 		}) => {
-			return fetchAPI<{ success: boolean }>(`/v1/admin/payment-providers/${providerId}`, {
+			return fetchAPI<{ success: boolean }>(`/v1/admin/payment-providers/${data.providerId}`, {
 				method: "PATCH",
-				body: JSON.stringify(data),
+				body: JSON.stringify(data.data),
 			});
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["payment-providers"] });
+		onSuccess: (_, variables) => {
+			queryClient.invalidateQueries({ queryKey: ["payment-providers", "project", variables.projectId] });
 		},
 	});
 }
@@ -762,13 +719,13 @@ export function useUpdatePaymentProvider(providerId: number) {
 export function useDeletePaymentProvider() {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: async (providerId: number) => {
-			return fetchAPI<{ success: boolean }>(`/v1/admin/payment-providers/${providerId}`, {
+		mutationFn: async (data: { projectId: string; providerId: string }) => {
+			return fetchAPI<{ success: boolean }>(`/v1/admin/payment-providers/${data.providerId}`, {
 				method: "DELETE",
 			});
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["payment-providers"] });
+		onSuccess: (_, variables) => {
+			queryClient.invalidateQueries({ queryKey: ["payment-providers", "project", variables.projectId] });
 		},
 	});
 }
