@@ -9,6 +9,54 @@ import { apps, oauth_providers, app_oauth_selections, payment_providers, project
  */
 export const oauthProviderQueries = {
 	/**
+	 * Find OAuth provider by ID
+	 */
+	async findById(db: DbClient, providerId: number) {
+		const results = await db.select().from(oauth_providers).where(eq(oauth_providers.id, providerId));
+		return results[0];
+	},
+
+	/**
+	 * Find OAuth provider by public ID
+	 */
+	async findByPublicId(db: DbClient, publicId: string) {
+		const results = await db.select().from(oauth_providers).where(eq(oauth_providers.public_id, publicId));
+		return results[0];
+	},
+
+	/**
+	 * Create OAuth provider (generic)
+	 */
+	async create(db: DbClient, data: any) {
+		const results = await db.insert(oauth_providers).values(data).returning();
+		return results[0];
+	},
+
+	/**
+	 * Update OAuth provider
+	 */
+	async update(db: DbClient, providerId: number, data: any) {
+		const results = await db
+			.update(oauth_providers)
+			.set({ ...data, updated_at: new Date() })
+			.where(eq(oauth_providers.id, providerId))
+			.returning();
+		return results[0];
+	},
+
+	/**
+	 * Delete OAuth provider (soft delete)
+	 */
+	async delete(db: DbClient, providerId: number) {
+		const results = await db
+			.update(oauth_providers)
+			.set({ deleted_at: new Date() })
+			.where(eq(oauth_providers.id, providerId))
+			.returning();
+		return results[0];
+	},
+
+	/**
 	 * Get all available OAuth providers for an app (from all 3 levels)
 	 * Returns providers from platform, project, and app levels
 	 */
@@ -237,6 +285,77 @@ export const oauthProviderQueries = {
  * Resolves payment providers from Platform → Project → App hierarchy
  */
 export const paymentProviderQueries = {
+	/**
+	 * Find payment provider by ID
+	 */
+	async findById(db: DbClient, providerId: number) {
+		const results = await db.select().from(payment_providers).where(eq(payment_providers.id, providerId));
+		return results[0];
+	},
+
+	/**
+	 * Find payment provider by public ID
+	 */
+	async findByPublicId(db: DbClient, publicId: string) {
+		const results = await db.select().from(payment_providers).where(eq(payment_providers.public_id, publicId));
+		return results[0];
+	},
+
+	/**
+	 * Create payment provider (generic)
+	 */
+	async create(db: DbClient, data: any) {
+		const results = await db.insert(payment_providers).values(data).returning();
+		return results[0];
+	},
+
+	/**
+	 * Update payment provider
+	 */
+	async update(db: DbClient, providerId: number, data: any) {
+		const results = await db
+			.update(payment_providers)
+			.set({ ...data, updated_at: new Date() })
+			.where(eq(payment_providers.id, providerId))
+			.returning();
+		return results[0];
+	},
+
+	/**
+	 * Delete payment provider (soft delete)
+	 */
+	async delete(db: DbClient, providerId: number) {
+		const results = await db
+			.update(payment_providers)
+			.set({ deleted_at: new Date() })
+			.where(eq(payment_providers.id, providerId))
+			.returning();
+		return results[0];
+	},
+
+	/**
+	 * Get selected payment provider for an app
+	 */
+	async getSelectedPaymentProvider(db: DbClient, appId: number) {
+		const appResults = await db.select().from(apps).where(eq(apps.id, appId));
+		const app = appResults[0];
+		
+		if (!app || !app.selected_payment_provider_id) return null;
+
+		const results = await db
+			.select()
+			.from(payment_providers)
+			.where(
+				and(
+					eq(payment_providers.id, app.selected_payment_provider_id),
+					eq(payment_providers.is_active, true),
+					isNull(payment_providers.deleted_at)
+				)
+			);
+		
+		return results[0] || null;
+	},
+
 	/**
 	 * Get all available payment providers for an app (from all 3 levels)
 	 * Returns providers from platform, project, and app levels

@@ -1,4 +1,4 @@
-import { appQueries, getDb, identityQueries, invitationQueries, licenseQueries, paymentConfigQueries, planQueries, projectInvitationQueries, projectMemberQueries, projectQueries, userQueries, sessionQueries } from "@proofa/db";
+import { appQueries, getDb, identityQueries, invitationQueries, licenseQueries, paymentConfigQueries, planQueries, projectInvitationQueries, projectMemberQueries, projectQueries, userQueries, sessionQueries, oauthProviderQueries, paymentProviderQueries } from "@proofa/db";
 import { createId, encrypt, decrypt, isEncrypted, maskSecret, createLogger, serializeError, AuditEventType } from "@proofa/shared";
 import { 
 	InviteAppUserRequestSchema, 
@@ -3001,6 +3001,8 @@ adminRoutes.get("/projects/:projectId/payment-config", async (c: Context) => {
 		return c.json({
 			configured: true,
 			id: config.public_id,
+			name: config.name,
+			slug: config.slug,
 			provider: config.provider,
 			testMode: Boolean(config.test_mode),
 			isActive: Boolean(config.is_active),
@@ -3023,11 +3025,11 @@ adminRoutes.post("/projects/:projectId/payment-config", async (c: Context) => {
 		const projectId = c.req.param("projectId");
 		const body = await c.req.json();
 		
-		const { provider, testMode, config: configData } = body;
+		const { name, slug, provider, testMode, config: configData } = body;
 		
 		// Validate
-		if (!provider || !configData) {
-			return c.json({ error: "Provider and config are required" }, 400);
+		if (!name || !provider || !configData) {
+			return c.json({ error: "Name, provider and config are required" }, 400);
 		}
 		
 		const db = getDb();
@@ -3056,10 +3058,15 @@ adminRoutes.post("/projects/:projectId/payment-config", async (c: Context) => {
 		const now = new Date();
 		const encryptedConfig = encrypt(JSON.stringify(configData));
 		
+		// Auto-generate slug from name if not provided
+		const finalSlug = slug || name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+
 		let result;
 		if (existing) {
 			// Update existing
 			result = await paymentConfigQueries.update(db, existing.id, {
+				name,
+				slug: finalSlug,
 				test_mode: testMode,
 				config: encryptedConfig,
 				updated_at: now,
@@ -3068,6 +3075,8 @@ adminRoutes.post("/projects/:projectId/payment-config", async (c: Context) => {
 			// Create new
 			result = await paymentConfigQueries.create(db, {
 				public_id: createId("paymentConfig"),
+				name,
+				slug: finalSlug,
 				scope_type: 'project',
 				scope_id: project.id,
 				provider,
@@ -3082,6 +3091,8 @@ adminRoutes.post("/projects/:projectId/payment-config", async (c: Context) => {
 		return c.json({
 			success: true,
 			id: result.public_id,
+			name: result.name,
+			slug: result.slug,
 			provider: result.provider,
 			testMode: Boolean(result.test_mode),
 		});
@@ -3302,5 +3313,722 @@ adminRoutes.delete("/projects/:projectId/apps/:appId/payment-config", async (c: 
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Delete app payment config error:");
 		return c.json({ error: "Failed to delete payment configuration" }, 500);
+	}
+});
+
+/**
+ * GET /v1/admin/apps/:appId/oauth/available
+ * Get all available OAuth providers for an app (from platform, project, and app levels)
+ */
+adminRoutes.get("/apps/:appId/oauth/available", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const appId = c.req.param("appId");
+
+		const db = getDb();
+
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		// Get user by public ID
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Check user is member with appropriate role
+		const members = await projectMemberQueries.findByProjectAndUser(db, app.project_id, user.id);
+		const member = members[0];
+
+		if (!member || (member.role !== "owner" && member.role !== "admin")) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		// Get available OAuth providers
+		const providers = await oauthProviderQueries.getAvailableOAuthProviders(db, app.id);
+
+		// Format response
+		const formattedProviders = providers.map((p: any) => ({
+			id: p.id,
+			provider: p.provider,
+			entityType: p.entity_type,
+			entityId: p.entity_id,
+			credentials: p.credentials,
+			isActive: p.is_active,
+			createdAt: p.created_at,
+		}));
+
+		return c.json({ providers: formattedProviders });
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Get available OAuth providers error:");
+		return c.json({ error: "Failed to get available OAuth providers" }, 500);
+	}
+});
+
+/**
+ * GET /v1/admin/apps/:appId/oauth/selected
+ * Get selected OAuth providers for an app
+ */
+adminRoutes.get("/apps/:appId/oauth/selected", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const appId = c.req.param("appId");
+
+		const db = getDb();
+
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		// Get user by public ID
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Check user is member with appropriate role
+		const members = await projectMemberQueries.findByProjectAndUser(db, app.project_id, user.id);
+		const member = members[0];
+
+		if (!member || (member.role !== "owner" && member.role !== "admin")) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		// Get selected OAuth providers
+		const selections = await oauthProviderQueries.getOAuthProviders(db, app.id);
+
+		// Format response
+		const formattedProviders = selections.map((s: any) => ({
+			id: s.provider_id,
+			provider: s.provider,
+			entityType: s.entity_type,
+			entityId: s.entity_id,
+			credentials: s.credentials,
+			displayOrder: s.display_order,
+			customButtonText: s.custom_button_text,
+			isEnabled: s.is_enabled,
+		}));
+
+		return c.json({ providers: formattedProviders });
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Get selected OAuth providers error:");
+		return c.json({ error: "Failed to get selected OAuth providers" }, 500);
+	}
+});
+
+/**
+ * POST /v1/admin/apps/:appId/oauth/select
+ * Select an OAuth provider for an app
+ */
+adminRoutes.post("/apps/:appId/oauth/select", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const appId = c.req.param("appId");
+		const body = await c.req.json();
+
+		const db = getDb();
+
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		// Get user by public ID
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Check user is member with appropriate role
+		const members = await projectMemberQueries.findByProjectAndUser(db, app.project_id, user.id);
+		const member = members[0];
+
+		if (!member || (member.role !== "owner" && member.role !== "admin")) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		// Validate request
+		const validatedData = z.object({
+			oauthProviderId: z.number(),
+			displayOrder: z.number().optional(),
+			customButtonText: z.string().optional(),
+		}).parse(body);
+
+		// Select the provider
+		const selectionResults = await oauthProviderQueries.selectProviderForApp(db, {
+			app_id: app.id,
+			oauth_provider_id: validatedData.oauthProviderId,
+			display_order: validatedData.displayOrder,
+			custom_button_text: validatedData.customButtonText,
+		});
+
+		const selection = selectionResults[0];
+
+		return c.json({ 
+			selection: {
+				id: selection.id,
+				appId: selection.app_id,
+				oauthProviderId: selection.oauth_provider_id,
+				displayOrder: selection.display_order,
+				customButtonText: selection.custom_button_text,
+				isEnabled: selection.is_enabled,
+			}
+		});
+	} catch (error) {
+		if (error instanceof z.ZodError) {
+			log.warn({ errors: error.errors }, "Validation error");
+			return c.json({ error: "Invalid request data", details: error.errors }, 400);
+		}
+		log.error({ err: serializeError(error as Error) }, "Select OAuth provider error:");
+		return c.json({ error: "Failed to select OAuth provider" }, 500);
+	}
+});
+
+/**
+ * DELETE /v1/admin/apps/:appId/oauth/:providerId/deselect
+ * Deselect an OAuth provider for an app
+ */
+adminRoutes.delete("/apps/:appId/oauth/:providerId/deselect", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const appId = c.req.param("appId");
+		const providerId = Number.parseInt(c.req.param("providerId"), 10);
+
+		const db = getDb();
+
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		// Get user by public ID
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Check user is member with appropriate role
+		const members = await projectMemberQueries.findByProjectAndUser(db, app.project_id, user.id);
+		const member = members[0];
+
+		if (!member || (member.role !== "owner" && member.role !== "admin")) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		// Deselect the provider
+		await oauthProviderQueries.deselectProviderForApp(db, app.id, providerId);
+
+		return c.json({ success: true });
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Deselect OAuth provider error:");
+		return c.json({ error: "Failed to deselect OAuth provider" }, 500);
+	}
+});
+
+/**
+ * POST /v1/admin/oauth-providers
+ * Create a new OAuth provider
+ */
+adminRoutes.post("/oauth-providers", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const body = await c.req.json();
+
+		const { entityType, entityId, provider, credentials } = body;
+
+		if (!entityType || !provider || !credentials) {
+			return c.json({ error: "Missing required fields" }, 400);
+		}
+
+		const db = getDb();
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Verify access based on entity type
+		if (entityType === "project" && entityId) {
+			const project = await projectQueries.findById(db, entityId);
+			if (!project) {
+				return c.json({ error: "Project not found" }, 404);
+			}
+
+			const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+			const member = members[0];
+			if (!member || (member.role !== "owner" && member.role !== "admin")) {
+				return c.json({ error: "Access denied" }, 403);
+			}
+		} else if (entityType === "app" && entityId) {
+			const app = await appQueries.findById(db, entityId);
+			if (!app) {
+				return c.json({ error: "App not found" }, 404);
+			}
+
+			const members = await projectMemberQueries.findByProjectAndUser(db, app.project_id, user.id);
+			const member = members[0];
+			if (!member || (member.role !== "owner" && member.role !== "admin")) {
+				return c.json({ error: "Access denied" }, 403);
+			}
+		}
+
+		// Create OAuth provider
+		const newProvider = await oauthProviderQueries.create(db, {
+			entity_type: entityType,
+			entity_id: entityId,
+			provider,
+			credentials: encrypt(JSON.stringify(credentials)),
+			is_active: true,
+			created_at: new Date(),
+			updated_at: new Date(),
+		});
+
+		return c.json({ provider: newProvider });
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Create OAuth provider error:");
+		return c.json({ error: "Failed to create OAuth provider" }, 500);
+	}
+});
+
+/**
+ * PATCH /v1/admin/oauth-providers/:providerId
+ * Update an OAuth provider
+ */
+adminRoutes.patch("/oauth-providers/:providerId", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const providerId = Number.parseInt(c.req.param("providerId"), 10);
+		const body = await c.req.json();
+
+		const db = getDb();
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Get provider
+		const provider = await oauthProviderQueries.findById(db, providerId);
+		if (!provider) {
+			return c.json({ error: "OAuth provider not found" }, 404);
+		}
+
+		// Verify access
+		if (provider.entity_type === "project" && provider.entity_id) {
+			const members = await projectMemberQueries.findByProjectAndUser(db, provider.entity_id, user.id);
+			const member = members[0];
+			if (!member || (member.role !== "owner" && member.role !== "admin")) {
+				return c.json({ error: "Access denied" }, 403);
+			}
+		} else if (provider.entity_type === "app" && provider.entity_id) {
+			const app = await appQueries.findById(db, provider.entity_id);
+			if (!app) {
+				return c.json({ error: "App not found" }, 404);
+			}
+
+			const members = await projectMemberQueries.findByProjectAndUser(db, app.project_id, user.id);
+			const member = members[0];
+			if (!member || (member.role !== "owner" && member.role !== "admin")) {
+				return c.json({ error: "Access denied" }, 403);
+			}
+		}
+
+		// Update provider
+		const updateData: any = { updated_at: new Date() };
+		if (body.credentials) {
+			updateData.credentials = encrypt(JSON.stringify(body.credentials));
+		}
+		if (body.isActive !== undefined) {
+			updateData.is_active = body.isActive;
+		}
+
+		await oauthProviderQueries.update(db, providerId, updateData);
+
+		return c.json({ success: true });
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Update OAuth provider error:");
+		return c.json({ error: "Failed to update OAuth provider" }, 500);
+	}
+});
+
+/**
+ * DELETE /v1/admin/oauth-providers/:providerId
+ * Delete an OAuth provider
+ */
+adminRoutes.delete("/oauth-providers/:providerId", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const providerId = Number.parseInt(c.req.param("providerId"), 10);
+
+		const db = getDb();
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Get provider
+		const provider = await oauthProviderQueries.findById(db, providerId);
+		if (!provider) {
+			return c.json({ error: "OAuth provider not found" }, 404);
+		}
+
+		// Verify access
+		if (provider.entity_type === "project" && provider.entity_id) {
+			const members = await projectMemberQueries.findByProjectAndUser(db, provider.entity_id, user.id);
+			const member = members[0];
+			if (!member || (member.role !== "owner" && member.role !== "admin")) {
+				return c.json({ error: "Access denied" }, 403);
+			}
+		} else if (provider.entity_type === "app" && provider.entity_id) {
+			const app = await appQueries.findById(db, provider.entity_id);
+			if (!app) {
+				return c.json({ error: "App not found" }, 404);
+			}
+
+			const members = await projectMemberQueries.findByProjectAndUser(db, app.project_id, user.id);
+			const member = members[0];
+			if (!member || (member.role !== "owner" && member.role !== "admin")) {
+				return c.json({ error: "Access denied" }, 403);
+			}
+		}
+
+		// Delete provider
+		await oauthProviderQueries.delete(db, providerId);
+
+		return c.json({ success: true });
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Delete OAuth provider error:");
+		return c.json({ error: "Failed to delete OAuth provider" }, 500);
+	}
+});
+
+/**
+ * POST /v1/admin/payment-providers
+ * Create a new Payment provider
+ */
+adminRoutes.post("/payment-providers", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const body = await c.req.json();
+
+		const { entityType, entityId, provider, environment, credentials, webhookSecret } = body;
+
+		if (!entityType || !provider || !environment || !credentials) {
+			return c.json({ error: "Missing required fields" }, 400);
+		}
+
+		const db = getDb();
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Verify access based on entity type
+		if (entityType === "project" && entityId) {
+			const project = await projectQueries.findById(db, entityId);
+			if (!project) {
+				return c.json({ error: "Project not found" }, 404);
+			}
+
+			const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+			const member = members[0];
+			if (!member || (member.role !== "owner" && member.role !== "admin")) {
+				return c.json({ error: "Access denied" }, 403);
+			}
+		} else if (entityType === "app" && entityId) {
+			const app = await appQueries.findById(db, entityId);
+			if (!app) {
+				return c.json({ error: "App not found" }, 404);
+			}
+
+			const members = await projectMemberQueries.findByProjectAndUser(db, app.project_id, user.id);
+			const member = members[0];
+			if (!member || (member.role !== "owner" && member.role !== "admin")) {
+				return c.json({ error: "Access denied" }, 403);
+			}
+		}
+
+		// Create Payment provider
+		const newProvider = await paymentProviderQueries.create(db, {
+			entity_type: entityType,
+			entity_id: entityId,
+			provider,
+			environment,
+			credentials: encrypt(JSON.stringify(credentials)),
+			webhook_secret: webhookSecret ? encrypt(webhookSecret) : null,
+			is_active: true,
+			created_at: new Date(),
+			updated_at: new Date(),
+		});
+
+		return c.json({ provider: newProvider });
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Create Payment provider error:");
+		return c.json({ error: "Failed to create Payment provider" }, 500);
+	}
+});
+
+/**
+ * PATCH /v1/admin/payment-providers/:providerId
+ * Update a Payment provider
+ */
+adminRoutes.patch("/payment-providers/:providerId", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const providerId = Number.parseInt(c.req.param("providerId"), 10);
+		const body = await c.req.json();
+
+		const db = getDb();
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Get provider
+		const provider = await paymentProviderQueries.findById(db, providerId);
+		if (!provider) {
+			return c.json({ error: "Payment provider not found" }, 404);
+		}
+
+		// Verify access
+		if (provider.entity_type === "project" && provider.entity_id) {
+			const members = await projectMemberQueries.findByProjectAndUser(db, provider.entity_id, user.id);
+			const member = members[0];
+			if (!member || (member.role !== "owner" && member.role !== "admin")) {
+				return c.json({ error: "Access denied" }, 403);
+			}
+		} else if (provider.entity_type === "app" && provider.entity_id) {
+			const app = await appQueries.findById(db, provider.entity_id);
+			if (!app) {
+				return c.json({ error: "App not found" }, 404);
+			}
+
+			const members = await projectMemberQueries.findByProjectAndUser(db, app.project_id, user.id);
+			const member = members[0];
+			if (!member || (member.role !== "owner" && member.role !== "admin")) {
+				return c.json({ error: "Access denied" }, 403);
+			}
+		}
+
+		// Update provider
+		const updateData: any = { updated_at: new Date() };
+		if (body.credentials) {
+			updateData.credentials = encrypt(JSON.stringify(body.credentials));
+		}
+		if (body.webhookSecret) {
+			updateData.webhook_secret = encrypt(body.webhookSecret);
+		}
+		if (body.isActive !== undefined) {
+			updateData.is_active = body.isActive;
+		}
+		if (body.environment) {
+			updateData.environment = body.environment;
+		}
+
+		await paymentProviderQueries.update(db, providerId, updateData);
+
+		return c.json({ success: true });
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Update Payment provider error:");
+		return c.json({ error: "Failed to update Payment provider" }, 500);
+	}
+});
+
+/**
+ * DELETE /v1/admin/payment-providers/:providerId
+ * Delete a Payment provider
+ */
+adminRoutes.delete("/payment-providers/:providerId", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const providerId = Number.parseInt(c.req.param("providerId"), 10);
+
+		const db = getDb();
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Get provider
+		const provider = await paymentProviderQueries.findById(db, providerId);
+		if (!provider) {
+			return c.json({ error: "Payment provider not found" }, 404);
+		}
+
+		// Verify access
+		if (provider.entity_type === "project" && provider.entity_id) {
+			const members = await projectMemberQueries.findByProjectAndUser(db, provider.entity_id, user.id);
+			const member = members[0];
+			if (!member || (member.role !== "owner" && member.role !== "admin")) {
+				return c.json({ error: "Access denied" }, 403);
+			}
+		} else if (provider.entity_type === "app" && provider.entity_id) {
+			const app = await appQueries.findById(db, provider.entity_id);
+			if (!app) {
+				return c.json({ error: "App not found" }, 404);
+			}
+
+			const members = await projectMemberQueries.findByProjectAndUser(db, app.project_id, user.id);
+			const member = members[0];
+			if (!member || (member.role !== "owner" && member.role !== "admin")) {
+				return c.json({ error: "Access denied" }, 403);
+			}
+		}
+
+		// Delete provider
+		await paymentProviderQueries.delete(db, providerId);
+
+		return c.json({ success: true });
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Delete Payment provider error:");
+		return c.json({ error: "Failed to delete Payment provider" }, 500);
+	}
+});
+
+/**
+ * GET /v1/admin/apps/:appId/payment/available
+ * Get all available Payment providers for an app
+ */
+adminRoutes.get("/apps/:appId/payment/available", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const appId = c.req.param("appId");
+		const environment = c.req.query("environment") || "test";
+
+		const db = getDb();
+
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		const members = await projectMemberQueries.findByProjectAndUser(db, app.project_id, user.id);
+		const member = members[0];
+
+		if (!member || (member.role !== "owner" && member.role !== "admin")) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		// Get available Payment providers
+		const providers = await paymentProviderQueries.getAvailablePaymentProviders(db, app.id, environment as "test" | "production");
+
+		const formattedProviders = providers.map((p: any) => ({
+			id: p.id,
+			provider: p.provider,
+			entityType: p.entity_type,
+			entityId: p.entity_id,
+			environment: p.environment,
+			credentials: p.credentials,
+			isActive: p.is_active,
+			createdAt: p.created_at,
+		}));
+
+		return c.json({ providers: formattedProviders });
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Get available Payment providers error:");
+		return c.json({ error: "Failed to get available Payment providers" }, 500);
+	}
+});
+
+/**
+ * GET /v1/admin/apps/:appId/payment/selected
+ * Get selected Payment provider for an app
+ */
+adminRoutes.get("/apps/:appId/payment/selected", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const appId = c.req.param("appId");
+
+		const db = getDb();
+
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		const members = await projectMemberQueries.findByProjectAndUser(db, app.project_id, user.id);
+		const member = members[0];
+
+		if (!member || (member.role !== "owner" && member.role !== "admin")) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		// Get selected Payment provider
+		const provider = await paymentProviderQueries.getSelectedPaymentProvider(db, app.id);
+
+		if (!provider) {
+			return c.json({ provider: null });
+		}
+
+		return c.json({
+			provider: {
+				id: provider.id,
+				provider: provider.provider,
+				entityType: provider.entity_type,
+				entityId: provider.entity_id,
+				environment: provider.environment,
+				isActive: provider.is_active,
+				createdAt: provider.created_at,
+			},
+		});
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Get selected Payment provider error:");
+		return c.json({ error: "Failed to get selected Payment provider" }, 500);
+	}
+});
+
+/**
+ * POST /v1/admin/apps/:appId/payment/select
+ * Select a Payment provider for an app
+ */
+adminRoutes.post("/apps/:appId/payment/select", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const appId = c.req.param("appId");
+		const body = await c.req.json();
+
+		const { paymentProviderId } = body;
+
+		if (!paymentProviderId) {
+			return c.json({ error: "Missing paymentProviderId" }, 400);
+		}
+
+		const db = getDb();
+
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		const members = await projectMemberQueries.findByProjectAndUser(db, app.project_id, user.id);
+		const member = members[0];
+
+		if (!member || (member.role !== "owner" && member.role !== "admin")) {
+			return c.json({ error: "Access denied" }, 403);
+		}
+
+		// Select the provider
+		await paymentProviderQueries.selectProviderForApp(db, app.id, paymentProviderId);
+
+		return c.json({ success: true });
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Select Payment provider error:");
+		return c.json({ error: "Failed to select Payment provider" }, 500);
 	}
 });

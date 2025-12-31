@@ -5,6 +5,7 @@ import { useApp, useProject, useAppUsers, useRenewLicense } from "../hooks/api";
 import { InviteUserModal } from "../components/InviteUserModal";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { useToast } from "../components/Toast";
+import { Select } from "../components/Select";
 
 export function AppUsersPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -566,7 +567,7 @@ export function AppUsersPage() {
 										</span>
 									</td>
 									<td style={{ padding: "16px", textAlign: "center", fontSize: "13px", color: "var(--text-secondary)" }}>
-										{new Date(user.createdAt * 1000).toLocaleDateString()}
+										{new Date(user.createdAt).toLocaleDateString()}
 									</td>
 									<td style={{ padding: "16px", textAlign: "center", fontSize: "13px" }}>
 										{user.licenseValidUntil ? (
@@ -581,7 +582,7 @@ export function AppUsersPage() {
 														<span style={{ 
 															color: isExpired ? "var(--danger)" : isExpiringSoon ? "var(--warning)" : "var(--text-secondary)"
 														}}>
-															{new Date(user.licenseValidUntil * 1000).toLocaleDateString()}
+															{new Date(user.licenseValidUntil).toLocaleDateString()}
 														</span>
 														{isExpired && (
 															<span style={{
@@ -834,9 +835,23 @@ export function AppUsersPage() {
 							<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "8px" }}>
 								License Plan
 							</label>
-							<select
-								value={editLicensePlan || ""}
-								onChange={(e) => setEditLicensePlan(Number(e.target.value))}
+							<Select
+								value={editLicensePlan?.toString() || ""}
+								onChange={(value) => setEditLicensePlan(Number(value))}
+								options={
+									plansLoading
+										? [{ value: "", label: "Loading plans..." }]
+										: plans.length === 0
+										? [{ value: "", label: "No plans available" }]
+										: plans.map((plan) => ({
+												value: plan.id.toString(),
+												label: `${plan.name}${plan.monthlyPrice !== null && plan.monthlyPrice > 0
+													? ` ($${(plan.monthlyPrice / 100).toFixed(2)}/mo)`
+													: plan.yearlyPrice !== null && plan.yearlyPrice > 0
+														? ` ($${(plan.yearlyPrice / 100).toFixed(2)}/yr)`
+														: " (Free)"}`
+										  }))
+								}
 								disabled={isUpdating || plansLoading}
 								style={{
 									width: "100%",
@@ -846,36 +861,23 @@ export function AppUsersPage() {
 									background: "var(--content-bg)",
 									color: "var(--text-primary)",
 									fontSize: "14px",
-									cursor: isUpdating || plansLoading ? "not-allowed" : "pointer",
 									opacity: isUpdating || plansLoading ? 0.6 : 1,
 								}}
-							>
-								{plansLoading ? (
-									<option value="">Loading plans...</option>
-								) : plans.length === 0 ? (
-									<option value="">No plans available</option>
-								) : (
-									plans.map((plan) => (
-										<option key={plan.id} value={plan.id}>
-											{plan.name}
-											{plan.monthlyPrice !== null && plan.monthlyPrice > 0
-												? ` ($${(plan.monthlyPrice / 100).toFixed(2)}/mo)`
-												: plan.yearlyPrice !== null && plan.yearlyPrice > 0
-													? ` ($${(plan.yearlyPrice / 100).toFixed(2)}/yr)`
-													: " (Free)"}
-										</option>
-									))
-								)}
-							</select>
+							/>
 						</div>
 
 						<div style={{ marginBottom: "24px" }}>
 							<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "8px" }}>
 								Status
 							</label>
-							<select
+							<Select
 								value={editLicenseStatus}
-								onChange={(e) => setEditLicenseStatus(e.target.value)}
+								onChange={(value) => setEditLicenseStatus(value)}
+								options={[
+									{ value: "active", label: "Active" },
+									{ value: "suspended", label: "Suspended" },
+									{ value: "trial", label: "Trial" }
+								]}
 								disabled={isUpdating}
 								style={{
 									width: "100%",
@@ -885,14 +887,9 @@ export function AppUsersPage() {
 									background: "var(--content-bg)",
 									color: "var(--text-primary)",
 									fontSize: "14px",
-									cursor: isUpdating ? "not-allowed" : "pointer",
 									opacity: isUpdating ? 0.6 : 1,
 								}}
-							>
-								<option value="active">Active</option>
-								<option value="suspended">Suspended</option>
-								<option value="trial">Trial</option>
-							</select>
+							/>
 						</div>
 
 						<div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>

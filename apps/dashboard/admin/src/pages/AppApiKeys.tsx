@@ -24,7 +24,7 @@ export function AppApiKeysPage() {
 	const handleRevealKeys = async () => {
 		try {
 			const response = await fetch(
-				`/api/admin/projects/${projectId}/apps/${appId}/api-keys`,
+				`${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/admin/projects/${projectId}/apps/${appId}/api-keys`,
 				{
 					credentials: "include",
 				}
@@ -63,7 +63,7 @@ export function AppApiKeysPage() {
 		setIsRegenerating(true);
 		try {
 			const response = await fetch(
-				`/api/admin/projects/${projectId}/apps/${appId}/regenerate-secret`,
+				`${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/admin/projects/${projectId}/apps/${appId}/regenerate-secret`,
 				{
 					method: "POST",
 					credentials: "include",
@@ -93,7 +93,7 @@ export function AppApiKeysPage() {
 		setIsRegenerating(true);
 		try {
 			const response = await fetch(
-				`/api/admin/projects/${projectId}/apps/${appId}/regenerate-token`,
+				`${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/admin/projects/${projectId}/apps/${appId}/regenerate-token`,
 				{
 					method: "POST",
 					credentials: "include",

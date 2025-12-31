@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useProject, useProjectPaymentConfig, useSaveProjectPaymentConfig } from "../hooks/api";
 import { useToast } from "../components/Toast";
+import { Select } from "../components/Select";
 
 type Provider = "lemonsqueezy" | "dodo" | "stripe";
 
@@ -31,13 +32,30 @@ export default function ProjectPaymentSettingsPage() {
 
 	const [selectedProvider, setSelectedProvider] = useState<Provider>("lemonsqueezy");
 	const [testMode, setTestMode] = useState(true);
+	const [configName, setConfigName] = useState("");
+	const [configSlug, setConfigSlug] = useState("");
 	const [configForm, setConfigForm] = useState<LemonSqueezyConfig | DodoConfig | StripeConfig>({
 		storeId: "",
 		apiKey: "",
 	});
+	const [showCredentials, setShowCredentials] = useState(false);
+	const [isEditMode, setIsEditMode] = useState(false);
 
 	const isLoading = projectLoading || configLoading;
 	const isConfigured = paymentConfig?.configured;
+
+	// Load existing configuration when available
+	useEffect(() => {
+		if (paymentConfig && paymentConfig.configured) {
+			setSelectedProvider(paymentConfig.provider as Provider);
+			setTestMode(paymentConfig.testMode || false);
+			setConfigName(paymentConfig.name || "");
+			setConfigSlug(paymentConfig.slug || "");
+			// Don't load encrypted config values for security
+			setIsEditMode(false);
+			setShowCredentials(false);
+		}
+	}, [paymentConfig]);
 
 	const handleProviderChange = (provider: Provider) => {
 		setSelectedProvider(provider);
@@ -54,7 +72,26 @@ export default function ProjectPaymentSettingsPage() {
 		}
 	};
 
+	const handleEdit = () => {
+		setIsEditMode(true);
+		setShowCredentials(false);
+		// Reset form to empty values when editing
+		handleProviderChange(selectedProvider);
+	};
+
+	const handleCancel = () => {
+		setIsEditMode(false);
+		setShowCredentials(false);
+		handleProviderChange(selectedProvider);
+	};
+
 	const handleSave = async () => {
+		// Validate name and slug
+		if (!configName.trim()) {
+			showToast("Please enter a configuration name", "error");
+			return;
+		}
+
 		if (selectedProvider === "lemonsqueezy") {
 			const config = configForm as LemonSqueezyConfig;
 			if (!config.storeId || !config.apiKey) {
@@ -77,14 +114,23 @@ export default function ProjectPaymentSettingsPage() {
 
 		try {
 			await saveConfigMutation.mutateAsync({
+				name: configName,
+				slug: configSlug || configName.toLowerCase().replace(/\s+/g, "-"),
 				provider: selectedProvider,
 				testMode,
 				config: configForm,
 			});
 			showToast("Payment configuration saved successfully", "success");
+			setIsEditMode(false);
 		} catch (error: any) {
 			showToast(error.message || "Failed to save payment configuration", "error");
 		}
+	};
+
+	const maskValue = (value: string) => {
+		if (!value) return "";
+		if (value.length <= 8) return "••••••••";
+		return value.substring(0, 4) + "••••••••" + value.substring(value.length - 4);
 	};
 
 	if (isLoading) {
@@ -97,42 +143,122 @@ export default function ProjectPaymentSettingsPage() {
 
 	return (
 		<div className="page">
-			<div style={{ marginBottom: "32px" }}>
-				<h1 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>Payment Settings</h1>
-				<p style={{ fontSize: "14px", color: "var(--text-tertiary)" }}>
-					Configure payment provider for <strong>{project?.name}</strong>
-				</p>
+			<div style={{ marginBottom: "32px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+				<div>
+					<h1 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>Payment Settings</h1>
+					<p style={{ fontSize: "14px", color: "var(--text-tertiary)" }}>
+						Configure payment provider for <strong>{project?.name}</strong>
+					</p>
+				</div>
+				{isConfigured && !isEditMode && (
+					<button
+						type="button"
+						onClick={handleEdit}
+						className="btn btn-primary"
+					>
+						Edit Configuration
+					</button>
+				)}
 			</div>
 
-			{isConfigured && (
-				<div className="alert alert-success" style={{ marginBottom: "24px" }}>
-					<svg fill="currentColor" viewBox="0 0 20 20" style={{ width: "20px", height: "20px" }}>
-						<path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-					</svg>
-					<div>
-						<strong>Payment provider configured: {paymentConfig.provider}</strong>
-						<br />
-						<small>Mode: {paymentConfig.testMode ? "Test" : "Production"}</small>
+			{isConfigured && !isEditMode ? (
+				<div className="card" style={{ padding: "24px", marginBottom: "24px" }}>
+					<div className="alert alert-success" style={{ marginBottom: "24px", display: "flex", alignItems: "center" }}>
+						<svg fill="currentColor" viewBox="0 0 20 20" style={{ width: "20px", height: "20px" }}>
+							<path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+						</svg>
+						<div>
+							<strong>Payment provider configured: {paymentConfig.provider}</strong>
+							<br />
+							<small>Mode: {paymentConfig.testMode ? "Test" : "Production"}</small>
+						</div>
+					</div>
+
+					<div style={{ display: "grid", gap: "16px" }}>
+						<div className="form-group">
+							<label className="form-label">Configuration Name</label>
+							<div style={{ padding: "8px 12px", background: "var(--card-bg)", border: "1px solid var(--border)", borderRadius: "4px" }}>
+								{paymentConfig.name || "Unnamed Configuration"}
+							</div>
+						</div>
+
+						{paymentConfig.slug && (
+							<div className="form-group">
+								<label className="form-label">Slug</label>
+								<div style={{ padding: "8px 12px", background: "var(--card-bg)", border: "1px solid var(--border)", borderRadius: "4px", fontFamily: "monospace", fontSize: "13px" }}>
+									{paymentConfig.slug}
+								</div>
+							</div>
+						)}
+
+						<div className="form-group">
+							<label className="form-label">Provider</label>
+							<div style={{ padding: "8px 12px", background: "var(--card-bg)", border: "1px solid var(--border)", borderRadius: "4px" }}>
+								{paymentConfig.provider === "lemonsqueezy" && "🍋 Lemon Squeezy"}
+								{paymentConfig.provider === "dodo" && "🦤 Dodo Payments"}
+								{paymentConfig.provider === "stripe" && "💳 Stripe"}
+							</div>
+						</div>
+
+						<div className="form-group">
+							<label className="form-label">Mode</label>
+							<div style={{ padding: "8px 12px", background: "var(--card-bg)", border: "1px solid var(--border)", borderRadius: "4px" }}>
+								{paymentConfig.testMode ? "Test Mode" : "Production Mode"}
+							</div>
+						</div>
+
+						<div style={{ marginTop: "8px", padding: "12px", background: "var(--warning-bg)", border: "1px solid var(--warning)", borderRadius: "4px", fontSize: "13px", color: "var(--warning)" }}>
+							⚠️ For security reasons, credentials are encrypted and cannot be viewed. Click "Edit Configuration" to update them.
+						</div>
 					</div>
 				</div>
-			)}
-
-			<div className="card" style={{ padding: "24px", marginBottom: "24px" }}>
+			) : (
+				<div className="card" style={{ padding: "24px", marginBottom: "24px" }}>
 				<div className="form-group">
-					<label className="form-label">Payment Provider</label>
-					<select
-						value={selectedProvider}
-						onChange={(e) => handleProviderChange(e.target.value as Provider)}
+					<label className="form-label">Configuration Name *</label>
+					<input
+						type="text"
+						value={configName}
+						onChange={(e) => setConfigName(e.target.value)}
+						placeholder="e.g., My Store Payments"
 						className="form-control"
-					>
-						<option value="lemonsqueezy">🍋 Lemon Squeezy - Merchant of Record</option>
-						<option value="dodo">🦤 Dodo Payments - Indian Payment Gateway</option>
-						<option value="stripe">💳 Stripe - Global Payments</option>
-					</select>
+					/>
+					<small style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "4px", display: "block" }}>
+						A friendly name to identify this payment configuration
+					</small>
 				</div>
 
 				<div className="form-group">
-					<label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+					<label className="form-label">Slug (optional)</label>
+					<input
+						type="text"
+						value={configSlug}
+						onChange={(e) => setConfigSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"))}
+						placeholder="my-store-payments"
+						className="form-control"
+						style={{ fontFamily: "monospace", fontSize: "13px" }}
+					/>
+					<small style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "4px", display: "block" }}>
+						URL-friendly identifier (auto-generated from name if not provided)
+					</small>
+				</div>
+
+				<div className="form-group">
+					<label className="form-label">Payment Provider</label>
+					<Select
+						value={selectedProvider}
+						onChange={(value) => handleProviderChange(value as Provider)}
+						options={[
+							{ value: "lemonsqueezy", label: "🍋 Lemon Squeezy - Merchant of Record" },
+							{ value: "dodo", label: "🦤 Dodo Payments - Indian Payment Gateway" },
+							{ value: "stripe", label: "💳 Stripe - Global Payments" },
+						]}
+						disabled={isConfigured && !isEditMode}
+					/>
+				</div>
+
+				<div className="form-group" style={{ marginTop: "16px" }}>
+					<label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", marginBottom: "0" }}>
 						<input
 							type="checkbox"
 							checked={testMode}
@@ -245,16 +371,28 @@ export default function ProjectPaymentSettingsPage() {
 				)}
 
 				<div style={{ marginTop: "24px", display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+					{isEditMode && (
+						<button
+							type="button"
+							onClick={handleCancel}
+							disabled={saveConfigMutation.isPending}
+							className="btn"
+							style={{ background: "var(--card-bg)", border: "1px solid var(--border)" }}
+						>
+							Cancel
+						</button>
+					)}
 					<button
 						type="button"
 						onClick={handleSave}
 						disabled={saveConfigMutation.isPending}
 						className="btn btn-primary"
 					>
-						{saveConfigMutation.isPending ? "Saving..." : "Save Configuration"}
+						{saveConfigMutation.isPending ? "Saving..." : isEditMode ? "Update Configuration" : "Save Configuration"}
 					</button>
 				</div>
 			</div>
+			)}
 		</div>
 	);
 }

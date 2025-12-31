@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Select } from "./Select";
 
 interface InviteUserModalProps {
 	isOpen: boolean;
@@ -363,11 +364,23 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 								>
 									License Plan <span style={{ color: "var(--danger)" }}>*</span>
 								</label>
-								<select
-									id="plan"
-									required
-									value={planId || ""}
-									onChange={(e) => setPlanId(Number(e.target.value))}
+								<Select
+									value={planId?.toString() || ""}
+									onChange={(value) => setPlanId(Number(value))}
+									options={
+										plansLoading
+											? [{ value: "", label: "Loading plans..." }]
+											: plans.length === 0
+											? [{ value: "", label: "No plans available" }]
+											: plans.map((plan) => ({
+													value: plan.id.toString(),
+													label: `${plan.name}${plan.monthlyPrice !== null && plan.monthlyPrice > 0
+														? ` ($${(plan.monthlyPrice / 100).toFixed(2)}/mo)`
+														: plan.yearlyPrice !== null && plan.yearlyPrice > 0
+															? ` ($${(plan.yearlyPrice / 100).toFixed(2)}/yr)`
+															: " (Free)"}`
+											  }))
+									}
 									disabled={loading || plansLoading}
 									style={{
 										width: "100%",
@@ -378,35 +391,9 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 										color: "var(--text-primary)",
 										fontSize: "14px",
 										outline: "none",
-										cursor: loading || plansLoading ? "not-allowed" : "pointer",
 										transition: "all 0.2s ease",
 									}}
-									onFocus={(e) => {
-										e.currentTarget.style.borderColor = "var(--primary)";
-										e.currentTarget.style.boxShadow = "0 0 0 2px rgba(139, 92, 246, 0.2)";
-									}}
-									onBlur={(e) => {
-										e.currentTarget.style.borderColor = "var(--card-border)";
-										e.currentTarget.style.boxShadow = "none";
-									}}
-								>
-									{plansLoading ? (
-										<option value="">Loading plans...</option>
-									) : plans.length === 0 ? (
-										<option value="">No plans available</option>
-									) : (
-										plans.map((plan) => (
-											<option key={plan.id} value={plan.id}>
-												{plan.name}
-												{plan.monthlyPrice !== null && plan.monthlyPrice > 0
-													? ` ($${(plan.monthlyPrice / 100).toFixed(2)}/mo)`
-													: plan.yearlyPrice !== null && plan.yearlyPrice > 0
-														? ` ($${(plan.yearlyPrice / 100).toFixed(2)}/yr)`
-														: " (Free)"}
-											</option>
-										))
-									)}
-								</select>
+								/>
 							</div>
 
 							{/* License Duration */}

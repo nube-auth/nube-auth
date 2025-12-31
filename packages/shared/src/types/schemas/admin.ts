@@ -37,8 +37,8 @@ export const ProjectDTOSchema = z.object({
 	googleClientSecret: z.string().optional(), // Masked in API response
 	githubClientId: z.string().optional(),
 	githubClientSecret: z.string().optional(), // Masked in API response
-	createdAt: z.number().optional(),
-	updatedAt: z.number().optional(),
+	createdAt: z.coerce.date().optional(),
+	updatedAt: z.coerce.date().optional(),
 	totalApps: z.number().optional(),
 	totalUsers: z.number().optional(),
 	totalLicenses: z.number().optional(),
@@ -214,8 +214,8 @@ export const AppDTOSchema = z.object({
 	googleClientSecret: z.string().optional(), // Masked in API response
 	githubClientId: z.string().optional(),
 	githubClientSecret: z.string().optional(), // Masked in API response
-	createdAt: z.date(),
-	updatedAt: z.date(),
+	createdAt: z.coerce.date(),
+	updatedAt: z.coerce.date(),
 });
 
 export const AppsListResponseSchema = z.object({
@@ -225,7 +225,7 @@ export const AppsListResponseSchema = z.object({
 			name: NameSchema,
 			slug: SlugSchema,
 			description: DescriptionSchema,
-			createdAt: z.number().optional(),
+			createdAt: z.coerce.date().optional(),
 		}),
 	),
 });
@@ -240,7 +240,7 @@ export const ProjectMemberDTOSchema = z.object({
 	email: EmailSchema.optional(),
 	name: z.string().optional(),
 	role: RoleSchema,
-	createdAt: z.number(),
+	createdAt: z.coerce.date(),
 });
 
 export const ProjectMembersListResponseSchema = z.object({
@@ -256,8 +256,8 @@ export const LicenseDTOSchema = z.object({
 	appId: PublicIdSchema,
 	plan: z.string(),
 	status: z.enum(["active", "expired", "canceled", "suspended"]),
-	validUntil: z.number().nullable().optional(),
-	createdAt: z.number(),
+	validUntil: z.coerce.date().nullable().optional(),
+	createdAt: z.coerce.date(),
 });
 
 export const LicensesListResponseSchema = z.object({

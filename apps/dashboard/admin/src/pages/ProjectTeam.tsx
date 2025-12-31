@@ -4,6 +4,7 @@ import { useProject, useProjectMembers, useProjectInvitations, useUpdateTeamMemb
 import { InviteTeamMemberModal } from "../components/InviteTeamMemberModal";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { useToast } from "../components/Toast";
+import { Select } from "../components/Select";
 
 export function ProjectTeamPage() {
 	const { projectId } = useParams<{ projectId: string }>();
@@ -124,7 +125,7 @@ export function ProjectTeamPage() {
 										</span>
 									</td>
 									<td style={{ padding: "14px 16px", fontSize: "14px", color: "var(--text-secondary)" }}>
-										{new Date(member.createdAt * 1000).toLocaleDateString()}
+										{new Date(member.createdAt).toLocaleDateString()}
 									</td>
 									<td style={{ padding: "14px 16px", textAlign: "right" }}>
 										<div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
@@ -242,10 +243,10 @@ export function ProjectTeamPage() {
 											</span>
 										</td>
 										<td style={{ padding: "14px 16px", fontSize: "14px", color: "var(--text-secondary)" }}>
-											{new Date(invitation.createdAt * 1000).toLocaleDateString()}
+											{new Date(invitation.createdAt).toLocaleDateString()}
 										</td>
 										<td style={{ padding: "14px 16px", fontSize: "14px", color: "var(--text-secondary)" }}>
-											{new Date(invitation.expiresAt * 1000).toLocaleDateString()}
+											{new Date(invitation.expiresAt).toLocaleDateString()}
 										</td>
 										<td style={{ padding: "14px 16px", textAlign: "right" }}>
 											<button
@@ -321,52 +322,44 @@ export function ProjectTeamPage() {
 							>
 								Role
 							</label>
-							<select
-								id="edit-role"
-								className="form-control"
-								defaultValue={editingMember.currentRole}
-								style={{
-									width: "100%",
-									padding: "10px 14px",
-									background: "var(--content-bg)",
-									border: "1px solid var(--card-border)",
-									borderRadius: "var(--radius)",
-									fontSize: "14px",
-									color: "var(--text-primary)",
-								}}
-								onChange={async (e) => {
-									const newRole = e.target.value;
-									if (newRole === editingMember.currentRole) {
-										setEditingMember(null);
-										return;
+						<Select
+							value={editingMember.currentRole}
+							options={[
+								{ value: "admin", label: "Admin" },
+								{ value: "member", label: "Member" },
+							]}
+							onChange={async (newRole) => {
+								if (newRole === editingMember.currentRole) {
+									setEditingMember(null);
+									return;
+								}
+								try {
+									await updateMemberMutation.mutateAsync({
+										memberId: editingMember.id,
+										role: newRole,
+									});
+									showToast("Member role updated successfully", "success");
+									setEditingMember(null);
+								} catch (error: unknown) {
+									if (error && typeof error === "object" && "message" in error) {
+										showToast(`Failed to update role: ${(error as { message: string }).message}`, "error");
+									} else {
+										showToast("Failed to update role", "error");
 									}
-									try {
-										await updateMemberMutation.mutateAsync({
-											memberId: editingMember.id,
-											role: newRole,
-										});
-										showToast("Member role updated successfully", "success");
-										setEditingMember(null);
-									} catch (error: unknown) {
-										if (error && typeof error === "object" && "message" in error) {
-											showToast(`Failed to update role: ${(error as { message: string }).message}`, "error");
-										} else {
-											showToast("Failed to update role", "error");
-										}
-									}
-								}}
-							>
-								<option value="admin">Admin</option>
-								<option value="member">Member</option>
-							</select>
-						</div>
+								}
+							}}
+							style={{
+								width: "100%",
+							}}
+						/>
+					</div>
 
-						<div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
-							<button
-								type="button"
-								className="btn btn-secondary-outline"
-								onClick={() => setEditingMember(null)}
-							>
+					<div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+						<button
+							type="button"
+							className="btn btn-secondary-outline"
+							onClick={() => setEditingMember(null)}
+						>
 								Cancel
 							</button>
 						</div>

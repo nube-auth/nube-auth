@@ -484,8 +484,8 @@ export function AppSettingsPage() {
 				onClose={() => setShowDeleteModal(false)}
 				onConfirm={async () => {
 					try {
-						const response = await fetch(`/api/admin/projects/${projectId}/apps/${appId}`, {
-							method: "DELETE",
+					const response = await fetch(`${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/admin/projects/${projectId}/apps/${appId}`, {
+						method: "DELETE",
 							credentials: "include",
 						});
 

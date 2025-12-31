@@ -447,6 +447,8 @@ export function useProjectPaymentConfig(projectId: string) {
 			return fetchAPI<{
 				configured: boolean;
 				id?: string;
+				name?: string;
+				slug?: string;
 				provider?: string;
 				testMode?: boolean;
 				isActive?: boolean;
@@ -461,10 +463,12 @@ export function useProjectPaymentConfig(projectId: string) {
 export function useSaveProjectPaymentConfig(projectId: string) {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: async (data: { provider: string; testMode: boolean; config: any }) => {
+		mutationFn: async (data: { name: string; slug?: string; provider: string; testMode: boolean; config: any }) => {
 			return fetchAPI<{
 				success: boolean;
 				id: string;
+				name: string;
+				slug: string;
 				provider: string;
 				testMode: boolean;
 			}>(`/v1/admin/projects/${projectId}/payment-config`, {

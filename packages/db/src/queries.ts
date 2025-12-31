@@ -634,11 +634,13 @@ export const paymentConfigQueries = {
 	},
 
 	async findByScope(db: DbClient, scopeType: string, scopeId: number) {
-		return db
+		const results = await db
 			.select()
 			.from(payment_configurations)
 			.where(and(eq(payment_configurations.scope_type, scopeType), eq(payment_configurations.scope_id, scopeId)))
-			.orderBy(desc(payment_configurations.created_at));
+			.orderBy(desc(payment_configurations.created_at))
+			.limit(1);
+		return results[0];
 	},
 
 	async findByScopeAndProvider(db: DbClient, scopeType: string, scopeId: number, provider: string) {

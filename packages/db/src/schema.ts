@@ -316,11 +316,12 @@ export const apps = pgTable(
 		github_client_id: text("github_client_id"),
 		github_client_secret: text("github_client_secret"),
 		session_ttl_days: integer("session_ttl_days").notNull().default(28),
-		account_lockout_minutes: integer("account_lockout_minutes").notNull().default(30),
-		cache_ttl_minutes: integer("cache_ttl_minutes").notNull().default(60),
-		rate_limit: integer("rate_limit").notNull().default(100),
-		created_at: timestamp("created_at").notNull().defaultNow(),
-		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	account_lockout_minutes: integer("account_lockout_minutes").notNull().default(30),
+	cache_ttl_minutes: integer("cache_ttl_minutes").notNull().default(60),
+	rate_limit: integer("rate_limit").notNull().default(100),
+	selected_payment_provider_id: integer("selected_payment_provider_id"),
+	created_at: timestamp("created_at").notNull().defaultNow(),
+	updated_at: timestamp("updated_at").notNull().defaultNow(),
 	},
 	(table) => ({
 		projectSlugUnique: unique("apps_project_slug_unique").on(table.project_id, table.slug),
@@ -517,6 +518,8 @@ export const payment_configurations = pgTable(
 	{
 		id: serial("id").primaryKey(),
 		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		name: varchar("name", { length: 255 }),
+		slug: varchar("slug", { length: 255 }),
 		scope_type: varchar("scope_type", { length: 20 }).notNull(), // 'project' or 'app'
 		scope_id: integer("scope_id").notNull(), // project_id or app_id
 		provider: varchar("provider", { length: 50 }).notNull(), // 'stripe', 'lemonsqueezy', 'dodo'

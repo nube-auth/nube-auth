@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useInviteTeamMember } from "../hooks/api";
 import { useToast } from "./Toast";
+import { Select } from "./Select";
 
 interface InviteTeamMemberModalProps {
 	projectId: string;
@@ -121,11 +122,13 @@ export function InviteTeamMemberModal({ projectId, onClose }: InviteTeamMemberMo
 						>
 							Role *
 						</label>
-						<select
-							id="role"
-							className="form-control"
+						<Select
 							value={role}
-							onChange={(e) => setRole(e.target.value)}
+							onChange={(value) => setRole(value)}
+							options={[
+								{ value: "admin", label: "Admin" },
+								{ value: "member", label: "Member" }
+							]}
 							style={{
 								width: "100%",
 								padding: "10px 14px",
@@ -135,10 +138,7 @@ export function InviteTeamMemberModal({ projectId, onClose }: InviteTeamMemberMo
 								fontSize: "14px",
 								color: "var(--text-primary)",
 							}}
-						>
-							<option value="admin">Admin</option>
-							<option value="member">Member</option>
-						</select>
+						/>
 						<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
 							<strong>Admin:</strong> Can manage apps, users, and invite members.{" "}
 							<strong>Member:</strong> Read-only access.

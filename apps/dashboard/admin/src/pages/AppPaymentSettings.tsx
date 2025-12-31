@@ -7,6 +7,7 @@ import {
 	useSelectPaymentProvider,
 } from "../hooks/api";
 import { useToast } from "../components/Toast";
+import { Select } from "../components/Select";
 
 type PaymentProvider = {
 	id: number;
@@ -130,15 +131,15 @@ export default function AppPaymentSettingsPage() {
 					</p>
 				</div>
 				<div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-					<select
+					<Select
 						value={selectedEnvironment}
-						onChange={(e) => setSelectedEnvironment(e.target.value as "test" | "production")}
-						className="form-control"
+						onChange={(value) => setSelectedEnvironment(value as "test" | "production")}
+						options={[
+							{ value: "test", label: "Test Mode" },
+							{ value: "production", label: "Production Mode" }
+						]}
 						style={{ width: "auto", fontSize: "13px" }}
-					>
-						<option value="test">Test Mode</option>
-						<option value="production">Production Mode</option>
-					</select>
+					/>
 					<button
 						type="button"
 						onClick={() => setShowCreateForm(!showCreateForm)}

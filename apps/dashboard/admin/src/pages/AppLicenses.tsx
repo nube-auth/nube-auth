@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useApp, useProject, useAppUsers } from "../hooks/api";
 import { useToast } from "../components/Toast";
+import { Select } from "../components/Select";
 
 interface Plan {
 	id: string;
@@ -680,9 +681,15 @@ export function AppLicensesPage() {
 							color: "var(--text-primary)",
 						}}
 					/>
-					<select
+					<Select
 						value={filterStatus}
-						onChange={(e) => setFilterStatus(e.target.value)}
+						onChange={(value) => setFilterStatus(value)}
+						options={[
+							{ value: "all", label: "All Status" },
+							{ value: "active", label: "Active" },
+							{ value: "suspended", label: "Suspended" },
+							{ value: "trial", label: "Trial" }
+						]}
 						style={{
 							padding: "8px 12px",
 							border: "1px solid var(--border-primary)",
@@ -690,14 +697,8 @@ export function AppLicensesPage() {
 							fontSize: "14px",
 							background: "var(--content-bg)",
 							color: "var(--text-primary)",
-							cursor: "pointer",
 						}}
-					>
-						<option value="all">All Status</option>
-						<option value="active">Active</option>
-						<option value="suspended">Suspended</option>
-						<option value="trial">Trial</option>
-					</select>
+					/>
 				</div>
 
 				{/* Table */}
@@ -772,7 +773,7 @@ export function AppLicensesPage() {
 										</td>
 										<td style={{ padding: "14px 16px", textAlign: "center", fontSize: "13px", color: "var(--text-secondary)" }}>
 											{user.licenseValidUntil
-												? new Date(user.licenseValidUntil * 1000).toLocaleDateString()
+												? new Date(user.licenseValidUntil).toLocaleDateString()
 												: "—"}
 										</td>
 										<td style={{ padding: "14px 16px", textAlign: "right" }}>
@@ -852,9 +853,15 @@ export function AppLicensesPage() {
 							<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "8px" }}>
 								New Plan
 							</label>
-							<select
+							<Select
 								value={newPlan}
-								onChange={(e) => setNewPlan(e.target.value)}
+								onChange={(value) => setNewPlan(value)}
+								options={[
+									{ value: "free", label: "Free" },
+									{ value: "trial", label: "Trial" },
+									{ value: "pro", label: "Pro" },
+									{ value: "enterprise", label: "Enterprise" }
+								]}
 								disabled={isUpdating}
 								style={{
 									width: "100%",
@@ -864,15 +871,9 @@ export function AppLicensesPage() {
 									background: "var(--content-bg)",
 									color: "var(--text-primary)",
 									fontSize: "14px",
-									cursor: isUpdating ? "not-allowed" : "pointer",
 									opacity: isUpdating ? 0.6 : 1,
 								}}
-							>
-								<option value="free">Free</option>
-								<option value="trial">Trial</option>
-								<option value="pro">Pro</option>
-								<option value="enterprise">Enterprise</option>
-							</select>
+							/>
 						</div>
 
 						<div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>

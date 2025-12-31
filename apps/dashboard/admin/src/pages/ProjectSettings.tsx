@@ -151,7 +151,7 @@ export function ProjectSettingsPage() {
 									Created
 								</p>
 								<p style={{ fontSize: "15px", color: "var(--text-primary)", margin: 0 }}>
-									{project.createdAt ? new Date(project.createdAt * 1000).toLocaleDateString("en-US", {
+									{project.createdAt ? new Date(project.createdAt).toLocaleDateString("en-US", {
 										year: "numeric",
 										month: "long",
 										day: "numeric",
@@ -289,8 +289,8 @@ export function ProjectSettingsPage() {
 				onClose={() => setShowDeleteModal(false)}
 				onConfirm={async () => {
 					try {
-						const response = await fetch(`/api/admin/projects/${projectId}`, {
-							method: "DELETE",
+					const response = await fetch(`${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/admin/projects/${projectId}`, {
+						method: "DELETE",
 							credentials: "include",
 						});
 
