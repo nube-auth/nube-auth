@@ -130,15 +130,21 @@ export function SessionsPage() {
 						/>
 					</svg>
 					You have {activeSessions.length} active sessions across your devices.
-					<a
-						href="#logout"
-						onClick={(e) => {
-							e.preventDefault();
-							logout();
+					<button
+						type="button"
+						onClick={() => logout()}
+						style={{
+							background: "none",
+							border: "none",
+							color: "var(--primary)",
+							cursor: "pointer",
+							textDecoration: "underline",
+							padding: 0,
+							font: "inherit",
 						}}
 					>
 						Logout all
-					</a>
+					</button>
 				</div>
 			)}
 

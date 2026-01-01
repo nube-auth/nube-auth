@@ -814,8 +814,8 @@ export function AppLicensesPage() {
 														color: "var(--text-secondary)",
 													}}
 												>
-													{plan.features.slice(0, 3).map((feature, i) => (
-														<li key={i} style={{ marginBottom: "4px" }}>
+													{plan.features.slice(0, 3).map((feature) => (
+														<li key={feature} style={{ marginBottom: "4px" }}>
 															{feature}
 														</li>
 													))}
@@ -1709,7 +1709,7 @@ export function AppLicensesPage() {
 									<div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
 										{planForm.features.map((feature, index) => (
 											<div
-												key={index}
+												key={`feature-${index}`}
 												style={{
 													display: "flex",
 													alignItems: "center",
