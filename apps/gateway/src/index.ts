@@ -3,8 +3,8 @@ import { createLogger, serializeError } from "@proofa/shared";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { secureHeaders } from "hono/secure-headers";
-import { csrf } from "hono/csrf";
 import { authMiddleware } from "./middleware/auth";
+import { csrfProtection } from "./middleware/csrf";
 import { httpLogger } from "./middleware/logger";
 import { rateLimitPresets } from "./middleware/rateLimit";
 import { adminSecurityCheck } from "./middleware/adminSecurityCheck";
@@ -62,7 +62,7 @@ app.use("*", cors({
 	},
 	credentials: true,
 	allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-	allowHeaders: ["Content-Type", "Authorization", "X-Proofa-Service-Token"],
+	allowHeaders: ["Content-Type", "Authorization", "X-Proofa-Service-Token", "X-CSRF-Token"],
 	exposeHeaders: ["Set-Cookie"],
 }));
 
@@ -72,13 +72,9 @@ app.use("*", httpLogger(log));
 // Auth middleware (applies to protected routes)
 app.use("*", authMiddleware);
 
-// CSRF Protection for sensitive admin operations
-app.use(
-	"/v1/admin/*",
-	csrf({
-		origin: allowedOrigins,
-	})
-);
+// CSRF Protection for admin routes (state-changing operations)
+// This validates the CSRF token from cookie matches the header
+app.use("/v1/admin/*", csrfProtection);
 
 // Rate limiting
 // Apply strict rate limiting to auth endpoints

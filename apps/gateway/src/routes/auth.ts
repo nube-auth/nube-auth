@@ -104,17 +104,21 @@ authRoutes.get("/callback", async (c: Context) => {
 		// Generate NEW session ID for Gateway (session fixation protection)
 		// Don't reuse the Core's session ID
 		const gatewaySessionId = crypto.randomBytes(32).toString("hex");
+		const csrfToken = crypto.randomBytes(32).toString("hex"); // Generate CSRF token
 		const ttlSeconds = 7 * 24 * 60 * 60; // 7 days
 		
 		// Store app session in Redis with Gateway session ID
-		// Store Core session ID in metadata for exchange if needed
+		// Store Core session ID and CSRF token in metadata
 		const appId = audience === "admin" ? "admin-dashboard" : "user-dashboard";
 		await sessionStore.setAppSession(
 			gatewaySessionId, 
 			data.userId, 
 			appId, 
 			ttlSeconds,
-			{ coreSessionId: code } // Store Core session in metadata
+			{ 
+				coreSessionId: code, // Store Core session in metadata
+				csrfToken // Store CSRF token for validation
+			}
 		);
 
 		// Create signed cookie with domain for cross-subdomain access
@@ -134,13 +138,23 @@ authRoutes.get("/callback", async (c: Context) => {
 			maxAge: attributes.maxAge as number | undefined,
 		});
 
+		// Set CSRF token cookie (NOT httpOnly so JavaScript can read it)
+		setCookie(c, "proofa_csrf_token", csrfToken, {
+			httpOnly: false, // Must be readable by JavaScript
+			secure: attributes.secure as boolean,
+			sameSite: attributes.sameSite as "Strict" | "Lax" | "None",
+			path: attributes.path as string,
+			domain: attributes.domain as string | undefined,
+			maxAge: attributes.maxAge as number | undefined,
+		});
+
 		// Redirect to appropriate dashboard
 		const dashboardUrl = audience === "admin"
 			? (process.env.ADMIN_DASHBOARD_URL || "http://localhost:5174")
 			: (process.env.USER_DASHBOARD_URL || "http://localhost:5173");
 		const redirectUrl = state.startsWith("/") ? `${dashboardUrl}${state}` : dashboardUrl;
 		
-		log.info({ audience, appId, cookieName, dashboardUrl }, "Login successful, redirecting");
+		log.info({ audience, appId, cookieName, dashboardUrl, hasCsrfToken: true }, "Login successful, redirecting");
 		return c.redirect(redirectUrl);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Auth callback error:");
@@ -171,16 +185,20 @@ authRoutes.post("/login", async (c: Context) => {
 
 		// Generate NEW session ID for Gateway (session fixation protection)
 		const gatewaySessionId = crypto.randomBytes(32).toString("hex");
+		const csrfToken = crypto.randomBytes(32).toString("hex"); // Generate CSRF token
 		const ttlSeconds = 7 * 24 * 60 * 60; // 7 days
 		const resolvedAudience = audience === "admin" ? "admin" : "user";
 		
-		// Store app session with Gateway session ID
+		// Store app session with Gateway session ID and CSRF token
 		await sessionStore.setAppSession(
 			gatewaySessionId,
 			user.userId,
 			resolvedAudience === "admin" ? "admin-dashboard" : "user-dashboard",
 			ttlSeconds,
-			{ coreSessionId } // Store Core session in metadata
+			{ 
+				coreSessionId, // Store Core session in metadata
+				csrfToken // Store CSRF token for validation
+			}
 		);
 
 		// Create signed cookie with Gateway session ID
@@ -188,9 +206,19 @@ authRoutes.post("/login", async (c: Context) => {
 		const { value, attributes } = createSessionCookie(gatewaySessionId, { domain: cookieDomain });
 		const cookieName = resolvedAudience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
 
-		// Set cookie
+		// Set session cookie
 		setCookie(c, cookieName, value, {
 			httpOnly: attributes.httpOnly as boolean,
+			secure: attributes.secure as boolean,
+			sameSite: attributes.sameSite as "Strict" | "Lax" | "None",
+			path: attributes.path as string,
+			domain: attributes.domain as string | undefined,
+			maxAge: attributes.maxAge as number | undefined,
+		});
+
+		// Set CSRF token cookie (NOT httpOnly so JavaScript can read it)
+		setCookie(c, "proofa_csrf_token", csrfToken, {
+			httpOnly: false, // Must be readable by JavaScript
 			secure: attributes.secure as boolean,
 			sameSite: attributes.sameSite as "Strict" | "Lax" | "None",
 			path: attributes.path as string,
@@ -205,6 +233,7 @@ authRoutes.post("/login", async (c: Context) => {
 				email: user.email,
 				name: user.name,
 			},
+			csrfToken, // Return CSRF token in response for client-side storage as backup
 		});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Login error:");
@@ -362,6 +391,33 @@ authRoutes.post("/logout", async (c: Context) => {
 			maxAge: 0,
 		});
 		log.info({ cookieName, secure: false }, "Clearing cookie with secure:false");
+
+		// Clear CSRF token cookie
+		if (cookieDomain) {
+			setCookie(c, "proofa_csrf_token", "", {
+				httpOnly: false,
+				secure: true,
+				sameSite: "Lax",
+				path: "/",
+				domain: cookieDomain,
+				maxAge: 0,
+			});
+		}
+		setCookie(c, "proofa_csrf_token", "", {
+			httpOnly: false,
+			secure: true,
+			sameSite: "Lax",
+			path: "/",
+			maxAge: 0,
+		});
+		setCookie(c, "proofa_csrf_token", "", {
+			httpOnly: false,
+			secure: false,
+			sameSite: "Lax",
+			path: "/",
+			maxAge: 0,
+		});
+		log.info("CSRF token cookie cleared");
 
 		// Back-compat: clear legacy cookie when logging out of user session.
 		if (audience === "user") {

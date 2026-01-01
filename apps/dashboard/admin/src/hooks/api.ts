@@ -16,15 +16,31 @@ const client = new ProofaClient({
 
 const GATEWAY_URL = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
 
+// Helper to get CSRF token from cookie
+function getCsrfToken(): string | null {
+	const match = document.cookie.match(/proofa_csrf_token=([^;]+)/);
+	return match ? match[1] : null;
+}
+
 // Helper to make authenticated API calls
 async function fetchAPI<T>(path: string, options?: RequestInit, schema?: any): Promise<T> {
+	const headers: Record<string, string> = {
+		"Content-Type": "application/json",
+		...options?.headers,
+	};
+
+	// Add CSRF token for state-changing requests
+	if (options?.method && !["GET", "HEAD", "OPTIONS"].includes(options.method.toUpperCase())) {
+		const csrfToken = getCsrfToken();
+		if (csrfToken) {
+			headers["X-CSRF-Token"] = csrfToken;
+		}
+	}
+
 	const response = await fetch(`${GATEWAY_URL}${path}`, {
 		...options,
 		credentials: "include",
-		headers: {
-			"Content-Type": "application/json",
-			...options?.headers,
-		},
+		headers,
 	});
 
 	if (!response.ok) {
