@@ -132,34 +132,6 @@ export const CreatePlanRequestSchema = z.object({
 export const UpdatePlanRequestSchema = CreatePlanRequestSchema.partial();
 
 /**
- * Payment Configuration Schemas
- */
-
-export const CreatePaymentConfigRequestSchema = z.object({
-	provider: z.enum(["stripe", "razorpay", "paypal"]),
-	test_mode: z.boolean().default(true),
-	is_active: z.boolean().default(true),
-	config: z.record(z.string()).refine(
-		(config) => {
-			// Validate required fields based on provider
-			if (config.provider === "stripe") {
-				return config.secret_key && config.publishable_key;
-			}
-			if (config.provider === "razorpay") {
-				return config.key_id && config.key_secret;
-			}
-			if (config.provider === "paypal") {
-				return config.client_id && config.client_secret;
-			}
-			return true;
-		},
-		{ message: "Missing required configuration fields for provider" }
-	),
-});
-
-export const UpdatePaymentConfigRequestSchema = CreatePaymentConfigRequestSchema.partial();
-
-/**
  * Query Parameter Schemas
  */
 

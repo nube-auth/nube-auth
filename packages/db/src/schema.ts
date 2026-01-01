@@ -17,10 +17,10 @@ export const users = pgTable(
 		created_at: timestamp("created_at").notNull().defaultNow(),
 		updated_at: timestamp("updated_at").notNull().defaultNow(),
 	},
-	(table) => ({
-		emailIdx: index("users_primary_email_idx").on(table.primary_email),
-		publicIdIdx: index("users_public_id_idx").on(table.public_id),
-	}),
+	(table) => ([
+		index("users_primary_email_idx").on(table.primary_email),
+		index("users_public_id_idx").on(table.public_id),
+	]),
 );
 
 /**
@@ -41,11 +41,11 @@ export const identities = pgTable(
 		email_verified: boolean("email_verified").notNull().default(false),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 	},
-	(table) => ({
-		providerUnique: unique("identities_provider_user_id_unique").on(table.provider, table.provider_user_id),
-		userIdIdx: index("identities_user_id_idx").on(table.user_id),
-		providerIdx: index("identities_provider_idx").on(table.provider),
-	}),
+	(table) => [
+		unique("identities_provider_user_id_unique").on(table.provider, table.provider_user_id),
+		index("identities_user_id_idx").on(table.user_id),
+		index("identities_provider_idx").on(table.provider),
+	],
 );
 
 /**
@@ -66,11 +66,11 @@ export const sessions = pgTable(
 		expires_at: timestamp("expires_at").notNull(),
 		revoked_at: timestamp("revoked_at"),
 	},
-	(table) => ({
-		userIdIdx: index("sessions_user_id_idx").on(table.user_id),
-		appIdIdx: index("sessions_app_id_idx").on(table.app_id),
-		expiresAtIdx: index("sessions_expires_at_idx").on(table.expires_at),
-	}),
+	(table) => [
+		index("sessions_user_id_idx").on(table.user_id),
+		index("sessions_app_id_idx").on(table.app_id),
+		index("sessions_expires_at_idx").on(table.expires_at),
+	],
 );
 
 /**
@@ -90,12 +90,11 @@ export const projects = pgTable(
 			.references(() => users.id),
 		is_active: boolean("is_active").notNull().default(true),
 		created_at: timestamp("created_at").notNull().defaultNow(),
-		updated_at: timestamp("updated_at").notNull().defaultNow(),
-	},
-	(table) => ({
-		slugUnique: unique("projects_slug_unique").on(table.slug),
-		ownerIdx: index("projects_owner_user_id_idx").on(table.owner_user_id),
-	}),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),	deleted_at: timestamp("deleted_at"),	},
+	(table) => [
+		unique("projects_slug_unique").on(table.slug),
+		index("projects_owner_user_id_idx").on(table.owner_user_id),
+	],
 );
 
 /**
@@ -115,13 +114,12 @@ export const project_members = pgTable(
 			.references(() => users.id),
 		role: varchar("role", { length: 50 }).notNull().default("member"),
 		created_at: timestamp("created_at").notNull().defaultNow(),
-		updated_at: timestamp("updated_at").notNull().defaultNow(),
-	},
-	(table) => ({
-		projectUserUnique: unique("project_members_project_user_unique").on(table.project_id, table.user_id),
-		projectIdIdx: index("project_members_project_id_idx").on(table.project_id),
-		userIdIdx: index("project_members_user_id_idx").on(table.user_id),
-	}),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),	deleted_at: timestamp("deleted_at"),	},
+	(table) => [
+		unique("project_members_project_user_unique").on(table.project_id, table.user_id),
+		index("project_members_project_id_idx").on(table.project_id),
+		index("project_members_user_id_idx").on(table.user_id),
+	],
 );
 
 /**
@@ -145,14 +143,13 @@ export const project_invitations = pgTable(
 		expires_at: timestamp("expires_at").notNull(),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 		accepted_at: timestamp("accepted_at"),
-		accepted_by_user_id: integer("accepted_by_user_id").references(() => users.id),
-	},
-	(table) => ({
-		projectEmailUnique: unique("project_invitations_project_email_unique").on(table.project_id, table.email),
-		projectIdIdx: index("project_invitations_project_id_idx").on(table.project_id),
-		emailIdx: index("project_invitations_email_idx").on(table.email),
-		expiresAtIdx: index("project_invitations_expires_at_idx").on(table.expires_at),
-	}),
+		accepted_by_user_id: integer("accepted_by_user_id").references(() => users.id),	deleted_at: timestamp("deleted_at"),	},
+	(table) => [
+		unique("project_invitations_project_email_unique").on(table.project_id, table.email),
+		index("project_invitations_project_id_idx").on(table.project_id),
+		index("project_invitations_email_idx").on(table.email),
+		index("project_invitations_expires_at_idx").on(table.expires_at),
+	],
 );
 
 /**
@@ -177,14 +174,16 @@ export const plans = pgTable(
 		features: jsonb("features"),
 		status: varchar("status", { length: 20 }).notNull().default("active"),
 		display_order: integer("display_order").notNull().default(0),
-		created_at: timestamp("created_at").notNull().defaultNow(),
-		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	is_active: boolean("is_active").notNull().default(true),
+	created_at: timestamp("created_at").notNull().defaultNow(),
+	updated_at: timestamp("updated_at").notNull().defaultNow(),
+	deleted_at: timestamp("deleted_at"),
 	},
-	(table) => ({
-		appIdIdx: index("plans_app_id_idx").on(table.app_id),
-		slugIdx: index("plans_slug_idx").on(table.slug),
-		statusIdx: index("plans_status_idx").on(table.status),
-	}),
+	(table) => [
+		index("plans_app_id_idx").on(table.app_id),
+		index("plans_slug_idx").on(table.slug),
+		index("plans_status_idx").on(table.status),
+	],
 );
 
 /**
@@ -212,18 +211,18 @@ export const payment_providers = pgTable(
 		updated_by_user_id: integer("updated_by_user_id").references(() => users.id),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 		updated_at: timestamp("updated_at").notNull().defaultNow(),
-		deleted_at: timestamp("deleted_at"), // Soft delete
+	deleted_at: timestamp("deleted_at"),
 	},
-	(table) => ({
-		entityIdx: index("payment_providers_entity_idx").on(table.entity_type, table.entity_id),
-		providerIdx: index("payment_providers_provider_idx").on(table.provider),
-		entityProviderEnvUnique: unique("payment_providers_entity_provider_env_unique").on(
+	(table) => [
+		index("payment_providers_entity_idx").on(table.entity_type, table.entity_id),
+		index("payment_providers_provider_idx").on(table.provider),
+		unique("payment_providers_entity_provider_env_unique").on(
 			table.entity_type,
 			table.entity_id,
 			table.provider,
 			table.environment,
 		),
-	}),
+	],
 );
 
 /**
@@ -252,13 +251,15 @@ export const apps = pgTable(
 		cache_ttl_minutes: integer("cache_ttl_minutes").notNull().default(60),
 		rate_limit: integer("rate_limit").notNull().default(100),
 		selected_payment_provider_id: integer("selected_payment_provider_id"),
-		created_at: timestamp("created_at").notNull().defaultNow(),
-		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	is_active: boolean("is_active").notNull().default(true),
+	created_at: timestamp("created_at").notNull().defaultNow(),
+	updated_at: timestamp("updated_at").notNull().defaultNow(),
+	deleted_at: timestamp("deleted_at"),
 	},
-	(table) => ({
-		projectSlugUnique: unique("apps_project_slug_unique").on(table.project_id, table.slug),
-		projectIdIdx: index("apps_project_id_idx").on(table.project_id),
-	}),
+	(table) => [
+		unique("apps_project_slug_unique").on(table.project_id, table.slug),
+		index("apps_project_id_idx").on(table.project_id),
+	],
 );
 
 /**
@@ -282,11 +283,11 @@ export const auth_codes = pgTable(
 		consumed_at: timestamp("consumed_at"),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 	},
-	(table) => ({
-		codeIdx: index("auth_codes_code_idx").on(table.code),
-		userIdIdx: index("auth_codes_user_id_idx").on(table.user_id),
-		expiresAtIdx: index("auth_codes_expires_at_idx").on(table.expires_at),
-	}),
+	(table) => [
+		index("auth_codes_code_idx").on(table.code),
+		index("auth_codes_user_id_idx").on(table.user_id),
+		index("auth_codes_expires_at_idx").on(table.expires_at),
+	],
 );
 
 /**
@@ -310,15 +311,14 @@ export const licenses = pgTable(
 		status: varchar("status", { length: 20 }).notNull().default("active"),
 		valid_until: timestamp("valid_until"),
 		created_at: timestamp("created_at").notNull().defaultNow(),
-		updated_at: timestamp("updated_at").notNull().defaultNow(),
-	},
-	(table) => ({
-		userAppUnique: unique("licenses_user_app_unique").on(table.user_id, table.app_id),
-		userIdIdx: index("licenses_user_id_idx").on(table.user_id),
-		appIdIdx: index("licenses_app_id_idx").on(table.app_id),
-		planIdIdx: index("licenses_plan_id_idx").on(table.plan_id),
-		statusIdx: index("licenses_status_idx").on(table.status),
-	}),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),	deleted_at: timestamp("deleted_at"),	},
+	(table) => [
+		unique("licenses_user_app_unique").on(table.user_id, table.app_id),
+		index("licenses_user_id_idx").on(table.user_id),
+		index("licenses_app_id_idx").on(table.app_id),
+		index("licenses_plan_id_idx").on(table.plan_id),
+		index("licenses_status_idx").on(table.status),
+	],
 );
 
 /**
@@ -338,11 +338,11 @@ export const email_verifications = pgTable(
 		consumed_at: timestamp("consumed_at"),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 	},
-	(table) => ({
-		emailIdx: index("email_verifications_email_idx").on(table.email),
-		expiresAtIdx: index("email_verifications_expires_at_idx").on(table.expires_at),
-		lockedUntilIdx: index("email_verifications_locked_until_idx").on(table.locked_until),
-	}),
+	(table) => [
+		index("email_verifications_email_idx").on(table.email),
+		index("email_verifications_expires_at_idx").on(table.expires_at),
+		index("email_verifications_locked_until_idx").on(table.locked_until),
+	],
 );
 
 /**
@@ -366,13 +366,13 @@ export const audit_logs = pgTable(
 		ip_address: varchar("ip_address", { length: 50 }),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 	},
-	(table) => ({
-		userIdx: index("audit_logs_user_id_idx").on(table.user_id),
-		appIdx: index("audit_logs_app_id_idx").on(table.app_id),
-		projectIdx: index("audit_logs_project_id_idx").on(table.project_id),
-		actionIdx: index("audit_logs_action_idx").on(table.action),
-		createdAtIdx: index("audit_logs_created_at_idx").on(table.created_at),
-	}),
+	(table) => [
+		index("audit_logs_user_id_idx").on(table.user_id),
+		index("audit_logs_app_id_idx").on(table.app_id),
+		index("audit_logs_project_id_idx").on(table.project_id),
+		index("audit_logs_action_idx").on(table.action),
+		index("audit_logs_created_at_idx").on(table.created_at),
+	],
 );
 
 /**
@@ -400,16 +400,15 @@ export const invitations = pgTable(
 		expires_at: timestamp("expires_at").notNull(),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 		consumed_at: timestamp("consumed_at"),
-		consumed_by_user_id: integer("consumed_by_user_id").references(() => users.id),
-	},
-	(table) => ({
-		emailAppUnique: unique("invitations_email_app_unique").on(table.email, table.app_id),
-		appIdIdx: index("invitations_app_id_idx").on(table.app_id),
-		projectIdIdx: index("invitations_project_id_idx").on(table.project_id),
-		planIdx: index("invitations_plan_id_idx").on(table.plan_id),
-		emailIdx: index("invitations_email_idx").on(table.email),
-		expiresAtIdx: index("invitations_expires_at_idx").on(table.expires_at),
-	}),
+		consumed_by_user_id: integer("consumed_by_user_id").references(() => users.id),	deleted_at: timestamp("deleted_at"),	},
+	(table) => [
+		unique("invitations_email_app_unique").on(table.email, table.app_id),
+		index("invitations_app_id_idx").on(table.app_id),
+		index("invitations_project_id_idx").on(table.project_id),
+		index("invitations_plan_id_idx").on(table.plan_id),
+		index("invitations_email_idx").on(table.email),
+		index("invitations_expires_at_idx").on(table.expires_at),
+	],
 );
 
 /**
@@ -431,43 +430,12 @@ export const provider_usage_logs = pgTable(
 		ip_address: varchar("ip_address", { length: 50 }),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 	},
-	(table) => ({
-		providerIdIdx: index("provider_usage_logs_provider_id_idx").on(table.provider_id),
-		appIdIdx: index("provider_usage_logs_app_id_idx").on(table.app_id),
-		createdAtIdx: index("provider_usage_logs_created_at_idx").on(table.created_at),
-		statusIdx: index("provider_usage_logs_status_idx").on(table.status),
-		providerTypeOperationIdx: index("provider_usage_logs_type_operation_idx").on(table.provider_type, table.operation),
-	}),
+	(table) => [
+		index("provider_usage_logs_provider_id_idx").on(table.provider_id),
+		index("provider_usage_logs_app_id_idx").on(table.app_id),
+		index("provider_usage_logs_created_at_idx").on(table.created_at),
+		index("provider_usage_logs_status_idx").on(table.status),
+		index("provider_usage_logs_type_operation_idx").on(table.provider_type, table.operation),
+	],
 );
 
-/**
- * Payment Configurations table (LEGACY - for backward compatibility)
- * Stores encrypted payment provider credentials for projects and apps
- * NOTE: New code should use payment_providers table instead
- */
-export const payment_configurations = pgTable(
-	"payment_configurations",
-	{
-		id: serial("id").primaryKey(),
-		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
-		name: varchar("name", { length: 255 }),
-		slug: varchar("slug", { length: 255 }),
-		scope_type: varchar("scope_type", { length: 20 }).notNull(), // 'project' or 'app'
-		scope_id: integer("scope_id").notNull(), // project_id or app_id
-		provider: varchar("provider", { length: 50 }).notNull(), // 'stripe', 'lemonsqueezy', 'dodo'
-		is_active: boolean("is_active").notNull().default(true),
-		test_mode: boolean("test_mode").notNull().default(true),
-		config: text("config").notNull(), // Encrypted JSON config
-		created_at: timestamp("created_at").notNull().defaultNow(),
-		updated_at: timestamp("updated_at").notNull().defaultNow(),
-	},
-	(table) => ({
-		scopeIdx: index("payment_configurations_scope_idx").on(table.scope_type, table.scope_id),
-		providerIdx: index("payment_configurations_provider_idx").on(table.provider),
-		scopeProviderUnique: unique("payment_configurations_scope_provider_unique").on(
-			table.scope_type,
-			table.scope_id,
-			table.provider,
-		),
-	}),
-);

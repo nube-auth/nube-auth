@@ -8,7 +8,6 @@ import {
 	identities,
 	invitations,
 	licenses,
-	payment_configurations,
 	plans,
 	project_invitations,
 	project_members,
@@ -132,17 +131,17 @@ export const sessionQueries = {
  */
 export const projectQueries = {
 	async findById(db: DbClient, projectId: number) {
-		const results = await db.select().from(projects).where(and(eq(projects.id, projectId), eq(projects.is_active, true)));
+		const results = await db.select().from(projects).where(and(eq(projects.id, projectId), eq(projects.is_active, true), isNull(projects.deleted_at)));
 		return results[0];
 	},
 
 	async findByPublicId(db: DbClient, publicId: string) {
-		const results = await db.select().from(projects).where(and(eq(projects.public_id, publicId), eq(projects.is_active, true)));
+		const results = await db.select().from(projects).where(and(eq(projects.public_id, publicId), eq(projects.is_active, true), isNull(projects.deleted_at)));
 		return results[0];
 	},
 
 	async findByOwnerId(db: DbClient, userId: number) {
-		return db.select().from(projects).where(and(eq(projects.owner_user_id, userId), eq(projects.is_active, true)));
+		return db.select().from(projects).where(and(eq(projects.owner_user_id, userId), eq(projects.is_active, true), isNull(projects.deleted_at)));
 	},
 
 	async findByUserId(db: DbClient, userId: number) {
@@ -156,7 +155,7 @@ export const projectQueries = {
 		if (memberProjects.length === 0) return [];
 
 		const projectIds = memberProjects.map((m) => m.project_id);
-		return db.select().from(projects).where(and(inArray(projects.id, projectIds), eq(projects.is_active, true)));
+		return db.select().from(projects).where(and(inArray(projects.id, projectIds), eq(projects.is_active, true), isNull(projects.deleted_at)));
 	},
 
 	async create(db: DbClient, data: typeof projects.$inferInsert) {
@@ -171,6 +170,27 @@ export const projectQueries = {
 			.where(eq(projects.id, projectId))
 			.returning()
 			;
+	},
+
+	async delete(db: DbClient, projectId: number) {
+		const project = await this.findById(db, projectId);
+		if (!project) return null;
+
+		const now = new Date();
+		const timestamp = now.getTime();
+		const newSlug = `${project.slug}--deleted-${timestamp}`;
+
+		const results = await db
+			.update(projects)
+			.set({
+				slug: newSlug,
+				is_active: false,
+				deleted_at: now,
+				updated_at: now,
+			})
+			.where(eq(projects.id, projectId))
+			.returning();
+		return results[0];
 	},
 };
 
@@ -197,11 +217,11 @@ export const projectMemberQueries = {
 	},
 
 	async findByProjectId(db: DbClient, projectId: number) {
-		return db.select().from(project_members).where(eq(project_members.project_id, projectId));
+		return db.select().from(project_members).where(and(eq(project_members.project_id, projectId), isNull(project_members.deleted_at)));
 	},
 
 	async findByUserId(db: DbClient, userId: number) {
-		return db.select().from(project_members).where(eq(project_members.user_id, userId));
+		return db.select().from(project_members).where(and(eq(project_members.user_id, userId), isNull(project_members.deleted_at)));
 	},
 
 	async create(db: DbClient, data: typeof project_members.$inferInsert) {
@@ -224,11 +244,21 @@ export const projectMemberQueries = {
 	},
 
 	async delete(db: DbClient, id: number) {
-		return db.delete(project_members).where(eq(project_members.id, id)).returning();
+		const results = await db
+			.update(project_members)
+			.set({ deleted_at: new Date(), updated_at: new Date() })
+			.where(eq(project_members.id, id))
+			.returning();
+		return results[0];
 	},
 
 	async deleteByPublicId(db: DbClient, publicId: string) {
-		return db.delete(project_members).where(eq(project_members.public_id, publicId)).returning();
+		const results = await db
+			.update(project_members)
+			.set({ deleted_at: new Date(), updated_at: new Date() })
+			.where(eq(project_members.public_id, publicId))
+			.returning();
+		return results[0];
 	},
 };
 
@@ -286,11 +316,21 @@ export const projectInvitationQueries = {
 	},
 
 	async delete(db: DbClient, id: number) {
-		return db.delete(project_invitations).where(eq(project_invitations.id, id)).returning();
+		const results = await db
+			.update(project_invitations)
+			.set({ deleted_at: new Date() })
+			.where(eq(project_invitations.id, id))
+			.returning();
+		return results[0];
 	},
 
 	async deleteByPublicId(db: DbClient, publicId: string) {
-		return db.delete(project_invitations).where(eq(project_invitations.public_id, publicId)).returning();
+		const results = await db
+			.update(project_invitations)
+			.set({ deleted_at: new Date() })
+			.where(eq(project_invitations.public_id, publicId))
+			.returning();
+		return results[0];
 	},
 
 	async cleanupExpired(db: DbClient) {
@@ -309,17 +349,17 @@ export const projectInvitationQueries = {
  */
 export const appQueries = {
 	async findById(db: DbClient, appId: number) {
-		const results = await db.select().from(apps).where(eq(apps.id, appId));
+		const results = await db.select().from(apps).where(and(eq(apps.id, appId), isNull(apps.deleted_at)));
 		return results[0];
 	},
 
 	async findByPublicId(db: DbClient, publicId: string) {
-		const results = await db.select().from(apps).where(eq(apps.public_id, publicId));
+		const results = await db.select().from(apps).where(and(eq(apps.public_id, publicId), isNull(apps.deleted_at)));
 		return results[0];
 	},
 
 	async findByProjectId(db: DbClient, projectId: number) {
-		return db.select().from(apps).where(eq(apps.project_id, projectId));
+		return db.select().from(apps).where(and(eq(apps.project_id, projectId), isNull(apps.deleted_at)));
 	},
 
 	async create(db: DbClient, data: typeof apps.$inferInsert) {
@@ -329,6 +369,27 @@ export const appQueries = {
 
 	async update(db: DbClient, appId: number, data: Partial<typeof apps.$inferInsert>) {
 		const results = await db.update(apps).set(data).where(eq(apps.id, appId)).returning();
+		return results[0];
+	},
+
+	async delete(db: DbClient, appId: number) {
+		const app = await this.findById(db, appId);
+		if (!app) return null;
+
+		const now = new Date();
+		const timestamp = now.getTime();
+		const newSlug = `${app.slug}--deleted-${timestamp}`;
+
+		const results = await db
+			.update(apps)
+			.set({
+				slug: newSlug,
+				is_active: false,
+				deleted_at: now,
+				updated_at: now,
+			})
+			.where(eq(apps.id, appId))
+			.returning();
 		return results[0];
 	},
 };
@@ -364,16 +425,16 @@ export const licenseQueries = {
 		const results = await db
 			.select()
 			.from(licenses)
-			.where(and(eq(licenses.user_id, userId), eq(licenses.app_id, appId)));
+			.where(and(eq(licenses.user_id, userId), eq(licenses.app_id, appId), isNull(licenses.deleted_at)));
 		return results[0];
 	},
 
 	async findByUserId(db: DbClient, userId: number) {
-		return db.select().from(licenses).where(eq(licenses.user_id, userId));
+		return db.select().from(licenses).where(and(eq(licenses.user_id, userId), isNull(licenses.deleted_at)));
 	},
 
 	async findByAppId(db: DbClient, appId: number) {
-		return db.select().from(licenses).where(eq(licenses.app_id, appId));
+		return db.select().from(licenses).where(and(eq(licenses.app_id, appId), isNull(licenses.deleted_at)));
 	},
 
 	async create(db: DbClient, data: typeof licenses.$inferInsert) {
@@ -416,7 +477,14 @@ export const licenseQueries = {
 			return results[0];
 		}
 	},
-};
+	async delete(db: DbClient, licenseId: number) {
+		const results = await db
+			.update(licenses)
+			.set({ deleted_at: new Date(), updated_at: new Date() })
+			.where(eq(licenses.id, licenseId))
+			.returning();
+		return results[0];
+	},};
 
 /**
  * EmailVerification queries
@@ -548,8 +616,9 @@ export const invitationQueries = {
 	async deleteExpired(db: DbClient) {
 		const now = new Date();
 		return db
-			.delete(invitations)
-			.where(and(isNull(invitations.consumed_at), lt(invitations.expires_at, now)))
+			.update(invitations)
+			.set({ deleted_at: now })
+			.where(and(isNull(invitations.consumed_at), lt(invitations.expires_at, now), isNull(invitations.deleted_at)))
 			.returning();
 	},
 };
@@ -564,12 +633,12 @@ export const planQueries = {
 	},
 
 	async findByPublicId(db: DbClient, publicId: string) {
-		const results = await db.select().from(plans).where(eq(plans.public_id, publicId));
+		const results = await db.select().from(plans).where(and(eq(plans.public_id, publicId), isNull(plans.deleted_at)));
 		return results[0];
 	},
 
 	async findById(db: DbClient, id: number) {
-		const results = await db.select().from(plans).where(eq(plans.id, id));
+		const results = await db.select().from(plans).where(and(eq(plans.id, id), isNull(plans.deleted_at)));
 		return results[0];
 	},
 
@@ -577,12 +646,12 @@ export const planQueries = {
 		return db
 			.select()
 			.from(plans)
-			.where(eq(plans.app_id, appId))
+			.where(and(eq(plans.app_id, appId), isNull(plans.deleted_at)))
 			.orderBy(plans.display_order);
 	},
 
 	async findByAppAndSlug(db: DbClient, appId: number, slug: string) {
-		const results = await db.select().from(plans).where(and(eq(plans.app_id, appId), eq(plans.slug, slug)));
+		const results = await db.select().from(plans).where(and(eq(plans.app_id, appId), eq(plans.slug, slug), isNull(plans.deleted_at)));
 		return results[0];
 	},
 
@@ -590,7 +659,7 @@ export const planQueries = {
 		return db
 			.select()
 			.from(plans)
-			.where(and(eq(plans.app_id, appId), eq(plans.status, "active")))
+			.where(and(eq(plans.app_id, appId), eq(plans.status, "active"), isNull(plans.deleted_at)))
 			.orderBy(plans.display_order);
 	},
 
@@ -605,7 +674,23 @@ export const planQueries = {
 	},
 
 	async delete(db: DbClient, planId: number) {
-		const results = await db.delete(plans).where(eq(plans.id, planId)).returning();
+		const plan = await this.findById(db, planId);
+		if (!plan) return null;
+
+		const now = new Date();
+		const timestamp = now.getTime();
+		const newSlug = `${plan.slug}--deleted-${timestamp}`;
+
+		const results = await db
+			.update(plans)
+			.set({
+				slug: newSlug,
+				is_active: false,
+				deleted_at: now,
+				updated_at: now,
+			})
+			.where(eq(plans.id, planId))
+			.returning();
 		return results[0];
 	},
 
@@ -616,78 +701,5 @@ export const planQueries = {
 			.where(eq(licenses.plan_id, planId));
 
 		return result[0]?.count || 0;
-	},
-};
-
-/**
- * Payment Configuration queries
- */
-export const paymentConfigQueries = {
-	async findById(db: DbClient, id: number) {
-		const results = await db.select().from(payment_configurations).where(eq(payment_configurations.id, id));
-		return results[0];
-	},
-
-	async findByPublicId(db: DbClient, publicId: string) {
-		const results = await db.select().from(payment_configurations).where(eq(payment_configurations.public_id, publicId));
-		return results[0];
-	},
-
-	async findByScope(db: DbClient, scopeType: string, scopeId: number) {
-		const results = await db
-			.select()
-			.from(payment_configurations)
-			.where(and(eq(payment_configurations.scope_type, scopeType), eq(payment_configurations.scope_id, scopeId)))
-			.orderBy(desc(payment_configurations.created_at))
-			.limit(1);
-		return results[0];
-	},
-
-	async findByScopeAndProvider(db: DbClient, scopeType: string, scopeId: number, provider: string) {
-		const results = await db
-			.select()
-			.from(payment_configurations)
-			.where(
-				and(
-					eq(payment_configurations.scope_type, scopeType),
-					eq(payment_configurations.scope_id, scopeId),
-					eq(payment_configurations.provider, provider),
-				),
-			);
-		return results[0];
-	},
-
-	async findActiveByScope(db: DbClient, scopeType: string, scopeId: number) {
-		return db
-			.select()
-			.from(payment_configurations)
-			.where(
-				and(
-					eq(payment_configurations.scope_type, scopeType),
-					eq(payment_configurations.scope_id, scopeId),
-					eq(payment_configurations.is_active, true),
-				),
-			)
-			.orderBy(desc(payment_configurations.created_at));
-	},
-
-	async create(db: DbClient, data: typeof payment_configurations.$inferInsert) {
-		const results = await db.insert(payment_configurations).values(data).returning();
-		return results[0];
-	},
-
-	async update(db: DbClient, configId: number, data: Partial<typeof payment_configurations.$inferInsert>) {
-		const now = new Date();
-		const results = await db
-			.update(payment_configurations)
-			.set({ ...data, updated_at: now } as any)
-			.where(eq(payment_configurations.id, configId))
-			.returning();
-		return results[0];
-	},
-
-	async delete(db: DbClient, configId: number) {
-		const results = await db.delete(payment_configurations).where(eq(payment_configurations.id, configId)).returning();
-		return results[0];
 	},
 };

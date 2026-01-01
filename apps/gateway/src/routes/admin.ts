@@ -1,4 +1,4 @@
-import { appQueries, getDb, identityQueries, invitationQueries, licenseQueries, paymentConfigQueries, planQueries, projectInvitationQueries, projectMemberQueries, projectQueries, userQueries, sessionQueries, paymentProviderQueries, payment_providers, and, eq, isNull, desc } from "@proofa/db";
+import { appQueries, getDb, identityQueries, invitationQueries, licenseQueries, planQueries, projectInvitationQueries, projectMemberQueries, projectQueries, userQueries, sessionQueries, paymentProviderQueries, payment_providers, and, eq, isNull, desc } from "@proofa/db";
 import { createId, encrypt, decrypt, isEncrypted, maskSecret, createLogger, serializeError, AuditEventType } from "@proofa/shared";
 import { 
 	InviteAppUserRequestSchema, 
@@ -7,8 +7,6 @@ import {
 	UpdateLicenseRequestSchema,
 	CreatePlanRequestSchema,
 	UpdatePlanRequestSchema,
-	CreatePaymentConfigRequestSchema,
-	UpdatePaymentConfigRequestSchema,
 	ListQuerySchema,
 	ProjectIdParamSchema,
 	AppIdParamSchema,
@@ -2360,39 +2358,28 @@ adminRoutes.delete("/projects/:projectId", async (c: Context) => {
 			return c.json({ error: "Access denied. Only the project owner can delete the project" }, 403);
 		}
 
-		// Soft delete: Mark project as inactive
-		// In a production system, you might want to:
-		// 1. Mark all apps in this project as inactive
-		// 2. Revoke all licenses for all apps
-		// 3. Delete all sessions
-		// 4. Remove all team members
-		// 5. Cancel all invitations
-		// 6. Add a deleted_at timestamp
-		
-		// For now, we'll mark it as inactive
-		await projectQueries.update(db, project.id, {
-			is_active: false,
-			updated_at: new Date(),
-		});
+		// Soft delete: Mark project as deleted
+		// This will:
+		// 1. Set deleted_at timestamp
+		// 2. Set is_active to false
+		// 3. Update slug to avoid uniqueness conflicts
+		await projectQueries.delete(db, project.id);
 
-		// Mark all apps in this project as inactive
+		// Mark all apps in this project as deleted
 		const apps = await appQueries.findByProjectId(db, project.id);
 		for (const app of apps) {
-			await appQueries.update(db, app.id, {
-				is_active: false,
-				updated_at: new Date(),
-			});
+			await appQueries.delete(db, app.id);
 
-			// Revoke all active licenses for each app
+			// Soft delete all active licenses for each app
 			const licenses = await licenseQueries.findByAppId(db, app.id);
 			for (const license of licenses) {
 				if (license.status === "active") {
-					await licenseQueries.update(db, license.id, { status: "revoked" });
+					await licenseQueries.delete(db, license.id);
 				}
 			}
 		}
 
-		// Remove all team members (except owner)
+		// Soft delete all team members (except owner for audit trail)
 		const allMembers = await projectMemberQueries.findByProjectId(db, project.id);
 		for (const projectMember of allMembers) {
 			if (projectMember.role !== "owner") {
@@ -2400,11 +2387,11 @@ adminRoutes.delete("/projects/:projectId", async (c: Context) => {
 			}
 		}
 
-		// Cancel all pending invitations
+		// Soft delete all pending invitations
 		const invitations = await projectInvitationQueries.findByProjectId(db, project.id);
 		for (const invitation of invitations) {
 			if (invitation.status === "pending") {
-				await projectInvitationQueries.update(db, invitation.id, { status: "cancelled" });
+				await projectInvitationQueries.delete(db, invitation.id);
 			}
 		}
 
@@ -2504,24 +2491,18 @@ adminRoutes.delete("/projects/:projectId/apps/:appId", async (c: Context) => {
 			return c.json({ error: "App not found" }, 404);
 		}
 
-		// Soft delete: Mark app as inactive
-		// In a production system, you might want to:
-		// 1. Archive all related data
-		// 2. Revoke all active licenses
-		// 3. Delete all sessions
-		// 4. Mark app as deleted with a deleted_at timestamp
-		
-		// For now, we'll mark it as inactive
-		await appQueries.update(db, app.id, {
-			is_active: false,
-			updated_at: new Date(),
-		});
+		// Soft delete: Mark app as deleted
+		// This will:
+		// 1. Set deleted_at timestamp
+		// 2. Set is_active to false
+		// 3. Update slug to avoid uniqueness conflicts
+		await appQueries.delete(db, app.id);
 
-		// Optionally: Revoke all active licenses for this app
+		// Soft delete all active licenses for this app
 		const licenses = await licenseQueries.findByAppId(db, app.id);
 		for (const license of licenses) {
 			if (license.status === "active") {
-				await licenseQueries.update(db, license.id, { status: "revoked" });
+				await licenseQueries.delete(db, license.id);
 			}
 		}
 
@@ -2926,7 +2907,11 @@ adminRoutes.delete("/projects/:projectId/apps/:appId/plans/:planId", async (c: C
 			}, 400);
 		}
 
-		// Delete plan
+		// Soft delete plan
+		// This will:
+		// 1. Set deleted_at timestamp
+		// 2. Set is_active to false
+		// 3. Update slug to avoid uniqueness conflicts
 		await planQueries.delete(db, plan.id);
 
 		return c.json({
@@ -2936,664 +2921,6 @@ adminRoutes.delete("/projects/:projectId/apps/:appId/plans/:planId", async (c: C
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Delete plan error:");
 		return c.json({ error: "Failed to delete plan" }, 500);
-	}
-});
-
-/**
- * Helper: Resolve payment configuration for an app
- * Checks app-level config first, falls back to project-level
- */
-async function resolvePaymentConfig(db: any, appId: number) {
-	// 1. Try app-level config first
-	const appConfig = await paymentConfigQueries.findByScope(db, 'app', appId);
-	
-	if (appConfig) {
-		return {
-			provider: appConfig.provider,
-			testMode: Boolean(appConfig.test_mode),
-			config: JSON.parse(decrypt(appConfig.config)),
-			source: 'app'
-		};
-	}
-	
-	// 2. Fall back to project-level config
-	const app = await appQueries.findById(db, appId);
-	if (!app) return null;
-	
-	const projectConfig = await paymentConfigQueries.findByScope(db, 'project', app.project_id);
-	
-	if (projectConfig) {
-		return {
-			provider: projectConfig.provider,
-			testMode: Boolean(projectConfig.test_mode),
-			config: JSON.parse(decrypt(projectConfig.config)),
-			source: 'project'
-		};
-	}
-	
-	return null;
-}
-
-/**
- * GET /v1/admin/projects/:projectId/payment-config
- * Get project payment configuration
- */
-adminRoutes.get("/projects/:projectId/payment-config", async (c: Context) => {
-	try {
-		const auth = getAuth(c);
-		const projectId = c.req.param("projectId");
-		
-		const db = getDb();
-		
-		// Verify project access
-		const project = await projectQueries.findByPublicId(db, projectId);
-		if (!project) {
-			return c.json({ error: "Project not found" }, 404);
-		}
-		
-		const user = await userQueries.findByPublicId(db, auth.userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
-		
-		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
-		if (!member) {
-			return c.json({ error: "Access denied" }, 403);
-		}
-		
-		// Get payment config
-		const config = await paymentConfigQueries.findByScope(db, 'project', project.id);
-		
-		if (!config) {
-			return c.json({ configured: false });
-		}
-		
-		// Return masked config (don't decrypt for display)
-		return c.json({
-			configured: true,
-			id: config.public_id,
-			name: config.name,
-			slug: config.slug,
-			provider: config.provider,
-			testMode: Boolean(config.test_mode),
-			isActive: Boolean(config.is_active),
-			createdAt: config.created_at,
-			updatedAt: config.updated_at,
-		});
-	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "Get project payment config error:");
-		return c.json({ error: "Failed to get payment configuration" }, 500);
-	}
-});
-
-/**
- * POST /v1/admin/projects/:projectId/payment-config
- * Create/Update project payment configuration
- */
-adminRoutes.post("/projects/:projectId/payment-config", async (c: Context) => {
-	try {
-		const auth = getAuth(c);
-		const projectId = c.req.param("projectId");
-		const body = await c.req.json();
-		
-		const { name, slug, provider, testMode, config: configData } = body;
-		
-		// Validate
-		if (!name || !provider || !configData) {
-			return c.json({ error: "Name, provider and config are required" }, 400);
-		}
-		
-		const db = getDb();
-		
-		// Verify project access (owner only)
-		const project = await projectQueries.findByPublicId(db, projectId);
-		if (!project) {
-			return c.json({ error: "Project not found" }, 404);
-		}
-		
-		const user = await userQueries.findByPublicId(db, auth.userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
-		
-		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
-		if (!member || member.role !== "owner") {
-			return c.json({ error: "Access denied. Only project owners can configure payments" }, 403);
-		}
-		
-		
-		// Check if config exists
-		const existing = await paymentConfigQueries.findByScopeAndProvider(db, 'project', project.id, provider);
-		
-		const now = new Date();
-		const encryptedConfig = encrypt(JSON.stringify(configData));
-		
-		// Auto-generate slug from name if not provided
-		const finalSlug = slug || name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-
-		let result;
-		if (existing) {
-			// Update existing
-			result = await paymentConfigQueries.update(db, existing.id, {
-				name,
-				slug: finalSlug,
-				test_mode: testMode,
-				config: encryptedConfig,
-				updated_at: now,
-			});
-		} else {
-			// Create new
-			result = await paymentConfigQueries.create(db, {
-				public_id: createId("paymentConfig"),
-				name,
-				slug: finalSlug,
-				scope_type: 'project',
-				scope_id: project.id,
-				provider,
-				test_mode: testMode,
-				is_active: true,
-				config: encryptedConfig,
-				created_at: now,
-				updated_at: now,
-			});
-		}
-		
-		return c.json({
-			success: true,
-			id: result.public_id,
-			name: result.name,
-			slug: result.slug,
-			provider: result.provider,
-			testMode: Boolean(result.test_mode),
-		});
-	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "Save project payment config error:");
-		return c.json({ error: "Failed to save payment configuration" }, 500);
-	}
-});
-
-/**
- * GET /v1/admin/projects/:projectId/payment-providers
- * List all payment providers for a project
- */
-adminRoutes.get("/projects/:projectId/payment-providers", async (c: Context) => {
-	try {
-		const auth = getAuth(c);
-		const projectId = c.req.param("projectId");
-		
-		const db = getDb();
-		
-		// Verify project access
-		const project = await projectQueries.findByPublicId(db, projectId);
-		if (!project) {
-			return c.json({ error: "Project not found" }, 404);
-		}
-		
-		const user = await userQueries.findByPublicId(db, auth.userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
-		
-		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-		const member = members[0];
-		if (!member) {
-			return c.json({ error: "Access denied" }, 403);
-		}
-		
-		// Get all payment providers for this project
-		const providers = await db
-			.select()
-			.from(payment_providers)
-			.where(and(
-				eq(payment_providers.entity_type, 'project'),
-				eq(payment_providers.entity_id, project.id),
-				isNull(payment_providers.deleted_at)
-			))
-			.orderBy(desc(payment_providers.created_at));
-		
-		return c.json({
-			providers: providers.map(p => ({
-				id: p.public_id,
-				name: p.name,
-				slug: p.slug,
-				provider: p.provider,
-				environment: p.environment,
-				isActive: p.is_active,
-				createdAt: p.created_at,
-				updatedAt: p.updated_at,
-			})),
-		});
-	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "List project payment providers error:");
-		return c.json({ error: "Failed to list payment providers" }, 500);
-	}
-});
-
-/**
- * GET /v1/admin/projects/:projectId/apps/:appId/payment-config
- * Get app payment configuration (with resolution)
- */
-adminRoutes.get("/projects/:projectId/apps/:appId/payment-config", async (c: Context) => {
-	try {
-		const auth = getAuth(c);
-		const projectId = c.req.param("projectId");
-		const appId = c.req.param("appId");
-		
-		const db = getDb();
-		
-		// Verify access
-		const project = await projectQueries.findByPublicId(db, projectId);
-		if (!project) {
-			return c.json({ error: "Project not found" }, 404);
-		}
-		
-		const user = await userQueries.findByPublicId(db, auth.userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
-		
-		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
-		if (!member) {
-			return c.json({ error: "Access denied" }, 403);
-		}
-		
-		const app = await appQueries.findByPublicId(db, appId);
-		if (!app || app.project_id !== project.id) {
-			return c.json({ error: "App not found" }, 404);
-		}
-		
-		// Get resolved config
-		
-		// Check app-level config
-		const appConfig = await paymentConfigQueries.findByScope(db, 'app', app.id);
-		
-		if (appConfig) {
-			return c.json({
-				configured: true,
-				source: 'app',
-				id: appConfig.public_id,
-				provider: appConfig.provider,
-				testMode: Boolean(appConfig.test_mode),
-				isActive: Boolean(appConfig.is_active),
-				createdAt: appConfig.created_at,
-				updatedAt: appConfig.updated_at,
-			});
-		}
-		
-		// Check project-level config
-		const projectConfig = await paymentConfigQueries.findByScope(db, 'project', project.id);
-		
-		if (projectConfig) {
-			return c.json({
-				configured: true,
-				source: 'project',
-				id: projectConfig.public_id,
-				provider: projectConfig.provider,
-				testMode: Boolean(projectConfig.test_mode),
-				isActive: Boolean(projectConfig.is_active),
-				createdAt: projectConfig.created_at,
-				updatedAt: projectConfig.updated_at,
-			});
-		}
-		
-		return c.json({ configured: false });
-	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "Get app payment config error:");
-		return c.json({ error: "Failed to get payment configuration" }, 500);
-	}
-});
-
-/**
- * POST /v1/admin/projects/:projectId/apps/:appId/payment-config
- * Create/Update app payment configuration (override)
- */
-adminRoutes.post("/projects/:projectId/apps/:appId/payment-config", async (c: Context) => {
-	try {
-		const auth = getAuth(c);
-		const projectId = c.req.param("projectId");
-		const appId = c.req.param("appId");
-		const body = await c.req.json();
-		
-		const { provider, testMode, config: configData } = body;
-		
-		// Validate
-		if (!provider || !configData) {
-			return c.json({ error: "Provider and config are required" }, 400);
-		}
-		
-		const db = getDb();
-		
-		// Verify access (owner only)
-		const project = await projectQueries.findByPublicId(db, projectId);
-		if (!project) {
-			return c.json({ error: "Project not found" }, 404);
-		}
-		
-		const user = await userQueries.findByPublicId(db, auth.userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
-		
-		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
-		if (!member || member.role !== "owner") {
-			return c.json({ error: "Access denied. Only project owners can configure payments" }, 403);
-		}
-		
-		const app = await appQueries.findByPublicId(db, appId);
-		if (!app || app.project_id !== project.id) {
-			return c.json({ error: "App not found" }, 404);
-		}
-		
-		
-		// Check if config exists
-		const existing = await paymentConfigQueries.findByScopeAndProvider(db, 'app', app.id, provider);
-		
-		const now = new Date();
-		const encryptedConfig = encrypt(JSON.stringify(configData));
-		
-		let result;
-		if (existing) {
-			// Update existing
-			result = await paymentConfigQueries.update(db, existing.id, {
-				test_mode: testMode,
-				config: encryptedConfig,
-				updated_at: now,
-			});
-		} else {
-			// Create new
-			result = await paymentConfigQueries.create(db, {
-				public_id: createId("paymentConfig"),
-				scope_type: 'app',
-				scope_id: app.id,
-				provider,
-				test_mode: testMode,
-				is_active: true,
-				config: encryptedConfig,
-				created_at: now,
-				updated_at: now,
-			});
-		}
-		
-		return c.json({
-			success: true,
-			id: result.public_id,
-			provider: result.provider,
-			testMode: Boolean(result.test_mode),
-		});
-	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "Save app payment config error:");
-		return c.json({ error: "Failed to save payment configuration" }, 500);
-	}
-});
-
-/**
- * DELETE /v1/admin/projects/:projectId/apps/:appId/payment-config
- * Delete app payment configuration (revert to project-level)
- */
-adminRoutes.delete("/projects/:projectId/apps/:appId/payment-config", async (c: Context) => {
-	try {
-		const auth = getAuth(c);
-		const projectId = c.req.param("projectId");
-		const appId = c.req.param("appId");
-		
-		const db = getDb();
-		
-		// Verify access (owner only)
-		const project = await projectQueries.findByPublicId(db, projectId);
-		if (!project) {
-			return c.json({ error: "Project not found" }, 404);
-		}
-		
-		const user = await userQueries.findByPublicId(db, auth.userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
-		
-		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
-		if (!member || member.role !== "owner") {
-			return c.json({ error: "Access denied" }, 403);
-		}
-		
-		const app = await appQueries.findByPublicId(db, appId);
-		if (!app || app.project_id !== project.id) {
-			return c.json({ error: "App not found" }, 404);
-		}
-		
-		
-		// Get app-level config
-		const config = await paymentConfigQueries.findByScope(db, 'app', app.id);
-		
-		if (!config) {
-			return c.json({ error: "No app-level configuration found" }, 404);
-		}
-		
-		// Delete it
-		await paymentConfigQueries.delete(db, config.id);
-		
-		return c.json({
-			success: true,
-			message: "App payment configuration removed. Now using project-level configuration.",
-		});
-	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "Delete app payment config error:");
-		return c.json({ error: "Failed to delete payment configuration" }, 500);
-	}
-});
-
-/**
- * GET /v1/admin/apps/:appId/oauth/available
- * Get all available OAuth providers for an app (from platform, project, and app levels)
- */
-adminRoutes.get("/apps/:appId/oauth/available", async (c: Context) => {
-	try {
-		const auth = getAuth(c);
-		const appId = c.req.param("appId");
-
-		const db = getDb();
-
-		const app = await appQueries.findByPublicId(db, appId);
-		if (!app) {
-			return c.json({ error: "App not found" }, 404);
-		}
-
-		// Get user by public ID
-		const user = await userQueries.findByPublicId(db, auth.userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
-
-		// Check user is member with appropriate role
-		const members = await projectMemberQueries.findByProjectAndUser(db, app.project_id, user.id);
-		const member = members[0];
-
-		if (!member || (member.role !== "owner" && member.role !== "admin")) {
-			return c.json({ error: "Access denied" }, 403);
-		}
-
-		// Get available OAuth providers
-		const providers = await oauthProviderQueries.getAvailableOAuthProviders(db, app.id);
-
-		// Format response
-		const formattedProviders = providers.map((p: any) => ({
-			id: p.id,
-			provider: p.provider,
-			entityType: p.entity_type,
-			entityId: p.entity_id,
-			credentials: p.credentials,
-			isActive: p.is_active,
-			createdAt: p.created_at,
-		}));
-
-		return c.json({ providers: formattedProviders });
-	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "Get available OAuth providers error:");
-		return c.json({ error: "Failed to get available OAuth providers" }, 500);
-	}
-});
-
-/**
- * GET /v1/admin/apps/:appId/oauth/selected
- * Get selected OAuth providers for an app
- */
-adminRoutes.get("/apps/:appId/oauth/selected", async (c: Context) => {
-	try {
-		const auth = getAuth(c);
-		const appId = c.req.param("appId");
-
-		const db = getDb();
-
-		const app = await appQueries.findByPublicId(db, appId);
-		if (!app) {
-			return c.json({ error: "App not found" }, 404);
-		}
-
-		// Get user by public ID
-		const user = await userQueries.findByPublicId(db, auth.userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
-
-		// Check user is member with appropriate role
-		const members = await projectMemberQueries.findByProjectAndUser(db, app.project_id, user.id);
-		const member = members[0];
-
-		if (!member || (member.role !== "owner" && member.role !== "admin")) {
-			return c.json({ error: "Access denied" }, 403);
-		}
-
-		// Get selected OAuth providers
-		const selections = await oauthProviderQueries.getOAuthProviders(db, app.id);
-
-		// Format response
-		const formattedProviders = selections.map((s: any) => ({
-			id: s.provider_id,
-			provider: s.provider,
-			entityType: s.entity_type,
-			entityId: s.entity_id,
-			credentials: s.credentials,
-			displayOrder: s.display_order,
-			customButtonText: s.custom_button_text,
-			isEnabled: s.is_enabled,
-		}));
-
-		return c.json({ providers: formattedProviders });
-	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "Get selected OAuth providers error:");
-		return c.json({ error: "Failed to get selected OAuth providers" }, 500);
-	}
-});
-
-/**
- * POST /v1/admin/apps/:appId/oauth/select
- * Select an OAuth provider for an app
- */
-adminRoutes.post("/apps/:appId/oauth/select", async (c: Context) => {
-	try {
-		const auth = getAuth(c);
-		const appId = c.req.param("appId");
-		const body = await c.req.json();
-
-		const db = getDb();
-
-		const app = await appQueries.findByPublicId(db, appId);
-		if (!app) {
-			return c.json({ error: "App not found" }, 404);
-		}
-
-		// Get user by public ID
-		const user = await userQueries.findByPublicId(db, auth.userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
-
-		// Check user is member with appropriate role
-		const members = await projectMemberQueries.findByProjectAndUser(db, app.project_id, user.id);
-		const member = members[0];
-
-		if (!member || (member.role !== "owner" && member.role !== "admin")) {
-			return c.json({ error: "Access denied" }, 403);
-		}
-
-		// Validate request
-		const validatedData = z.object({
-			oauthProviderId: z.number(),
-			displayOrder: z.number().optional(),
-			customButtonText: z.string().optional(),
-		}).parse(body);
-
-		// Select the provider
-		const selectionResults = await oauthProviderQueries.selectProviderForApp(db, {
-			app_id: app.id,
-			oauth_provider_id: validatedData.oauthProviderId,
-			display_order: validatedData.displayOrder,
-			custom_button_text: validatedData.customButtonText,
-		});
-
-		const selection = selectionResults[0];
-
-		return c.json({ 
-			selection: {
-				id: selection.id,
-				appId: selection.app_id,
-				oauthProviderId: selection.oauth_provider_id,
-				displayOrder: selection.display_order,
-				customButtonText: selection.custom_button_text,
-				isEnabled: selection.is_enabled,
-			}
-		});
-	} catch (error) {
-		if (error instanceof z.ZodError) {
-			log.warn({ errors: error.errors }, "Validation error");
-			return c.json({ error: "Invalid request data", details: error.errors }, 400);
-		}
-		log.error({ err: serializeError(error as Error) }, "Select OAuth provider error:");
-		return c.json({ error: "Failed to select OAuth provider" }, 500);
-	}
-});
-
-/**
- * DELETE /v1/admin/apps/:appId/oauth/:providerId/deselect
- * Deselect an OAuth provider for an app
- */
-adminRoutes.delete("/apps/:appId/oauth/:providerId/deselect", async (c: Context) => {
-	try {
-		const auth = getAuth(c);
-		const appId = c.req.param("appId");
-		const providerId = Number.parseInt(c.req.param("providerId"), 10);
-
-		const db = getDb();
-
-		const app = await appQueries.findByPublicId(db, appId);
-		if (!app) {
-			return c.json({ error: "App not found" }, 404);
-		}
-
-		// Get user by public ID
-		const user = await userQueries.findByPublicId(db, auth.userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
-
-		// Check user is member with appropriate role
-		const members = await projectMemberQueries.findByProjectAndUser(db, app.project_id, user.id);
-		const member = members[0];
-
-		if (!member || (member.role !== "owner" && member.role !== "admin")) {
-			return c.json({ error: "Access denied" }, 403);
-		}
-
-		// Deselect the provider
-		await oauthProviderQueries.deselectProviderForApp(db, app.id, providerId);
-
-		return c.json({ success: true });
-	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "Deselect OAuth provider error:");
-		return c.json({ error: "Failed to deselect OAuth provider" }, 500);
 	}
 });
 

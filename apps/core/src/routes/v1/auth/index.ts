@@ -164,6 +164,7 @@ router.get("/callback/:provider", async (c: Context) => {
 		const userData = {
 			public_id: createId("user"),
 			primary_email: profile.email,
+			primary_email_verified: true, // OAuth providers verify email addresses
 			name: profile.name,
 			avatar_url: profile.picture || null,
 			// created_at and updated_at auto-set by .defaultNow() in schema
@@ -179,6 +180,7 @@ router.get("/callback/:provider", async (c: Context) => {
 			provider,
 			provider_user_id: profile.id,
 			email: profile.email,
+			email_verified: true, // OAuth providers verify email addresses
 			// created_at auto-set by .defaultNow() in schema
 		};
 		await identityQueries.create(db, identityData);
