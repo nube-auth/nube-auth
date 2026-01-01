@@ -29,7 +29,7 @@ export const paymentProviderQueries = {
 	 */
 	async create(db: DbClient, data: any) {
 		const results = await db.insert(payment_providers).values(data).returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	/**
@@ -41,7 +41,7 @@ export const paymentProviderQueries = {
 			.set({ ...data, updated_at: new Date() })
 			.where(eq(payment_providers.id, providerId))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	/**
@@ -53,7 +53,7 @@ export const paymentProviderQueries = {
 			.set({ deleted_at: new Date() })
 			.where(eq(payment_providers.id, providerId))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	/**
@@ -77,6 +77,23 @@ export const paymentProviderQueries = {
 			);
 
 		return results[0] || null;
+	},
+
+	/**
+	 * Get all payment providers configured for a project
+	 */
+	async getProjectPaymentProviders(db: DbClient, projectId: number) {
+		return db
+			.select()
+			.from(payment_providers)
+			.where(
+				and(
+					eq(payment_providers.entity_type, "project"),
+					eq(payment_providers.entity_id, projectId),
+					isNull(payment_providers.deleted_at),
+				),
+			)
+			.orderBy(desc(payment_providers.created_at));
 	},
 
 	/**
@@ -171,7 +188,7 @@ export const paymentProviderQueries = {
 				updated_at: now,
 			})
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	/**
@@ -207,7 +224,7 @@ export const paymentProviderQueries = {
 				updated_at: now,
 			})
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	/**
@@ -243,7 +260,7 @@ export const paymentProviderQueries = {
 				updated_at: now,
 			})
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	/**
@@ -263,7 +280,7 @@ export const paymentProviderQueries = {
 			.set({ is_active: true, updated_at: new Date() })
 			.where(eq(payment_providers.id, payment_provider_id))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	/**
@@ -294,7 +311,7 @@ export const paymentProviderQueries = {
 			})
 			.where(eq(payment_providers.id, provider_id))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	/**

@@ -59,6 +59,14 @@ function useMe() {
 		queryKey: ["admin", "me"],
 		queryFn: async () => {
 			const gatewayUrl = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
+
+			// 1) Check session status first (mirrors user dashboard flow)
+			const statusRes = await fetch(`${gatewayUrl}/v1/auth/status?audience=admin`, { credentials: "include" });
+			if (!statusRes.ok) throw new Error("Unauthorized");
+			const status = (await statusRes.json()) as { loggedIn?: boolean };
+			if (!status.loggedIn) throw new Error("Unauthorized");
+
+			// 2) Then fetch admin profile
 			const res = await fetch(`${gatewayUrl}/v1/admin/me`, { credentials: "include" });
 			if (!res.ok) throw new Error("Unauthorized");
 			return res.json() as Promise<{ id: string; email?: string; name?: string; primary_email?: string }>;

@@ -37,7 +37,7 @@ export const userQueries = {
 
 	async create(db: DbClient, data: typeof users.$inferInsert) {
 		const results = await db.insert(users).values(data).returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async update(db: DbClient, userId: number, data: Partial<typeof users.$inferInsert>) {
@@ -67,7 +67,7 @@ export const identityQueries = {
 
 	async create(db: DbClient, data: typeof identities.$inferInsert) {
 		const results = await db.insert(identities).values(data).returning();
-		return results[0];
+		return results[0]!;
 	},
 };
 
@@ -99,7 +99,7 @@ export const sessionQueries = {
 
 	async create(db: DbClient, data: typeof sessions.$inferInsert) {
 		const results = await db.insert(sessions).values(data).returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async updateLastSeen(db: DbClient, sessionId: number, lastSeenAt: Date) {
@@ -108,7 +108,7 @@ export const sessionQueries = {
 			.set({ last_seen_at: lastSeenAt })
 			.where(eq(sessions.id, sessionId))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async revoke(db: DbClient, sessionId: number) {
@@ -117,7 +117,7 @@ export const sessionQueries = {
 			.set({ revoked_at: new Date() })
 			.where(eq(sessions.id, sessionId))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 };
 
@@ -166,7 +166,7 @@ export const projectQueries = {
 
 	async create(db: DbClient, data: typeof projects.$inferInsert) {
 		const results = await db.insert(projects).values(data).returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async update(db: DbClient, projectId: number, data: Partial<typeof projects.$inferInsert>) {
@@ -195,7 +195,7 @@ export const projectQueries = {
 			})
 			.where(eq(projects.id, projectId))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 };
 
@@ -236,12 +236,12 @@ export const projectMemberQueries = {
 
 	async create(db: DbClient, data: typeof project_members.$inferInsert) {
 		const results = await db.insert(project_members).values(data).returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async update(db: DbClient, id: number, data: Partial<typeof project_members.$inferInsert>) {
 		const results = await db.update(project_members).set(data).where(eq(project_members.id, id)).returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async updateByPublicId(db: DbClient, publicId: string, data: Partial<typeof project_members.$inferInsert>) {
@@ -254,7 +254,7 @@ export const projectMemberQueries = {
 			.set({ deleted_at: new Date(), updated_at: new Date() })
 			.where(eq(project_members.id, id))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async deleteByPublicId(db: DbClient, publicId: string) {
@@ -263,7 +263,7 @@ export const projectMemberQueries = {
 			.set({ deleted_at: new Date(), updated_at: new Date() })
 			.where(eq(project_members.public_id, publicId))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 };
 
@@ -304,7 +304,7 @@ export const projectInvitationQueries = {
 
 	async create(db: DbClient, data: typeof project_invitations.$inferInsert) {
 		const results = await db.insert(project_invitations).values(data).returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async update(db: DbClient, id: number, data: Partial<typeof project_invitations.$inferInsert>) {
@@ -313,7 +313,7 @@ export const projectInvitationQueries = {
 			.set(data)
 			.where(eq(project_invitations.id, id))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async updateByPublicId(db: DbClient, publicId: string, data: Partial<typeof project_invitations.$inferInsert>) {
@@ -322,7 +322,7 @@ export const projectInvitationQueries = {
 			.set(data)
 			.where(eq(project_invitations.public_id, publicId))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async delete(db: DbClient, id: number) {
@@ -331,7 +331,7 @@ export const projectInvitationQueries = {
 			.set({ deleted_at: new Date() })
 			.where(eq(project_invitations.id, id))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async deleteByPublicId(db: DbClient, publicId: string) {
@@ -340,7 +340,7 @@ export const projectInvitationQueries = {
 			.set({ deleted_at: new Date() })
 			.where(eq(project_invitations.public_id, publicId))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async cleanupExpired(db: DbClient) {
@@ -382,12 +382,12 @@ export const appQueries = {
 
 	async create(db: DbClient, data: typeof apps.$inferInsert) {
 		const results = await db.insert(apps).values(data).returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async update(db: DbClient, appId: number, data: Partial<typeof apps.$inferInsert>) {
 		const results = await db.update(apps).set(data).where(eq(apps.id, appId)).returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async delete(db: DbClient, appId: number) {
@@ -408,7 +408,7 @@ export const appQueries = {
 			})
 			.where(eq(apps.id, appId))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 };
 
@@ -426,7 +426,7 @@ export const authCodeQueries = {
 
 	async create(db: DbClient, data: typeof auth_codes.$inferInsert) {
 		const results = await db.insert(auth_codes).values(data).returning();
-		return results[0];
+		return results[0]!;
 	},
 };
 
@@ -458,7 +458,7 @@ export const licenseQueries = {
 
 	async create(db: DbClient, data: typeof licenses.$inferInsert) {
 		const results = await db.insert(licenses).values(data).returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async update(db: DbClient, licenseId: number, data: Partial<typeof licenses.$inferInsert>) {
@@ -480,7 +480,7 @@ export const licenseQueries = {
 				.set({ ...data, updated_at: now })
 				.where(and(eq(licenses.user_id, userId), eq(licenses.app_id, appId)))
 				.returning();
-			return results[0];
+			return results[0]!;
 		} else {
 			const results = await db
 				.insert(licenses)
@@ -492,7 +492,7 @@ export const licenseQueries = {
 					updated_at: now,
 				} as typeof licenses.$inferInsert)
 				.returning();
-			return results[0];
+			return results[0]!;
 		}
 	},
 	async delete(db: DbClient, licenseId: number) {
@@ -501,7 +501,7 @@ export const licenseQueries = {
 			.set({ deleted_at: new Date(), updated_at: new Date() })
 			.where(eq(licenses.id, licenseId))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 };
 
@@ -516,7 +516,7 @@ export const emailVerificationQueries = {
 
 	async create(db: DbClient, data: typeof email_verifications.$inferInsert) {
 		const results = await db.insert(email_verifications).values(data).returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async update(db: DbClient, id: number, data: Partial<typeof email_verifications.$inferInsert>) {
@@ -525,7 +525,7 @@ export const emailVerificationQueries = {
 			.set(data)
 			.where(eq(email_verifications.id, id))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async delete(db: DbClient, id: number) {
@@ -563,7 +563,7 @@ export const emailVerificationQueries = {
 export const auditLogQueries = {
 	async create(db: DbClient, data: typeof audit_logs.$inferInsert) {
 		const results = await db.insert(audit_logs).values(data).returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async findByProjectId(db: DbClient, projectId: number, limit = 100) {
@@ -582,7 +582,7 @@ export const auditLogQueries = {
 export const invitationQueries = {
 	async create(db: DbClient, data: typeof invitations.$inferInsert) {
 		const results = await db.insert(invitations).values(data).returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async findByPublicId(db: DbClient, publicId: string) {
@@ -628,7 +628,7 @@ export const invitationQueries = {
 			.set({ consumed_at: new Date(), consumed_by_user_id: userId })
 			.where(eq(invitations.id, invitationId))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async deleteExpired(db: DbClient) {
@@ -649,7 +649,7 @@ export const invitationQueries = {
 export const planQueries = {
 	async create(db: DbClient, data: typeof plans.$inferInsert) {
 		const results = await db.insert(plans).values(data).returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async findByPublicId(db: DbClient, publicId: string) {
@@ -699,7 +699,7 @@ export const planQueries = {
 			.set({ ...data, updated_at: now } as any)
 			.where(eq(plans.id, planId))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async delete(db: DbClient, planId: number) {
@@ -720,7 +720,7 @@ export const planQueries = {
 			})
 			.where(eq(plans.id, planId))
 			.returning();
-		return results[0];
+		return results[0]!;
 	},
 
 	async countLicensesByPlan(db: DbClient, planId: number) {

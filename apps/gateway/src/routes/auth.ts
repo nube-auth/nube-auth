@@ -19,13 +19,31 @@ const USER_SESSION_COOKIE = "proofa_user_session";
 const ADMIN_SESSION_COOKIE = "proofa_admin_session";
 const LEGACY_SESSION_COOKIE = "proofa_session";
 
+function safeParseUrl(value: string | undefined): URL | null {
+	if (!value) return null;
+	try {
+		return new URL(value);
+	} catch {
+		return null;
+	}
+}
+
 function inferAudience(c: Context): "user" | "admin" {
 	const audience = c.req.query("audience");
 	if (audience === "admin") return "admin";
 	if (audience === "user") return "user";
 
-	const origin = c.req.header("origin") || "";
-	if (origin.includes("manage.proofa.") || origin.includes("admin.proofa.")) return "admin";
+	const originOrReferer = c.req.header("origin") || c.req.header("referer") || "";
+	const requestHost = safeParseUrl(originOrReferer)?.host || "";
+
+	const adminHost = safeParseUrl(env.ADMIN_DASHBOARD_URL)?.host || "";
+	const userHost = safeParseUrl(env.USER_DASHBOARD_URL)?.host || "";
+
+	if (adminHost && requestHost === adminHost) return "admin";
+	if (userHost && requestHost === userHost) return "user";
+
+	// Fallback heuristics for hosted environments
+	if (requestHost.includes("manage.proofa.") || requestHost.includes("admin.proofa.")) return "admin";
 	return "user";
 }
 
@@ -119,9 +137,11 @@ authRoutes.get("/callback", async (c: Context) => {
 
 		// Create signed cookie with domain for cross-subdomain access
 		const cookieDomain = env.COOKIE_DOMAIN; // e.g., ".proofa.sh"
+		const secureCookies =
+			env.NODE_ENV === "production" || (env.GATEWAY_PUBLIC_URL ? env.GATEWAY_PUBLIC_URL.startsWith("https://") : false);
 		const { value, attributes } = createSessionCookie(
 			gatewaySessionId,
-			cookieDomain ? { domain: cookieDomain } : {},
+			cookieDomain ? { domain: cookieDomain, secure: secureCookies } : { secure: secureCookies },
 		);
 
 		const httpOnly = attributes["httpOnly"] as boolean;
@@ -209,9 +229,11 @@ authRoutes.post("/login", async (c: Context) => {
 
 		// Create signed cookie with Gateway session ID
 		const cookieDomain = env.COOKIE_DOMAIN; // e.g., ".proofa.sh"
+		const secureCookies =
+			env.NODE_ENV === "production" || (env.GATEWAY_PUBLIC_URL ? env.GATEWAY_PUBLIC_URL.startsWith("https://") : false);
 		const { value, attributes } = createSessionCookie(
 			gatewaySessionId,
-			cookieDomain ? { domain: cookieDomain } : {},
+			cookieDomain ? { domain: cookieDomain, secure: secureCookies } : { secure: secureCookies },
 		);
 
 		const httpOnly = attributes["httpOnly"] as boolean;
@@ -506,31 +528,34 @@ authRoutes.post("/logout", async (c: Context) => {
 authRoutes.get("/status", async (c: Context) => {
 	try {
 		const audience = inferAudience(c);
-		const isAdmin = audience === "admin";
-		const cookie = getCookie(c, isAdmin ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE);
+		const adminCookie = getCookie(c, ADMIN_SESSION_COOKIE);
+		const userCookie = getCookie(c, USER_SESSION_COOKIE);
 
-		if (!cookie) {
+		const cookiesToTry: Array<string> = [];
+		if (audience === "admin") {
+			if (adminCookie) cookiesToTry.push(adminCookie);
+			if (userCookie) cookiesToTry.push(userCookie);
+		} else {
+			if (userCookie) cookiesToTry.push(userCookie);
+			if (adminCookie) cookiesToTry.push(adminCookie);
+		}
+
+		if (cookiesToTry.length === 0) {
 			return c.json({ loggedIn: false });
 		}
 
-		try {
+		for (const cookie of cookiesToTry) {
 			const sessionId = parseSessionCookie(cookie);
-			if (!sessionId) {
-				return c.json({ loggedIn: false });
-			}
+			if (!sessionId) continue;
 
 			const appSession = await sessionStore.getAppSession(sessionId);
+			if (!appSession) continue;
 
-			if (!appSession) {
-				return c.json({ loggedIn: false });
-			}
+			const coreSessionId = appSession.metadata?.["coreSessionId"] as string | undefined;
+			if (!coreSessionId) continue;
 
-			// Get user info from Core
-			const user = await coreClient.exchangeSession(sessionId);
-
-			if (!user) {
-				return c.json({ loggedIn: false });
-			}
+			const user = await coreClient.exchangeSession(coreSessionId);
+			if (!user) continue;
 
 			return c.json({
 				loggedIn: true,
@@ -540,9 +565,9 @@ authRoutes.get("/status", async (c: Context) => {
 					name: user.name,
 				},
 			});
-		} catch {
-			return c.json({ loggedIn: false });
 		}
+
+		return c.json({ loggedIn: false });
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Status check error:");
 		return c.json({ loggedIn: false });

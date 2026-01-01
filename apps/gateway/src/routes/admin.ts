@@ -416,6 +416,53 @@ adminRoutes.get("/projects/:projectId/stats", async (c: Context) => {
 			}
 		}
 
+		/**
+		 * GET /v1/admin/projects/:projectId/payment-providers
+		 * Get all payment providers configured for a project
+		 */
+		adminRoutes.get("/projects/:projectId/payment-providers", async (c: Context) => {
+			try {
+				const auth = getAuth(c);
+				const projectId = c.req.param("projectId");
+
+				const db = getDb();
+
+				const project = await projectQueries.findByPublicId(db, projectId);
+				if (!project) {
+					return c.json({ error: "Project not found" }, 404);
+				}
+
+				const user = await userQueries.findByPublicId(db, auth.userId);
+				if (!user) {
+					return c.json({ error: "User not found" }, 404);
+				}
+
+				const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+				const member = members[0];
+				if (!member || (member.role !== "owner" && member.role !== "admin")) {
+					return c.json({ error: "Access denied" }, 403);
+				}
+
+				const providers = await paymentProviderQueries.getProjectPaymentProviders(db, project.id);
+
+				return c.json({
+					providers: providers.map((p: any) => ({
+						id: String(p.id),
+						name: p.name,
+						slug: p.slug,
+						provider: p.provider,
+						environment: p.environment,
+						isActive: p.is_active,
+						createdAt: p.created_at,
+						updatedAt: p.updated_at,
+					})),
+				});
+			} catch (error) {
+				log.error({ err: serializeError(error as Error) }, "Get project payment providers error:");
+				return c.json({ error: "Failed to get payment providers" }, 500);
+			}
+		});
+
 		// Count total users across all apps (unique users)
 		const uniqueUserIds = new Set<number>();
 		for (const appId of appIds) {

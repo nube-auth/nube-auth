@@ -73,6 +73,16 @@ export function LoginPage() {
 
 			// Check if already authenticated before showing login
 			try {
+				const statusRes = await fetch("/api/auth/status?audience=admin", { credentials: "include" });
+				if (statusRes.ok) {
+					const statusData = (await statusRes.json()) as { loggedIn?: boolean };
+					if (!statusData.loggedIn) {
+						setStatus("idle");
+						return;
+					}
+				}
+
+				// Session exists - now fetch admin profile
 				const meRes = await fetch("/api/admin/me", { credentials: "include" });
 				if (meRes.ok) {
 					// Already logged in - check for invitation code
