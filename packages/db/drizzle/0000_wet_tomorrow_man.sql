@@ -1,17 +1,3 @@
-CREATE TABLE "app_oauth_selections" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"public_id" varchar(255) NOT NULL,
-	"app_id" integer NOT NULL,
-	"oauth_provider_id" integer NOT NULL,
-	"is_enabled" boolean DEFAULT true NOT NULL,
-	"display_order" integer DEFAULT 0 NOT NULL,
-	"custom_button_text" varchar(100),
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "app_oauth_selections_public_id_unique" UNIQUE("public_id"),
-	CONSTRAINT "app_oauth_selections_app_provider_unique" UNIQUE("app_id","oauth_provider_id")
-);
---> statement-breakpoint
 CREATE TABLE "apps" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"public_id" varchar(255) NOT NULL,
@@ -24,11 +10,7 @@ CREATE TABLE "apps" (
 	"redirect_uris" jsonb NOT NULL,
 	"allowed_hosts" jsonb,
 	"cors_origins" jsonb,
-	"oauth_inherit_source" text DEFAULT 'proofa' NOT NULL,
-	"google_client_id" text,
-	"google_client_secret" text,
-	"github_client_id" text,
-	"github_client_secret" text,
+	"enabled_providers" jsonb DEFAULT '["google"]' NOT NULL,
 	"session_ttl_days" integer DEFAULT 28 NOT NULL,
 	"account_lockout_minutes" integer DEFAULT 30 NOT NULL,
 	"cache_ttl_minutes" integer DEFAULT 60 NOT NULL,
@@ -129,28 +111,6 @@ CREATE TABLE "licenses" (
 	CONSTRAINT "licenses_user_app_unique" UNIQUE("user_id","app_id")
 );
 --> statement-breakpoint
-CREATE TABLE "oauth_providers" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"public_id" varchar(255) NOT NULL,
-	"name" varchar(255),
-	"slug" varchar(255),
-	"entity_type" varchar(20) NOT NULL,
-	"entity_id" integer,
-	"provider" varchar(50) NOT NULL,
-	"credentials" text NOT NULL,
-	"previous_credentials" text,
-	"credentials_rotated_at" timestamp,
-	"is_active" boolean DEFAULT true NOT NULL,
-	"metadata" jsonb,
-	"created_by_user_id" integer,
-	"updated_by_user_id" integer,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"deleted_at" timestamp,
-	CONSTRAINT "oauth_providers_public_id_unique" UNIQUE("public_id"),
-	CONSTRAINT "oauth_providers_entity_provider_unique" UNIQUE("entity_type","entity_id","provider")
-);
---> statement-breakpoint
 CREATE TABLE "payment_configurations" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"public_id" varchar(255) NOT NULL,
@@ -249,10 +209,6 @@ CREATE TABLE "projects" (
 	"description" text,
 	"owner_user_id" integer NOT NULL,
 	"is_active" boolean DEFAULT true NOT NULL,
-	"google_client_id" text,
-	"google_client_secret" text,
-	"github_client_id" text,
-	"github_client_secret" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "projects_public_id_unique" UNIQUE("public_id"),
@@ -298,8 +254,6 @@ CREATE TABLE "users" (
 	CONSTRAINT "users_public_id_unique" UNIQUE("public_id")
 );
 --> statement-breakpoint
-ALTER TABLE "app_oauth_selections" ADD CONSTRAINT "app_oauth_selections_app_id_apps_id_fk" FOREIGN KEY ("app_id") REFERENCES "public"."apps"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "app_oauth_selections" ADD CONSTRAINT "app_oauth_selections_oauth_provider_id_oauth_providers_id_fk" FOREIGN KEY ("oauth_provider_id") REFERENCES "public"."oauth_providers"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "apps" ADD CONSTRAINT "apps_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_app_id_apps_id_fk" FOREIGN KEY ("app_id") REFERENCES "public"."apps"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
@@ -313,8 +267,6 @@ ALTER TABLE "invitations" ADD CONSTRAINT "invitations_consumed_by_user_id_users_
 ALTER TABLE "licenses" ADD CONSTRAINT "licenses_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "licenses" ADD CONSTRAINT "licenses_app_id_apps_id_fk" FOREIGN KEY ("app_id") REFERENCES "public"."apps"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "licenses" ADD CONSTRAINT "licenses_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "public"."plans"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "oauth_providers" ADD CONSTRAINT "oauth_providers_created_by_user_id_users_id_fk" FOREIGN KEY ("created_by_user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "oauth_providers" ADD CONSTRAINT "oauth_providers_updated_by_user_id_users_id_fk" FOREIGN KEY ("updated_by_user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payment_providers" ADD CONSTRAINT "payment_providers_created_by_user_id_users_id_fk" FOREIGN KEY ("created_by_user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payment_providers" ADD CONSTRAINT "payment_providers_updated_by_user_id_users_id_fk" FOREIGN KEY ("updated_by_user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "project_invitations" ADD CONSTRAINT "project_invitations_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
@@ -326,8 +278,6 @@ ALTER TABLE "projects" ADD CONSTRAINT "projects_owner_user_id_users_id_fk" FOREI
 ALTER TABLE "provider_usage_logs" ADD CONSTRAINT "provider_usage_logs_app_id_apps_id_fk" FOREIGN KEY ("app_id") REFERENCES "public"."apps"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "provider_usage_logs" ADD CONSTRAINT "provider_usage_logs_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "app_oauth_selections_app_id_idx" ON "app_oauth_selections" USING btree ("app_id");--> statement-breakpoint
-CREATE INDEX "app_oauth_selections_provider_id_idx" ON "app_oauth_selections" USING btree ("oauth_provider_id");--> statement-breakpoint
 CREATE INDEX "apps_project_id_idx" ON "apps" USING btree ("project_id");--> statement-breakpoint
 CREATE INDEX "audit_logs_user_id_idx" ON "audit_logs" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "audit_logs_app_id_idx" ON "audit_logs" USING btree ("app_id");--> statement-breakpoint
@@ -351,8 +301,6 @@ CREATE INDEX "licenses_user_id_idx" ON "licenses" USING btree ("user_id");--> st
 CREATE INDEX "licenses_app_id_idx" ON "licenses" USING btree ("app_id");--> statement-breakpoint
 CREATE INDEX "licenses_plan_id_idx" ON "licenses" USING btree ("plan_id");--> statement-breakpoint
 CREATE INDEX "licenses_status_idx" ON "licenses" USING btree ("status");--> statement-breakpoint
-CREATE INDEX "oauth_providers_entity_idx" ON "oauth_providers" USING btree ("entity_type","entity_id");--> statement-breakpoint
-CREATE INDEX "oauth_providers_provider_idx" ON "oauth_providers" USING btree ("provider");--> statement-breakpoint
 CREATE INDEX "payment_configurations_scope_idx" ON "payment_configurations" USING btree ("scope_type","scope_id");--> statement-breakpoint
 CREATE INDEX "payment_configurations_provider_idx" ON "payment_configurations" USING btree ("provider");--> statement-breakpoint
 CREATE INDEX "payment_providers_entity_idx" ON "payment_providers" USING btree ("entity_type","entity_id");--> statement-breakpoint

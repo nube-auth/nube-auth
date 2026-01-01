@@ -1,10 +1,10 @@
 # Proofa Implementation Specification (Final)
 
-**Version:** 1.0.0  
-**Last Updated:** December 14, 2025  
+**Version:** 1.1.0  
+**Last Updated:** January 1, 2026  
 **Status:** MVP Implementation Contract — Ready for Development
 
-> This is the **single source of truth** for building Proofa. It consolidates V0 (original flows) and V1 (structure decisions) with final architectural choices: multi-tenant projects, nanoid-based IDs, per-app configurable session TTLs + other settings, separate dashboards, OAuth-only auth, global API rate limiting, Zod validation, audit logging, and 7-day rolling core sessions.
+> This is the **single source of truth** for building Proofa. It consolidates V0 (original flows) and V1 (structure decisions) with final architectural choices: multi-tenant projects, nanoid-based IDs, per-app configurable session TTLs + other settings, separate dashboards, OAuth-only auth (platform-level credentials), global API rate limiting, Zod validation, audit logging, and 7-day rolling core sessions.
 
 ---
 
@@ -105,9 +105,10 @@
 - **Build Orchestration**: Turbo
 
 ### Authentication
-- **OAuth**: Google, GitHub (extendable)
+- **OAuth**: Google, GitHub (extendable) - **Platform-level credentials only**
 - **Session Storage**: Cookie (Core) + Redis (Gateway)
 - **Email Verification**: OTP-only (6-digit, **Core/Proofa login only**, not app verification)
+- **Provider Selection**: Apps select which OAuth providers to enable (google, github, etc.)
 
 ---
 
@@ -206,7 +207,9 @@ Foreign keys reference internal `id`. Public IDs are for API responses and loggi
 | `public_id` | TEXT | NO | UNIQUE | Externally exposed (P0xxx format) |
 | `name` | TEXT | NO | | Project name |
 | `slug` | TEXT | NO | UNIQUE | URL-safe identifier |
+| `description` | TEXT | YES | | Project description |
 | `owner_user_id` | INTEGER | NO | FK → users.id | Project owner |
+| `is_active` | BOOLEAN | NO | DEFAULT true | Project active status |
 | `created_at` | INTEGER | NO | | Epoch seconds |
 | `updated_at` | INTEGER | NO | | Epoch seconds |
 
@@ -231,9 +234,10 @@ Foreign keys reference internal `id`. Public IDs are for API responses and loggi
 | `project_id` | INTEGER | NO | FK → projects.id | |
 | `name` | TEXT | NO | | Display name |
 | `slug` | TEXT | NO | | URL-safe identifier |
+| `description` | TEXT | YES | | App description |
 | `allowed_hosts` | TEXT | NO | | JSON array of domains |
 | `redirect_uris` | TEXT | NO | | JSON array of valid redirect URIs |
-| `required_providers` | TEXT | NO | | JSON array (e.g., ["google", "github"]) |
+| `enabled_providers` | TEXT | NO | DEFAULT '["google"]' | JSON array of enabled OAuth providers (e.g., ["google", "github"]) |
 | `is_active` | BOOLEAN | NO | DEFAULT true | |
 | `licensing_required` | BOOLEAN | NO | DEFAULT true | |
 | `default_license_plan` | TEXT | NO | DEFAULT "free" | Enum: free or trial |

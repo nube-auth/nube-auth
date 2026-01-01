@@ -1,4 +1,4 @@
-import { appQueries, getDb, identityQueries, invitationQueries, licenseQueries, paymentConfigQueries, planQueries, projectInvitationQueries, projectMemberQueries, projectQueries, userQueries, sessionQueries, oauthProviderQueries, paymentProviderQueries, oauth_providers, payment_providers, and, eq, isNull, desc } from "@proofa/db";
+import { appQueries, getDb, identityQueries, invitationQueries, licenseQueries, paymentConfigQueries, planQueries, projectInvitationQueries, projectMemberQueries, projectQueries, userQueries, sessionQueries, paymentProviderQueries, payment_providers, and, eq, isNull, desc } from "@proofa/db";
 import { createId, encrypt, decrypt, isEncrypted, maskSecret, createLogger, serializeError, AuditEventType } from "@proofa/shared";
 import { 
 	InviteAppUserRequestSchema, 
@@ -285,10 +285,6 @@ adminRoutes.get("/projects/:projectId", async (c: Context) => {
 			name: project.name,
 			slug: project.slug,
 			description: project.description || null,
-			googleClientId: project.google_client_id || undefined,
-			googleClientSecret: project.google_client_secret ? maskSecret(project.google_client_secret) : undefined,
-			githubClientId: project.github_client_id || undefined,
-			githubClientSecret: project.github_client_secret ? maskSecret(project.github_client_secret) : undefined,
 			createdAt: project.created_at,
 			updatedAt: project.updated_at,
 		});
@@ -367,83 +363,7 @@ adminRoutes.patch("/projects/:projectId", async (c: Context) => {
 	}
 });
 
-/**
- * PATCH /v1/admin/projects/:projectId/oauth
- * Update project OAuth configuration
- */
-adminRoutes.patch("/projects/:projectId/oauth", async (c: Context) => {
-	try {
-		const auth = getAuth(c);
-		const projectId = c.req.param("projectId");
-		const body = await c.req.json();
 
-		const db = getDb();
-
-		const project = await projectQueries.findByPublicId(db, projectId);
-
-		if (!project) {
-			return c.json({ error: "Project not found" }, 404);
-		}
-
-		// Get user by public ID
-		const user = await userQueries.findByPublicId(db, auth.userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
-
-		// Check user is member with owner or admin role
-		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
-
-		if (!member || (member.role !== "owner" && member.role !== "admin")) {
-			return c.json({ error: "Access denied" }, 403);
-		}
-
-		// Validate request
-		const validatedData = z.object({
-			googleClientId: z.string().optional(),
-			googleClientSecret: z.string().optional(),
-			githubClientId: z.string().optional(),
-			githubClientSecret: z.string().optional(),
-		}).parse(body);
-
-		// Update project OAuth credentials
-		const now = new Date();
-		const updateData: Record<string, string | number | null> = {
-			updated_at: now,
-		};
-
-		if (validatedData.googleClientId !== undefined) updateData.google_client_id = validatedData.googleClientId || null;
-		if (validatedData.googleClientSecret !== undefined) {
-			updateData.google_client_secret = validatedData.googleClientSecret ? encrypt(validatedData.googleClientSecret) : null;
-		}
-		if (validatedData.githubClientId !== undefined) updateData.github_client_id = validatedData.githubClientId || null;
-		if (validatedData.githubClientSecret !== undefined) {
-			updateData.github_client_secret = validatedData.githubClientSecret ? encrypt(validatedData.githubClientSecret) : null;
-		}
-
-		const updatedProjects = await projectQueries.update(db, project.id, updateData);
-		const updatedProject = updatedProjects[0];
-
-		if (!updatedProject) {
-			return c.json({ error: "Failed to update project OAuth configuration" }, 500);
-		}
-
-		return c.json({
-			googleClientId: updatedProject.google_client_id || undefined,
-			googleClientSecret: updatedProject.google_client_secret ? maskSecret(updatedProject.google_client_secret) : undefined,
-			githubClientId: updatedProject.github_client_id || undefined,
-			githubClientSecret: updatedProject.github_client_secret ? maskSecret(updatedProject.github_client_secret) : undefined,
-		});
-	} catch (error) {
-		if (error instanceof z.ZodError) {
-			log.warn({ errors: error.errors }, "Validation error");
-			return c.json({ error: "Invalid request data", details: error.errors }, 400);
-		}
-		log.error({ err: serializeError(error as Error) }, "Update project OAuth error:");
-		return c.json({ error: "Failed to update project OAuth configuration" }, 500);
-	}
-});
 
 /**
  * GET /v1/admin/projects/:projectId/stats
@@ -627,10 +547,72 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			cache_ttl_minutes: 60,
 			cors_origins: ["http://localhost:3001"],
 			rate_limit: 100,
-			oauth_inherit_source: "proofa", // Default to inheriting from Proofa
 			created_at: now,
 			updated_at: now,
 		});
+
+		// Step 2: If licensing is enabled, create default license plan
+		let defaultPlanId: number | undefined;
+		if (validatedData.requiresLicensing && validatedData.defaultLicensePlan) {
+			const planData = validatedData.defaultLicensePlan;
+			const planSlug = planData.slug || planData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+			// Convert price and billing period to database format
+			let monthlyPrice: number | null = null;
+			let yearlyPrice: number | null = null;
+			let oneTimePrice: number | null = null;
+			let durationDays: number | null = null;
+
+			// Convert price to cents
+			const priceInCents = Math.round(planData.price * 100);
+
+			if (planData.billing_period === "none") {
+				// No billing - completely free plan
+				monthlyPrice = null;
+				yearlyPrice = null;
+				oneTimePrice = null;
+				durationDays = null;
+			} else if (planData.billing_period === "monthly") {
+				monthlyPrice = priceInCents;
+				durationDays = null;
+			} else if (planData.billing_period === "yearly") {
+				yearlyPrice = priceInCents;
+				durationDays = null;
+			} else if (planData.billing_period === "lifetime") {
+				oneTimePrice = priceInCents;
+				durationDays = null;
+			} else if (planData.billing_period === "custom") {
+				oneTimePrice = priceInCents;
+				durationDays = planData.trial_days || 30;
+			}
+
+			const defaultPlan = await planQueries.create(db, {
+				public_id: createId("plan"),
+				app_id: app.id,
+				name: planData.name,
+				slug: planSlug,
+				description: planData.description || null,
+				monthly_price: monthlyPrice,
+				yearly_price: yearlyPrice,
+				one_time_price: oneTimePrice,
+				duration_days: durationDays,
+				trial_enabled: (planData.trial_days || 0) > 0,
+				trial_days: planData.trial_days || null,
+				features: planData.features || null,
+				status: "active",
+				display_order: 0,
+				created_at: now,
+				updated_at: now,
+			});
+
+			defaultPlanId = defaultPlan.id;
+
+			// Update app with default_plan_id
+			await appQueries.update(db, app.id, {
+				default_plan_id: defaultPlanId,
+				updated_at: now,
+			});
+		}
 
 		// Validate and return response
 		const appDTO = AppDTOSchema.parse({
@@ -648,13 +630,9 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			accountLockoutMinutes: app.account_lockout_minutes,
 			cacheTtlMinutes: app.cache_ttl_minutes,
 			rateLimit: app.rate_limit,
-			oauthInheritSource: (app.oauth_inherit_source || "proofa") as "proofa" | "project" | "app",
-			googleClientId: app.google_client_id || undefined,
-			googleClientSecret: app.google_client_secret ? maskSecret(app.google_client_secret) : undefined,
-			githubClientId: app.github_client_id || undefined,
-			githubClientSecret: app.github_client_secret ? maskSecret(app.github_client_secret) : undefined,
-			createdAt: app.created_at,
-			updatedAt: app.updated_at,
+			enabledProviders: (app.enabled_providers || ["google"]) as string[],
+			createdAt: new Date(app.created_at),
+			updatedAt: new Date(app.updated_at),
 		});
 
 		return c.json(appDTO, 201);
@@ -722,13 +700,9 @@ adminRoutes.get("/projects/:projectId/apps/:appId", async (c: Context) => {
 			cacheTtlMinutes: app.cache_ttl_minutes,
 			selectedPaymentProviderId: app.selected_payment_provider_id,
 			rateLimit: app.rate_limit,
-			oauthInheritSource: (app.oauth_inherit_source || "proofa") as "proofa" | "project" | "app",
-			googleClientId: app.google_client_id || undefined,
-			googleClientSecret: app.google_client_secret ? maskSecret(app.google_client_secret) : undefined,
-			githubClientId: app.github_client_id || undefined,
-			githubClientSecret: app.github_client_secret ? maskSecret(app.github_client_secret) : undefined,
-			createdAt: app.created_at,
-			updatedAt: app.updated_at,
+			enabledProviders: (app.enabled_providers || ["google"]) as string[],
+			createdAt: new Date(app.created_at),
+			updatedAt: new Date(app.updated_at),
 		});
 
 		return c.json(appDTO);
@@ -1023,7 +997,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 
 			// Create new invitation for existing user who hasn't logged into the app
 			const invitationId = createId("invitation");
-			const expiresAt = now + 7 * 24 * 60 * 60; // 7 days
+			const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
 			const invitation = await invitationQueries.create(db, {
 				public_id: invitationId,
@@ -1080,9 +1054,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 
 		// User doesn't exist - create invitation
 		const invitationId = createId("invitation");
-		const expiresAt = now + 7 * 24 * 60 * 60; // 7 days
-
-		// Check for existing pending invitation
+	const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days
 		const existingInvitation = await invitationQueries.findPendingByEmailAndApp(db, email.toLowerCase(), app.id);
 
 		if (existingInvitation) {
@@ -1463,12 +1435,12 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/:userId/renew", async (
 
 		// Calculate new valid_until
 		const now = new Date();
-		let newValidUntil: number | null = null;
+		let newValidUntil: Date | null = null;
 
 		if (plan.duration_days) {
 			// Start from current valid_until if it's in the future, otherwise start from now
 			const startFrom = license.valid_until && license.valid_until > now ? license.valid_until : now;
-			newValidUntil = startFrom + (plan.duration_days * 24 * 60 * 60);
+			newValidUntil = new Date(startFrom.getTime() + plan.duration_days * 24 * 60 * 60 * 1000);
 		}
 		// If plan.duration_days is null, newValidUntil stays null (lifetime)
 
@@ -1556,30 +1528,9 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 		if (validatedData.accountLockoutMinutes) updateData.account_lockout_minutes = validatedData.accountLockoutMinutes;
 		if (validatedData.cacheTtlMinutes) updateData.cache_ttl_minutes = validatedData.cacheTtlMinutes;
 
-		// Handle OAuth inheritance source
-		const newInheritSource = validatedData.oauthInheritSource ?? app.oauth_inherit_source ?? "proofa";
-		if (validatedData.oauthInheritSource !== undefined) {
-			updateData.oauth_inherit_source = validatedData.oauthInheritSource;
-		}
-
-		// Handle OAuth credentials with encryption (only if inherit_source is 'app')
-		if (newInheritSource === "app") {
-			if (validatedData.googleClientId !== undefined) updateData.google_client_id = validatedData.googleClientId;
-			if (validatedData.googleClientSecret !== undefined) {
-				// Encrypt the secret before storing
-				updateData.google_client_secret = validatedData.googleClientSecret ? encrypt(validatedData.googleClientSecret) : null;
-			}
-			if (validatedData.githubClientId !== undefined) updateData.github_client_id = validatedData.githubClientId;
-			if (validatedData.githubClientSecret !== undefined) {
-				// Encrypt the secret before storing
-				updateData.github_client_secret = validatedData.githubClientSecret ? encrypt(validatedData.githubClientSecret) : null;
-			}
-		} else if (validatedData.oauthInheritSource !== undefined && validatedData.oauthInheritSource !== "app") {
-			// If switching away from 'app', clear app-specific OAuth credentials
-			updateData.google_client_id = null;
-			updateData.google_client_secret = null;
-			updateData.github_client_id = null;
-			updateData.github_client_secret = null;
+		// Handle enabled providers
+		if (validatedData.enabledProviders !== undefined) {
+			updateData.enabled_providers = validatedData.enabledProviders;
 		}
 
 		const updatedApps = await appQueries.update(db, app.id, updateData);
@@ -1605,13 +1556,9 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 			accountLockoutMinutes: updatedApp.account_lockout_minutes,
 			cacheTtlMinutes: updatedApp.cache_ttl_minutes,
 			rateLimit: updatedApp.rate_limit,
-			oauthInheritSource: (updatedApp.oauth_inherit_source || "proofa") as "proofa" | "project" | "app",
-			googleClientId: updatedApp.google_client_id || undefined,
-			googleClientSecret: updatedApp.google_client_secret ? maskSecret(updatedApp.google_client_secret) : undefined,
-			githubClientId: updatedApp.github_client_id || undefined,
-			githubClientSecret: updatedApp.github_client_secret ? maskSecret(updatedApp.github_client_secret) : undefined,
-			createdAt: updatedApp.created_at,
-			updatedAt: updatedApp.updated_at,
+			enabledProviders: (updatedApp.enabled_providers || ["google"]) as string[],
+			createdAt: new Date(updatedApp.created_at),
+			updatedAt: new Date(updatedApp.updated_at),
 		});
 
 		return c.json(appDTO);
@@ -1818,7 +1765,7 @@ adminRoutes.get("/projects/:projectId/members", async (c: Context) => {
 						email: memberUser?.primary_email,
 						name: memberUser?.name,
 						role: m.role,
-						createdAt: m.created_at,
+						createdAt: new Date(m.created_at),
 					};
 				}),
 			),
@@ -1866,7 +1813,8 @@ adminRoutes.post("/projects/:projectId/members", async (c: Context) => {
 		}
 
 		// Check if requesting user has permission (must be owner or admin)
-		const requestingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
+		const requestingMembers = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
+		const requestingMember = requestingMembers[0];
 
 		if (!requestingMember || (requestingMember.role !== "owner" && requestingMember.role !== "admin")) {
 			return c.json({ error: "Access denied. Only owners and admins can invite members" }, 403);
@@ -1878,7 +1826,8 @@ adminRoutes.post("/projects/:projectId/members", async (c: Context) => {
 
 		if (targetUser) {
 			// User exists - check if already a member
-			const existingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, targetUser.id);
+			const existingMembers = await projectMemberQueries.findByProjectAndUser(db, project.id, targetUser.id);
+			const existingMember = existingMembers[0];
 
 			if (existingMember) {
 				return c.json({ error: "User is already a member of this project" }, 400);
@@ -1893,26 +1842,36 @@ adminRoutes.post("/projects/:projectId/members", async (c: Context) => {
 				created_at: now,
 			});
 
-			return c.json({
+			const memberResponse = {
 				type: "member",
 				id: newMember.public_id,
 				userId: targetUser.public_id,
 				email: targetUser.primary_email,
 				name: targetUser.name,
 				role: newMember.role,
-				createdAt: newMember.created_at,
-			});
+				createdAt: new Date(newMember.created_at),
+			};
+
+			log.info({
+				rawCreatedAt: newMember.created_at,
+				createdAtType: typeof newMember.created_at,
+				convertedCreatedAt: memberResponse.createdAt,
+				convertedType: typeof memberResponse.createdAt,
+				isDate: memberResponse.createdAt instanceof Date,
+			}, "Member response data before JSON");
+
+			return c.json(memberResponse);
 		}
 
 		// User doesn't exist - create invitation
-		const existingInvitation = await projectInvitationQueries.findByProjectAndEmail(db, project.id, email);
-
+	const existingInvitations = await projectInvitationQueries.findByProjectAndEmail(db, project.id, email);
+	const existingInvitation = existingInvitations[0];
 		if (existingInvitation && existingInvitation.status === "pending") {
 			return c.json({ error: "An invitation for this email already exists" }, 400);
 		}
 
 		// Create invitation (expires in 7 days)
-		const expiresAt = now + 7 * 24 * 60 * 60;
+		const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 		const invitation = await projectInvitationQueries.create(db, {
 			public_id: createId("invitation"),
 			project_id: project.id,
@@ -1943,16 +1902,29 @@ adminRoutes.post("/projects/:projectId/members", async (c: Context) => {
 			// Don't fail the request if email fails
 		}
 
-		return c.json({
+		const invitationResponse = {
 			type: "invitation",
 			id: invitation.id,
 			invitationId: invitation.public_id,
 			email: invitation.email,
 			role: invitation.role,
 			status: invitation.status,
-			createdAt: invitation.created_at,
-			expiresAt: invitation.expires_at,
-		});
+			createdAt: new Date(invitation.created_at),
+			expiresAt: new Date(invitation.expires_at),
+		};
+
+		log.info({
+			rawCreatedAt: invitation.created_at,
+			createdAtType: typeof invitation.created_at,
+			rawExpiresAt: invitation.expires_at,
+			expiresAtType: typeof invitation.expires_at,
+			convertedCreatedAt: invitationResponse.createdAt,
+			convertedExpiresAt: invitationResponse.expiresAt,
+			createdAtIsDate: invitationResponse.createdAt instanceof Date,
+			expiresAtIsDate: invitationResponse.expiresAt instanceof Date,
+		}, "Invitation response data before JSON");
+
+		return c.json(invitationResponse);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Invite project member error:");
 		return c.json({ error: "Failed to invite project member" }, 500);
@@ -1997,7 +1969,8 @@ adminRoutes.patch("/projects/:projectId/members/:memberId", async (c: Context) =
 		}
 
 		// Check if requesting user has permission (must be owner)
-		const requestingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
+		const requestingMembers = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
+		const requestingMember = requestingMembers[0];
 
 		if (!requestingMember || requestingMember.role !== "owner") {
 			return c.json({ error: "Access denied. Only owners can change member roles" }, 403);
@@ -2026,7 +1999,7 @@ adminRoutes.patch("/projects/:projectId/members/:memberId", async (c: Context) =
 			email: memberUser?.primary_email,
 			name: memberUser?.name,
 			role: updatedMember.role,
-			createdAt: updatedMember.created_at,
+			createdAt: new Date(updatedMember.created_at),
 		});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Update member role error:");
@@ -2059,8 +2032,8 @@ adminRoutes.delete("/projects/:projectId/members/:memberId", async (c: Context) 
 		}
 
 		// Check if requesting user has permission (must be owner or admin)
-		const requestingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
-
+	const requestingMembers = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
+	const requestingMember = requestingMembers[0];
 		if (!requestingMember || (requestingMember.role !== "owner" && requestingMember.role !== "admin")) {
 			return c.json({ error: "Access denied. Only owners and admins can remove members" }, 403);
 		}
@@ -2125,8 +2098,8 @@ adminRoutes.get("/projects/:projectId/invitations", async (c: Context) => {
 				email: inv.email,
 				role: inv.role,
 				status: inv.status,
-				createdAt: inv.created_at,
-				expiresAt: inv.expires_at,
+				createdAt: new Date(inv.created_at),
+				expiresAt: new Date(inv.expires_at),
 			})),
 		});
 	} catch (error) {
@@ -2144,10 +2117,20 @@ adminRoutes.post("/invitations/:invitationCode/accept", async (c: Context) => {
 		const auth = getAuth(c);
 		const invitationCode = c.req.param("invitationCode");
 
+		log.info({
+			invitationCode,
+			userId: auth.userId,
+		}, "Accept invitation request");
+
 		const db = getDb();
 
 		// Get the invitation
 		const invitation = await projectInvitationQueries.findByPublicId(db, invitationCode);
+
+		log.info({
+			invitation: !!invitation,
+			status: invitation?.status,
+		}, "Invitation lookup");
 
 		if (!invitation) {
 			return c.json({ error: "Invitation not found" }, 404);
@@ -2170,6 +2153,11 @@ adminRoutes.post("/invitations/:invitationCode/accept", async (c: Context) => {
 			return c.json({ error: "User not found" }, 404);
 		}
 
+		log.info({
+			userEmail: user.primary_email,
+			invitationEmail: invitation.email,
+		}, "Email comparison");
+
 		// Check if email matches
 		if (user.primary_email?.toLowerCase() !== invitation.email.toLowerCase()) {
 			return c.json({ error: "This invitation is for a different email address" }, 403);
@@ -2182,7 +2170,16 @@ adminRoutes.post("/invitations/:invitationCode/accept", async (c: Context) => {
 		}
 
 		// Check if user is already a member
-		const existingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const existingMembers = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
+		const existingMember = existingMembers[0];
+
+		log.info({
+			existingMembers: existingMembers.length,
+			existingMember: !!existingMember,
+			userId: user.id,
+			projectId: project.id,
+		}, "Checking existing member");
+
 		if (existingMember) {
 			// Mark invitation as accepted anyway
 			await projectInvitationQueries.updateByPublicId(db, invitationCode, { status: "accepted" });
@@ -2197,6 +2194,12 @@ adminRoutes.post("/invitations/:invitationCode/accept", async (c: Context) => {
 		}
 
 		// Add user as project member
+		log.info({
+			userId: user.id,
+			projectId: project.id,
+			role: invitation.role,
+		}, "Creating new project member");
+
 		const newMember = await projectMemberQueries.create(db, {
 			public_id: createId("projectMember"),
 			project_id: project.id,
@@ -2205,8 +2208,15 @@ adminRoutes.post("/invitations/:invitationCode/accept", async (c: Context) => {
 			created_at: now,
 		});
 
+		log.info({
+			newMemberId: newMember.public_id,
+			memberRole: newMember.role,
+		}, "Member created successfully");
+
 		// Mark invitation as accepted
 		await projectInvitationQueries.updateByPublicId(db, invitationCode, { status: "accepted" });
+
+		log.info("Invitation marked as accepted");
 
 		return c.json({
 			success: true,
@@ -2251,8 +2261,8 @@ adminRoutes.delete("/projects/:projectId/invitations/:invitationId", async (c: C
 		}
 
 		// Check if requesting user has permission (must be owner or admin)
-		const requestingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
-
+	const requestingMembers = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
+	const requestingMember = requestingMembers[0];
 		if (!requestingMember || (requestingMember.role !== "owner" && requestingMember.role !== "admin")) {
 			return c.json({ error: "Access denied. Only owners and admins can cancel invitations" }, 403);
 		}

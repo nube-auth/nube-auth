@@ -78,7 +78,7 @@ export {
 	userQueries,
 } from "./queries.js";
 // Export provider helpers
-export { oauthProviderQueries, paymentProviderQueries } from "./providers.js";
+export { paymentProviderQueries } from "./providers.js";
 // Export schema for migrations and types
 export * from "./schema.js";
 

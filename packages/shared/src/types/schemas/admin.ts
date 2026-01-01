@@ -33,10 +33,6 @@ export const ProjectDTOSchema = z.object({
 	name: NameSchema,
 	slug: SlugSchema,
 	description: z.string().optional(),
-	googleClientId: z.string().optional(),
-	googleClientSecret: z.string().optional(), // Masked in API response
-	githubClientId: z.string().optional(),
-	githubClientSecret: z.string().optional(), // Masked in API response
 	createdAt: z.coerce.date().optional(),
 	updatedAt: z.coerce.date().optional(),
 	totalApps: z.number().optional(),
@@ -61,25 +57,25 @@ export const CreateAppRequestSchema = z.object({
 	redirectUris: RedirectUrisSchema,
 	allowedHosts: AllowedHostsSchema,
 	sessionTtlDays: AppSessionTtlDaysSchema.default(28),
+	enabledProviders: z.array(z.enum(["google", "github"])).optional().default(["google", "github"]),
+	requiresLicensing: z.boolean().default(false),
+	defaultLicensePlan: z.object({
+		name: NameSchema,
+		slug: SlugSchema.optional(),
+		description: DescriptionSchema,
+		price: z.number().min(0).max(999999.99),
+		currency: z.string().length(3).regex(/^[A-Z]{3}$/, "Currency must be 3-letter ISO code").default("USD"),
+		billing_period: z.enum(["none", "monthly", "yearly", "lifetime", "custom"]).default("none"),
+		trial_days: TrialDaysSchema,
+		features: z.record(z.any()).optional(),
+	}).optional(),
 });
 
 export const UpdateAppRequestSchema = CreateAppRequestSchema.partial().extend({
-	oauthInheritSource: z.enum(["proofa", "project", "app"]).optional(),
-	googleClientId: z.string().optional(),
-	googleClientSecret: z.string().optional(),
-	githubClientId: z.string().optional(),
-	githubClientSecret: z.string().optional(),
 	corsOrigins: z.array(z.string()).optional(),
 	rateLimit: z.number().int().positive().optional(),
 	accountLockoutMinutes: z.number().int().positive().optional(),
 	cacheTtlMinutes: z.number().int().positive().optional(),
-});
-
-export const UpdateProjectOAuthRequestSchema = z.object({
-	googleClientId: z.string().optional(),
-	googleClientSecret: z.string().optional(),
-	githubClientId: z.string().optional(),
-	githubClientSecret: z.string().optional(),
 });
 
 /**
@@ -209,11 +205,7 @@ export const AppDTOSchema = z.object({
 	accountLockoutMinutes: z.number(),
 	cacheTtlMinutes: z.number(),
 	rateLimit: z.number(),
-	oauthInheritSource: z.enum(["proofa", "project", "app"]),
-	googleClientId: z.string().optional(),
-	googleClientSecret: z.string().optional(), // Masked in API response
-	githubClientId: z.string().optional(),
-	githubClientSecret: z.string().optional(), // Masked in API response
+	enabledProviders: z.array(z.string()),
 	selectedPaymentProviderId: z.number().nullable().optional(),
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
@@ -275,7 +267,6 @@ export type ProjectsListResponse = z.infer<typeof ProjectsListResponseSchema>;
 
 export type CreateAppRequest = z.infer<typeof CreateAppRequestSchema>;
 export type UpdateAppRequest = z.infer<typeof UpdateAppRequestSchema>;
-export type UpdateProjectOAuthRequest = z.infer<typeof UpdateProjectOAuthRequestSchema>;
 export type AppDTO = z.infer<typeof AppDTOSchema>;
 export type AppsListResponse = z.infer<typeof AppsListResponseSchema>;
 

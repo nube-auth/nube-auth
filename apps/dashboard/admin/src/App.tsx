@@ -23,7 +23,6 @@ import { ProjectAppsPage } from "./pages/ProjectApps";
 import { ProjectSettingsPage } from "./pages/ProjectSettings";
 import ProjectPaymentSettingsPage from "./pages/ProjectPaymentSettings";
 import ProjectPaymentProvidersPage from "./pages/ProjectPaymentProviders";
-import ProjectOAuthPage from "./pages/ProjectOAuth";
 import AppPaymentSettingsPage from "./pages/AppPaymentSettings";
 import { ProjectStatsPage } from "./pages/ProjectStats";
 import { ProjectTeamPage } from "./pages/ProjectTeam";
@@ -716,14 +715,6 @@ function App() {
 					element={
 						<ProtectedLayout>
 							<ProjectPaymentProvidersPage />
-						</ProtectedLayout>
-					}
-				/>
-				<Route
-					path="/projects/:projectId/oauth"
-					element={
-						<ProtectedLayout>
-							<ProjectOAuthPage />
 						</ProtectedLayout>
 					}
 				/>

@@ -1,6 +1,7 @@
 import { createSessionCookie, parseSessionCookie } from "@proofa/auth";
 import { createLogger, serializeError, GatewayLoginRequestSchema } from "@proofa/shared";
 import { sessionStore } from "@proofa/cache";
+import { getDb, sessionQueries } from "@proofa/db";
 import crypto from "node:crypto";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -221,36 +222,175 @@ authRoutes.post("/logout", async (c: Context) => {
 		const audience = inferAudience(c);
 		const cookieDomain = process.env.COOKIE_DOMAIN;
 
-		// Get the session token from cookie before clearing it
-		const cookieName = audience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
-		const sessionToken = getCookie(c, cookieName);
+		log.info({
+			audience,
+			isProduction,
+			cookieDomain,
+		}, "Logout request received");
 
-		// Delete session from Redis if it exists
-		if (sessionToken) {
-			await sessionService.deleteSession(sessionToken);
-			log.info({ sessionToken: sessionToken.substring(0, 8) + "..." }, "Session deleted from Redis");
+		// Check which session cookie actually exists (admin or user)
+		const adminCookie = getCookie(c, ADMIN_SESSION_COOKIE);
+		const userCookie = getCookie(c, USER_SESSION_COOKIE);
+		
+		// Determine actual cookie name and value based on what exists
+		let cookieName: string;
+		let sessionCookie: string | undefined;
+		
+		if (adminCookie) {
+			cookieName = ADMIN_SESSION_COOKIE;
+			sessionCookie = adminCookie;
+			log.info("Found admin session cookie, will delete admin session");
+		} else if (userCookie) {
+			cookieName = USER_SESSION_COOKIE;
+			sessionCookie = userCookie;
+			log.info("Found user session cookie, will delete user session");
+		} else {
+			// Neither cookie exists, try to clear based on inferred audience
+			cookieName = audience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
+			sessionCookie = undefined;
+			log.warn({ inferredAudience: audience }, "No session cookie found, will clear based on inferred audience");
 		}
 
-		// Clear the session cookie
-		setCookie(c, cookieName, "", {
-			httpOnly: true,
-			secure: isProduction,
-			sameSite: "Lax",
-			path: "/",
-			domain: cookieDomain,
-			maxAge: 0, // Clear cookie
-		});
+		log.info({
+			cookieName,
+			hasSessionCookie: !!sessionCookie,
+			sessionCookiePreview: sessionCookie ? sessionCookie.substring(0, 8) + "..." : null,
+		}, "Session cookie info");
 
-		// Back-compat: clear legacy cookie when logging out of user session.
-		if (audience === "user") {
-			setCookie(c, LEGACY_SESSION_COOKIE, "", {
+		// Parse the signed cookie to get the actual session ID
+		if (sessionCookie) {
+			try {
+				const sessionId = parseSessionCookie(sessionCookie);
+				if (sessionId) {
+					log.info({ 
+						sessionId: sessionId.substring(0, 8) + "...", 
+						cookieName,
+						audience 
+					}, "Starting session deletion");
+					
+					// Verify session exists before deletion
+					const appSessionBefore = await sessionStore.getAppSession(sessionId);
+					log.info({ 
+						sessionExists: !!appSessionBefore,
+						userId: appSessionBefore?.userId,
+						appId: appSessionBefore?.appId 
+					}, "App session before deletion");
+					
+					// Get Core session ID to revoke database session
+					const coreSessionId = appSessionBefore?.metadata?.coreSessionId as string | undefined;
+					
+					// Delete from all three stores:
+					// 1. Delete from sessionService (gateway:session:xxx)
+					await sessionService.deleteSession(sessionId);
+					log.info({ sessionId: sessionId.substring(0, 8) + "..." }, "Gateway session deleted from Redis");
+					
+					// 2. Delete from sessionStore (session:app:xxx) - this is what auth middleware checks!
+					await sessionStore.revokeAppSession(sessionId);
+					log.info({ sessionId: sessionId.substring(0, 8) + "..." }, "App session deleted from Redis");
+					
+					// 3. Revoke Core database session
+					if (coreSessionId) {
+						try {
+							const db = getDb();
+							const dbSession = await sessionQueries.findByPublicId(db, coreSessionId);
+							if (dbSession) {
+								await sessionQueries.revoke(db, dbSession.id);
+								log.info({ coreSessionId: coreSessionId.substring(0, 8) + "..." }, "Core database session revoked");
+							} else {
+								log.warn({ coreSessionId: coreSessionId.substring(0, 8) + "..." }, "Core database session not found");
+							}
+						} catch (dbError) {
+							log.error({ err: serializeError(dbError as Error) }, "Failed to revoke Core database session");
+						}
+					} else {
+						log.warn("No Core session ID found in metadata");
+					}
+					
+					// Verify deletion was successful
+					const appSessionAfter = await sessionStore.getAppSession(sessionId);
+					log.info({ 
+						sessionStillExists: !!appSessionAfter,
+						deletionSuccessful: !appSessionAfter 
+					}, "App session after deletion verification");
+					
+					if (appSessionAfter) {
+						log.error({ sessionId: sessionId.substring(0, 8) + "..." }, "ERROR: App session still exists after deletion!");
+					}
+				} else {
+					log.warn("Failed to parse session cookie");
+				}
+			} catch (parseError) {
+				log.error({ err: serializeError(parseError as Error) }, "Error parsing session cookie");
+			}
+		} else {
+			log.warn("No session cookie found");
+		}
+
+		// Clear the session cookie - must match EXACT attributes used when cookie was set
+		// In development, cookies are set with secure:true even on localhost (Chrome allows this)
+		// So we must clear with the SAME attributes
+		
+		// Clear with domain (if set)
+		if (cookieDomain) {
+			setCookie(c, cookieName, "", {
 				httpOnly: true,
-				secure: isProduction,
+				secure: true, // Must match how it was set
 				sameSite: "Lax",
 				path: "/",
 				domain: cookieDomain,
 				maxAge: 0,
 			});
+			log.info({ cookieName, domain: cookieDomain, secure: true }, "Clearing cookie with domain");
+		}
+		
+		// Always clear without domain too (for localhost)
+		setCookie(c, cookieName, "", {
+			httpOnly: true,
+			secure: true, // Must match how it was set (Chrome allows secure on localhost)
+			sameSite: "Lax",
+			path: "/",
+			maxAge: 0,
+		});
+		log.info({ cookieName, secure: true }, "Clearing cookie without domain");
+		
+		// Also try clearing with secure: false for older browsers
+		setCookie(c, cookieName, "", {
+			httpOnly: true,
+			secure: false,
+			sameSite: "Lax",
+			path: "/",
+			maxAge: 0,
+		});
+		log.info({ cookieName, secure: false }, "Clearing cookie with secure:false");
+
+		// Back-compat: clear legacy cookie when logging out of user session.
+		if (audience === "user") {
+			// Try all combinations for legacy cookie too
+			if (cookieDomain) {
+				setCookie(c, LEGACY_SESSION_COOKIE, "", {
+					httpOnly: true,
+					secure: true,
+					sameSite: "Lax",
+					path: "/",
+					domain: cookieDomain,
+					maxAge: 0,
+				});
+			}
+			setCookie(c, LEGACY_SESSION_COOKIE, "", {
+				httpOnly: true,
+				secure: true,
+				sameSite: "Lax",
+				path: "/",
+				maxAge: 0,
+			});
+			setCookie(c, LEGACY_SESSION_COOKIE, "", {
+				httpOnly: true,
+				secure: false,
+				sameSite: "Lax",
+				path: "/",
+				maxAge: 0,
+			});
+			log.info("Legacy cookie cleared");
 		}
 
 		return c.json({ message: "Logged out successfully" });
