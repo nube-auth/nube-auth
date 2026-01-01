@@ -28,7 +28,7 @@
 		"db:studio": "drizzle-kit studio",
 		"db:drop": "tsx scripts/drop-tables.ts",
 		"db:reset": "pnpm run db:drop && pnpm run db:push",
-		"db:fresh": "rm -rf drizzle && pnpm run db:generate && pnpm run db:drop && pnpm run db:push" 
+		"db:fresh": "rm -rf drizzle && pnpm run db:generate && pnpm run db:drop && pnpm run db:push"
 	},
 	"dependencies": {
 		"@proofa/shared": "workspace:*",

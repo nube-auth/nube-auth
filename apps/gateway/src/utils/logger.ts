@@ -3,10 +3,10 @@ import { createLogger as createSharedLogger, serializeError } from "@proofa/shar
 /**
  * Create a logger instance for a specific module
  * Replaces console.log/console.error usage
- * 
+ *
  * @param module - Module name for logging context
  * @returns Logger instance
- * 
+ *
  * @example
  * const log = createLogger("auth-routes");
  * log.info({ userId: "123" }, "User logged in");

@@ -1,6 +1,6 @@
+import type { Session } from "@proofa/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useProofaContext } from "./ProofaProvider";
-import type { Session } from "@proofa/client";
 
 export function useSessions() {
 	const { client } = useProofaContext();

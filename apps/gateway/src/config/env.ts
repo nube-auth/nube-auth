@@ -16,12 +16,7 @@ export interface Env {
 	ENCRYPTION_KEY: string;
 }
 
-const requiredEnvVars = [
-	"DATABASE_URL",
-	"REDIS_URL",
-	"RESEND_API_KEY",
-	"ENCRYPTION_KEY",
-] as const;
+const requiredEnvVars = ["DATABASE_URL", "REDIS_URL", "RESEND_API_KEY", "ENCRYPTION_KEY"] as const;
 
 function validateEnv(): Env {
 	// Validate required environment variables

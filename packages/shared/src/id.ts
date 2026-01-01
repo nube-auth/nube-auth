@@ -4,7 +4,7 @@ import { customAlphabet } from "nanoid";
 const ALPHABET = "0123456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ";
 
 // Create nanoid generators with specific lengths
-const nano9 = customAlphabet(ALPHABET, 9);  // For standard IDs (12 chars total)
+const nano9 = customAlphabet(ALPHABET, 9); // For standard IDs (12 chars total)
 const nano15 = customAlphabet(ALPHABET, 15); // For sessions (18 chars total)
 
 /**

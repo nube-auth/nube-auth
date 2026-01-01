@@ -132,11 +132,12 @@ export const ErrorResponses = {
 	AccountLocked: (minutes?: number) =>
 		createErrorResponse(
 			"ACCOUNT_LOCKED",
-			minutes ? `Account locked. Try again in ${minutes} minutes.` : "Account locked due to too many failed attempts.",
+			minutes
+				? `Account locked. Try again in ${minutes} minutes.`
+				: "Account locked due to too many failed attempts.",
 		),
 
-	InvalidCredentials: (message = "Invalid credentials") =>
-		createErrorResponse("INVALID_CREDENTIALS", message),
+	InvalidCredentials: (message = "Invalid credentials") => createErrorResponse("INVALID_CREDENTIALS", message),
 
 	ExpiredToken: (message = "Token has expired") => createErrorResponse("EXPIRED_TOKEN", message),
 
@@ -165,5 +166,11 @@ export function isErrorResponse(response: unknown): response is ErrorResponse {
  * Check if a response is a success response
  */
 export function isSuccessResponse<T>(response: unknown): response is SuccessResponse<T> {
-	return typeof response === "object" && response !== null && "ok" in response && response.ok === true && "data" in response;
+	return (
+		typeof response === "object" &&
+		response !== null &&
+		"ok" in response &&
+		response.ok === true &&
+		"data" in response
+	);
 }

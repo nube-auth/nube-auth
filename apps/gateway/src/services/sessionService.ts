@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
-import { createLogger, serializeError } from "@proofa/shared";
 import { cache } from "@proofa/cache";
-import { SESSION_TTL, SESSION_ID_BYTES } from "../config/constants";
+import { createLogger, serializeError } from "@proofa/shared";
+import { SESSION_ID_BYTES, SESSION_TTL } from "../config/constants";
 
 const log = createLogger("session");
 
@@ -57,10 +57,7 @@ export const sessionService = {
 
 		await cache.set(key, session, SESSION_TTL);
 
-		log.info(
-			{ userId, ipAddress, userAgent: userAgent?.substring(0, 50) },
-			"Session created with fingerprint",
-		);
+		log.info({ userId, ipAddress, userAgent: userAgent?.substring(0, 50) }, "Session created with fingerprint");
 
 		return { token, session };
 	},
@@ -81,7 +78,6 @@ export const sessionService = {
 		}
 
 		try {
-			
 			session.lastActivity = new Date().toISOString();
 			session.requestCount = (session.requestCount || 0) + 1;
 			session.lastIpAddress = currentIpAddress;
@@ -107,10 +103,7 @@ export const sessionService = {
 		// If no fingerprint data exists, session was created before this security feature
 		// Allow it but log a warning
 		if (!session.ipAddress && !session.userAgent) {
-			log.warn(
-				{ userId: session.userId },
-				"Session has no fingerprint - created before security update",
-			);
+			log.warn({ userId: session.userId }, "Session has no fingerprint - created before security update");
 			return { valid: true };
 		}
 

@@ -1,27 +1,27 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1767254830275,
-      "tag": "0000_wet_tomorrow_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1767259765732,
-      "tag": "0001_light_cyclops",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1767259863336,
-      "tag": "0002_fluffy_grey_gargoyle",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "postgresql",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "7",
+			"when": 1767254830275,
+			"tag": "0000_wet_tomorrow_man",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1767259765732,
+			"tag": "0001_light_cyclops",
+			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1767259863336,
+			"tag": "0002_fluffy_grey_gargoyle",
+			"breakpoints": true
+		}
+	]
 }

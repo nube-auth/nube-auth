@@ -1,6 +1,6 @@
 import { generateOTP, hashOTP, verifyOTP } from "@proofa/auth";
-import { emailVerificationQueries, getDb, identityQueries, sessionQueries, userQueries } from "@proofa/db";
 import { rateLimit } from "@proofa/cache";
+import { emailVerificationQueries, getDb, identityQueries, sessionQueries, userQueries } from "@proofa/db";
 import { id, OTP_LENGTH, OTP_LOCKOUT_MINUTES, OTP_MAX_ATTEMPTS } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -35,7 +35,9 @@ emailRoutes.post("/start", async (c: Context) => {
 		const emailVerification = await emailVerificationQueries.findByEmail(db, email);
 
 		if (emailVerification?.locked_until && emailVerification.locked_until > now) {
-			const remainingMinutes = Math.ceil((new Date(emailVerification.locked_until).getTime() - now.getTime()) / 60000);
+			const remainingMinutes = Math.ceil(
+				(new Date(emailVerification.locked_until).getTime() - now.getTime()) / 60000,
+			);
 			return c.json({ error: `Account locked. Try again in ${remainingMinutes} minutes.` }, 429);
 		}
 

@@ -1,9 +1,9 @@
 import { getDb, sessionQueries, userQueries } from "@proofa/db";
-import { createLogger, serializeError } from "@proofa/shared";
 
 const log = createLogger("me-routes");
-import type { Context } from "hono";
+
 import { createLogger, serializeError } from "@proofa/shared";
+import type { Context } from "hono";
 
 import { Hono } from "hono";
 import { getAuth } from "../middleware/auth";

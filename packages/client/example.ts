@@ -1,6 +1,6 @@
 /**
  * Example usage of @proofa/client
- * 
+ *
  * This file demonstrates how to use the Proofa client in your applications.
  */
 
@@ -14,7 +14,7 @@ const client = new ProofaClient({
 });
 
 // Backend usage (S2S token authentication)
-const backendClient = new ProofaClient({
+const _backendClient = new ProofaClient({
 	gatewayUrl: process.env.GATEWAY_URL || "https://api.proofa.sh",
 	s2sToken: process.env.X_PROOFA_SERVICE_TOKEN,
 });
@@ -23,19 +23,19 @@ const backendClient = new ProofaClient({
 // AUTHENTICATION
 // ============================================
 
-async function checkAuthentication() {
+async function _checkAuthentication() {
 	try {
 		const status = await client.auth.checkStatus();
 		console.log("Logged in:", status.loggedIn);
 		if (status.user) {
 			console.log("User:", status.user.name, status.user.primary_email);
 		}
-	} catch (error) {
+	} catch (_error) {
 		console.error("Not authenticated");
 	}
 }
 
-async function logout() {
+async function _logout() {
 	try {
 		await client.auth.logout();
 		console.log("Logged out successfully");
@@ -48,7 +48,7 @@ async function logout() {
 // USER PROFILE
 // ============================================
 
-async function getUserProfile() {
+async function _getUserProfile() {
 	try {
 		const user = await client.me.get();
 		console.log("User profile:", {
@@ -62,7 +62,7 @@ async function getUserProfile() {
 	}
 }
 
-async function updateProfile() {
+async function _updateProfile() {
 	try {
 		const updated = await client.me.update({
 			name: "John Doe",
@@ -78,7 +78,7 @@ async function updateProfile() {
 // SESSIONS
 // ============================================
 
-async function listSessions() {
+async function _listSessions() {
 	try {
 		const { sessions } = await client.sessions.list();
 		console.log(`Found ${sessions.length} active sessions`);
@@ -95,7 +95,7 @@ async function listSessions() {
 	}
 }
 
-async function deleteSession(sessionId: string) {
+async function _deleteSession(sessionId: string) {
 	try {
 		await client.sessions.delete(sessionId);
 		console.log("Session deleted");
@@ -104,7 +104,7 @@ async function deleteSession(sessionId: string) {
 	}
 }
 
-async function logoutAllSessions() {
+async function _logoutAllSessions() {
 	try {
 		await client.sessions.deleteAll();
 		console.log("All sessions logged out");
@@ -119,7 +119,7 @@ async function logoutAllSessions() {
 
 import { ProofaError } from "./src/index";
 
-async function handleErrors() {
+async function _handleErrors() {
 	try {
 		await client.me.get();
 	} catch (error) {
@@ -217,9 +217,9 @@ export function useCreateProject() {
 /**
  * For React applications, use the @proofa/react package instead!
  * It provides ready-to-use hooks with built-in React Query integration.
- * 
+ *
  * Install: pnpm add @proofa/react
- * 
+ *
  * Example usage:
  */
 
@@ -295,7 +295,7 @@ function Header() {
 /**
  * Admin operations (projects, apps, licenses) are not included in @proofa/client.
  * Admin dashboards should call the Gateway API directly using fetch or your HTTP client.
- * 
+ *
  * Example:
  */
 

@@ -18,7 +18,7 @@ router.get("/", async (c: Context) => {
 
 	try {
 		const db = getDb();
-		const now = new Date();
+		const _now = new Date();
 
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) {

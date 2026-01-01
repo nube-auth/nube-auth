@@ -1,12 +1,5 @@
 import { HttpClient } from "pingpong-fetch";
-import type {
-	ApiError,
-	AuthStatus,
-	ProofaClientConfig,
-	Session,
-	UpdateProfileData,
-	User,
-} from "./types";
+import type { ApiError, AuthStatus, ProofaClientConfig, Session, UpdateProfileData, User } from "./types";
 
 export class ProofaClient {
 	private baseUrl: string;
@@ -19,32 +12,27 @@ export class ProofaClient {
 		this.httpClient = new HttpClient();
 	}
 
-	private async request<T>(
-		path: string,
-		options?: RequestInit,
-	): Promise<T> {
+	private async request<T>(path: string, options?: RequestInit): Promise<T> {
 		const url = `${this.baseUrl}${path}`;
-		
+
 		// Build headers with optional S2S token for backend usage
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
 			...(options?.headers as Record<string, string>),
 		};
-		
+
 		// Add S2S token if provided (backend authentication)
 		if (this.s2sToken) {
 			headers["X-Proofa-Service-Token"] = this.s2sToken;
 		}
-		
-		const response = await this.httpClient.send(
-			{
-				url,
-				method: (options?.method || "GET") as any,
-				headers,
-				body: options?.body as string,
-				credentials: "include", // Send cookies with requests (browser-only)
-			} as any
-		); // Cast to any to support credentials option from newer pingpong-fetch
+
+		const response = await this.httpClient.send({
+			url,
+			method: (options?.method || "GET") as any,
+			headers,
+			body: options?.body as string,
+			credentials: "include", // Send cookies with requests (browser-only)
+		} as any); // Cast to any to support credentials option from newer pingpong-fetch
 
 		if (!response.ok) {
 			let error: ApiError;

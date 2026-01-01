@@ -23,7 +23,11 @@ export const TimestampSchema = z.object({
  */
 export const PublicIdSchema = z.string().regex(/^[A-Za-z0-9]+$/, "Invalid public ID format");
 export const NameSchema = z.string().min(1, "Name is required").max(255);
-export const SlugSchema = z.string().min(1).max(255).regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens");
+export const SlugSchema = z
+	.string()
+	.min(1)
+	.max(255)
+	.regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens");
 export const DescriptionSchema = z.string().max(500).optional();
 export const EmailSchema = z.string().email();
 export const RoleSchema = z.enum(["owner", "admin", "member"]);
@@ -51,15 +55,16 @@ export const LicensePlanSchema = z.enum(["free", "trial"]).default("free");
  */
 
 // Sanitize string input (remove control characters, trim)
-export const SanitizedStringSchema = z.string().transform((val) => 
-	val.replace(/[\x00-\x1F\x7F]/g, "").trim()
-);
+// biome-ignore lint/suspicious/noControlCharactersInRegex: intentional removal of control characters for security
+export const SanitizedStringSchema = z.string().transform((val) => val.replace(/[\x00-\x1F\x7F]/g, "").trim());
 
 // URL validation with protocol requirement
-export const SecureUrlSchema = z.string().url().refine(
-	(url) => url.startsWith("https://") || url.startsWith("http://localhost"),
-	{ message: "URL must use HTTPS or be localhost" }
-);
+export const SecureUrlSchema = z
+	.string()
+	.url()
+	.refine((url) => url.startsWith("https://") || url.startsWith("http://localhost"), {
+		message: "URL must use HTTPS or be localhost",
+	});
 
 // JSON string that can be parsed
 export const JsonStringSchema = z.string().refine(
@@ -71,7 +76,7 @@ export const JsonStringSchema = z.string().refine(
 			return false;
 		}
 	},
-	{ message: "Invalid JSON string" }
+	{ message: "Invalid JSON string" },
 );
 
 // ISO date string

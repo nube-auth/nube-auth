@@ -44,32 +44,27 @@ export function encrypt(plaintext: string): string {
 	}
 
 	const encryptionKey = getEncryptionKey();
-	
+
 	// Generate random salt and IV
 	const salt = crypto.randomBytes(SALT_LENGTH);
 	const iv = crypto.randomBytes(IV_LENGTH);
-	
+
 	// Derive key from encryption key
 	const key = deriveKey(encryptionKey, salt);
-	
+
 	// Create cipher
 	const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
-	
+
 	// Encrypt the data
 	let encrypted = cipher.update(plaintext, "utf8", "hex");
 	encrypted += cipher.final("hex");
-	
+
 	// Get authentication tag
 	const tag = cipher.getAuthTag();
-	
+
 	// Combine salt, IV, tag, and encrypted data
-	const combined = Buffer.concat([
-		salt,
-		iv,
-		tag,
-		Buffer.from(encrypted, "hex"),
-	]);
-	
+	const combined = Buffer.concat([salt, iv, tag, Buffer.from(encrypted, "hex")]);
+
 	// Return as base64
 	return combined.toString("base64");
 }
@@ -84,27 +79,27 @@ export function decrypt(encryptedData: string): string {
 	}
 
 	const encryptionKey = getEncryptionKey();
-	
+
 	// Decode from base64
 	const combined = Buffer.from(encryptedData, "base64");
-	
+
 	// Extract components
 	const salt = combined.subarray(0, SALT_LENGTH);
 	const iv = combined.subarray(SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
 	const tag = combined.subarray(SALT_LENGTH + IV_LENGTH, SALT_LENGTH + IV_LENGTH + TAG_LENGTH);
 	const encrypted = combined.subarray(SALT_LENGTH + IV_LENGTH + TAG_LENGTH);
-	
+
 	// Derive key from encryption key
 	const key = deriveKey(encryptionKey, salt);
-	
+
 	// Create decipher
 	const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
 	decipher.setAuthTag(tag);
-	
+
 	// Decrypt the data
 	let decrypted = decipher.update(encrypted.toString("hex"), "hex", "utf8");
 	decrypted += decipher.final("utf8");
-	
+
 	return decrypted;
 }
 
@@ -115,12 +110,12 @@ export function isEncrypted(value: string): boolean {
 	if (!value) {
 		return false;
 	}
-	
+
 	try {
 		// Try to decode as base64
 		const decoded = Buffer.from(value, "base64");
 		// Check if it has the expected minimum length (salt + iv + tag + some data)
-		return decoded.length >= (SALT_LENGTH + IV_LENGTH + TAG_LENGTH + 1);
+		return decoded.length >= SALT_LENGTH + IV_LENGTH + TAG_LENGTH + 1;
 	} catch {
 		return false;
 	}

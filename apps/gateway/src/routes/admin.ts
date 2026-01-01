@@ -1,39 +1,40 @@
-import { appQueries, getDb, identityQueries, invitationQueries, licenseQueries, planQueries, projectInvitationQueries, projectMemberQueries, projectQueries, userQueries, sessionQueries, paymentProviderQueries, payment_providers, and, eq, isNull, desc } from "@proofa/db";
-import { createId, encrypt, decrypt, isEncrypted, maskSecret, createLogger, serializeError, AuditEventType } from "@proofa/shared";
-import { 
-	InviteAppUserRequestSchema, 
-	InviteProjectMemberRequestSchema,
-	GrantLicenseRequestSchema,
-	UpdateLicenseRequestSchema,
-	CreatePlanRequestSchema,
-	UpdatePlanRequestSchema,
-	ListQuerySchema,
-	ProjectIdParamSchema,
-	AppIdParamSchema,
-	UserIdParamSchema,
-	LicenseIdParamSchema,
-	PlanIdParamSchema
-} from "@proofa/shared";
+import {
+	appQueries,
+	getDb,
+	identityQueries,
+	invitationQueries,
+	licenseQueries,
+	paymentProviderQueries,
+	planQueries,
+	projectInvitationQueries,
+	projectMemberQueries,
+	projectQueries,
+	sessionQueries,
+	userQueries,
+} from "@proofa/db";
+import { createId, createLogger, encrypt, InviteAppUserRequestSchema, serializeError } from "@proofa/shared";
 import { nanoid } from "nanoid";
-import { sendEmail, generateAppUserInvitationEmail, generateLicenseGrantedEmail, generateProjectTeamInvitationEmail } from "../services/email.js";
-import { auditLogger } from "../utils/logger.js";
 import { INVITATION_EXPIRY_DAYS } from "../config/constants";
+import {
+	generateAppUserInvitationEmail,
+	generateLicenseGrantedEmail,
+	generateProjectTeamInvitationEmail,
+	sendEmail,
+} from "../services/email.js";
+import { auditLogger } from "../utils/logger.js";
 
 const log = createLogger("admin-routes");
+
 import {
-	ProjectDTOSchema,
-	ProjectsListResponseSchema,
-	CreateProjectRequestSchema,
-	CreateAppRequestSchema,
-	UpdateAppRequestSchema,
 	AppDTOSchema,
-	AppsListResponseSchema,
-	ProjectMembersListResponseSchema,
-	LicensesListResponseSchema,
+	CreateAppRequestSchema,
+	CreateProjectRequestSchema,
+	ProjectDTOSchema,
+	UpdateAppRequestSchema,
 } from "@proofa/shared/types/schemas";
-import { z } from "zod";
 import type { Context } from "hono";
 import { Hono } from "hono";
+import { z } from "zod";
 import { getAuth } from "../middleware/auth";
 
 export const adminRoutes = new Hono();
@@ -153,10 +154,10 @@ adminRoutes.get("/projects", async (c: Context) => {
 				const totalRevenue = 0; // TODO: Calculate from payment records
 
 				return {
-				id: p.public_id,
-				name: p.name,
-				slug: p.slug,
-				createdAt: p.created_at,
+					id: p.public_id,
+					name: p.name,
+					slug: p.slug,
+					createdAt: p.created_at,
 					totalApps: apps.length,
 					totalUsers: uniqueUserIds.size,
 					totalLicenses,
@@ -224,7 +225,7 @@ adminRoutes.post("/projects", async (c: Context) => {
 			auth.userId,
 			user.primary_email,
 			c.req.header("x-forwarded-for") || c.req.header("x-real-ip"),
-			{ slug: project.slug }
+			{ slug: project.slug },
 		);
 
 		// Validate and return response
@@ -273,7 +274,7 @@ adminRoutes.get("/projects/:projectId", async (c: Context) => {
 
 		// Check user is member
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
@@ -319,7 +320,7 @@ adminRoutes.patch("/projects/:projectId", async (c: Context) => {
 
 		// Check user is member with owner or admin role
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 
 		if (!member || (member.role !== "owner" && member.role !== "admin")) {
 			return c.json({ error: "Access denied" }, 403);
@@ -362,8 +363,6 @@ adminRoutes.patch("/projects/:projectId", async (c: Context) => {
 	}
 });
 
-
-
 /**
  * GET /v1/admin/projects/:projectId/stats
  * Get aggregated stats for project
@@ -389,7 +388,7 @@ adminRoutes.get("/projects/:projectId/stats", async (c: Context) => {
 
 		// Check user is member
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
@@ -409,7 +408,7 @@ adminRoutes.get("/projects/:projectId/stats", async (c: Context) => {
 			totalLicenses += licenses.length;
 			activeLicenses += licenses.filter((l) => l.status === "active").length;
 
-				// Count by plan
+			// Count by plan
 			for (const license of licenses) {
 				const plan = await planQueries.findById(db, license.plan_id);
 				const planName = plan?.name || `Unknown (ID: ${license.plan_id})`;
@@ -467,7 +466,7 @@ adminRoutes.get("/projects/:projectId/apps", async (c: Context) => {
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
@@ -517,7 +516,7 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 
 		if (!member || (member.role !== "owner" && member.role !== "admin")) {
 			return c.json({ error: "Access denied. Only owners and admins can create apps" }, 403);
@@ -670,7 +669,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId", async (c: Context) => {
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
@@ -737,7 +736,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId/stats", async (c: Context) => 
 
 		// Check user is member
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
@@ -814,7 +813,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId/users", async (c: Context) => 
 
 		// Check user is member
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
@@ -889,7 +888,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -915,7 +914,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 		let validUntil: Date | null = null;
 		if (license_duration_days && typeof license_duration_days === "number") {
 			// Calculate valid_until: now + (days * 24 * 60 * 60 * 1000)
-			validUntil = new Date(Date.now() + (license_duration_days * 24 * 60 * 60 * 1000));
+			validUntil = new Date(Date.now() + license_duration_days * 24 * 60 * 60 * 1000);
 		}
 
 		// SMART FLOW: Check if user exists
@@ -939,26 +938,30 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 				if (plan_id) {
 					const plan = await planQueries.findById(db, plan_id);
 					const validUntilDate = validUntil ? validUntil.toLocaleDateString() : undefined;
-				
-				try {
-					await sendEmail({
-						to: email,
-						subject: `Your ${app.name} license has been updated`,
-						html: generateLicenseGrantedEmail({
-							userName: existingUser.name || existingUser.primary_email || "there",
-							appName: app.name,
-							planName: plan?.name || "Unknown Plan",
-							validUntil: validUntilDate,
-							dashboardUrl: `https://auth.proofa.sh/login?app_id=${app.public_id}`,
-						}),
-					});
-				} catch (emailError) {
-					log.error({ err: serializeError(error as Error) }, "Failed to send license update email:", emailError);
-					// Don't fail the request if email fails
-				}
-		}
 
-		return c.json({
+					try {
+						await sendEmail({
+							to: email,
+							subject: `Your ${app.name} license has been updated`,
+							html: generateLicenseGrantedEmail({
+								userName: existingUser.name || existingUser.primary_email || "there",
+								appName: app.name,
+								planName: plan?.name || "Unknown Plan",
+								validUntil: validUntilDate,
+								dashboardUrl: `https://auth.proofa.sh/login?app_id=${app.public_id}`,
+							}),
+						});
+					} catch (emailError) {
+						log.error(
+							{ err: serializeError(emailError as Error) },
+							"Failed to send license update email:",
+							emailError,
+						);
+						// Don't fail the request if email fails
+					}
+				}
+
+				return c.json({
 					success: true,
 					user_exists: true,
 					has_logged_in: true,
@@ -975,7 +978,11 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 
 			// Case 2: User exists but hasn't logged into the app (no license) - create invitation
 			// Check for existing pending invitation
-			const existingInvitations = await invitationQueries.findPendingByEmailAndApp(db, email.toLowerCase(), app.id);
+			const existingInvitations = await invitationQueries.findPendingByEmailAndApp(
+				db,
+				email.toLowerCase(),
+				app.id,
+			);
 			const existingInvitation = existingInvitations[0];
 
 			if (existingInvitation) {
@@ -1016,7 +1023,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 			// Send invitation email
 			const plan = plan_id ? await planQueries.findById(db, plan_id) : null;
 			const inviteLink = `https://auth.proofa.sh/login?app_id=${app.public_id}&invite_code=${invitation.public_id}`;
-			
+
 			try {
 				await sendEmail({
 					to: email,
@@ -1032,7 +1039,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 					}),
 				});
 			} catch (emailError) {
-				log.error({ err: serializeError(error as Error) }, "Failed to send invitation email:", emailError);
+				log.error({ err: serializeError(emailError as Error) }, "Failed to send invitation email:", emailError);
 				// Don't fail the request if email fails
 			}
 
@@ -1042,7 +1049,8 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 				has_logged_in: false,
 				invitation_sent: true,
 				action: "invitation_created",
-				message: "User exists but hasn't used this app yet. Invitation sent. License will be activated when they first access the app.",
+				message:
+					"User exists but hasn't used this app yet. Invitation sent. License will be activated when they first access the app.",
 				invitation: {
 					id: invitation.public_id,
 					email: invitation.email,
@@ -1053,7 +1061,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 
 		// User doesn't exist - create invitation
 		const invitationId = createId("invitation");
-	const expiresAt = new Date(now.getTime() + INVITATION_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+		const expiresAt = new Date(now.getTime() + INVITATION_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
 		const existingInvitation = await invitationQueries.findPendingByEmailAndApp(db, email.toLowerCase(), app.id);
 
 		if (existingInvitation) {
@@ -1090,7 +1098,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 		// Send invitation email
 		const plan = plan_id ? await planQueries.findById(db, plan_id) : null;
 		const inviteLink = `https://auth.proofa.sh/signup?app_id=${app.public_id}&invite_code=${invitation.public_id}`;
-		
+
 		try {
 			await sendEmail({
 				to: email,
@@ -1106,7 +1114,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 				}),
 			});
 		} catch (emailError) {
-			log.error({ err: serializeError(error as Error) }, "Failed to send invitation email:", emailError);
+			log.error({ err: serializeError(emailError as Error) }, "Failed to send invitation email:", emailError);
 			// Don't fail the request if email fails
 		}
 
@@ -1154,7 +1162,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId/users/:userId", async (c: Cont
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, adminUser.id);
-	const member = members[0];
+		const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -1250,7 +1258,7 @@ adminRoutes.patch("/projects/:projectId/apps/:appId/users/:userId", async (c: Co
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, adminUser.id);
-	const member = members[0];
+		const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -1342,7 +1350,7 @@ adminRoutes.delete("/projects/:projectId/apps/:appId/users/:userId", async (c: C
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, adminUser.id);
-	const member = members[0];
+		const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -1403,7 +1411,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/:userId/renew", async (
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, adminUser.id);
-	const member = members[0];
+		const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -1454,7 +1462,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/:userId/renew", async (
 
 		return c.json({
 			success: true,
-			message: plan.duration_days 
+			message: plan.duration_days
 				? `License renewed for ${plan.duration_days} days`
 				: "License renewed (lifetime access)",
 			license: {
@@ -1499,7 +1507,7 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 
 		if (!member || member.role !== "owner") {
 			return c.json({ error: "Access denied" }, 403);
@@ -1524,7 +1532,8 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 		if (validatedData.sessionTtlDays) updateData.session_ttl_days = validatedData.sessionTtlDays;
 		if (validatedData.corsOrigins) updateData.cors_origins = validatedData.corsOrigins;
 		if (validatedData.rateLimit) updateData.rate_limit = validatedData.rateLimit;
-		if (validatedData.accountLockoutMinutes) updateData.account_lockout_minutes = validatedData.accountLockoutMinutes;
+		if (validatedData.accountLockoutMinutes)
+			updateData.account_lockout_minutes = validatedData.accountLockoutMinutes;
 		if (validatedData.cacheTtlMinutes) updateData.cache_ttl_minutes = validatedData.cacheTtlMinutes;
 
 		// Handle enabled providers
@@ -1533,7 +1542,7 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 		}
 
 		const updatedApps = await appQueries.update(db, app.id, updateData);
-		const updatedApp = updatedApps[0];
+		const updatedApp = updatedApps;
 
 		if (!updatedApp) {
 			return c.json({ error: "Failed to update app" }, 500);
@@ -1597,7 +1606,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId/api-keys", async (c: Context) 
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 		if (!member || member.role !== "owner") {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -1641,7 +1650,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/regenerate-secret", async (c:
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 		if (!member || member.role !== "owner") {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -1693,7 +1702,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/regenerate-token", async (c: 
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 		if (!member || member.role !== "owner") {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -1746,7 +1755,7 @@ adminRoutes.get("/projects/:projectId/members", async (c: Context) => {
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
@@ -1851,20 +1860,23 @@ adminRoutes.post("/projects/:projectId/members", async (c: Context) => {
 				createdAt: new Date(newMember.created_at),
 			};
 
-			log.info({
-				rawCreatedAt: newMember.created_at,
-				createdAtType: typeof newMember.created_at,
-				convertedCreatedAt: memberResponse.createdAt,
-				convertedType: typeof memberResponse.createdAt,
-				isDate: memberResponse.createdAt instanceof Date,
-			}, "Member response data before JSON");
+			log.info(
+				{
+					rawCreatedAt: newMember.created_at,
+					createdAtType: typeof newMember.created_at,
+					convertedCreatedAt: memberResponse.createdAt,
+					convertedType: typeof memberResponse.createdAt,
+					isDate: memberResponse.createdAt instanceof Date,
+				},
+				"Member response data before JSON",
+			);
 
 			return c.json(memberResponse);
 		}
 
 		// User doesn't exist - create invitation
-	const existingInvitations = await projectInvitationQueries.findByProjectAndEmail(db, project.id, email);
-	const existingInvitation = existingInvitations[0];
+		const existingInvitations = await projectInvitationQueries.findByProjectAndEmail(db, project.id, email);
+		const existingInvitation = existingInvitations[0];
 		if (existingInvitation && existingInvitation.status === "pending") {
 			return c.json({ error: "An invitation for this email already exists" }, 400);
 		}
@@ -1897,7 +1909,11 @@ adminRoutes.post("/projects/:projectId/members", async (c: Context) => {
 				}),
 			});
 		} catch (emailError) {
-			log.error({ err: serializeError(error as Error) }, "Failed to send team invitation email:", emailError);
+			log.error(
+				{ err: serializeError(emailError as Error) },
+				"Failed to send team invitation email:",
+				emailError,
+			);
 			// Don't fail the request if email fails
 		}
 
@@ -1912,16 +1928,19 @@ adminRoutes.post("/projects/:projectId/members", async (c: Context) => {
 			expiresAt: new Date(invitation.expires_at),
 		};
 
-		log.info({
-			rawCreatedAt: invitation.created_at,
-			createdAtType: typeof invitation.created_at,
-			rawExpiresAt: invitation.expires_at,
-			expiresAtType: typeof invitation.expires_at,
-			convertedCreatedAt: invitationResponse.createdAt,
-			convertedExpiresAt: invitationResponse.expiresAt,
-			createdAtIsDate: invitationResponse.createdAt instanceof Date,
-			expiresAtIsDate: invitationResponse.expiresAt instanceof Date,
-		}, "Invitation response data before JSON");
+		log.info(
+			{
+				rawCreatedAt: invitation.created_at,
+				createdAtType: typeof invitation.created_at,
+				rawExpiresAt: invitation.expires_at,
+				expiresAtType: typeof invitation.expires_at,
+				convertedCreatedAt: invitationResponse.createdAt,
+				convertedExpiresAt: invitationResponse.expiresAt,
+				createdAtIsDate: invitationResponse.createdAt instanceof Date,
+				expiresAtIsDate: invitationResponse.expiresAt instanceof Date,
+			},
+			"Invitation response data before JSON",
+		);
 
 		return c.json(invitationResponse);
 	} catch (error) {
@@ -2031,8 +2050,8 @@ adminRoutes.delete("/projects/:projectId/members/:memberId", async (c: Context) 
 		}
 
 		// Check if requesting user has permission (must be owner or admin)
-	const requestingMembers = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
-	const requestingMember = requestingMembers[0];
+		const requestingMembers = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
+		const requestingMember = requestingMembers[0];
 		if (!requestingMember || (requestingMember.role !== "owner" && requestingMember.role !== "admin")) {
 			return c.json({ error: "Access denied. Only owners and admins can remove members" }, 403);
 		}
@@ -2083,7 +2102,7 @@ adminRoutes.get("/projects/:projectId/invitations", async (c: Context) => {
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
@@ -2116,20 +2135,26 @@ adminRoutes.post("/invitations/:invitationCode/accept", async (c: Context) => {
 		const auth = getAuth(c);
 		const invitationCode = c.req.param("invitationCode");
 
-		log.info({
-			invitationCode,
-			userId: auth.userId,
-		}, "Accept invitation request");
+		log.info(
+			{
+				invitationCode,
+				userId: auth.userId,
+			},
+			"Accept invitation request",
+		);
 
 		const db = getDb();
 
 		// Get the invitation
 		const invitation = await projectInvitationQueries.findByPublicId(db, invitationCode);
 
-		log.info({
-			invitation: !!invitation,
-			status: invitation?.status,
-		}, "Invitation lookup");
+		log.info(
+			{
+				invitation: !!invitation,
+				status: invitation?.status,
+			},
+			"Invitation lookup",
+		);
 
 		if (!invitation) {
 			return c.json({ error: "Invitation not found" }, 404);
@@ -2152,10 +2177,13 @@ adminRoutes.post("/invitations/:invitationCode/accept", async (c: Context) => {
 			return c.json({ error: "User not found" }, 404);
 		}
 
-		log.info({
-			userEmail: user.primary_email,
-			invitationEmail: invitation.email,
-		}, "Email comparison");
+		log.info(
+			{
+				userEmail: user.primary_email,
+				invitationEmail: invitation.email,
+			},
+			"Email comparison",
+		);
 
 		// Check if email matches
 		if (user.primary_email?.toLowerCase() !== invitation.email.toLowerCase()) {
@@ -2172,12 +2200,15 @@ adminRoutes.post("/invitations/:invitationCode/accept", async (c: Context) => {
 		const existingMembers = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
 		const existingMember = existingMembers[0];
 
-		log.info({
-			existingMembers: existingMembers.length,
-			existingMember: !!existingMember,
-			userId: user.id,
-			projectId: project.id,
-		}, "Checking existing member");
+		log.info(
+			{
+				existingMembers: existingMembers.length,
+				existingMember: !!existingMember,
+				userId: user.id,
+				projectId: project.id,
+			},
+			"Checking existing member",
+		);
 
 		if (existingMember) {
 			// Mark invitation as accepted anyway
@@ -2193,11 +2224,14 @@ adminRoutes.post("/invitations/:invitationCode/accept", async (c: Context) => {
 		}
 
 		// Add user as project member
-		log.info({
-			userId: user.id,
-			projectId: project.id,
-			role: invitation.role,
-		}, "Creating new project member");
+		log.info(
+			{
+				userId: user.id,
+				projectId: project.id,
+				role: invitation.role,
+			},
+			"Creating new project member",
+		);
 
 		const newMember = await projectMemberQueries.create(db, {
 			public_id: createId("projectMember"),
@@ -2207,10 +2241,13 @@ adminRoutes.post("/invitations/:invitationCode/accept", async (c: Context) => {
 			created_at: now,
 		});
 
-		log.info({
-			newMemberId: newMember.public_id,
-			memberRole: newMember.role,
-		}, "Member created successfully");
+		log.info(
+			{
+				newMemberId: newMember.public_id,
+				memberRole: newMember.role,
+			},
+			"Member created successfully",
+		);
 
 		// Mark invitation as accepted
 		await projectInvitationQueries.updateByPublicId(db, invitationCode, { status: "accepted" });
@@ -2260,8 +2297,8 @@ adminRoutes.delete("/projects/:projectId/invitations/:invitationId", async (c: C
 		}
 
 		// Check if requesting user has permission (must be owner or admin)
-	const requestingMembers = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
-	const requestingMember = requestingMembers[0];
+		const requestingMembers = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
+		const requestingMember = requestingMembers[0];
 		if (!requestingMember || (requestingMember.role !== "owner" && requestingMember.role !== "admin")) {
 			return c.json({ error: "Access denied. Only owners and admins can cancel invitations" }, 403);
 		}
@@ -2307,14 +2344,14 @@ adminRoutes.get("/licenses", async (c: Context) => {
 				const app = await appQueries.findById(db, l.app_id);
 				const plan = await planQueries.findById(db, l.plan_id);
 				return {
-				id: l.public_id,
+					id: l.public_id,
 					appId: app?.public_id || null,
 					appName: app?.name || "Unknown App",
 					plan_id: l.plan_id,
 					plan: plan?.name || "Unknown",
-				status: l.status,
-				validUntil: l.valid_until,
-				createdAt: l.created_at,
+					status: l.status,
+					validUntil: l.valid_until,
+					createdAt: l.created_at,
 				};
 			}),
 		);
@@ -2353,7 +2390,7 @@ adminRoutes.delete("/projects/:projectId", async (c: Context) => {
 
 		// Check if user is the owner
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 		if (!member || member.role !== "owner") {
 			return c.json({ error: "Access denied. Only the project owner can delete the project" }, 403);
 		}
@@ -2480,7 +2517,7 @@ adminRoutes.delete("/projects/:projectId/apps/:appId", async (c: Context) => {
 
 		// Check if user has permission (must be owner or admin)
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 		if (!member || (member.role !== "owner" && member.role !== "admin")) {
 			return c.json({ error: "Access denied. Only owners and admins can delete apps" }, 403);
 		}
@@ -2623,7 +2660,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId/plans", async (c: Context) => 
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -2647,7 +2684,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId/plans", async (c: Context) => 
 				yearlyPrice: plan.yearly_price,
 				oneTimePrice: plan.one_time_price,
 				durationDays: plan.duration_days,
-				trialEnabled: plan.trial_enabled === 1,
+				trialEnabled: plan.trial_enabled,
 				trialDays: plan.trial_days,
 				features: plan.features || [],
 				status: plan.status,
@@ -2686,7 +2723,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/plans", async (c: Context) =>
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -2699,7 +2736,19 @@ adminRoutes.post("/projects/:projectId/apps/:appId/plans", async (c: Context) =>
 
 		// Parse request body
 		const body = await c.req.json();
-		const { name, slug, description, monthly_price, yearly_price, one_time_price, duration_days, trial_enabled, trial_days, features, display_order } = body;
+		const {
+			name,
+			slug,
+			description,
+			monthly_price,
+			yearly_price,
+			one_time_price,
+			duration_days,
+			trial_enabled,
+			trial_days,
+			features,
+			display_order,
+		} = body;
 
 		// Validate required fields
 		if (!name || typeof name !== "string") {
@@ -2748,7 +2797,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/plans", async (c: Context) =>
 				yearlyPrice: plan.yearly_price,
 				oneTimePrice: plan.one_time_price,
 				durationDays: plan.duration_days,
-				trialEnabled: plan.trial_enabled === 1,
+				trialEnabled: plan.trial_enabled,
 				trialDays: plan.trial_days,
 				features: plan.features || [],
 				status: plan.status,
@@ -2788,7 +2837,7 @@ adminRoutes.patch("/projects/:projectId/apps/:appId/plans/:planId", async (c: Co
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -2807,7 +2856,19 @@ adminRoutes.patch("/projects/:projectId/apps/:appId/plans/:planId", async (c: Co
 
 		// Parse request body
 		const body = await c.req.json();
-		const { name, description, monthly_price, yearly_price, one_time_price, duration_days, trial_enabled, trial_days, features, status, display_order } = body;
+		const {
+			name,
+			description,
+			monthly_price,
+			yearly_price,
+			one_time_price,
+			duration_days,
+			trial_enabled,
+			trial_days,
+			features,
+			status,
+			display_order,
+		} = body;
 
 		// Build update object
 		const updates: any = {};
@@ -2825,7 +2886,7 @@ adminRoutes.patch("/projects/:projectId/apps/:appId/plans/:planId", async (c: Co
 
 		// Update plan
 		const updatedPlans = await planQueries.update(db, plan.id, updates);
-		const updatedPlan = updatedPlans[0];
+		const updatedPlan = updatedPlans;
 
 		if (!updatedPlan) {
 			return c.json({ error: "Failed to update plan" }, 500);
@@ -2842,7 +2903,7 @@ adminRoutes.patch("/projects/:projectId/apps/:appId/plans/:planId", async (c: Co
 				yearlyPrice: updatedPlan.yearly_price,
 				oneTimePrice: updatedPlan.one_time_price,
 				durationDays: updatedPlan.duration_days,
-				trialEnabled: updatedPlan.trial_enabled === 1,
+				trialEnabled: updatedPlan.trial_enabled,
 				trialDays: updatedPlan.trial_days,
 				features: updatedPlan.features || [],
 				status: updatedPlan.status,
@@ -2882,7 +2943,7 @@ adminRoutes.delete("/projects/:projectId/apps/:appId/plans/:planId", async (c: C
 		}
 
 		const members = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-	const member = members[0];
+		const member = members[0];
 		if (!member) {
 			return c.json({ error: "Access denied" }, 403);
 		}
@@ -2902,9 +2963,12 @@ adminRoutes.delete("/projects/:projectId/apps/:appId/plans/:planId", async (c: C
 		// Check if any active licenses use this plan
 		const licenseCount = await planQueries.countLicensesByPlan(db, plan.id);
 		if (licenseCount > 0) {
-			return c.json({
-				error: `Cannot delete plan. ${licenseCount} active license(s) are using this plan.`,
-			}, 400);
+			return c.json(
+				{
+					error: `Cannot delete plan. ${licenseCount} active license(s) are using this plan.`,
+				},
+				400,
+			);
 		}
 
 		// Soft delete plan
@@ -2987,7 +3051,14 @@ adminRoutes.post("/payment-providers", async (c: Context) => {
 		}
 
 		// Auto-generate slug from name if not provided
-		const finalSlug = slug || (name ? name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") : undefined);
+		const finalSlug =
+			slug ||
+			(name
+				? name
+						.toLowerCase()
+						.replace(/\s+/g, "-")
+						.replace(/[^a-z0-9-]/g, "")
+				: undefined);
 
 		// Create Payment provider
 		const newProvider = await paymentProviderQueries.create(db, {
@@ -3006,7 +3077,7 @@ adminRoutes.post("/payment-providers", async (c: Context) => {
 			updated_at: new Date(),
 		});
 
-		return c.json({ 
+		return c.json({
 			provider: {
 				id: newProvider.public_id,
 				name: newProvider.name,
@@ -3018,7 +3089,7 @@ adminRoutes.post("/payment-providers", async (c: Context) => {
 				isActive: newProvider.is_active,
 				createdAt: newProvider.created_at,
 				updatedAt: newProvider.updated_at,
-			}
+			},
 		});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Create Payment provider error:");
@@ -3069,7 +3140,7 @@ adminRoutes.patch("/payment-providers/:providerId", async (c: Context) => {
 		}
 
 		// Update provider
-		const updateData: any = { 
+		const updateData: any = {
 			updated_at: new Date(),
 			updated_by_user_id: user.id,
 		};
@@ -3077,7 +3148,14 @@ adminRoutes.patch("/payment-providers/:providerId", async (c: Context) => {
 			updateData.name = body.name || null;
 		}
 		if (body.slug !== undefined) {
-			updateData.slug = body.slug || (body.name ? body.name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") : null);
+			updateData.slug =
+				body.slug ||
+				(body.name
+					? body.name
+							.toLowerCase()
+							.replace(/\s+/g, "-")
+							.replace(/[^a-z0-9-]/g, "")
+					: null);
 		}
 		if (body.credentials) {
 			updateData.credentials = encrypt(JSON.stringify(body.credentials));
@@ -3182,7 +3260,11 @@ adminRoutes.get("/apps/:appId/payment/available", async (c: Context) => {
 		}
 
 		// Get available Payment providers
-		const providers = await paymentProviderQueries.getAvailablePaymentProviders(db, app.id, environment as "test" | "production");
+		const providers = await paymentProviderQueries.getAvailablePaymentProviders(
+			db,
+			app.id,
+			environment as "test" | "production",
+		);
 
 		const formattedProviders = providers.map((p: any) => ({
 			id: p.id,

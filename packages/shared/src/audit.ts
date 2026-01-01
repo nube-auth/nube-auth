@@ -111,22 +111,23 @@ export class AuditLogger {
 	 */
 	log(event: AuditEvent): void {
 		const logLevel = this.getLogLevel(event.severity);
-		
+
 		// Ensure timestamp is a Date object
-		const timestamp = event.timestamp instanceof Date 
-			? event.timestamp 
-			: new Date(event.timestamp);
-		
-		this.logger[logLevel]({
-			audit: true,
-			event_type: event.type,
-			severity: event.severity,
-			actor: event.actor,
-			resource: event.resource,
-			action: event.action,
-			metadata: event.metadata,
-			timestamp: timestamp.toISOString(),
-		}, `Audit: ${event.action}`);
+		const timestamp = event.timestamp instanceof Date ? event.timestamp : new Date(event.timestamp);
+
+		this.logger[logLevel](
+			{
+				audit: true,
+				event_type: event.type,
+				severity: event.severity,
+				actor: event.actor,
+				resource: event.resource,
+				action: event.action,
+				metadata: event.metadata,
+				timestamp: timestamp.toISOString(),
+			},
+			`Audit: ${event.action}`,
+		);
 	}
 
 	/**
@@ -139,7 +140,7 @@ export class AuditLogger {
 		ip: string | undefined,
 		userAgent: string | undefined,
 		success: boolean,
-		metadata?: Record<string, any>
+		metadata?: Record<string, any>,
 	): void {
 		this.log({
 			type,
@@ -162,7 +163,7 @@ export class AuditLogger {
 		actorUserId: string,
 		actorEmail: string | undefined,
 		ip: string | undefined,
-		metadata?: Record<string, any>
+		metadata?: Record<string, any>,
 	): void {
 		this.log({
 			type: this.getEventType(`${resourceType}.created`),
@@ -186,7 +187,7 @@ export class AuditLogger {
 		actorEmail: string | undefined,
 		ip: string | undefined,
 		changes: Record<string, any>,
-		metadata?: Record<string, any>
+		metadata?: Record<string, any>,
 	): void {
 		this.log({
 			type: this.getEventType(`${resourceType}.updated`),
@@ -209,7 +210,7 @@ export class AuditLogger {
 		actorUserId: string,
 		actorEmail: string | undefined,
 		ip: string | undefined,
-		metadata?: Record<string, any>
+		metadata?: Record<string, any>,
 	): void {
 		this.log({
 			type: this.getEventType(`${resourceType}.deleted`),
@@ -231,7 +232,7 @@ export class AuditLogger {
 		action: string,
 		userId: string | undefined,
 		ip: string | undefined,
-		metadata?: Record<string, any>
+		metadata?: Record<string, any>,
 	): void {
 		this.log({
 			type,
@@ -267,7 +268,7 @@ export class AuditLogger {
 	 */
 	private getEventType(type: string): AuditEventType {
 		// Try to match to enum, fallback to generic
-		const enumValue = Object.values(AuditEventType).find(v => v === type);
+		const enumValue = Object.values(AuditEventType).find((v) => v === type);
 		return enumValue || AuditEventType.USER_UPDATED;
 	}
 }

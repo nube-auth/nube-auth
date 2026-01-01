@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Modal, ModalHeader, ModalBody, ModalFooter } from "./Modal";
+import { useCallback, useEffect, useState } from "react";
+import { Modal, ModalBody, ModalFooter, ModalHeader } from "./Modal";
 
 interface ConfirmModalProps {
 	isOpen: boolean;
@@ -30,6 +30,14 @@ export function ConfirmModal({
 	const [captchaNumbers, setCaptchaNumbers] = useState<{ num1: number; num2: number }>({ num1: 0, num2: 0 });
 	const [error, setError] = useState("");
 
+	const generateCaptcha = useCallback(() => {
+		// Generate two 2-digit numbers where sum is less than 99
+		const num1 = Math.floor(Math.random() * 90) + 10; // 10-99
+		const maxNum2 = Math.min(99 - num1, 99);
+		const num2 = Math.floor(Math.random() * (maxNum2 - 10 + 1)) + 10; // 10 to maxNum2
+		setCaptchaNumbers({ num1, num2 });
+	}, []);
+
 	// Generate captcha numbers when modal opens
 	useEffect(() => {
 		if (isOpen && requireCaptcha) {
@@ -37,22 +45,14 @@ export function ConfirmModal({
 			setCaptchaAnswer("");
 			setError("");
 		}
-	}, [isOpen, requireCaptcha]);
-
-	const generateCaptcha = () => {
-		// Generate two 2-digit numbers where sum is less than 99
-		const num1 = Math.floor(Math.random() * 90) + 10; // 10-99
-		const maxNum2 = Math.min(99 - num1, 99);
-		const num2 = Math.floor(Math.random() * (maxNum2 - 10 + 1)) + 10; // 10 to maxNum2
-		setCaptchaNumbers({ num1, num2 });
-	};
+	}, [isOpen, requireCaptcha, generateCaptcha]);
 
 	const handleConfirm = () => {
 		if (requireCaptcha) {
 			const correctAnswer = captchaNumbers.num1 + captchaNumbers.num2;
 			const userAnswer = parseInt(captchaAnswer, 10);
 
-			if (isNaN(userAnswer) || userAnswer !== correctAnswer) {
+			if (Number.isNaN(userAnswer) || userAnswer !== correctAnswer) {
 				setError("Incorrect answer. Please try again.");
 				generateCaptcha();
 				setCaptchaAnswer("");
@@ -195,7 +195,6 @@ export function ConfirmModal({
 										setError("");
 									}}
 									placeholder="Enter the answer"
-									autoFocus
 									style={{
 										width: "100%",
 										padding: "10px 14px",
@@ -213,7 +212,14 @@ export function ConfirmModal({
 									}}
 								/>
 								{error && (
-									<p style={{ fontSize: "13px", color: "#ef4444", marginTop: "8px", marginBottom: 0 }}>
+									<p
+										style={{
+											fontSize: "13px",
+											color: "#ef4444",
+											marginTop: "8px",
+											marginBottom: 0,
+										}}
+									>
 										{error}
 									</p>
 								)}
@@ -237,7 +243,10 @@ export function ConfirmModal({
 						borderRadius: "6px",
 						border: "none",
 						cursor: isLoading || (requireCaptcha && !captchaAnswer) ? "not-allowed" : "pointer",
-						background: isLoading || (requireCaptcha && !captchaAnswer) ? "var(--surface-tertiary)" : styles.confirmBg,
+						background:
+							isLoading || (requireCaptcha && !captchaAnswer)
+								? "var(--surface-tertiary)"
+								: styles.confirmBg,
 						color: "white",
 						transition: "all 0.15s ease",
 						display: "inline-flex",
@@ -259,7 +268,12 @@ export function ConfirmModal({
 					{isLoading && (
 						<div
 							className="spinner"
-							style={{ width: "14px", height: "14px", borderWidth: "2px", borderColor: "white transparent" }}
+							style={{
+								width: "14px",
+								height: "14px",
+								borderWidth: "2px",
+								borderColor: "white transparent",
+							}}
 						/>
 					)}
 					{confirmText}

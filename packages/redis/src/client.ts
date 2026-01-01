@@ -11,7 +11,7 @@ let redisInstance: RedisClientType | null = null;
  * Application code should use cache/rateLimit/sessionStore utilities
  */
 async function getRedisClient(): Promise<RedisClientType> {
-	if (redisInstance && redisInstance.isOpen) {
+	if (redisInstance?.isOpen) {
 		return redisInstance;
 	}
 
@@ -51,7 +51,7 @@ export const cache = {
 			if (keys.length === 0) return [];
 			const client = await getRedisClient();
 			const values = await client.mGet(keys);
-			return values.map((v) => (v ? JSON.parse(v) as T : null));
+			return values.map((v) => (v ? (JSON.parse(v) as T) : null));
 		} catch (error) {
 			console.error(`Cache getMany error:`, error);
 			return keys.map(() => null);
@@ -299,7 +299,9 @@ export const sessionStore = {
 		}
 	},
 
-	async getAppSession(sessionId: string): Promise<{ userId: string; appId: string; metadata?: Record<string, unknown> } | null> {
+	async getAppSession(
+		sessionId: string,
+	): Promise<{ userId: string; appId: string; metadata?: Record<string, unknown> } | null> {
 		try {
 			const client = await getRedisClient();
 			const key = `session:app:${sessionId}`;
@@ -325,7 +327,7 @@ export const sessionStore = {
 		try {
 			const client = await getRedisClient();
 			const pattern = `session:app:*`;
-			
+
 			// Use SCAN instead of KEYS for production
 			let cursor = 0;
 			do {
@@ -334,7 +336,7 @@ export const sessionStore = {
 					COUNT: 100,
 				});
 				cursor = result.cursor;
-				
+
 				for (const key of result.keys) {
 					const session = await client.get(key);
 					if (session) {

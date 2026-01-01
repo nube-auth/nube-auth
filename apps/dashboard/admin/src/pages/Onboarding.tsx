@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState } from "react";
 import { useCreateProject } from "../hooks/api";
 
 export function OnboardingPage() {
@@ -30,20 +30,30 @@ export function OnboardingPage() {
 			<div className="card get-started-card">
 				<div className="get-started-content">
 					<div className="get-started-text">
-						<span className="badge badge-success" style={{ marginBottom: "12px" }}>Getting Started</span>
-						<h2 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "12px", color: "var(--text-primary)" }}>
+						<span className="badge badge-success" style={{ marginBottom: "12px" }}>
+							Getting Started
+						</span>
+						<h2
+							style={{
+								fontSize: "24px",
+								fontWeight: "700",
+								marginBottom: "12px",
+								color: "var(--text-primary)",
+							}}
+						>
 							Create your first project
 						</h2>
 						<p style={{ color: "var(--text-secondary)", marginBottom: "24px", lineHeight: "1.6" }}>
-							Set up authentication for your application in minutes. Proofa handles user management, 
-							OAuth providers, sessions, and more so you can focus on building your product.
+							Set up authentication for your application in minutes. Proofa handles user management, OAuth
+							providers, sessions, and more so you can focus on building your product.
 						</p>
-						<button
-							type="button"
-							onClick={() => setShowForm(true)}
-							className="btn btn-primary"
-						>
-							<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<button type="button" onClick={() => setShowForm(true)} className="btn btn-primary">
+							<svg
+								style={{ width: "16px", height: "16px" }}
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
 							</svg>
 							Create Project
@@ -57,7 +67,7 @@ export function OnboardingPage() {
 								<span className="code-preview-dot" style={{ background: "#28c840" }} />
 							</div>
 							<pre className="code-preview-content">
-{`import { ProofaAuth } from '@proofa/auth';
+								{`import { ProofaAuth } from '@proofa/auth';
 
 const auth = new ProofaAuth({
   projectId: 'your-project-id',
@@ -200,7 +210,12 @@ const user = await auth.getUser();`}
 							<h3>Create New Project</h3>
 							<button type="button" className="modal-close" onClick={() => setShowForm(false)}>
 								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={2}
+										d="M6 18L18 6M6 6l12 12"
+									/>
 								</svg>
 							</button>
 						</div>
@@ -232,7 +247,11 @@ const user = await auth.getUser();`}
 								<button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>
 									Cancel
 								</button>
-								<button type="submit" className="btn btn-primary" disabled={createProjectMutation.isPending}>
+								<button
+									type="submit"
+									className="btn btn-primary"
+									disabled={createProjectMutation.isPending}
+								>
 									{createProjectMutation.isPending ? "Creating..." : "Create Project"}
 								</button>
 							</div>

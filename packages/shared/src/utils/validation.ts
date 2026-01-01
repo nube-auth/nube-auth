@@ -1,5 +1,5 @@
-import { z } from "zod";
 import type { Context } from "hono";
+import { z } from "zod";
 import { ErrorResponses } from "./errors";
 
 /**
@@ -10,7 +10,9 @@ import { ErrorResponses } from "./errors";
 export const emailSchema = z.string().email("Invalid email format").min(3).max(255);
 
 /** Public ID schema (matches our ID format) */
-export const publicIdSchema = z.string().regex(/^[A-Z]{3}0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9,15}$/, "Invalid ID format");
+export const publicIdSchema = z
+	.string()
+	.regex(/^[A-Z]{3}0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9,15}$/, "Invalid ID format");
 
 /** URL schema */
 export const urlSchema = z.string().url("Invalid URL format");
@@ -47,10 +49,7 @@ export const dateRangeSchema = z.object({
  * Validate request body with Zod schema
  * Returns validated data or throws validation error
  */
-export async function validateBody<T extends z.ZodType>(
-	c: Context,
-	schema: T,
-): Promise<z.infer<T>> {
+export async function validateBody<T extends z.ZodType>(c: Context, schema: T): Promise<z.infer<T>> {
 	try {
 		const body = await c.req.json();
 		return schema.parse(body);
@@ -70,10 +69,7 @@ export async function validateBody<T extends z.ZodType>(
  * Validate query parameters with Zod schema
  * Returns validated data or throws validation error
  */
-export function validateQuery<T extends z.ZodType>(
-	c: Context,
-	schema: T,
-): z.infer<T> {
+export function validateQuery<T extends z.ZodType>(c: Context, schema: T): z.infer<T> {
 	try {
 		const query = c.req.query();
 		return schema.parse(query);
@@ -93,10 +89,7 @@ export function validateQuery<T extends z.ZodType>(
  * Validate path parameters with Zod schema
  * Returns validated data or throws validation error
  */
-export function validateParams<T extends z.ZodType>(
-	c: Context,
-	schema: T,
-): z.infer<T> {
+export function validateParams<T extends z.ZodType>(c: Context, schema: T): z.infer<T> {
 	try {
 		const params = c.req.param();
 		return schema.parse(params);
@@ -115,11 +108,7 @@ export function validateParams<T extends z.ZodType>(
 /**
  * Create a validation middleware for Hono routes
  */
-export function validateRequest<T extends z.ZodType>(schema: {
-	body?: T;
-	query?: T;
-	params?: T;
-}) {
+export function validateRequest<T extends z.ZodType>(schema: { body?: T; query?: T; params?: T }) {
 	return async (c: Context, next: () => Promise<void>) => {
 		try {
 			if (schema.body) {
@@ -141,10 +130,7 @@ export function validateRequest<T extends z.ZodType>(schema: {
 					path: issue.path.join("."),
 					message: issue.message,
 				}));
-				return c.json(
-					ErrorResponses.ValidationError("Validation failed", { issues }),
-					400,
-				);
+				return c.json(ErrorResponses.ValidationError("Validation failed", { issues }), 400);
 			}
 			throw error;
 		}

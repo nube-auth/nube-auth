@@ -1,6 +1,6 @@
+import { createId } from "@proofa/shared";
 import type { Context, Next } from "hono";
 import type pino from "pino";
-import { createId } from "@proofa/shared";
 
 /**
  * Request ID middleware

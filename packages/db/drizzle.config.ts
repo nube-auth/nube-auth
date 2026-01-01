@@ -1,12 +1,9 @@
-import { defineConfig } from "drizzle-kit";
-import dotenv from "dotenv";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
+import { defineConfig } from "drizzle-kit";
 
-const configDir =
-	typeof __dirname === "string"
-		? __dirname
-		: dirname(fileURLToPath(import.meta.url));
+const configDir = typeof __dirname === "string" ? __dirname : dirname(fileURLToPath(import.meta.url));
 
 // Load .env and .env.local from workspace root
 dotenv.config({ path: resolve(configDir, "../../.env") });

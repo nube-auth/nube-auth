@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
-import { useApp, useUpdateApp, useProject } from "../hooks/api";
-import { App } from "../types/admin";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { useToast } from "../components/Toast";
+import { useApp, useProject, useUpdateApp } from "../hooks/api";
+import type { App } from "../types/admin";
 
 type SettingsTab = "general" | "authentication" | "security" | "danger";
 
@@ -150,16 +150,30 @@ export function AppSettingsPage() {
 		<div className="page">
 			{/* Breadcrumb */}
 			<div style={{ marginBottom: "24px" }}>
-				<div style={{ display: "flex", gap: "8px", alignItems: "center", fontSize: "13px", color: "var(--text-tertiary)" }}>
+				<div
+					style={{
+						display: "flex",
+						gap: "8px",
+						alignItems: "center",
+						fontSize: "13px",
+						color: "var(--text-tertiary)",
+					}}
+				>
 					<Link to="/projects" style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
 						Projects
 					</Link>
 					<span>›</span>
-					<Link to={`/projects/${projectId}`} style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+					<Link
+						to={`/projects/${projectId}`}
+						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
+					>
 						{project.name}
 					</Link>
 					<span>›</span>
-					<Link to={`/projects/${projectId}/apps/${appId}`} style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+					<Link
+						to={`/projects/${projectId}/apps/${appId}`}
+						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
+					>
 						{app.name}
 					</Link>
 					<span>›</span>
@@ -190,7 +204,8 @@ export function AppSettingsPage() {
 								color: activeTab === tab.id ? "var(--primary)" : "var(--text-tertiary)",
 								background: "none",
 								border: "none",
-								borderBottom: activeTab === tab.id ? "2px solid var(--primary)" : "2px solid transparent",
+								borderBottom:
+									activeTab === tab.id ? "2px solid var(--primary)" : "2px solid transparent",
 								cursor: "pointer",
 								transition: "all 0.2s ease",
 							}}
@@ -207,7 +222,9 @@ export function AppSettingsPage() {
 				{activeTab === "general" && (
 					<div>
 						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>Basic Information</h3>
+							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>
+								Basic Information
+							</h3>
 
 							<div style={{ display: "grid", gap: "20px" }}>
 								<div>
@@ -258,7 +275,6 @@ export function AppSettingsPage() {
 										Optional description for internal reference
 									</p>
 								</div>
-
 							</div>
 						</div>
 					</div>
@@ -268,10 +284,13 @@ export function AppSettingsPage() {
 				{activeTab === "authentication" && (
 					<div>
 						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>OAuth Providers</h3>
+							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>
+								OAuth Providers
+							</h3>
 							<p style={{ fontSize: "14px", color: "var(--text-tertiary)", marginBottom: "20px" }}>
-							OAuth providers are now managed at the project level. Go to Project Settings to configure authentication providers.
-						</p>
+								OAuth providers are now managed at the project level. Go to Project Settings to
+								configure authentication providers.
+							</p>
 							<p style={{ fontSize: "14px", color: "var(--text-tertiary)", marginBottom: "16px" }}>
 								Allowed callback URLs after successful authentication
 							</p>
@@ -348,7 +367,9 @@ export function AppSettingsPage() {
 				{activeTab === "security" && (
 					<div>
 						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>Security Settings</h3>
+							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>
+								Security Settings
+							</h3>
 
 							<div style={{ display: "grid", gap: "20px" }}>
 								<div>
@@ -404,15 +425,18 @@ export function AppSettingsPage() {
 							</div>
 						</div>
 
-						<div style={{
-							padding: "16px",
-							background: "var(--info-bg)",
-							border: "1px solid var(--info-border)",
-							borderRadius: "8px",
-							fontSize: "14px",
-							color: "var(--info-text)",
-						}}>
-							<strong>💡 Pro Tip:</strong> Adjust these settings based on your app's needs. Higher values provide better UX but may increase security risks.
+						<div
+							style={{
+								padding: "16px",
+								background: "var(--info-bg)",
+								border: "1px solid var(--info-border)",
+								borderRadius: "8px",
+								fontSize: "14px",
+								color: "var(--info-text)",
+							}}
+						>
+							<strong>💡 Pro Tip:</strong> Adjust these settings based on your app's needs. Higher values
+							provide better UX but may increase security risks.
 						</div>
 					</div>
 				)}
@@ -420,22 +444,53 @@ export function AppSettingsPage() {
 				{/* Danger Zone Tab */}
 				{activeTab === "danger" && (
 					<div>
-						<div className="card" style={{ padding: "24px", borderColor: "var(--danger)", borderWidth: "2px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px", color: "var(--danger)" }}>
+						<div
+							className="card"
+							style={{ padding: "24px", borderColor: "var(--danger)", borderWidth: "2px" }}
+						>
+							<h3
+								style={{
+									fontSize: "16px",
+									fontWeight: "600",
+									marginBottom: "12px",
+									color: "var(--danger)",
+								}}
+							>
 								⚠️ Danger Zone
 							</h3>
 							<p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "20px" }}>
 								These actions are permanent and cannot be undone.
 							</p>
 
-							<div style={{ padding: "20px", background: "rgba(239, 68, 68, 0.05)", borderRadius: "8px", border: "1px solid rgba(239, 68, 68, 0.2)" }}>
-								<h4 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "8px", color: "var(--danger)" }}>
+							<div
+								style={{
+									padding: "20px",
+									background: "rgba(239, 68, 68, 0.05)",
+									borderRadius: "8px",
+									border: "1px solid rgba(239, 68, 68, 0.2)",
+								}}
+							>
+								<h4
+									style={{
+										fontSize: "14px",
+										fontWeight: "600",
+										marginBottom: "8px",
+										color: "var(--danger)",
+									}}
+								>
 									Delete This App
 								</h4>
 								<p style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "16px" }}>
 									Once you delete an app, there is no going back. This will:
 								</p>
-								<ul style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "16px", paddingLeft: "20px" }}>
+								<ul
+									style={{
+										fontSize: "13px",
+										color: "var(--text-secondary)",
+										marginBottom: "16px",
+										paddingLeft: "20px",
+									}}
+								>
 									<li>Delete all user data and sessions</li>
 									<li>Revoke all active licenses</li>
 									<li>Remove all API keys and integrations</li>
@@ -484,10 +539,13 @@ export function AppSettingsPage() {
 				onClose={() => setShowDeleteModal(false)}
 				onConfirm={async () => {
 					try {
-					const response = await fetch(`${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/admin/projects/${projectId}/apps/${appId}`, {
-						method: "DELETE",
-							credentials: "include",
-						});
+						const response = await fetch(
+							`${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/admin/projects/${projectId}/apps/${appId}`,
+							{
+								method: "DELETE",
+								credentials: "include",
+							},
+						);
 
 						if (!response.ok) {
 							const data = await response.json();
@@ -496,7 +554,7 @@ export function AppSettingsPage() {
 
 						showToast("App deleted successfully", "success");
 						setShowDeleteModal(false);
-						
+
 						// Redirect to project apps page
 						window.location.href = `/projects/${projectId}/apps`;
 					} catch (error) {

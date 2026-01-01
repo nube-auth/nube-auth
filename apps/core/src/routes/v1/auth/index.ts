@@ -1,6 +1,6 @@
 import { GitHubOAuthAdapter, GoogleOAuthAdapter } from "@proofa/auth";
-import { getDb, identityQueries, sessionQueries, userQueries } from "@proofa/db";
 import { cache } from "@proofa/cache";
+import { getDb, identityQueries, sessionQueries, userQueries } from "@proofa/db";
 import { createId, idPatterns } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -131,7 +131,7 @@ router.get("/callback/:provider", async (c: Context) => {
 
 	try {
 		const db = getDb();
-		const now = new Date();
+		const _now = new Date();
 		const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
 		let adapter;
@@ -157,46 +157,46 @@ router.get("/callback/:provider", async (c: Context) => {
 		const existingIdentity = await identityQueries.findByProviderUserId(db, provider, profile.id);
 
 		let userId = existingIdentity?.user_id;
-		let userPublicId: string;
+		let _userPublicId: string;
 
 		if (!userId) {
 			// Create new user
-		const userData = {
-			public_id: createId("user"),
-			primary_email: profile.email,
-			primary_email_verified: true, // OAuth providers verify email addresses
-			name: profile.name,
-			avatar_url: profile.picture || null,
-			// created_at and updated_at auto-set by .defaultNow() in schema
-		};
-		const newUser = await userQueries.create(db, userData);
-		userId = newUser.id;
-		userPublicId = newUser.public_id;
+			const userData = {
+				public_id: createId("user"),
+				primary_email: profile.email,
+				primary_email_verified: true, // OAuth providers verify email addresses
+				name: profile.name,
+				avatar_url: profile.picture || null,
+				// created_at and updated_at auto-set by .defaultNow() in schema
+			};
+			const newUser = await userQueries.create(db, userData);
+			userId = newUser.id;
+			_userPublicId = newUser.public_id;
 
-		// Create identity
-		const identityData = {
-			public_id: createId("identity"),
-			user_id: userId,
-			provider,
-			provider_user_id: profile.id,
-			email: profile.email,
-			email_verified: true, // OAuth providers verify email addresses
-			// created_at auto-set by .defaultNow() in schema
-		};
-		await identityQueries.create(db, identityData);
+			// Create identity
+			const identityData = {
+				public_id: createId("identity"),
+				user_id: userId,
+				provider,
+				provider_user_id: profile.id,
+				email: profile.email,
+				email_verified: true, // OAuth providers verify email addresses
+				// created_at auto-set by .defaultNow() in schema
+			};
+			await identityQueries.create(db, identityData);
 		} else {
 			const user = await userQueries.findById(db, userId);
-			userPublicId = user?.public_id || createId("user");
+			_userPublicId = user?.public_id || createId("user");
 		}
 
-	// Create core session
-	const sessionData = {
-		public_id: createId("session"),
-		user_id: userId,
-		// created_at and last_seen_at will be set automatically by .defaultNow() in schema
-		expires_at: expiresAt,
-	};
-	const session = await sessionQueries.create(db, sessionData);
+		// Create core session
+		const sessionData = {
+			public_id: createId("session"),
+			user_id: userId,
+			// created_at and last_seen_at will be set automatically by .defaultNow() in schema
+			expires_at: expiresAt,
+		};
+		const session = await sessionQueries.create(db, sessionData);
 
 		// Redirect to Gateway callback with session ID as code
 		const redirectUrl = new URL(storedState.redirectUri);

@@ -6,7 +6,7 @@ import { getEnv } from "../config/env";
  * Service-to-service authentication middleware
  * Validates X-Proofa-Service-Token header for Core API calls
  */
-export const s2sAuthMiddleware = createMiddleware(async (c: Context, next: Next): Promise<Response | void> => {
+export const s2sAuthMiddleware = createMiddleware(async (c: Context, next: Next): Promise<Response | undefined> => {
 	const token = c.req.header("X-Proofa-Service-Token");
 	const env = getEnv();
 

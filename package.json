@@ -6,7 +6,6 @@
 	"type": "module",
 	"scripts": {
 		"setup": "./scripts/setup-dev.sh",
-		"setup:secrets": "node -e \"const crypto = require('crypto'); console.log('ENCRYPTION_KEY=' + crypto.randomBytes(32).toString('hex')); console.log('SESSION_SECRET=' + crypto.randomBytes(64).toString('hex')); console.log('GATEWAY_S2S_TOKEN=' + crypto.randomBytes(32).toString('hex')); console.log('CORE_S2S_TOKEN=' + crypto.randomBytes(32).toString('hex'));\"",
 		"dev": "turbo run dev",
 		"dev:gateway": "pnpm --filter @proofa/gateway dev",
 		"dev:core": "pnpm --filter @proofa/core dev",

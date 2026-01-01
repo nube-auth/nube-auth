@@ -23,7 +23,7 @@ class AppError extends Error {
  * Global error handling middleware
  * Catches all errors and returns structured error responses
  */
-export const errorMiddleware = createMiddleware(async (c: Context, next): Promise<Response | void> => {
+export const errorMiddleware = createMiddleware(async (c: Context, next): Promise<Response | undefined> => {
 	try {
 		await next();
 	} catch (error) {

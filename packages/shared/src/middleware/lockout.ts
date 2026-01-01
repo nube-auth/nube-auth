@@ -1,7 +1,7 @@
 import { cache } from "@proofa/cache";
 import type { Context } from "hono";
-import { createLogger } from "../utils/logger";
 import { ErrorResponses } from "../utils/errors";
+import { createLogger } from "../utils/logger";
 
 const log = createLogger("lockout");
 
@@ -65,7 +65,7 @@ export async function recordFailedAttempt(
 	config: LockoutConfig = DEFAULT_LOCKOUT_CONFIG,
 ): Promise<{ shouldLock: boolean; attempts: number; remainingAttempts: number }> {
 	const attemptKey = `${ATTEMPT_PREFIX}${type}:${identifier}`;
-	const now = Math.floor(Date.now() / 1000);
+	const _now = Math.floor(Date.now() / 1000);
 
 	// Increment attempt count
 	const attempts = await cache.increment(attemptKey);
@@ -78,13 +78,16 @@ export async function recordFailedAttempt(
 	const shouldLock = attempts >= config.maxAttempts;
 	const remainingAttempts = Math.max(0, config.maxAttempts - attempts);
 
-	log.info({
-		identifier,
-		type,
-		attempts,
-		shouldLock,
-		remainingAttempts,
-	}, "Failed attempt recorded");
+	log.info(
+		{
+			identifier,
+			type,
+			attempts,
+			shouldLock,
+			remainingAttempts,
+		},
+		"Failed attempt recorded",
+	);
 
 	if (shouldLock) {
 		await lockAccount(identifier, type, config.lockoutMinutes);
@@ -97,40 +100,33 @@ export async function recordFailedAttempt(
 /**
  * Lock an account for a specified duration
  */
-export async function lockAccount(
-	identifier: string,
-	type: string = "auth",
-	minutes: number,
-): Promise<void> {
+export async function lockAccount(identifier: string, type: string = "auth", minutes: number): Promise<void> {
 	const key = `${LOCKOUT_PREFIX}${type}:${identifier}`;
 	const now = Math.floor(Date.now() / 1000);
 	const lockedUntil = now + minutes * 60;
 
 	await cache.set(key, lockedUntil, minutes * 60);
 
-	log.warn({
-		identifier,
-		type,
-		minutes,
-		lockedUntil,
-	}, "Account locked");
+	log.warn(
+		{
+			identifier,
+			type,
+			minutes,
+			lockedUntil,
+		},
+		"Account locked",
+	);
 }
 
 /**
  * Clear lockout and attempts for an identifier
  * Used for manual unlock or after successful authentication
  */
-export async function clearLockout(
-	identifier: string,
-	type: string = "auth",
-): Promise<void> {
+export async function clearLockout(identifier: string, type: string = "auth"): Promise<void> {
 	const lockoutKey = `${LOCKOUT_PREFIX}${type}:${identifier}`;
 	const attemptKey = `${ATTEMPT_PREFIX}${type}:${identifier}`;
 
-	await Promise.all([
-		cache.delete(lockoutKey),
-		cache.delete(attemptKey),
-	]);
+	await Promise.all([cache.delete(lockoutKey), cache.delete(attemptKey)]);
 
 	log.info({ identifier, type }, "Lockout cleared");
 }
@@ -138,10 +134,7 @@ export async function clearLockout(
 /**
  * Get current attempt count for an identifier
  */
-export async function getAttemptCount(
-	identifier: string,
-	type: string = "auth",
-): Promise<number> {
+export async function getAttemptCount(identifier: string, type: string = "auth"): Promise<number> {
 	const key = `${ATTEMPT_PREFIX}${type}:${identifier}`;
 	const attempts = await cache.get<number>(key);
 	return attempts || 0;
@@ -159,7 +152,7 @@ export function lockoutMiddleware(options: {
 	/** Custom lockout configuration */
 	config?: LockoutConfig;
 }) {
-	const { getIdentifier, type = "auth", config = DEFAULT_LOCKOUT_CONFIG } = options;
+	const { getIdentifier, type = "auth", config: _config = DEFAULT_LOCKOUT_CONFIG } = options;
 
 	return async (c: Context, next: () => Promise<void>) => {
 		try {
@@ -205,9 +198,5 @@ export async function getEmailFromBody(c: Context): Promise<string> {
  * Helper to extract IP address from request
  */
 export function getIpFromRequest(c: Context): string {
-	return (
-		c.req.header("x-forwarded-for")?.split(",")[0] ||
-		c.req.header("x-real-ip") ||
-		"unknown"
-	);
+	return c.req.header("x-forwarded-for")?.split(",")[0] || c.req.header("x-real-ip") || "unknown";
 }

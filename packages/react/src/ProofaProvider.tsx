@@ -1,6 +1,6 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { ProofaClient, type ProofaClientConfig } from "@proofa/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createContext, type ReactNode, useContext, useMemo } from "react";
 
 interface ProofaContextValue {
 	client: ProofaClient;
@@ -15,11 +15,7 @@ interface ProofaProviderProps {
 	children: ReactNode;
 }
 
-export function ProofaProvider({
-	config,
-	queryClient: externalQueryClient,
-	children,
-}: ProofaProviderProps) {
+export function ProofaProvider({ config, queryClient: externalQueryClient, children }: ProofaProviderProps) {
 	const value = useMemo(() => {
 		const client = new ProofaClient(config);
 		const queryClient =
@@ -35,13 +31,11 @@ export function ProofaProvider({
 			});
 
 		return { client, queryClient };
-	}, [config.gatewayUrl, config.s2sToken, externalQueryClient]);
+	}, [config.gatewayUrl, config.s2sToken, externalQueryClient, config]);
 
 	return (
 		<ProofaContext.Provider value={value}>
-			<QueryClientProvider client={value.queryClient}>
-				{children}
-			</QueryClientProvider>
+			<QueryClientProvider client={value.queryClient}>{children}</QueryClientProvider>
 		</ProofaContext.Provider>
 	);
 }

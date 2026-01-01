@@ -9,12 +9,12 @@ export interface ProofaClientConfig {
 }
 
 export interface User {
-    id: string;
-    email: string;
-    name: string | null;
-    createdAt: string;
-    avatar_url?: string | null;
-    emailVerified?: boolean;
+	id: string;
+	email: string;
+	name: string | null;
+	createdAt: string;
+	avatar_url?: string | null;
+	emailVerified?: boolean;
 }
 
 export interface AuthStatus {
@@ -24,9 +24,9 @@ export interface AuthStatus {
 
 export interface Session {
 	id: string;
-    createdAt: string;
-    expiresAt: string;
-    isCurrent?: boolean;
+	createdAt: string;
+	expiresAt: string;
+	isCurrent?: boolean;
 }
 
 export interface License {

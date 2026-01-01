@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PublicIdSchema, EmailSchema, NameSchema, TimestampSchema } from "./common";
+import { EmailSchema, NameSchema, PublicIdSchema } from "./common";
 
 /**
  * User/Auth Schemas

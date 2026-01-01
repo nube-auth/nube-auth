@@ -1,5 +1,5 @@
-import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { createId } from "@proofa/shared";
+import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import type { DbClient } from "./index.js";
 import { apps, payment_providers } from "./schema.js";
 
@@ -8,7 +8,6 @@ import { apps, payment_providers } from "./schema.js";
  * Resolves payment providers from Platform → Project → App hierarchy
  */
 export const paymentProviderQueries = {
-
 	/**
 	 * Find payment provider by ID
 	 */
@@ -63,7 +62,7 @@ export const paymentProviderQueries = {
 	async getSelectedPaymentProvider(db: DbClient, appId: number) {
 		const appResults = await db.select().from(apps).where(eq(apps.id, appId));
 		const app = appResults[0];
-		
+
 		if (!app || !app.selected_payment_provider_id) return null;
 
 		const results = await db
@@ -73,10 +72,10 @@ export const paymentProviderQueries = {
 				and(
 					eq(payment_providers.id, app.selected_payment_provider_id),
 					eq(payment_providers.is_active, true),
-					isNull(payment_providers.deleted_at)
-				)
+					isNull(payment_providers.deleted_at),
+				),
 			);
-		
+
 		return results[0] || null;
 	},
 
@@ -86,39 +85,37 @@ export const paymentProviderQueries = {
 	 */
 	async getAvailablePaymentProviders(db: DbClient, appId: number, environment: "test" | "production" = "test") {
 		// Get the app with its project
-	const appResults = await db
-		.select({
-			id: apps.id,
-			project_id: apps.project_id,
-		})
-		.from(apps)
-		.where(eq(apps.id, appId))
-		;
+		const appResults = await db
+			.select({
+				id: apps.id,
+				project_id: apps.project_id,
+			})
+			.from(apps)
+			.where(eq(apps.id, appId));
 
-	const app = appResults[0];
-	if (!app) return [];
+		const app = appResults[0];
+		if (!app) return [];
 
-	// Get all active payment providers from platform (entity_id = null), project, and app levels
-	const providers = await db
-		.select()
-		.from(payment_providers)
-		.where(
-			and(
-				inArray(payment_providers.entity_type, ["platform", "project", "app"]),
-				eq(payment_providers.environment, environment),
-				eq(payment_providers.is_active, true),
-				isNull(payment_providers.deleted_at),
-			),
-		)
-		;
+		// Get all active payment providers from platform (entity_id = null), project, and app levels
+		const providers = await db
+			.select()
+			.from(payment_providers)
+			.where(
+				and(
+					inArray(payment_providers.entity_type, ["platform", "project", "app"]),
+					eq(payment_providers.environment, environment),
+					eq(payment_providers.is_active, true),
+					isNull(payment_providers.deleted_at),
+				),
+			);
 
-	// Filter to relevant providers (platform, this project, or this app)
-	return providers.filter((p: any) => {
-		if (p.entity_type === "platform" && p.entity_id === null) return true;
-		if (p.entity_type === "project" && p.entity_id === app.project_id) return true;
-		if (p.entity_type === "app" && p.entity_id === app.id) return true;
-		return false;
-	});
+		// Filter to relevant providers (platform, this project, or this app)
+		return providers.filter((p: any) => {
+			if (p.entity_type === "platform" && p.entity_id === null) return true;
+			if (p.entity_type === "project" && p.entity_id === app.project_id) return true;
+			if (p.entity_type === "app" && p.entity_id === app.id) return true;
+			return false;
+		});
 	},
 
 	/**
@@ -252,12 +249,7 @@ export const paymentProviderQueries = {
 		await db
 			.update(payment_providers)
 			.set({ is_active: false, updated_at: new Date() })
-			.where(
-				and(
-					eq(payment_providers.entity_type, "app"),
-					eq(payment_providers.entity_id, app_id),
-				),
-			);
+			.where(and(eq(payment_providers.entity_type, "app"), eq(payment_providers.entity_id, app_id)));
 
 		// Activate the selected provider
 		const results = await db
@@ -295,8 +287,7 @@ export const paymentProviderQueries = {
 				updated_at: new Date(),
 			})
 			.where(eq(payment_providers.id, provider_id))
-			.returning()
-			;
+			.returning();
 		return results[0];
 	},
 
@@ -308,7 +299,6 @@ export const paymentProviderQueries = {
 			.update(payment_providers)
 			.set({ deleted_at: new Date() })
 			.where(eq(payment_providers.id, provider_id))
-			.returning()
-			;
+			.returning();
 	},
 };

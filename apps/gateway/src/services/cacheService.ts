@@ -1,5 +1,5 @@
-import { CACHE_TTL } from "../config/constants";
 import { cache } from "@proofa/cache";
+import { CACHE_TTL } from "../config/constants";
 import { coreService } from "./coreService";
 
 /**

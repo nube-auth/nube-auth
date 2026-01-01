@@ -1,14 +1,22 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ProofaClient } from "@proofa/client";
-import type { Project, App, ProjectMember, License, CreateProjectRequest, CreateAppRequest, UpdateAppRequest } from "../types/admin";
 import {
-	ProjectDTOSchema,
-	ProjectsListResponseSchema,
 	AppDTOSchema,
 	AppsListResponseSchema,
-	ProjectMembersListResponseSchema,
 	LicensesListResponseSchema,
+	ProjectDTOSchema,
+	ProjectMembersListResponseSchema,
+	ProjectsListResponseSchema,
 } from "@proofa/shared";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type {
+	App,
+	CreateAppRequest,
+	CreateProjectRequest,
+	License,
+	Project,
+	ProjectMember,
+	UpdateAppRequest,
+} from "../types/admin";
 
 const client = new ProofaClient({
 	gatewayUrl: import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004",
@@ -101,10 +109,14 @@ export function useCreateProject() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async (data: CreateProjectRequest) => {
-			return fetchAPI<Project>("/v1/admin/projects", {
-				method: "POST",
-				body: JSON.stringify(data),
-			}, ProjectDTOSchema);
+			return fetchAPI<Project>(
+				"/v1/admin/projects",
+				{
+					method: "POST",
+					body: JSON.stringify(data),
+				},
+				ProjectDTOSchema,
+			);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["projects"] });
@@ -116,10 +128,14 @@ export function useUpdateProject(projectId: string) {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async (data: { name: string; slug: string; description?: string }) => {
-			return fetchAPI<Project>(`/v1/admin/projects/${projectId}`, {
-				method: "PATCH",
-				body: JSON.stringify(data),
-			}, ProjectDTOSchema);
+			return fetchAPI<Project>(
+				`/v1/admin/projects/${projectId}`,
+				{
+					method: "PATCH",
+					body: JSON.stringify(data),
+				},
+				ProjectDTOSchema,
+			);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["projects"] });
@@ -157,10 +173,14 @@ export function useCreateApp(projectId: string) {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async (data: CreateAppRequest) => {
-			return fetchAPI<App>(`/v1/admin/projects/${projectId}/apps`, {
-				method: "POST",
-				body: JSON.stringify(data),
-			}, AppDTOSchema);
+			return fetchAPI<App>(
+				`/v1/admin/projects/${projectId}/apps`,
+				{
+					method: "POST",
+					body: JSON.stringify(data),
+				},
+				AppDTOSchema,
+			);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["project-apps", projectId] });
@@ -288,20 +308,22 @@ export function useAppPlans(projectId: string, appId: string) {
 	return useQuery({
 		queryKey: ["app-plans", projectId, appId],
 		queryFn: async () => {
-			return fetchAPI<Array<{
-				id: string;
-				name: string;
-				slug: string;
-				description: string | null;
-				monthlyPrice: number | null;
-				yearlyPrice: number | null;
-				oneTimePrice: number | null;
-				trialEnabled: boolean;
-				trialDays: number | null;
-				features: string[];
-				status: string;
-				displayOrder: number;
-			}>>(`/v1/admin/projects/${projectId}/apps/${appId}/plans`);
+			return fetchAPI<
+				Array<{
+					id: string;
+					name: string;
+					slug: string;
+					description: string | null;
+					monthlyPrice: number | null;
+					yearlyPrice: number | null;
+					oneTimePrice: number | null;
+					trialEnabled: boolean;
+					trialDays: number | null;
+					features: string[];
+					status: string;
+					displayOrder: number;
+				}>
+			>(`/v1/admin/projects/${projectId}/apps/${appId}/plans`);
 		},
 		enabled: !!projectId && !!appId,
 	});
@@ -572,11 +594,7 @@ export function useSelectedOAuthProviders(appId: string) {
 export function useSelectOAuthProvider(appId: string) {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: async (data: {
-			oauthProviderId: number;
-			displayOrder?: number;
-			customButtonText?: string;
-		}) => {
+		mutationFn: async (data: { oauthProviderId: number; displayOrder?: number; customButtonText?: string }) => {
 			return fetchAPI<{ selection: any }>(`/v1/admin/apps/${appId}/oauth/select`, {
 				method: "POST",
 				body: JSON.stringify(data),

@@ -26,7 +26,7 @@ setInterval(() => {
 authRoutes.get("/start", async (c: Context) => {
 	const provider = c.req.query("provider") as "google" | "github" | undefined;
 	const redirectUri = c.req.query("redirect_uri") as string | undefined;
-	const state = c.req.query("state") as string | undefined; // Pass-through state from Gateway
+	const _state = c.req.query("state") as string | undefined; // Pass-through state from Gateway
 
 	if (!provider || !["google", "github"].includes(provider)) {
 		return c.json({ error: "Invalid provider" }, 400);
@@ -148,7 +148,7 @@ authRoutes.get("/callback/:provider", async (c: Context) => {
 		const existingIdentity = await identityQueries.findByProviderUserId(db, provider, profile.id);
 
 		let userId = existingIdentity?.user_id;
-		let createdUser = false;
+		let _createdUser = false;
 
 		if (!userId) {
 			// Create new user
@@ -161,7 +161,7 @@ authRoutes.get("/callback/:provider", async (c: Context) => {
 				updated_at: new Date(),
 			});
 			userId = newUser.id;
-			createdUser = true;
+			_createdUser = true;
 
 			// Create identity
 			await identityQueries.create(db, {
@@ -186,7 +186,7 @@ authRoutes.get("/callback/:provider", async (c: Context) => {
 		const session = await sessionQueries.create(db, sessionData);
 
 		// Generate auth code for Gateway to exchange
-		const authCode = id.authCode();
+		const _authCode = id.authCode();
 
 		// Store auth code temporarily (in production, use Redis with TTL)
 		// For now, we'll pass the session directly since Gateway will exchange immediately

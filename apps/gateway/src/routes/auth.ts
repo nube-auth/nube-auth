@@ -1,15 +1,15 @@
+import crypto from "node:crypto";
 import { createSessionCookie, parseSessionCookie } from "@proofa/auth";
-import { createLogger, serializeError, GatewayLoginRequestSchema } from "@proofa/shared";
 import { sessionStore } from "@proofa/cache";
 import { getDb, sessionQueries } from "@proofa/db";
-import crypto from "node:crypto";
+import { createLogger, GatewayLoginRequestSchema, serializeError } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
-import { coreClient } from "../lib/core-client";
+import { CSRF_TOKEN_BYTES, SESSION_ID_BYTES, SESSION_TTL } from "../config/constants";
 import { env } from "../config/env";
+import { coreClient } from "../lib/core-client";
 import { sessionService } from "../services/sessionService";
-import { SESSION_TTL, SESSION_ID_BYTES, CSRF_TOKEN_BYTES } from "../config/constants";
 
 const log = createLogger("auth-routes");
 
@@ -90,9 +90,10 @@ authRoutes.get("/callback", async (c: Context) => {
 		if (!response.ok) {
 			const errorData = await response.json().catch(() => ({}));
 			log.error({ err: serializeError(error as Error) }, "Code exchange failed:", response.status, errorData);
-			const dashboardUrl = audience === "admin" 
-				? (process.env.ADMIN_DASHBOARD_URL || "http://localhost:5174")
-				: (process.env.USER_DASHBOARD_URL || "http://localhost:5173");
+			const dashboardUrl =
+				audience === "admin"
+					? process.env.ADMIN_DASHBOARD_URL || "http://localhost:5174"
+					: process.env.USER_DASHBOARD_URL || "http://localhost:5173";
 			return c.redirect(`${dashboardUrl}/login?error=exchange_failed`);
 		}
 
@@ -107,20 +108,14 @@ authRoutes.get("/callback", async (c: Context) => {
 		const gatewaySessionId = crypto.randomBytes(SESSION_ID_BYTES).toString("hex");
 		const csrfToken = crypto.randomBytes(CSRF_TOKEN_BYTES).toString("hex"); // Generate CSRF token
 		const ttlSeconds = SESSION_TTL;
-		
+
 		// Store app session in Redis with Gateway session ID
 		// Store Core session ID and CSRF token in metadata
 		const appId = audience === "admin" ? "admin-dashboard" : "user-dashboard";
-		await sessionStore.setAppSession(
-			gatewaySessionId, 
-			data.userId, 
-			appId, 
-			ttlSeconds,
-			{ 
-				coreSessionId: code, // Store Core session in metadata
-				csrfToken // Store CSRF token for validation
-			}
-		);
+		await sessionStore.setAppSession(gatewaySessionId, data.userId, appId, ttlSeconds, {
+			coreSessionId: code, // Store Core session in metadata
+			csrfToken, // Store CSRF token for validation
+		});
 
 		// Create signed cookie with domain for cross-subdomain access
 		const cookieDomain = process.env.COOKIE_DOMAIN; // e.g., ".proofa.sh"
@@ -150,19 +145,21 @@ authRoutes.get("/callback", async (c: Context) => {
 		});
 
 		// Redirect to appropriate dashboard
-		const dashboardUrl = audience === "admin"
-			? (process.env.ADMIN_DASHBOARD_URL || "http://localhost:5174")
-			: (process.env.USER_DASHBOARD_URL || "http://localhost:5173");
+		const dashboardUrl =
+			audience === "admin"
+				? process.env.ADMIN_DASHBOARD_URL || "http://localhost:5174"
+				: process.env.USER_DASHBOARD_URL || "http://localhost:5173";
 		const redirectUrl = state.startsWith("/") ? `${dashboardUrl}${state}` : dashboardUrl;
-		
+
 		log.info({ audience, appId, cookieName, dashboardUrl, hasCsrfToken: true }, "Login successful, redirecting");
 		return c.redirect(redirectUrl);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Auth callback error:");
 		const audience = inferAudience(c);
-		const dashboardUrl = audience === "admin"
-			? (process.env.ADMIN_DASHBOARD_URL || "http://localhost:5174")
-			: (process.env.USER_DASHBOARD_URL || "http://localhost:5173");
+		const dashboardUrl =
+			audience === "admin"
+				? process.env.ADMIN_DASHBOARD_URL || "http://localhost:5174"
+				: process.env.USER_DASHBOARD_URL || "http://localhost:5173";
 		return c.redirect(`${dashboardUrl}/login?error=internal_error`);
 	}
 });
@@ -189,17 +186,17 @@ authRoutes.post("/login", async (c: Context) => {
 		const csrfToken = crypto.randomBytes(CSRF_TOKEN_BYTES).toString("hex"); // Generate CSRF token
 		const ttlSeconds = SESSION_TTL;
 		const resolvedAudience = audience === "admin" ? "admin" : "user";
-		
+
 		// Store app session with Gateway session ID and CSRF token
 		await sessionStore.setAppSession(
 			gatewaySessionId,
 			user.userId,
 			resolvedAudience === "admin" ? "admin-dashboard" : "user-dashboard",
 			ttlSeconds,
-			{ 
+			{
 				coreSessionId, // Store Core session in metadata
-				csrfToken // Store CSRF token for validation
-			}
+				csrfToken, // Store CSRF token for validation
+			},
 		);
 
 		// Create signed cookie with Gateway session ID
@@ -252,20 +249,23 @@ authRoutes.post("/logout", async (c: Context) => {
 		const audience = inferAudience(c);
 		const cookieDomain = process.env.COOKIE_DOMAIN;
 
-		log.info({
-			audience,
-			isProduction,
-			cookieDomain,
-		}, "Logout request received");
+		log.info(
+			{
+				audience,
+				isProduction,
+				cookieDomain,
+			},
+			"Logout request received",
+		);
 
 		// Check which session cookie actually exists (admin or user)
 		const adminCookie = getCookie(c, ADMIN_SESSION_COOKIE);
 		const userCookie = getCookie(c, USER_SESSION_COOKIE);
-		
+
 		// Determine actual cookie name and value based on what exists
 		let cookieName: string;
 		let sessionCookie: string | undefined;
-		
+
 		if (adminCookie) {
 			cookieName = ADMIN_SESSION_COOKIE;
 			sessionCookie = adminCookie;
@@ -281,43 +281,52 @@ authRoutes.post("/logout", async (c: Context) => {
 			log.warn({ inferredAudience: audience }, "No session cookie found, will clear based on inferred audience");
 		}
 
-		log.info({
-			cookieName,
-			hasSessionCookie: !!sessionCookie,
-			sessionCookiePreview: sessionCookie ? sessionCookie.substring(0, 8) + "..." : null,
-		}, "Session cookie info");
+		log.info(
+			{
+				cookieName,
+				hasSessionCookie: !!sessionCookie,
+				sessionCookiePreview: sessionCookie ? `${sessionCookie.substring(0, 8)}...` : null,
+			},
+			"Session cookie info",
+		);
 
 		// Parse the signed cookie to get the actual session ID
 		if (sessionCookie) {
 			try {
 				const sessionId = parseSessionCookie(sessionCookie);
 				if (sessionId) {
-					log.info({ 
-						sessionId: sessionId.substring(0, 8) + "...", 
-						cookieName,
-						audience 
-					}, "Starting session deletion");
-					
+					log.info(
+						{
+							sessionId: `${sessionId.substring(0, 8)}...`,
+							cookieName,
+							audience,
+						},
+						"Starting session deletion",
+					);
+
 					// Verify session exists before deletion
 					const appSessionBefore = await sessionStore.getAppSession(sessionId);
-					log.info({ 
-						sessionExists: !!appSessionBefore,
-						userId: appSessionBefore?.userId,
-						appId: appSessionBefore?.appId 
-					}, "App session before deletion");
-					
+					log.info(
+						{
+							sessionExists: !!appSessionBefore,
+							userId: appSessionBefore?.userId,
+							appId: appSessionBefore?.appId,
+						},
+						"App session before deletion",
+					);
+
 					// Get Core session ID to revoke database session
 					const coreSessionId = appSessionBefore?.metadata?.coreSessionId as string | undefined;
-					
+
 					// Delete from all three stores:
 					// 1. Delete from sessionService (gateway:session:xxx)
 					await sessionService.deleteSession(sessionId);
-					log.info({ sessionId: sessionId.substring(0, 8) + "..." }, "Gateway session deleted from Redis");
-					
+					log.info({ sessionId: `${sessionId.substring(0, 8)}...` }, "Gateway session deleted from Redis");
+
 					// 2. Delete from sessionStore (session:app:xxx) - this is what auth middleware checks!
 					await sessionStore.revokeAppSession(sessionId);
-					log.info({ sessionId: sessionId.substring(0, 8) + "..." }, "App session deleted from Redis");
-					
+					log.info({ sessionId: `${sessionId.substring(0, 8)}...` }, "App session deleted from Redis");
+
 					// 3. Revoke Core database session
 					if (coreSessionId) {
 						try {
@@ -325,26 +334,41 @@ authRoutes.post("/logout", async (c: Context) => {
 							const dbSession = await sessionQueries.findByPublicId(db, coreSessionId);
 							if (dbSession) {
 								await sessionQueries.revoke(db, dbSession.id);
-								log.info({ coreSessionId: coreSessionId.substring(0, 8) + "..." }, "Core database session revoked");
+								log.info(
+									{ coreSessionId: `${coreSessionId.substring(0, 8)}...` },
+									"Core database session revoked",
+								);
 							} else {
-								log.warn({ coreSessionId: coreSessionId.substring(0, 8) + "..." }, "Core database session not found");
+								log.warn(
+									{ coreSessionId: `${coreSessionId.substring(0, 8)}...` },
+									"Core database session not found",
+								);
 							}
 						} catch (dbError) {
-							log.error({ err: serializeError(dbError as Error) }, "Failed to revoke Core database session");
+							log.error(
+								{ err: serializeError(dbError as Error) },
+								"Failed to revoke Core database session",
+							);
 						}
 					} else {
 						log.warn("No Core session ID found in metadata");
 					}
-					
+
 					// Verify deletion was successful
 					const appSessionAfter = await sessionStore.getAppSession(sessionId);
-					log.info({ 
-						sessionStillExists: !!appSessionAfter,
-						deletionSuccessful: !appSessionAfter 
-					}, "App session after deletion verification");
-					
+					log.info(
+						{
+							sessionStillExists: !!appSessionAfter,
+							deletionSuccessful: !appSessionAfter,
+						},
+						"App session after deletion verification",
+					);
+
 					if (appSessionAfter) {
-						log.error({ sessionId: sessionId.substring(0, 8) + "..." }, "ERROR: App session still exists after deletion!");
+						log.error(
+							{ sessionId: `${sessionId.substring(0, 8)}...` },
+							"ERROR: App session still exists after deletion!",
+						);
 					}
 				} else {
 					log.warn("Failed to parse session cookie");
@@ -359,7 +383,7 @@ authRoutes.post("/logout", async (c: Context) => {
 		// Clear the session cookie - must match EXACT attributes used when cookie was set
 		// In development, cookies are set with secure:true even on localhost (Chrome allows this)
 		// So we must clear with the SAME attributes
-		
+
 		// Clear with domain (if set)
 		if (cookieDomain) {
 			setCookie(c, cookieName, "", {
@@ -372,7 +396,7 @@ authRoutes.post("/logout", async (c: Context) => {
 			});
 			log.info({ cookieName, domain: cookieDomain, secure: true }, "Clearing cookie with domain");
 		}
-		
+
 		// Always clear without domain too (for localhost)
 		setCookie(c, cookieName, "", {
 			httpOnly: true,
@@ -382,7 +406,7 @@ authRoutes.post("/logout", async (c: Context) => {
 			maxAge: 0,
 		});
 		log.info({ cookieName, secure: true }, "Clearing cookie without domain");
-		
+
 		// Also try clearing with secure: false for older browsers
 		setCookie(c, cookieName, "", {
 			httpOnly: true,

@@ -7,11 +7,9 @@ import { authMiddleware } from "./middleware/auth";
 import { csrfProtection } from "./middleware/csrf";
 import { httpLogger } from "./middleware/logger";
 import { rateLimitPresets } from "./middleware/rateLimit";
-import { adminSecurityCheck } from "./middleware/adminSecurityCheck";
 import { adminRoutes } from "./routes/admin";
 import { authRoutes } from "./routes/auth";
 import { meRoutes } from "./routes/me";
-import { env } from "./config/env";
 
 const log = createLogger("gateway");
 const app = new Hono();
@@ -26,45 +24,51 @@ const allowedOrigins = [
 ];
 
 // Security headers middleware
-app.use("*", secureHeaders({
-	contentSecurityPolicy: {
-		defaultSrc: ["'self'"],
-		scriptSrc: ["'self'", "'unsafe-inline'"],
-		styleSrc: ["'self'", "'unsafe-inline'"],
-		imgSrc: ["'self'", "data:", "https:"],
-		connectSrc: ["'self'", "https://api.proofa.sh"],
-		fontSrc: ["'self'"],
-		objectSrc: ["'none'"],
-		mediaSrc: ["'self'"],
-		frameSrc: ["'none'"],
-	},
-	strictTransportSecurity: "max-age=31536000; includeSubDomains",
-	xFrameOptions: "DENY",
-	xContentTypeOptions: "nosniff",
-	referrerPolicy: "strict-origin-when-cross-origin",
-	permissionsPolicy: {
-		camera: ["none"],
-		microphone: ["none"],
-		geolocation: ["none"],
-	},
-}));
+app.use(
+	"*",
+	secureHeaders({
+		contentSecurityPolicy: {
+			defaultSrc: ["'self'"],
+			scriptSrc: ["'self'", "'unsafe-inline'"],
+			styleSrc: ["'self'", "'unsafe-inline'"],
+			imgSrc: ["'self'", "data:", "https:"],
+			connectSrc: ["'self'", "https://api.proofa.sh"],
+			fontSrc: ["'self'"],
+			objectSrc: ["'none'"],
+			mediaSrc: ["'self'"],
+			frameSrc: ["'none'"],
+		},
+		strictTransportSecurity: "max-age=31536000; includeSubDomains",
+		xFrameOptions: "DENY",
+		xContentTypeOptions: "nosniff",
+		referrerPolicy: "strict-origin-when-cross-origin",
+		permissionsPolicy: {
+			camera: ["none"],
+			microphone: ["none"],
+			geolocation: ["none"],
+		},
+	}),
+);
 
 // CORS configuration
-app.use("*", cors({
-	origin: (origin) => {
-		// Allow requests with no origin (e.g., same-origin, curl)
-		if (!origin) return "*";
-		// Check if origin is in allowed list
-		if (allowedOrigins.includes(origin)) return origin;
-		// Allow any *.proofa.sh subdomain
-		if (origin.endsWith(".proofa.sh")) return origin;
-		return null;
-	},
-	credentials: true,
-	allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-	allowHeaders: ["Content-Type", "Authorization", "X-Proofa-Service-Token", "X-CSRF-Token"],
-	exposeHeaders: ["Set-Cookie"],
-}));
+app.use(
+	"*",
+	cors({
+		origin: (origin) => {
+			// Allow requests with no origin (e.g., same-origin, curl)
+			if (!origin) return "*";
+			// Check if origin is in allowed list
+			if (allowedOrigins.includes(origin)) return origin;
+			// Allow any *.proofa.sh subdomain
+			if (origin.endsWith(".proofa.sh")) return origin;
+			return null;
+		},
+		credentials: true,
+		allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+		allowHeaders: ["Content-Type", "Authorization", "X-Proofa-Service-Token", "X-CSRF-Token"],
+		exposeHeaders: ["Set-Cookie"],
+	}),
+);
 
 // HTTP request logging
 app.use("*", httpLogger(log));
@@ -103,19 +107,20 @@ app.notFound((c) => {
 // Error handler with production sanitization
 app.onError((err, c) => {
 	const isProduction = process.env.NODE_ENV === "production";
-	
+
 	// Log the full error internally
-	log.error({ 
-		err: serializeError(err), 
-		path: c.req.path,
-		method: c.req.method,
-	}, "Unhandled error");
-	
+	log.error(
+		{
+			err: serializeError(err),
+			path: c.req.path,
+			method: c.req.method,
+		},
+		"Unhandled error",
+	);
+
 	// Sanitize error message for production
-	const errorMessage = isProduction 
-		? "Internal server error" 
-		: err.message || "Internal server error";
-	
+	const errorMessage = isProduction ? "Internal server error" : err.message || "Internal server error";
+
 	return c.json({ error: errorMessage }, 500);
 });
 

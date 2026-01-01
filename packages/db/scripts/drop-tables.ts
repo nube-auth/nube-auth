@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
  * Drop All Tables Script
- * 
+ *
  * WARNING: This will DELETE ALL DATA in your database!
  * Only use this in development when you want to start fresh.
- * 
+ *
  * Usage:
  *   pnpm run db:drop
  */
@@ -14,10 +14,7 @@ import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import pg from "pg";
 
-const configDir =
-	typeof __dirname === "string"
-		? __dirname
-		: dirname(fileURLToPath(import.meta.url));
+const configDir = typeof __dirname === "string" ? __dirname : dirname(fileURLToPath(import.meta.url));
 
 // Load .env and .env.local from workspace root
 dotenv.config({ path: resolve(configDir, "../../../.env") });
@@ -75,9 +72,7 @@ async function dropAllTables() {
 				[DATABASE_SCHEMA],
 			);
 
-			const existingTables = result.rows.map(
-				(row) => `${row.schemaname}.${row.tablename}`,
-			);
+			const existingTables = result.rows.map((row) => `${row.schemaname}.${row.tablename}`);
 
 			if (existingTables.length > 0) {
 				console.log(`   Found ${existingTables.length} tables:`, existingTables.join(", "));
@@ -113,10 +108,7 @@ async function dropAllTables() {
 				await client.query(`DROP TABLE IF EXISTS ${schema}.${table} CASCADE`);
 				console.log(`   ✓ Dropped ${row.schemaname}.${row.tablename}`);
 			} catch (error: any) {
-				console.warn(
-					`   ⚠ Could not drop ${row.schemaname}.${row.tablename}:`,
-					error?.message ?? error,
-				);
+				console.warn(`   ⚠ Could not drop ${row.schemaname}.${row.tablename}:`, error?.message ?? error);
 			}
 		}
 
@@ -142,9 +134,7 @@ async function dropAllTables() {
 				[DATABASE_SCHEMA],
 			);
 
-			const remainingTables = result.rows.map(
-				(row) => `${row.schemaname}.${row.tablename}`,
-			);
+			const remainingTables = result.rows.map((row) => `${row.schemaname}.${row.tablename}`);
 
 			if (remainingTables.length > 0) {
 				console.warn("⚠️  Some tables still exist:", remainingTables.join(", "));

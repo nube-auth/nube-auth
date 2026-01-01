@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { useApp, useProject, useUpdateApp } from "../hooks/api";
+import { Link, useParams } from "react-router-dom";
 import { useToast } from "../components/Toast";
+import { useApp, useProject, useUpdateApp } from "../hooks/api";
 
 const AVAILABLE_PROVIDERS = [
 	{ id: "google", name: "Google", icon: "🔵" },
@@ -26,9 +26,7 @@ export default function AppOAuthPage() {
 
 	const handleToggleProvider = (providerId: string) => {
 		setSelectedProviders((prev) =>
-			prev.includes(providerId)
-				? prev.filter((p) => p !== providerId)
-				: [...prev, providerId]
+			prev.includes(providerId) ? prev.filter((p) => p !== providerId) : [...prev, providerId],
 		);
 	};
 
@@ -98,20 +96,37 @@ export default function AppOAuthPage() {
 		<div className="page">
 			{/* Breadcrumb */}
 			<div style={{ marginBottom: "24px" }}>
-				<div style={{ display: "flex", gap: "8px", alignItems: "center", fontSize: "13px", color: "var(--text-tertiary)" }}>
+				<div
+					style={{
+						display: "flex",
+						gap: "8px",
+						alignItems: "center",
+						fontSize: "13px",
+						color: "var(--text-tertiary)",
+					}}
+				>
 					<Link to="/projects" style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
 						Projects
 					</Link>
 					<span>›</span>
-					<Link to={`/projects/${projectId}`} style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+					<Link
+						to={`/projects/${projectId}`}
+						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
+					>
 						{project?.name}
 					</Link>
 					<span>›</span>
-					<Link to={`/projects/${projectId}/apps`} style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+					<Link
+						to={`/projects/${projectId}/apps`}
+						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
+					>
 						Apps
 					</Link>
 					<span>›</span>
-					<Link to={`/projects/${projectId}/apps/${appId}`} style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+					<Link
+						to={`/projects/${projectId}/apps/${appId}`}
+						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
+					>
 						{app.name}
 					</Link>
 					<span>›</span>
@@ -120,7 +135,14 @@ export default function AppOAuthPage() {
 			</div>
 
 			{/* Page Header */}
-			<div style={{ marginBottom: "32px", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+			<div
+				style={{
+					marginBottom: "32px",
+					display: "flex",
+					alignItems: "flex-start",
+					justifyContent: "space-between",
+				}}
+			>
 				<div>
 					<h1 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>OAuth Providers</h1>
 					<p style={{ fontSize: "14px", color: "var(--text-tertiary)" }}>
@@ -178,7 +200,8 @@ export default function AppOAuthPage() {
 						Platform-Level Configuration
 					</p>
 					<p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>
-						OAuth credentials are managed at the platform level. Simply select which providers to enable for your app.
+						OAuth credentials are managed at the platform level. Simply select which providers to enable for
+						your app.
 					</p>
 				</div>
 			</div>
@@ -202,7 +225,9 @@ export default function AppOAuthPage() {
 							}}
 							onClick={() => isEditing && handleToggleProvider(provider.id)}
 						>
-							<div style={{ display: "flex", alignItems: "flex-start", gap: "16px", marginBottom: "16px" }}>
+							<div
+								style={{ display: "flex", alignItems: "flex-start", gap: "16px", marginBottom: "16px" }}
+							>
 								<div
 									style={{
 										width: "48px",
@@ -218,7 +243,14 @@ export default function AppOAuthPage() {
 									{getProviderIcon(provider.id)}
 								</div>
 								<div style={{ flex: 1 }}>
-									<div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+									<div
+										style={{
+											display: "flex",
+											alignItems: "center",
+											gap: "8px",
+											marginBottom: "4px",
+										}}
+									>
 										<h3
 											style={{
 												fontSize: "16px",

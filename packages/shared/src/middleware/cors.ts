@@ -1,5 +1,5 @@
-import type { Context, Next } from "hono";
 import { createLogger } from "@proofa/shared";
+import type { Context, Next } from "hono";
 
 const log = createLogger("cors");
 

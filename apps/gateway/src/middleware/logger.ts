@@ -1,7 +1,6 @@
-import { serializeError } from "@proofa/shared";
+import { createId, serializeError } from "@proofa/shared";
 import type { Context, Next } from "hono";
 import type pino from "pino";
-import { createId } from "@proofa/shared";
 
 /**
  * HTTP request/response logger middleware using pino

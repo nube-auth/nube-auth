@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { useApp, useProject, useAppUsers } from "../hooks/api";
-import { useToast } from "../components/Toast";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { Select } from "../components/Select";
+import { useToast } from "../components/Toast";
+import { useApp, useAppUsers, useProject } from "../hooks/api";
 
 interface Plan {
 	id: string;
@@ -67,22 +67,15 @@ export function AppLicensesPage() {
 	const freeUsers = users.filter((u) => u.plan === "free" && u.status === "active").length;
 	const paidUsers = users.filter((u) => u.plan !== "free" && u.status === "active").length;
 
-	// Fetch plans when section is expanded
-	useEffect(() => {
-		if (showPlansSection && projectId && appId) {
-			fetchPlans();
-		}
-	}, [showPlansSection, projectId, appId]);
-
 	// Fetch plans
-	const fetchPlans = async () => {
+	const fetchPlans = useCallback(async () => {
 		setPlansLoading(true);
 		try {
 			const response = await fetch(
 				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/plans`,
 				{
 					credentials: "include",
-				}
+				},
 			);
 
 			if (!response.ok) {
@@ -96,7 +89,14 @@ export function AppLicensesPage() {
 		} finally {
 			setPlansLoading(false);
 		}
-	};
+	}, [projectId, appId]);
+
+	// Fetch plans when section is expanded
+	useEffect(() => {
+		if (showPlansSection && projectId && appId) {
+			fetchPlans();
+		}
+	}, [showPlansSection, projectId, appId, fetchPlans]);
 
 	// Open create plan modal
 	const handleCreatePlan = () => {
@@ -214,7 +214,7 @@ export function AppLicensesPage() {
 				{
 					method: "DELETE",
 					credentials: "include",
-				}
+				},
 			);
 
 			if (!response.ok) {
@@ -282,7 +282,7 @@ export function AppLicensesPage() {
 					body: JSON.stringify({
 						license_plan: newPlan,
 					}),
-				}
+				},
 			);
 
 			if (!response.ok) {
@@ -327,19 +327,37 @@ export function AppLicensesPage() {
 				<Link to="/projects" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>
 					Projects
 				</Link>
-				<svg style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<svg
+					style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }}
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+				>
 					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
 				</svg>
 				<Link to={`/projects/${projectId}`} style={{ color: "var(--text-secondary)", textDecoration: "none" }}>
 					{project.name}
 				</Link>
-				<svg style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<svg
+					style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }}
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+				>
 					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
 				</svg>
-				<Link to={`/projects/${projectId}/apps/${appId}`} style={{ color: "var(--text-secondary)", textDecoration: "none" }}>
+				<Link
+					to={`/projects/${projectId}/apps/${appId}`}
+					style={{ color: "var(--text-secondary)", textDecoration: "none" }}
+				>
 					{app.name}
 				</Link>
-				<svg style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<svg
+					style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }}
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+				>
 					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
 				</svg>
 				<span style={{ color: "var(--text-primary)", fontWeight: "500" }}>Licenses</span>
@@ -358,17 +376,30 @@ export function AppLicensesPage() {
 				{/* Active Licenses */}
 				<div className="stat-card">
 					<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-						<div style={{
-							width: "40px",
-							height: "40px",
-							background: "linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05))",
-							borderRadius: "12px",
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-						}}>
-							<svg style={{ width: "20px", height: "20px", color: "var(--primary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+						<div
+							style={{
+								width: "40px",
+								height: "40px",
+								background:
+									"linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05))",
+								borderRadius: "12px",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+							}}
+						>
+							<svg
+								style={{ width: "20px", height: "20px", color: "var(--primary)" }}
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+								/>
 							</svg>
 						</div>
 						<div>
@@ -381,16 +412,23 @@ export function AppLicensesPage() {
 				{/* Free Plan Users */}
 				<div className="stat-card">
 					<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-						<div style={{
-							width: "40px",
-							height: "40px",
-							background: "linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05))",
-							borderRadius: "12px",
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-						}}>
-							<svg style={{ width: "20px", height: "20px", color: "var(--success)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<div
+							style={{
+								width: "40px",
+								height: "40px",
+								background: "linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05))",
+								borderRadius: "12px",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+							}}
+						>
+							<svg
+								style={{ width: "20px", height: "20px", color: "var(--success)" }}
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
 							</svg>
 						</div>
@@ -404,17 +442,29 @@ export function AppLicensesPage() {
 				{/* Paid Plan Users */}
 				<div className="stat-card">
 					<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-						<div style={{
-							width: "40px",
-							height: "40px",
-							background: "linear-gradient(135deg, rgba(234, 179, 8, 0.1), rgba(234, 179, 8, 0.05))",
-							borderRadius: "12px",
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-						}}>
-							<svg style={{ width: "20px", height: "20px", color: "#eab308" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+						<div
+							style={{
+								width: "40px",
+								height: "40px",
+								background: "linear-gradient(135deg, rgba(234, 179, 8, 0.1), rgba(234, 179, 8, 0.05))",
+								borderRadius: "12px",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+							}}
+						>
+							<svg
+								style={{ width: "20px", height: "20px", color: "#eab308" }}
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+								/>
 							</svg>
 						</div>
 						<div>
@@ -427,17 +477,30 @@ export function AppLicensesPage() {
 				{/* Monthly Revenue */}
 				<div className="stat-card">
 					<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-						<div style={{
-							width: "40px",
-							height: "40px",
-							background: "linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.05))",
-							borderRadius: "12px",
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-						}}>
-							<svg style={{ width: "20px", height: "20px", color: "#6366f1" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+						<div
+							style={{
+								width: "40px",
+								height: "40px",
+								background:
+									"linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.05))",
+								borderRadius: "12px",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+							}}
+						>
+							<svg
+								style={{ width: "20px", height: "20px", color: "#6366f1" }}
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+								/>
 							</svg>
 						</div>
 						<div>
@@ -464,18 +527,37 @@ export function AppLicensesPage() {
 						cursor: "pointer",
 						transition: "background 0.2s",
 					}}
-					onMouseEnter={(e) => e.currentTarget.style.background = "var(--surface-hover)"}
-					onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+					onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface-hover)")}
+					onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
 				>
 					<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-						<svg style={{ width: "20px", height: "20px", color: "var(--primary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+						<svg
+							style={{ width: "20px", height: "20px", color: "var(--primary)" }}
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								strokeWidth={2}
+								d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+							/>
 						</svg>
 						<div style={{ textAlign: "left" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--text-primary)", margin: 0 }}>
+							<h3
+								style={{ fontSize: "16px", fontWeight: "600", color: "var(--text-primary)", margin: 0 }}
+							>
 								Pricing Plans
 							</h3>
-							<p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "2px", margin: 0 }}>
+							<p
+								style={{
+									fontSize: "13px",
+									color: "var(--text-secondary)",
+									marginTop: "2px",
+									margin: 0,
+								}}
+							>
 								Configure plans and pricing for your app
 							</p>
 						</div>
@@ -496,175 +578,316 @@ export function AppLicensesPage() {
 					</svg>
 				</button>
 
-			{showPlansSection && (
-				<div style={{ padding: "20px", borderTop: "1px solid var(--card-border)" }}>
-					{/* Create Plan Button */}
-					<div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
-						<button
-							type="button"
-							onClick={handleCreatePlan}
-							className="btn btn-primary btn-sm"
-							style={{ display: "flex", alignItems: "center", gap: "6px" }}
-						>
-							<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-							</svg>
-							Create Plan
-						</button>
-					</div>
-
-					{/* Plans List */}
-					{plansLoading ? (
-						<div style={{ textAlign: "center", padding: "40px 20px" }}>
-							<div className="spinner" style={{ margin: "0 auto" }} />
-						</div>
-					) : plans.length === 0 ? (
-						<div style={{
-							textAlign: "center",
-							padding: "60px 20px",
-							color: "var(--text-secondary)",
-						}}>
-							<svg style={{ width: "64px", height: "64px", margin: "0 auto 16px", opacity: 0.3 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-							</svg>
-							<p style={{ fontSize: "14px", fontWeight: "500" }}>No plans yet</p>
-							<p style={{ fontSize: "13px", marginTop: "8px", color: "var(--text-tertiary)" }}>
-								Create your first pricing plan to get started
-							</p>
-						</div>
-					) : (
-						<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "16px", alignItems: "stretch" }}>
-							{plans.map((plan) => (
-								<div
-									key={plan.id}
-									style={{
-										display: "flex",
-										flexDirection: "column",
-										background: "var(--content-bg)",
-										border: "1px solid var(--card-border)",
-										borderRadius: "12px",
-										padding: "20px",
-										height: "100%",
-										transition: "all 0.2s ease",
-									}}
+				{showPlansSection && (
+					<div style={{ padding: "20px", borderTop: "1px solid var(--card-border)" }}>
+						{/* Create Plan Button */}
+						<div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+							<button
+								type="button"
+								onClick={handleCreatePlan}
+								className="btn btn-primary btn-sm"
+								style={{ display: "flex", alignItems: "center", gap: "6px" }}
+							>
+								<svg
+									style={{ width: "16px", height: "16px" }}
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
 								>
-									<div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
-										<div>
-											<h4 style={{ fontSize: "16px", fontWeight: "600", color: "var(--text-primary)", margin: 0 }}>
-												{plan.name}
-											</h4>
-											<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "2px" }}>
-												{plan.slug}
-											</p>
-										</div>
-										<span style={{
-											display: "inline-block",
-											padding: "4px 8px",
-											borderRadius: "6px",
-											fontSize: "11px",
-											fontWeight: "600",
-											textTransform: "capitalize",
-											background: plan.status === "active" ? "rgba(34, 197, 94, 0.1)" : "rgba(107, 114, 128, 0.1)",
-											color: plan.status === "active" ? "var(--success)" : "#6b7280",
-										}}>
-											{plan.status}
-										</span>
-									</div>
-
-									{plan.description && (
-										<p style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "12px", lineHeight: "1.5" }}>
-											{plan.description}
-										</p>
-									)}
-
-									<div style={{ marginBottom: "12px" }}>
-										{plan.monthlyPrice && (
-											<div style={{ fontSize: "14px", color: "var(--text-primary)", marginBottom: "4px" }}>
-												<span style={{ fontWeight: "600" }}>${(plan.monthlyPrice / 100).toFixed(2)}</span>
-												<span style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>/month</span>
-											</div>
-										)}
-										{plan.yearlyPrice && (
-											<div style={{ fontSize: "14px", color: "var(--text-primary)", marginBottom: "4px" }}>
-												<span style={{ fontWeight: "600" }}>${(plan.yearlyPrice / 100).toFixed(2)}</span>
-												<span style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>/year</span>
-											</div>
-										)}
-										{plan.oneTimePrice && (
-											<div style={{ fontSize: "14px", color: "var(--text-primary)", marginBottom: "4px" }}>
-												<span style={{ fontWeight: "600" }}>${(plan.oneTimePrice / 100).toFixed(2)}</span>
-												<span style={{ fontSize: "12px", color: "var(--text-tertiary)" }}> one-time</span>
-											</div>
-										)}
-										{!plan.monthlyPrice && !plan.yearlyPrice && !plan.oneTimePrice && (
-											<div style={{ fontSize: "14px", color: "var(--text-primary)", marginBottom: "4px" }}>
-												<span style={{ fontWeight: "600" }}>00</span>
-											</div>
-										)}
-										{plan.trialEnabled && plan.trialDays && (
-											<div style={{ fontSize: "12px", color: "var(--primary)", marginTop: "4px" }}>
-												{plan.trialDays} day free trial
-											</div>
-										)}
-									</div>
-
-									{plan.features.length > 0 && (
-										<div style={{ marginBottom: "16px" }}>
-											<p style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "8px" }}>
-												Features:
-											</p>
-											<ul style={{ margin: 0, paddingLeft: "20px", fontSize: "12px", color: "var(--text-secondary)" }}>
-												{plan.features.slice(0, 3).map((feature, i) => (
-													<li key={i} style={{ marginBottom: "4px" }}>{feature}</li>
-												))}
-												{plan.features.length > 3 && (
-													<li style={{ color: "var(--text-tertiary)" }}>
-														+{plan.features.length - 3} more
-													</li>
-												)}
-											</ul>
-										</div>
-									)}
-
-									<div style={{ display: "flex", gap: "8px", paddingTop: "12px", borderTop: "1px solid var(--card-border)", marginTop: "auto" }}>
-										<button
-											type="button"
-											onClick={() => handleEditPlan(plan)}
-											className="btn btn-secondary-outline btn-sm"
-											style={{ flex: 1 }}
-										>
-											Edit
-										</button>
-										<button
-											type="button"
-											onClick={() => setDeletingPlan(plan)}
-											className="btn btn-danger-outline btn-sm"
-											style={{ flex: 1 }}
-										>
-											Delete
-										</button>
-									</div>
-								</div>
-							))}
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={2}
+										d="M12 4v16m8-8H4"
+									/>
+								</svg>
+								Create Plan
+							</button>
 						</div>
-					)}
-				</div>
-			)}
+
+						{/* Plans List */}
+						{plansLoading ? (
+							<div style={{ textAlign: "center", padding: "40px 20px" }}>
+								<div className="spinner" style={{ margin: "0 auto" }} />
+							</div>
+						) : plans.length === 0 ? (
+							<div
+								style={{
+									textAlign: "center",
+									padding: "60px 20px",
+									color: "var(--text-secondary)",
+								}}
+							>
+								<svg
+									style={{ width: "64px", height: "64px", margin: "0 auto 16px", opacity: 0.3 }}
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={1.5}
+										d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+									/>
+								</svg>
+								<p style={{ fontSize: "14px", fontWeight: "500" }}>No plans yet</p>
+								<p style={{ fontSize: "13px", marginTop: "8px", color: "var(--text-tertiary)" }}>
+									Create your first pricing plan to get started
+								</p>
+							</div>
+						) : (
+							<div
+								style={{
+									display: "grid",
+									gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+									gap: "16px",
+									alignItems: "stretch",
+								}}
+							>
+								{plans.map((plan) => (
+									<div
+										key={plan.id}
+										style={{
+											display: "flex",
+											flexDirection: "column",
+											background: "var(--content-bg)",
+											border: "1px solid var(--card-border)",
+											borderRadius: "12px",
+											padding: "20px",
+											height: "100%",
+											transition: "all 0.2s ease",
+										}}
+									>
+										<div
+											style={{
+												display: "flex",
+												justifyContent: "space-between",
+												alignItems: "flex-start",
+												marginBottom: "12px",
+											}}
+										>
+											<div>
+												<h4
+													style={{
+														fontSize: "16px",
+														fontWeight: "600",
+														color: "var(--text-primary)",
+														margin: 0,
+													}}
+												>
+													{plan.name}
+												</h4>
+												<p
+													style={{
+														fontSize: "12px",
+														color: "var(--text-tertiary)",
+														marginTop: "2px",
+													}}
+												>
+													{plan.slug}
+												</p>
+											</div>
+											<span
+												style={{
+													display: "inline-block",
+													padding: "4px 8px",
+													borderRadius: "6px",
+													fontSize: "11px",
+													fontWeight: "600",
+													textTransform: "capitalize",
+													background:
+														plan.status === "active"
+															? "rgba(34, 197, 94, 0.1)"
+															: "rgba(107, 114, 128, 0.1)",
+													color: plan.status === "active" ? "var(--success)" : "#6b7280",
+												}}
+											>
+												{plan.status}
+											</span>
+										</div>
+
+										{plan.description && (
+											<p
+												style={{
+													fontSize: "13px",
+													color: "var(--text-secondary)",
+													marginBottom: "12px",
+													lineHeight: "1.5",
+												}}
+											>
+												{plan.description}
+											</p>
+										)}
+
+										<div style={{ marginBottom: "12px" }}>
+											{plan.monthlyPrice && (
+												<div
+													style={{
+														fontSize: "14px",
+														color: "var(--text-primary)",
+														marginBottom: "4px",
+													}}
+												>
+													<span style={{ fontWeight: "600" }}>
+														${(plan.monthlyPrice / 100).toFixed(2)}
+													</span>
+													<span style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+														/month
+													</span>
+												</div>
+											)}
+											{plan.yearlyPrice && (
+												<div
+													style={{
+														fontSize: "14px",
+														color: "var(--text-primary)",
+														marginBottom: "4px",
+													}}
+												>
+													<span style={{ fontWeight: "600" }}>
+														${(plan.yearlyPrice / 100).toFixed(2)}
+													</span>
+													<span style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+														/year
+													</span>
+												</div>
+											)}
+											{plan.oneTimePrice && (
+												<div
+													style={{
+														fontSize: "14px",
+														color: "var(--text-primary)",
+														marginBottom: "4px",
+													}}
+												>
+													<span style={{ fontWeight: "600" }}>
+														${(plan.oneTimePrice / 100).toFixed(2)}
+													</span>
+													<span style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+														{" "}
+														one-time
+													</span>
+												</div>
+											)}
+											{!plan.monthlyPrice && !plan.yearlyPrice && !plan.oneTimePrice && (
+												<div
+													style={{
+														fontSize: "14px",
+														color: "var(--text-primary)",
+														marginBottom: "4px",
+													}}
+												>
+													<span style={{ fontWeight: "600" }}>00</span>
+												</div>
+											)}
+											{plan.trialEnabled && plan.trialDays && (
+												<div
+													style={{
+														fontSize: "12px",
+														color: "var(--primary)",
+														marginTop: "4px",
+													}}
+												>
+													{plan.trialDays} day free trial
+												</div>
+											)}
+										</div>
+
+										{plan.features.length > 0 && (
+											<div style={{ marginBottom: "16px" }}>
+												<p
+													style={{
+														fontSize: "12px",
+														fontWeight: "600",
+														color: "var(--text-secondary)",
+														marginBottom: "8px",
+													}}
+												>
+													Features:
+												</p>
+												<ul
+													style={{
+														margin: 0,
+														paddingLeft: "20px",
+														fontSize: "12px",
+														color: "var(--text-secondary)",
+													}}
+												>
+													{plan.features.slice(0, 3).map((feature, i) => (
+														<li key={i} style={{ marginBottom: "4px" }}>
+															{feature}
+														</li>
+													))}
+													{plan.features.length > 3 && (
+														<li style={{ color: "var(--text-tertiary)" }}>
+															+{plan.features.length - 3} more
+														</li>
+													)}
+												</ul>
+											</div>
+										)}
+
+										<div
+											style={{
+												display: "flex",
+												gap: "8px",
+												paddingTop: "12px",
+												borderTop: "1px solid var(--card-border)",
+												marginTop: "auto",
+											}}
+										>
+											<button
+												type="button"
+												onClick={() => handleEditPlan(plan)}
+												className="btn btn-secondary-outline btn-sm"
+												style={{ flex: 1 }}
+											>
+												Edit
+											</button>
+											<button
+												type="button"
+												onClick={() => setDeletingPlan(plan)}
+												className="btn btn-danger-outline btn-sm"
+												style={{ flex: 1 }}
+											>
+												Delete
+											</button>
+										</div>
+									</div>
+								))}
+							</div>
+						)}
+					</div>
+				)}
 			</div>
 
 			{/* Licenses Table */}
 			<div className="card">
 				<div style={{ padding: "20px", borderBottom: "1px solid var(--card-border)" }}>
-					<h2 style={{ fontSize: "16px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "4px" }}>
+					<h2
+						style={{
+							fontSize: "16px",
+							fontWeight: "600",
+							color: "var(--text-primary)",
+							marginBottom: "4px",
+						}}
+					>
 						Active Licenses
 					</h2>
-					<p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
-						View and manage user licenses
-					</p>
+					<p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>View and manage user licenses</p>
 				</div>
 
 				{/* Filters */}
-				<div style={{ padding: "16px", borderBottom: "1px solid var(--card-border)", display: "flex", gap: "12px", flexWrap: "wrap" }}>
+				<div
+					style={{
+						padding: "16px",
+						borderBottom: "1px solid var(--card-border)",
+						display: "flex",
+						gap: "12px",
+						flexWrap: "wrap",
+					}}
+				>
 					<input
 						type="text"
 						placeholder="Search by name or email..."
@@ -688,7 +911,7 @@ export function AppLicensesPage() {
 							{ value: "all", label: "All Status" },
 							{ value: "active", label: "Active" },
 							{ value: "suspended", label: "Suspended" },
-							{ value: "trial", label: "Trial" }
+							{ value: "trial", label: "Trial" },
 						]}
 						style={{
 							padding: "8px 12px",
@@ -705,14 +928,91 @@ export function AppLicensesPage() {
 				{!usersLoading && filteredLicenses.length > 0 ? (
 					<div style={{ overflowX: "auto" }}>
 						<table style={{ width: "100%", borderCollapse: "collapse" }}>
-							<thead style={{ background: "var(--surface-secondary)", borderBottom: "1px solid var(--card-border)" }}>
+							<thead
+								style={{
+									background: "var(--surface-secondary)",
+									borderBottom: "1px solid var(--card-border)",
+								}}
+							>
 								<tr>
-									<th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>User</th>
-									<th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Email</th>
-									<th style={{ padding: "12px 16px", textAlign: "center", fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Plan</th>
-									<th style={{ padding: "12px 16px", textAlign: "center", fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Status</th>
-									<th style={{ padding: "12px 16px", textAlign: "center", fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Valid Until</th>
-									<th style={{ padding: "12px 16px", textAlign: "right", fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Actions</th>
+									<th
+										style={{
+											padding: "12px 16px",
+											textAlign: "left",
+											fontSize: "12px",
+											fontWeight: "600",
+											color: "var(--text-secondary)",
+											textTransform: "uppercase",
+											letterSpacing: "0.5px",
+										}}
+									>
+										User
+									</th>
+									<th
+										style={{
+											padding: "12px 16px",
+											textAlign: "left",
+											fontSize: "12px",
+											fontWeight: "600",
+											color: "var(--text-secondary)",
+											textTransform: "uppercase",
+											letterSpacing: "0.5px",
+										}}
+									>
+										Email
+									</th>
+									<th
+										style={{
+											padding: "12px 16px",
+											textAlign: "center",
+											fontSize: "12px",
+											fontWeight: "600",
+											color: "var(--text-secondary)",
+											textTransform: "uppercase",
+											letterSpacing: "0.5px",
+										}}
+									>
+										Plan
+									</th>
+									<th
+										style={{
+											padding: "12px 16px",
+											textAlign: "center",
+											fontSize: "12px",
+											fontWeight: "600",
+											color: "var(--text-secondary)",
+											textTransform: "uppercase",
+											letterSpacing: "0.5px",
+										}}
+									>
+										Status
+									</th>
+									<th
+										style={{
+											padding: "12px 16px",
+											textAlign: "center",
+											fontSize: "12px",
+											fontWeight: "600",
+											color: "var(--text-secondary)",
+											textTransform: "uppercase",
+											letterSpacing: "0.5px",
+										}}
+									>
+										Valid Until
+									</th>
+									<th
+										style={{
+											padding: "12px 16px",
+											textAlign: "right",
+											fontSize: "12px",
+											fontWeight: "600",
+											color: "var(--text-secondary)",
+											textTransform: "uppercase",
+											letterSpacing: "0.5px",
+										}}
+									>
+										Actions
+									</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -720,70 +1020,104 @@ export function AppLicensesPage() {
 									<tr key={user.id} style={{ borderBottom: "1px solid var(--card-border)" }}>
 										<td style={{ padding: "14px 16px" }}>
 											<div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-												<div style={{
-													width: "36px",
-													height: "36px",
-													borderRadius: "50%",
-													background: "var(--primary-light)",
-													display: "flex",
-													alignItems: "center",
-													justifyContent: "center",
-													fontSize: "13px",
-													fontWeight: "600",
-													color: "var(--primary)",
-													flexShrink: 0,
-												}}>
-													{user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+												<div
+													style={{
+														width: "36px",
+														height: "36px",
+														borderRadius: "50%",
+														background: "var(--primary-light)",
+														display: "flex",
+														alignItems: "center",
+														justifyContent: "center",
+														fontSize: "13px",
+														fontWeight: "600",
+														color: "var(--primary)",
+														flexShrink: 0,
+													}}
+												>
+													{user.name
+														? user.name.charAt(0).toUpperCase()
+														: user.email.charAt(0).toUpperCase()}
 												</div>
-												<span style={{ fontSize: "14px", fontWeight: "500", color: "var(--text-primary)" }}>
+												<span
+													style={{
+														fontSize: "14px",
+														fontWeight: "500",
+														color: "var(--text-primary)",
+													}}
+												>
 													{user.name || "—"}
 												</span>
 											</div>
 										</td>
-										<td style={{ padding: "14px 16px", fontSize: "13px", color: "var(--text-secondary)" }}>
+										<td
+											style={{
+												padding: "14px 16px",
+												fontSize: "13px",
+												color: "var(--text-secondary)",
+											}}
+										>
 											{user.email}
 										</td>
 										<td style={{ padding: "14px 16px", textAlign: "center" }}>
-											<span style={{
-												display: "inline-block",
-												padding: "4px 10px",
-												borderRadius: "6px",
-											fontSize: "12px",
-											fontWeight: "600",
-											textTransform: "capitalize",
-											background: user.plan === "free" ? "rgba(107, 114, 128, 0.1)" : "rgba(139, 92, 246, 0.1)",
-											color: user.plan === "free" ? "#6b7280" : "var(--primary)",
-										}}>
-											{user.plan || "free"}
+											<span
+												style={{
+													display: "inline-block",
+													padding: "4px 10px",
+													borderRadius: "6px",
+													fontSize: "12px",
+													fontWeight: "600",
+													textTransform: "capitalize",
+													background:
+														user.plan === "free"
+															? "rgba(107, 114, 128, 0.1)"
+															: "rgba(139, 92, 246, 0.1)",
+													color: user.plan === "free" ? "#6b7280" : "var(--primary)",
+												}}
+											>
+												{user.plan || "free"}
 											</span>
 										</td>
 										<td style={{ padding: "14px 16px", textAlign: "center" }}>
-											<span style={{
-												display: "inline-block",
-												padding: "4px 10px",
-												borderRadius: "6px",
-												fontSize: "12px",
-												fontWeight: "600",
-												textTransform: "capitalize",
-												background: user.status === "active" ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
-												color: user.status === "active" ? "var(--success)" : "var(--danger)",
-											}}>
+											<span
+												style={{
+													display: "inline-block",
+													padding: "4px 10px",
+													borderRadius: "6px",
+													fontSize: "12px",
+													fontWeight: "600",
+													textTransform: "capitalize",
+													background:
+														user.status === "active"
+															? "rgba(34, 197, 94, 0.1)"
+															: "rgba(239, 68, 68, 0.1)",
+													color:
+														user.status === "active" ? "var(--success)" : "var(--danger)",
+												}}
+											>
 												{user.status}
 											</span>
 										</td>
-										<td style={{ padding: "14px 16px", textAlign: "center", fontSize: "13px", color: "var(--text-secondary)" }}>
+										<td
+											style={{
+												padding: "14px 16px",
+												textAlign: "center",
+												fontSize: "13px",
+												color: "var(--text-secondary)",
+											}}
+										>
 											{user.licenseValidUntil
 												? new Date(user.licenseValidUntil).toLocaleDateString()
 												: "—"}
 										</td>
 										<td style={{ padding: "14px 16px", textAlign: "right" }}>
 											<button
-											type="button"
-											onClick={() => {
-												setChangingLicense(user);
-												setNewPlan(user.plan || "free");
-											}}
-											className="btn btn-secondary-outline btn-sm"
+												type="button"
+												onClick={() => {
+													setChangingLicense(user);
+													setNewPlan(user.plan || "free");
+												}}
+												className="btn btn-secondary-outline btn-sm"
 											>
 												Change Plan
 											</button>
@@ -794,19 +1128,40 @@ export function AppLicensesPage() {
 						</table>
 					</div>
 				) : (
-					<div style={{
-						textAlign: "center",
-						padding: "80px 20px",
-						color: "var(--text-secondary)",
-					}}>
-						<svg style={{ width: "64px", height: "64px", margin: "0 auto 16px", opacity: 0.3 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+					<div
+						style={{
+							textAlign: "center",
+							padding: "80px 20px",
+							color: "var(--text-secondary)",
+						}}
+					>
+						<svg
+							style={{ width: "64px", height: "64px", margin: "0 auto 16px", opacity: 0.3 }}
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								strokeWidth={1.5}
+								d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+							/>
 						</svg>
-						<h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--text-primary)", marginBottom: "8px" }}>
+						<h3
+							style={{
+								fontSize: "16px",
+								fontWeight: "600",
+								color: "var(--text-primary)",
+								marginBottom: "8px",
+							}}
+						>
 							No licenses found
 						</h3>
 						<p style={{ fontSize: "14px", color: "var(--text-secondary)" }}>
-							{searchQuery || filterStatus !== "all" ? "Try adjusting your filters" : "Licenses will appear here when users sign up"}
+							{searchQuery || filterStatus !== "all"
+								? "Try adjusting your filters"
+								: "Licenses will appear here when users sign up"}
 						</p>
 					</div>
 				)}
@@ -842,7 +1197,14 @@ export function AppLicensesPage() {
 						}}
 						onClick={(e) => e.stopPropagation()}
 					>
-						<h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px", color: "var(--text-primary)" }}>
+						<h2
+							style={{
+								fontSize: "20px",
+								fontWeight: "700",
+								marginBottom: "8px",
+								color: "var(--text-primary)",
+							}}
+						>
 							Change License Plan
 						</h2>
 						<p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "24px" }}>
@@ -850,7 +1212,15 @@ export function AppLicensesPage() {
 						</p>
 
 						<div style={{ marginBottom: "24px" }}>
-							<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "8px" }}>
+							<label
+								style={{
+									display: "block",
+									fontSize: "13px",
+									fontWeight: "600",
+									color: "var(--text-secondary)",
+									marginBottom: "8px",
+								}}
+							>
 								New Plan
 							</label>
 							<Select
@@ -860,7 +1230,7 @@ export function AppLicensesPage() {
 									{ value: "free", label: "Free" },
 									{ value: "trial", label: "Trial" },
 									{ value: "pro", label: "Pro" },
-									{ value: "enterprise", label: "Enterprise" }
+									{ value: "enterprise", label: "Enterprise" },
 								]}
 								disabled={isUpdating}
 								style={{
@@ -889,17 +1259,17 @@ export function AppLicensesPage() {
 							>
 								Cancel
 							</button>
-						<button
-							type="button"
-							onClick={handleChangePlan}
-							disabled={isUpdating || newPlan === changingLicense.plan}
-							className="btn btn-primary"
-							style={{
-								opacity: isUpdating || newPlan === changingLicense.plan ? 0.6 : 1,
-								cursor: isUpdating || newPlan === changingLicense.plan ? "not-allowed" : "pointer",
-							}}
-						>
-							{isUpdating ? "Saving..." : "Save Changes"}
+							<button
+								type="button"
+								onClick={handleChangePlan}
+								disabled={isUpdating || newPlan === changingLicense.plan}
+								className="btn btn-primary"
+								style={{
+									opacity: isUpdating || newPlan === changingLicense.plan ? 0.6 : 1,
+									cursor: isUpdating || newPlan === changingLicense.plan ? "not-allowed" : "pointer",
+								}}
+							>
+								{isUpdating ? "Saving..." : "Save Changes"}
 							</button>
 						</div>
 					</div>
@@ -938,7 +1308,14 @@ export function AppLicensesPage() {
 						}}
 						onClick={(e) => e.stopPropagation()}
 					>
-						<h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px", color: "var(--text-primary)" }}>
+						<h2
+							style={{
+								fontSize: "20px",
+								fontWeight: "700",
+								marginBottom: "8px",
+								color: "var(--text-primary)",
+							}}
+						>
 							{editingPlan ? "Edit Plan" : "Create Plan"}
 						</h2>
 						<p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "24px" }}>
@@ -946,29 +1323,52 @@ export function AppLicensesPage() {
 						</p>
 
 						{planError && (
-							<div style={{
-								background: "rgba(239, 68, 68, 0.1)",
-								border: "1px solid var(--danger)",
-								borderRadius: "8px",
-								padding: "12px 16px",
-								marginBottom: "20px",
-								display: "flex",
-								alignItems: "center",
-								gap: "12px",
-							}}>
-								<svg style={{ width: "20px", height: "20px", color: "var(--danger)", flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+							<div
+								style={{
+									background: "rgba(239, 68, 68, 0.1)",
+									border: "1px solid var(--danger)",
+									borderRadius: "8px",
+									padding: "12px 16px",
+									marginBottom: "20px",
+									display: "flex",
+									alignItems: "center",
+									gap: "12px",
+								}}
+							>
+								<svg
+									style={{ width: "20px", height: "20px", color: "var(--danger)", flexShrink: 0 }}
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={2}
+										d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+									/>
 								</svg>
-								<p style={{ fontSize: "14px", color: "var(--danger)", margin: 0 }}>
-									{planError}
-								</p>
+								<p style={{ fontSize: "14px", color: "var(--danger)", margin: 0 }}>{planError}</p>
 							</div>
 						)}
 
-						<form onSubmit={(e) => { e.preventDefault(); handleSavePlan(); }}>
+						<form
+							onSubmit={(e) => {
+								e.preventDefault();
+								handleSavePlan();
+							}}
+						>
 							{/* Plan Name */}
 							<div style={{ marginBottom: "20px" }}>
-								<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "8px" }}>
+								<label
+									style={{
+										display: "block",
+										fontSize: "13px",
+										fontWeight: "600",
+										color: "var(--text-secondary)",
+										marginBottom: "8px",
+									}}
+								>
 									Plan Name <span style={{ color: "var(--danger)" }}>*</span>
 								</label>
 								<input
@@ -992,13 +1392,26 @@ export function AppLicensesPage() {
 
 							{/* Plan Slug */}
 							<div style={{ marginBottom: "20px" }}>
-								<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "8px" }}>
+								<label
+									style={{
+										display: "block",
+										fontSize: "13px",
+										fontWeight: "600",
+										color: "var(--text-secondary)",
+										marginBottom: "8px",
+									}}
+								>
 									Plan Slug <span style={{ color: "var(--danger)" }}>*</span>
 								</label>
 								<input
 									type="text"
 									value={planForm.slug}
-									onChange={(e) => setPlanForm({ ...planForm, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+									onChange={(e) =>
+										setPlanForm({
+											...planForm,
+											slug: e.target.value.toLowerCase().replace(/\s+/g, "-"),
+										})
+									}
 									disabled={isUpdating || !!editingPlan}
 									placeholder="e.g., pro"
 									required
@@ -1022,7 +1435,15 @@ export function AppLicensesPage() {
 
 							{/* Description */}
 							<div style={{ marginBottom: "20px" }}>
-								<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "8px" }}>
+								<label
+									style={{
+										display: "block",
+										fontSize: "13px",
+										fontWeight: "600",
+										color: "var(--text-secondary)",
+										marginBottom: "8px",
+									}}
+								>
 									Description
 								</label>
 								<textarea
@@ -1046,9 +1467,24 @@ export function AppLicensesPage() {
 							</div>
 
 							{/* Pricing */}
-							<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: "20px" }}>
+							<div
+								style={{
+									display: "grid",
+									gridTemplateColumns: "1fr 1fr 1fr",
+									gap: "12px",
+									marginBottom: "20px",
+								}}
+							>
 								<div>
-									<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "8px" }}>
+									<label
+										style={{
+											display: "block",
+											fontSize: "13px",
+											fontWeight: "600",
+											color: "var(--text-secondary)",
+											marginBottom: "8px",
+										}}
+									>
 										Monthly Price ($)
 									</label>
 									<input
@@ -1071,7 +1507,15 @@ export function AppLicensesPage() {
 									/>
 								</div>
 								<div>
-									<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "8px" }}>
+									<label
+										style={{
+											display: "block",
+											fontSize: "13px",
+											fontWeight: "600",
+											color: "var(--text-secondary)",
+											marginBottom: "8px",
+										}}
+									>
 										Yearly Price ($)
 									</label>
 									<input
@@ -1094,7 +1538,15 @@ export function AppLicensesPage() {
 									/>
 								</div>
 								<div>
-									<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "8px" }}>
+									<label
+										style={{
+											display: "block",
+											fontSize: "13px",
+											fontWeight: "600",
+											color: "var(--text-secondary)",
+											marginBottom: "8px",
+										}}
+									>
 										One-Time Price ($)
 									</label>
 									<input
@@ -1120,14 +1572,27 @@ export function AppLicensesPage() {
 
 							{/* Duration */}
 							<div style={{ marginBottom: "20px" }}>
-								<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "8px" }}>
+								<label
+									style={{
+										display: "block",
+										fontSize: "13px",
+										fontWeight: "600",
+										color: "var(--text-secondary)",
+										marginBottom: "8px",
+									}}
+								>
 									License Duration (Days)
 								</label>
 								<input
 									type="number"
 									min="1"
 									value={planForm.durationDays || ""}
-									onChange={(e) => setPlanForm({ ...planForm, durationDays: e.target.value ? parseInt(e.target.value) : null })}
+									onChange={(e) =>
+										setPlanForm({
+											...planForm,
+											durationDays: e.target.value ? parseInt(e.target.value, 10) : null,
+										})
+									}
 									disabled={isUpdating}
 									placeholder="e.g., 30, 365 (leave empty for lifetime)"
 									style={{
@@ -1147,7 +1612,9 @@ export function AppLicensesPage() {
 
 							{/* Trial */}
 							<div style={{ marginBottom: "20px" }}>
-								<label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+								<label
+									style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
+								>
 									<input
 										type="checkbox"
 										checked={planForm.trialEnabled}
@@ -1161,7 +1628,15 @@ export function AppLicensesPage() {
 								</label>
 								{planForm.trialEnabled && (
 									<div style={{ marginTop: "12px", marginLeft: "28px" }}>
-										<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "8px" }}>
+										<label
+											style={{
+												display: "block",
+												fontSize: "13px",
+												fontWeight: "600",
+												color: "var(--text-secondary)",
+												marginBottom: "8px",
+											}}
+										>
 											Trial Duration (days)
 										</label>
 										<input
@@ -1187,7 +1662,15 @@ export function AppLicensesPage() {
 
 							{/* Features */}
 							<div style={{ marginBottom: "24px" }}>
-								<label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "8px" }}>
+								<label
+									style={{
+										display: "block",
+										fontSize: "13px",
+										fontWeight: "600",
+										color: "var(--text-secondary)",
+										marginBottom: "8px",
+									}}
+								>
 									Features
 								</label>
 								<div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
@@ -1252,8 +1735,18 @@ export function AppLicensesPage() {
 														padding: "4px",
 													}}
 												>
-													<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+													<svg
+														style={{ width: "16px", height: "16px" }}
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<path
+															strokeLinecap="round"
+															strokeLinejoin="round"
+															strokeWidth={2}
+															d="M6 18L18 6M6 6l12 12"
+														/>
 													</svg>
 												</button>
 											</div>
@@ -1269,7 +1762,10 @@ export function AppLicensesPage() {
 									onClick={() => setShowPlanModal(false)}
 									disabled={isUpdating}
 									className="btn btn-secondary"
-									style={{ opacity: isUpdating ? 0.6 : 1, cursor: isUpdating ? "not-allowed" : "pointer" }}
+									style={{
+										opacity: isUpdating ? 0.6 : 1,
+										cursor: isUpdating ? "not-allowed" : "pointer",
+									}}
 								>
 									Cancel
 								</button>
@@ -1277,7 +1773,10 @@ export function AppLicensesPage() {
 									type="submit"
 									disabled={isUpdating}
 									className="btn btn-primary"
-									style={{ opacity: isUpdating ? 0.6 : 1, cursor: isUpdating ? "not-allowed" : "pointer" }}
+									style={{
+										opacity: isUpdating ? 0.6 : 1,
+										cursor: isUpdating ? "not-allowed" : "pointer",
+									}}
 								>
 									{isUpdating ? "Saving..." : editingPlan ? "Update Plan" : "Create Plan"}
 								</button>
@@ -1318,25 +1817,45 @@ export function AppLicensesPage() {
 						onClick={(e) => e.stopPropagation()}
 					>
 						<div style={{ marginBottom: "24px" }}>
-							<div style={{
-								width: "48px",
-								height: "48px",
-								borderRadius: "12px",
-								background: "rgba(239, 68, 68, 0.1)",
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-								marginBottom: "16px",
-							}}>
-								<svg style={{ width: "24px", height: "24px", color: "var(--danger)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+							<div
+								style={{
+									width: "48px",
+									height: "48px",
+									borderRadius: "12px",
+									background: "rgba(239, 68, 68, 0.1)",
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "center",
+									marginBottom: "16px",
+								}}
+							>
+								<svg
+									style={{ width: "24px", height: "24px", color: "var(--danger)" }}
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={2}
+										d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+									/>
 								</svg>
 							</div>
-							<h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px", color: "var(--text-primary)" }}>
+							<h2
+								style={{
+									fontSize: "20px",
+									fontWeight: "700",
+									marginBottom: "8px",
+									color: "var(--text-primary)",
+								}}
+							>
 								Delete Plan?
 							</h2>
 							<p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "12px" }}>
-								Are you sure you want to delete the <strong>{deletingPlan.name}</strong> plan? This action cannot be undone.
+								Are you sure you want to delete the <strong>{deletingPlan.name}</strong> plan? This
+								action cannot be undone.
 							</p>
 							<p style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>
 								Note: Plans with active licenses cannot be deleted.
@@ -1349,7 +1868,10 @@ export function AppLicensesPage() {
 								onClick={() => setDeletingPlan(null)}
 								disabled={isUpdating}
 								className="btn btn-secondary"
-								style={{ opacity: isUpdating ? 0.6 : 1, cursor: isUpdating ? "not-allowed" : "pointer" }}
+								style={{
+									opacity: isUpdating ? 0.6 : 1,
+									cursor: isUpdating ? "not-allowed" : "pointer",
+								}}
 							>
 								Cancel
 							</button>
@@ -1358,7 +1880,10 @@ export function AppLicensesPage() {
 								onClick={handleDeletePlan}
 								disabled={isUpdating}
 								className="btn btn-danger"
-								style={{ opacity: isUpdating ? 0.6 : 1, cursor: isUpdating ? "not-allowed" : "pointer" }}
+								style={{
+									opacity: isUpdating ? 0.6 : 1,
+									cursor: isUpdating ? "not-allowed" : "pointer",
+								}}
 							>
 								{isUpdating ? "Deleting..." : "Delete Plan"}
 							</button>

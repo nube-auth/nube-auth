@@ -11,7 +11,7 @@ const log = createLogger("admin-security");
 export const adminSecurityCheck = createMiddleware(async (c: Context, next: Next) => {
 	try {
 		const method = c.req.method;
-		
+
 		// Only apply to state-changing operations
 		if (method === "GET" || method === "HEAD" || method === "OPTIONS") {
 			return next();

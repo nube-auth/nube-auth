@@ -28,20 +28,22 @@ export function SessionsPage() {
 				.slice(0, 2)
 		: user?.email?.charAt(0).toUpperCase() || "U";
 
-const formatDate = (date: string | number) => {
-const timestamp = typeof date === 'number' ? date * 1000 : new Date(date).getTime();
-return new Date(timestamp).toLocaleDateString("en-US", {
-month: "short",
-day: "numeric",
-year: "numeric"
-});
-};
+	const formatDate = (date: string | number) => {
+		const timestamp = typeof date === "number" ? date * 1000 : new Date(date).getTime();
+		return new Date(timestamp).toLocaleDateString("en-US", {
+			month: "short",
+			day: "numeric",
+			year: "numeric",
+		});
+	};
 
 	return (
 		<div>
 			{/* Breadcrumbs */}
 			<nav className="breadcrumbs">
-				<Link to="/profile" className="breadcrumb-item">Account</Link>
+				<Link to="/profile" className="breadcrumb-item">
+					Account
+				</Link>
 				<span className="breadcrumb-divider">/</span>
 				<span className="breadcrumb-current">Sessions</span>
 			</nav>
@@ -70,9 +72,7 @@ year: "numeric"
 				</div>
 				<div className="info-item">
 					<div className="info-label">Current Expires</div>
-					<div className="info-value">
-						{currentSession ? formatDate(currentSession.expiresAt) : "N/A"}
-					</div>
+					<div className="info-value">{currentSession ? formatDate(currentSession.expiresAt) : "N/A"}</div>
 				</div>
 				<div className="info-item">
 					<div className="info-label">Last Activity</div>
@@ -84,20 +84,35 @@ year: "numeric"
 			<div className="tabs">
 				<Link to="/profile" className={`tab ${location.pathname === "/profile" ? "active" : ""}`}>
 					<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							strokeWidth={2}
+							d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+						/>
 					</svg>
 					Profile
 				</Link>
 				<Link to="/sessions" className={`tab ${location.pathname === "/sessions" ? "active" : ""}`}>
 					<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							strokeWidth={2}
+							d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+						/>
 					</svg>
 					Sessions
 					<span className="tab-badge">{sessions?.length || 0}</span>
 				</Link>
 				<button type="button" className="tab" disabled>
 					<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							strokeWidth={2}
+							d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+						/>
 					</svg>
 					Security
 				</button>
@@ -107,10 +122,23 @@ year: "numeric"
 			{activeSessions.length > 1 && (
 				<div className="alert-bar">
 					<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							strokeWidth={2}
+							d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+						/>
 					</svg>
 					You have {activeSessions.length} active sessions across your devices.
-					<a href="#logout" onClick={(e) => { e.preventDefault(); logout(); }}>Logout all</a>
+					<a
+						href="#logout"
+						onClick={(e) => {
+							e.preventDefault();
+							logout();
+						}}
+					>
+						Logout all
+					</a>
 				</div>
 			)}
 
@@ -120,7 +148,12 @@ year: "numeric"
 					<div className="current-session-header">
 						<div className="current-session-icon">
 							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+								/>
 							</svg>
 						</div>
 						<div className="current-session-info">
@@ -146,21 +179,29 @@ year: "numeric"
 			<div className="card">
 				<div className="card-header">
 					<h3 className="card-title">All Sessions</h3>
-					<button 
-						type="button" 
-						onClick={() => logout()} 
-						disabled={isLoggingOut} 
+					<button
+						type="button"
+						onClick={() => logout()}
+						disabled={isLoggingOut}
 						className="btn btn-danger btn-sm"
 					>
 						{isLoggingOut ? (
 							<>
-								<div className="spinner" style={{ width: "14px", height: "14px", borderWidth: "2px" }} />
+								<div
+									className="spinner"
+									style={{ width: "14px", height: "14px", borderWidth: "2px" }}
+								/>
 								Logging out...
 							</>
 						) : (
 							<>
 								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={2}
+										d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+									/>
 								</svg>
 								Logout All
 							</>
@@ -188,8 +229,22 @@ year: "numeric"
 											<td>
 												<div className="table-account">
 													<div className="table-account-icon">
-														<svg style={{ width: "18px", height: "18px", color: "var(--text-tertiary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-															<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+														<svg
+															style={{
+																width: "18px",
+																height: "18px",
+																color: "var(--text-tertiary)",
+															}}
+															fill="none"
+															stroke="currentColor"
+															viewBox="0 0 24 24"
+														>
+															<path
+																strokeLinecap="round"
+																strokeLinejoin="round"
+																strokeWidth={2}
+																d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+															/>
 														</svg>
 													</div>
 													<div className="table-account-info">
@@ -202,22 +257,20 @@ year: "numeric"
 													</div>
 												</div>
 											</td>
-											<td className="table-date">
-												{formatDate(session.createdAt)}
-											</td>
-											<td className="table-date">
-												{formatDate(session.expiresAt)}
-											</td>
+											<td className="table-date">{formatDate(session.createdAt)}</td>
+											<td className="table-date">{formatDate(session.expiresAt)}</td>
 											<td>
 												{isCurrent ? (
 													<span className="badge badge-success">
-														<span style={{ 
-															width: "6px", 
-															height: "6px", 
-															background: "currentColor", 
-															borderRadius: "50%",
-															animation: "pulse 2s infinite"
-														}} />
+														<span
+															style={{
+																width: "6px",
+																height: "6px",
+																background: "currentColor",
+																borderRadius: "50%",
+																animation: "pulse 2s infinite",
+															}}
+														/>
 														Current
 													</span>
 												) : isExpired ? (
@@ -236,7 +289,12 @@ year: "numeric"
 					<div className="empty-state">
 						<div className="empty-state-icon">
 							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+								/>
 							</svg>
 						</div>
 						<h3 className="empty-state-title">No active sessions</h3>

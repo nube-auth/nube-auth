@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Select } from "./Select";
 
 interface InviteUserModalProps {
@@ -30,14 +30,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState<{ message: string; action: string } | null>(null);
 
-	// Fetch plans when modal opens
-	useEffect(() => {
-		if (isOpen) {
-			fetchPlans();
-		}
-	}, [isOpen, projectId, appId]);
-
-	const fetchPlans = async () => {
+	const fetchPlans = useCallback(async () => {
 		setPlansLoading(true);
 		try {
 			const response = await fetch(
@@ -54,7 +47,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 
 			const data = await response.json();
 			setPlans(data.plans || []);
-			
+
 			// Set default plan to first active plan if available
 			if (data.plans && data.plans.length > 0) {
 				// Find first plan (internal ID, not public_id)
@@ -68,7 +61,14 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 		} finally {
 			setPlansLoading(false);
 		}
-	};
+	}, [projectId, appId]);
+
+	// Fetch plans when modal opens
+	useEffect(() => {
+		if (isOpen) {
+			fetchPlans();
+		}
+	}, [isOpen, fetchPlans]);
 
 	if (!isOpen) return null;
 
@@ -87,13 +87,13 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 						"Content-Type": "application/json",
 					},
 					credentials: "include",
-				body: JSON.stringify({
-					email,
-					plan_id: grantLicense ? planId : null,
-					grant_license: grantLicense,
-					license_duration_days: licenseDuration ? Number.parseInt(licenseDuration, 10) : null,
-					custom_message: customMessage || null,
-				}),
+					body: JSON.stringify({
+						email,
+						plan_id: grantLicense ? planId : null,
+						grant_license: grantLicense,
+						license_duration_days: licenseDuration ? Number.parseInt(licenseDuration, 10) : null,
+						custom_message: customMessage || null,
+					}),
 				},
 			);
 
@@ -174,9 +174,23 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 				}}
 			>
 				{/* Header */}
-				<div style={{ marginBottom: "24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+				<div
+					style={{
+						marginBottom: "24px",
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "space-between",
+					}}
+				>
 					<div>
-						<h2 style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "4px" }}>
+						<h2
+							style={{
+								fontSize: "20px",
+								fontWeight: "700",
+								color: "var(--text-primary)",
+								marginBottom: "4px",
+							}}
+						>
 							Invite User
 						</h2>
 						<p style={{ fontSize: "14px", color: "var(--text-secondary)", margin: 0 }}>
@@ -207,8 +221,18 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 							e.currentTarget.style.color = "var(--text-secondary)";
 						}}
 					>
-						<svg style={{ width: "20px", height: "20px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+						<svg
+							style={{ width: "20px", height: "20px" }}
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								strokeWidth={2}
+								d="M6 18L18 6M6 6l12 12"
+							/>
 						</svg>
 					</button>
 				</div>
@@ -227,7 +251,12 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 							gap: "12px",
 						}}
 					>
-						<svg style={{ width: "20px", height: "20px", color: "var(--success)", flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg
+							style={{ width: "20px", height: "20px", color: "var(--success)", flexShrink: 0 }}
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
 							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
 						</svg>
 						<div style={{ flex: 1 }}>
@@ -252,12 +281,20 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 							gap: "12px",
 						}}
 					>
-						<svg style={{ width: "20px", height: "20px", color: "var(--danger)", flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+						<svg
+							style={{ width: "20px", height: "20px", color: "var(--danger)", flexShrink: 0 }}
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								strokeWidth={2}
+								d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+							/>
 						</svg>
-						<p style={{ fontSize: "14px", color: "var(--danger-text)", margin: 0 }}>
-							{error}
-						</p>
+						<p style={{ fontSize: "14px", color: "var(--danger-text)", margin: 0 }}>{error}</p>
 					</div>
 				)}
 
@@ -371,15 +408,17 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 										plansLoading
 											? [{ value: "", label: "Loading plans..." }]
 											: plans.length === 0
-											? [{ value: "", label: "No plans available" }]
-											: plans.map((plan) => ({
-													value: plan.id.toString(),
-													label: `${plan.name}${plan.monthlyPrice !== null && plan.monthlyPrice > 0
-														? ` ($${(plan.monthlyPrice / 100).toFixed(2)}/mo)`
-														: plan.yearlyPrice !== null && plan.yearlyPrice > 0
-															? ` ($${(plan.yearlyPrice / 100).toFixed(2)}/yr)`
-															: " (Free)"}`
-											  }))
+												? [{ value: "", label: "No plans available" }]
+												: plans.map((plan) => ({
+														value: plan.id.toString(),
+														label: `${plan.name}${
+															plan.monthlyPrice !== null && plan.monthlyPrice > 0
+																? ` ($${(plan.monthlyPrice / 100).toFixed(2)}/mo)`
+																: plan.yearlyPrice !== null && plan.yearlyPrice > 0
+																	? ` ($${(plan.yearlyPrice / 100).toFixed(2)}/yr)`
+																	: " (Free)"
+														}`,
+													}))
 									}
 									disabled={loading || plansLoading}
 									style={{
@@ -408,7 +447,8 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 										marginBottom: "8px",
 									}}
 								>
-									License Duration <span style={{ fontSize: "11px", fontWeight: "400" }}>(Optional)</span>
+									License Duration{" "}
+									<span style={{ fontSize: "11px", fontWeight: "400" }}>(Optional)</span>
 								</label>
 								<div style={{ position: "relative" }}>
 									<input
@@ -562,7 +602,8 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 								}
 							}}
 							onMouseLeave={(e) => {
-								e.currentTarget.style.background = loading || !email ? "var(--text-tertiary)" : "var(--primary)";
+								e.currentTarget.style.background =
+									loading || !email ? "var(--text-tertiary)" : "var(--primary)";
 								e.currentTarget.style.transform = "translateY(0)";
 								e.currentTarget.style.boxShadow = "none";
 							}}
@@ -586,7 +627,12 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 								</>
 							) : (
 								<>
-									<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<svg
+										style={{ width: "16px", height: "16px" }}
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
 										<path
 											strokeLinecap="round"
 											strokeLinejoin="round"

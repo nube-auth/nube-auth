@@ -1,7 +1,7 @@
-import type { Context, Next } from "hono";
-import { createMiddleware } from "hono/factory";
 import { cache } from "@proofa/cache";
 import { createLogger } from "@proofa/shared";
+import type { Context, Next } from "hono";
+import { createMiddleware } from "hono/factory";
 
 const log = createLogger("rate-limit");
 
@@ -18,7 +18,7 @@ export interface RateLimitOptions {
 
 /**
  * Rate limiting middleware using Redis sliding window
- * 
+ *
  * @example
  * // Limit auth endpoints to 10 requests per 5 minutes
  * app.use('/v1/auth/*', rateLimitMiddleware({
@@ -27,19 +27,12 @@ export interface RateLimitOptions {
  * }));
  */
 export function rateLimitMiddleware(options: RateLimitOptions) {
-	const {
-		maxRequests,
-		windowSeconds,
-		keyPrefix = "rate-limit",
-		identifier,
-	} = options;
+	const { maxRequests, windowSeconds, keyPrefix = "rate-limit", identifier } = options;
 
-	return createMiddleware(async (c: Context, next: Next): Promise<Response | void> => {
+	return createMiddleware(async (c: Context, next: Next): Promise<Response | undefined> => {
 		try {
 			// Get identifier (IP address by default)
-			const id = identifier
-				? await identifier(c)
-				: getClientIp(c);
+			const id = identifier ? await identifier(c) : getClientIp(c);
 
 			if (!id) {
 				log.warn("No identifier found for rate limiting, allowing request");
@@ -70,9 +63,9 @@ export function rateLimitMiddleware(options: RateLimitOptions) {
 			// Check if limit exceeded
 			if (current > maxRequests) {
 				log.warn({ id, path, current, maxRequests }, "Rate limit exceeded");
-				
+
 				c.header("Retry-After", ttl.toString());
-				
+
 				return c.json(
 					{
 						error: "Too many requests",
@@ -180,7 +173,7 @@ export async function checkRateLimit(
 export async function clearRateLimit(identifier: string, keyPrefix: string): Promise<void> {
 	const pattern = `${keyPrefix}:${identifier}:*`;
 	const keys = await cache.keys(pattern);
-	
+
 	if (keys.length > 0) {
 		await cache.deleteMany(keys);
 		log.info({ identifier, keyPrefix, count: keys.length }, "Rate limits cleared");

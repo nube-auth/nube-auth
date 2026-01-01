@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, type ReactNode, useContext, useState } from "react";
 
 interface Toast {
 	id: string;
@@ -26,7 +26,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 	const showToast = (message: string, type: Toast["type"] = "info") => {
 		const id = Math.random().toString(36).substr(2, 9);
 		const newToast: Toast = { id, message, type };
-		
+
 		setToasts((prev) => [...prev, newToast]);
 
 		// Auto-remove after 5 seconds
@@ -55,7 +55,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 					bg: "#ef4444",
 					icon: (
 						<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								strokeWidth={2}
+								d="M6 18L18 6M6 6l12 12"
+							/>
 						</svg>
 					),
 				};
@@ -141,8 +146,18 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 								onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
 								onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.8")}
 							>
-								<svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+								<svg
+									style={{ width: "16px", height: "16px" }}
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={2}
+										d="M6 18L18 6M6 6l12 12"
+									/>
 								</svg>
 							</button>
 						</div>

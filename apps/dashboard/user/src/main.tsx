@@ -1,6 +1,6 @@
+import { ProofaProvider } from "@proofa/react";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { ProofaProvider } from "@proofa/react";
 import App from "./App";
 import "./index.css";
 

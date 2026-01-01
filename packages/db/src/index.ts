@@ -20,7 +20,7 @@ export function createDbClient() {
 		// Only log protocol, host, and database name - no credentials
 		const sanitized = `${parsed.protocol}//${parsed.host}${parsed.pathname}`;
 		console.log(`Connecting to database: ${sanitized}`);
-	} catch (error) {
+	} catch (_error) {
 		// Fallback if URL parsing fails
 		console.log("Connecting to database...");
 	}
@@ -60,6 +60,10 @@ export function getDb(): DbClient {
 	return dbInstance;
 }
 
+// Export drizzle-orm operators for queries
+export { and, asc, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
+// Export provider helpers
+export { paymentProviderQueries } from "./providers.js";
 // Export all query helpers
 export {
 	appQueries,
@@ -76,17 +80,11 @@ export {
 	sessionQueries,
 	userQueries,
 } from "./queries.js";
-// Export provider helpers
-export { paymentProviderQueries } from "./providers.js";
 // Export schema for migrations and types
 export * from "./schema.js";
-
 // Export transaction utilities
 export {
-	withTransaction,
 	executeAtomic,
 	withRetry,
+	withTransaction,
 } from "./utils/transaction.js";
-
-// Export drizzle-orm operators for queries
-export { and, eq, isNull, desc, asc, or, inArray, sql } from "drizzle-orm";

@@ -15,7 +15,12 @@ export function LicensesPage() {
 		return (
 			<div className="alert alert-danger">
 				<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+					<path
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						strokeWidth={2}
+						d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+					/>
 				</svg>
 				<span>Error loading licenses. Please try again.</span>
 			</div>
@@ -76,14 +81,24 @@ export function LicensesPage() {
 									const isActive = license.status === "active" || license.status !== "expired";
 									const expiryDate = license.validUntil;
 									const isExpired = expiryDate && new Date(expiryDate) < new Date();
-									
+
 									return (
 										<tr key={license.id}>
 											<td>
 												<div className="flex items-center gap-3">
 													<div className="w-8 h-8 bg-yellow-50 rounded-lg flex items-center justify-center">
-														<svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-															<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+														<svg
+															className="w-4 h-4 text-yellow-600"
+															fill="none"
+															stroke="currentColor"
+															viewBox="0 0 24 24"
+														>
+															<path
+																strokeLinecap="round"
+																strokeLinejoin="round"
+																strokeWidth={2}
+																d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
+															/>
 														</svg>
 													</div>
 													<span className="code-inline">{license.id}</span>
@@ -112,7 +127,7 @@ export function LicensesPage() {
 															year: "numeric",
 															month: "short",
 															day: "numeric",
-													  })
+														})
 													: "—"}
 											</td>
 										</tr>
@@ -125,7 +140,12 @@ export function LicensesPage() {
 					<div className="empty-state">
 						<div className="empty-state-icon">
 							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-full h-full">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={1.5}
+									d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
+								/>
 							</svg>
 						</div>
 						<h3 className="empty-state-title">No licenses found</h3>

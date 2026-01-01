@@ -1,22 +1,15 @@
-import type { Context } from "hono";
-import { z } from "zod";
+import { getDb, paymentProviderQueries } from "@proofa/db";
 import {
-	paymentProviderQueries,
-	getDb,
-} from "@proofa/db";
-import {
-	encryptOAuthCredentials,
-	encryptPaymentCredentials,
-	decryptOAuthCredentials,
 	decryptPaymentCredentials,
-	maskOAuthCredentials,
+	encryptPaymentCredentials,
 	maskPaymentCredentials,
-	type OAuthCredentials,
 	type PaymentCredentials,
 } from "@proofa/shared";
+import type { Context } from "hono";
+import { z } from "zod";
 
 // Validation schemas
-const createOAuthProviderSchema = z.object({
+const _createOAuthProviderSchema = z.object({
 	entityType: z.enum(["platform", "project", "app"]),
 	entityId: z.number().nullable(),
 	provider: z.string().min(1),
@@ -28,17 +21,19 @@ const createOAuthProviderSchema = z.object({
 	metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
-const updateOAuthProviderSchema = z.object({
-	credentials: z.object({
-		client_id: z.string().min(1),
-		client_secret: z.string().min(1),
-		redirect_uri: z.string().optional(),
-	}).optional(),
+const _updateOAuthProviderSchema = z.object({
+	credentials: z
+		.object({
+			client_id: z.string().min(1),
+			client_secret: z.string().min(1),
+			redirect_uri: z.string().optional(),
+		})
+		.optional(),
 	isActive: z.boolean().optional(),
 	metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
-const selectOAuthProviderSchema = z.object({
+const _selectOAuthProviderSchema = z.object({
 	oauthProviderId: z.number(),
 	displayOrder: z.number().optional(),
 	customButtonText: z.string().optional(),
@@ -67,7 +62,7 @@ const updatePaymentProviderSchema = z.object({
  */
 export async function getAvailablePaymentProviders(c: Context) {
 	const db = getDb();
-	const appId = parseInt(c.req.param("appId"));
+	const appId = parseInt(c.req.param("appId"), 10);
 	const environment = (c.req.query("environment") as "test" | "production") || "test";
 
 	const providers = await paymentProviderQueries.getAvailablePaymentProviders(db, appId, environment);
@@ -96,7 +91,7 @@ export async function getAvailablePaymentProviders(c: Context) {
  */
 export async function getSelectedPaymentProvider(c: Context) {
 	const db = getDb();
-	const appId = parseInt(c.req.param("appId"));
+	const appId = parseInt(c.req.param("appId"), 10);
 
 	const provider = await paymentProviderQueries.getPaymentProvider(db, appId);
 
@@ -129,7 +124,7 @@ export async function getSelectedPaymentProvider(c: Context) {
 export async function createPaymentProvider(c: Context) {
 	const body = await c.req.json();
 	const result = createPaymentProviderSchema.safeParse(body);
-	
+
 	if (!result.success) {
 		return c.json({ error: "Invalid request data", details: result.error.issues }, 400);
 	}
@@ -185,13 +180,13 @@ export async function createPaymentProvider(c: Context) {
 export async function updatePaymentProvider(c: Context) {
 	const body = await c.req.json();
 	const result = updatePaymentProviderSchema.safeParse(body);
-	
+
 	if (!result.success) {
 		return c.json({ error: "Invalid request data", details: result.error.issues }, 400);
 	}
 
 	const db = getDb();
-	const providerId = parseInt(c.req.param("providerId"));
+	const providerId = parseInt(c.req.param("providerId"), 10);
 	const data = result.data;
 	const userId = c.get("userId");
 
@@ -215,7 +210,7 @@ export async function updatePaymentProvider(c: Context) {
  */
 export async function deletePaymentProvider(c: Context) {
 	const db = getDb();
-	const providerId = parseInt(c.req.param("providerId"));
+	const providerId = parseInt(c.req.param("providerId"), 10);
 
 	await paymentProviderQueries.deleteProvider(db, providerId);
 
@@ -227,7 +222,7 @@ export async function deletePaymentProvider(c: Context) {
  */
 export async function selectPaymentProvider(c: Context) {
 	const db = getDb();
-	const appId = parseInt(c.req.param("appId"));
+	const appId = parseInt(c.req.param("appId"), 10);
 	const { paymentProviderId } = await c.req.json();
 
 	if (!paymentProviderId) {

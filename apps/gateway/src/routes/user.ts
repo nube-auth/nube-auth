@@ -1,9 +1,9 @@
 import type { Context } from "hono";
-import { createLogger, serializeError } from "@proofa/shared";
 
 const log = createLogger("user-routes");
-import { Hono } from "hono";
+
 import { createLogger, serializeError } from "@proofa/shared";
+import { Hono } from "hono";
 
 import { getCookie } from "hono/cookie";
 

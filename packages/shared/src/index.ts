@@ -1,22 +1,13 @@
 // Re-export all types
-export type {
-	ApiResponse,
-	App,
-	AuditLog,
-	AuthCode,
-	AuthContext,
-	EmailVerification,
-	Identity,
-	License,
-	Project,
-	ProjectMember,
-	Session,
-	User,
-} from "./types/index.js";
 
-// Re-export schemas
-export * from "./types/schemas/index.js";
-
+// Re-export audit logging
+export {
+	type AuditEvent,
+	AuditEventType,
+	AuditLogger,
+	AuditSeverity,
+	createAuditLogger,
+} from "./audit.js";
 // Re-export constants
 export {
 	ACCOUNT_LOCKOUT_DEFAULT_MINUTES,
@@ -59,10 +50,49 @@ export {
 	INFRA_PORTS,
 	ports,
 } from "./constants/ports.js";
+// Re-export environment utilities (Node.js only - not for browser)
+// Note: These functions use Node.js APIs and should NOT be imported in browser code
+// Backend services should import directly: import { loadEnv } from "@proofa/shared/dist/env-loader.js"
+// Type-only export to prevent bundling in browser builds
+export type {} from "./env-loader.js";
 export type { IdType } from "./id.js";
 // Re-export ID generators and validation
 export { createId, id, idPatterns, validateId } from "./id.js";
-
+// Re-export middleware (Node.js only - uses Redis)
+// Browser builds should not import these
+// Backend services should import directly if needed
+export type { LockoutConfig } from "./middleware/lockout.js";
+export type {
+	ApiResponse,
+	App,
+	AuditLog,
+	AuthCode,
+	AuthContext,
+	EmailVerification,
+	Identity,
+	License,
+	Project,
+	ProjectMember,
+	Session,
+	User,
+} from "./types/index.js";
+// Re-export schemas
+export * from "./types/schemas/index.js";
+// Re-export credential utilities
+export {
+	decryptOAuthCredentials,
+	decryptPaymentCredentials,
+	encryptOAuthCredentials,
+	encryptPaymentCredentials,
+	maskOAuthCredentials,
+	maskPaymentCredentials,
+	type OAuthCredentials,
+	type PaymentCredentials,
+	safeDecryptOAuthCredentials,
+	safeDecryptPaymentCredentials,
+	validateOAuthCredentials,
+	validatePaymentCredentials,
+} from "./utils/credentials.js";
 // Re-export utilities
 export {
 	addDays,
@@ -70,6 +100,27 @@ export {
 	getCurrentEpoch,
 	isExpired,
 } from "./utils/date.js";
+// Re-export encryption utilities
+export {
+	decrypt,
+	encrypt,
+	isEncrypted,
+	maskSecret,
+} from "./utils/encryption.js";
+
+// Re-export error handling utilities
+export {
+	AppError,
+	createErrorResponse,
+	createSuccessResponse,
+	type ErrorCode,
+	type ErrorResponse,
+	ErrorResponses,
+	getErrorCodeFromStatus,
+	isErrorResponse,
+	isSuccessResponse,
+	type SuccessResponse,
+} from "./utils/errors.js";
 // Re-export logger utilities
 export {
 	createChildLogger,
@@ -86,48 +137,6 @@ export {
 	validateSecret,
 	validateSecrets,
 } from "./utils/secrets.js";
-// Re-export encryption utilities
-export {
-	encrypt,
-	decrypt,
-	isEncrypted,
-	maskSecret,
-} from "./utils/encryption.js";
-// Re-export credential utilities
-export {
-	encryptOAuthCredentials,
-	decryptOAuthCredentials,
-	encryptPaymentCredentials,
-	decryptPaymentCredentials,
-	maskOAuthCredentials,
-	maskPaymentCredentials,
-	validateOAuthCredentials,
-	validatePaymentCredentials,
-	safeDecryptOAuthCredentials,
-	safeDecryptPaymentCredentials,
-	type OAuthCredentials,
-	type PaymentCredentials,
-} from "./utils/credentials.js";
-// Re-export environment utilities (Node.js only - not for browser)
-// Note: These functions use Node.js APIs and should NOT be imported in browser code
-// Backend services should import directly: import { loadEnv } from "@proofa/shared/dist/env-loader.js"
-// Type-only export to prevent bundling in browser builds
-export type { } from "./env-loader.js";
-
-// Re-export error handling utilities
-export {
-	AppError,
-	createErrorResponse,
-	createSuccessResponse,
-	type ErrorCode,
-	type ErrorResponse,
-	ErrorResponses,
-	getErrorCodeFromStatus,
-	isErrorResponse,
-	isSuccessResponse,
-	type SuccessResponse,
-} from "./utils/errors.js";
-
 // Re-export validation utilities
 export {
 	booleanSchema,
@@ -145,17 +154,3 @@ export {
 	validateQuery,
 	validateRequest,
 } from "./utils/validation.js";
-
-// Re-export middleware (Node.js only - uses Redis)
-// Browser builds should not import these
-// Backend services should import directly if needed
-export type { LockoutConfig } from "./middleware/lockout.js";
-
-// Re-export audit logging
-export {
-	AuditEventType,
-	AuditSeverity,
-	type AuditEvent,
-	AuditLogger,
-	createAuditLogger,
-} from "./audit.js";

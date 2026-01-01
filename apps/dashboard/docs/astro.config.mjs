@@ -1,60 +1,60 @@
-import { defineConfig } from 'astro/config';
-import starlight from '@astrojs/starlight';
+import starlight from "@astrojs/starlight";
+import { defineConfig } from "astro/config";
 
 export default defineConfig({
 	integrations: [
 		starlight({
-			title: 'Proofa',
+			title: "Proofa",
 			logo: {
-				src: './src/assets/logo.png',
-				alt: 'Proofa',
+				src: "./src/assets/logo.png",
+				alt: "Proofa",
 			},
-			description: 'Authentication, session management, and licensing for modern applications',
-			favicon: '/favicon.png',
+			description: "Authentication, session management, and licensing for modern applications",
+			favicon: "/favicon.png",
 			head: [],
-			customCss: ['./src/styles/custom.css'],
+			customCss: ["./src/styles/custom.css"],
 			components: {
 				// Override the default theme selector with our custom toggle button
-				ThemeSelect: './src/components/ThemeSelect.astro',
+				ThemeSelect: "./src/components/ThemeSelect.astro",
 			},
 			sidebar: [
 				{
-					label: 'Getting Started',
+					label: "Getting Started",
 					items: [
-						{ label: 'Introduction', link: '/getting-started/introduction/' },
-						{ label: 'Quick Start', link: '/getting-started/quickstart/' },
-						{ label: 'Installation', link: '/getting-started/installation/' },
-						{ label: 'Configuration', link: '/getting-started/configuration/' },
+						{ label: "Introduction", link: "/getting-started/introduction/" },
+						{ label: "Quick Start", link: "/getting-started/quickstart/" },
+						{ label: "Installation", link: "/getting-started/installation/" },
+						{ label: "Configuration", link: "/getting-started/configuration/" },
 					],
 				},
 				{
-					label: 'Authentication',
+					label: "Authentication",
 					items: [
-						{ label: 'Overview', link: '/authentication/overview/' },
-						{ label: 'OAuth Providers', link: '/authentication/oauth-providers/' },
-						{ label: 'Magic Links', link: '/authentication/magic-links/' },
+						{ label: "Overview", link: "/authentication/overview/" },
+						{ label: "OAuth Providers", link: "/authentication/oauth-providers/" },
+						{ label: "Magic Links", link: "/authentication/magic-links/" },
 					],
 				},
 				{
-					label: 'Sessions',
+					label: "Sessions",
 					items: [
-						{ label: 'Overview', link: '/sessions/overview/' },
-						{ label: 'Token Refresh', link: '/sessions/token-refresh/' },
+						{ label: "Overview", link: "/sessions/overview/" },
+						{ label: "Token Refresh", link: "/sessions/token-refresh/" },
 					],
 				},
 				{
-					label: 'Licensing',
+					label: "Licensing",
 					items: [
-						{ label: 'Overview', link: '/licensing/overview/' },
-						{ label: 'Plans & Tiers', link: '/licensing/plans/' },
+						{ label: "Overview", link: "/licensing/overview/" },
+						{ label: "Plans & Tiers", link: "/licensing/plans/" },
 					],
 				},
 				{
-					label: 'API Reference',
+					label: "API Reference",
 					items: [
-						{ label: 'REST API', link: '/api/rest/' },
-						{ label: 'Authentication', link: '/api/authentication/' },
-						{ label: 'Sessions', link: '/api/sessions/' },
+						{ label: "REST API", link: "/api/rest/" },
+						{ label: "Authentication", link: "/api/authentication/" },
+						{ label: "Sessions", link: "/api/sessions/" },
 					],
 				},
 			],

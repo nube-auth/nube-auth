@@ -22,12 +22,23 @@ export function ProjectStatsPage() {
 		<div className="page">
 			{/* Breadcrumb */}
 			<div style={{ marginBottom: "24px" }}>
-				<div style={{ display: "flex", gap: "8px", alignItems: "center", fontSize: "13px", color: "var(--text-tertiary)" }}>
+				<div
+					style={{
+						display: "flex",
+						gap: "8px",
+						alignItems: "center",
+						fontSize: "13px",
+						color: "var(--text-tertiary)",
+					}}
+				>
 					<Link to="/projects" style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
 						Projects
 					</Link>
 					<span>›</span>
-					<Link to={`/projects/${projectId}`} style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+					<Link
+						to={`/projects/${projectId}`}
+						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
+					>
 						{project.name}
 					</Link>
 					<span>›</span>
@@ -44,9 +55,25 @@ export function ProjectStatsPage() {
 			</div>
 
 			{/* Stats Cards */}
-			<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "20px", marginBottom: "32px" }}>
+			<div
+				style={{
+					display: "grid",
+					gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+					gap: "20px",
+					marginBottom: "32px",
+				}}
+			>
 				<div className="card" style={{ padding: "20px" }}>
-					<div style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+					<div
+						style={{
+							fontSize: "13px",
+							color: "var(--text-tertiary)",
+							marginBottom: "8px",
+							fontWeight: "600",
+							textTransform: "uppercase",
+							letterSpacing: "0.5px",
+						}}
+					>
 						Total Apps
 					</div>
 					<div style={{ fontSize: "32px", fontWeight: "700", color: "var(--text-primary)" }}>
@@ -55,7 +82,16 @@ export function ProjectStatsPage() {
 				</div>
 
 				<div className="card" style={{ padding: "20px" }}>
-					<div style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+					<div
+						style={{
+							fontSize: "13px",
+							color: "var(--text-tertiary)",
+							marginBottom: "8px",
+							fontWeight: "600",
+							textTransform: "uppercase",
+							letterSpacing: "0.5px",
+						}}
+					>
 						Total Users
 					</div>
 					<div style={{ fontSize: "32px", fontWeight: "700", color: "var(--text-primary)" }}>
@@ -64,7 +100,16 @@ export function ProjectStatsPage() {
 				</div>
 
 				<div className="card" style={{ padding: "20px" }}>
-					<div style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+					<div
+						style={{
+							fontSize: "13px",
+							color: "var(--text-tertiary)",
+							marginBottom: "8px",
+							fontWeight: "600",
+							textTransform: "uppercase",
+							letterSpacing: "0.5px",
+						}}
+					>
 						Active Licenses
 					</div>
 					<div style={{ fontSize: "32px", fontWeight: "700", color: "var(--text-primary)" }}>
@@ -73,7 +118,16 @@ export function ProjectStatsPage() {
 				</div>
 
 				<div className="card" style={{ padding: "20px" }}>
-					<div style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "8px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+					<div
+						style={{
+							fontSize: "13px",
+							color: "var(--text-tertiary)",
+							marginBottom: "8px",
+							fontWeight: "600",
+							textTransform: "uppercase",
+							letterSpacing: "0.5px",
+						}}
+					>
 						Monthly Revenue
 					</div>
 					<div style={{ fontSize: "32px", fontWeight: "700", color: "var(--text-primary)" }}>
@@ -89,8 +143,8 @@ export function ProjectStatsPage() {
 					Advanced Analytics Coming Soon
 				</h2>
 				<p style={{ fontSize: "14px", color: "var(--text-tertiary)", maxWidth: "480px", margin: "0 auto" }}>
-					We're working on detailed charts, user growth trends, retention analytics, and more. 
-					Stay tuned for updates!
+					We're working on detailed charts, user growth trends, retention analytics, and more. Stay tuned for
+					updates!
 				</p>
 			</div>
 		</div>

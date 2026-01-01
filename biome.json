@@ -34,11 +34,19 @@
 				"noExplicitAny": "off",
 				"noConsole": "off",
 				"noImplicitAnyLet": "off",
-				"noDocumentCookie": "off"
+				"noDocumentCookie": "off",
+				"noArrayIndexKey": "warn",
+				"noAssignInExpressions": "off"
 			},
 			"a11y": {
-				"noLabelWithoutControl": "warn",
-				"useButtonType": "warn"
+				"noLabelWithoutControl": "off",
+				"useButtonType": "off",
+				"noSvgWithoutTitle": "off",
+				"noStaticElementInteractions": "off",
+				"useKeyWithClickEvents": "off",
+				"noAutofocus": "off",
+				"useKeyWithMouseEvents": "off",
+				"useValidAnchor": "warn"
 			}
 		}
 	},

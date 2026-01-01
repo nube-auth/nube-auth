@@ -3,14 +3,14 @@
  * Loads .env first, then .env.local to allow local overrides
  */
 
-import { config } from "dotenv";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
+import { config } from "dotenv";
 
 /**
  * Load environment variables from .env and .env.local files
  * .env.local values override .env values
- * 
+ *
  * @param workspaceRoot - Optional path to workspace root (defaults to process.cwd())
  */
 export function loadEnv(workspaceRoot?: string): void {
@@ -74,7 +74,7 @@ export function validateEnv(requiredVars: readonly string[]): void {
 
 	if (missing.length > 0) {
 		throw new Error(
-			`Missing required environment variables:\n  - ${missing.join("\n  - ")}\n\nPlease check your .env and .env.local files.`
+			`Missing required environment variables:\n  - ${missing.join("\n  - ")}\n\nPlease check your .env and .env.local files.`,
 		);
 	}
 }

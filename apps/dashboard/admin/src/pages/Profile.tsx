@@ -1,5 +1,5 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface AdminProfile {
 	id: string;
@@ -90,9 +90,7 @@ export function ProfilePage() {
 		return (
 			<div className="page-header">
 				<h1 className="page-title">Profile</h1>
-				<p style={{ color: "var(--text-secondary)", marginTop: "16px" }}>
-					Failed to load profile
-				</p>
+				<p style={{ color: "var(--text-secondary)", marginTop: "16px" }}>Failed to load profile</p>
 			</div>
 		);
 	}
@@ -110,9 +108,7 @@ export function ProfilePage() {
 		<div>
 			<div className="page-header">
 				<h1 className="page-title">Profile</h1>
-				<p className="page-description">
-					Manage your personal information and preferences
-				</p>
+				<p className="page-description">Manage your personal information and preferences</p>
 			</div>
 
 			{/* Success Message */}
@@ -178,7 +174,14 @@ export function ProfilePage() {
 						{initials}
 					</div>
 					<div style={{ flex: 1 }}>
-						<h2 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "4px", color: "var(--text-primary)" }}>
+						<h2
+							style={{
+								fontSize: "24px",
+								fontWeight: "600",
+								marginBottom: "4px",
+								color: "var(--text-primary)",
+							}}
+						>
 							{profile.name || "Admin User"}
 						</h2>
 						<p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>
@@ -186,9 +189,9 @@ export function ProfilePage() {
 						</p>
 					</div>
 					{!isEditing && (
-						<button 
-							type="button" 
-							onClick={handleEdit} 
+						<button
+							type="button"
+							onClick={handleEdit}
 							className="btn-secondary"
 							style={{
 								display: "flex",
@@ -197,7 +200,7 @@ export function ProfilePage() {
 								padding: "10px 16px",
 								fontSize: "14px",
 								fontWeight: "500",
-								borderRadius: "var(--radius)"
+								borderRadius: "var(--radius)",
 							}}
 						>
 							<svg
@@ -254,11 +257,10 @@ export function ProfilePage() {
 									onChange={(e) => setName(e.target.value)}
 									placeholder="Enter your full name"
 									className="input"
-									style={{ 
+									style={{
 										maxWidth: "500px",
 										fontSize: "14px",
 									}}
-									autoFocus
 								/>
 							) : (
 								<div
@@ -378,7 +380,7 @@ export function ProfilePage() {
 								onClick={handleSave}
 								disabled={updateProfile.isPending || !name.trim()}
 								className="btn-primary"
-								style={{ 
+								style={{
 									minWidth: "110px",
 									display: "flex",
 									alignItems: "center",
@@ -387,7 +389,7 @@ export function ProfilePage() {
 									padding: "10px 16px",
 									fontSize: "14px",
 									fontWeight: "500",
-									borderRadius: "var(--radius)"
+									borderRadius: "var(--radius)",
 								}}
 							>
 								{updateProfile.isPending ? (
@@ -423,7 +425,7 @@ export function ProfilePage() {
 									padding: "10px 16px",
 									fontSize: "14px",
 									fontWeight: "500",
-									borderRadius: "var(--radius)"
+									borderRadius: "var(--radius)",
 								}}
 							>
 								Cancel
@@ -482,7 +484,9 @@ export function ProfilePage() {
 						}}
 					>
 						<div>
-							<div style={{ fontWeight: "500", marginBottom: "4px", fontSize: "14px" }}>Theme Preference</div>
+							<div style={{ fontWeight: "500", marginBottom: "4px", fontSize: "14px" }}>
+								Theme Preference
+							</div>
 							<div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
 								Your theme preference is managed in the header
 							</div>
@@ -515,7 +519,9 @@ export function ProfilePage() {
 						}}
 					>
 						<div>
-							<div style={{ fontWeight: "500", marginBottom: "4px", fontSize: "14px" }}>Active Sessions</div>
+							<div style={{ fontWeight: "500", marginBottom: "4px", fontSize: "14px" }}>
+								Active Sessions
+							</div>
 							<div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
 								You are currently signed in
 							</div>

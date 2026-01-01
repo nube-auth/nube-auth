@@ -1,4 +1,4 @@
-import { pgTable, serial, text, varchar, integer, timestamp, boolean, index, unique, jsonb } from "drizzle-orm/pg-core";
+import { boolean, index, integer, jsonb, pgTable, serial, text, timestamp, unique, varchar } from "drizzle-orm/pg-core";
 
 /**
  * Users table
@@ -17,10 +17,10 @@ export const users = pgTable(
 		created_at: timestamp("created_at").notNull().defaultNow(),
 		updated_at: timestamp("updated_at").notNull().defaultNow(),
 	},
-	(table) => ([
+	(table) => [
 		index("users_primary_email_idx").on(table.primary_email),
 		index("users_public_id_idx").on(table.public_id),
-	]),
+	],
 );
 
 /**
@@ -90,7 +90,9 @@ export const projects = pgTable(
 			.references(() => users.id),
 		is_active: boolean("is_active").notNull().default(true),
 		created_at: timestamp("created_at").notNull().defaultNow(),
-		updated_at: timestamp("updated_at").notNull().defaultNow(),	deleted_at: timestamp("deleted_at"),	},
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+		deleted_at: timestamp("deleted_at"),
+	},
 	(table) => [
 		unique("projects_slug_unique").on(table.slug),
 		index("projects_owner_user_id_idx").on(table.owner_user_id),
@@ -114,7 +116,9 @@ export const project_members = pgTable(
 			.references(() => users.id),
 		role: varchar("role", { length: 50 }).notNull().default("member"),
 		created_at: timestamp("created_at").notNull().defaultNow(),
-		updated_at: timestamp("updated_at").notNull().defaultNow(),	deleted_at: timestamp("deleted_at"),	},
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+		deleted_at: timestamp("deleted_at"),
+	},
 	(table) => [
 		unique("project_members_project_user_unique").on(table.project_id, table.user_id),
 		index("project_members_project_id_idx").on(table.project_id),
@@ -143,7 +147,9 @@ export const project_invitations = pgTable(
 		expires_at: timestamp("expires_at").notNull(),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 		accepted_at: timestamp("accepted_at"),
-		accepted_by_user_id: integer("accepted_by_user_id").references(() => users.id),	deleted_at: timestamp("deleted_at"),	},
+		accepted_by_user_id: integer("accepted_by_user_id").references(() => users.id),
+		deleted_at: timestamp("deleted_at"),
+	},
 	(table) => [
 		unique("project_invitations_project_email_unique").on(table.project_id, table.email),
 		index("project_invitations_project_id_idx").on(table.project_id),
@@ -174,10 +180,10 @@ export const plans = pgTable(
 		features: jsonb("features"),
 		status: varchar("status", { length: 20 }).notNull().default("active"),
 		display_order: integer("display_order").notNull().default(0),
-	is_active: boolean("is_active").notNull().default(true),
-	created_at: timestamp("created_at").notNull().defaultNow(),
-	updated_at: timestamp("updated_at").notNull().defaultNow(),
-	deleted_at: timestamp("deleted_at"),
+		is_active: boolean("is_active").notNull().default(true),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+		deleted_at: timestamp("deleted_at"),
 	},
 	(table) => [
 		index("plans_app_id_idx").on(table.app_id),
@@ -211,7 +217,7 @@ export const payment_providers = pgTable(
 		updated_by_user_id: integer("updated_by_user_id").references(() => users.id),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 		updated_at: timestamp("updated_at").notNull().defaultNow(),
-	deleted_at: timestamp("deleted_at"),
+		deleted_at: timestamp("deleted_at"),
 	},
 	(table) => [
 		index("payment_providers_entity_idx").on(table.entity_type, table.entity_id),
@@ -251,10 +257,10 @@ export const apps = pgTable(
 		cache_ttl_minutes: integer("cache_ttl_minutes").notNull().default(60),
 		rate_limit: integer("rate_limit").notNull().default(100),
 		selected_payment_provider_id: integer("selected_payment_provider_id"),
-	is_active: boolean("is_active").notNull().default(true),
-	created_at: timestamp("created_at").notNull().defaultNow(),
-	updated_at: timestamp("updated_at").notNull().defaultNow(),
-	deleted_at: timestamp("deleted_at"),
+		is_active: boolean("is_active").notNull().default(true),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+		deleted_at: timestamp("deleted_at"),
 	},
 	(table) => [
 		unique("apps_project_slug_unique").on(table.project_id, table.slug),
@@ -311,7 +317,9 @@ export const licenses = pgTable(
 		status: varchar("status", { length: 20 }).notNull().default("active"),
 		valid_until: timestamp("valid_until"),
 		created_at: timestamp("created_at").notNull().defaultNow(),
-		updated_at: timestamp("updated_at").notNull().defaultNow(),	deleted_at: timestamp("deleted_at"),	},
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+		deleted_at: timestamp("deleted_at"),
+	},
 	(table) => [
 		unique("licenses_user_app_unique").on(table.user_id, table.app_id),
 		index("licenses_user_id_idx").on(table.user_id),
@@ -400,7 +408,9 @@ export const invitations = pgTable(
 		expires_at: timestamp("expires_at").notNull(),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 		consumed_at: timestamp("consumed_at"),
-		consumed_by_user_id: integer("consumed_by_user_id").references(() => users.id),	deleted_at: timestamp("deleted_at"),	},
+		consumed_by_user_id: integer("consumed_by_user_id").references(() => users.id),
+		deleted_at: timestamp("deleted_at"),
+	},
 	(table) => [
 		unique("invitations_email_app_unique").on(table.email, table.app_id),
 		index("invitations_app_id_idx").on(table.app_id),
@@ -438,4 +448,3 @@ export const provider_usage_logs = pgTable(
 		index("provider_usage_logs_type_operation_idx").on(table.provider_type, table.operation),
 	],
 );
-

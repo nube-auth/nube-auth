@@ -67,7 +67,15 @@ interface AppUserInvitationEmailData {
 }
 
 export function generateAppUserInvitationEmail(data: AppUserInvitationEmailData): string {
-	const { inviteeEmail, appName, inviterName, planName, customMessage, inviteLink, expiresInDays } = data;
+	const {
+		inviteeEmail: _inviteeEmail,
+		appName,
+		inviterName,
+		planName,
+		customMessage,
+		inviteLink,
+		expiresInDays,
+	} = data;
 
 	return `
 <!DOCTYPE html>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useInviteTeamMember } from "../hooks/api";
-import { useToast } from "./Toast";
 import { Select } from "./Select";
+import { useToast } from "./Toast";
 
 interface InviteTeamMemberModalProps {
 	projectId: string;
@@ -16,7 +16,7 @@ export function InviteTeamMemberModal({ projectId, onClose }: InviteTeamMemberMo
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		
+
 		if (!email) {
 			showToast("Please enter an email address", "warning");
 			return;
@@ -66,9 +66,7 @@ export function InviteTeamMemberModal({ projectId, onClose }: InviteTeamMemberMo
 				}}
 				onClick={(e) => e.stopPropagation()}
 			>
-				<h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px" }}>
-					Invite Team Member
-				</h2>
+				<h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px" }}>Invite Team Member</h2>
 				<p style={{ fontSize: "14px", color: "var(--text-tertiary)", marginBottom: "24px" }}>
 					Add a team member to this project. They must have a Proofa account.
 				</p>
@@ -127,7 +125,7 @@ export function InviteTeamMemberModal({ projectId, onClose }: InviteTeamMemberMo
 							onChange={(value) => setRole(value)}
 							options={[
 								{ value: "admin", label: "Admin" },
-								{ value: "member", label: "Member" }
+								{ value: "member", label: "Member" },
 							]}
 							style={{
 								width: "100%",
@@ -140,8 +138,8 @@ export function InviteTeamMemberModal({ projectId, onClose }: InviteTeamMemberMo
 							}}
 						/>
 						<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
-							<strong>Admin:</strong> Can manage apps, users, and invite members.{" "}
-							<strong>Member:</strong> Read-only access.
+							<strong>Admin:</strong> Can manage apps, users, and invite members. <strong>Member:</strong>{" "}
+							Read-only access.
 						</p>
 					</div>
 
@@ -155,11 +153,7 @@ export function InviteTeamMemberModal({ projectId, onClose }: InviteTeamMemberMo
 						>
 							Cancel
 						</button>
-						<button
-							type="submit"
-							className="btn btn-primary"
-							disabled={inviteMutation.isPending}
-						>
+						<button type="submit" className="btn btn-primary" disabled={inviteMutation.isPending}>
 							{inviteMutation.isPending ? "Inviting..." : "Invite Member"}
 						</button>
 					</div>

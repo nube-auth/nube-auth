@@ -4,11 +4,11 @@
  */
 
 export type {
-	ProjectDTO as Project,
 	AppDTO as App,
-	ProjectMemberDTO as ProjectMember,
-	LicenseDTO as License,
-	CreateProjectRequest,
 	CreateAppRequest,
+	CreateProjectRequest,
+	LicenseDTO as License,
+	ProjectDTO as Project,
+	ProjectMemberDTO as ProjectMember,
 	UpdateAppRequest,
 } from "@proofa/shared";

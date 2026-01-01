@@ -1,8 +1,8 @@
-import type { Context } from "hono";
-import { createMiddleware } from "hono/factory";
-import { sessionStore } from "@proofa/cache";
 import { parseSessionCookie } from "@proofa/auth";
+import { sessionStore } from "@proofa/cache";
+import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
+import { createMiddleware } from "hono/factory";
 import { loggers } from "../utils/logger";
 
 const ADMIN_SESSION_COOKIE = "proofa_admin_session";
@@ -38,12 +38,15 @@ export const csrfProtection = createMiddleware(async (c: Context, next) => {
 
 	// Verify tokens match
 	if (csrfTokenHeader !== csrfTokenCookie) {
-		loggers.auth.warn({ 
-			path: c.req.path, 
-			method,
-			headerPreview: csrfTokenHeader.substring(0, 8),
-			cookiePreview: csrfTokenCookie.substring(0, 8)
-		}, "CSRF token mismatch");
+		loggers.auth.warn(
+			{
+				path: c.req.path,
+				method,
+				headerPreview: csrfTokenHeader.substring(0, 8),
+				cookiePreview: csrfTokenCookie.substring(0, 8),
+			},
+			"CSRF token mismatch",
+		);
 		return c.json({ error: "CSRF token mismatch" }, 403);
 	}
 
@@ -66,17 +69,20 @@ export const csrfProtection = createMiddleware(async (c: Context, next) => {
 
 	const session = await sessionStore.getAppSession(sessionId);
 	if (!session) {
-		loggers.auth.warn({ sessionId: sessionId.substring(0, 8) + "..." }, "Session not found during CSRF validation");
+		loggers.auth.warn({ sessionId: `${sessionId.substring(0, 8)}...` }, "Session not found during CSRF validation");
 		return c.json({ error: "Session not found" }, 401);
 	}
 
 	// Verify CSRF token matches what's stored in session
 	const storedCsrfToken = session.metadata?.csrfToken as string | undefined;
 	if (!storedCsrfToken || storedCsrfToken !== csrfTokenHeader) {
-		loggers.auth.warn({ 
-			sessionId: sessionId.substring(0, 8) + "...",
-			hasStoredToken: !!storedCsrfToken
-		}, "CSRF token does not match session");
+		loggers.auth.warn(
+			{
+				sessionId: `${sessionId.substring(0, 8)}...`,
+				hasStoredToken: !!storedCsrfToken,
+			},
+			"CSRF token does not match session",
+		);
 		return c.json({ error: "CSRF token invalid" }, 403);
 	}
 

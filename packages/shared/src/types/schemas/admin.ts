@@ -1,22 +1,15 @@
 import { z } from "zod";
 import {
-	NameSchema,
-	SlugSchema,
-	DescriptionSchema,
-	PublicIdSchema,
-	EmailSchema,
-	RoleSchema,
-	RedirectUrisSchema,
 	AllowedHostsSchema,
-	ProvidersSchema,
-	CorsOriginsSchema,
 	AppSessionTtlDaysSchema,
-	AccountLockoutMinutesSchema,
-	CacheTtlMinutesSchema,
-	RateLimitSchema,
+	DescriptionSchema,
+	EmailSchema,
+	NameSchema,
+	PublicIdSchema,
+	RedirectUrisSchema,
+	RoleSchema,
+	SlugSchema,
 	TrialDaysSchema,
-	LicensePlanSchema,
-	TimestampSchema,
 } from "./common";
 
 /**
@@ -57,18 +50,27 @@ export const CreateAppRequestSchema = z.object({
 	redirectUris: RedirectUrisSchema,
 	allowedHosts: AllowedHostsSchema,
 	sessionTtlDays: AppSessionTtlDaysSchema.default(28),
-	enabledProviders: z.array(z.enum(["google", "github"])).optional().default(["google", "github"]),
+	enabledProviders: z
+		.array(z.enum(["google", "github"]))
+		.optional()
+		.default(["google", "github"]),
 	requiresLicensing: z.boolean().default(false),
-	defaultLicensePlan: z.object({
-		name: NameSchema,
-		slug: SlugSchema.optional(),
-		description: DescriptionSchema,
-		price: z.number().min(0).max(999999.99),
-		currency: z.string().length(3).regex(/^[A-Z]{3}$/, "Currency must be 3-letter ISO code").default("USD"),
-		billing_period: z.enum(["none", "monthly", "yearly", "lifetime", "custom"]).default("none"),
-		trial_days: TrialDaysSchema,
-		features: z.record(z.any()).optional(),
-	}).optional(),
+	defaultLicensePlan: z
+		.object({
+			name: NameSchema,
+			slug: SlugSchema.optional(),
+			description: DescriptionSchema,
+			price: z.number().min(0).max(999999.99),
+			currency: z
+				.string()
+				.length(3)
+				.regex(/^[A-Z]{3}$/, "Currency must be 3-letter ISO code")
+				.default("USD"),
+			billing_period: z.enum(["none", "monthly", "yearly", "lifetime", "custom"]).default("none"),
+			trial_days: TrialDaysSchema,
+			features: z.record(z.any()).optional(),
+		})
+		.optional(),
 });
 
 export const UpdateAppRequestSchema = CreateAppRequestSchema.partial().extend({
@@ -122,7 +124,10 @@ export const CreatePlanRequestSchema = z.object({
 	slug: SlugSchema.optional(),
 	description: DescriptionSchema,
 	price: z.number().min(0).max(999999.99),
-	currency: z.string().length(3).regex(/^[A-Z]{3}$/, "Currency must be 3-letter ISO code"),
+	currency: z
+		.string()
+		.length(3)
+		.regex(/^[A-Z]{3}$/, "Currency must be 3-letter ISO code"),
 	billing_period: z.enum(["monthly", "yearly", "lifetime", "custom"]),
 	trial_days: TrialDaysSchema,
 	features: z.record(z.any()).optional(),

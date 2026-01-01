@@ -1,6 +1,6 @@
+import type { AuthStatus } from "@proofa/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useProofaContext } from "./ProofaProvider";
-import type { AuthStatus } from "@proofa/client";
 
 export function useAuth() {
 	const { client } = useProofaContext();
