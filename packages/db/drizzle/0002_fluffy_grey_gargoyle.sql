@@ -1,1 +1,0 @@
-ALTER TABLE "payment_configurations" ADD COLUMN "deleted_at" timestamp;

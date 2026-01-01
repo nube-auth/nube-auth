@@ -27,6 +27,7 @@
 		"db:push": "pnpm --filter @proofa/db run db:push",
 		"db:studio": "pnpm --filter @proofa/db run db:studio",
 		"db:generate": "pnpm --filter @proofa/db run db:generate",
+		"db:fresh": "pnpm --filter @proofa/db run db:fresh",
 		"db:seed": "turbo run db:seed",
 		"docker:up": "./scripts/docker-local.sh up",
 		"docker:up:all": "./scripts/docker-local.sh up:all",

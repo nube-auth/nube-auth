@@ -16,8 +16,10 @@ CREATE TABLE "apps" (
 	"cache_ttl_minutes" integer DEFAULT 60 NOT NULL,
 	"rate_limit" integer DEFAULT 100 NOT NULL,
 	"selected_payment_provider_id" integer,
+	"is_active" boolean DEFAULT true NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"deleted_at" timestamp,
 	CONSTRAINT "apps_public_id_unique" UNIQUE("public_id"),
 	CONSTRAINT "apps_project_slug_unique" UNIQUE("project_id","slug")
 );
@@ -93,6 +95,7 @@ CREATE TABLE "invitations" (
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"consumed_at" timestamp,
 	"consumed_by_user_id" integer,
+	"deleted_at" timestamp,
 	CONSTRAINT "invitations_public_id_unique" UNIQUE("public_id"),
 	CONSTRAINT "invitations_email_app_unique" UNIQUE("email","app_id")
 );
@@ -107,25 +110,9 @@ CREATE TABLE "licenses" (
 	"valid_until" timestamp,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"deleted_at" timestamp,
 	CONSTRAINT "licenses_public_id_unique" UNIQUE("public_id"),
 	CONSTRAINT "licenses_user_app_unique" UNIQUE("user_id","app_id")
-);
---> statement-breakpoint
-CREATE TABLE "payment_configurations" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"public_id" varchar(255) NOT NULL,
-	"name" varchar(255),
-	"slug" varchar(255),
-	"scope_type" varchar(20) NOT NULL,
-	"scope_id" integer NOT NULL,
-	"provider" varchar(50) NOT NULL,
-	"is_active" boolean DEFAULT true NOT NULL,
-	"test_mode" boolean DEFAULT true NOT NULL,
-	"config" text NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "payment_configurations_public_id_unique" UNIQUE("public_id"),
-	CONSTRAINT "payment_configurations_scope_provider_unique" UNIQUE("scope_type","scope_id","provider")
 );
 --> statement-breakpoint
 CREATE TABLE "payment_providers" (
@@ -168,8 +155,10 @@ CREATE TABLE "plans" (
 	"features" jsonb,
 	"status" varchar(20) DEFAULT 'active' NOT NULL,
 	"display_order" integer DEFAULT 0 NOT NULL,
+	"is_active" boolean DEFAULT true NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"deleted_at" timestamp,
 	CONSTRAINT "plans_public_id_unique" UNIQUE("public_id")
 );
 --> statement-breakpoint
@@ -185,6 +174,7 @@ CREATE TABLE "project_invitations" (
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"accepted_at" timestamp,
 	"accepted_by_user_id" integer,
+	"deleted_at" timestamp,
 	CONSTRAINT "project_invitations_public_id_unique" UNIQUE("public_id"),
 	CONSTRAINT "project_invitations_project_email_unique" UNIQUE("project_id","email")
 );
@@ -197,6 +187,7 @@ CREATE TABLE "project_members" (
 	"role" varchar(50) DEFAULT 'member' NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"deleted_at" timestamp,
 	CONSTRAINT "project_members_public_id_unique" UNIQUE("public_id"),
 	CONSTRAINT "project_members_project_user_unique" UNIQUE("project_id","user_id")
 );
@@ -211,6 +202,7 @@ CREATE TABLE "projects" (
 	"is_active" boolean DEFAULT true NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"deleted_at" timestamp,
 	CONSTRAINT "projects_public_id_unique" UNIQUE("public_id"),
 	CONSTRAINT "projects_slug_unique" UNIQUE("slug")
 );
@@ -301,8 +293,6 @@ CREATE INDEX "licenses_user_id_idx" ON "licenses" USING btree ("user_id");--> st
 CREATE INDEX "licenses_app_id_idx" ON "licenses" USING btree ("app_id");--> statement-breakpoint
 CREATE INDEX "licenses_plan_id_idx" ON "licenses" USING btree ("plan_id");--> statement-breakpoint
 CREATE INDEX "licenses_status_idx" ON "licenses" USING btree ("status");--> statement-breakpoint
-CREATE INDEX "payment_configurations_scope_idx" ON "payment_configurations" USING btree ("scope_type","scope_id");--> statement-breakpoint
-CREATE INDEX "payment_configurations_provider_idx" ON "payment_configurations" USING btree ("provider");--> statement-breakpoint
 CREATE INDEX "payment_providers_entity_idx" ON "payment_providers" USING btree ("entity_type","entity_id");--> statement-breakpoint
 CREATE INDEX "payment_providers_provider_idx" ON "payment_providers" USING btree ("provider");--> statement-breakpoint
 CREATE INDEX "plans_app_id_idx" ON "plans" USING btree ("app_id");--> statement-breakpoint
