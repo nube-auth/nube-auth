@@ -19,6 +19,7 @@ import {
 import { nanoid } from "nanoid";
 import { sendEmail, generateAppUserInvitationEmail, generateLicenseGrantedEmail, generateProjectTeamInvitationEmail } from "../services/email.js";
 import { auditLogger } from "../utils/logger.js";
+import { INVITATION_EXPIRY_DAYS } from "../config/constants";
 
 const log = createLogger("admin-routes");
 import {
@@ -997,7 +998,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 
 			// Create new invitation for existing user who hasn't logged into the app
 			const invitationId = createId("invitation");
-			const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days
+			const expiresAt = new Date(now.getTime() + INVITATION_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
 
 			const invitation = await invitationQueries.create(db, {
 				public_id: invitationId,
@@ -1054,7 +1055,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 
 		// User doesn't exist - create invitation
 		const invitationId = createId("invitation");
-	const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days
+	const expiresAt = new Date(now.getTime() + INVITATION_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
 		const existingInvitation = await invitationQueries.findPendingByEmailAndApp(db, email.toLowerCase(), app.id);
 
 		if (existingInvitation) {
@@ -1870,8 +1871,8 @@ adminRoutes.post("/projects/:projectId/members", async (c: Context) => {
 			return c.json({ error: "An invitation for this email already exists" }, 400);
 		}
 
-		// Create invitation (expires in 7 days)
-		const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+		// Create invitation (expires in configured days)
+		const expiresAt = new Date(now.getTime() + INVITATION_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
 		const invitation = await projectInvitationQueries.create(db, {
 			public_id: createId("invitation"),
 			project_id: project.id,

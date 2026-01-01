@@ -9,6 +9,7 @@ import { getCookie, setCookie } from "hono/cookie";
 import { coreClient } from "../lib/core-client";
 import { env } from "../config/env";
 import { sessionService } from "../services/sessionService";
+import { SESSION_TTL, SESSION_ID_BYTES, CSRF_TOKEN_BYTES } from "../config/constants";
 
 const log = createLogger("auth-routes");
 
@@ -103,9 +104,9 @@ authRoutes.get("/callback", async (c: Context) => {
 
 		// Generate NEW session ID for Gateway (session fixation protection)
 		// Don't reuse the Core's session ID
-		const gatewaySessionId = crypto.randomBytes(32).toString("hex");
-		const csrfToken = crypto.randomBytes(32).toString("hex"); // Generate CSRF token
-		const ttlSeconds = 7 * 24 * 60 * 60; // 7 days
+		const gatewaySessionId = crypto.randomBytes(SESSION_ID_BYTES).toString("hex");
+		const csrfToken = crypto.randomBytes(CSRF_TOKEN_BYTES).toString("hex"); // Generate CSRF token
+		const ttlSeconds = SESSION_TTL;
 		
 		// Store app session in Redis with Gateway session ID
 		// Store Core session ID and CSRF token in metadata
@@ -184,9 +185,9 @@ authRoutes.post("/login", async (c: Context) => {
 		}
 
 		// Generate NEW session ID for Gateway (session fixation protection)
-		const gatewaySessionId = crypto.randomBytes(32).toString("hex");
-		const csrfToken = crypto.randomBytes(32).toString("hex"); // Generate CSRF token
-		const ttlSeconds = 7 * 24 * 60 * 60; // 7 days
+		const gatewaySessionId = crypto.randomBytes(SESSION_ID_BYTES).toString("hex");
+		const csrfToken = crypto.randomBytes(CSRF_TOKEN_BYTES).toString("hex"); // Generate CSRF token
+		const ttlSeconds = SESSION_TTL;
 		const resolvedAudience = audience === "admin" ? "admin" : "user";
 		
 		// Store app session with Gateway session ID and CSRF token

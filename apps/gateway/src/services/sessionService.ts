@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { createLogger, serializeError } from "@proofa/shared";
 import { cache } from "@proofa/cache";
-import { SESSION_TTL } from "../config/constants";
+import { SESSION_TTL, SESSION_ID_BYTES } from "../config/constants";
 
 const log = createLogger("session");
 
@@ -209,7 +209,7 @@ export const sessionService = {
 	 * Uses crypto.randomBytes for security
 	 */
 	generateSessionToken(): string {
-		return crypto.randomBytes(32).toString("hex");
+		return crypto.randomBytes(SESSION_ID_BYTES).toString("hex");
 	},
 };
 
