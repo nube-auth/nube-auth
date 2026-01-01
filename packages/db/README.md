@@ -22,27 +22,27 @@ PostgreSQL database with Drizzle ORM, providing type-safe database access and mi
 ### Tables
 1. **users** - Platform users
 2. **identities** - OAuth provider identities
-3. **sessions** - User sessions
-4. **projects** - User projects (with OAuth config)
+3. **sessions** - User sessions (365-day TTL)
+4. **projects** - User projects
 5. **project_members** - Project team members
 6. **project_invitations** - Team invitations
-7. **apps** - Applications (with OAuth inheritance)
+7. **apps** - Applications
 8. **plans** - Subscription/license plans
 9. **licenses** - User licenses
 10. **invitations** - User invitations
 11. **auth_codes** - OAuth authorization codes
 12. **email_verifications** - Email verification OTPs
-13. **audit_logs** - Audit trail
-14. **payment_configurations** - Payment provider configs
+13. **audit_logs** - Audit trail (40+ event types)
+14. **payment_providers** - Payment provider configs
 
 ### Key Features
-- OAuth configuration at project & app levels
-- OAuth inheritance (Proofa → Project → App)
-- Payment configuration at project & app levels
-- Encrypted storage for secrets
-- Soft deletion with `is_active` flags
-- Comprehensive indexing
-- Foreign key constraints
+- **Soft Deletes**: `deleted_at` timestamps with slug uniqueness handling
+- **Long Sessions**: 365-day session expiry (configurable)
+- **Multi-Tenant**: Project-based isolation
+- **Type-Safe**: Full TypeScript support with Drizzle
+- **Encrypted Storage**: Secure credential storage
+- **Comprehensive Indexing**: Optimized queries
+- **Foreign Key Constraints**: Data integrity
 
 ---
 

@@ -237,31 +237,27 @@ pnpm typecheck            # Type check all packages
 
 ## 📚 Documentation
 
+**Complete Documentation Index**: See [DOCS_INDEX.md](./DOCS_INDEX.md) for all documentation files.
+
 ### Getting Started
 - [Quick Start Guide](./QUICKSTART.md) - Get up and running in 5 minutes
-- [Local Development](./LOCAL_DEVELOPMENT.md) - Complete local setup guide
-- [Architecture Overview](./docs/ARCHITECTURE.md) - System design and components
+- [Development Guide](./DEVELOPMENT.md) - Complete local setup and workflows
+- [Product Specification](./docs/PRODUCT_SPEC.md) - Full product specification
 
 ### Security
-- [Security Overview](./docs/security/README.md) - Complete security documentation
+- [Security Overview](./docs/security/README.md) - A+ rated security documentation
 - [Session Hijacking Protection](./docs/security/SESSION_HIJACKING.md) - Multi-layered protection
 - [Audit Report](./docs/security/AUDIT_REPORT.md) - Security audit findings
 
 ### API & SDK
 - [Gateway API](./apps/gateway/README.md) - REST API documentation
-- [TypeScript Client](./packages/client/README.md) - SDK reference
+- [TypeScript Client](./packages/client/README.md) - SDK reference and examples
 - [React Integration](./packages/react/README.md) - React hooks and components
 
 ### Packages
-- [Database](./packages/db/README.md) - Schema and queries
+- [Database](./packages/db/README.md) - PostgreSQL + Drizzle ORM
 - [Cache](./packages/cache/README.md) - Redis client
-- [Auth](./packages/auth/README.md) - Authentication utilities
 - [Shared](./packages/shared/README.md) - Common utilities
-
-### Operations
-- [Deployment Guide](./docs/DEPLOYMENT.md) - Production deployment
-- [Monitoring](./docs/MONITORING.md) - Observability and logging
-- [Troubleshooting](./docs/TROUBLESHOOTING.md) - Common issues
 
 ## 🔒 Security
 
@@ -357,6 +353,7 @@ Built with:
 
 **Made with ❤️ by the Proofa team**
 
-**Last Updated**: December 29, 2024  
+**Last Updated**: January 1, 2026  
 **Version**: 1.0.0  
-**Security Rating**: A+ (94/100)
+**Security Rating**: A+ (94/100)  
+**Session Duration**: 365 days (configurable)

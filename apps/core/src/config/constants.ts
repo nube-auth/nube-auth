@@ -6,7 +6,7 @@
 
 export const TTL = {
 	// Session TTL - 7 days
-	SESSION: process.env.SESSION_TTL ? parseInt(process.env.SESSION_TTL, 10) : 7 * 24 * 60 * 60,
+	SESSION: process.env.SESSION_TTL ? parseInt(process.env.SESSION_TTL, 10) : 365 * 24 * 60 * 60,
 	// JWT expiration - 1 hour
 	JWT: process.env.JWT_TTL ? parseInt(process.env.JWT_TTL, 10) : 60 * 60,
 	// Email verification code - 10 minutes

@@ -1,6 +1,6 @@
 // Session & Token TTLs (in seconds)
 // Override with environment variables for production
-export const SESSION_TTL = process.env.SESSION_TTL ? parseInt(process.env.SESSION_TTL, 10) : 7 * 24 * 60 * 60; // Default: 7 days
+export const SESSION_TTL = process.env.SESSION_TTL ? parseInt(process.env.SESSION_TTL, 10) : 365 * 24 * 60 * 60; // Default: 365 days
 export const CACHE_TTL = process.env.CACHE_TTL ? parseInt(process.env.CACHE_TTL, 10) : 2 * 60; // Default: 2 minutes
 export const REFRESH_TOKEN_TTL = process.env.REFRESH_TOKEN_TTL ? parseInt(process.env.REFRESH_TOKEN_TTL, 10) : 7 * 24 * 60 * 60; // Default: 7 days
 export const TOKEN_EXPIRY_BUFFER = process.env.TOKEN_EXPIRY_BUFFER ? parseInt(process.env.TOKEN_EXPIRY_BUFFER, 10) : 60; // Default: 1 minute

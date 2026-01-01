@@ -65,7 +65,7 @@ GITHUB_CLIENT_SECRET=your-client-secret
 
 ```bash
 # Session duration (seconds)
-SESSION_TTL=604800  # 7 days
+SESSION_TTL=31536000  # 365 days
 
 # Rolling session extension
 SESSION_ROLLING=true

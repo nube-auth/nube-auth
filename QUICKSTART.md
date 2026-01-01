@@ -1,6 +1,146 @@
-# Proofa Quick Start Guide
+# Quick Start Guide
 
-Get Proofa up and running in under 10 minutes!
+Get Proofa running in 5 minutes.
+
+---
+
+## Prerequisites
+
+- **Node.js** 22+
+- **pnpm** 8+
+- **Docker** with Docker Compose
+
+---
+
+## 5-Minute Setup
+
+```bash
+# 1. Clone and install
+git clone https://github.com/yourorg/proofa-core.git
+cd proofa-core
+pnpm install
+
+# 2. Start infrastructure
+docker-compose up -d
+
+# 3. Setup database
+cd packages/db && pnpm db:push && cd ../..
+
+# 4. Build packages
+pnpm build:packages
+
+# 5. Start development
+pnpm dev
+```
+
+---
+
+## Access Applications
+
+- **Admin Dashboard**: http://localhost:5174
+- **User Dashboard**: http://localhost:5173
+- **API Gateway**: http://localhost:3004
+- **Core Service**: http://localhost:3003
+- **Marketing Site**: http://localhost:4321
+- **Documentation**: http://localhost:4322
+
+---
+
+## What's Running?
+
+| Service | Port | Description |
+|---------|------|-------------|
+| Gateway | 3004 | API Gateway & Auth |
+| Core | 3003 | Core Service |
+| Admin UI | 5174 | Admin Dashboard |
+| User UI | 5173 | User Dashboard |
+| Marketing | 4321 | Marketing Site |
+| Docs | 4322 | Documentation |
+| PostgreSQL | 5432 | Database |
+| Redis | 6379 | Cache & Sessions |
+
+---
+
+## Configuration (Optional)
+
+For custom configuration, create `.env.local`:
+
+```bash
+# Copy template
+cp .env.example .env.local
+
+# Generate secrets
+node -e "console.log('ENCRYPTION_KEY=' + require('crypto').randomBytes(32).toString('hex'))"
+node -e "console.log('SESSION_SECRET=' + require('crypto').randomBytes(64).toString('hex'))"
+
+# Add OAuth credentials (optional)
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+GITHUB_CLIENT_ID=your-client-id
+GITHUB_CLIENT_SECRET=your-client-secret
+```
+
+---
+
+## First Steps
+
+1. **Open Admin Dashboard**: http://localhost:5174
+2. **Sign in** with OAuth (Google/GitHub) or Magic Link
+3. **Create a Project** - Your first tenant
+4. **Create an App** - Add an app to your project
+5. **Configure OAuth** - Set up authentication providers
+6. **Invite Users** - Use the invitation system
+
+---
+
+## Troubleshooting
+
+### Ports Already in Use
+```bash
+# Kill process on port
+lsof -ti:3004 | xargs kill -9
+```
+
+### Database Issues
+```bash
+# Restart PostgreSQL
+docker-compose restart postgres
+
+# Check logs
+docker-compose logs postgres
+```
+
+### Build Errors
+```bash
+# Clean and rebuild
+rm -rf node_modules packages/*/node_modules apps/*/node_modules
+pnpm install
+pnpm build:packages
+```
+
+---
+
+## Need More Details?
+
+- **Full Setup Guide**: [DEVELOPMENT.md](./DEVELOPMENT.md)
+- **Environment Config**: See `.env.example`
+- **Security Docs**: [docs/security/](./docs/security/)
+- **API Docs**: [apps/gateway/README.md](./apps/gateway/README.md)
+
+---
+
+## Next Steps
+
+After setup, explore:
+
+1. ✅ [Product Specification](./docs/PRODUCT_SPEC.md)
+2. ✅ [Development Guide](./DEVELOPMENT.md)
+3. ✅ [Security Overview](./docs/security/README.md)
+4. ✅ [Executive Summary](./SPEC_ANALYSIS_EXECUTIVE_SUMMARY.md)
+
+---
+
+**Last Updated**: January 1, 2026
 
 ---
 
