@@ -239,6 +239,7 @@ Edit `.env` and set these required values:
 ```bash
 ENCRYPTION_KEY=<paste_generated_key_here>
 RESEND_API_KEY=re_your_api_key_here  # Get from https://resend.com
+X_PROOFA_SERVICE_TOKEN=<32+ char token> # Must match Core + Gateway
 ```
 
 The `.env` file contains base configuration (team defaults).  
@@ -254,7 +255,7 @@ Values in `.env.local` override values in `.env`. Use `.env.local` for personal 
 - Personal OAuth credentials for testing
 - Debug settings
 
-See [LOCAL_DEVELOPMENT.md](./LOCAL_DEVELOPMENT.md) for detailed environment configuration.
+See [DEVELOPMENT.md](./DEVELOPMENT.md) for detailed environment configuration.
 
 ---
 

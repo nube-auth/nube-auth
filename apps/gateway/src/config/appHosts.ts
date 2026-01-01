@@ -21,6 +21,7 @@ const appHostMap: AppHostMapping = {
  */
 export function getAppIdFromHost(hostname: string): string | null {
 	const host = hostname.split(":")[0]; // Remove port
+	if (!host) return null;
 	return appHostMap[host] || null;
 }
 

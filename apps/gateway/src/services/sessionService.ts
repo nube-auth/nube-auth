@@ -11,14 +11,14 @@ export interface GatewaySession {
 	createdAt: string;
 	expiresAt: string;
 	lastActivity: string;
-	metadata?: Record<string, any>;
+	metadata?: Record<string, any> | undefined;
 	// Security fingerprinting to prevent session hijacking
-	ipAddress?: string;
-	userAgent?: string;
+	ipAddress?: string | undefined;
+	userAgent?: string | undefined;
 	// Track suspicious activity
-	requestCount?: number;
-	lastIpAddress?: string;
-	lastUserAgent?: string;
+	requestCount?: number | undefined;
+	lastIpAddress?: string | undefined;
+	lastUserAgent?: string | undefined;
 }
 
 /**

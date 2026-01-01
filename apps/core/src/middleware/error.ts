@@ -25,7 +25,7 @@ export async function errorHandler(err: AppError, c: Context) {
 			error: {
 				message: err.message,
 				code,
-				...(process.env.NODE_ENV === "development" && { details: err.details }),
+				...(process.env["NODE_ENV"] === "development" && { details: err.details }),
 			},
 		},
 		status,

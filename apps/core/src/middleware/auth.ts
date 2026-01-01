@@ -27,6 +27,7 @@ export async function authMiddleware(c: Context, next: Next): Promise<Response |
 		// This is a stub for session validation logic
 
 		await next();
+		return;
 	} catch (_error) {
 		return c.json({ error: "Authentication failed" }, 401);
 	}

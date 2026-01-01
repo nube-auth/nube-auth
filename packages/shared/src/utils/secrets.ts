@@ -32,9 +32,9 @@ export function validateSecret(
 	secret: string | undefined,
 	name: string,
 	options: {
-		minLength?: number;
-		required?: boolean;
-		isProduction?: boolean;
+		minLength?: number | undefined;
+		required?: boolean | undefined;
+		isProduction?: boolean | undefined;
 	} = {},
 ): SecretValidationResult {
 	const { minLength = 32, required = true, isProduction = process.env.NODE_ENV === "production" } = options;

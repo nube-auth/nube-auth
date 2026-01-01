@@ -308,7 +308,7 @@ export default function ProjectPaymentSettingsPage() {
 								{ value: "dodo", label: "🦤 Dodo Payments - Indian Payment Gateway" },
 								{ value: "stripe", label: "💳 Stripe - Global Payments" },
 							]}
-							disabled={isConfigured && !isEditMode}
+							disabled={(isConfigured && !isEditMode) || false}
 						/>
 					</div>
 

@@ -48,13 +48,13 @@ router.get("/start", async (c: Context) => {
 		let adapter;
 		if (provider === "google") {
 			adapter = new GoogleOAuthAdapter({
-				clientId: process.env.GOOGLE_CLIENT_ID || "",
-				clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+				clientId: process.env["GOOGLE_CLIENT_ID"] ?? "",
+				clientSecret: process.env["GOOGLE_CLIENT_SECRET"] ?? "",
 			});
 		} else {
 			adapter = new GitHubOAuthAdapter({
-				clientId: process.env.GITHUB_CLIENT_ID || "",
-				clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+				clientId: process.env["GITHUB_CLIENT_ID"] ?? "",
+				clientSecret: process.env["GITHUB_CLIENT_SECRET"] ?? "",
 			});
 		}
 
@@ -68,7 +68,7 @@ router.get("/start", async (c: Context) => {
 		});
 
 		// Core's own callback URL - Google will redirect here
-		const coreCallbackUrl = `${process.env.CORE_PUBLIC_URL || "http://localhost:3003"}/v1/auth/callback/${provider}`;
+		const coreCallbackUrl = `${process.env["CORE_PUBLIC_URL"] ?? "http://localhost:3003"}/v1/auth/callback/${provider}`;
 
 		const authUrl = adapter.getAuthorizationUrl(oauthState, coreCallbackUrl);
 
@@ -131,24 +131,23 @@ router.get("/callback/:provider", async (c: Context) => {
 
 	try {
 		const db = getDb();
-		const _now = new Date();
 		const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
 		let adapter;
 		if (provider === "google") {
 			adapter = new GoogleOAuthAdapter({
-				clientId: process.env.GOOGLE_CLIENT_ID || "",
-				clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+				clientId: process.env["GOOGLE_CLIENT_ID"] ?? "",
+				clientSecret: process.env["GOOGLE_CLIENT_SECRET"] ?? "",
 			});
 		} else {
 			adapter = new GitHubOAuthAdapter({
-				clientId: process.env.GITHUB_CLIENT_ID || "",
-				clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+				clientId: process.env["GITHUB_CLIENT_ID"] ?? "",
+				clientSecret: process.env["GITHUB_CLIENT_SECRET"] ?? "",
 			});
 		}
 
 		// Core's callback URL that was used for OAuth
-		const coreCallbackUrl = `${process.env.CORE_PUBLIC_URL || "http://localhost:3003"}/v1/auth/callback/${provider}`;
+		const coreCallbackUrl = `${process.env["CORE_PUBLIC_URL"] ?? "http://localhost:3003"}/v1/auth/callback/${provider}`;
 
 		const token = await adapter.exchangeCodeForTokens(code, coreCallbackUrl);
 		const profile = await adapter.fetchUserProfile(token.accessToken);
@@ -157,7 +156,6 @@ router.get("/callback/:provider", async (c: Context) => {
 		const existingIdentity = await identityQueries.findByProviderUserId(db, provider, profile.id);
 
 		let userId = existingIdentity?.user_id;
-		let _userPublicId: string;
 
 		if (!userId) {
 			// Create new user
@@ -171,7 +169,6 @@ router.get("/callback/:provider", async (c: Context) => {
 			};
 			const newUser = await userQueries.create(db, userData);
 			userId = newUser.id;
-			_userPublicId = newUser.public_id;
 
 			// Create identity
 			const identityData = {
@@ -185,8 +182,7 @@ router.get("/callback/:provider", async (c: Context) => {
 			};
 			await identityQueries.create(db, identityData);
 		} else {
-			const user = await userQueries.findById(db, userId);
-			_userPublicId = user?.public_id || createId("user");
+			await userQueries.findById(db, userId);
 		}
 
 		// Create core session

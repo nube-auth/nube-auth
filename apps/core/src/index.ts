@@ -53,7 +53,7 @@ app.onError((err, c) => {
 });
 
 // Start server
-const port = Number.parseInt(process.env.PORT || "3003", 10);
+const port = Number.parseInt(process.env["PORT"] ?? "3003", 10);
 log.info({ port }, "Core server starting");
 
 serve({

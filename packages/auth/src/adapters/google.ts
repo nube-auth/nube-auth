@@ -11,8 +11,8 @@ interface GoogleOAuthConfig {
 
 interface TokenResponse {
 	accessToken: string;
-	refreshToken?: string;
-	expiresIn?: number;
+	refreshToken?: string | undefined;
+	expiresIn?: number | undefined;
 }
 
 /**
@@ -102,7 +102,7 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
 		return {
 			id: data.sub,
 			email: data.email,
-			name: data.name || data.email.split("@")[0],
+			name: data.name || (data.email.split("@")[0] ?? data.email),
 			picture: data.picture,
 		};
 	}

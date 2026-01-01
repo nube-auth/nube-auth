@@ -17,16 +17,17 @@ export default function AppOAuthPage() {
 	const updateAppMutation = useUpdateApp(projectId!, appId!);
 
 	const [isEditing, setIsEditing] = useState(false);
-	const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
+	const [selectedProviders, setSelectedProviders] = useState<("google" | "github")[]>([]);
 
 	// Initialize selected providers when app data loads
 	if (app && selectedProviders.length === 0 && app.enabledProviders) {
-		setSelectedProviders(app.enabledProviders);
+		setSelectedProviders(app.enabledProviders as ("google" | "github")[]);
 	}
 
 	const handleToggleProvider = (providerId: string) => {
+		const provider = providerId as "google" | "github";
 		setSelectedProviders((prev) =>
-			prev.includes(providerId) ? prev.filter((p) => p !== providerId) : [...prev, providerId],
+			prev.includes(provider) ? prev.filter((p) => p !== provider) : [...prev, provider],
 		);
 	};
 
@@ -43,7 +44,7 @@ export default function AppOAuthPage() {
 
 	const handleCancel = () => {
 		setIsEditing(false);
-		setSelectedProviders(app?.enabledProviders || ["google"]);
+		setSelectedProviders((app?.enabledProviders as ("google" | "github")[]) || ["google"]);
 	};
 
 	const getProviderIcon = (provider: string) => {

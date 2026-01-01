@@ -19,6 +19,7 @@ export async function s2sMiddleware(c: Context, next: Next): Promise<Response | 
 		(c as any).s2sTokenValid = true;
 
 		await next();
+		return;
 	} catch (_error) {
 		return c.json({ error: "S2S authentication failed" }, 401);
 	}

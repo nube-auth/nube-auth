@@ -6,7 +6,7 @@ import type { Context } from "hono";
 import { Hono } from "hono";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env["RESEND_API_KEY"] ?? "");
 
 export const emailRoutes = new Hono();
 
@@ -67,9 +67,9 @@ emailRoutes.post("/start", async (c: Context) => {
 		}
 
 		// Send OTP email (in production, use Resend)
-		if (process.env.SEND_EMAILS === "true") {
+		if (process.env["SEND_EMAILS"] === "true") {
 			await resend.emails.send({
-				from: process.env.EMAIL_FROM || "noreply@proofa.ai",
+				from: process.env["EMAIL_FROM"] ?? "noreply@proofa.ai",
 				to: email,
 				subject: "Your Proofa OTP Code",
 				html: `<p>Your OTP code is: <strong>${otp}</strong></p><p>Valid for 10 minutes.</p>`,
@@ -169,7 +169,7 @@ emailRoutes.post("/verify", async (c: Context) => {
 			const newUser = await userQueries.create(db, {
 				public_id: id.user(),
 				primary_email: email,
-				name: email.split("@")[0],
+				name: email.split("@")[0] ?? email,
 				avatar_url: null,
 				created_at: now,
 				updated_at: now,
@@ -194,7 +194,7 @@ emailRoutes.post("/verify", async (c: Context) => {
 			user_id: userId,
 			created_at: now,
 			last_seen_at: now,
-			expires_at: now + 7 * 24 * 60 * 60, // 7 days
+			expires_at: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days
 			updated_at: now,
 		};
 

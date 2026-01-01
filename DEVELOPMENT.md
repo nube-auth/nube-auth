@@ -149,6 +149,10 @@ GATEWAY_API_URL="http://localhost:3004"
 
 # CORS Origins (comma-separated)
 CORS_ORIGINS="http://localhost:5173,http://localhost:5174"
+
+# Service-to-Service (Core <-> Gateway)
+# Must match between Core + Gateway
+X_PROOFA_SERVICE_TOKEN="<32+ char token>"
 ```
 
 ### Session Configuration

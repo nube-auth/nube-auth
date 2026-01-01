@@ -15,6 +15,7 @@ export const s2sAuthMiddleware = createMiddleware(async (c: Context, next: Next)
 	}
 
 	await next();
+	return;
 });
 
 /**

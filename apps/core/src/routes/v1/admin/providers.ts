@@ -8,37 +8,6 @@ import {
 import type { Context } from "hono";
 import { z } from "zod";
 
-// Validation schemas
-const _createOAuthProviderSchema = z.object({
-	entityType: z.enum(["platform", "project", "app"]),
-	entityId: z.number().nullable(),
-	provider: z.string().min(1),
-	credentials: z.object({
-		client_id: z.string().min(1),
-		client_secret: z.string().min(1),
-		redirect_uri: z.string().optional(),
-	}),
-	metadata: z.record(z.string(), z.unknown()).optional(),
-});
-
-const _updateOAuthProviderSchema = z.object({
-	credentials: z
-		.object({
-			client_id: z.string().min(1),
-			client_secret: z.string().min(1),
-			redirect_uri: z.string().optional(),
-		})
-		.optional(),
-	isActive: z.boolean().optional(),
-	metadata: z.record(z.string(), z.unknown()).optional(),
-});
-
-const _selectOAuthProviderSchema = z.object({
-	oauthProviderId: z.number(),
-	displayOrder: z.number().optional(),
-	customButtonText: z.string().optional(),
-});
-
 const createPaymentProviderSchema = z.object({
 	entityType: z.enum(["platform", "project", "app"]),
 	entityId: z.number().nullable(),
@@ -132,6 +101,7 @@ export async function createPaymentProvider(c: Context) {
 	const db = getDb();
 	const data = result.data;
 	const userId = c.get("userId");
+	const createdByUserId = typeof userId === "number" ? userId : undefined;
 
 	// Encrypt credentials
 	const encryptedCredentials = encryptPaymentCredentials(data.credentials as PaymentCredentials);
@@ -142,8 +112,8 @@ export async function createPaymentProvider(c: Context) {
 			provider: data.provider,
 			environment: data.environment,
 			credentials: encryptedCredentials,
-			webhook_secret: data.webhookSecret,
-			created_by_user_id: userId,
+			...(data.webhookSecret !== undefined ? { webhook_secret: data.webhookSecret } : {}),
+			...(createdByUserId !== undefined ? { created_by_user_id: createdByUserId } : {}),
 		});
 	} else if (data.entityType === "project") {
 		if (!data.entityId) {
@@ -154,8 +124,8 @@ export async function createPaymentProvider(c: Context) {
 			provider: data.provider,
 			environment: data.environment,
 			credentials: encryptedCredentials,
-			webhook_secret: data.webhookSecret,
-			created_by_user_id: userId,
+			...(data.webhookSecret !== undefined ? { webhook_secret: data.webhookSecret } : {}),
+			...(createdByUserId !== undefined ? { created_by_user_id: createdByUserId } : {}),
 		});
 	} else {
 		if (!data.entityId) {
@@ -166,8 +136,8 @@ export async function createPaymentProvider(c: Context) {
 			provider: data.provider,
 			environment: data.environment,
 			credentials: encryptedCredentials,
-			webhook_secret: data.webhookSecret,
-			created_by_user_id: userId,
+			...(data.webhookSecret !== undefined ? { webhook_secret: data.webhookSecret } : {}),
+			...(createdByUserId !== undefined ? { created_by_user_id: createdByUserId } : {}),
 		});
 	}
 

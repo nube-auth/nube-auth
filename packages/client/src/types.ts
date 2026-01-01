@@ -5,7 +5,7 @@ export interface ProofaClientConfig {
 	 * If provided, it will be sent as X-Proofa-Service-Token header.
 	 * Leave undefined for frontend cookie-based authentication.
 	 */
-	s2sToken?: string;
+	s2sToken?: string | undefined;
 }
 
 export interface User {

@@ -16,7 +16,7 @@ export interface OAuthProfile {
 	id: string;
 	email: string;
 	name: string;
-	avatar_url?: string;
+	avatar_url?: string | undefined;
 }
 
 /**
@@ -116,7 +116,7 @@ export async function fetchUserProfile(provider: OAuthProvider, accessToken: str
 		return {
 			id: data.sub,
 			email: data.email,
-			name: data.name,
+			name: data.name || (typeof data.email === "string" ? (data.email.split("@")[0] ?? data.email) : ""),
 			avatar_url: data.picture,
 		};
 	} else if (provider.name === "github") {

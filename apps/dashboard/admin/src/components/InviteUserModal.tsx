@@ -53,7 +53,10 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 				// Find first plan (internal ID, not public_id)
 				// We need to convert public_id to internal id, but API should return internal id
 				// For now, assume plans[0] is the default
-				setPlanId(data.plans[0].id);
+				const firstPlan = data.plans[0];
+				if (firstPlan) {
+					setPlanId(firstPlan.id);
+				}
 			}
 		} catch (err) {
 			console.error("Failed to fetch plans:", err);
@@ -111,7 +114,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 
 			// Reset form
 			setEmail("");
-			setPlanId(plans.length > 0 ? plans[0].id : null);
+			setPlanId(plans.length > 0 && plans[0] ? plans[0].id : null);
 			setGrantLicense(true);
 			setLicenseDuration("");
 			setCustomMessage("");
@@ -131,7 +134,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 	const handleClose = () => {
 		if (loading) return;
 		setEmail("");
-		setPlanId(plans.length > 0 ? plans[0].id : null);
+		setPlanId(plans.length > 0 && plans[0] ? plans[0].id : null);
 		setGrantLicense(true);
 		setLicenseDuration("");
 		setCustomMessage("");

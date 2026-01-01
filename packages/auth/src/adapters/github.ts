@@ -17,8 +17,8 @@ interface GitHubOAuthConfig {
 
 interface TokenResponse {
 	accessToken: string;
-	refreshToken?: string;
-	expiresIn?: number;
+	refreshToken?: string | undefined;
+	expiresIn?: number | undefined;
 }
 
 /**

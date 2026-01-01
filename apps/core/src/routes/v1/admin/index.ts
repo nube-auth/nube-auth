@@ -1,4 +1,4 @@
-import { appQueries, getDb, licenseQueries, userQueries } from "@proofa/db";
+import { appQueries, getDb, licenseQueries, planQueries, userQueries } from "@proofa/db";
 import { createId } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -42,13 +42,22 @@ router.post("/license/grant", async (c: Context) => {
 		}
 
 		// Create or update license using upsert
+		const planSlug = plan ?? "pro";
+		type PlanRow = Awaited<ReturnType<typeof planQueries.findByAppAndSlug>>;
+		let selectedPlan: PlanRow | undefined = await planQueries.findByAppAndSlug(db, app.id, planSlug);
+		if (!selectedPlan) {
+			const activePlans = await planQueries.findActiveByAppId(db, app.id);
+			selectedPlan = activePlans[0];
+		}
+		if (!selectedPlan) {
+			return c.json({ error: "Plan not found" }, 400);
+		}
+
 		const license = await licenseQueries.upsert(db, user.id, app.id, {
 			public_id: createId("license"),
-			plan: plan || "pro",
+			plan_id: selectedPlan.id,
 			status: "active",
-			source: "manual",
-			valid_from: now,
-			valid_until: validUntil || null,
+			valid_until: validUntil ? new Date(validUntil) : null,
 		});
 
 		return c.json({
@@ -56,7 +65,7 @@ router.post("/license/grant", async (c: Context) => {
 			licenseId: license.public_id,
 			userId,
 			appId,
-			plan: license.plan,
+			plan: selectedPlan.slug,
 			validUntil: license.valid_until,
 			grantedAt: now,
 		});
@@ -81,8 +90,7 @@ router.get("/licenses/:userId", async (c: Context) => {
 		const db = getDb();
 
 		// Validate user exists
-		const userResult = await userQueries.findByPublicId(db, userId);
-		const user = userResult[0];
+		const user = await userQueries.findByPublicId(db, userId);
 		if (!user) {
 			return c.json({ error: "User not found" }, 404);
 		}
@@ -113,8 +121,6 @@ router.delete("/licenses/:licenseId", async (c: Context) => {
 	}
 
 	try {
-		const _db = getDb();
-
 		// In a real implementation, you'd have a method to find and delete by public_id
 		// For now, we'll return a success response
 		return c.json({
@@ -126,15 +132,6 @@ router.delete("/licenses/:licenseId", async (c: Context) => {
 		return c.json({ error: "Failed to revoke license" }, 500);
 	}
 });
-
-// OAuth Provider Routes
-router.get("/apps/:appId/oauth/available", providers.getAvailableOAuthProviders);
-router.get("/apps/:appId/oauth/selected", providers.getSelectedOAuthProviders);
-router.post("/oauth-providers", providers.createOAuthProvider);
-router.patch("/oauth-providers/:providerId", providers.updateOAuthProvider);
-router.delete("/oauth-providers/:providerId", providers.deleteOAuthProvider);
-router.post("/apps/:appId/oauth/select", providers.selectOAuthProvider);
-router.delete("/apps/:appId/oauth/:providerId/deselect", providers.deselectOAuthProvider);
 
 // Payment Provider Routes
 router.get("/apps/:appId/payment/available", providers.getAvailablePaymentProviders);

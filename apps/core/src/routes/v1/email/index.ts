@@ -6,7 +6,7 @@ import type { Context } from "hono";
 import { Hono } from "hono";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env["RESEND_API_KEY"] ?? "");
 
 const router = new Hono();
 
@@ -35,14 +35,14 @@ router.post("/start", async (c: Context) => {
 		const emailVerification = await emailVerificationQueries.findByEmail(db, email);
 
 		if (emailVerification?.locked_until && emailVerification.locked_until > now) {
-			const remainingMinutes = Math.ceil((emailVerification.locked_until - now) / 60);
+			const remainingMinutes = Math.ceil((emailVerification.locked_until.getTime() - now.getTime()) / 60000);
 			return c.json({ error: `Account locked. Try again in ${remainingMinutes} minutes.` }, 429);
 		}
 
 		// Generate OTP
 		const otp = generateOTP();
 		const otpHash = hashOTP(otp);
-		const expiresAt = now + 10 * 60; // 10 minutes
+		const expiresAt = new Date(now.getTime() + 10 * 60 * 1000); // 10 minutes
 
 		// Save or update OTP record
 		if (emailVerification) {
@@ -65,9 +65,9 @@ router.post("/start", async (c: Context) => {
 		}
 
 		// Send OTP email (in production, use Resend)
-		if (process.env.SEND_EMAILS === "true") {
+		if (process.env["SEND_EMAILS"] === "true") {
 			await resend.emails.send({
-				from: process.env.EMAIL_FROM || "noreply@proofa.ai",
+				from: process.env["EMAIL_FROM"] ?? "noreply@proofa.ai",
 				to: email,
 				subject: "Your Proofa OTP Code",
 				html: `<p>Your OTP code is: <strong>${otp}</strong></p><p>Valid for 10 minutes.</p>`,
@@ -136,7 +136,7 @@ router.post("/verify", async (c: Context) => {
 
 			if (newAttempts >= OTP_MAX_ATTEMPTS) {
 				// Lock account for 30 minutes
-				const lockedUntil = now + OTP_LOCKOUT_MINUTES * 60;
+				const lockedUntil = new Date(now.getTime() + OTP_LOCKOUT_MINUTES * 60 * 1000);
 				await emailVerificationQueries.update(db, emailVerification.id, {
 					attempts: newAttempts,
 					locked_until: lockedUntil,
@@ -167,7 +167,7 @@ router.post("/verify", async (c: Context) => {
 			const newUser = await userQueries.create(db, {
 				public_id: createId("user"),
 				primary_email: email,
-				name: email.split("@")[0],
+				name: email.split("@")[0] ?? email,
 				avatar_url: null,
 				created_at: now,
 				updated_at: now,
@@ -205,7 +205,7 @@ router.post("/verify", async (c: Context) => {
 			user_id: userId,
 			created_at: now,
 			last_seen_at: now,
-			expires_at: now + 7 * 24 * 60 * 60, // 7 days
+			expires_at: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days
 		};
 
 		const session = await sessionQueries.create(db, sessionData);

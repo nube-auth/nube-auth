@@ -81,18 +81,18 @@ export interface AuditEvent {
 	type: AuditEventType;
 	severity: AuditSeverity;
 	actor: {
-		userId?: string;
-		email?: string;
-		ip?: string;
-		userAgent?: string;
+		userId?: string | undefined;
+		email?: string | undefined;
+		ip?: string | undefined;
+		userAgent?: string | undefined;
 	};
 	resource: {
 		type: string; // "project", "app", "user", "license", etc.
-		id?: string;
-		name?: string;
+		id?: string | undefined;
+		name?: string | undefined;
 	};
 	action: string;
-	metadata?: Record<string, any>;
+	metadata?: Record<string, any> | undefined;
 	timestamp: Date;
 }
 

@@ -8,9 +8,9 @@ export class CoreClient {
 	private baseUrl: string;
 	private s2sToken: string;
 
-	constructor(baseUrl: string = process.env.CORE_URL || "http://localhost:3003", s2sToken?: string) {
+	constructor(baseUrl: string = process.env["CORE_URL"] || "http://localhost:3003", s2sToken?: string) {
 		this.baseUrl = baseUrl;
-		this.s2sToken = s2sToken || process.env.CORE_S2S_TOKEN || "";
+		this.s2sToken = s2sToken || process.env["CORE_S2S_TOKEN"] || "";
 	}
 
 	private async request<T>(method: string, path: string, body?: Record<string, unknown>): Promise<T> {
@@ -24,7 +24,7 @@ export class CoreClient {
 			const response = await fetch(url, {
 				method,
 				headers,
-				body: body ? JSON.stringify(body) : undefined,
+				...(body ? { body: JSON.stringify(body) } : {}),
 			});
 
 			if (!response.ok) {

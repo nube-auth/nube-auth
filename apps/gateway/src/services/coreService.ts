@@ -28,7 +28,7 @@ export const coreService = {
 		const response = await fetch(url, {
 			method: config.method,
 			headers,
-			body: config.body ? JSON.stringify(config.body) : undefined,
+			...(config.body ? { body: JSON.stringify(config.body) } : {}),
 		});
 
 		if (!response.ok) {

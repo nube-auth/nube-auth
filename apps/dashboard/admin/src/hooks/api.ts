@@ -27,15 +27,20 @@ const GATEWAY_URL = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
 // Helper to get CSRF token from cookie
 function getCsrfToken(): string | null {
 	const match = document.cookie.match(/proofa_csrf_token=([^;]+)/);
-	return match ? match[1] : null;
+	return match && match[1] ? match[1] : null;
 }
 
 // Helper to make authenticated API calls
 async function fetchAPI<T>(path: string, options?: RequestInit, schema?: any): Promise<T> {
 	const headers: Record<string, string> = {
 		"Content-Type": "application/json",
-		...options?.headers,
 	};
+
+	// Add any custom headers
+	if (options?.headers) {
+		const customHeaders = options.headers as Record<string, string>;
+		Object.assign(headers, customHeaders);
+	}
 
 	// Add CSRF token for state-changing requests
 	if (options?.method && !["GET", "HEAD", "OPTIONS"].includes(options.method.toUpperCase())) {

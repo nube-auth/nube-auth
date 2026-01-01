@@ -5,11 +5,13 @@
 
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { env } from "../config/env";
 
-const SEND_EMAILS = process.env.SEND_EMAILS === "true";
-const DEFAULT_FROM = process.env.EMAIL_FROM || "Proofa <noreply@proofa.sh>";
-const ADMIN_DASHBOARD_URL = process.env.ADMIN_DASHBOARD_URL || "http://localhost:5174";
+const resend = new Resend(env.RESEND_API_KEY);
+
+const SEND_EMAILS = env.SEND_EMAILS === "true";
+const DEFAULT_FROM = env.EMAIL_FROM ?? "Proofa <noreply@proofa.sh>";
+const ADMIN_DASHBOARD_URL = env.ADMIN_DASHBOARD_URL ?? "http://localhost:5174";
 
 interface EmailOptions {
 	to: string;

@@ -65,7 +65,6 @@ export async function recordFailedAttempt(
 	config: LockoutConfig = DEFAULT_LOCKOUT_CONFIG,
 ): Promise<{ shouldLock: boolean; attempts: number; remainingAttempts: number }> {
 	const attemptKey = `${ATTEMPT_PREFIX}${type}:${identifier}`;
-	const _now = Math.floor(Date.now() / 1000);
 
 	// Increment attempt count
 	const attempts = await cache.increment(attemptKey);
@@ -174,10 +173,12 @@ export function lockoutMiddleware(options: {
 			c.set("lockoutType", type);
 
 			await next();
+			return;
 		} catch (error) {
 			log.error({ error }, "Lockout middleware error");
 			// Don't block request on lockout check failure
 			await next();
+			return;
 		}
 	};
 }

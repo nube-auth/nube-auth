@@ -38,7 +38,7 @@ authRoutes.get("/start", async (c: Context) => {
 	const returnTo = c.req.query("return_to") || "/";
 
 	// Gateway's callback URL - Core will redirect here after OAuth
-	const gatewayCallbackUrl = `${process.env.GATEWAY_PUBLIC_URL || "http://localhost:3004"}/v1/auth/callback`;
+	const gatewayCallbackUrl = `${env.GATEWAY_PUBLIC_URL ?? "http://localhost:3004"}/v1/auth/callback`;
 
 	// Build Core auth start URL
 	const coreAuthUrl = new URL(`${env.CORE_URL}/v1/auth/start`);
@@ -59,14 +59,14 @@ authRoutes.get("/callback", async (c: Context) => {
 	const error = c.req.query("error");
 
 	if (error) {
-		log.error({ err: serializeError(error as Error) }, "OAuth error:");
+		log.error({ err: serializeError(new Error(error)) }, "OAuth error:");
 		// Redirect to dashboard with error
-		const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:5173";
+		const dashboardUrl = env.USER_DASHBOARD_URL ?? "http://localhost:5173";
 		return c.redirect(`${dashboardUrl}/login?error=${encodeURIComponent(error)}`);
 	}
 
 	if (!code) {
-		const dashboardUrl = process.env.USER_DASHBOARD_URL || "http://localhost:5173";
+		const dashboardUrl = env.USER_DASHBOARD_URL ?? "http://localhost:5173";
 		return c.redirect(`${dashboardUrl}/login?error=missing_code`);
 	}
 
@@ -89,11 +89,11 @@ authRoutes.get("/callback", async (c: Context) => {
 
 		if (!response.ok) {
 			const errorData = await response.json().catch(() => ({}));
-			log.error({ err: serializeError(error as Error) }, "Code exchange failed:", response.status, errorData);
+			log.error({ err: serializeError(new Error("exchange_failed")) }, "Code exchange failed:", response.status, errorData);
 			const dashboardUrl =
 				audience === "admin"
-					? process.env.ADMIN_DASHBOARD_URL || "http://localhost:5174"
-					: process.env.USER_DASHBOARD_URL || "http://localhost:5173";
+					? (env.ADMIN_DASHBOARD_URL ?? "http://localhost:5174")
+					: (env.USER_DASHBOARD_URL ?? "http://localhost:5173");
 			return c.redirect(`${dashboardUrl}/login?error=exchange_failed`);
 		}
 
@@ -118,37 +118,45 @@ authRoutes.get("/callback", async (c: Context) => {
 		});
 
 		// Create signed cookie with domain for cross-subdomain access
-		const cookieDomain = process.env.COOKIE_DOMAIN; // e.g., ".proofa.sh"
-		const { value, attributes } = createSessionCookie(gatewaySessionId, {
-			domain: cookieDomain,
-		});
+		const cookieDomain = env.COOKIE_DOMAIN; // e.g., ".proofa.sh"
+		const { value, attributes } = createSessionCookie(
+			gatewaySessionId,
+			cookieDomain ? { domain: cookieDomain } : {},
+		);
+
+		const httpOnly = attributes["httpOnly"] as boolean;
+		const secure = attributes["secure"] as boolean;
+		const sameSite = attributes["sameSite"] as "Strict" | "Lax" | "None";
+		const path = attributes["path"] as string;
+		const domain = attributes["domain"] as string | undefined;
+		const maxAge = attributes["maxAge"] as number | undefined;
 
 		// Set appropriate cookie based on audience
 		const cookieName = audience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
 		setCookie(c, cookieName, value, {
-			httpOnly: attributes.httpOnly as boolean,
-			secure: attributes.secure as boolean,
-			sameSite: attributes.sameSite as "Strict" | "Lax" | "None",
-			path: attributes.path as string,
-			domain: attributes.domain as string | undefined,
-			maxAge: attributes.maxAge as number | undefined,
+			httpOnly,
+			secure,
+			sameSite,
+			path,
+			...(domain ? { domain } : {}),
+			...(maxAge !== undefined ? { maxAge } : {}),
 		});
 
 		// Set CSRF token cookie (NOT httpOnly so JavaScript can read it)
 		setCookie(c, "proofa_csrf_token", csrfToken, {
 			httpOnly: false, // Must be readable by JavaScript
-			secure: attributes.secure as boolean,
-			sameSite: attributes.sameSite as "Strict" | "Lax" | "None",
-			path: attributes.path as string,
-			domain: attributes.domain as string | undefined,
-			maxAge: attributes.maxAge as number | undefined,
+			secure,
+			sameSite,
+			path,
+			...(domain ? { domain } : {}),
+			...(maxAge !== undefined ? { maxAge } : {}),
 		});
 
 		// Redirect to appropriate dashboard
 		const dashboardUrl =
 			audience === "admin"
-				? process.env.ADMIN_DASHBOARD_URL || "http://localhost:5174"
-				: process.env.USER_DASHBOARD_URL || "http://localhost:5173";
+				? (env.ADMIN_DASHBOARD_URL ?? "http://localhost:5174")
+				: (env.USER_DASHBOARD_URL ?? "http://localhost:5173");
 		const redirectUrl = state.startsWith("/") ? `${dashboardUrl}${state}` : dashboardUrl;
 
 		log.info({ audience, appId, cookieName, dashboardUrl, hasCsrfToken: true }, "Login successful, redirecting");
@@ -158,8 +166,8 @@ authRoutes.get("/callback", async (c: Context) => {
 		const audience = inferAudience(c);
 		const dashboardUrl =
 			audience === "admin"
-				? process.env.ADMIN_DASHBOARD_URL || "http://localhost:5174"
-				: process.env.USER_DASHBOARD_URL || "http://localhost:5173";
+				? (env.ADMIN_DASHBOARD_URL ?? "http://localhost:5174")
+				: (env.USER_DASHBOARD_URL ?? "http://localhost:5173");
 		return c.redirect(`${dashboardUrl}/login?error=internal_error`);
 	}
 });
@@ -200,28 +208,38 @@ authRoutes.post("/login", async (c: Context) => {
 		);
 
 		// Create signed cookie with Gateway session ID
-		const cookieDomain = process.env.COOKIE_DOMAIN; // e.g., ".proofa.sh"
-		const { value, attributes } = createSessionCookie(gatewaySessionId, { domain: cookieDomain });
+		const cookieDomain = env.COOKIE_DOMAIN; // e.g., ".proofa.sh"
+		const { value, attributes } = createSessionCookie(
+			gatewaySessionId,
+			cookieDomain ? { domain: cookieDomain } : {},
+		);
+
+		const httpOnly = attributes["httpOnly"] as boolean;
+		const secure = attributes["secure"] as boolean;
+		const sameSite = attributes["sameSite"] as "Strict" | "Lax" | "None";
+		const path = attributes["path"] as string;
+		const domain = attributes["domain"] as string | undefined;
+		const maxAge = attributes["maxAge"] as number | undefined;
 		const cookieName = resolvedAudience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
 
 		// Set session cookie
 		setCookie(c, cookieName, value, {
-			httpOnly: attributes.httpOnly as boolean,
-			secure: attributes.secure as boolean,
-			sameSite: attributes.sameSite as "Strict" | "Lax" | "None",
-			path: attributes.path as string,
-			domain: attributes.domain as string | undefined,
-			maxAge: attributes.maxAge as number | undefined,
+			httpOnly,
+			secure,
+			sameSite,
+			path,
+			...(domain ? { domain } : {}),
+			...(maxAge !== undefined ? { maxAge } : {}),
 		});
 
 		// Set CSRF token cookie (NOT httpOnly so JavaScript can read it)
 		setCookie(c, "proofa_csrf_token", csrfToken, {
 			httpOnly: false, // Must be readable by JavaScript
-			secure: attributes.secure as boolean,
-			sameSite: attributes.sameSite as "Strict" | "Lax" | "None",
-			path: attributes.path as string,
-			domain: attributes.domain as string | undefined,
-			maxAge: attributes.maxAge as number | undefined,
+			secure,
+			sameSite,
+			path,
+			...(domain ? { domain } : {}),
+			...(maxAge !== undefined ? { maxAge } : {}),
 		});
 
 		return c.json({
@@ -245,9 +263,9 @@ authRoutes.post("/login", async (c: Context) => {
  */
 authRoutes.post("/logout", async (c: Context) => {
 	try {
-		const isProduction = process.env.NODE_ENV === "production";
+		const isProduction = env.NODE_ENV === "production";
 		const audience = inferAudience(c);
-		const cookieDomain = process.env.COOKIE_DOMAIN;
+		const cookieDomain = env.COOKIE_DOMAIN;
 
 		log.info(
 			{
@@ -316,7 +334,7 @@ authRoutes.post("/logout", async (c: Context) => {
 					);
 
 					// Get Core session ID to revoke database session
-					const coreSessionId = appSessionBefore?.metadata?.coreSessionId as string | undefined;
+					const coreSessionId = appSessionBefore?.metadata?.["coreSessionId"] as string | undefined;
 
 					// Delete from all three stores:
 					// 1. Delete from sessionService (gateway:session:xxx)

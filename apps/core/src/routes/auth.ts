@@ -26,7 +26,6 @@ setInterval(() => {
 authRoutes.get("/start", async (c: Context) => {
 	const provider = c.req.query("provider") as "google" | "github" | undefined;
 	const redirectUri = c.req.query("redirect_uri") as string | undefined;
-	const _state = c.req.query("state") as string | undefined; // Pass-through state from Gateway
 
 	if (!provider || !["google", "github"].includes(provider)) {
 		return c.json({ error: "Invalid provider" }, 400);
@@ -40,13 +39,13 @@ authRoutes.get("/start", async (c: Context) => {
 		let adapter;
 		if (provider === "google") {
 			adapter = new GoogleOAuthAdapter({
-				clientId: process.env.GOOGLE_CLIENT_ID || "",
-				clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+				clientId: process.env["GOOGLE_CLIENT_ID"] ?? "",
+				clientSecret: process.env["GOOGLE_CLIENT_SECRET"] ?? "",
 			});
 		} else {
 			adapter = new GitHubOAuthAdapter({
-				clientId: process.env.GITHUB_CLIENT_ID || "",
-				clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+				clientId: process.env["GITHUB_CLIENT_ID"] ?? "",
+				clientSecret: process.env["GITHUB_CLIENT_SECRET"] ?? "",
 			});
 		}
 
@@ -61,7 +60,7 @@ authRoutes.get("/start", async (c: Context) => {
 		});
 
 		// Core's own callback URL - Google will redirect here
-		const coreCallbackUrl = `${process.env.CORE_PUBLIC_URL || "http://localhost:3003"}/v1/auth/callback/${provider}`;
+		const coreCallbackUrl = `${process.env["CORE_PUBLIC_URL"] ?? "http://localhost:3003"}/v1/auth/callback/${provider}`;
 
 		const authUrl = adapter.getAuthorizationUrl(oauthState, coreCallbackUrl);
 
@@ -129,18 +128,18 @@ authRoutes.get("/callback/:provider", async (c: Context) => {
 		let adapter;
 		if (provider === "google") {
 			adapter = new GoogleOAuthAdapter({
-				clientId: process.env.GOOGLE_CLIENT_ID || "",
-				clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+				clientId: process.env["GOOGLE_CLIENT_ID"] ?? "",
+				clientSecret: process.env["GOOGLE_CLIENT_SECRET"] ?? "",
 			});
 		} else {
 			adapter = new GitHubOAuthAdapter({
-				clientId: process.env.GITHUB_CLIENT_ID || "",
-				clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+				clientId: process.env["GITHUB_CLIENT_ID"] ?? "",
+				clientSecret: process.env["GITHUB_CLIENT_SECRET"] ?? "",
 			});
 		}
 
 		// Core's callback URL that was used for OAuth
-		const coreCallbackUrl = `${process.env.CORE_PUBLIC_URL || "http://localhost:3003"}/v1/auth/callback/${provider}`;
+		const coreCallbackUrl = `${process.env["CORE_PUBLIC_URL"] ?? "http://localhost:3003"}/v1/auth/callback/${provider}`;
 
 		const profile = await adapter.exchangeToken(code, coreCallbackUrl);
 
@@ -148,7 +147,6 @@ authRoutes.get("/callback/:provider", async (c: Context) => {
 		const existingIdentity = await identityQueries.findByProviderUserId(db, provider, profile.id);
 
 		let userId = existingIdentity?.user_id;
-		let _createdUser = false;
 
 		if (!userId) {
 			// Create new user
@@ -161,7 +159,6 @@ authRoutes.get("/callback/:provider", async (c: Context) => {
 				updated_at: new Date(),
 			});
 			userId = newUser.id;
-			_createdUser = true;
 
 			// Create identity
 			await identityQueries.create(db, {
@@ -184,13 +181,6 @@ authRoutes.get("/callback/:provider", async (c: Context) => {
 		};
 
 		const session = await sessionQueries.create(db, sessionData);
-
-		// Generate auth code for Gateway to exchange
-		const _authCode = id.authCode();
-
-		// Store auth code temporarily (in production, use Redis with TTL)
-		// For now, we'll pass the session directly since Gateway will exchange immediately
-		// TODO: Implement proper auth code storage and exchange
 
 		// Redirect to Gateway callback with auth code
 		const redirectUrl = new URL(storedState.redirectUri);

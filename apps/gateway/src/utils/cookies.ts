@@ -24,7 +24,7 @@ export function generateSessionCookie(
 			httpOnly: true,
 			secure: SECURE_COOKIES,
 			sameSite: SAME_SITE,
-			domain: COOKIE_DOMAIN,
+			...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {}),
 			path: COOKIE_PATH,
 			maxAge,
 		},
@@ -42,7 +42,7 @@ export function clearSessionCookie(): { name: string; value: string; options: Co
 			httpOnly: true,
 			secure: SECURE_COOKIES,
 			sameSite: SAME_SITE,
-			domain: COOKIE_DOMAIN,
+			...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {}),
 			path: COOKIE_PATH,
 			maxAge: 0,
 		},
@@ -64,6 +64,9 @@ export function signCookie(value: string): string {
  */
 export function verifyCookie(signedValue: string): string | null {
 	const [value, signature] = signedValue.split(".");
+	if (!value || !signature) {
+		return null;
+	}
 	const env = getEnv();
 	const expectedSignature = Buffer.from(env.GATEWAY_SESSION_SECRET).toString("base64").slice(0, 8);
 

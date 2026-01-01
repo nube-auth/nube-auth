@@ -42,22 +42,28 @@ function getEnvironment(): Environment {
 		throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
 	}
 
-	return {
-		NODE_ENV: (process.env.NODE_ENV as any) || "development",
-		PORT: parseInt(process.env.PORT || "3003", 10),
-		CORE_PUBLIC_URL: process.env.CORE_PUBLIC_URL!,
-		DATABASE_URL: process.env.DATABASE_URL!,
-		DATABASE_AUTH_TOKEN: process.env.DATABASE_AUTH_TOKEN,
-		GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID!,
-		GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET!,
-		GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
-		GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
-		JWT_SECRET: process.env.JWT_SECRET!,
-		SESSION_SECRET: process.env.SESSION_SECRET!,
-		S2S_SECRET: process.env.S2S_SECRET!,
-		REDIS_URL: process.env.REDIS_URL!,
-		LOG_LEVEL: (process.env.LOG_LEVEL as any) || "info",
+	const environment: Environment = {
+		NODE_ENV: ((process.env["NODE_ENV"] as Environment["NODE_ENV"] | undefined) ?? "development"),
+		PORT: parseInt(process.env["PORT"] ?? "3003", 10),
+		CORE_PUBLIC_URL: process.env["CORE_PUBLIC_URL"]!,
+		DATABASE_URL: process.env["DATABASE_URL"]!,
+		GOOGLE_CLIENT_ID: process.env["GOOGLE_CLIENT_ID"]!,
+		GOOGLE_CLIENT_SECRET: process.env["GOOGLE_CLIENT_SECRET"]!,
+		JWT_SECRET: process.env["JWT_SECRET"]!,
+		SESSION_SECRET: process.env["SESSION_SECRET"]!,
+		S2S_SECRET: process.env["S2S_SECRET"]!,
+		REDIS_URL: process.env["REDIS_URL"]!,
+		LOG_LEVEL: ((process.env["LOG_LEVEL"] as Environment["LOG_LEVEL"] | undefined) ?? "info"),
+		...(process.env["DATABASE_AUTH_TOKEN"] !== undefined
+			? { DATABASE_AUTH_TOKEN: process.env["DATABASE_AUTH_TOKEN"] }
+			: {}),
+		...(process.env["GITHUB_CLIENT_ID"] !== undefined ? { GITHUB_CLIENT_ID: process.env["GITHUB_CLIENT_ID"] } : {}),
+		...(process.env["GITHUB_CLIENT_SECRET"] !== undefined
+			? { GITHUB_CLIENT_SECRET: process.env["GITHUB_CLIENT_SECRET"] }
+			: {}),
 	};
+
+	return environment;
 }
 
 export const env = getEnvironment();

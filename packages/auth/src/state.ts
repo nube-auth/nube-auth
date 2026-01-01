@@ -15,13 +15,13 @@ interface StateData {
 	createdAt: number;
 	provider: string;
 	redirectUri: string;
-	metadata?: Record<string, unknown>;
+	metadata?: Record<string, unknown> | undefined;
 }
 
 interface CreateStateOptions {
 	provider: string;
 	redirectUri: string;
-	metadata?: Record<string, unknown>;
+	metadata?: Record<string, unknown> | undefined;
 	ttlMs?: number;
 }
 

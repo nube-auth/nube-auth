@@ -1,12 +1,11 @@
 import { getDb, sessionQueries, userQueries } from "@proofa/db";
-
-const log = createLogger("me-routes");
-
 import { createLogger, serializeError } from "@proofa/shared";
 import type { Context } from "hono";
 
 import { Hono } from "hono";
 import { getAuth } from "../middleware/auth";
+
+const log = createLogger("me-routes");
 
 export const meRoutes = new Hono();
 
@@ -52,10 +51,12 @@ meRoutes.patch("/", async (c: Context) => {
 		}
 
 		// Update user in database
-		const updated = await userQueries.update(db, user.id, {
-			name: name !== undefined ? name : undefined,
-			avatar_url: picture !== undefined ? picture : undefined,
-		});
+		const updateData: Parameters<typeof userQueries.update>[2] = {};
+		if (name !== undefined) updateData.name = name;
+		if (picture !== undefined) updateData.avatar_url = picture;
+
+		const updatedRows = await userQueries.update(db, user.id, updateData);
+		const updated = updatedRows[0];
 
 		if (!updated) {
 			return c.json({ error: "User not found" }, 404);

@@ -124,6 +124,7 @@ export function validateRequest<T extends z.ZodType>(schema: { body?: T; query?:
 				c.set("validatedParams", schema.params.parse(params));
 			}
 			await next();
+			return;
 		} catch (error) {
 			if (error instanceof z.ZodError) {
 				const issues = error.issues.map((issue) => ({

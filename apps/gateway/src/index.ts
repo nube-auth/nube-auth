@@ -106,7 +106,7 @@ app.notFound((c) => {
 
 // Error handler with production sanitization
 app.onError((err, c) => {
-	const isProduction = process.env.NODE_ENV === "production";
+	const isProduction = process.env["NODE_ENV"] === "production";
 
 	// Log the full error internally
 	log.error(
@@ -125,7 +125,7 @@ app.onError((err, c) => {
 });
 
 // Start server
-const port = Number.parseInt(process.env.PORT || process.env.GATEWAY_PORT || "3004", 10);
+const port = Number.parseInt(process.env["PORT"] || process.env["GATEWAY_PORT"] || "3004", 10);
 log.info({ port }, "Gateway server starting");
 
 serve({

@@ -148,6 +148,10 @@ GITHUB_CLIENT_SECRET=your_github_client_secret
 # Application URLs
 GATEWAY_URL=http://localhost:3000
 DASHBOARD_URL=http://localhost:5173
+
+# Service-to-Service (Core <-> Gateway)
+# Must match Core's X_PROOFA_SERVICE_TOKEN
+X_PROOFA_SERVICE_TOKEN=your-service-token-here
 ```
 
 ---

@@ -152,6 +152,7 @@ export const paymentProviderQueries = {
 			created_by_user_id?: number;
 		},
 	) {
+		const now = new Date();
 		const results = await db
 			.insert(payment_providers)
 			.values({
@@ -161,12 +162,13 @@ export const paymentProviderQueries = {
 				provider: data.provider,
 				environment: data.environment,
 				credentials: data.credentials,
-				webhook_secret: data.webhook_secret,
+				...(data.webhook_secret !== undefined ? { webhook_secret: data.webhook_secret } : {}),
 				is_active: true,
-				created_by_user_id: data.created_by_user_id,
-				updated_by_user_id: data.created_by_user_id,
-				created_at: new Date(),
-				updated_at: new Date(),
+				...(data.created_by_user_id !== undefined
+					? { created_by_user_id: data.created_by_user_id, updated_by_user_id: data.created_by_user_id }
+					: {}),
+				created_at: now,
+				updated_at: now,
 			})
 			.returning();
 		return results[0];
@@ -186,6 +188,7 @@ export const paymentProviderQueries = {
 			created_by_user_id?: number;
 		},
 	) {
+		const now = new Date();
 		const results = await db
 			.insert(payment_providers)
 			.values({
@@ -195,12 +198,13 @@ export const paymentProviderQueries = {
 				provider: data.provider,
 				environment: data.environment,
 				credentials: data.credentials,
-				webhook_secret: data.webhook_secret,
+				...(data.webhook_secret !== undefined ? { webhook_secret: data.webhook_secret } : {}),
 				is_active: true,
-				created_by_user_id: data.created_by_user_id,
-				updated_by_user_id: data.created_by_user_id,
-				created_at: new Date(),
-				updated_at: new Date(),
+				...(data.created_by_user_id !== undefined
+					? { created_by_user_id: data.created_by_user_id, updated_by_user_id: data.created_by_user_id }
+					: {}),
+				created_at: now,
+				updated_at: now,
 			})
 			.returning();
 		return results[0];
@@ -220,6 +224,7 @@ export const paymentProviderQueries = {
 			created_by_user_id?: number;
 		},
 	) {
+		const now = new Date();
 		const results = await db
 			.insert(payment_providers)
 			.values({
@@ -229,12 +234,13 @@ export const paymentProviderQueries = {
 				provider: data.provider,
 				environment: data.environment,
 				credentials: data.credentials,
-				webhook_secret: data.webhook_secret,
+				...(data.webhook_secret !== undefined ? { webhook_secret: data.webhook_secret } : {}),
 				is_active: true,
-				created_by_user_id: data.created_by_user_id,
-				updated_by_user_id: data.created_by_user_id,
-				created_at: new Date(),
-				updated_at: new Date(),
+				...(data.created_by_user_id !== undefined
+					? { created_by_user_id: data.created_by_user_id, updated_by_user_id: data.created_by_user_id }
+					: {}),
+				created_at: now,
+				updated_at: now,
 			})
 			.returning();
 		return results[0];
@@ -283,7 +289,7 @@ export const paymentProviderQueries = {
 				previous_credentials: current.credentials,
 				credentials_rotated_at: new Date(),
 				webhook_secret: webhook_secret ?? current.webhook_secret,
-				updated_by_user_id,
+				...(updated_by_user_id !== undefined ? { updated_by_user_id } : {}),
 				updated_at: new Date(),
 			})
 			.where(eq(payment_providers.id, provider_id))

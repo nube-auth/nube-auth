@@ -36,7 +36,8 @@ export function rateLimitMiddleware(options: RateLimitOptions) {
 
 			if (!id) {
 				log.warn("No identifier found for rate limiting, allowing request");
-				return next();
+				await next();
+				return;
 			}
 
 			// Create Redis key
@@ -81,11 +82,13 @@ export function rateLimitMiddleware(options: RateLimitOptions) {
 				log.debug({ id, path, current, maxRequests }, "Approaching rate limit");
 			}
 
-			return next();
+			await next();
+			return;
 		} catch (error) {
 			// Don't block requests if rate limiting fails
 			log.error({ err: error }, "Rate limiting error, allowing request");
-			return next();
+			await next();
+			return;
 		}
 	});
 }
@@ -103,7 +106,8 @@ function getClientIp(c: Context): string | null {
 	const xForwardedFor = c.req.header("x-forwarded-for");
 	if (xForwardedFor) {
 		// Take first IP if multiple
-		return xForwardedFor.split(",")[0].trim();
+		const firstIp = xForwardedFor.split(",")[0];
+		return firstIp ? firstIp.trim() : null;
 	}
 
 	// Other common headers

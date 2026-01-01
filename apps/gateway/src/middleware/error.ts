@@ -26,6 +26,7 @@ class AppError extends Error {
 export const errorMiddleware = createMiddleware(async (c: Context, next): Promise<Response | undefined> => {
 	try {
 		await next();
+		return;
 	} catch (error) {
 		const requestId = c.get("requestId") as string | undefined;
 		let statusCode: ContentfulStatusCode = 500;

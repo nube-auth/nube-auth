@@ -202,7 +202,7 @@ adminRoutes.post("/projects", async (c: Context) => {
 			public_id: createId("project"),
 			name: validatedData.name,
 			slug: validatedData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-			description: validatedData.description,
+			description: validatedData.description ?? null,
 			owner_user_id: user.id,
 			created_at: now,
 			updated_at: now,
@@ -223,7 +223,7 @@ adminRoutes.post("/projects", async (c: Context) => {
 			project.public_id,
 			project.name,
 			auth.userId,
-			user.primary_email,
+			user.primary_email ?? undefined,
 			c.req.header("x-forwarded-for") || c.req.header("x-real-ip"),
 			{ slug: project.slug },
 		);
@@ -332,14 +332,14 @@ adminRoutes.patch("/projects/:projectId", async (c: Context) => {
 			updated_at: now,
 		};
 
-		if (body.name !== undefined) {
-			updateData.name = body.name;
+		if (body["name"] !== undefined) {
+			updateData["name"] = body["name"];
 		}
-		if (body.slug !== undefined) {
-			updateData.slug = body.slug;
+		if (body["slug"] !== undefined) {
+			updateData["slug"] = body["slug"];
 		}
-		if (body.description !== undefined) {
-			updateData.description = body.description;
+		if (body["description"] !== undefined) {
+			updateData["description"] = body["description"];
 		}
 
 		const updatedProjects = await projectQueries.update(db, project.id, updateData);
@@ -535,7 +535,7 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			project_id: project.id,
 			name: validatedData.name,
 			slug: appSlug,
-			description: validatedData.description,
+			description: validatedData.description ?? null,
 			allowed_hosts: validatedData.allowedHosts || [],
 			redirect_uris: validatedData.redirectUris || [],
 			session_ttl_days: validatedData.sessionTtlDays || 28,
@@ -550,7 +550,6 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 		});
 
 		// Step 2: If licensing is enabled, create default license plan
-		let defaultPlanId: number | undefined;
 		if (validatedData.requiresLicensing && validatedData.defaultLicensePlan) {
 			const planData = validatedData.defaultLicensePlan;
 			const planSlug = planData.slug || planData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
@@ -584,7 +583,7 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 				durationDays = planData.trial_days || 30;
 			}
 
-			const defaultPlan = await planQueries.create(db, {
+			await planQueries.create(db, {
 				public_id: createId("plan"),
 				app_id: app.id,
 				name: planData.name,
@@ -603,13 +602,7 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 				updated_at: now,
 			});
 
-			defaultPlanId = defaultPlan.id;
-
-			// Update app with default_plan_id
-			await appQueries.update(db, app.id, {
-				default_plan_id: defaultPlanId,
-				updated_at: now,
-			});
+			// Note: apps table does not currently store a default plan reference.
 		}
 
 		// Validate and return response
@@ -947,8 +940,8 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 								userName: existingUser.name || existingUser.primary_email || "there",
 								appName: app.name,
 								planName: plan?.name || "Unknown Plan",
-								validUntil: validUntilDate,
 								dashboardUrl: `https://auth.proofa.sh/login?app_id=${app.public_id}`,
+								...(validUntilDate ? { validUntil: validUntilDate } : {}),
 							}),
 						});
 					} catch (emailError) {
@@ -1032,8 +1025,8 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 						inviteeEmail: email,
 						appName: app.name,
 						inviterName: user.name || user.primary_email || "A team member",
-						planName: plan?.name,
-						customMessage: custom_message,
+						...(plan?.name ? { planName: plan.name } : {}),
+						...(custom_message ? { customMessage: custom_message } : {}),
 						inviteLink,
 						expiresInDays: 7,
 					}),
@@ -1062,7 +1055,8 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 		// User doesn't exist - create invitation
 		const invitationId = createId("invitation");
 		const expiresAt = new Date(now.getTime() + INVITATION_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
-		const existingInvitation = await invitationQueries.findPendingByEmailAndApp(db, email.toLowerCase(), app.id);
+		const existingInvitations = await invitationQueries.findPendingByEmailAndApp(db, email.toLowerCase(), app.id);
+		const existingInvitation = existingInvitations[0];
 
 		if (existingInvitation) {
 			return c.json({
@@ -1107,8 +1101,8 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 					inviteeEmail: email,
 					appName: app.name,
 					inviterName: user.name || user.primary_email || "A team member",
-					planName: plan?.name,
-					customMessage: custom_message,
+					...(plan?.name ? { planName: plan.name } : {}),
+					...(custom_message ? { customMessage: custom_message } : {}),
 					inviteLink,
 					expiresInDays: 7,
 				}),
@@ -1524,21 +1518,21 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 		// Build update object with JSON serialization for array fields
 		const updateData: Record<string, unknown> = { updated_at: now };
 
-		if (validatedData.name) updateData.name = validatedData.name;
-		if (validatedData.slug) updateData.slug = validatedData.slug;
-		if (validatedData.description !== undefined) updateData.description = validatedData.description;
-		if (validatedData.allowedHosts) updateData.allowed_hosts = validatedData.allowedHosts;
-		if (validatedData.redirectUris) updateData.redirect_uris = validatedData.redirectUris;
-		if (validatedData.sessionTtlDays) updateData.session_ttl_days = validatedData.sessionTtlDays;
-		if (validatedData.corsOrigins) updateData.cors_origins = validatedData.corsOrigins;
-		if (validatedData.rateLimit) updateData.rate_limit = validatedData.rateLimit;
-		if (validatedData.accountLockoutMinutes)
-			updateData.account_lockout_minutes = validatedData.accountLockoutMinutes;
-		if (validatedData.cacheTtlMinutes) updateData.cache_ttl_minutes = validatedData.cacheTtlMinutes;
+		if (validatedData["name"]) updateData["name"] = validatedData["name"];
+		if (validatedData["slug"]) updateData["slug"] = validatedData["slug"];
+		if (validatedData["description"] !== undefined) updateData["description"] = validatedData["description"];
+		if (validatedData["allowedHosts"]) updateData["allowed_hosts"] = validatedData["allowedHosts"];
+		if (validatedData["redirectUris"]) updateData["redirect_uris"] = validatedData["redirectUris"];
+		if (validatedData["sessionTtlDays"]) updateData["session_ttl_days"] = validatedData["sessionTtlDays"];
+		if (validatedData["corsOrigins"]) updateData["cors_origins"] = validatedData["corsOrigins"];
+		if (validatedData["rateLimit"]) updateData["rate_limit"] = validatedData["rateLimit"];
+		if (validatedData["accountLockoutMinutes"])
+			updateData["account_lockout_minutes"] = validatedData["accountLockoutMinutes"];
+		if (validatedData["cacheTtlMinutes"]) updateData["cache_ttl_minutes"] = validatedData["cacheTtlMinutes"];
 
 		// Handle enabled providers
-		if (validatedData.enabledProviders !== undefined) {
-			updateData.enabled_providers = validatedData.enabledProviders;
+		if (validatedData["enabledProviders"] !== undefined) {
+			updateData["enabled_providers"] = validatedData["enabledProviders"];
 		}
 
 		const updatedApps = await appQueries.update(db, app.id, updateData);

@@ -30,13 +30,13 @@ export function createLogger(
 					translateTime: "SYS:standard",
 					ignore: "pid,hostname",
 				},
-			}
+		  }
 		: undefined;
 
 	return pino({
 		name,
 		level,
-		transport,
+		...(transport && { transport }),
 		base: {
 			env: process.env.NODE_ENV ?? "development",
 		},

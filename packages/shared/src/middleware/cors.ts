@@ -91,6 +91,7 @@ export function corsMiddleware(options: {
 		}
 
 		await next();
+		return;
 	};
 }
 

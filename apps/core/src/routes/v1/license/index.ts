@@ -1,4 +1,4 @@
-import { appQueries, getDb, licenseQueries, userQueries } from "@proofa/db";
+import { appQueries, getDb, licenseQueries, planQueries, userQueries } from "@proofa/db";
 import { createId } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -18,7 +18,6 @@ router.get("/", async (c: Context) => {
 
 	try {
 		const db = getDb();
-		const _now = new Date();
 
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) {
@@ -57,7 +56,6 @@ router.post("/grant", async (c: Context) => {
 
 	try {
 		const db = getDb();
-		const now = new Date();
 
 		// Validate user exists
 		const user = await userQueries.findByPublicId(db, userId);
@@ -72,20 +70,29 @@ router.post("/grant", async (c: Context) => {
 		}
 
 		// Create or update license using upsert
+		const planSlug = plan ?? "pro";
+		type PlanRow = Awaited<ReturnType<typeof planQueries.findByAppAndSlug>>;
+		let selectedPlan: PlanRow | undefined = await planQueries.findByAppAndSlug(db, app.id, planSlug);
+		if (!selectedPlan) {
+			const activePlans = await planQueries.findActiveByAppId(db, app.id);
+			selectedPlan = activePlans[0];
+		}
+		if (!selectedPlan) {
+			return c.json({ error: "Plan not found" }, 400);
+		}
+
 		const license = await licenseQueries.upsert(db, user.id, app.id, {
 			public_id: createId("license"),
-			plan: plan || "pro",
+			plan_id: selectedPlan.id,
 			status: "active",
-			source: "manual",
-			valid_from: now,
-			valid_until: validUntil || null,
+			valid_until: validUntil ? new Date(validUntil) : null,
 		});
 
 		return c.json({
 			message: "License granted",
 			license: {
 				id: license.public_id,
-				plan: license.plan,
+				plan: selectedPlan.slug,
 				status: license.status,
 				validUntil: license.valid_until,
 			},

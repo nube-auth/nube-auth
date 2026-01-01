@@ -27,8 +27,8 @@ export interface OAuthProfile {
 	id: string;
 	email: string;
 	name: string;
-	picture?: string;
-	avatar_url?: string;
+	picture?: string | undefined;
+	avatar_url?: string | undefined;
 }
 
 /**

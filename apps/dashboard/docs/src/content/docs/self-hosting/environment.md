@@ -107,6 +107,12 @@ GITHUB_CLIENT_SECRET=xxx
 | `CORS_ORIGINS` | No | `*` | Allowed origins (comma-separated) |
 | `RATE_LIMIT_MAX` | No | `100` | Max requests per minute |
 
+## Service-to-Service
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `X_PROOFA_SERVICE_TOKEN` | Yes* | - | Shared token for Core ↔ Gateway S2S calls (must match on both services) |
+
 ## Example .env
 
 ```bash
@@ -143,4 +149,7 @@ RESEND_API_KEY=re_xxx
 
 # Security
 CORS_ORIGINS=https://yourdomain.com,https://app.yourdomain.com
+
+# Service-to-Service
+X_PROOFA_SERVICE_TOKEN=your-32-plus-char-token
 ```

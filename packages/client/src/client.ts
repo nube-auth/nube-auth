@@ -3,7 +3,7 @@ import type { ApiError, AuthStatus, ProofaClientConfig, Session, UpdateProfileDa
 
 export class ProofaClient {
 	private baseUrl: string;
-	private s2sToken?: string;
+	private s2sToken?: string | undefined;
 	private httpClient: HttpClient;
 
 	constructor(config: ProofaClientConfig) {
