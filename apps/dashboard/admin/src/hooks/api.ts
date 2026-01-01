@@ -17,6 +17,7 @@ import type {
 	ProjectMember,
 	UpdateAppRequest,
 } from "../types/admin";
+import { pingpong } from "../lib/pingpong";
 
 const client = new ProofaClient({
 	gatewayUrl: import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004",
@@ -50,11 +51,12 @@ async function fetchAPI<T>(path: string, options?: RequestInit, schema?: any): P
 		}
 	}
 
-	const response = await fetch(`${GATEWAY_URL}${path}`, {
+	const response = await pingpong(`${GATEWAY_URL}${path}`, {
 		...options,
 		credentials: "include",
 		headers,
 	});
+
 
 	if (!response.ok) {
 		const error = await response.json().catch(() => ({ message: response.statusText }));

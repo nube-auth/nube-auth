@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { pingpong } from "../lib/pingpong";
 
 export function LoginPage() {
 	const [searchParams] = useSearchParams();
@@ -24,7 +25,7 @@ export function LoginPage() {
 				setStatus("processing");
 				try {
 					// Exchange the code with Core via our backend
-					const res = await fetch("/api/auth/login", {
+					const res = await pingpong("/api/auth/login", {
 						method: "POST",
 						credentials: "include",
 						headers: { "Content-Type": "application/json" },
@@ -36,7 +37,7 @@ export function LoginPage() {
 						const inviteCode = searchParams.get("invite");
 						if (inviteCode) {
 							try {
-								const inviteRes = await fetch(`/api/admin/invitations/${inviteCode}/accept`, {
+								const inviteRes = await pingpong(`/api/admin/invitations/${inviteCode}/accept`, {
 									method: "POST",
 									credentials: "include",
 								});
@@ -73,7 +74,7 @@ export function LoginPage() {
 
 			// Check if already authenticated before showing login
 			try {
-				const statusRes = await fetch("/api/auth/status?audience=admin", { credentials: "include" });
+				const statusRes = await pingpong("/api/auth/status?audience=admin", { credentials: "include" });
 				if (statusRes.ok) {
 					const statusData = (await statusRes.json()) as { loggedIn?: boolean };
 					if (!statusData.loggedIn) {
@@ -83,13 +84,13 @@ export function LoginPage() {
 				}
 
 				// Session exists - now fetch admin profile
-				const meRes = await fetch("/api/admin/me", { credentials: "include" });
+				const meRes = await pingpong("/api/admin/me", { credentials: "include" });
 				if (meRes.ok) {
 					// Already logged in - check for invitation code
 					const inviteCode = searchParams.get("invite");
 					if (inviteCode) {
 						try {
-							const inviteRes = await fetch(`/api/admin/invitations/${inviteCode}/accept`, {
+							const inviteRes = await pingpong(`/api/admin/invitations/${inviteCode}/accept`, {
 								method: "POST",
 								credentials: "include",
 							});

@@ -26,6 +26,7 @@ import { ProjectSettingsPage } from "./pages/ProjectSettings";
 import { ProjectStatsPage } from "./pages/ProjectStats";
 import { ProjectsPage } from "./pages/Projects";
 import { ProjectTeamPage } from "./pages/ProjectTeam";
+import { pingpong } from "./lib/pingpong";
 
 const queryClient = new QueryClient();
 
@@ -61,13 +62,15 @@ function useMe() {
 			const gatewayUrl = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
 
 			// 1) Check session status first (mirrors user dashboard flow)
-			const statusRes = await fetch(`${gatewayUrl}/v1/auth/status?audience=admin`, { credentials: "include" });
+			const statusRes = await pingpong(`${gatewayUrl}/v1/auth/status?audience=admin`, {
+				credentials: "include",
+			});
 			if (!statusRes.ok) throw new Error("Unauthorized");
 			const status = (await statusRes.json()) as { loggedIn?: boolean };
 			if (!status.loggedIn) throw new Error("Unauthorized");
 
 			// 2) Then fetch admin profile
-			const res = await fetch(`${gatewayUrl}/v1/admin/me`, { credentials: "include" });
+			const res = await pingpong(`${gatewayUrl}/v1/admin/me`, { credentials: "include" });
 			if (!res.ok) throw new Error("Unauthorized");
 			return res.json() as Promise<{ id: string; email?: string; name?: string; primary_email?: string }>;
 		},

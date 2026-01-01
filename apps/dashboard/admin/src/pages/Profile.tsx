@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { pingpong } from "../lib/pingpong";
 
 interface AdminProfile {
 	id: string;
@@ -11,7 +12,7 @@ interface AdminProfile {
 const GATEWAY_URL = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
 
 async function fetchAPI<T>(path: string, options?: RequestInit): Promise<T> {
-	const response = await fetch(`${GATEWAY_URL}${path}`, {
+	const response = await pingpong(`${GATEWAY_URL}${path}`, {
 		...options,
 		credentials: "include",
 		headers: {

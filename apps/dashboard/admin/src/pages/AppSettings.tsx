@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { useToast } from "../components/Toast";
 import { useApp, useProject, useUpdateApp } from "../hooks/api";
+import { pingpong } from "../lib/pingpong";
 import type { App } from "../types/admin";
 
 type SettingsTab = "general" | "authentication" | "security" | "danger";
@@ -539,7 +540,7 @@ export function AppSettingsPage() {
 				onClose={() => setShowDeleteModal(false)}
 				onConfirm={async () => {
 					try {
-						const response = await fetch(
+						const response = await pingpong(
 							`${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/admin/projects/${projectId}/apps/${appId}`,
 							{
 								method: "DELETE",

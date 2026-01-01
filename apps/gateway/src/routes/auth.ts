@@ -9,6 +9,7 @@ import { getCookie, setCookie } from "hono/cookie";
 import { CSRF_TOKEN_BYTES, SESSION_ID_BYTES, SESSION_TTL } from "../config/constants";
 import { env } from "../config/env";
 import { coreClient } from "../lib/core-client";
+import { pingpong } from "../lib/pingpong";
 import { sessionService } from "../services/sessionService";
 
 const log = createLogger("auth-routes");
@@ -94,7 +95,7 @@ authRoutes.get("/callback", async (c: Context) => {
 
 		// Exchange session ID with Core (S2S call)
 		// Note: Core's callback sends the session ID as "code" parameter
-		const response = await fetch(`${env.CORE_URL}/v1/auth/exchange`, {
+		const response = await pingpong(`${env.CORE_URL}/v1/auth/exchange`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",

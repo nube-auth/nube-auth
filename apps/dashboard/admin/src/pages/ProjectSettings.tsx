@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { useToast } from "../components/Toast";
 import { useProject, useUpdateProject } from "../hooks/api";
+import { pingpong } from "../lib/pingpong";
 
 export function ProjectSettingsPage() {
 	const { projectId } = useParams<{ projectId: string }>();
@@ -409,7 +410,7 @@ export function ProjectSettingsPage() {
 				onClose={() => setShowDeleteModal(false)}
 				onConfirm={async () => {
 					try {
-						const response = await fetch(
+						const response = await pingpong(
 							`${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/admin/projects/${projectId}`,
 							{
 								method: "DELETE",

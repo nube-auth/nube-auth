@@ -3,6 +3,8 @@
  * Abstracts OAuth provider details (Google, GitHub, etc.)
  */
 
+import { pingpong } from "./pingpong";
+
 export interface OAuthProvider {
 	name: string;
 	clientId: string;
@@ -71,7 +73,7 @@ export async function exchangeCodeForToken(
 	code: string,
 	redirectUri: string,
 ): Promise<string> {
-	const response = await fetch(provider.tokenEndpoint, {
+	const response = await pingpong(provider.tokenEndpoint, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -98,7 +100,7 @@ export async function exchangeCodeForToken(
  * Fetch user profile from OAuth provider
  */
 export async function fetchUserProfile(provider: OAuthProvider, accessToken: string): Promise<OAuthProfile> {
-	const response = await fetch(provider.userInfoEndpoint, {
+	const response = await pingpong(provider.userInfoEndpoint, {
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
 			Accept: "application/json",

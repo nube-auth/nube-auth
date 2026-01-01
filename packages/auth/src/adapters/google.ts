@@ -1,5 +1,6 @@
 import { GoogleTokenResponseSchema, GoogleUserInfoSchema } from "../schemas/index.js";
 import type { OAuthAdapter, OAuthProfile } from "../types/index.js";
+import { pingpong } from "../pingpong";
 
 /**
  * Google OAuth configuration
@@ -52,7 +53,7 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
 	 * Exchange authorization code for tokens with validated response
 	 */
 	async exchangeCodeForTokens(code: string, redirectUri: string): Promise<TokenResponse> {
-		const response = await fetch(this.tokenEndpoint, {
+		const response = await pingpong(this.tokenEndpoint, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/x-www-form-urlencoded",
@@ -85,7 +86,7 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
 	 * Fetch user profile using access token with validated response
 	 */
 	async fetchUserProfile(accessToken: string): Promise<OAuthProfile> {
-		const response = await fetch(this.userInfoEndpoint, {
+		const response = await pingpong(this.userInfoEndpoint, {
 			headers: {
 				Authorization: `Bearer ${accessToken}`,
 			},

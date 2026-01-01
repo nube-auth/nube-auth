@@ -6,6 +6,7 @@ import {
 	OAuthErrorSchema,
 } from "../schemas/index.js";
 import type { OAuthAdapter, OAuthProfile } from "../types/index.js";
+import { pingpong } from "../pingpong";
 
 /**
  * GitHub OAuth configuration
@@ -57,7 +58,7 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
 	 * Exchange authorization code for tokens with validated response
 	 */
 	async exchangeCodeForTokens(code: string, redirectUri: string): Promise<TokenResponse> {
-		const response = await fetch(this.tokenEndpoint, {
+		const response = await pingpong(this.tokenEndpoint, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/x-www-form-urlencoded",
@@ -98,7 +99,7 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
 	 */
 	async fetchUserProfile(accessToken: string): Promise<OAuthProfile> {
 		// Fetch user data
-		const userResponse = await fetch(this.userEndpoint, {
+		const userResponse = await pingpong(this.userEndpoint, {
 			headers: {
 				Authorization: `Bearer ${accessToken}`,
 				Accept: "application/json",
@@ -116,7 +117,7 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
 		// Fetch primary email if not in user data
 		let email = userData.email;
 		if (!email) {
-			const emailResponse = await fetch(this.userEmailEndpoint, {
+			const emailResponse = await pingpong(this.userEmailEndpoint, {
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 					Accept: "application/json",

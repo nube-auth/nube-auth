@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
 import { useApp, useAppUsers, useProject } from "../hooks/api";
+import { pingpong } from "../lib/pingpong";
 
 interface Plan {
 	id: string;
@@ -71,7 +72,7 @@ export function AppLicensesPage() {
 	const fetchPlans = useCallback(async () => {
 		setPlansLoading(true);
 		try {
-			const response = await fetch(
+			const response = await pingpong(
 				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/plans`,
 				{
 					credentials: "include",
@@ -176,7 +177,7 @@ export function AppLicensesPage() {
 				? `${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/plans/${editingPlan.id}`
 				: `${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/plans`;
 
-			const response = await fetch(url, {
+			const response = await pingpong(url, {
 				method: editingPlan ? "PATCH" : "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -209,7 +210,7 @@ export function AppLicensesPage() {
 		setIsUpdating(true);
 
 		try {
-			const response = await fetch(
+			const response = await pingpong(
 				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/plans/${deletingPlan.id}`,
 				{
 					method: "DELETE",
@@ -271,7 +272,7 @@ export function AppLicensesPage() {
 		setIsUpdating(true);
 
 		try {
-			const response = await fetch(
+			const response = await pingpong(
 				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/users/${changingLicense.id}`,
 				{
 					method: "PATCH",

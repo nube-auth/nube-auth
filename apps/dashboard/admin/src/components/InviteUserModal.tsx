@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Select } from "./Select";
+import { pingpong } from "../lib/pingpong";
 
 interface InviteUserModalProps {
 	isOpen: boolean;
@@ -33,7 +34,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 	const fetchPlans = useCallback(async () => {
 		setPlansLoading(true);
 		try {
-			const response = await fetch(
+			const response = await pingpong(
 				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/plans`,
 				{
 					method: "GET",
@@ -82,7 +83,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 		setSuccess(null);
 
 		try {
-			const response = await fetch(
+			const response = await pingpong(
 				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/users/invite`,
 				{
 					method: "POST",

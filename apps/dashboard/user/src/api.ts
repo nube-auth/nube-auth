@@ -1,8 +1,10 @@
+import { pingpong } from "./lib/pingpong";
+
 const API_URL = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
 
 const apiClient = {
 	async get<T>(url: string): Promise<T> {
-		const res = await fetch(`${API_URL}${url}`, {
+		const res = await pingpong(`${API_URL}${url}`, {
 			credentials: "include",
 		});
 		if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -10,7 +12,7 @@ const apiClient = {
 	},
 
 	async post<T>(url: string, data?: unknown): Promise<T> {
-		const res = await fetch(`${API_URL}${url}`, {
+		const res = await pingpong(`${API_URL}${url}`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(data),
@@ -21,7 +23,7 @@ const apiClient = {
 	},
 
 	async patch<T>(url: string, data?: unknown): Promise<T> {
-		const res = await fetch(`${API_URL}${url}`, {
+		const res = await pingpong(`${API_URL}${url}`, {
 			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(data),
@@ -32,7 +34,7 @@ const apiClient = {
 	},
 
 	async delete<T>(url: string): Promise<T> {
-		const res = await fetch(`${API_URL}${url}`, {
+		const res = await pingpong(`${API_URL}${url}`, {
 			method: "DELETE",
 			credentials: "include",
 		});

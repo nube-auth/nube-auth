@@ -1,4 +1,5 @@
 import type { User } from "@proofa/shared";
+import { pingpong } from "./pingpong";
 
 /**
  * Client for calling Proofa Core API
@@ -21,7 +22,7 @@ export class CoreClient {
 		};
 
 		try {
-			const response = await fetch(url, {
+			const response = await pingpong(url, {
 				method,
 				headers,
 				...(body ? { body: JSON.stringify(body) } : {}),

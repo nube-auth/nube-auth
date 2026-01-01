@@ -6,6 +6,7 @@ import { InviteUserModal } from "../components/InviteUserModal";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
 import { useApp, useAppUsers, useProject, useRenewLicense } from "../hooks/api";
+import { pingpong } from "../lib/pingpong";
 
 export function AppUsersPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -34,7 +35,7 @@ export function AppUsersPage() {
 	const fetchPlans = useCallback(async () => {
 		setPlansLoading(true);
 		try {
-			const response = await fetch(
+			const response = await pingpong(
 				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/plans`,
 				{
 					method: "GET",
@@ -78,7 +79,7 @@ export function AppUsersPage() {
 		const newStatus = currentStatus === "active" ? "suspended" : "active";
 
 		try {
-			const response = await fetch(
+			const response = await pingpong(
 				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/users/${userId}`,
 				{
 					method: "PATCH",
@@ -113,7 +114,7 @@ export function AppUsersPage() {
 		setUpdateError(null);
 
 		try {
-			const response = await fetch(
+			const response = await pingpong(
 				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/users/${editingUser.id}`,
 				{
 					method: "PATCH",

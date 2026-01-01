@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { pingpong } from "../lib/pingpong";
 
 export function LoginPage() {
 	const [searchParams] = useSearchParams();
@@ -19,7 +20,7 @@ export function LoginPage() {
 		const checkAuth = async () => {
 			try {
 				const gatewayUrl = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
-				const res = await fetch(`${gatewayUrl}/v1/auth/status`, { credentials: "include" });
+				const res = await pingpong(`${gatewayUrl}/v1/auth/status`, { credentials: "include" });
 				if (res.ok) {
 					const data = await res.json();
 					if (data.loggedIn) {

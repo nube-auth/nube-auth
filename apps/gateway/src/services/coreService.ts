@@ -1,5 +1,6 @@
 import { getEnv } from "../config/env";
 import { addS2SAuthHeader } from "../middleware/s2s";
+import { pingpong } from "../lib/pingpong";
 
 interface CoreRequest {
 	method: "GET" | "POST" | "PATCH" | "DELETE";
@@ -25,7 +26,8 @@ export const coreService = {
 
 		addS2SAuthHeader(headers);
 
-		const response = await fetch(url, {
+
+		const response = await pingpong(url, {
 			method: config.method,
 			headers,
 			...(config.body ? { body: JSON.stringify(config.body) } : {}),
