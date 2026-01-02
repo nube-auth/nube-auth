@@ -81,7 +81,10 @@ app.use("*", authMiddleware);
 app.use("/v1/admin/*", csrfProtection);
 
 // Rate limiting
-// Apply strict rate limiting to auth endpoints
+// Apply generous rate limiting to status check (read-only, frequently called)
+app.use("/v1/auth/status", rateLimitPresets.public);
+
+// Apply strict rate limiting to auth endpoints (after status to avoid override)
 app.use("/v1/auth/*", rateLimitPresets.auth);
 
 // Apply standard rate limiting to API endpoints

@@ -1,4 +1,3 @@
-export { pingpong } from "./pingpong";
+export { pingpongFetch, pingpongFetch as pingpong } from "./pingpong.js";
 
-/** @deprecated Use `pingpong` from `./pingpong` */
-export { pingpong as pingpongFetch } from "./pingpong";
+/** @deprecated Use `pingpongFetch` from `./pingpong` */

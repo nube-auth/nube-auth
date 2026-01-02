@@ -767,6 +767,7 @@ export function useSelectPaymentProvider(appId: string) {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["payment-providers", "selected", appId] });
+			queryClient.invalidateQueries({ queryKey: ["app", appId] });
 		},
 	});
 }

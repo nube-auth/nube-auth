@@ -217,16 +217,16 @@ export default function AppPaymentSettingsPage() {
 									cursor: "pointer",
 									opacity: isLoading ? 0.6 : 1,
 								}}
-								onClick={() => !isLoading && !isSelected && handleSelectProvider(provider.id)}
+								onClick={() => !isLoading && handleSelectProvider(provider.id)}
 							>
 								<div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-									{/* Radio Button */}
+									{/* Checkbox at the start */}
 									<div
 										style={{
-											width: "24px",
-											height: "24px",
-											borderRadius: "50%",
-											border: `2px solid ${isSelected ? "var(--primary)" : "var(--border-primary)"}`,
+											width: "20px",
+											height: "20px",
+											borderRadius: "4px",
+											border: isSelected ? "2px solid var(--primary)" : "2px solid rgba(255, 255, 255, 0.3)",
 											background: isSelected ? "var(--primary)" : "transparent",
 											display: "flex",
 											alignItems: "center",
@@ -236,14 +236,18 @@ export default function AppPaymentSettingsPage() {
 										}}
 									>
 										{isSelected && (
-											<div
-												style={{
-													width: "8px",
-													height: "8px",
-													borderRadius: "50%",
-													background: "white",
-												}}
-											/>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												style={{ width: "14px", height: "14px" }}
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="white"
+												strokeWidth="4"
+												strokeLinecap="round"
+												strokeLinejoin="round"
+											>
+												<polyline points="20 6 9 17 4 12" />
+											</svg>
 										)}
 									</div>
 
@@ -317,21 +321,6 @@ export default function AppPaymentSettingsPage() {
 											)}
 										</div>
 									</div>
-
-									{/* Select Button (for non-selected) */}
-									{!isSelected && (
-										<button
-											className="btn btn-secondary"
-											onClick={(e) => {
-												e.stopPropagation();
-												handleSelectProvider(provider.id);
-											}}
-											disabled={isLoading}
-											style={{ flexShrink: 0 }}
-										>
-											Select
-										</button>
-									)}
 								</div>
 							</div>
 						);

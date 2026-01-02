@@ -97,8 +97,8 @@ export const paymentProviderQueries = {
 	},
 
 	/**
-	 * Get all available payment providers for an app (from all 3 levels)
-	 * Returns providers from platform, project, and app levels
+	 * Get all available payment providers for an app (from platform and project levels)
+	 * Returns providers from platform and project levels only (apps select from these)
 	 */
 	async getAvailablePaymentProviders(db: DbClient, appId: number, environment: "test" | "production" = "test") {
 		// Get the app with its project
@@ -113,24 +113,23 @@ export const paymentProviderQueries = {
 		const app = appResults[0];
 		if (!app) return [];
 
-		// Get all active payment providers from platform (entity_id = null), project, and app levels
+		// Get all active payment providers from platform and project levels
 		const providers = await db
 			.select()
 			.from(payment_providers)
 			.where(
 				and(
-					inArray(payment_providers.entity_type, ["platform", "project", "app"]),
+					inArray(payment_providers.entity_type, ["platform", "project"]),
 					eq(payment_providers.environment, environment),
 					eq(payment_providers.is_active, true),
 					isNull(payment_providers.deleted_at),
 				),
 			);
 
-		// Filter to relevant providers (platform, this project, or this app)
+		// Filter to relevant providers (platform-level or this app's project)
 		return providers.filter((p: any) => {
 			if (p.entity_type === "platform" && p.entity_id === null) return true;
 			if (p.entity_type === "project" && p.entity_id === app.project_id) return true;
-			if (p.entity_type === "app" && p.entity_id === app.id) return true;
 			return false;
 		});
 	},
@@ -198,6 +197,8 @@ export const paymentProviderQueries = {
 		db: DbClient,
 		data: {
 			project_id: number;
+			name: string;
+			slug?: string;
 			provider: string;
 			environment: "test" | "production";
 			credentials: string;
@@ -206,10 +207,13 @@ export const paymentProviderQueries = {
 		},
 	) {
 		const now = new Date();
+		const slug = data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 		const results = await db
 			.insert(payment_providers)
 			.values({
 				public_id: createId("paymentProvider"),
+				name: data.name,
+				slug: slug,
 				entity_type: "project",
 				entity_id: data.project_id,
 				provider: data.provider,
@@ -234,6 +238,8 @@ export const paymentProviderQueries = {
 		db: DbClient,
 		data: {
 			app_id: number;
+			name: string;
+			slug?: string;
 			provider: string;
 			environment: "test" | "production";
 			credentials: string;
@@ -242,9 +248,12 @@ export const paymentProviderQueries = {
 		},
 	) {
 		const now = new Date();
+		const slug = data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 		const results = await db
 			.insert(payment_providers)
 			.values({
+				name: data.name,
+				slug: slug,
 				public_id: createId("paymentProvider"),
 				entity_type: "app",
 				entity_id: data.app_id,
@@ -268,18 +277,20 @@ export const paymentProviderQueries = {
 	 * Marks the selected provider as active and all others as inactive
 	 */
 	async selectProviderForApp(db: DbClient, app_id: number, payment_provider_id: number) {
-		// Deactivate all other providers for this app
+		// Update the apps table with the selected provider
 		await db
-			.update(payment_providers)
-			.set({ is_active: false, updated_at: new Date() })
-			.where(and(eq(payment_providers.entity_type, "app"), eq(payment_providers.entity_id, app_id)));
+			.update(apps)
+			.set({ 
+				selected_payment_provider_id: payment_provider_id,
+				updated_at: new Date() 
+			})
+			.where(eq(apps.id, app_id));
 
-		// Activate the selected provider
+		// Return the selected provider
 		const results = await db
-			.update(payment_providers)
-			.set({ is_active: true, updated_at: new Date() })
-			.where(eq(payment_providers.id, payment_provider_id))
-			.returning();
+			.select()
+			.from(payment_providers)
+			.where(eq(payment_providers.id, payment_provider_id));
 		return results[0]!;
 	},
 

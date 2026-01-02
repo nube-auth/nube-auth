@@ -114,8 +114,15 @@ function getClientIp(c: Context): string | null {
 	const xRealIp = c.req.header("x-real-ip");
 	if (xRealIp) return xRealIp;
 
-	// Fallback to "unknown" for local development
-	return "unknown";
+	// Try to get from env (useful when behind a proxy)
+	const env = c.env as any;
+	if (env?.incoming?.socket?.remoteAddress) {
+		return env.incoming.socket.remoteAddress;
+	}
+
+	// For local development, use localhost as identifier
+	// This allows local development without being blocked
+	return "127.0.0.1";
 }
 
 /**

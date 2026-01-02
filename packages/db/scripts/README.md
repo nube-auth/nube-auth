@@ -34,6 +34,45 @@ pnpm run db:drop
 - Always backup production data before running
 - The script will show you which database it's targeting before execution
 
+## seed-project-app.ts
+
+Creates a complete project setup including a user, project, app, and payment provider configuration.
+
+### Usage
+
+```bash
+# From workspace root
+pnpm seed:project
+
+# Or directly from db package
+cd packages/db
+pnpm run seed:project
+```
+
+### What it creates
+
+1. **User**: Demo user with email `demo@example.com` (only if no users exist)
+2. **Project**: A project owned by the user with a timestamped name
+3. **Project Member**: Adds the user as owner of the project
+4. **App**: An application within the project with:
+   - Generated client secret and service token
+   - Localhost redirect URIs configured
+   - Google and GitHub OAuth providers enabled
+   - Default session and security settings
+5. **Payment Provider**: Stripe test payment configuration with:
+   - Encrypted demo credentials
+   - Webhook secret
+   - Test environment mode
+
+### Requirements
+
+- `DATABASE_URL` must be set in your `.env` file at project root
+- Database must be running and accessible
+
+### Output
+
+The script provides detailed progress for each step and a final summary with all created entity IDs and public IDs.
+
 ## Adding More Scripts
 
 Follow this pattern for new database utility scripts:

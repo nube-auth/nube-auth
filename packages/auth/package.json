@@ -19,7 +19,7 @@
 	},
 	"dependencies": {
 		"@proofa/shared": "workspace:*",
-		"pingpong-fetch": "^1.3.0",
+		"@pingpong-js/fetch": "^1.0.1",
 		"zod": "^4.2.1"
 	},
 	"devDependencies": {

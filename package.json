@@ -29,6 +29,7 @@
 		"db:generate": "pnpm --filter @proofa/db run db:generate",
 		"db:fresh": "pnpm --filter @proofa/db run db:fresh",
 		"db:seed": "turbo run db:seed",
+		"seed:project": "pnpm --filter @proofa/db run seed:project",
 		"docker:up": "./scripts/docker-local.sh up",
 		"docker:up:all": "./scripts/docker-local.sh up:all",
 		"docker:down": "./scripts/docker-local.sh down",
@@ -45,6 +46,7 @@
 		"dotenv-cli": "^11.0.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.2.7",
+		"tsx": "^4.7.0",
 		"turbo": "^2.7.2",
 		"typescript": "^5.9.3"
 	},
