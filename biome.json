@@ -35,7 +35,7 @@
 				"noConsole": "off",
 				"noImplicitAnyLet": "off",
 				"noDocumentCookie": "off",
-			"noArrayIndexKey": "off",
+				"noArrayIndexKey": "off",
 				"noAssignInExpressions": "off"
 			},
 			"a11y": {

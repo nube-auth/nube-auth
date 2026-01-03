@@ -1,13 +1,13 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1767430577617,
-      "tag": "0000_ancient_stark_industries",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "postgresql",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "7",
+			"when": 1767432970607,
+			"tag": "0000_faithful_blue_shield",
+			"breakpoints": true
+		}
+	]
 }

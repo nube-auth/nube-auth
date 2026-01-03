@@ -26,7 +26,6 @@ export const coreService = {
 
 		addS2SAuthHeader(headers);
 
-
 		const response = await pingpong(url, {
 			method: config.method,
 			headers,

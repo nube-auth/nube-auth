@@ -1,7 +1,18 @@
 import { GitHubOAuthAdapter, GoogleOAuthAdapter } from "@proofa/auth";
 import { cache } from "@proofa/cache";
-import { appQueries, getDb, identityQueries, invitationQueries, licenseQueries, planQueries, projectInvitationQueries, projectMemberQueries, sessionQueries, userQueries } from "@proofa/db";
-import { createId, idPatterns } from "@proofa/shared";
+import {
+	appQueries,
+	getDb,
+	identityQueries,
+	invitationQueries,
+	licenseQueries,
+	planQueries,
+	projectInvitationQueries,
+	projectMemberQueries,
+	sessionQueries,
+	userQueries,
+} from "@proofa/db";
+import { createId, idPatterns, type PlanSettings } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { env } from "../../../config/env";
@@ -31,6 +42,60 @@ async function getOAuthState(state: string): Promise<OAuthStateData | null> {
 
 async function deleteOAuthState(state: string): Promise<void> {
 	await cache.delete(`${OAUTH_STATE_PREFIX}${state}`);
+}
+
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+async function ensureLicenseForApp(db: ReturnType<typeof getDb>, userId: number, appPublicId?: string): Promise<void> {
+	if (!appPublicId) return;
+
+	try {
+		const app = await appQueries.findByPublicId(db, appPublicId);
+		if (!app) return;
+
+		// Type-safe access to plan_settings JSONB field
+		const planSettings = app.plan_settings as unknown as PlanSettings;
+		if (planSettings?.licensingRequired === false) return;
+
+		const existing = await licenseQueries.findByUserAndApp(db, userId, app.id);
+		if (existing) return;
+
+		if (!planSettings?.defaultPlanId) {
+			console.warn({ appId: appPublicId }, "Auto-license skipped: defaultPlanId not set in plan_settings");
+			return;
+		}
+
+		const plan = await planQueries.findById(db, planSettings.defaultPlanId);
+		if (!plan || plan.app_id !== app.id || plan.status !== "active" || plan.deleted_at) {
+			console.warn(
+				{ appId: appPublicId, planId: planSettings.defaultPlanId },
+				"Auto-license skipped: default plan invalid or inactive",
+			);
+			return;
+		}
+
+		const now = new Date();
+		let validUntil: Date | null = null;
+
+		if (plan.trial_enabled && plan.trial_days) {
+			validUntil = new Date(now.getTime() + plan.trial_days * ONE_DAY_MS);
+		} else if (plan.duration_days) {
+			validUntil = new Date(now.getTime() + plan.duration_days * ONE_DAY_MS);
+		}
+
+		await licenseQueries.create(db, {
+			public_id: createId("license"),
+			user_id: userId,
+			app_id: app.id,
+			plan_id: plan.id,
+			status: "active",
+			valid_until: validUntil,
+			created_at: now,
+			updated_at: now,
+		});
+	} catch (licenseError) {
+		console.error({ appId: appPublicId, err: licenseError }, "Auto-license creation failed");
+	}
 }
 
 /**
@@ -169,21 +234,21 @@ router.get("/callback/:provider", async (c: Context) => {
 		const existingIdentity = await identityQueries.findByProviderUserId(db, provider, profile.id);
 
 		let userId = existingIdentity?.user_id;
-				let _isNewUser = false;
+		let _isNewUser = false;
 
-				if (!userId) {
-					// Create new user
-					const userData = {
-						public_id: createId("user"),
-						primary_email: profile.email,
-						primary_email_verified: true, // OAuth providers verify email addresses
-						name: profile.name,
-						avatar_url: profile.picture || null,
-						// created_at and updated_at auto-set by .defaultNow() in schema
-					};
-					const newUser = await userQueries.create(db, userData);
-					userId = newUser.id;
-					_isNewUser = true;
+		if (!userId) {
+			// Create new user
+			const userData = {
+				public_id: createId("user"),
+				primary_email: profile.email,
+				primary_email_verified: true, // OAuth providers verify email addresses
+				name: profile.name,
+				avatar_url: profile.picture || null,
+				// created_at and updated_at auto-set by .defaultNow() in schema
+			};
+			const newUser = await userQueries.create(db, userData);
+			userId = newUser.id;
+			_isNewUser = true;
 			// Create identity
 			const identityData = {
 				public_id: createId("identity"),
@@ -316,6 +381,9 @@ router.get("/callback/:provider", async (c: Context) => {
 			await userQueries.findById(db, userId);
 		}
 
+		// Auto-provision license for the app on first login (if app_id provided)
+		await ensureLicenseForApp(db, userId, storedState.appId);
+
 		// Create core session
 		const sessionData = {
 			public_id: createId("session"),
@@ -383,7 +451,7 @@ router.post("/exchange", async (c: Context) => {
 		if (timeSinceLastSeen > refreshThresholdMs) {
 			// Extend session expiry (rolling TTL)
 			updatedExpiresAt = new Date(now.getTime() + env.CORE_SESSION_TTL_DAYS * 24 * 60 * 60 * 1000);
-			
+
 			// Update both last_seen_at and expires_at
 			await sessionQueries.updateLastSeenAndExpiry(db, session.id, now, updatedExpiresAt);
 		}

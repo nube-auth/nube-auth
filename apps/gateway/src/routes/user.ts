@@ -5,7 +5,6 @@ const log = createLogger("user-routes");
 import { createLogger, serializeError } from "@proofa/shared";
 import { Hono } from "hono";
 
-
 const userRouter = new Hono();
 
 /**

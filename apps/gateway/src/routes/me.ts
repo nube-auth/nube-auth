@@ -1,5 +1,6 @@
 import { getDb, sessionQueries, userQueries } from "@proofa/db";
-import { createLogger, serializeError } from "@proofa/shared";
+import { cache, sessionStore } from "@proofa/cache";
+import { createLogger, idPatterns, serializeError } from "@proofa/shared";
 import type { Context } from "hono";
 
 import { Hono } from "hono";
@@ -8,6 +9,28 @@ import { getAuth } from "../middleware/auth";
 const log = createLogger("me-routes");
 
 export const meRoutes = new Hono();
+
+async function revokeGatewaySessions(userPublicId: string, targetCoreSessionId?: string): Promise<void> {
+	let cursor = 0;
+	const pattern = "session:app:*";
+
+	do {
+		const result = await cache.scan(cursor, pattern, 100);
+		cursor = result.cursor;
+
+		for (const key of result.keys) {
+			const sessionId = key.replace("session:app:", "");
+			const appSession = await sessionStore.getAppSession(sessionId);
+			if (!appSession) continue;
+
+			const coreSessionId = appSession.metadata?.coreSessionId as string | undefined;
+			if (appSession.userId !== userPublicId) continue;
+			if (targetCoreSessionId && coreSessionId !== targetCoreSessionId) continue;
+
+			await sessionStore.revokeAppSession(sessionId);
+		}
+	} while (cursor !== 0);
+}
 
 /**
  * GET /v1/me
@@ -79,11 +102,22 @@ meRoutes.patch("/", async (c: Context) => {
  */
 meRoutes.delete("/sessions", async (c: Context) => {
 	try {
-		// Revoke all sessions for user (this would be in Core)
-		// For now, just revoke the current session
-		// In a real app, we'd call a Core endpoint to revoke all sessions
+		const auth = getAuth(c);
+		const db = getDb();
 
-		return c.json({ message: "Logged out" });
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		const activeSessions = await sessionQueries.findActiveByUserId(db, user.id);
+		for (const session of activeSessions) {
+			await sessionQueries.revoke(db, session.id);
+		}
+
+		await revokeGatewaySessions(auth.userId);
+
+		return c.json({ message: "All sessions revoked", revoked: activeSessions.length });
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Logout error:");
 		return c.json({ error: "Failed to logout" }, 500);
@@ -106,8 +140,8 @@ meRoutes.get("/sessions", async (c: Context) => {
 
 		const sessionRows = await sessionQueries.findActiveByUserId(db, user.id);
 		sessionRows.sort((a, b) => {
-			const aIsCurrent = a.public_id === auth.sessionId;
-			const bIsCurrent = b.public_id === auth.sessionId;
+			const aIsCurrent = a.public_id === auth.coreSessionId;
+			const bIsCurrent = b.public_id === auth.coreSessionId;
 			if (aIsCurrent !== bIsCurrent) return aIsCurrent ? -1 : 1;
 			return new Date(b.last_seen_at).getTime() - new Date(a.last_seen_at).getTime();
 		});
@@ -116,12 +150,50 @@ meRoutes.get("/sessions", async (c: Context) => {
 			sessions: sessionRows.map((s) => ({
 				id: s.public_id,
 				createdAt: new Date(s.created_at).toISOString(),
+				lastSeenAt: new Date(s.last_seen_at).toISOString(),
 				expiresAt: new Date(s.expires_at).toISOString(),
-				isCurrent: s.public_id === auth.sessionId,
+				isCurrent: s.public_id === auth.coreSessionId,
 			})),
 		});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get sessions error:");
 		return c.json({ error: "Failed to get sessions" }, 500);
+	}
+});
+
+/**
+ * DELETE /v1/me/sessions/:sessionId
+ * Revoke a specific session
+ */
+meRoutes.delete("/sessions/:sessionId", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const sessionId = c.req.param("sessionId");
+
+		if (!idPatterns.session.test(sessionId)) {
+			return c.json({ error: "Invalid session id" }, 400);
+		}
+
+		const db = getDb();
+		const user = await userQueries.findByPublicId(db, auth.userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		const session = await sessionQueries.findByPublicId(db, sessionId);
+		if (!session || session.user_id !== user.id) {
+			return c.json({ error: "Session not found" }, 404);
+		}
+
+		await sessionQueries.revoke(db, session.id);
+		await revokeGatewaySessions(auth.userId, session.public_id);
+
+		return c.json({
+			message: "Session revoked",
+			currentSessionRevoked: session.public_id === auth.coreSessionId,
+		});
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Revoke session error:");
+		return c.json({ error: "Failed to revoke session" }, 500);
 	}
 });

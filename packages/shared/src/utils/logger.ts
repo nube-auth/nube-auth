@@ -30,7 +30,7 @@ export function createLogger(
 					translateTime: "SYS:standard",
 					ignore: "pid,hostname",
 				},
-		  }
+			}
 		: undefined;
 
 	return pino({

@@ -35,7 +35,8 @@
 	"dependencies": {
 		"@proofa/shared": "workspace:*",
 		"drizzle-orm": "^0.45.1",
-		"pg": "^8.13.1"
+		"pg": "^8.13.1",
+		"zod": "^4.3.4"
 	},
 	"devDependencies": {
 		"@types/pg": "^8.11.10",

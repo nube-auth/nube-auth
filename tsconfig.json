@@ -13,7 +13,7 @@
 		"allowImportingTsExtensions": true,
 		"resolveJsonModule": true,
 		"noEmit": true,
-		
+
 		/* Strict Type Checking */
 		"strict": true,
 		"noImplicitAny": true,
@@ -23,7 +23,7 @@
 		"strictPropertyInitialization": true,
 		"noImplicitThis": true,
 		"alwaysStrict": true,
-		
+
 		/* Additional Checks */
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,

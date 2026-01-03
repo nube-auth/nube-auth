@@ -540,7 +540,10 @@ export function AppSetupPage() {
 											}}
 										>
 											{formData.redirectUris.map((uri, index) => (
-												<div key={`redirectUri-${index}`} style={{ display: "flex", gap: "8px" }}>
+												<div
+													key={`redirectUri-${index}`}
+													style={{ display: "flex", gap: "8px" }}
+												>
 													<input
 														type="url"
 														placeholder="e.g., http://localhost:3000/callback"
@@ -557,7 +560,12 @@ export function AppSetupPage() {
 													{formData.redirectUris.length > 1 && (
 														<button
 															type="button"
-															onClick={() => removeArrayField("redirectUris", formData.redirectUris.indexOf(uri))}
+															onClick={() =>
+																removeArrayField(
+																	"redirectUris",
+																	formData.redirectUris.indexOf(uri),
+																)
+															}
 															className="btn btn-ghost btn-sm"
 															style={{ color: "var(--danger)" }}
 														>
@@ -618,7 +626,10 @@ export function AppSetupPage() {
 											}}
 										>
 											{formData.allowedHosts.map((host, index) => (
-												<div key={`allowedHost-${index}`} style={{ display: "flex", gap: "8px" }}>
+												<div
+													key={`allowedHost-${index}`}
+													style={{ display: "flex", gap: "8px" }}
+												>
 													<input
 														type="text"
 														placeholder="e.g., localhost:3000, example.com"
@@ -635,7 +646,12 @@ export function AppSetupPage() {
 													{formData.allowedHosts.length > 1 && (
 														<button
 															type="button"
-															onClick={() => removeArrayField("allowedHosts", formData.allowedHosts.indexOf(host))}
+															onClick={() =>
+																removeArrayField(
+																	"allowedHosts",
+																	formData.allowedHosts.indexOf(host),
+																)
+															}
 															className="btn btn-ghost btn-sm"
 															style={{ color: "var(--danger)" }}
 														>

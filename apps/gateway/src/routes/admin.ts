@@ -1,5 +1,7 @@
 import {
 	appQueries,
+	apps,
+	buildJsonbMergeClause,
 	getDb,
 	identityQueries,
 	invitationQueries,
@@ -12,7 +14,16 @@ import {
 	sessionQueries,
 	userQueries,
 } from "@proofa/db";
-import { createId, createLogger, encrypt, InviteAppUserRequestSchema, serializeError } from "@proofa/shared";
+import {
+	createId,
+	createLogger,
+	encrypt,
+	InviteAppUserRequestSchema,
+	serializeError,
+	type AppTokens,
+	type SecuritySettings,
+	type PlanSettings,
+} from "@proofa/shared";
 import { nanoid } from "nanoid";
 import { INVITATION_EXPIRY_DAYS } from "../config/constants";
 import {
@@ -31,6 +42,11 @@ import {
 	CreateProjectRequestSchema,
 	ProjectDTOSchema,
 	UpdateAppRequestSchema,
+	AppTokensSchema,
+	SecuritySettingsSchema,
+	PlanSettingsSchema,
+	CreateAppSecuritySettingsSchema,
+	CreateAppPlanSettingsSchema,
 } from "@proofa/shared/types/schemas";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -48,6 +64,45 @@ function maskApiKey(key: string): string {
 	const prefix = key.substring(0, 3); // sk_ or st_
 	const suffix = key.substring(key.length - 4);
 	return `${prefix}...${suffix}`;
+}
+
+/**
+ * Helper function to format app to DTO
+ * Extracts values from JSONB columns with type safety
+ */
+function formatAppDTO(app: any, projectPublicId: string) {
+	// Type-safe access to JSONB fields
+	const appTokens = (app.app_tokens as unknown as AppTokens) || { clientSecret: "", serviceToken: "" };
+	const securitySettings = (app.security_settings as unknown as SecuritySettings) || {
+		redirectUris: [],
+		allowedHosts: [],
+		corsOrigins: [],
+		sessionTtlDays: 28,
+		accountLockoutMinutes: 30,
+		cacheTtlMinutes: 60,
+		rateLimit: 100,
+	};
+
+	return AppDTOSchema.parse({
+		id: app.public_id,
+		projectId: projectPublicId,
+		name: app.name,
+		slug: app.slug,
+		description: app.description,
+		redirectUris: securitySettings.redirectUris,
+		allowedHosts: securitySettings.allowedHosts,
+		corsOrigins: securitySettings.corsOrigins,
+		clientSecret: maskApiKey(appTokens.clientSecret),
+		serviceToken: maskApiKey(appTokens.serviceToken),
+		sessionTtlDays: securitySettings.sessionTtlDays,
+		accountLockoutMinutes: securitySettings.accountLockoutMinutes,
+		cacheTtlMinutes: securitySettings.cacheTtlMinutes,
+		selectedPaymentProviderId: app.selected_payment_provider_id,
+		rateLimit: securitySettings.rateLimit,
+		enabledProviders: (app.enabled_providers || ["google"]) as string[],
+		createdAt: new Date(app.created_at),
+		updatedAt: new Date(app.updated_at),
+	});
 }
 
 /**
@@ -572,10 +627,37 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 		const now = new Date();
 		const appSlug = validatedData.slug || validatedData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
-		// Step 1: Create the app (without default_plan_id initially)
-		// Generate secure API keys for developers
+		if (validatedData.requiresLicensing && !validatedData.defaultLicensePlan) {
+			return c.json({ error: "Default license plan is required when licensing is enabled" }, 400);
+		}
+
+		// Step 1: Generate secure API keys and create app with JSONB settings
 		const clientSecret = `sk_${nanoid(48)}`; // Secret key for server-to-server auth
 		const serviceToken = `st_${nanoid(48)}`; // Service token for API calls
+
+		// Validate and create app_tokens JSONB
+		const appTokens: AppTokens = AppTokensSchema.parse({
+			clientSecret,
+			serviceToken,
+		});
+
+		// Validate and create security_settings JSONB
+		const securitySettings: SecuritySettings = CreateAppSecuritySettingsSchema.parse({
+			redirectUris: validatedData.redirectUris || [],
+			allowedHosts: validatedData.allowedHosts || [],
+			corsOrigins: ["http://localhost:3001"],
+			sessionTtlDays: validatedData.sessionTtlDays || 28,
+			accountLockoutMinutes: 30,
+			cacheTtlMinutes: 60,
+			rateLimit: 100,
+		});
+
+		// Validate and create plan_settings JSONB
+		let planSettings: PlanSettings = CreateAppPlanSettingsSchema.parse({
+			licensingRequired: validatedData.requiresLicensing ?? true,
+			defaultPlanId: null,
+			trial: { enabled: false, planId: null, days: null, oncePerUser: true, fallbackPlanId: null },
+		});
 
 		const app = await appQueries.create(db, {
 			public_id: createId("app"),
@@ -583,97 +665,73 @@ adminRoutes.post("/projects/:projectId/apps", async (c: Context) => {
 			name: validatedData.name,
 			slug: appSlug,
 			description: validatedData.description ?? null,
-			allowed_hosts: validatedData.allowedHosts || [],
-			redirect_uris: validatedData.redirectUris || [],
-			session_ttl_days: validatedData.sessionTtlDays || 28,
-			client_secret: clientSecret,
-			service_token: serviceToken,
-			account_lockout_minutes: 30,
-			cache_ttl_minutes: 60,
-			cors_origins: ["http://localhost:3001"],
-			rate_limit: 100,
+			app_tokens: appTokens,
+			security_settings: securitySettings,
+			plan_settings: planSettings,
+			created_at: now,
+			updated_at: now,
+		});
+		const planData = validatedData.defaultLicensePlan;
+		const planSlug = planData.slug || planData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+		// Convert price and billing period to database format
+		let monthlyPrice: number | null = null;
+		let yearlyPrice: number | null = null;
+		let oneTimePrice: number | null = null;
+		let durationDays: number | null = null;
+
+		// Convert price to cents
+		const priceInCents = Math.round(planData.price * 100);
+
+		if (planData.billing_period === "none") {
+			// No billing - completely free plan
+			monthlyPrice = null;
+			yearlyPrice = null;
+			oneTimePrice = null;
+			durationDays = null;
+		} else if (planData.billing_period === "monthly") {
+			monthlyPrice = priceInCents;
+			durationDays = null;
+		} else if (planData.billing_period === "yearly") {
+			yearlyPrice = priceInCents;
+			durationDays = null;
+		} else if (planData.billing_period === "lifetime") {
+			oneTimePrice = priceInCents;
+			durationDays = null;
+		} else if (planData.billing_period === "custom") {
+			oneTimePrice = priceInCents;
+			durationDays = planData.trial_days || 30;
+		}
+
+		const plan = await planQueries.create(db, {
+			public_id: createId("plan"),
+			app_id: app.id,
+			name: planData.name,
+			slug: planSlug,
+			description: planData.description || null,
+			monthly_price: monthlyPrice,
+			yearly_price: yearlyPrice,
+			one_time_price: oneTimePrice,
+			duration_days: durationDays,
+			trial_enabled: (planData.trial_days || 0) > 0,
+			trial_days: planData.trial_days || null,
+			features: planData.features || null,
+			status: "active",
+			display_order: 0,
 			created_at: now,
 			updated_at: now,
 		});
 
-		// Step 2: If licensing is enabled, create default license plan
-		if (validatedData.requiresLicensing && validatedData.defaultLicensePlan) {
-			const planData = validatedData.defaultLicensePlan;
-			const planSlug = planData.slug || planData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-
-			// Convert price and billing period to database format
-			let monthlyPrice: number | null = null;
-			let yearlyPrice: number | null = null;
-			let oneTimePrice: number | null = null;
-			let durationDays: number | null = null;
-
-			// Convert price to cents
-			const priceInCents = Math.round(planData.price * 100);
-
-			if (planData.billing_period === "none") {
-				// No billing - completely free plan
-				monthlyPrice = null;
-				yearlyPrice = null;
-				oneTimePrice = null;
-				durationDays = null;
-			} else if (planData.billing_period === "monthly") {
-				monthlyPrice = priceInCents;
-				durationDays = null;
-			} else if (planData.billing_period === "yearly") {
-				yearlyPrice = priceInCents;
-				durationDays = null;
-			} else if (planData.billing_period === "lifetime") {
-				oneTimePrice = priceInCents;
-				durationDays = null;
-			} else if (planData.billing_period === "custom") {
-				oneTimePrice = priceInCents;
-				durationDays = planData.trial_days || 30;
-			}
-
-			await planQueries.create(db, {
-				public_id: createId("plan"),
-				app_id: app.id,
-				name: planData.name,
-				slug: planSlug,
-				description: planData.description || null,
-				monthly_price: monthlyPrice,
-				yearly_price: yearlyPrice,
-				one_time_price: oneTimePrice,
-				duration_days: durationDays,
-				trial_enabled: (planData.trial_days || 0) > 0,
-				trial_days: planData.trial_days || null,
-				features: planData.features || null,
-				status: "active",
-				display_order: 0,
-				created_at: now,
-				updated_at: now,
-			});
-
-			// Note: apps table does not currently store a default plan reference.
+		planSettings.defaultPlanId = plan.id;
+		if (planData.trial_days) {
+			planSettings.trial = {
+				enabled: true,
+				planId: plan.id,
+				days: planData.trial_days,
+				oncePerUser: true,
+				fallbackPlanId: plan.id,
+			};
 		}
-
-		// Validate and return response
-		const appDTO = AppDTOSchema.parse({
-			id: app.public_id,
-			projectId: project.public_id,
-			name: app.name,
-			slug: app.slug,
-			description: app.description,
-			redirectUris: app.redirect_uris || [],
-			allowedHosts: app.allowed_hosts || [],
-			corsOrigins: app.cors_origins || [],
-			clientSecret: maskApiKey(app.client_secret),
-			serviceToken: maskApiKey(app.service_token),
-			sessionTtlDays: app.session_ttl_days,
-			accountLockoutMinutes: app.account_lockout_minutes,
-			cacheTtlMinutes: app.cache_ttl_minutes,
-			rateLimit: app.rate_limit,
-			enabledProviders: (app.enabled_providers || ["google"]) as string[],
-			createdAt: new Date(app.created_at),
-			updatedAt: new Date(app.updated_at),
-		});
-
-		return c.json(appDTO, 201);
 	} catch (error) {
 		if (error instanceof z.ZodError) {
 			log.warn({ errors: error.errors }, "Validation error");
@@ -722,26 +780,7 @@ adminRoutes.get("/projects/:projectId/apps/:appId", async (c: Context) => {
 		}
 
 		// Validate and return response with camelCase
-		const appDTO = AppDTOSchema.parse({
-			id: app.public_id,
-			projectId: project.public_id,
-			name: app.name,
-			slug: app.slug,
-			description: app.description,
-			redirectUris: app.redirect_uris || [],
-			allowedHosts: app.allowed_hosts || [],
-			corsOrigins: app.cors_origins || [],
-			clientSecret: maskApiKey(app.client_secret),
-			serviceToken: maskApiKey(app.service_token),
-			sessionTtlDays: app.session_ttl_days,
-			accountLockoutMinutes: app.account_lockout_minutes,
-			cacheTtlMinutes: app.cache_ttl_minutes,
-			selectedPaymentProviderId: app.selected_payment_provider_id,
-			rateLimit: app.rate_limit,
-			enabledProviders: (app.enabled_providers || ["google"]) as string[],
-			createdAt: new Date(app.created_at),
-			updatedAt: new Date(app.updated_at),
-		});
+		const appDTO = formatAppDTO(app, project.public_id);
 
 		return c.json(appDTO);
 	} catch (error) {
@@ -1562,25 +1601,35 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 
 		const now = new Date();
 
-		// Build update object with JSON serialization for array fields
+		// Build atomic update using PostgreSQL JSONB operators
+		// This avoids read-modify-write race conditions entirely
 		const updateData: Record<string, unknown> = { updated_at: now };
 
+		// Collect security settings updates
+		const securityUpdates: Record<string, any> = {};
+		if (validatedData["allowedHosts"]) securityUpdates.allowedHosts = validatedData["allowedHosts"];
+		if (validatedData["redirectUris"]) securityUpdates.redirectUris = validatedData["redirectUris"];
+		if (validatedData["sessionTtlDays"]) securityUpdates.sessionTtlDays = validatedData["sessionTtlDays"];
+		if (validatedData["corsOrigins"]) securityUpdates.corsOrigins = validatedData["corsOrigins"];
+		if (validatedData["rateLimit"]) securityUpdates.rateLimit = validatedData["rateLimit"];
+		if (validatedData["accountLockoutMinutes"])
+			securityUpdates.accountLockoutMinutes = validatedData["accountLockoutMinutes"];
+		if (validatedData["cacheTtlMinutes"]) securityUpdates.cacheTtlMinutes = validatedData["cacheTtlMinutes"];
+
+		// Validate and apply atomically at database level
+		if (Object.keys(securityUpdates).length > 0) {
+			// Validate against schema
+			const validatedSettings = SecuritySettingsSchema.parse(securityUpdates);
+			// Use atomic JSONB merge - no lost updates!
+			updateData["security_settings"] = buildJsonbMergeClause(apps.security_settings, validatedSettings);
+		}
+
+		// Handle other fields
 		if (validatedData["name"]) updateData["name"] = validatedData["name"];
 		if (validatedData["slug"]) updateData["slug"] = validatedData["slug"];
 		if (validatedData["description"] !== undefined) updateData["description"] = validatedData["description"];
-		if (validatedData["allowedHosts"]) updateData["allowed_hosts"] = validatedData["allowedHosts"];
-		if (validatedData["redirectUris"]) updateData["redirect_uris"] = validatedData["redirectUris"];
-		if (validatedData["sessionTtlDays"]) updateData["session_ttl_days"] = validatedData["sessionTtlDays"];
-		if (validatedData["corsOrigins"]) updateData["cors_origins"] = validatedData["corsOrigins"];
-		if (validatedData["rateLimit"]) updateData["rate_limit"] = validatedData["rateLimit"];
-		if (validatedData["accountLockoutMinutes"])
-			updateData["account_lockout_minutes"] = validatedData["accountLockoutMinutes"];
-		if (validatedData["cacheTtlMinutes"]) updateData["cache_ttl_minutes"] = validatedData["cacheTtlMinutes"];
-
-		// Handle enabled providers
-		if (validatedData["enabledProviders"] !== undefined) {
+		if (validatedData["enabledProviders"] !== undefined)
 			updateData["enabled_providers"] = validatedData["enabledProviders"];
-		}
 
 		const updatedApps = await appQueries.update(db, app.id, updateData);
 		const updatedApp = updatedApps;
@@ -1590,25 +1639,7 @@ adminRoutes.patch("/projects/:projectId/apps/:appId", async (c: Context) => {
 		}
 
 		// Validate and return response
-		const appDTO = AppDTOSchema.parse({
-			id: updatedApp.public_id,
-			projectId: project.public_id,
-			name: updatedApp.name,
-			slug: updatedApp.slug,
-			description: updatedApp.description,
-			redirectUris: updatedApp.redirect_uris || [],
-			allowedHosts: updatedApp.allowed_hosts || [],
-			corsOrigins: updatedApp.cors_origins || [],
-			clientSecret: maskApiKey(updatedApp.client_secret),
-			serviceToken: maskApiKey(updatedApp.service_token),
-			sessionTtlDays: updatedApp.session_ttl_days,
-			accountLockoutMinutes: updatedApp.account_lockout_minutes,
-			cacheTtlMinutes: updatedApp.cache_ttl_minutes,
-			rateLimit: updatedApp.rate_limit,
-			enabledProviders: (updatedApp.enabled_providers || ["google"]) as string[],
-			createdAt: new Date(updatedApp.created_at),
-			updatedAt: new Date(updatedApp.updated_at),
-		});
+		const appDTO = formatAppDTO(updatedApp, project.public_id);
 
 		return c.json(appDTO);
 	} catch (error) {
@@ -1705,8 +1736,17 @@ adminRoutes.post("/projects/:projectId/apps/:appId/regenerate-secret", async (c:
 		const newClientSecret = `sk_${nanoid(48)}`;
 		const now = new Date();
 
+		// Atomically update using PostgreSQL JSONB merge
+		// No race condition - entire operation is atomic at DB level
+		const validatedTokens = AppTokensSchema.parse({
+			clientSecret: newClientSecret,
+			serviceToken: (app.app_tokens as unknown as AppTokens).serviceToken,
+		});
+
 		await appQueries.update(db, app.id, {
-			client_secret: newClientSecret,
+			app_tokens: buildJsonbMergeClause(apps.app_tokens, {
+				clientSecret: newClientSecret,
+			}),
 			updated_at: now,
 		});
 
@@ -1757,8 +1797,17 @@ adminRoutes.post("/projects/:projectId/apps/:appId/regenerate-token", async (c: 
 		const newServiceToken = `st_${nanoid(48)}`;
 		const now = new Date();
 
+		// Atomically update using PostgreSQL JSONB merge
+		// No race condition - entire operation is atomic at DB level
+		const validatedTokens = AppTokensSchema.parse({
+			clientSecret: (app.app_tokens as unknown as AppTokens).clientSecret,
+			serviceToken: newServiceToken,
+		});
+
 		await appQueries.update(db, app.id, {
-			service_token: newServiceToken,
+			app_tokens: buildJsonbMergeClause(apps.app_tokens, {
+				serviceToken: newServiceToken,
+			}),
 			updated_at: now,
 		});
 

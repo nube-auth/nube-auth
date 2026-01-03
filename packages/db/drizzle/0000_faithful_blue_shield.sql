@@ -15,6 +15,8 @@ CREATE TABLE "apps" (
 	"account_lockout_minutes" integer DEFAULT 30 NOT NULL,
 	"cache_ttl_minutes" integer DEFAULT 60 NOT NULL,
 	"rate_limit" integer DEFAULT 100 NOT NULL,
+	"licensing_required" boolean DEFAULT true NOT NULL,
+	"default_plan_id" integer,
 	"selected_payment_provider_id" integer,
 	"is_active" boolean DEFAULT true NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
@@ -270,6 +272,7 @@ ALTER TABLE "provider_usage_logs" ADD CONSTRAINT "provider_usage_logs_app_id_app
 ALTER TABLE "provider_usage_logs" ADD CONSTRAINT "provider_usage_logs_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "apps_project_id_idx" ON "apps" USING btree ("project_id");--> statement-breakpoint
+CREATE INDEX "apps_default_plan_id_idx" ON "apps" USING btree ("default_plan_id");--> statement-breakpoint
 CREATE INDEX "audit_logs_user_id_idx" ON "audit_logs" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "audit_logs_app_id_idx" ON "audit_logs" USING btree ("app_id");--> statement-breakpoint
 CREATE INDEX "audit_logs_project_id_idx" ON "audit_logs" USING btree ("project_id");--> statement-breakpoint

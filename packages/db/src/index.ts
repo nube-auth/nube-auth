@@ -62,6 +62,15 @@ export function getDb(): DbClient {
 
 // Export drizzle-orm operators for queries
 export { and, asc, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
+// Export JSONB utilities
+export {
+	buildJsonbMergeClause,
+	buildJsonbSetClause,
+	createJsonbUpdateChain,
+	jsonbField,
+	validateAndBuildJsonbUpdate,
+	type JsonbUpdateChain,
+} from "./utils/jsonb.js";
 // Export provider helpers
 export { paymentProviderQueries } from "./providers.js";
 // Export all query helpers

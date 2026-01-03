@@ -15,6 +15,7 @@ import {
 	sessions,
 	users,
 } from "./schema.js";
+import { buildJsonbMergeClause, createJsonbUpdateChain } from "./utils/jsonb.js";
 
 /**
  * User queries
@@ -415,6 +416,134 @@ export const appQueries = {
 				deleted_at: now,
 				updated_at: now,
 			})
+			.where(eq(apps.id, appId))
+			.returning();
+		return results[0]!;
+	},
+
+	/**
+	 * Atomically update security_settings JSONB column
+	 * Uses PostgreSQL JSONB merge operator for consistent updates
+	 * No read-modify-write cycle - eliminates lost update race conditions
+	 */
+	async updateSecuritySettings(
+		db: DbClient,
+		appId: number,
+		updates: Record<string, any>,
+	) {
+		const results = await db
+			.update(apps)
+			.set({
+				security_settings: buildJsonbMergeClause(apps.security_settings, updates),
+				updated_at: new Date(),
+			})
+			.where(eq(apps.id, appId))
+			.returning();
+		return results[0]!;
+	},
+
+	/**
+	 * Atomically update app_tokens JSONB column
+	 * Use for API key regeneration to prevent lost updates
+	 */
+	async updateAppTokens(
+		db: DbClient,
+		appId: number,
+		updates: Record<string, any>,
+	) {
+		const results = await db
+			.update(apps)
+			.set({
+				app_tokens: buildJsonbMergeClause(apps.app_tokens, updates),
+				updated_at: new Date(),
+			})
+			.where(eq(apps.id, appId))
+			.returning();
+		return results[0]!;
+	},
+
+	/**
+	 * Atomically update plan_settings JSONB column
+	 * Use for licensing configuration updates
+	 */
+	async updatePlanSettings(
+		db: DbClient,
+		appId: number,
+		updates: Record<string, any>,
+	) {
+		const results = await db
+			.update(apps)
+			.set({
+				plan_settings: buildJsonbMergeClause(apps.plan_settings, updates),
+				updated_at: new Date(),
+			})
+			.where(eq(apps.id, appId))
+			.returning();
+		return results[0]!;
+	},
+
+	/**
+	 * Atomically update multiple JSONB fields with chained updates
+	 * Use for complex updates involving multiple nested paths
+	 * Example: updateSecuritySettingField(db, appId, 'redirectUris', [...])
+	 */
+	async updateJsonbField(
+		db: DbClient,
+		appId: number,
+		fieldName: "app_tokens" | "security_settings" | "plan_settings",
+		path: string,
+		value: any,
+	) {
+		const field = apps[fieldName as keyof typeof apps];
+		const chain = createJsonbUpdateChain(field as any);
+		(chain as any).set(path, value);
+
+		const results = await db
+			.update(apps)
+			.set({
+				[fieldName]: (chain as any).build(),
+				updated_at: new Date(),
+			} as any)
+			.where(eq(apps.id, appId))
+			.returning();
+		return results[0]!;
+	},
+
+	/**
+	 * Batch update multiple JSONB paths atomically
+	 * More efficient than multiple individual updates
+	 */
+	async batchUpdateJsonbFields(
+		db: DbClient,
+		appId: number,
+		updates: {
+			fieldName: "app_tokens" | "security_settings" | "plan_settings";
+			path: string;
+			value: any;
+		}[],
+	) {
+		const updateData: Record<string, any> = { updated_at: new Date() };
+
+		// Group by field name
+		const grouped = updates.reduce(
+			(acc, { fieldName, path, value }) => {
+				if (!acc[fieldName]) {
+					acc[fieldName] = createJsonbUpdateChain(apps[fieldName as keyof typeof apps] as any);
+				}
+				(acc[fieldName] as any).set(path, value);
+				return acc;
+			},
+			{} as Record<string, any>,
+		);
+
+		// Build all field updates
+		for (const [fieldName, chain] of Object.entries(grouped)) {
+			updateData[fieldName] = (chain as any).build();
+		}
+
+		const results = await db
+			.update(apps)
+			.set(updateData)
 			.where(eq(apps.id, appId))
 			.returning();
 		return results[0]!;

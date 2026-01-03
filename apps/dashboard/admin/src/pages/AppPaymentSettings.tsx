@@ -226,7 +226,9 @@ export default function AppPaymentSettingsPage() {
 											width: "20px",
 											height: "20px",
 											borderRadius: "4px",
-											border: isSelected ? "2px solid var(--primary)" : "2px solid rgba(255, 255, 255, 0.3)",
+											border: isSelected
+												? "2px solid var(--primary)"
+												: "2px solid rgba(255, 255, 255, 0.3)",
 											background: isSelected ? "var(--primary)" : "transparent",
 											display: "flex",
 											alignItems: "center",

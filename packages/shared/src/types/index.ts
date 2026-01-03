@@ -71,6 +71,50 @@ export interface ProjectMember {
 }
 
 /**
+ * App Tokens JSONB structure
+ * Stores client_secret and service_token for app authentication
+ */
+export interface AppTokens {
+	clientSecret: string;
+	serviceToken: string;
+}
+
+/**
+ * Security Settings JSONB structure
+ * Stores security-related configuration for the app
+ */
+export interface SecuritySettings {
+	redirectUris: string[];
+	allowedHosts: string[];
+	corsOrigins: string[];
+	sessionTtlDays: number; // default 28 (1-365)
+	accountLockoutMinutes: number; // default 30
+	cacheTtlMinutes: number; // default 60
+	rateLimit: number; // default 100 requests per minute
+}
+
+/**
+ * Trial Configuration nested in Plan Settings
+ */
+export interface TrialConfig {
+	enabled: boolean;
+	planId: number | null;
+	days: number | null;
+	oncePerUser: boolean;
+	fallbackPlanId: number | null;
+}
+
+/**
+ * Plan Settings JSONB structure
+ * Stores licensing and trial configuration for the app
+ */
+export interface PlanSettings {
+	licensingRequired: boolean;
+	defaultPlanId: number | null;
+	trial: TrialConfig;
+}
+
+/**
  * App type
  * Represents an application within a project
  */
@@ -80,20 +124,16 @@ export interface App {
 	project_id: number;
 	name: string;
 	slug: string;
-	allowed_hosts: string; // JSON array
-	redirect_uris: string; // JSON array
-	required_providers: string; // JSON array ['google', 'github']
+	description: string | null;
+	enabled_providers: string[]; // ['google', 'github']
+	app_tokens: AppTokens;
+	security_settings: SecuritySettings;
+	plan_settings: PlanSettings;
+	selected_payment_provider_id: number | null;
 	is_active: boolean;
-	licensing_required: boolean;
-	default_license_plan: "free" | "trial"; // 'free' or 'trial'
-	trial_days: number | null; // required if plan = 'trial'
-	app_session_ttl_days: number; // default 28 (1-365)
-	account_lockout_minutes: number; // default 15
-	cache_ttl_minutes: number; // default 10
-	cors_allowed_origins: string; // JSON array (optional)
-	rate_limit_requests_per_minute: number; // default 100
 	created_at: number;
 	updated_at: number;
+	deleted_at: number | null;
 }
 
 /**

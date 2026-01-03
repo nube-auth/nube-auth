@@ -10,13 +10,13 @@ export async function pingpongFetch(url: string, options: PingpongRequestOptions
 	// @pingpong-js/fetch returns HttpResponse which has .ok(), .json(), .text() methods
 	// Note: In @pingpong-js/fetch, .json() and .text() are synchronous, not async
 	// But our adapters expect async methods, so we wrap them in promises
-	
+
 	// Convert body to string if it's URLSearchParams
 	let body = options.body;
 	if (body instanceof URLSearchParams) {
 		body = body.toString();
 	}
-	
+
 	const httpResponse = await pingpong.send({
 		method: (options.method ?? "GET") as any,
 		url,

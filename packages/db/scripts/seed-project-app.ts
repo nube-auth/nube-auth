@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * Seed Script: Create Project, App, and Payment Configuration
- * 
+ *
  * This script will:
  * 1. Find an existing user in the database
  * 2. Create a new project for that user
@@ -14,12 +14,7 @@ import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import { createId, encrypt } from "@proofa/shared";
 import { getDb } from "../src/index.js";
-import { 
-	userQueries, 
-	projectQueries, 
-	appQueries,
-	projectMemberQueries 
-} from "../src/queries.js";
+import { userQueries, projectQueries, appQueries, projectMemberQueries } from "../src/queries.js";
 import { paymentProviderQueries } from "../src/providers.js";
 import { users } from "../src/schema.js";
 
@@ -32,8 +27,8 @@ dotenv.config({ path: resolve(configDir, "../../../.env.local"), override: true 
 const db = getDb();
 
 async function generateSecureToken(length: number = 32): Promise<string> {
-	const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	let result = '';
+	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	let result = "";
 	for (let i = 0; i < length; i++) {
 		result += chars.charAt(Math.floor(Math.random() * chars.length));
 	}
@@ -47,7 +42,7 @@ async function seedProjectAndApp() {
 		// Step 1: Find an existing user or create one
 		console.log("📋 Step 1: Finding an existing user...");
 		const allUsers = await db.select().from(users).limit(10);
-		
+
 		let user;
 		if (allUsers.length === 0) {
 			console.log("   No users found. Creating a demo user...");
@@ -65,7 +60,7 @@ async function seedProjectAndApp() {
 			user = allUsers[0];
 			console.log(`   ✅ Found user: ${user.name || user.primary_email || user.public_id}`);
 		}
-		
+
 		console.log(`   User ID: ${user.id}`);
 		console.log(`   Public ID: ${user.public_id}\n`);
 
@@ -73,7 +68,7 @@ async function seedProjectAndApp() {
 		console.log("📋 Step 2: Creating a project...");
 		const timestamp = Date.now();
 		const projectSlug = `project-${timestamp}`;
-		
+
 		const project = await projectQueries.create(db, {
 			public_id: createId("project"),
 			name: `Demo Project ${timestamp}`,
@@ -139,7 +134,7 @@ async function seedProjectAndApp() {
 
 		// Step 4: Create a payment provider configuration
 		console.log("📋 Step 4: Creating payment provider configuration...");
-		
+
 		// Create demo Stripe credentials (these are fake test credentials)
 		const stripeCredentials = {
 			api_key: `sk_test_demo_${await generateSecureToken(24)}`,

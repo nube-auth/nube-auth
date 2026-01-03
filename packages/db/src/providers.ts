@@ -280,17 +280,14 @@ export const paymentProviderQueries = {
 		// Update the apps table with the selected provider
 		await db
 			.update(apps)
-			.set({ 
+			.set({
 				selected_payment_provider_id: payment_provider_id,
-				updated_at: new Date() 
+				updated_at: new Date(),
 			})
 			.where(eq(apps.id, app_id));
 
 		// Return the selected provider
-		const results = await db
-			.select()
-			.from(payment_providers)
-			.where(eq(payment_providers.id, payment_provider_id));
+		const results = await db.select().from(payment_providers).where(eq(payment_providers.id, payment_provider_id));
 		return results[0]!;
 	},
 

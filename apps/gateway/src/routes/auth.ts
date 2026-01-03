@@ -20,6 +20,27 @@ const USER_SESSION_COOKIE = "proofa_user_session";
 const ADMIN_SESSION_COOKIE = "proofa_admin_session";
 const LEGACY_SESSION_COOKIE = "proofa_session";
 
+/**
+ * Safely extract string values from cookie attributes
+ * Handles cases where attributes might be typed as string | string[]
+ */
+function safeAttrString(value: unknown): string {
+	if (typeof value === "string") return value;
+	if (Array.isArray(value) && value.length > 0 && typeof value[0] === "string") return value[0];
+	return String(value);
+}
+
+function safeAttrBoolean(value: unknown): boolean {
+	return value === true || value === "true";
+}
+
+function safeAttrNumber(value: unknown): number | undefined {
+	if (typeof value === "number") return value;
+	if (typeof value === "string") return parseInt(value, 10);
+	if (Array.isArray(value) && value.length > 0) return safeAttrNumber(value[0]);
+	return undefined;
+}
+
 function safeParseUrl(value: string | undefined): URL | null {
 	if (!value) return null;
 	try {
@@ -195,12 +216,12 @@ authRoutes.get("/callback", async (c: Context) => {
 			cookieDomain ? { domain: cookieDomain, secure: secureCookies } : { secure: secureCookies },
 		);
 
-			const httpOnly = attributes.httpOnly as boolean;
-			const secure = attributes.secure as boolean;
-			const sameSite = attributes.sameSite as "Strict" | "Lax" | "None";
-			const path = attributes.path as string;
-			const domain = attributes.domain as string | undefined;
-			const maxAge = attributes.maxAge as number | undefined;
+		const httpOnly = safeAttrBoolean(attributes['httpOnly']);
+		const secure = safeAttrBoolean(attributes['secure']);
+		const sameSite = safeAttrString(attributes['sameSite']) as "Strict" | "Lax" | "None";
+		const path = safeAttrString(attributes['path']);
+		const domain = attributes['domain'] ? safeAttrString(attributes['domain']) : undefined;
+		const maxAge = safeAttrNumber(attributes['maxAge']);
 
 		// Set appropriate cookie based on audience
 		const cookieName = audience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
@@ -295,12 +316,12 @@ authRoutes.post("/login", async (c: Context) => {
 			cookieDomain ? { domain: cookieDomain, secure: secureCookies } : { secure: secureCookies },
 		);
 
-const httpOnly = attributes.httpOnly as boolean;
-			const secure = attributes.secure as boolean;
-			const sameSite = attributes.sameSite as "Strict" | "Lax" | "None";
-			const path = attributes.path as string;
-			const domain = attributes.domain as string | undefined;
-			const maxAge = attributes.maxAge as number | undefined;
+		const httpOnly = safeAttrBoolean(attributes['httpOnly']);
+		const secure = safeAttrBoolean(attributes['secure']);
+		const sameSite = safeAttrString(attributes['sameSite']) as "Strict" | "Lax" | "None";
+		const path = safeAttrString(attributes['path']);
+		const domain = attributes['domain'] ? safeAttrString(attributes['domain']) : undefined;
+		const maxAge = safeAttrNumber(attributes['maxAge']);
 		const cookieName = resolvedAudience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
 
 		// Set session cookie
@@ -415,7 +436,7 @@ authRoutes.post("/logout", async (c: Context) => {
 					);
 
 					// Get Core session ID to revoke database session
-										const coreSessionId = appSessionBefore?.metadata?.coreSessionId as string | undefined;
+					const coreSessionId = appSessionBefore?.metadata?.['coreSessionId'] as string | undefined;
 					// Delete from all three stores:
 					// 1. Delete from sessionService (gateway:session:xxx)
 					await sessionService.deleteSession(sessionId);

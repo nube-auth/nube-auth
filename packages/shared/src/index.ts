@@ -69,15 +69,19 @@ export type { LockoutConfig } from "./middleware/lockout.js";
 export type {
 	ApiResponse,
 	App,
+	AppTokens,
 	AuditLog,
 	AuthCode,
 	AuthContext,
 	EmailVerification,
 	Identity,
 	License,
+	PlanSettings,
 	Project,
 	ProjectMember,
+	SecuritySettings,
 	Session,
+	TrialConfig,
 	User,
 } from "./types/index.js";
 // Re-export schemas

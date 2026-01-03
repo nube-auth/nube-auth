@@ -296,19 +296,24 @@ export function AppSettingsPage() {
 								Allowed callback URLs after successful authentication
 							</p>
 
-						{(formData.redirectUris || []).map((uri: string, index: number) => (
-							<div key={`redirectUri-${index}`} style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+							{(formData.redirectUris || []).map((uri: string, index: number) => (
+								<div
+									key={`redirectUri-${index}`}
+									style={{ display: "flex", gap: "8px", marginBottom: "12px" }}
+								>
 									<input
 										type="url"
 										className="form-control"
 										value={uri}
-									onChange={(e) => handleArrayFieldChange("redirectUris", index, e.target.value)}
-									placeholder="https://myapp.com/callback"
-									style={{ flex: 1 }}
-								/>
-								<button
-									type="button"
-									onClick={() => removeArrayField("redirectUris", (formData.redirectUris || []).indexOf(uri))}
+										onChange={(e) => handleArrayFieldChange("redirectUris", index, e.target.value)}
+										placeholder="https://myapp.com/callback"
+										style={{ flex: 1 }}
+									/>
+									<button
+										type="button"
+										onClick={() =>
+											removeArrayField("redirectUris", (formData.redirectUris || []).indexOf(uri))
+										}
 										className="btn btn-danger-outline btn-sm"
 									>
 										Remove
@@ -332,19 +337,27 @@ export function AppSettingsPage() {
 								Domains allowed to make requests to your app
 							</p>
 
-						{(formData.allowedHosts || []).map((host: string, index: number) => (
-							<div key={`allowedHost-${index}`} style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+							{(formData.allowedHosts || []).map((host: string, index: number) => (
+								<div
+									key={`allowedHost-${index}`}
+									style={{ display: "flex", gap: "8px", marginBottom: "12px" }}
+								>
 									<input
 										type="text"
 										className="form-control"
 										value={host}
-									onChange={(e) => handleArrayFieldChange("allowedHosts", index, e.target.value)}
-									placeholder="myapp.com or localhost:3000"
-									style={{ flex: 1 }}
-								/>
-								<button
-									type="button"
-									onClick={() => removeArrayField("allowedHosts", (formData.allowedHosts || []).indexOf(host))}
+										onChange={(e) => handleArrayFieldChange("allowedHosts", index, e.target.value)}
+										placeholder="myapp.com or localhost:3000"
+										style={{ flex: 1 }}
+									/>
+									<button
+										type="button"
+										onClick={() =>
+											removeArrayField(
+												"allowedHosts",
+												(formData.allowedHosts || []).indexOf(host),
+											)
+										}
 										className="btn btn-danger-outline btn-sm"
 									>
 										Remove

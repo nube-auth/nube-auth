@@ -57,7 +57,6 @@ async function fetchAPI<T>(path: string, options?: RequestInit, schema?: any): P
 		headers,
 	});
 
-
 	if (!response.ok) {
 		const error = await response.json().catch(() => ({ message: response.statusText }));
 		throw new Error(error.message || "Request failed");

@@ -1,11 +1,12 @@
 import { parseSessionCookie } from "@proofa/auth";
-import { sessionStore } from "@proofa/cache";
+import { cache, sessionStore } from "@proofa/cache";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 import { env } from "../config/env";
 import { coreClient } from "../lib/core-client";
 import { loggers, serializeError } from "../utils/logger";
+import { SESSION_TTL } from "../config/constants";
 
 const USER_SESSION_COOKIE = "proofa_user_session";
 const ADMIN_SESSION_COOKIE = "proofa_admin_session";
@@ -19,6 +20,7 @@ export interface AuthContext {
 	name: string;
 	sessionId: string;
 	appSessionId?: string;
+	coreSessionId: string;
 }
 
 /**
@@ -89,11 +91,14 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 		);
 
 		// Get Core session ID from metadata (stored during login)
-					const coreSessionId = appSession.metadata?.coreSessionId as string | undefined;
+		const coreSessionId = appSession.metadata?.coreSessionId as string | undefined;
 		if (!coreSessionId) {
 			loggers.auth.warn("Core session ID not found in metadata");
 			return c.json({ error: "Core session not found" }, 401);
 		}
+
+		// Refresh gateway session TTL on access (rolling TTL for app session)
+		await cache.expire(`session:app:${sessionId}`, SESSION_TTL);
 
 		// Get user info from Core using Core session ID
 		const coreSession = await coreClient.exchangeSession(coreSessionId);
@@ -118,6 +123,7 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 			name: coreSession.name,
 			sessionId,
 			appSessionId: sessionId,
+			coreSessionId,
 		};
 
 		c.set("auth", auth);

@@ -11,6 +11,7 @@ import {
 	SlugSchema,
 	TrialDaysSchema,
 } from "./common";
+import { SecuritySettingsSchema, PlanSettingsSchema } from "./jsonb";
 
 /**
  * Project Schemas
@@ -78,6 +79,20 @@ export const UpdateAppRequestSchema = CreateAppRequestSchema.partial().extend({
 	rateLimit: z.number().int().positive().optional(),
 	accountLockoutMinutes: z.number().int().positive().optional(),
 	cacheTtlMinutes: z.number().int().positive().optional(),
+});
+
+/**
+ * Internal schemas for JSONB field validation
+ * Used when creating/updating apps directly in the database
+ */
+export const CreateAppSecuritySettingsSchema = SecuritySettingsSchema.partial().extend({
+	redirectUris: RedirectUrisSchema,
+	allowedHosts: AllowedHostsSchema,
+	sessionTtlDays: AppSessionTtlDaysSchema.default(28),
+});
+
+export const CreateAppPlanSettingsSchema = PlanSettingsSchema.partial().extend({
+	licensingRequired: z.boolean().default(true),
 });
 
 /**
