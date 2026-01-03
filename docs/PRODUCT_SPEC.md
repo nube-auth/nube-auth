@@ -290,7 +290,7 @@ Foreign keys reference internal `id`. Public IDs are for API responses and loggi
 
 **Constraints**: `UNIQUE(user_id, app_id)` — One license per user per app
 
-#### `email_verifications`
+#### `email_verifications` (Phase 2 - Q2 2026)
 
 | Column | Type | Nullable | Constraints | Notes |
 |--------|------|----------|-------------|-------|
@@ -453,7 +453,7 @@ UI shows two actions:
 
 ##### 2. **Create Account (new user)**
 
-1. Show provider buttons (Google/GitHub based on app `required_providers`)
+1. Show provider buttons (Google/GitHub based on app `enabled_providers`)
 2. Complete provider OAuth
 3. Create user + identity in Core
 4. Create core session
@@ -479,7 +479,7 @@ After OAuth, lookup identity by `(provider, provider_user_id)`.
 - User clicked "Create account"
 - Provider returned email that matches existing user
 
-**Required flow:**
+**Required flow (Phase 2 - Q2 2026):**
 1. Store "pending link" in Redis (5-10 min TTL)
 2. Return to frontend: "Email already exists. Verify OTP to link?"
 3. Frontend shows OTP verification screen
@@ -568,7 +568,7 @@ App → User logged in
 **Behavior:**
 1. Validate `app_id` exists and is active
 2. Validate `redirect_uri` is allowlisted for app
-3. If `provider` not specified but app has `required_providers` with exactly one → use that
+3. If `provider` not specified but app has `enabled_providers` with exactly one → use that
 4. Redirect to provider OAuth
 
 **Response:**
@@ -592,9 +592,9 @@ Location: https://accounts.google.com/o/oauth2/v2/auth?...
 1. Exchange OAuth code → provider profile
 2. Lookup identity by `(provider, provider_user_id)`
 3. **If exists**: Login that user
-4. **If not exists**: Check email collision policy (§6.2)
-   - If collision: Require OTP step-up
-   - If no collision: Create new user + identity
+4. **If not exists**: Create new user + identity
+   - Email collision handling with OTP step-up: Phase 2 (Q2 2026)
+   - MVP: Email collisions prevented by OAuth provider uniqueness
 5. Create/refresh **core session** `proofa_session` (TTL 7 days rolling)
 6. Ensure license exists for `(user, app)`
 7. Issue **auth_code** (TTL 120s)
@@ -659,7 +659,7 @@ Set-Cookie: proofa_session=...; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=
 
 ---
 
-#### `POST /v1/email/start`
+#### `POST /v1/email/start` (Phase 2 - Q2 2026)
 
 **Request body:**
 ```json
@@ -683,7 +683,7 @@ Set-Cookie: proofa_session=...; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=
 
 ---
 
-#### `POST /v1/email/verify`
+#### `POST /v1/email/verify` (Phase 2 - Q2 2026)
 
 **Request body:**
 ```json
@@ -1068,12 +1068,14 @@ All admin endpoints require:
   "slug": "my-app",
   "allowed_hosts": ["api.myapp.com"],
   "redirect_uris": ["http://myapp.local/auth/callback"],
-  "required_providers": ["google", "github"],
+  "enabled_providers": ["google", "github"],
   "licensing_required": true,
   "default_license_plan": "free",
   "app_session_ttl_days": 28
 }
 ```
+
+**Note**: OAuth providers are configured directly via the `enabled_providers` field in the app schema. No separate OAuth configuration endpoints exist - this field is updated via the app PATCH endpoint when needed.
 
 **Response (201 Created):** App details
 
@@ -1507,8 +1509,8 @@ Follow this sequence for implementation:
 | **Multi-tenant** | **Yes (projects)** | Flexibility for future |
 | **Admin access** | **Role-based (owner/admin/member)** | Scalable permission model |
 | **Auth pages** | **Core-hosted** | Security, consistency, branding |
-| **Authentication** | **OAuth-only (no passwords) + OTP for email verify** | Simple, secure, modern |
-| **ID collision** | **Provider match wins; email requires OTP step-up** | Prevents duplicates, account takeover |
+| **Authentication** | **OAuth-only for MVP (Google, GitHub); email/OTP in Q2 2026** | Simple, secure, modern |
+| **ID collision** | **OAuth provider uniqueness (MVP); email collision with OTP step-up in Phase 2 (Q2 2026)** | Prevents duplicates in MVP; account linking in Phase 2 |
 | **JWT** | **No JWT tokens; sessions only** | Stateful sessions more secure for this use case |
 | **Input Validation** | **Zod schemas (TypeScript-native)** | Type-safe runtime validation |
 | **Error Format** | **Standard JSON structure (ok/error/code/message)** | Consistent, client-friendly API |
@@ -1519,18 +1521,26 @@ Follow this sequence for implementation:
 | **Logging** | **Winston/Pino structured logs + audit_logs table** | Security audit, debugging, compliance |
 | **Transactions** | **Drizzle transactions for multi-write operations** | ACID guarantees, atomicity |
 | **Audit Trail** | **Yes (audit_logs table with actions/actors/changes)** | Compliance, transparency, security |
-| **OTP Lockout** | **3 failed attempts = 30 min lockout (Core only)** | Brute-force protection for login |
+| **OTP Lockout** | **Phase 2 (Q2 2026) - 3 failed attempts = 30 min lockout** | Brute-force protection for email login |
 | **S2S Token** | **Env var + manual script generation** | Simple, no infra needed for MVP |
 
 ### Future (Phase 2 / Beyond)
 
+**Q1 2026:**
 - ✅ Payments (Stripe, LemonSqueezy integration)
-- ✅ MFA (TOTP, WebAuthn)
 - ✅ Email invitations (project member invites)
 - ✅ OAuth linking (step-up flows)
-- ✅ Separate admin-api subdomain (if scale demands)
 - ✅ Admin audit dashboard (activity logs visualization)
 - ✅ License expiry cron job (auto-mark expired, send notifications)
+
+**Q2 2026:**
+- ✅ Email/Magic Link Authentication (OTP-based passwordless)
+- ✅ Email collision handling with OTP step-up
+- ✅ MFA/2FA (TOTP)
+- ✅ WebAuthn/Passkeys
+- ✅ SAML/SSO integration
+- ✅ Advanced RBAC (custom roles, permissions)
+- ✅ Separate admin-api subdomain (if scale demands)
 - ✅ S2S token rotation strategy + management API
 
 ---

@@ -3,6 +3,7 @@ import { sessionStore } from "@proofa/cache";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
+import { env } from "../config/env";
 import { coreClient } from "../lib/core-client";
 import { loggers, serializeError } from "../utils/logger";
 
@@ -88,8 +89,7 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 		);
 
 		// Get Core session ID from metadata (stored during login)
-		const coreSessionId = appSession.metadata?.["coreSessionId"] as string | undefined;
-
+					const coreSessionId = appSession.metadata?.coreSessionId as string | undefined;
 		if (!coreSessionId) {
 			loggers.auth.warn("Core session ID not found in metadata");
 			return c.json({ error: "Core session not found" }, 401);
@@ -144,7 +144,7 @@ export function getAuth(c: Context): AuthContext {
  */
 export const s2sAuthMiddleware = createMiddleware(async (c: Context, next) => {
 	const token = c.req.header("X-S2S-Token");
-	const expectedToken = process.env["GATEWAY_S2S_TOKEN"];
+	const expectedToken = env.X_PROOFA_SERVICE_TOKEN;
 
 	if (!token || !expectedToken || token !== expectedToken) {
 		return c.json({ error: "Unauthorized" }, 401);

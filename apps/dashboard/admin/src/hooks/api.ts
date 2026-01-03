@@ -28,7 +28,7 @@ const GATEWAY_URL = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
 // Helper to get CSRF token from cookie
 function getCsrfToken(): string | null {
 	const match = document.cookie.match(/proofa_csrf_token=([^;]+)/);
-	return match && match[1] ? match[1] : null;
+	return match?.[1] ? match[1] : null;
 }
 
 // Helper to make authenticated API calls
@@ -109,6 +109,9 @@ export function useProjects() {
 			);
 			return data.projects;
 		},
+		staleTime: 5 * 60 * 1000, // 5 minutes
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 }
 
@@ -158,6 +161,9 @@ export function useProject(projectId: string) {
 			return fetchAPI<Project>(`/v1/admin/projects/${projectId}`, undefined, ProjectDTOSchema);
 		},
 		enabled: !!projectId,
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 }
 
@@ -173,6 +179,9 @@ export function useProjectApps(projectId: string) {
 			return data.apps;
 		},
 		enabled: !!projectId,
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 }
 
@@ -202,6 +211,9 @@ export function useApp(projectId: string, appId: string) {
 			return fetchAPI<App>(`/v1/admin/projects/${projectId}/apps/${appId}`, undefined, AppDTOSchema);
 		},
 		enabled: !!projectId && !!appId,
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 }
 
@@ -236,6 +248,9 @@ export function useLicenses() {
 			);
 			return data.licenses;
 		},
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 }
 
@@ -251,6 +266,9 @@ export function useProjectMembers(projectId: string) {
 			return data.members;
 		},
 		enabled: !!projectId,
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 }
 
@@ -268,6 +286,9 @@ export function useProjectStats(projectId: string) {
 			}>(`/v1/admin/projects/${projectId}/stats`);
 		},
 		enabled: !!projectId,
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 }
 
@@ -285,6 +306,9 @@ export function useAppStats(projectId: string, appId: string) {
 			}>(`/v1/admin/projects/${projectId}/apps/${appId}/stats`);
 		},
 		enabled: !!projectId && !!appId,
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 }
 
@@ -308,6 +332,9 @@ export function useAppUsers(projectId: string, appId: string) {
 			}>(`/v1/admin/projects/${projectId}/apps/${appId}/users`);
 		},
 		enabled: !!projectId && !!appId,
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 }
 
@@ -333,6 +360,9 @@ export function useAppPlans(projectId: string, appId: string) {
 			>(`/v1/admin/projects/${projectId}/apps/${appId}/plans`);
 		},
 		enabled: !!projectId && !!appId,
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 }
 
@@ -484,6 +514,9 @@ export function useProjectPaymentConfig(projectId: string) {
 			}>(`/v1/admin/projects/${projectId}/payment-config`);
 		},
 		enabled: !!projectId,
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 }
 
@@ -525,6 +558,9 @@ export function useAppPaymentConfig(projectId: string, appId: string) {
 			}>(`/v1/admin/projects/${projectId}/apps/${appId}/payment-config`);
 		},
 		enabled: !!projectId && !!appId,
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 }
 
@@ -578,6 +614,9 @@ export function useAvailableOAuthProviders(appId: string) {
 			return data.providers;
 		},
 		enabled: !!appId,
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 }
 
@@ -592,6 +631,9 @@ export function useSelectedOAuthProviders(appId: string) {
 			return data.providers;
 		},
 		enabled: !!appId,
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 }
 
@@ -643,6 +685,9 @@ export function useProjectPaymentProviders(projectId: string) {
 			return data.providers;
 		},
 		enabled: !!projectId,
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 }
 
@@ -659,6 +704,9 @@ export function useAvailablePaymentProviders(appId: string, environment: "test" 
 			return data.providers;
 		},
 		enabled: !!appId,
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 }
 
@@ -673,6 +721,9 @@ export function useSelectedPaymentProvider(appId: string) {
 			return data.provider;
 		},
 		enabled: !!appId,
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 }
 

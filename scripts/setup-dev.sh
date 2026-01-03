@@ -232,9 +232,12 @@ echo -e "  - Drizzle Studio:         ${YELLOW}pnpm db:studio${NC}"
 echo -e "  - PostgreSQL (psql):      ${YELLOW}docker compose exec postgres psql -U proofa -d proofa${NC}"
 echo -e "  - Redis CLI:              ${YELLOW}docker compose exec redis redis-cli${NC}\n"
 
-echo -e "${BLUE}Optional:${NC}"
-echo -e "  - Start email testing:    ${YELLOW}docker compose --profile email up -d mailpit${NC}"
-echo -e "  - Start Redis Commander:  ${YELLOW}docker compose --profile debug up -d redis-commander${NC}\n"
+echo -e "${BLUE}Optional Debug Tools:${NC}"
+echo -e "  - Start debug tools:      ${YELLOW}docker compose --profile debug up -d${NC}"
+echo -e "  - CloudBeaver (DB UI):    ${GREEN}http://localhost:8978${NC}"
+echo -e "  - RedisInsight (Redis UI):${GREEN}http://localhost:5540${NC}"
+echo -e "  - Mailpit (Email Testing):${GREEN}http://localhost:8025${NC}"
+echo -e "  - Mailpit SMTP Server:    ${GREEN}localhost:1025${NC}\n"
 
 echo -e "${YELLOW}Note:${NC} Don't forget to configure OAuth providers in the admin dashboard or .env.local\n"
 

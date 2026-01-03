@@ -18,6 +18,10 @@
 		"./env-loader": {
 			"import": "./dist/env-loader.js",
 			"types": "./dist/env-loader.d.ts"
+		},
+		"./dist/email.js": {
+			"import": "./dist/email.js",
+			"types": "./dist/email.d.ts"
 		}
 	},
 	"scripts": {
@@ -28,10 +32,13 @@
 	"dependencies": {
 		"@proofa/cache": "workspace:*",
 		"hono": "^4.6.14",
+		"nodemailer": "^7.0.12",
 		"pino": "^10.1.0",
+		"resend": "^3.2.0",
 		"zod": "^3.22.4"
 	},
 	"devDependencies": {
+		"@types/nodemailer": "^7.0.4",
 		"typescript": "^5.3.3",
 		"nanoid": "^4.0.2"
 	}

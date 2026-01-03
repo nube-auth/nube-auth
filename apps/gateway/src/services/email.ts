@@ -1,16 +1,22 @@
 /**
  * Email Service
- * Centralized email sending with Resend
+ * Uses shared email utility for Resend or Mailpit (local)
  */
 
-import { Resend } from "resend";
+import { createEmailService } from "@proofa/shared/dist/email.js";
 
 import { env } from "../config/env";
 
-const resend = new Resend(env.RESEND_API_KEY);
+// Initialize shared email service
+const emailService = createEmailService({
+	sendEmails: env.SEND_EMAILS,
+	resendApiKey: env.RESEND_API_KEY,
+	useMailpit: env.IS_DEVELOPMENT,
+	smtpHost: env.SMTP_HOST,
+	smtpPort: env.SMTP_PORT,
+	defaultFrom: env.EMAIL_FROM,
+});
 
-const SEND_EMAILS = env.SEND_EMAILS === "true";
-const DEFAULT_FROM = env.EMAIL_FROM ?? "Proofa <noreply@proofa.sh>";
 const ADMIN_DASHBOARD_URL = env.ADMIN_DASHBOARD_URL ?? "http://localhost:5174";
 
 interface EmailOptions {
@@ -22,36 +28,10 @@ interface EmailOptions {
 }
 
 /**
- * Send an email using Resend
- * In development, logs to console instead of sending
+ * Send an email using the shared email service
  */
 export async function sendEmail(options: EmailOptions): Promise<void> {
-	const { to, subject, html, from = DEFAULT_FROM, replyTo } = options;
-
-	if (!SEND_EMAILS) {
-		console.log("\n=== EMAIL (DEV MODE) ===");
-		console.log(`To: ${to}`);
-		console.log(`From: ${from}`);
-		console.log(`Subject: ${subject}`);
-		console.log(`Reply-To: ${replyTo || "N/A"}`);
-		console.log(`Body:\n${html}`);
-		console.log("========================\n");
-		return;
-	}
-
-	try {
-		await resend.emails.send({
-			from,
-			to,
-			subject,
-			html,
-			...(replyTo && { replyTo }),
-		});
-		console.log(`Email sent to ${to}: ${subject}`);
-	} catch (error) {
-		console.error("Failed to send email:", error);
-		throw error;
-	}
+	await emailService.send(options);
 }
 
 /**

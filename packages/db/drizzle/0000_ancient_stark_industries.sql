@@ -175,8 +175,7 @@ CREATE TABLE "project_invitations" (
 	"accepted_at" timestamp,
 	"accepted_by_user_id" integer,
 	"deleted_at" timestamp,
-	CONSTRAINT "project_invitations_public_id_unique" UNIQUE("public_id"),
-	CONSTRAINT "project_invitations_project_email_unique" UNIQUE("project_id","email")
+	CONSTRAINT "project_invitations_public_id_unique" UNIQUE("public_id")
 );
 --> statement-breakpoint
 CREATE TABLE "project_members" (
@@ -298,6 +297,7 @@ CREATE INDEX "payment_providers_provider_idx" ON "payment_providers" USING btree
 CREATE INDEX "plans_app_id_idx" ON "plans" USING btree ("app_id");--> statement-breakpoint
 CREATE INDEX "plans_slug_idx" ON "plans" USING btree ("slug");--> statement-breakpoint
 CREATE INDEX "plans_status_idx" ON "plans" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "project_invitations_project_email_idx" ON "project_invitations" USING btree ("project_id","email");--> statement-breakpoint
 CREATE INDEX "project_invitations_project_id_idx" ON "project_invitations" USING btree ("project_id");--> statement-breakpoint
 CREATE INDEX "project_invitations_email_idx" ON "project_invitations" USING btree ("email");--> statement-breakpoint
 CREATE INDEX "project_invitations_expires_at_idx" ON "project_invitations" USING btree ("expires_at");--> statement-breakpoint

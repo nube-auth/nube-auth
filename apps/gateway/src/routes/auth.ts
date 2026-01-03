@@ -55,15 +55,30 @@ function inferAudience(c: Context): "user" | "admin" {
 authRoutes.get("/start", async (c: Context) => {
 	const provider = c.req.query("provider") || "google";
 	const returnTo = c.req.query("return_to") || "/";
+	const appId = c.req.query("app_id");
+	const inviteCode = c.req.query("invite_code");
+	const invite = c.req.query("invite"); // Project team invitation code
+	const audience = c.req.query("audience") || inferAudience(c);
 
 	// Gateway's callback URL - Core will redirect here after OAuth
 	const gatewayCallbackUrl = `${env.GATEWAY_PUBLIC_URL ?? "http://localhost:3004"}/v1/auth/callback`;
+
+	// Encode state as JSON to preserve both returnTo and audience
+	const stateData = JSON.stringify({ returnTo, audience });
+	// Use URL-safe base64 encoding (replace +/= with -_. to avoid URL encoding issues)
+	const encodedState = Buffer.from(stateData).toString("base64")
+		.replace(/\+/g, "-")
+		.replace(/\//g, "_")
+		.replace(/=/g, ".");
 
 	// Build Core auth start URL
 	const coreAuthUrl = new URL(`${env.CORE_URL}/v1/auth/start`);
 	coreAuthUrl.searchParams.set("provider", provider);
 	coreAuthUrl.searchParams.set("redirect_uri", gatewayCallbackUrl);
-	coreAuthUrl.searchParams.set("state", returnTo); // Pass return_to as state
+	coreAuthUrl.searchParams.set("state", encodedState);
+	if (appId) coreAuthUrl.searchParams.set("app_id", appId);
+	if (inviteCode) coreAuthUrl.searchParams.set("invite_code", inviteCode);
+	if (invite) coreAuthUrl.searchParams.set("invite", invite); // Pass project team invitation code
 
 	return c.redirect(coreAuthUrl.toString());
 });
@@ -74,24 +89,59 @@ authRoutes.get("/start", async (c: Context) => {
  */
 authRoutes.get("/callback", async (c: Context) => {
 	const code = c.req.query("code");
-	const state = c.req.query("state") || "/"; // return_to URL
+	const state = c.req.query("state") || "/"; // return_to URL or encoded state
 	const error = c.req.query("error");
+
+	// Parse state to extract returnTo and audience
+	let returnTo = "/";
+	let audience: "user" | "admin" = "user";
+	try {
+		console.log({ rawState: state }, "Decoding state parameter");
+		// Decode URL-safe base64 back to standard base64
+		const standardBase64 = state
+			.replace(/-/g, "+")
+			.replace(/_/g, "/")
+			.replace(/\./g, "=");
+		const decodedState = Buffer.from(standardBase64, "base64").toString("utf-8");
+		const stateData = JSON.parse(decodedState) as { returnTo?: string; audience?: "user" | "admin" };
+		returnTo = stateData.returnTo || "/";
+		audience = stateData.audience || "user";
+		log.info({ 
+			decodedState, 
+			stateData, 
+			returnTo, 
+			audience,
+			rawState: state 
+		}, "Parsed state successfully");
+	} catch (parseError) {
+		// Fallback for old-style state (just a path string)
+		returnTo = state;
+		audience = inferAudience(c);
+		log.warn({ 
+			rawState: state, 
+			parseError: parseError instanceof Error ? parseError.message : String(parseError),
+			fallbackAudience: audience,
+			fallbackReturnTo: returnTo
+		}, "Failed to parse state, using fallback");
+	}
 
 	if (error) {
 		log.error({ err: serializeError(new Error(error)) }, "OAuth error:");
 		// Redirect to dashboard with error
-		const dashboardUrl = env.USER_DASHBOARD_URL ?? "http://localhost:5173";
+		const dashboardUrl = audience === "admin"
+			? (env.ADMIN_DASHBOARD_URL ?? "http://localhost:5174")
+			: (env.USER_DASHBOARD_URL ?? "http://localhost:5173");
 		return c.redirect(`${dashboardUrl}/login?error=${encodeURIComponent(error)}`);
 	}
 
 	if (!code) {
-		const dashboardUrl = env.USER_DASHBOARD_URL ?? "http://localhost:5173";
+		const dashboardUrl = audience === "admin"
+			? (env.ADMIN_DASHBOARD_URL ?? "http://localhost:5174")
+			: (env.USER_DASHBOARD_URL ?? "http://localhost:5173");
 		return c.redirect(`${dashboardUrl}/login?error=missing_code`);
 	}
 
 	try {
-		// Determine audience (admin vs user) from origin or query param
-		const audience = inferAudience(c);
 
 		// Exchange session ID with Core (S2S call)
 		// Note: Core's callback sends the session ID as "code" parameter
@@ -145,12 +195,12 @@ authRoutes.get("/callback", async (c: Context) => {
 			cookieDomain ? { domain: cookieDomain, secure: secureCookies } : { secure: secureCookies },
 		);
 
-		const httpOnly = attributes["httpOnly"] as boolean;
-		const secure = attributes["secure"] as boolean;
-		const sameSite = attributes["sameSite"] as "Strict" | "Lax" | "None";
-		const path = attributes["path"] as string;
-		const domain = attributes["domain"] as string | undefined;
-		const maxAge = attributes["maxAge"] as number | undefined;
+			const httpOnly = attributes.httpOnly as boolean;
+			const secure = attributes.secure as boolean;
+			const sameSite = attributes.sameSite as "Strict" | "Lax" | "None";
+			const path = attributes.path as string;
+			const domain = attributes.domain as string | undefined;
+			const maxAge = attributes.maxAge as number | undefined;
 
 		// Set appropriate cookie based on audience
 		const cookieName = audience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
@@ -178,9 +228,17 @@ authRoutes.get("/callback", async (c: Context) => {
 			audience === "admin"
 				? (env.ADMIN_DASHBOARD_URL ?? "http://localhost:5174")
 				: (env.USER_DASHBOARD_URL ?? "http://localhost:5173");
-		const redirectUrl = state.startsWith("/") ? `${dashboardUrl}${state}` : dashboardUrl;
+		const redirectUrl = returnTo.startsWith("/") ? `${dashboardUrl}${returnTo}` : dashboardUrl;
 
-		log.info({ audience, appId, cookieName, dashboardUrl, hasCsrfToken: true }, "Login successful, redirecting");
+		log.info({ 
+			audience, 
+			appId, 
+			cookieName, 
+			dashboardUrl, 
+			returnTo,
+			redirectUrl,
+			hasCsrfToken: true 
+		}, "Login successful, redirecting");
 		return c.redirect(redirectUrl);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Auth callback error:");
@@ -237,12 +295,12 @@ authRoutes.post("/login", async (c: Context) => {
 			cookieDomain ? { domain: cookieDomain, secure: secureCookies } : { secure: secureCookies },
 		);
 
-		const httpOnly = attributes["httpOnly"] as boolean;
-		const secure = attributes["secure"] as boolean;
-		const sameSite = attributes["sameSite"] as "Strict" | "Lax" | "None";
-		const path = attributes["path"] as string;
-		const domain = attributes["domain"] as string | undefined;
-		const maxAge = attributes["maxAge"] as number | undefined;
+const httpOnly = attributes.httpOnly as boolean;
+			const secure = attributes.secure as boolean;
+			const sameSite = attributes.sameSite as "Strict" | "Lax" | "None";
+			const path = attributes.path as string;
+			const domain = attributes.domain as string | undefined;
+			const maxAge = attributes.maxAge as number | undefined;
 		const cookieName = resolvedAudience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
 
 		// Set session cookie
@@ -357,8 +415,7 @@ authRoutes.post("/logout", async (c: Context) => {
 					);
 
 					// Get Core session ID to revoke database session
-					const coreSessionId = appSessionBefore?.metadata?.["coreSessionId"] as string | undefined;
-
+										const coreSessionId = appSessionBefore?.metadata?.coreSessionId as string | undefined;
 					// Delete from all three stores:
 					// 1. Delete from sessionService (gateway:session:xxx)
 					await sessionService.deleteSession(sessionId);

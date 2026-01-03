@@ -39,6 +39,9 @@ export function ProfilePage() {
 	const { data: profile, isLoading } = useQuery<AdminProfile>({
 		queryKey: ["admin", "me"],
 		queryFn: () => fetchAPI<AdminProfile>("/v1/admin/me"),
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
 	});
 
 	// Update profile mutation

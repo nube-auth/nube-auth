@@ -74,7 +74,7 @@ export const csrfProtection = createMiddleware(async (c: Context, next) => {
 	}
 
 	// Verify CSRF token matches what's stored in session
-	const storedCsrfToken = session.metadata?.["csrfToken"] as string | undefined;
+		const storedCsrfToken = session.metadata?.csrfToken as string | undefined;
 	if (!storedCsrfToken || storedCsrfToken !== csrfTokenHeader) {
 		loggers.auth.warn(
 			{

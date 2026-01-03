@@ -5,26 +5,41 @@ import { loadEnv, validateEnv as validateEnvVars } from "@proofa/shared/env-load
 loadEnv();
 
 export interface Env {
+	NODE_ENV: string;
+	IS_DEVELOPMENT: boolean;
+	GATEWAY_PORT: number;
 	DATABASE_URL: string;
-	DATABASE_AUTH_TOKEN?: string | undefined;
 	REDIS_URL: string;
 	RESEND_API_KEY: string;
 	CORE_URL: string;
 	CORE_S2S_TOKEN: string;
 	X_PROOFA_SERVICE_TOKEN: string;
 	GATEWAY_SESSION_SECRET: string;
-	GATEWAY_PUBLIC_URL?: string | undefined;
-	USER_DASHBOARD_URL?: string | undefined;
-	ADMIN_DASHBOARD_URL?: string | undefined;
-	COOKIE_DOMAIN?: string | undefined;
-	SEND_EMAILS?: string | undefined;
-	EMAIL_FROM?: string | undefined;
-	NODE_ENV?: string | undefined;
-	GOOGLE_CLIENT_ID?: string | undefined;
-	GOOGLE_CLIENT_SECRET?: string | undefined;
-	GITHUB_CLIENT_ID?: string | undefined;
-	GITHUB_CLIENT_SECRET?: string | undefined;
+	GATEWAY_PUBLIC_URL: string;
+	USER_DASHBOARD_URL: string;
+	ADMIN_DASHBOARD_URL: string;
+	COOKIE_DOMAIN: string;
+	SEND_EMAILS: boolean;
+	EMAIL_FROM: string;
+
+	// SMTP for local email testing (auto-enabled in development)
+	SMTP_HOST: string;
+	SMTP_PORT: number;
+
 	ENCRYPTION_KEY: string;
+	// TTL overrides (in seconds)
+	SESSION_TTL_SECONDS: number;
+	CACHE_TTL_SECONDS: number;
+	REFRESH_TOKEN_TTL_SECONDS: number;
+	TOKEN_EXPIRY_BUFFER_SECONDS: number;
+	INVITATION_EXPIRY_DAYS: number;
+	// Security overrides
+	SESSION_ID_BYTES: number;
+	CSRF_TOKEN_BYTES: number;
+	// Rate limit overrides
+	MAX_LOGIN_ATTEMPTS: number;
+	LOGIN_ATTEMPT_WINDOW_SECONDS: number;
+	MAX_REQUESTS_PER_MINUTE: number;
 }
 
 const requiredEnvVars = [
@@ -43,26 +58,42 @@ function validateEnv(): Env {
 	validateEnvVars(requiredEnvVars);
 
 	return {
+		NODE_ENV: process.env["NODE_ENV"] || "production",
+		IS_DEVELOPMENT: (process.env["NODE_ENV"] || "production") === "development",
+		GATEWAY_PORT: parseInt(process.env["GATEWAY_PORT"] ?? "8080", 10),
 		DATABASE_URL: process.env["DATABASE_URL"]!,
-		DATABASE_AUTH_TOKEN: process.env["DATABASE_AUTH_TOKEN"],
 		REDIS_URL: process.env["REDIS_URL"]!,
 		RESEND_API_KEY: process.env["RESEND_API_KEY"]!,
 		CORE_URL: process.env["CORE_URL"]!,
 		CORE_S2S_TOKEN: process.env["CORE_S2S_TOKEN"]!,
 		X_PROOFA_SERVICE_TOKEN: process.env["X_PROOFA_SERVICE_TOKEN"]!,
 		GATEWAY_SESSION_SECRET: process.env["GATEWAY_SESSION_SECRET"]!,
-		GATEWAY_PUBLIC_URL: process.env["GATEWAY_PUBLIC_URL"],
-		USER_DASHBOARD_URL: process.env["USER_DASHBOARD_URL"],
-		ADMIN_DASHBOARD_URL: process.env["ADMIN_DASHBOARD_URL"],
-		COOKIE_DOMAIN: process.env["COOKIE_DOMAIN"],
-		SEND_EMAILS: process.env["SEND_EMAILS"],
-		EMAIL_FROM: process.env["EMAIL_FROM"],
-		NODE_ENV: process.env["NODE_ENV"],
-		GOOGLE_CLIENT_ID: process.env["GOOGLE_CLIENT_ID"],
-		GOOGLE_CLIENT_SECRET: process.env["GOOGLE_CLIENT_SECRET"],
-		GITHUB_CLIENT_ID: process.env["GITHUB_CLIENT_ID"],
-		GITHUB_CLIENT_SECRET: process.env["GITHUB_CLIENT_SECRET"],
+		GATEWAY_PUBLIC_URL: process.env["GATEWAY_PUBLIC_URL"] || "https://api.proofa.sh",
+		USER_DASHBOARD_URL: process.env["USER_DASHBOARD_URL"] || "https://user.proofa.sh",
+		ADMIN_DASHBOARD_URL: process.env["ADMIN_DASHBOARD_URL"] || "https://manage.proofa.sh",
+		COOKIE_DOMAIN: process.env["COOKIE_DOMAIN"] || "proofa.sh",
+		SEND_EMAILS: process.env["SEND_EMAILS"] === "true",
+		EMAIL_FROM: process.env["EMAIL_FROM"] || "noreply@proofa.sh",
+		SMTP_HOST: process.env["SMTP_HOST"] ?? "localhost",
+		SMTP_PORT: parseInt(process.env["SMTP_PORT"] ?? "1025", 10),
+
 		ENCRYPTION_KEY: process.env["ENCRYPTION_KEY"]!,
+
+		// TTL defaults - production values
+		SESSION_TTL_SECONDS: parseInt(process.env["SESSION_TTL_SECONDS"] ?? String(7 * 24 * 60 * 60), 10), // 7 days
+		CACHE_TTL_SECONDS: parseInt(process.env["CACHE_TTL_SECONDS"] ?? String(2 * 60), 10), // 2 minutes
+		REFRESH_TOKEN_TTL_SECONDS: parseInt(process.env["REFRESH_TOKEN_TTL_SECONDS"] ?? String(7 * 24 * 60 * 60), 10), // 7 days
+		TOKEN_EXPIRY_BUFFER_SECONDS: parseInt(process.env["TOKEN_EXPIRY_BUFFER_SECONDS"] ?? "60", 10), // 1 minute
+		INVITATION_EXPIRY_DAYS: parseInt(process.env["INVITATION_EXPIRY_DAYS"] ?? "7", 10), // 7 days
+
+		// Security defaults
+		SESSION_ID_BYTES: parseInt(process.env["SESSION_ID_BYTES"] ?? "32", 10),
+		CSRF_TOKEN_BYTES: parseInt(process.env["CSRF_TOKEN_BYTES"] ?? "32", 10),
+
+		// Rate limit defaults
+		MAX_LOGIN_ATTEMPTS: parseInt(process.env["MAX_LOGIN_ATTEMPTS"] ?? "5", 10),
+		LOGIN_ATTEMPT_WINDOW_SECONDS: parseInt(process.env["LOGIN_ATTEMPT_WINDOW_SECONDS"] ?? "900", 10), // 15 minutes
+		MAX_REQUESTS_PER_MINUTE: parseInt(process.env["MAX_REQUESTS_PER_MINUTE"] ?? "100", 10),
 	};
 }
 

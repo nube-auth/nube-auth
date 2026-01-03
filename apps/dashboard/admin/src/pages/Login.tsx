@@ -126,13 +126,11 @@ export function LoginPage() {
 
 	const handleGoogleLogin = () => {
 		setStatus("redirecting");
-		// Preserve invite code in redirect
+		// Preserve invite code in return_to parameter
 		const inviteCode = searchParams.get("invite");
-		const redirectUri = inviteCode
-			? `${window.location.origin}/login?invite=${inviteCode}`
-			: `${window.location.origin}/login`;
-		const coreAuthUrl = `${import.meta.env.VITE_CORE_URL || "http://localhost:3003"}/v1/auth/start?provider=google&redirect_uri=${encodeURIComponent(redirectUri)}`;
-		window.location.href = coreAuthUrl;
+		const returnTo = inviteCode ? `/login?invite=${inviteCode}` : "/login";
+		const gatewayAuthUrl = `${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/auth/start?provider=google&audience=admin&return_to=${encodeURIComponent(returnTo)}&invite=${encodeURIComponent(inviteCode || "")}`;
+		window.location.href = gatewayAuthUrl;
 	};
 
 	return (

@@ -1,9 +1,10 @@
 import { GitHubOAuthAdapter, GoogleOAuthAdapter } from "@proofa/auth";
 import { cache } from "@proofa/cache";
-import { getDb, identityQueries, sessionQueries, userQueries } from "@proofa/db";
+import { appQueries, getDb, identityQueries, invitationQueries, licenseQueries, planQueries, projectInvitationQueries, projectMemberQueries, sessionQueries, userQueries } from "@proofa/db";
 import { createId, idPatterns } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
+import { env } from "../../../config/env";
 
 const router = new Hono();
 
@@ -14,6 +15,10 @@ const OAUTH_STATE_TTL = 600; // 10 minutes
 interface OAuthStateData {
 	redirectUri: string;
 	provider: string;
+	appId?: string;
+	inviteCode?: string;
+	invite?: string; // Project team invitation code
+	gatewayState?: string; // Preserve Gateway's original state
 }
 
 async function setOAuthState(state: string, data: OAuthStateData): Promise<void> {
@@ -35,6 +40,10 @@ async function deleteOAuthState(state: string): Promise<void> {
 router.get("/start", async (c: Context) => {
 	const provider = c.req.query("provider") as "google" | "github" | undefined;
 	const redirectUri = c.req.query("redirect_uri") as string | undefined;
+	const appId = c.req.query("app_id") as string | undefined;
+	const inviteCode = c.req.query("invite_code") as string | undefined;
+	const invite = c.req.query("invite") as string | undefined; // Project team invitation code
+	const gatewayState = c.req.query("state") as string | undefined; // Gateway's state
 
 	if (!provider || !["google", "github"].includes(provider)) {
 		return c.json({ error: "Invalid provider" }, 400);
@@ -48,27 +57,31 @@ router.get("/start", async (c: Context) => {
 		let adapter;
 		if (provider === "google") {
 			adapter = new GoogleOAuthAdapter({
-				clientId: process.env["GOOGLE_CLIENT_ID"] ?? "",
-				clientSecret: process.env["GOOGLE_CLIENT_SECRET"] ?? "",
+				clientId: env.GOOGLE_CLIENT_ID,
+				clientSecret: env.GOOGLE_CLIENT_SECRET,
 			});
 		} else {
 			adapter = new GitHubOAuthAdapter({
-				clientId: process.env["GITHUB_CLIENT_ID"] ?? "",
-				clientSecret: process.env["GITHUB_CLIENT_SECRET"] ?? "",
+				clientId: env.GITHUB_CLIENT_ID ?? "",
+				clientSecret: env.GITHUB_CLIENT_SECRET ?? "",
 			});
 		}
 
 		// Generate state for CSRF protection and to store redirect info
 		const oauthState = createId("authCode");
 
-		// Store the redirect_uri and provider in Redis for when Google calls back
+		// Store the redirect_uri, provider, optional app_id/invite_code, and Gateway's state in Redis
 		await setOAuthState(oauthState, {
 			redirectUri,
 			provider,
+			...(appId && { appId }),
+			...(inviteCode && { inviteCode }),
+			...(invite && { invite }),
+			...(gatewayState && { gatewayState }),
 		});
 
 		// Core's own callback URL - Google will redirect here
-		const coreCallbackUrl = `${process.env["CORE_PUBLIC_URL"] ?? "http://localhost:3003"}/v1/auth/callback/${provider}`;
+		const coreCallbackUrl = `${env.CORE_PUBLIC_URL}/v1/auth/callback/${provider}`;
 
 		const authUrl = adapter.getAuthorizationUrl(oauthState, coreCallbackUrl);
 
@@ -131,23 +144,23 @@ router.get("/callback/:provider", async (c: Context) => {
 
 	try {
 		const db = getDb();
-		const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+		const expiresAt = new Date(Date.now() + env.CORE_SESSION_TTL_DAYS * 24 * 60 * 60 * 1000);
 
 		let adapter;
 		if (provider === "google") {
 			adapter = new GoogleOAuthAdapter({
-				clientId: process.env["GOOGLE_CLIENT_ID"] ?? "",
-				clientSecret: process.env["GOOGLE_CLIENT_SECRET"] ?? "",
+				clientId: env.GOOGLE_CLIENT_ID,
+				clientSecret: env.GOOGLE_CLIENT_SECRET,
 			});
 		} else {
 			adapter = new GitHubOAuthAdapter({
-				clientId: process.env["GITHUB_CLIENT_ID"] ?? "",
-				clientSecret: process.env["GITHUB_CLIENT_SECRET"] ?? "",
+				clientId: env.GITHUB_CLIENT_ID ?? "",
+				clientSecret: env.GITHUB_CLIENT_SECRET ?? "",
 			});
 		}
 
 		// Core's callback URL that was used for OAuth
-		const coreCallbackUrl = `${process.env["CORE_PUBLIC_URL"] ?? "http://localhost:3003"}/v1/auth/callback/${provider}`;
+		const coreCallbackUrl = `${env.CORE_PUBLIC_URL}/v1/auth/callback/${provider}`;
 
 		const token = await adapter.exchangeCodeForTokens(code, coreCallbackUrl);
 		const profile = await adapter.fetchUserProfile(token.accessToken);
@@ -156,20 +169,21 @@ router.get("/callback/:provider", async (c: Context) => {
 		const existingIdentity = await identityQueries.findByProviderUserId(db, provider, profile.id);
 
 		let userId = existingIdentity?.user_id;
+				let _isNewUser = false;
 
-		if (!userId) {
-			// Create new user
-			const userData = {
-				public_id: createId("user"),
-				primary_email: profile.email,
-				primary_email_verified: true, // OAuth providers verify email addresses
-				name: profile.name,
-				avatar_url: profile.picture || null,
-				// created_at and updated_at auto-set by .defaultNow() in schema
-			};
-			const newUser = await userQueries.create(db, userData);
-			userId = newUser.id;
-
+				if (!userId) {
+					// Create new user
+					const userData = {
+						public_id: createId("user"),
+						primary_email: profile.email,
+						primary_email_verified: true, // OAuth providers verify email addresses
+						name: profile.name,
+						avatar_url: profile.picture || null,
+						// created_at and updated_at auto-set by .defaultNow() in schema
+					};
+					const newUser = await userQueries.create(db, userData);
+					userId = newUser.id;
+					_isNewUser = true;
 			// Create identity
 			const identityData = {
 				public_id: createId("identity"),
@@ -181,6 +195,123 @@ router.get("/callback/:provider", async (c: Context) => {
 				// created_at auto-set by .defaultNow() in schema
 			};
 			await identityQueries.create(db, identityData);
+
+			// Check for and consume pending app invitations
+			if (storedState.appId) {
+				try {
+					const app = await appQueries.findByPublicId(db, storedState.appId);
+					if (app) {
+						// Find pending invitations for this email and app
+						const pendingInvitations = await invitationQueries.findPendingByEmailAndApp(
+							db,
+							profile.email.toLowerCase(),
+							app.id,
+						);
+
+						for (const invitation of pendingInvitations) {
+							// Mark invitation as consumed
+							await invitationQueries.markConsumed(db, invitation.id, userId);
+
+							// Grant license if specified in invitation
+							if (invitation.plan_id) {
+								const plan = await planQueries.findById(db, invitation.plan_id);
+								if (plan) {
+									const now = new Date();
+									let validUntil = null;
+									if (invitation.license_duration_days) {
+										validUntil = new Date(
+											now.getTime() + invitation.license_duration_days * 24 * 60 * 60 * 1000,
+										);
+									}
+
+									// Create license
+									await licenseQueries.create(db, {
+										public_id: createId("license"),
+										user_id: userId,
+										app_id: app.id,
+										plan_id: plan.id,
+										status: "active",
+										activated_at: now,
+										valid_until: validUntil,
+										created_at: now,
+									});
+								}
+							}
+						}
+					}
+				} catch (invitationError) {
+					console.error("Error processing app invitations:", invitationError);
+					// Don't fail signup if invitation processing fails
+				}
+			}
+
+			// Check for and consume pending project invitations
+			try {
+				// First check if there's a specific project invitation code passed
+				if (storedState.invite) {
+					const projectInvitation = await projectInvitationQueries.findByPublicId(db, storedState.invite);
+					if (projectInvitation && projectInvitation.email.toLowerCase() === profile.email.toLowerCase()) {
+						// Check if user is not already a member
+						const existingMember = await projectMemberQueries.findByProjectAndUser(
+							db,
+							projectInvitation.project_id,
+							userId,
+						);
+
+						if (!existingMember || existingMember.length === 0) {
+							// Create project member entry
+							await projectMemberQueries.create(db, {
+								public_id: createId("projectMember"),
+								project_id: projectInvitation.project_id,
+								user_id: userId,
+								role: projectInvitation.role || "member",
+							});
+						}
+
+						// Mark project invitation as accepted
+						await projectInvitationQueries.update(db, projectInvitation.id, {
+							status: "accepted",
+							accepted_by_user_id: userId,
+							accepted_at: new Date(),
+						});
+					}
+				} else {
+					// Fallback: look up by email if no specific invitation code was passed
+					const pendingProjectInvitations = await projectInvitationQueries.findByEmail(
+						db,
+						profile.email.toLowerCase(),
+					);
+
+					for (const projectInvitation of pendingProjectInvitations) {
+						// Check if user is not already a member
+						const existingMember = await projectMemberQueries.findByProjectAndUser(
+							db,
+							projectInvitation.project_id,
+							userId,
+						);
+
+						if (!existingMember || existingMember.length === 0) {
+							// Create project member entry
+							await projectMemberQueries.create(db, {
+								public_id: createId("projectMember"),
+								project_id: projectInvitation.project_id,
+								user_id: userId,
+								role: projectInvitation.role || "member",
+							});
+						}
+
+						// Mark project invitation as accepted
+						await projectInvitationQueries.update(db, projectInvitation.id, {
+							status: "accepted",
+							accepted_by_user_id: userId,
+							accepted_at: new Date(),
+						});
+					}
+				}
+			} catch (projectInvitationError) {
+				console.error("Error processing project invitations:", projectInvitationError);
+				// Don't fail signup if invitation processing fails
+			}
 		} else {
 			await userQueries.findById(db, userId);
 		}
@@ -197,7 +328,10 @@ router.get("/callback/:provider", async (c: Context) => {
 		// Redirect to Gateway callback with session ID as code
 		const redirectUrl = new URL(storedState.redirectUri);
 		redirectUrl.searchParams.set("code", session.public_id);
-		redirectUrl.searchParams.set("state", state);
+		// Pass back Gateway's original state, not Core's internal state
+		if (storedState.gatewayState) {
+			redirectUrl.searchParams.set("state", storedState.gatewayState);
+		}
 
 		return c.redirect(redirectUrl.toString());
 	} catch (error) {
@@ -240,12 +374,26 @@ router.post("/exchange", async (c: Context) => {
 			return c.json({ error: "User not found" }, 404);
 		}
 
+		// Implement rolling TTL: extend session if last_seen_at is older than threshold
+		const refreshThresholdMs = env.SESSION_REFRESH_THRESHOLD_HOURS * 60 * 60 * 1000;
+		const timeSinceLastSeen = now.getTime() - new Date(session.last_seen_at).getTime();
+
+		let updatedExpiresAt = session.expires_at;
+
+		if (timeSinceLastSeen > refreshThresholdMs) {
+			// Extend session expiry (rolling TTL)
+			updatedExpiresAt = new Date(now.getTime() + env.CORE_SESSION_TTL_DAYS * 24 * 60 * 60 * 1000);
+			
+			// Update both last_seen_at and expires_at
+			await sessionQueries.updateLastSeenAndExpiry(db, session.id, now, updatedExpiresAt);
+		}
+
 		return c.json({
 			userId: user.public_id,
 			email: user.primary_email,
 			name: user.name,
 			picture: user.avatar_url,
-			expiresAt: session.expires_at,
+			expiresAt: updatedExpiresAt,
 		});
 	} catch (error) {
 		console.error("Auth exchange error:", error);

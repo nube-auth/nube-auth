@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import { createLogger, serializeError } from "@proofa/shared";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { env } from "./config/env";
 import { errorHandler } from "./middleware/error";
 import { httpLogger, requestIdMiddleware } from "./middleware/logger";
 import { adminRoutes } from "./routes/v1/admin";
@@ -53,7 +54,7 @@ app.onError((err, c) => {
 });
 
 // Start server
-const port = Number.parseInt(process.env["PORT"] ?? "3003", 10);
+const port = env.CORE_PORT;
 log.info({ port }, "Core server starting");
 
 serve({

@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import { createLogger, serializeError } from "@proofa/shared";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { env } from "./config/env";
 import { secureHeaders } from "hono/secure-headers";
 import { authMiddleware } from "./middleware/auth";
 import { csrfProtection } from "./middleware/csrf";
@@ -109,7 +110,7 @@ app.notFound((c) => {
 
 // Error handler with production sanitization
 app.onError((err, c) => {
-	const isProduction = process.env["NODE_ENV"] === "production";
+	const isProduction = env.NODE_ENV === "production";
 
 	// Log the full error internally
 	log.error(
@@ -128,7 +129,7 @@ app.onError((err, c) => {
 });
 
 // Start server
-const port = Number.parseInt(process.env["PORT"] || process.env["GATEWAY_PORT"] || "3004", 10);
+const port = env.GATEWAY_PORT;
 log.info({ port }, "Gateway server starting");
 
 serve({

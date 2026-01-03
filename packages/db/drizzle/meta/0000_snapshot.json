@@ -1,5 +1,5 @@
 {
-  "id": "7746bb1e-5e80-42eb-9f1e-fa80fb8acf3c",
+  "id": "897d1552-8e5f-4825-9e7f-c2c1565399d7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1719,6 +1719,27 @@
         }
       },
       "indexes": {
+        "project_invitations_project_email_idx": {
+          "name": "project_invitations_project_email_idx",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "project_invitations_project_id_idx": {
           "name": "project_invitations_project_id_idx",
           "columns": [
@@ -1813,14 +1834,6 @@
           "nullsNotDistinct": false,
           "columns": [
             "public_id"
-          ]
-        },
-        "project_invitations_project_email_unique": {
-          "name": "project_invitations_project_email_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "project_id",
-            "email"
           ]
         }
       },

@@ -1062,7 +1062,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 
 			// Send invitation email
 			const plan = plan_id ? await planQueries.findById(db, plan_id) : null;
-			const inviteLink = `https://auth.proofa.sh/login?app_id=${app.public_id}&invite_code=${invitation.public_id}`;
+			const inviteLink = `${env.GATEWAY_PUBLIC_URL}/v1/auth/start?provider=google&app_id=${app.public_id}&invite_code=${invitation.public_id}`;
 
 			try {
 				await sendEmail({
@@ -1138,7 +1138,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 
 		// Send invitation email
 		const plan = plan_id ? await planQueries.findById(db, plan_id) : null;
-		const inviteLink = `https://auth.proofa.sh/signup?app_id=${app.public_id}&invite_code=${invitation.public_id}`;
+		const inviteLink = `${env.GATEWAY_PUBLIC_URL}/v1/auth/start?provider=google&app_id=${app.public_id}&invite_code=${invitation.public_id}`;
 
 		try {
 			await sendEmail({
@@ -1169,7 +1169,7 @@ adminRoutes.post("/projects/:projectId/apps/:appId/users/invite", async (c: Cont
 				id: invitation.public_id,
 				email: invitation.email,
 				expires_at: invitation.expires_at,
-				invite_link: `https://auth.proofa.com/signup?app_id=${app.public_id}&invite_code=${invitation.public_id}`,
+				invite_link: `${env.GATEWAY_PUBLIC_URL}/v1/auth/start?provider=google&app_id=${app.public_id}&invite_code=${invitation.public_id}`,
 			},
 		});
 	} catch (error) {

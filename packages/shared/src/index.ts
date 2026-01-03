@@ -1,5 +1,9 @@
 // Re-export all types
 
+// Re-export email service (Node.js only - not for browser)
+// Backend services should import directly: import { createEmailService } from "@proofa/shared/dist/email.js"
+// Type-only export to prevent bundling in browser builds
+export type { EmailConfig, EmailOptions } from "./email.js";
 // Re-export audit logging
 export {
 	type AuditEvent,

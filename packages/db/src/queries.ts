@@ -111,6 +111,15 @@ export const sessionQueries = {
 		return results[0]!;
 	},
 
+	async updateLastSeenAndExpiry(db: DbClient, sessionId: number, lastSeenAt: Date, expiresAt: Date) {
+		const results = await db
+			.update(sessions)
+			.set({ last_seen_at: lastSeenAt, expires_at: expiresAt })
+			.where(eq(sessions.id, sessionId))
+			.returning();
+		return results[0]!;
+	},
+
 	async revoke(db: DbClient, sessionId: number) {
 		const results = await db
 			.update(sessions)

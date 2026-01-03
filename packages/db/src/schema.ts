@@ -151,7 +151,7 @@ export const project_invitations = pgTable(
 		deleted_at: timestamp("deleted_at"),
 	},
 	(table) => [
-		unique("project_invitations_project_email_unique").on(table.project_id, table.email),
+		index("project_invitations_project_email_idx").on(table.project_id, table.email),
 		index("project_invitations_project_id_idx").on(table.project_id),
 		index("project_invitations_email_idx").on(table.email),
 		index("project_invitations_expires_at_idx").on(table.expires_at),

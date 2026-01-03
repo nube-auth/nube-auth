@@ -2,11 +2,20 @@ import { generateOTP, hashOTP, verifyOTP } from "@proofa/auth";
 import { rateLimit } from "@proofa/cache";
 import { emailVerificationQueries, getDb, identityQueries, sessionQueries, userQueries } from "@proofa/db";
 import { createId, OTP_LENGTH, OTP_LOCKOUT_MINUTES, OTP_MAX_ATTEMPTS } from "@proofa/shared";
+import { createEmailService } from "@proofa/shared/dist/email.js";
 import type { Context } from "hono";
 import { Hono } from "hono";
-import { Resend } from "resend";
+import { env } from "../../../config/env";
 
-const resend = new Resend(process.env["RESEND_API_KEY"] ?? "");
+// Initialize email service
+const emailService = createEmailService({
+	sendEmails: env.SEND_EMAILS,
+	resendApiKey: env.RESEND_API_KEY,
+	useMailpit: env.IS_DEVELOPMENT,
+	smtpHost: env.SMTP_HOST,
+	smtpPort: env.SMTP_PORT,
+	defaultFrom: env.EMAIL_FROM,
+});
 
 const router = new Hono();
 
@@ -64,17 +73,12 @@ router.post("/start", async (c: Context) => {
 			});
 		}
 
-		// Send OTP email (in production, use Resend)
-		if (process.env["SEND_EMAILS"] === "true") {
-			await resend.emails.send({
-				from: process.env["EMAIL_FROM"] ?? "noreply@proofa.ai",
-				to: email,
-				subject: "Your Proofa OTP Code",
-				html: `<p>Your OTP code is: <strong>${otp}</strong></p><p>Valid for 10 minutes.</p>`,
-			});
-		} else {
-			console.log(`[DEV] OTP for ${email}: ${otp}`);
-		}
+		// Send OTP email
+		await emailService.send({
+			to: email,
+			subject: "Your Proofa OTP Code",
+			html: `<p>Your OTP code is: <strong>${otp}</strong></p><p>Valid for 10 minutes.</p>`,
+		});
 
 		return c.json({
 			message: "OTP sent to email",

@@ -142,15 +142,13 @@ async function seedProjectAndApp() {
 		
 		// Create demo Stripe credentials (these are fake test credentials)
 		const stripeCredentials = {
-			api_key: "sk_test_demo_" + await generateSecureToken(24),
-			publishable_key: "pk_test_demo_" + await generateSecureToken(24),
+			api_key: `sk_test_demo_${await generateSecureToken(24)}`,
+			publishable_key: `pk_test_demo_${await generateSecureToken(24)}`,
 		};
 
 		// Encrypt the credentials
 		const encryptedCredentials = encrypt(JSON.stringify(stripeCredentials));
-		const webhookSecret = "whsec_demo_" + await generateSecureToken(32);
-
-		// Create project-level payment provider (not app-level)
+		const webhookSecret = `whsec_demo_${await generateSecureToken(32)}`;
 		const paymentProvider = await paymentProviderQueries.createProjectProvider(db, {
 			name: "Stripe Test",
 			slug: "stripe-test",
