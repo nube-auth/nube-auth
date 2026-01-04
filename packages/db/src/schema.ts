@@ -193,45 +193,6 @@ export const plans = pgTable(
 );
 
 /**
- * Payment Providers table
- * Payment provider configurations at platform, project, and app levels
- */
-export const payment_providers = pgTable(
-	"payment_providers",
-	{
-		id: serial("id").primaryKey(),
-		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
-		name: varchar("name", { length: 255 }),
-		slug: varchar("slug", { length: 255 }),
-		entity_type: varchar("entity_type", { length: 20 }).notNull(), // 'platform', 'project', 'app'
-		entity_id: integer("entity_id"), // null for platform, project_id or app_id
-		provider: varchar("provider", { length: 50 }).notNull(), // 'stripe', 'lemonsqueezy', 'dodo'
-		environment: varchar("environment", { length: 20 }).notNull(), // 'test' or 'production'
-		credentials: text("credentials").notNull(), // Encrypted JSON
-		previous_credentials: text("previous_credentials"), // For credential rotation
-		credentials_rotated_at: timestamp("credentials_rotated_at"),
-		webhook_secret: text("webhook_secret"),
-		is_active: boolean("is_active").notNull().default(true),
-		metadata: jsonb("metadata"),
-		created_by_user_id: integer("created_by_user_id").references(() => users.id),
-		updated_by_user_id: integer("updated_by_user_id").references(() => users.id),
-		created_at: timestamp("created_at").notNull().defaultNow(),
-		updated_at: timestamp("updated_at").notNull().defaultNow(),
-		deleted_at: timestamp("deleted_at"),
-	},
-	(table) => [
-		index("payment_providers_entity_idx").on(table.entity_type, table.entity_id),
-		index("payment_providers_provider_idx").on(table.provider),
-		unique("payment_providers_entity_provider_env_unique").on(
-			table.entity_type,
-			table.entity_id,
-			table.provider,
-			table.environment,
-		),
-	],
-);
-
-/**
  * Apps table
  * Applications within projects
  */
@@ -324,9 +285,227 @@ export const licenses = pgTable(
 );
 
 /**
+ * Payment Provider Configs table
+ * Payment provider configurations (renamed from payment_providers)
+ */
+export const payment_provider_configs = pgTable(
+	"payment_provider_configs",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		app_id: integer("app_id")
+			.notNull()
+			.references(() => apps.id),
+		provider: varchar("provider", { length: 50 }).notNull(), // 'stripe', 'lemonsqueezy', 'dodo'
+		environment: varchar("environment", { length: 20 }).notNull(), // 'test' or 'production'
+		credentials: text("credentials").notNull(), // Encrypted JSON
+		webhook_secret: text("webhook_secret"),
+		is_active: boolean("is_active").notNull().default(true),
+		is_default: boolean("is_default").notNull().default(false),
+		metadata: jsonb("metadata"),
+		created_by_user_id: integer("created_by_user_id").references(() => users.id),
+		updated_by_user_id: integer("updated_by_user_id").references(() => users.id),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [
+		index("payment_provider_configs_app_id_idx").on(table.app_id),
+		index("payment_provider_configs_provider_idx").on(table.provider),
+		index("payment_provider_configs_is_default_idx").on(table.is_default),
+		unique("payment_provider_configs_app_provider_env_unique").on(
+			table.app_id,
+			table.provider,
+			table.environment,
+		),
+	],
+);
+
+/**
+ * Plan Provider Prices table
+ * Pricing per plan per provider (what can be purchased)
+ */
+export const plan_provider_prices = pgTable(
+	"plan_provider_prices",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		plan_id: integer("plan_id")
+			.notNull()
+			.references(() => plans.id),
+		provider_config_id: integer("provider_config_id")
+			.notNull()
+			.references(() => payment_provider_configs.id),
+		billing_type: varchar("billing_type", { length: 50 }).notNull(), // 'recurring', 'one-time'
+		interval: varchar("interval", { length: 20 }), // 'month', 'year' (null for one-time)
+		amount_cents: integer("amount_cents").notNull(),
+		currency: varchar("currency", { length: 3 }).notNull().default("usd"),
+		provider_price_id: varchar("provider_price_id", { length: 255 }).notNull(), // e.g., Stripe price ID
+		is_active: boolean("is_active").notNull().default(true),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [
+		index("plan_provider_prices_plan_id_idx").on(table.plan_id),
+		index("plan_provider_prices_provider_config_id_idx").on(table.provider_config_id),
+		index("plan_provider_prices_billing_type_idx").on(table.billing_type),
+		unique("plan_provider_prices_provider_price_id_unique").on(table.provider_price_id),
+	],
+);
+
+/**
+ * Purchases table
+ * First-class record bridging checkout session to payment transaction
+ * Enables Phase 2 multi-provider routing and reconciliation
+ */
+export const purchases = pgTable(
+	"purchases",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+
+		// Application & Subject
+		app_id: integer("app_id")
+			.notNull()
+			.references(() => apps.id),
+		subject_type: varchar("subject_type", { length: 50 }).notNull().default("user"),
+		// 'user' (Phase 1), 'organization' (Phase 2)
+		subject_id: integer("subject_id").notNull(),
+		// user_id (Phase 1), organization_id (Phase 2)
+
+		// What was ordered
+		plan_provider_price_id: integer("plan_provider_price_id")
+			.notNull()
+			.references(() => plan_provider_prices.id),
+		// Direct link to price record (includes plan, provider, billing interval)
+
+		// Where the purchase happens (routing)
+		provider_config_id: integer("provider_config_id")
+			.notNull()
+			.references(() => payment_provider_configs.id),
+		// Real FK for secrets, routing, webhook handling
+
+		// Optional promotion
+		promotion_code_id: integer("promotion_code_id"),
+		// NULL if no promo, otherwise FK to redeemed code
+
+		// Webhook reconciliation
+		provider_session_id: varchar("provider_session_id", { length: 255 }).notNull(),
+		// Stripe: checkout_session_id, LemonSqueezy: checkout_id, etc.
+
+		// Status tracking
+		status: varchar("status", { length: 20 }).notNull().default("pending"),
+		// 'pending' (awaiting webhook), 'completed', 'expired', 'abandoned', 'failed'
+
+		// Link to result (no FK constraint to avoid circular dependency - handled in app code)
+		payment_transaction_id: integer("payment_transaction_id"),
+		// Set when checkout completes (status → 'completed')
+		// Note: Foreign key constraint on payment_transactions.id is enforced at application level
+
+		// Timeline
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [
+		index("purchases_app_id_idx").on(table.app_id),
+		index("purchases_subject_idx").on(table.subject_type, table.subject_id),
+		index("purchases_status_idx").on(table.status),
+		index("purchases_provider_session_id_idx").on(table.provider_session_id),
+		index("purchases_payment_transaction_id_idx").on(table.payment_transaction_id),
+	],
+);
+
+/**
+ * Promotions table
+ * Promotion configurations
+ */
+export const promotions = pgTable(
+	"promotions",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		app_id: integer("app_id")
+			.notNull()
+			.references(() => apps.id),
+		name: varchar("name", { length: 255 }).notNull(), // Internal label: "Launch 50% off"
+		discount_type: varchar("discount_type", { length: 20 }).notNull(), // 'percent', 'fixed'
+		discount_value: integer("discount_value").notNull(), // 50 (for 50%) or cents (for $50)
+		starts_at: timestamp("starts_at").notNull(),
+		ends_at: timestamp("ends_at"),
+		is_active: boolean("is_active").notNull().default(true),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [
+		index("promotions_app_id_idx").on(table.app_id),
+		index("promotions_is_active_idx").on(table.is_active),
+	],
+);
+
+/**
+ * Promotion Codes table
+ * Individual promo codes tied to promotions
+ */
+export const promotion_codes = pgTable(
+	"promotion_codes",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		promotion_id: integer("promotion_id")
+			.notNull()
+			.references(() => promotions.id),
+		app_id: integer("app_id")
+			.notNull()
+			.references(() => apps.id),
+		code: varchar("code", { length: 50 }).notNull().unique(),
+		max_uses: integer("max_uses"),
+		current_uses: integer("current_uses").notNull().default(0),
+		is_active: boolean("is_active").notNull().default(true),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [
+		index("promotion_codes_promotion_id_idx").on(table.promotion_id),
+		index("promotion_codes_app_id_idx").on(table.app_id),
+		index("promotion_codes_code_idx").on(table.code),
+		index("promotion_codes_is_active_idx").on(table.is_active),
+	],
+);
+
+/**
+ * Promotion Redemptions table
+ * Track when promo codes are used
+ */
+export const promotion_redemptions = pgTable(
+	"promotion_redemptions",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		promotion_code_id: integer("promotion_code_id")
+			.notNull()
+			.references(() => promotion_codes.id),
+		purchase_id: integer("purchase_id")
+			.notNull()
+			.references(() => purchases.id),
+		app_id: integer("app_id")
+			.notNull()
+			.references(() => apps.id),
+		subject_type: varchar("subject_type", { length: 50 }).notNull(),
+		subject_id: integer("subject_id").notNull(),
+		discount_cents: integer("discount_cents").notNull(),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+	},
+	(table) => [
+		index("promotion_redemptions_promotion_code_id_idx").on(table.promotion_code_id),
+		index("promotion_redemptions_purchase_id_idx").on(table.purchase_id),
+		index("promotion_redemptions_app_id_idx").on(table.app_id),
+		index("promotion_redemptions_subject_idx").on(table.subject_type, table.subject_id),
+	],
+);
+
+/**
  * Payment Transactions table
  * Tracks all payment transactions across all providers
- * Links to licenses for audit trail and reconciliation
+ * Links to purchases for audit trail and reconciliation
  */
 export const payment_transactions = pgTable(
 	"payment_transactions",
@@ -334,13 +513,21 @@ export const payment_transactions = pgTable(
 		id: serial("id").primaryKey(),
 		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
 
-		// Link to license
+		// Link to purchase & license
+		purchase_id: integer("purchase_id")
+			.notNull()
+			.references(() => purchases.id),
 		license_id: integer("license_id")
 			.notNull()
 			.references(() => licenses.id),
 
-		// Provider info
-		provider: varchar("provider", { length: 50 }).notNull(), // 'stripe', 'lemonsqueezy', 'dodo'
+		// Provider info (provider_config_id is the real join key)
+		provider_config_id: integer("provider_config_id")
+			.notNull()
+			.references(() => payment_provider_configs.id),
+		// Real FK for routing, secrets, webhook handling
+		provider: varchar("provider", { length: 50 }).notNull(),
+		// Denormalized convenience: 'stripe', 'lemonsqueezy', 'dodo'
 		provider_transaction_id: varchar("provider_transaction_id", { length: 255 }).notNull(),
 		provider_customer_id: varchar("provider_customer_id", { length: 255 }),
 
@@ -351,6 +538,17 @@ export const payment_transactions = pgTable(
 		// Amount tracking (always in smallest currency unit - cents)
 		amount_cents: integer("amount_cents").notNull(),
 		currency: varchar("currency", { length: 3 }).notNull().default("usd"),
+
+		// Discount tracking (explicit flags for analytics & support)
+		discount_applied_cents: integer("discount_applied_cents").notNull().default(0),
+		// Actual amount provider applied (0 if validation failed or no promo)
+		discount_applied: boolean("discount_applied").notNull().default(false),
+		// Explicit truth flag: Did we successfully apply a discount?
+
+		// Promotion tracking (Phase 1: max 1 per transaction)
+		promotion_id: integer("promotion_id").references(() => promotions.id),
+		promotion_code_id: integer("promotion_code_id").references(() => promotion_codes.id),
+		provider_discount_id: varchar("provider_discount_id", { length: 255 }), // e.g., 'coupon_abc'
 
 		// Metadata
 		description: text("description"),
@@ -370,15 +568,17 @@ export const payment_transactions = pgTable(
 	},
 	(table) => [
 		index("payment_transactions_license_id_idx").on(table.license_id),
+		index("payment_transactions_purchase_id_idx").on(table.purchase_id),
 		index("payment_transactions_provider_transaction_idx").on(
 			table.provider_transaction_id
 		),
-		index("payment_transactions_provider_idx").on(table.provider),
+		index("payment_transactions_provider_config_id_idx").on(table.provider_config_id),
 		index("payment_transactions_type_idx").on(table.type),
 		index("payment_transactions_status_idx").on(table.status),
 		index("payment_transactions_transaction_date_idx").on(table.transaction_date),
+		index("payment_transactions_promotion_id_idx").on(table.promotion_id),
 		unique("payment_transactions_provider_id_unique").on(
-			table.provider,
+			table.provider_config_id,
 			table.provider_transaction_id,
 		),
 	],

@@ -9,6 +9,7 @@
 		"dev": "turbo run dev",
 		"dev:gateway": "pnpm --filter @proofa/gateway dev",
 		"dev:core": "pnpm --filter @proofa/core dev",
+		"dev:workers": "pnpm --filter @proofa/workers dev",
 		"dev:admin": "pnpm --filter @proofa/dashboard-admin dev",
 		"dev:user": "pnpm --filter @proofa/dashboard-user dev",
 		"dev:home": "pnpm --filter @proofa/dashboard-home dev",

@@ -15,7 +15,6 @@ import dotenv from "dotenv";
 import { createId, encrypt } from "@proofa/shared";
 import { getDb } from "../src/index.js";
 import { userQueries, projectQueries, appQueries, projectMemberQueries } from "../src/queries.js";
-import { paymentProviderQueries } from "../src/providers.js";
 import { users } from "../src/schema.js";
 
 const configDir = typeof __dirname === "string" ? __dirname : dirname(fileURLToPath(import.meta.url));
@@ -132,35 +131,9 @@ async function seedProjectAndApp() {
 		console.log(`   Client Secret: ${clientSecret.substring(0, 10)}...`);
 		console.log(`   Service Token: ${serviceToken.substring(0, 10)}...\n`);
 
-		// Step 4: Create a payment provider configuration
-		console.log("📋 Step 4: Creating payment provider configuration...");
-
-		// Create demo Stripe credentials (these are fake test credentials)
-		const stripeCredentials = {
-			api_key: `sk_test_demo_${await generateSecureToken(24)}`,
-			publishable_key: `pk_test_demo_${await generateSecureToken(24)}`,
-		};
-
-		// Encrypt the credentials
-		const encryptedCredentials = encrypt(JSON.stringify(stripeCredentials));
-		const webhookSecret = `whsec_demo_${await generateSecureToken(32)}`;
-		const paymentProvider = await paymentProviderQueries.createProjectProvider(db, {
-			name: "Stripe Test",
-			slug: "stripe-test",
-			project_id: project.id,
-			provider: "stripe",
-			environment: "test",
-			credentials: encryptedCredentials,
-			webhook_secret: webhookSecret,
-			created_by_user_id: user.id,
-		});
-
-		console.log(`✅ Created payment provider: ${paymentProvider.provider}`);
-		console.log(`   Provider ID: ${paymentProvider.id}`);
-		console.log(`   Public ID: ${paymentProvider.public_id}`);
-		console.log(`   Environment: ${paymentProvider.environment}`);
-		console.log(`   Entity Type: ${paymentProvider.entity_type}`);
-		console.log(`   Entity ID: ${paymentProvider.entity_id}\n`);
+		// Step 4: Payment provider configuration (TODO: Update to use payment_provider_configs table)
+		console.log("📋 Step 4: Payment provider configuration skipped (deprecated API)\n");
+		console.log("   ⚠️  Use payment_provider_configs table directly for new setup\n");
 
 		// Summary
 		console.log("=".repeat(60));
@@ -169,7 +142,6 @@ async function seedProjectAndApp() {
 		console.log(`   User: ${user.name || user.primary_email || user.public_id} (${user.public_id})`);
 		console.log(`   Project: ${project.name} (${project.public_id})`);
 		console.log(`   App: ${app.name} (${app.public_id})`);
-		console.log(`   Payment Provider: ${paymentProvider.provider} (${paymentProvider.public_id})`);
 		console.log("=".repeat(60));
 
 		process.exit(0);

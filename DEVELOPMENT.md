@@ -120,6 +120,7 @@ pnpm dev
 # Or start individually:
 pnpm --filter @proofa/gateway dev      # API Gateway (port 3004)
 pnpm --filter @proofa/core dev         # Core Service (port 3003)
+pnpm --filter @proofa/workers dev      # Workers Service (background jobs)
 pnpm --filter @proofa/dashboard-admin dev  # Admin UI (port 5174)
 pnpm --filter @proofa/dashboard-user dev   # User UI (port 5173)
 pnpm --filter @proofa/dashboard-home dev   # Marketing (port 4321)

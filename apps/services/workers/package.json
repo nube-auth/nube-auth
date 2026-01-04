@@ -1,7 +1,7 @@
 {
-	"name": "@proofa/core",
+	"name": "@proofa/workers",
 	"version": "1.0.0",
-	"description": "Authoritative identity, session, and licensing service for Proofa",
+	"description": "Background job workers service for Proofa",
 	"type": "module",
 	"main": "dist/index.js",
 	"exports": {
@@ -14,21 +14,18 @@
 		"test": "vitest"
 	},
 	"dependencies": {
-		"@hono/node-server": "^1.19.7",
-		"@proofa/auth": "workspace:*",
-		"@proofa/cache": "workspace:*",
 		"@proofa/db": "workspace:*",
+		"@proofa/queue": "workspace:*",
 		"@proofa/shared": "workspace:*",
-		"hono": "^4.0.0",
-		"resend": "^2.0.0"
+		"bullmq": "^5.8.0",
+		"ioredis": "^5.3.2"
 	},
 	"devDependencies": {
-		"@hono/zod-validator": "^0.7.6",
 		"@types/node": "^20.10.0",
+		"dotenv-cli": "^7.4.2",
 		"tsup": "^8.0.0",
 		"tsx": "^4.7.0",
 		"typescript": "^5.3.0",
-		"vitest": "^1.0.0",
-		"zod": "^4.2.1"
+		"vitest": "^1.0.0"
 	}
 }

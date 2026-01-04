@@ -7,6 +7,7 @@ import { errorHandler } from "./middleware/error";
 import { httpLogger, requestIdMiddleware } from "./middleware/logger";
 import { adminRoutes } from "./routes/v1/admin";
 import { authRoutes } from "./routes/v1/auth";
+import { billingRoutes } from "./routes/v1/billing";
 import { emailRoutes } from "./routes/v1/email";
 import { licenseRoutes } from "./routes/v1/license";
 
@@ -38,6 +39,7 @@ app.use("*", requestIdMiddleware);
 
 // Routes
 app.route("/v1/auth", authRoutes);
+app.route("/v1/billing", billingRoutes);
 app.route("/v1/email", emailRoutes);
 app.route("/v1/license", licenseRoutes);
 app.route("/v1/admin", adminRoutes);
@@ -57,12 +59,29 @@ app.onError((err, c) => {
 const port = env.CORE_PORT;
 log.info({ port }, "Core server starting");
 
-serve({
+const server = serve({
 	fetch: app.fetch,
 	port,
 });
 
 log.info({ port, url: `http://localhost:${port}` }, "Core server running");
+
+// Graceful shutdown
+process.on("SIGINT", async () => {
+	log.info("Shutting down gracefully...");
+	server.close(() => {
+		log.info("Server shutdown complete");
+		process.exit(0);
+	});
+});
+
+process.on("SIGTERM", async () => {
+	log.info("Shutting down gracefully...");
+	server.close(() => {
+		log.info("Server shutdown complete");
+		process.exit(0);
+	});
+});
 
 export default app;
 export { log };

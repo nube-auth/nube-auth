@@ -71,8 +71,6 @@ export {
 	validateAndBuildJsonbUpdate,
 	type JsonbUpdateChain,
 } from "./utils/jsonb.js";
-// Export provider helpers
-export { paymentProviderQueries } from "./providers.js";
 // Export all query helpers
 export {
 	appQueries,

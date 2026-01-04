@@ -5,7 +5,7 @@ import { getCookie } from "hono/cookie";
 import { env } from "../config/env";
 import { coreClient } from "../lib/core-client";
 import { getDb, and, eq } from "@proofa/db";
-import { plans, licenses, apps, payment_providers } from "@proofa/db/schema";
+import { plans, licenses, apps } from "@proofa/db/schema";
 import Stripe from "stripe";
 
 const log = createLogger("payments-routes");
@@ -99,22 +99,24 @@ paymentsRoutes.post("/checkout", async (c: Context) => {
 			return c.json({ error: "App not found" }, 404);
 		}
 
-		// Get payment provider configuration
-		const paymentProvider = await db
-			.select()
-			.from(payment_providers)
-			.where(
-				and(
-					eq(payment_providers.id, app.selected_payment_provider_id || 0),
-					eq(payment_providers.provider, "stripe"),
-					eq(payment_providers.is_active, true),
-				),
-			)
-			.then((rows) => rows[0]);
-
-		if (!paymentProvider) {
-			return c.json({ error: "Payment provider not configured" }, 500);
-		}
+		// TODO: Update to use payment_provider_configs table
+		// For now, using hardcoded Stripe configuration
+		// const paymentProvider = await db
+		//   .select()
+		//   .from(payment_provider_configs)
+		//   .where(
+		//     and(
+		//       eq(payment_provider_configs.app_id, app.id),
+		//       eq(payment_provider_configs.provider, "stripe"),
+		//       eq(payment_provider_configs.is_active, true),
+		//       eq(payment_provider_configs.is_default, true)
+		//     )
+		//   )
+		//   .then((rows) => rows[0]);
+		//
+		// if (!paymentProvider) {
+		//   return c.json({ error: "Payment provider not configured" }, 500);
+		// }
 
 		// Determine price based on interval
 		let price = 0;
