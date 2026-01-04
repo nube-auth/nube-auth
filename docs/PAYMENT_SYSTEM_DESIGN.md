@@ -204,10 +204,73 @@ INDEX(status)
 ```
 
 **Rules**:
-- One active license per user per app
+- **One active license per user per app** (enforced via DB-level partial unique index)
 - `valid_until = null` means lifetime/perpetual access
 - Provider is source of truth for payment status
 - License status updated via webhooks only (never trust client redirects)
+
+**DB Constraint** (Partial Unique Index):
+```sql
+UNIQUE (user_id, app_id)
+WHERE status IN ('active', 'past_due', 'grace')
+```
+
+**Why DB-level enforcement?**
+- Webhooks are async and can race
+- Providers retry aggressively
+- App logic alone cannot prevent double-license bugs
+- DB constraints guarantee atomicity
+
+#### `plan_provider_prices` (Provider Price Mapping - MANDATORY)
+```typescript
+{
+  id: integer (PK)
+  public_id: string (unique)
+  
+  // Link to plan and provider
+  plan_id: integer (FK → plans) [NOT NULL]
+  provider_config_id: integer (FK → payment_provider_configs) [NOT NULL]
+  
+  // Billing interval
+  billing_interval: enum ['month', 'year', 'one_time'] [NOT NULL]
+  
+  // Provider's price ID (from Stripe/Lemonsqueezy/Dodo API)
+  provider_price_id: string [NOT NULL]
+  
+  // Pricing details (in cents)
+  amount_cents: integer [NOT NULL]
+  currency: varchar(3) [NOT NULL, default: 'usd']
+  
+  // Status
+  is_active: boolean [NOT NULL, default: true]
+  
+  // Audit
+  created_at: timestamp [NOT NULL, default: NOW()]
+  updated_at: timestamp [NOT NULL, default: NOW()]
+  deleted_at: timestamp (nullable, soft delete)
+}
+
+// Unique constraint: one price per plan + provider + interval
+UNIQUE(plan_id, provider_config_id, billing_interval)
+WHERE is_active = true
+
+// Indexes
+INDEX(plan_id)
+INDEX(provider_config_id)
+INDEX(provider_price_id)
+INDEX(billing_interval)
+```
+
+**Purpose**:
+- Map Proofa plans to provider-specific prices
+- Support multiple pricing options per plan (monthly/yearly/lifetime)
+- Enable price versioning (new provider_price_id when provider pricing changes)
+- Enable multi-provider routing (same plan, different prices per provider)
+- Clean webhook reconciliation (match provider price IDs to plans)
+
+**Key principle**: Provider price IDs are **not** stored in provider config — they're stored here, tied to a specific plan + interval + provider combination.
+
+**Example**: Plan `pro_monthly_v2` on Stripe has `price_abc123`, on Dodo has `price_dodo_456`
 
 #### `payment_transactions` (Provider-Specific Tracking)
 ```typescript
@@ -343,7 +406,7 @@ not_started → processing → completed
             signature_failed (security issue)
 ```
 
-#### `payment_providers` (Already Exists)
+#### `payment_providers` (renamed to `payment_provider_configs` - Already Exists)
 ```typescript
 {
   id: integer (PK)
@@ -450,7 +513,7 @@ Display available plans
 User Selects Plan & Interval
     ↓
 POST /v1/payment/checkout
-  - Lookup: app.selected_payment_provider_id
+  - Lookup: app.selected_provider_config_id
   - Get provider credentials from payment_providers table
   - Route to correct provider handler
     ├─ StripeCheckout(paymentProvider, plan, user)
@@ -702,6 +765,181 @@ With Proofa:
 
 ---
 
+## 4.6 Promotions & Discounts (Phase 1)
+
+**Core Principle**: Promotions are **billing modifiers**, not plan changes. Discounts never affect entitlements or access control.
+
+### Phase 1 Model
+
+**4 Tables**:
+
+1. **`promotions`** - Core discount rules with time window
+   - `name` (internal, e.g., "First year 50% off")
+   - `discount_type` ('percent' or 'amount')
+   - `discount_value` (50 for 50%, or 5000 for $50 USD)
+   - `duration_type` ('once' or 'cycles')
+   - `duration_cycles` (null or N for recurring)
+   - Eligibility rules: `is_new_customers_only`, `allowed_intervals`, `disallow_trials`, `min_amount_cents`
+   - Window: `starts_at`, `ends_at` (when promo can be redeemed)
+   - Status: `is_active`
+
+2. **`promotion_codes`** - Multiple user-facing codes per promotion
+   - `code` ('FIRSTYEAR50', 'SAVETODAY', etc.) - unique
+   - Links to one `promotion_id`
+   - Separate from name = supports campaign tracking & A/B testing
+
+3. **`promotion_plans`** - Many-to-many linking promotions to eligible plans
+   - Restrict which plans qualify for the discount
+   - Empty = all plans eligible
+
+4. **`promotion_redemptions`** - Usage tracking
+   - `user_id`, `app_id`, `promotion_id`
+   - Phase 1 constraint: **ONE redemption per user/org per promo** (enforced at DB level)
+   - Links to `license_id` and `payment_transaction_id` for audit
+
+### Design Decisions (Locked)
+
+**1. No Stacking (Phase 1)**
+- Maximum one promotion per checkout
+- Phase 2 can add `is_stackable` flag + stack limit rules
+
+**2. Eligibility Validation at Checkout Creation Only**
+- Validate when user clicks "Apply Coupon" at checkout
+- Eligibility is "frozen" at that moment
+- If promo window closes after validation, discount still applies (user already redeemed)
+- Prevents confusing UX where coupon applies then vanishes
+
+**3. Discounts ≠ Entitlements**
+```typescript
+// canAccess() should NEVER check promotions
+async function canAccess(userId: string, appId: string, feature: string): Promise<boolean> {
+  const license = await getLicense(userId, appId);
+  const plan = await getPlan(license.plan_id);
+  
+  // Check feature in plan, IGNORE discount_amount or promotion_id
+  return plan.features.includes(feature);
+}
+
+// Instead: promotions only affect billing
+async function getCheckoutTotal(
+  planId: string, 
+  interval: 'month' | 'year' | 'one_time',
+  promotionCode?: string
+): Promise<{ amountCents: number, discountCents: number }> {
+  const plan = await getPlan(planId);
+  const baseCost = plan[`${interval}_price`];
+  
+  if (!promotionCode) {
+    return { amountCents: baseCost, discountCents: 0 };
+  }
+  
+  const promo = await validateAndGetPromotion(promotionCode);
+  const discountAmount = calculateDiscount(baseCost, promo);
+  
+  return { 
+    amountCents: baseCost - discountAmount, 
+    discountCents: discountAmount 
+  };
+}
+```
+
+**4. Provider Mapping (Pattern)**
+
+Like `plan_provider_prices`, each promotion maps to provider-specific coupon objects:
+
+```
+Proofa Promotion "First Year 50%"
+├─ Stripe: coupon_50_percent_off_first_year
+├─ Lemonsqueezy: discount_xyz_code_promo_001
+└─ Dodo: FIRSTYEAR50
+
+promotion_provider_refs table:
+{
+  promotion_id: 1,
+  payment_provider_id: 1 (Stripe),
+  provider_object_id: "coupon_50_percent_off_first_year",
+  provider_object_type: "coupon"
+}
+```
+
+Provider refs are **immutable**: if Stripe coupon terms change, create a new Proofa promotion rather than updating the existing one.
+
+**5. Transaction Audit Trail**
+
+All promotions tracked on `payment_transactions`:
+```typescript
+{
+  id: 123,
+  amount_cents: 4500, // After discount
+  promotion_id: 1, // Which promo was applied
+  promotion_code_id: 2, // Which code user entered
+  provider_discount_id: "coupon_xyz", // Provider's coupon ID
+  // ... standard transaction fields
+}
+```
+
+### Checkout Flow with Promotions
+
+```
+1. User selects plan + interval
+   → GET /v1/payment/plans/:appId (fetch pricing)
+
+2. User enters promo code (optional)
+   → POST /v1/payment/validate-promo
+   → Validates:
+     - Promotion exists + is_active
+     - Code exists + is_active
+     - User eligibility (new customer? right interval? min amount?)
+     - Promo window (now between starts_at and ends_at?)
+     - User hasn't already redeemed this promo
+   → Returns: discount_amount, adjusted_total
+
+3. User clicks "Checkout"
+   → POST /v1/payment/checkout
+   → Includes: promotion_code (optional)
+   → Backend:
+     - Re-validate promo (frozen state)
+     - Create Stripe/Lemonsqueezy checkout session with provider coupon
+     - Include promo details in session metadata
+     - Store promotion_id + code in order/metadata
+
+4. Provider webhook fires (checkout.session.completed)
+   → POST /v1/webhooks/stripe
+   → Webhook handler:
+     - Create license (standard flow)
+     - Record promotion_id + code on payment_transaction
+     - Create promotion_redemption entry
+     - Update analytics (promo usage count)
+
+5. License created with discount applied
+   → License is **independent** of discount (no discount field)
+   → Features = plan features (UNAFFECTED by discount)
+   → Billing amount = discounted total (tracked in transaction)
+```
+
+### Phase 1 Constraints
+
+| Aspect | Phase 1 | Phase 2+ |
+|--------|---------|----------|
+| Promos per checkout | 1 | Many (with stacking rules) |
+| Redemptions per user | 1 per promo | Configurable limit |
+| Global redemption limit | None | max_redemptions_global field |
+| Eligibility rules | 5 fixed columns | Custom rules engine |
+| Plan targeting | Many-to-many | Many-to-many (same) |
+| Stacking | None | Optional (is_stackable flag) |
+
+### Why This Works
+
+✅ **Simple**: 4 tables, clear data model  
+✅ **Flexible**: Multiple codes per promo for campaigns  
+✅ **Immutable**: Provider refs never change (new promo if terms change)  
+✅ **Auditable**: Full transaction trail with promo context  
+✅ **Provider-agnostic**: Maps to any provider's coupon system  
+✅ **Access-control safe**: Discounts completely separate from entitlements  
+✅ **Scalable to Phase 2**: Easy to add global limits, stacking, custom rules  
+
+---
+
 ## 5. API Endpoints
 
 ### 5.1 GET /v1/payment/plans/:appId
@@ -792,60 +1030,172 @@ appId: string (public_id of app)
 
 ---
 
-### 5.3 POST /v1/payment/webhook/:provider
+### 5.3 Webhook Endpoints (Provider-Specific Paths)
 
-**Purpose**: Receive and process webhook events from payment providers
+**DECISION**: Use provider-specific endpoints, NOT generic `/webhook/:provider` paths.
 
-**Authentication**: Webhook signature verification (provider-specific)
-
-**Parameters**:
-```typescript
-provider: 'stripe' | 'lemonsqueezy' | 'dodo'
+**Endpoints**:
+```
+POST /v1/webhooks/stripe
+POST /v1/webhooks/dodo
+POST /v1/webhooks/lemonsqueezy
 ```
 
-**Request Body**: Raw event body from provider
+**Why separate paths?**
+- Signature verification differs per provider (HMAC algorithm, header names)
+- Payload schemas differ significantly
+- Easier to rotate webhook secrets per provider
+- Easier to debug failures (specific provider logs)
+- Reduces branching at the security-critical path
+
+**Internal Routing Pattern**:
+```
+StripeWebhookHandler.verify() → normalize → PaymentEvent
+DodoWebhookHandler.verify()   → normalize → PaymentEvent
+LemonsqueezyWebhookHandler.verify() → normalize → PaymentEvent
+```
+
+Each handler validates signature with its provider-specific secret, then converts to common `PaymentEvent` type.
+
+---
+
+### 5.4 POST /v1/webhooks/stripe
+
+**Purpose**: Receive and process webhook events from Stripe
+
+**Authentication**: Stripe HMAC signature verification
+
+**Request Body**: Raw Stripe event body
 
 **Processing Steps**:
 1. **Log webhook immediately** → Create webhook_logs entry with status='not_started'
-2. Extract webhook signature from headers
-3. Get payment_provider config for app
+2. Extract `stripe-signature` header
+3. Get payment_provider config (Stripe webhook secret)
 4. **Update webhook_logs** → status='processing', processing_started_at=NOW()
-5. Verify signature using webhook_secret
+5. Verify signature using `stripe.webhooks.constructEvent()`
    - If invalid: Update webhook_logs → status='signature_failed', return 400
-6. Parse event based on provider
-7. Route to appropriate event handler
+6. Parse event, extract event_type and event_id
+7. Route to appropriate Stripe event handler
 8. Create/update license and payment_transaction
 9. **Update webhook_logs** → status='completed', payment_transaction_id, license_id, processing_completed_at=NOW()
-10. If error at any step: Update webhook_logs → status='failed', error_message, error_stack
+10. If error: Update webhook_logs → status='failed', error_message, error_stack
 
 **Webhook Logging Flow**:
 ```
-Webhook Received
+Webhook Received at /v1/webhooks/stripe
     ↓
 Create webhook_logs entry (status='not_started')
-  - request_body: full payload
-  - request_headers: all headers
-  - signature: webhook signature
+  - provider: 'stripe'
+  - request_body: full Stripe event
+  - request_headers: all headers (stripe-signature, etc.)
+  - signature: extracted from stripe-signature header
   - ip_address: requester IP
-  - provider: identified from URL
-  - event_type: extracted from payload
-  - event_id: provider's event ID
+  - event_type: event.type from payload
+  - event_id: event.id from payload
     ↓
 Update status='processing', processing_started_at=NOW()
     ↓
-[Process webhook logic]
-    ↓
-    ├─ SUCCESS: Update webhook_logs
-    │   - status='completed'
-    │   - payment_transaction_id (if created)
-    │   - license_id (if created/updated)
-    │   - processing_completed_at=NOW()
-    │   - processing_duration_ms=(completed - started)
-    │   - response_status=200
-    │   - response_body={ success: true }
+Verify signature with webhook_secret
+    ├─ INVALID: Update webhook_logs
+    │   - status='signature_failed'
+    │   - error_message='Invalid signature'
+    │   - Return 400
     │
-    └─ FAILURE: Update webhook_logs
-        - status='failed' (or 'signature_failed')
+    └─ VALID: Continue
+        ↓
+    Route event_type to handler
+      ├─ checkout.session.completed
+      ├─ invoice.paid
+      ├─ customer.subscription.updated
+      ├─ customer.subscription.deleted
+      ├─ charge.refunded
+      └─ charge.dispute.created
+        ↓
+    Execute handler (create/update license)
+        ↓
+    Create payment_transaction
+        ↓
+    Update webhook_logs
+    - status='completed'
+    - payment_transaction_id, license_id
+    - processing_completed_at=NOW()
+    - Return 200 { success: true }
+```
+
+**Error Handling**:
+```
+If error at any step:
+  - Update webhook_logs → status='failed'
+  - Log error_message and error_stack
+  - Return 500 (provider will retry)
+  - Mark for manual reprocessing
+```
+
+---
+
+### 5.5 POST /v1/webhooks/dodo
+
+**Purpose**: Receive and process webhook events from Dodo
+
+**Authentication**: Dodo signature verification (HMAC-SHA256)
+
+**Similar to Stripe**, but with Dodo-specific event types and verification.
+
+---
+
+### 5.6 POST /v1/webhooks/lemonsqueezy
+
+**Purpose**: Receive and process webhook events from Lemonsqueezy
+
+**Authentication**: Lemonsqueezy signature verification
+
+**Similar to Stripe**, but with Lemonsqueezy-specific event types and verification.
+
+---
+
+### 5.7 GET /v1/payment/license/:appId
+
+**Purpose**: Check user's current license status for an app
+
+**Authentication**: Required (user session cookie)
+
+**Parameters**:
+```typescript
+appId: string // public_id
+```
+
+**Response** (200 OK - License exists):
+```typescript
+{
+  hasLicense: true
+  license: {
+    publicId: string
+    status: 'active' | 'inactive' | 'canceled' | 'expired'
+    validUntil: ISO8601 | null  // null = perpetual
+    isValid: boolean             // validUntil > now
+  }
+}
+```
+
+**Response** (404 - No license):
+```typescript
+{
+  hasLicense: false
+  error: "No active license"
+}
+```
+
+**Caching**:
+- Cache key: `license:{appId}:{userId}`
+- TTL: 5 minutes
+- Hard delete on webhook updates (lazy re-warm)
+
+**Error Cases**:
+- 401: Not authenticated
+- 404: App not found, no license exists
+- 500: Database error
+
+---        - status='failed' (or 'signature_failed')
         - error_message
         - error_stack
         - response_status=400/500
@@ -1248,7 +1598,6 @@ DO UPDATE SET
 
 **Solution**: 
 1. Check if license exists for (user_id, app_id)
-
 2. If not, create it
 3. Extract user info from metadata
 
@@ -1321,6 +1670,169 @@ if (txn) {
   // New transaction record
   await createTransaction({ ... })
 }
+```
+
+### 8.7 Webhook Retry Policy (LOCKED DECISION)
+
+**Decision**: Exponential backoff + provider retries (NOT 3 retries only).
+
+**Provider-Native Retries** (First Line of Defense)
+- Stripe, Dodo, Lemonsqueezy all retry aggressively
+- Trust their retry logic
+- Your job: be **idempotent** (same webhook, same result)
+
+**Internal Retry Policy** (For YOUR Failures)
+
+When webhook processing fails (not signature failure):
+- Mark webhook_logs → status='failed', increment retry_count
+- Schedule retries with exponential backoff:
+
+| Attempt | Delay | Total Time |
+|---------|-------|-----------|
+| 1 | Immediate | ~0s |
+| 2 | +5 minutes | 5min |
+| 3 | +30 minutes | 35min |
+| 4 | +2 hours | 2h35min |
+| 5 | +24 hours | 26h35min |
+| After | Mark as failed, alert admin | — |
+
+**Implementation**:
+```typescript
+async function scheduleWebhookRetry(webhookLogId: number, attempt: number) {
+  const delays = [0, 5, 30, 120, 1440]; // minutes
+  const delayMs = delays[attempt] * 60 * 1000;
+  
+  if (attempt >= 5) {
+    // Give up, alert admin
+    await markWebhookFailed(webhookLogId);
+    await alertAdmin(`Webhook ${webhookLogId} failed after 5 attempts`);
+    return;
+  }
+  
+  // Schedule next retry
+  await queue.scheduleRetry(webhookLogId, delayMs);
+}
+```
+
+**Why this approach?**
+- Providers already retry aggressively → trust them
+- Your failures are rare (network, DB, bugs)
+- Exponential backoff prevents thundering herd
+- After 5 attempts (26+ hours), surfaces to admin
+- Idempotency is your safety net (duplicate webhooks are safe)
+
+---
+
+### 8.8 Cache Invalidation Strategy (LOCKED DECISION)
+
+**Decision**: Hard delete immediately, lazy re-warm.
+
+**On License Update** (via webhook):
+```typescript
+async function updateLicenseFromWebhook(userId: string, appId: string, newLicense: License) {
+  // 1. Update DB
+  await db.updateLicense(userId, appId, newLicense);
+  
+  // 2. HARD DELETE cache immediately
+  await redis.del(`license:${appId}:${userId}`);
+  await redis.del(`entitlement:${appId}:${userId}`);
+  
+  // Do NOT re-warm in webhook handler
+  // Let the next API call populate cache naturally
+}
+```
+
+**Why hard delete?**
+- Webhooks are write-heavy but sporadic
+- Cache re-warming inside webhook handler increases latency
+- Webhook handler should be fast (log, return 200)
+- Cache consumers (API requests) will naturally re-populate on next read
+
+**Cache Re-warming** (Lazy):
+```typescript
+async function getLicenseWithCache(userId: string, appId: string) {
+  const cacheKey = `license:${appId}:${userId}`;
+  
+  // Try cache first
+  const cached = await redis.get(cacheKey);
+  if (cached) {
+    return JSON.parse(cached);
+  }
+  
+  // Cache miss → fetch from DB
+  const license = await db.getLicense(userId, appId);
+  
+  // Store in cache for next time (5 minute TTL)
+  await redis.setex(cacheKey, 300, JSON.stringify(license));
+  
+  return license;
+}
+```
+
+**Result**:
+- Webhook completes fast (cache delete only)
+- Next API request pays the "re-warm" cost (DB fetch)
+- System stays responsive and simple
+
+---
+
+### 8.9 Plan Versioning Strategy (LOCKED DECISION)
+
+**Decision**: Create new plan row per price change (immutable versioning).
+
+**WRONG Approach** (Mutating in-place):
+```typescript
+// ❌ DON'T DO THIS
+UPDATE plans SET monthly_price = 700 WHERE slug = 'pro';
+```
+
+**Problems**:
+- Old subscriptions lose pricing history
+- Audit trail becomes unreliable
+- Licenses lose connection to original pricing
+- Can't answer "what price did user sign up at?"
+
+**RIGHT Approach** (Versioned slugs):
+```typescript
+// ✅ DO THIS
+// Old plan (retire)
+SELECT id FROM plans WHERE slug = 'pro' AND is_active = true;
+// Returns: plan_id = 123, monthly_price = 500
+
+// Create new version
+INSERT INTO plans (
+  app_id, slug, name, monthly_price, yearly_price, 
+  duration_days, features, is_active
+) VALUES (
+  1, 'pro_v2', 'Pro Plan', 700, 2400,
+  30, '["api_access"]', true
+);
+// Returns: plan_id = 124
+
+// Mark old plan inactive
+UPDATE plans SET is_active = false WHERE id = 123;
+```
+
+**Result**:
+- Existing users keep old pricing (plan_id = 123)
+- New users see new pricing (plan_id = 124)
+- Audit trail intact
+- Clean versioning history
+- Easy to revert (SET is_active = true WHERE id = 123)
+
+**Queries**:
+```sql
+-- Find what price user signed up at
+SELECT p.monthly_price, p.slug
+FROM licenses l
+JOIN plans p ON p.id = l.plan_id
+WHERE l.user_id = $1 AND l.app_id = $2;
+
+-- List all plan versions
+SELECT slug, monthly_price, is_active, created_at
+FROM plans
+WHERE app_id = $1
+ORDER BY slug, created_at DESC;
 ```
 
 ### 8.7 Webhook Reprocessing
@@ -1646,7 +2158,168 @@ Log these events for monitoring:
 
 ---
 
-## 12. Migration & Future-Proofing
+## 12. Provider Selection Scope (LOCKED DECISION)
+
+**Decision**: App-level only in Phase 1, project-level inheritance in Phase 2+.
+
+### Phase 1 (Current): App-Level Only
+
+**Structure**:
+```sql
+apps.selected_provider_config_id → payment_provider_configs.id
+```
+
+**Resolution**:
+```typescript
+async function getPaymentProvider(appId: string) {
+  const app = await getApp(appId);
+  return getPaymentProvider(app.selected_payment_provider_id);
+}
+```
+
+**Why app-level only?**
+- App is the commercial boundary
+- Each app can have different payment terms
+- Simplifies initial implementation
+- No inheritance logic needed yet
+
+### Phase 2 (Future): Project-Level Override
+
+**Extended structure**:
+```sql
+projects.payment_provider_override → payment_provider_configs.id (nullable)
+apps.selected_provider_config_id → payment_provider_configs.id
+```
+
+**Resolution order**:
+1. Project override (if present)
+2. App default (if present)
+3. Routing rules (country/currency, future)
+
+**Implementation** (when needed):
+```typescript
+async function getPaymentProvider(appId: string) {
+  const app = await getApp(appId);
+  const project = await getProject(app.project_id);
+  
+  // Priority: project override > app default
+  return getPaymentProvider(
+    project.payment_provider_override ||
+    app.selected_payment_provider_id
+  );
+}
+```
+
+---
+
+## 13. Paddle / Dodo Stubs Behind Feature Flags (LOCKED DECISION)
+
+**Decision**: Stub adapters behind feature flags (NOT omitted entirely).
+
+**Why stubs?**
+- Keeps adapter interface stable
+- Allows early testing with mocks
+- Avoids "Stripe-first" bias in core logic
+- Lets you validate routing logic early
+- Prepares for future integration
+
+### Implementation
+
+**Adapter Interface** (all providers implement):
+```typescript
+interface PaymentProvider {
+  createCheckout(plan, interval, user): Promise<CheckoutSession>
+  verifyWebhookSignature(payload, signature): boolean
+  parseWebhookEvent(payload): WebhookEvent
+  // ... more methods
+}
+```
+
+**Stripe** (full implementation):
+```typescript
+class StripeProvider implements PaymentProvider {
+  async createCheckout(plan, interval, user) {
+    // Real Stripe API calls
+  }
+  // All methods implemented
+}
+```
+
+**Lemonsqueezy** (full implementation):
+```typescript
+class LemonsqueezyProvider implements PaymentProvider {
+  async createCheckout(plan, interval, user) {
+    // Real Lemonsqueezy API calls
+  }
+  // All methods implemented
+}
+```
+
+**Dodo** (feature-flagged stub):
+```typescript
+class DodoProvider implements PaymentProvider {
+  async createCheckout(plan, interval, user) {
+    if (!isFeatureEnabled('payment_provider_dodo')) {
+      throw new Error('Dodo provider not yet available');
+    }
+    // Implementation TBD
+  }
+  
+  verifyWebhookSignature(payload, signature) {
+    throw new NotImplementedError('Dodo webhook verification');
+  }
+  // All methods throw NotImplementedError
+}
+```
+
+### Feature Flag Usage
+
+**Admin UI**:
+```typescript
+// Only show Dodo if flag is enabled
+const providers = [
+  { id: 'stripe', name: 'Stripe', enabled: true },
+  { id: 'lemonsqueezy', name: 'Lemonsqueezy', enabled: true },
+  { id: 'dodo', name: 'Dodo', enabled: isFeatureEnabled('payment_provider_dodo') },
+];
+```
+
+**Webhook Endpoints**:
+```typescript
+// Dodo webhook exists but disabled
+if (!isFeatureEnabled('payment_provider_dodo')) {
+  return res.status(503).json({ error: 'Dodo webhooks not yet enabled' });
+}
+```
+
+**Testing**:
+```typescript
+// Can test routing logic with mock Dodo before real credentials exist
+const mockDodo = new DodoProvider(); // throws NotImplementedError if called
+const router = new PaymentRouter([
+  stripe, lemonsqueezy, mockDodo
+]);
+// Router logic is fully tested before Dodo is live
+```
+
+**Rollout Path**:
+1. Merge stub with feature flag OFF
+2. Add real credentials to stub
+3. Implement all methods
+4. Test thoroughly with feature flag ON
+5. Enable feature flag for users gradually
+6. Monitor errors, then enable fully
+
+**Result**:
+- Core routing logic is provider-agnostic and tested early
+- Real implementations can be added without refactoring
+- Feature flags prevent premature rollout
+- Easy to switch providers mid-flight
+- No "Stripe-first" bias in design
+
+---
+
+## 14. Migration & Future-Proofing
 
 ### Migration Ready
 
@@ -1660,7 +2333,7 @@ INSERT INTO payment_providers (provider, entity_type, ...)
 VALUES ('dodo', 'app', ...);
 
 // Step 2: Update app to use Dodo
-UPDATE apps SET selected_payment_provider_id = [dodo_id]
+UPDATE apps SET selected_provider_config_id = [dodo_id]
 WHERE id = [app_id];
 
 // Step 3: Existing licenses continue working
