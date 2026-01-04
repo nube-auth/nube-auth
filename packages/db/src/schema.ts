@@ -324,6 +324,132 @@ export const licenses = pgTable(
 );
 
 /**
+ * Payment Transactions table
+ * Tracks all payment transactions across all providers
+ * Links to licenses for audit trail and reconciliation
+ */
+export const payment_transactions = pgTable(
+	"payment_transactions",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+
+		// Link to license
+		license_id: integer("license_id")
+			.notNull()
+			.references(() => licenses.id),
+
+		// Provider info
+		provider: varchar("provider", { length: 50 }).notNull(), // 'stripe', 'lemonsqueezy', 'dodo'
+		provider_transaction_id: varchar("provider_transaction_id", { length: 255 }).notNull(),
+		provider_customer_id: varchar("provider_customer_id", { length: 255 }),
+
+		// Transaction details
+		type: varchar("type", { length: 50 }).notNull(), // 'purchase', 'renewal', 'refund', 'chargeback', 'manual_adjustment'
+		status: varchar("status", { length: 20 }).notNull(), // 'success', 'failed', 'pending', 'disputed'
+
+		// Amount tracking (always in smallest currency unit - cents)
+		amount_cents: integer("amount_cents").notNull(),
+		currency: varchar("currency", { length: 3 }).notNull().default("usd"),
+
+		// Metadata
+		description: text("description"),
+		metadata: jsonb("metadata"), // Provider-specific data, plan details snapshot
+
+		// Timeline
+		transaction_date: timestamp("transaction_date").notNull(), // When it happened in provider
+		created_at: timestamp("created_at").notNull().defaultNow(),
+
+		// For disputes/chargebacks
+		dispute_reason: varchar("dispute_reason", { length: 255 }),
+		resolved_at: timestamp("resolved_at"),
+
+		// Admin audit
+		created_by_user_id: integer("created_by_user_id").references(() => users.id),
+		notes: text("notes"),
+	},
+	(table) => [
+		index("payment_transactions_license_id_idx").on(table.license_id),
+		index("payment_transactions_provider_transaction_idx").on(
+			table.provider_transaction_id
+		),
+		index("payment_transactions_provider_idx").on(table.provider),
+		index("payment_transactions_type_idx").on(table.type),
+		index("payment_transactions_status_idx").on(table.status),
+		index("payment_transactions_transaction_date_idx").on(table.transaction_date),
+		unique("payment_transactions_provider_id_unique").on(
+			table.provider,
+			table.provider_transaction_id,
+		),
+	],
+);
+
+/**
+ * Webhook Logs table
+ * Tracks all incoming webhook requests for debugging and reprocessing
+ */
+export const webhook_logs = pgTable(
+	"webhook_logs",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+
+		// Provider identification
+		provider: varchar("provider", { length: 50 }).notNull(), // 'stripe', 'lemonsqueezy', 'dodo'
+		event_type: varchar("event_type", { length: 100 }).notNull(), // e.g., 'checkout.session.completed'
+		event_id: varchar("event_id", { length: 255 }), // Provider's event ID (for deduplication)
+
+		// Request data
+		request_body: jsonb("request_body").notNull(), // Full webhook payload
+		request_headers: jsonb("request_headers"), // Headers (signature, content-type, etc.)
+		signature: text("signature"), // Webhook signature for verification
+		ip_address: varchar("ip_address", { length: 50 }),
+
+		// Processing status
+		status: varchar("status", { length: 20 }).notNull().default("not_started"), 
+		// 'not_started', 'processing', 'completed', 'failed', 'signature_failed', 'skipped'
+		
+		// Processing timeline
+		received_at: timestamp("received_at").notNull().defaultNow(),
+		processing_started_at: timestamp("processing_started_at"),
+		processing_completed_at: timestamp("processing_completed_at"),
+		processing_duration_ms: integer("processing_duration_ms"), // Calculated: completed - started
+
+		// Results
+		payment_transaction_id: integer("payment_transaction_id").references(() => payment_transactions.id),
+		license_id: integer("license_id").references(() => licenses.id),
+		
+		// Error tracking
+		error_message: text("error_message"),
+		error_stack: text("error_stack"),
+		retry_count: integer("retry_count").notNull().default(0),
+		last_retry_at: timestamp("last_retry_at"),
+
+		// Response details
+		response_status: integer("response_status"), // HTTP status code we returned
+		response_body: jsonb("response_body"), // Response we sent back
+
+		// Metadata
+		metadata: jsonb("metadata"), // Any extracted metadata (userId, appId, etc.)
+		notes: text("notes"), // Admin notes for manual investigation
+
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [
+		index("webhook_logs_provider_idx").on(table.provider),
+		index("webhook_logs_event_type_idx").on(table.event_type),
+		index("webhook_logs_event_id_idx").on(table.event_id),
+		index("webhook_logs_status_idx").on(table.status),
+		index("webhook_logs_received_at_idx").on(table.received_at),
+		index("webhook_logs_payment_transaction_id_idx").on(table.payment_transaction_id),
+		index("webhook_logs_license_id_idx").on(table.license_id),
+		// Optional: unique constraint on (provider, event_id) if providers guarantee unique event IDs
+		unique("webhook_logs_provider_event_unique").on(table.provider, table.event_id),
+	],
+);
+
+/**
  * EmailVerifications table
  * OTP codes for email verification
  */

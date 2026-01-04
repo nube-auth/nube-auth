@@ -11,6 +11,7 @@ import { rateLimitPresets } from "./middleware/rateLimit";
 import { adminRoutes } from "./routes/admin";
 import { authRoutes } from "./routes/auth";
 import { meRoutes } from "./routes/me";
+import { paymentsRoutes } from "./routes/payments";
 
 const log = createLogger("gateway");
 const app = new Hono();
@@ -91,11 +92,13 @@ app.use("/v1/auth/*", rateLimitPresets.auth);
 // Apply standard rate limiting to API endpoints
 app.use("/v1/admin/*", rateLimitPresets.api);
 app.use("/v1/me/*", rateLimitPresets.api);
+app.use("/v1/payment/*", rateLimitPresets.api);
 
 // Routes
 app.route("/v1/auth", authRoutes);
 app.route("/v1/me", meRoutes);
 app.route("/v1/admin", adminRoutes);
+app.route("/v1/payment", paymentsRoutes);
 
 // Health check
 app.get("/health", (c) => {

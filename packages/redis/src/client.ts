@@ -323,13 +323,14 @@ export const sessionStore = {
 		}
 	},
 
-	async revokeUserSessions(userId: string): Promise<void> {
+	async revokeUserSessions(userId: string): Promise<{ deletedCount: number; cursor: number }> {
 		try {
 			const client = await getRedisClient();
 			const pattern = `session:app:*`;
+			let deletedCount = 0;
+			let cursor = 0;
 
 			// Use SCAN instead of KEYS for production
-			let cursor = 0;
 			do {
 				const result = await client.scan(cursor, {
 					MATCH: pattern,
@@ -343,12 +344,50 @@ export const sessionStore = {
 						const parsed = JSON.parse(session);
 						if (parsed.userId === userId) {
 							await client.del(key);
+							deletedCount++;
 						}
 					}
 				}
 			} while (cursor !== 0);
+
+			return { deletedCount, cursor: 0 };
 		} catch (error) {
 			console.error(`Session store revokeUserSessions error:`, error);
+			return { deletedCount: 0, cursor: 0 };
+		}
+	},
+
+	async getUserSessions(userId: string): Promise<Array<{ id: string; sessionData: any }>> {
+		try {
+			const client = await getRedisClient();
+			const pattern = `session:app:*`;
+			const sessions = [];
+			let cursor = 0;
+
+			// Use SCAN instead of KEYS for production
+			do {
+				const result = await client.scan(cursor, {
+					MATCH: pattern,
+					COUNT: 100,
+				});
+				cursor = result.cursor;
+
+				for (const key of result.keys) {
+					const session = await client.get(key);
+					if (session) {
+						const parsed = JSON.parse(session);
+						if (parsed.userId === userId) {
+							const sessionId = key.replace("session:app:", "");
+							sessions.push({ id: sessionId, sessionData: parsed });
+						}
+					}
+				}
+			} while (cursor !== 0);
+
+			return sessions;
+		} catch (error) {
+			console.error(`Session store getUserSessions error:`, error);
+			return [];
 		}
 	},
 };

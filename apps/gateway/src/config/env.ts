@@ -18,9 +18,12 @@ export interface Env {
 	GATEWAY_PUBLIC_URL: string;
 	USER_DASHBOARD_URL: string;
 	ADMIN_DASHBOARD_URL: string;
+	FRONTEND_URL: string;
 	COOKIE_DOMAIN: string;
 	SEND_EMAILS: boolean;
 	EMAIL_FROM: string;
+	STRIPE_SECRET_KEY: string;
+	STRIPE_WEBHOOK_SECRET: string;
 
 	// SMTP for local email testing (auto-enabled in development)
 	SMTP_HOST: string;
@@ -71,9 +74,12 @@ function validateEnv(): Env {
 		GATEWAY_PUBLIC_URL: process.env["GATEWAY_PUBLIC_URL"] || "https://api.proofa.sh",
 		USER_DASHBOARD_URL: process.env["USER_DASHBOARD_URL"] || "https://user.proofa.sh",
 		ADMIN_DASHBOARD_URL: process.env["ADMIN_DASHBOARD_URL"] || "https://manage.proofa.sh",
+		FRONTEND_URL: process.env["FRONTEND_URL"] || "https://user.proofa.sh",
 		COOKIE_DOMAIN: process.env["COOKIE_DOMAIN"] || "proofa.sh",
 		SEND_EMAILS: process.env["SEND_EMAILS"] === "true",
 		EMAIL_FROM: process.env["EMAIL_FROM"] || "noreply@proofa.sh",
+		STRIPE_SECRET_KEY: process.env["STRIPE_SECRET_KEY"] || "",
+		STRIPE_WEBHOOK_SECRET: process.env["STRIPE_WEBHOOK_SECRET"] || "",
 		SMTP_HOST: process.env["SMTP_HOST"] ?? "localhost",
 		SMTP_PORT: parseInt(process.env["SMTP_PORT"] ?? "1025", 10),
 

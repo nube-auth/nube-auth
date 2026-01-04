@@ -652,3 +652,157 @@ authRoutes.get("/status", async (c: Context) => {
 		return c.json({ loggedIn: false });
 	}
 });
+
+/**
+ * GET /v1/auth/sessions
+ * List all active sessions for the current user
+ */
+authRoutes.get("/sessions", async (c: Context) => {
+	try {
+		const adminCookie = getCookie(c, ADMIN_SESSION_COOKIE);
+		const userCookie = getCookie(c, USER_SESSION_COOKIE);
+
+		const cookiesToCheck: Array<{ cookie: string; cookieName: string }> = [];
+		if (adminCookie) cookiesToCheck.push({ cookie: adminCookie, cookieName: ADMIN_SESSION_COOKIE });
+		if (userCookie) cookiesToCheck.push({ cookie: userCookie, cookieName: USER_SESSION_COOKIE });
+
+		if (cookiesToCheck.length === 0) {
+			return c.json({ error: "Not authenticated" }, 401);
+		}
+
+		let currentUserId: string | undefined;
+		const activeSessions = [];
+
+		// Get current user ID and collect all their sessions
+		for (const { cookie, cookieName } of cookiesToCheck) {
+			const sessionId = parseSessionCookie(cookie);
+			if (!sessionId) continue;
+
+			const appSession = await sessionStore.getAppSession(sessionId);
+			if (!appSession) continue;
+
+			const coreSessionId = appSession.metadata?.["coreSessionId"] as string | undefined;
+			if (!coreSessionId) continue;
+
+			const user = await coreClient.exchangeSession(coreSessionId);
+			if (!user) continue;
+
+			currentUserId = user.userId;
+			break; // Found valid session, get user ID
+		}
+
+		if (!currentUserId) {
+			return c.json({ error: "Invalid session" }, 401);
+		}
+
+		// Get all sessions for this user by scanning Redis
+		const { cursor: _finalCursor, keys: sessionKeys } = await sessionStore.revokeUserSessions(currentUserId);
+
+		// Actually list sessions (need to implement list variant)
+		const pattern = `session:app:*`;
+		const allSessionKeys = await cache.keys(pattern);
+
+		for (const key of allSessionKeys) {
+			const sessionData = await cache.get<{ userId: string; appId: string; metadata?: Record<string, unknown> }>(key);
+			if (sessionData && sessionData.userId === currentUserId) {
+				const sessionId = key.replace("session:app:", "");
+				activeSessions.push({
+					id: sessionId,
+					appId: sessionData.appId,
+					createdAt: (sessionData.metadata?.["createdAt"] as string) || new Date().toISOString(),
+					lastActivity: (sessionData.metadata?.["lastActivity"] as string) || new Date().toISOString(),
+					isCurrentSession: sessionId === parseSessionCookie(userCookie || adminCookie || ""),
+				});
+			}
+		}
+
+		return c.json({
+			sessions: activeSessions.sort(
+				(a, b) => new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime(),
+			),
+		});
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Sessions list error:");
+		return c.json({ error: "Failed to list sessions" }, 500);
+	}
+});
+
+/**
+ * DELETE /v1/auth/sessions/:sessionId
+ * Revoke a specific session by ID
+ */
+authRoutes.delete("/sessions/:sessionId", async (c: Context) => {
+	try {
+		const sessionIdToRevoke = c.req.param("sessionId");
+		const adminCookie = getCookie(c, ADMIN_SESSION_COOKIE);
+		const userCookie = getCookie(c, USER_SESSION_COOKIE);
+
+		const cookiesToCheck: Array<string> = [];
+		if (adminCookie) cookiesToCheck.push(adminCookie);
+		if (userCookie) cookiesToCheck.push(userCookie);
+
+		if (cookiesToCheck.length === 0) {
+			return c.json({ error: "Not authenticated" }, 401);
+		}
+
+		let currentUserId: string | undefined;
+		let currentSessionId: string | undefined;
+
+		// Get current user ID to ensure they can only revoke their own sessions
+		for (const cookie of cookiesToCheck) {
+			const parsedSessionId = parseSessionCookie(cookie);
+			if (!parsedSessionId) continue;
+
+			const appSession = await sessionStore.getAppSession(parsedSessionId);
+			if (!appSession) continue;
+
+			const coreSessionId = appSession.metadata?.["coreSessionId"] as string | undefined;
+			if (!coreSessionId) continue;
+
+			const user = await coreClient.exchangeSession(coreSessionId);
+			if (!user) continue;
+
+			currentUserId = user.userId;
+			currentSessionId = parsedSessionId;
+			break;
+		}
+
+		if (!currentUserId) {
+			return c.json({ error: "Invalid session" }, 401);
+		}
+
+		// Verify the session to revoke belongs to the current user
+		const sessionToRevoke = await sessionStore.getAppSession(sessionIdToRevoke);
+		if (!sessionToRevoke) {
+			return c.json({ error: "Session not found" }, 404);
+		}
+
+		if (sessionToRevoke.userId !== currentUserId) {
+			return c.json({ error: "Cannot revoke other users' sessions" }, 403);
+		}
+
+		// Prevent revoking current session via this endpoint (use /logout instead)
+		if (sessionIdToRevoke === currentSessionId) {
+			return c.json(
+				{ error: "Use /logout endpoint to revoke current session" },
+				400,
+			);
+		}
+
+		// Revoke the session
+		await sessionStore.revokeAppSession(sessionIdToRevoke);
+
+		log.info(
+			{
+				userId: currentUserId,
+				revokedSessionId: `${sessionIdToRevoke.substring(0, 8)}...`,
+			},
+			"Session revoked by user",
+		);
+
+		return c.json({ message: "Session revoked successfully" });
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Session revocation error:");
+		return c.json({ error: "Failed to revoke session" }, 500);
+	}
+});
