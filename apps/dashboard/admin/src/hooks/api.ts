@@ -821,3 +821,326 @@ export function useSelectPaymentProvider(appId: string) {
 		},
 	});
 }
+
+// ============================================
+// BILLING API HOOKS
+// ============================================
+
+interface BillingPurchase {
+	id: string;
+	app_id: string;
+	user_id: string;
+	provider: "lemon_squeezy" | "paddle";
+	provider_purchase_id: string;
+	amount: number;
+	currency: string;
+	status: string;
+	created_at: string;
+	updated_at: string;
+	app?: { id: string; name: string };
+	user?: { id: string; email: string };
+}
+
+interface BillingTransaction {
+	id: string;
+	purchase_id: string;
+	type: "purchase" | "renewal" | "refund" | "chargeback" | "manual_adjustment";
+	status: "pending" | "completed" | "failed";
+	amount: number;
+	currency: string;
+	provider: "lemon_squeezy" | "paddle";
+	created_at: string;
+	updated_at: string;
+	purchase?: BillingPurchase;
+}
+
+interface BillingStats {
+	revenue: {
+		total: number;
+		by_type: Record<string, number>;
+		by_provider: Record<string, number>;
+		by_currency: Record<string, number>;
+	};
+	refunds: {
+		total: number;
+		percentage: number;
+	};
+	subscriptions: {
+		active: number;
+	};
+	transactions: {
+		total: number;
+		last_30_days: number;
+	};
+	webhooks: {
+		success: number;
+		failed: number;
+		processing: number;
+	};
+}
+
+export function useBillingPurchases(filters?: {
+	status?: string;
+	provider?: string;
+	app_id?: string;
+	limit?: number;
+	offset?: number;
+	start_date?: string;
+	end_date?: string;
+}) {
+	const queryParams = new URLSearchParams();
+	if (filters) {
+		Object.entries(filters).forEach(([key, value]) => {
+			if (value !== undefined && value !== null) {
+				queryParams.set(key, String(value));
+			}
+		});
+	}
+	const queryString = queryParams.toString() ? `?${queryParams.toString()}` : "";
+
+	return useQuery({
+		queryKey: ["billing", "purchases", filters],
+		queryFn: async () => {
+			const data = await fetchAPI<{
+				data: BillingPurchase[];
+				pagination: { total: number; limit: number; offset: number; hasMore: boolean };
+			}>(`/v1/admin/billing/purchases${queryString}`);
+			return data;
+		},
+		staleTime: 2 * 60 * 1000, // 2 minutes
+		refetchOnWindowFocus: false,
+	});
+}
+
+export function useBillingPurchaseDetail(purchaseId: string) {
+	return useQuery({
+		queryKey: ["billing", "purchase", purchaseId],
+		queryFn: async () => {
+			return fetchAPI<{ data: BillingPurchase }>(`/v1/admin/billing/purchases/${purchaseId}`);
+		},
+		enabled: !!purchaseId,
+		staleTime: 2 * 60 * 1000,
+		refetchOnWindowFocus: false,
+	});
+}
+
+export function useBillingTransactions(filters?: {
+	type?: string;
+	status?: string;
+	provider?: string;
+	limit?: number;
+	offset?: number;
+	start_date?: string;
+	end_date?: string;
+}) {
+	const queryParams = new URLSearchParams();
+	if (filters) {
+		Object.entries(filters).forEach(([key, value]) => {
+			if (value !== undefined && value !== null) {
+				queryParams.set(key, String(value));
+			}
+		});
+	}
+	const queryString = queryParams.toString() ? `?${queryParams.toString()}` : "";
+
+	return useQuery({
+		queryKey: ["billing", "transactions", filters],
+		queryFn: async () => {
+			const data = await fetchAPI<{
+				data: BillingTransaction[];
+				pagination: { total: number; limit: number; offset: number; hasMore: boolean };
+			}>(`/v1/admin/billing/transactions${queryString}`);
+			return data;
+		},
+		staleTime: 2 * 60 * 1000,
+		refetchOnWindowFocus: false,
+	});
+}
+
+export function useBillingStats(filters?: { start_date?: string; end_date?: string; provider?: string }) {
+	const queryParams = new URLSearchParams();
+	if (filters) {
+		Object.entries(filters).forEach(([key, value]) => {
+			if (value !== undefined && value !== null) {
+				queryParams.set(key, String(value));
+			}
+		});
+	}
+	const queryString = queryParams.toString() ? `?${queryParams.toString()}` : "";
+
+	return useQuery({
+		queryKey: ["billing", "stats", filters],
+		queryFn: async () => {
+			return fetchAPI<{ data: BillingStats }>(`/v1/admin/billing/stats${queryString}`);
+		},
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+	});
+}
+
+// ============================================
+// PAYMENT PROVIDER HEALTH
+// ============================================
+
+interface ProviderHealth {
+	provider: string;
+	healthy: boolean;
+	lastWebhook?: string;
+	lastWebhookStatus?: "success" | "failed";
+	successRate: number;
+	failedWebhooks: number;
+}
+
+export function useProviderHealth(providerId: string) {
+	return useQuery({
+		queryKey: ["provider-health", providerId],
+		queryFn: async () => {
+			return fetchAPI<{ data: ProviderHealth }>(`/v1/admin/payment-providers/${providerId}/health`);
+		},
+		enabled: !!providerId,
+		staleTime: 1 * 60 * 1000, // 1 minute for fresher health data
+		refetchOnWindowFocus: false,
+	});
+}
+
+// ============================================
+// WEBHOOK MONITORING
+// ============================================
+
+interface WebhookLog {
+	id: string;
+	provider: "lemon_squeezy" | "paddle";
+	event_type: string;
+	event_id: string;
+	status: "not_started" | "processing" | "success" | "failed";
+	ip_address: string;
+	processing_duration_ms: number;
+	error_message?: string;
+	retry_count: number;
+	received_at: string;
+	processing_completed_at?: string;
+}
+
+interface WebhookDetail extends WebhookLog {
+	request_body: Record<string, any>;
+	request_headers: Record<string, string>;
+	signature: string;
+	error_stack?: string;
+	processing_started_at?: string;
+	last_retry_at?: string;
+}
+
+export function useWebhookLogs(filters?: {
+	provider?: string;
+	status?: string;
+	event_type?: string;
+	limit?: number;
+	offset?: number;
+	start_date?: string;
+	end_date?: string;
+}) {
+	const queryParams = new URLSearchParams();
+	if (filters) {
+		Object.entries(filters).forEach(([key, value]) => {
+			if (value !== undefined && value !== null) {
+				queryParams.set(key, String(value));
+			}
+		});
+	}
+	const queryString = queryParams.toString() ? `?${queryParams.toString()}` : "";
+
+	return useQuery({
+		queryKey: ["webhooks", filters],
+		queryFn: async () => {
+			const data = await fetchAPI<{
+				webhooks: WebhookLog[];
+				pagination: { total: number; limit: number; offset: number; hasMore: boolean };
+			}>(`/v1/admin/billing/webhooks${queryString}`);
+			return data;
+		},
+		staleTime: 30 * 1000, // 30 seconds for webhook data
+		refetchOnWindowFocus: false,
+	});
+}
+
+export function useWebhookDetail(webhookId: string) {
+	return useQuery({
+		queryKey: ["webhook", webhookId],
+		queryFn: async () => {
+			return fetchAPI<WebhookDetail>(`/v1/admin/billing/webhooks/${webhookId}`);
+		},
+		enabled: !!webhookId,
+		staleTime: 2 * 60 * 1000,
+		refetchOnWindowFocus: false,
+	});
+}
+
+// ============================================
+// REFUND PROCESSING
+// ============================================
+
+interface Refund {
+	id: string;
+	provider: "lemon_squeezy" | "paddle";
+	purchase_id: string;
+	amount: number;
+	currency: string;
+	status: "pending" | "processing" | "completed" | "failed";
+	reason: string;
+	created_at: string;
+	completed_at?: string;
+	provider_refund_id?: string;
+	error_message?: string;
+	purchase?: BillingPurchase;
+}
+
+export function useBillingRefunds(filters?: {
+	status?: string;
+	provider?: string;
+	purchase_id?: string;
+	limit?: number;
+	offset?: number;
+	start_date?: string;
+	end_date?: string;
+}) {
+	const queryParams = new URLSearchParams();
+	if (filters) {
+		Object.entries(filters).forEach(([key, value]) => {
+			if (value !== undefined && value !== null) {
+				queryParams.set(key, String(value));
+			}
+		});
+	}
+	const queryString = queryParams.toString() ? `?${queryParams.toString()}` : "";
+
+	return useQuery({
+		queryKey: ["billing", "refunds", filters],
+		queryFn: async () => {
+			const data = await fetchAPI<{
+				refunds: Refund[];
+				pagination: { total: number; limit: number; offset: number; hasMore: boolean };
+			}>(`/v1/admin/billing/refunds${queryString}`);
+			return data;
+		},
+		staleTime: 2 * 60 * 1000,
+		refetchOnWindowFocus: false,
+	});
+}
+
+export function useCreateRefund() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (data: { purchase_id: string; amount: number; reason: string }) => {
+			return fetchAPI<{ refund: Refund }>("/v1/admin/billing/refunds", {
+				method: "POST",
+				body: JSON.stringify(data),
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["billing", "refunds"] });
+			queryClient.invalidateQueries({ queryKey: ["billing", "purchases"] });
+			queryClient.invalidateQueries({ queryKey: ["billing", "transactions"] });
+		},
+	});
+}

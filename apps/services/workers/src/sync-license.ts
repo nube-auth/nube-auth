@@ -11,21 +11,23 @@
 
 import { createLogger, serializeError } from "@proofa/shared";
 import type { Worker } from "bullmq";
-import { getQueueClient } from "@proofa/queue";
-import { getDb } from "@proofa/db";
+import { QueueClient } from "@proofa/queue";
 
 const log = createLogger("sync-license-worker");
 
 export interface SyncLicenseJobData {
+	type: "SYNC_LICENSE";
 	purchaseId: number;
 	appId: number;
 	subjectType: string;
 	subjectId: number;
+	timestamp: number;
 }
 
 export async function setupSyncLicenseWorker(): Promise<Worker<SyncLicenseJobData>> {
 	const { Worker: BullWorker } = await import("bullmq");
-	const redisConnection = getQueueClient();
+	const queueClient = new QueueClient();
+	const queue = queueClient.getQueue("SYNC_LICENSE");
 	return new BullWorker<SyncLicenseJobData>(
 		"SYNC_LICENSE",
 		async (job) => {
@@ -40,15 +42,6 @@ export async function setupSyncLicenseWorker(): Promise<Worker<SyncLicenseJobDat
 				);
 
 				const { purchaseId, appId, subjectType, subjectId } = job.data;
-				const db = getDb();
-
-			// Get purchase with related plan/price info via dynamic import
-			const { PurchasesService } = await import("@proofa/core/billing");
-				const purchase = await PurchasesService.getPurchase(purchaseId);
-				if (!purchase) {
-					log.error({ purchaseId }, "Purchase not found");
-					throw new Error(`Purchase ${purchaseId} not found`);
-				}
 
 				// TODO: Phase 2 - Integrate with actual license system
 				// This is a placeholder that just logs the sync
@@ -89,7 +82,7 @@ export async function setupSyncLicenseWorker(): Promise<Worker<SyncLicenseJobDat
 			}
 		},
 		{
-			connection: redisConnection,
+			connection: queue.client as any,
 			concurrency: 5,
 		},
 	);

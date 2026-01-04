@@ -674,7 +674,7 @@ authRoutes.get("/sessions", async (c: Context) => {
 		const activeSessions = [];
 
 		// Get current user ID and collect all their sessions
-		for (const { cookie, cookieName } of cookiesToCheck) {
+		for (const { cookie, cookieName: _cookieName } of cookiesToCheck) {
 			const sessionId = parseSessionCookie(cookie);
 			if (!sessionId) continue;
 
@@ -695,25 +695,18 @@ authRoutes.get("/sessions", async (c: Context) => {
 			return c.json({ error: "Invalid session" }, 401);
 		}
 
-		// Get all sessions for this user by scanning Redis
-		const { cursor: _finalCursor, keys: sessionKeys } = await sessionStore.revokeUserSessions(currentUserId);
+		// Get all sessions for this user
+		const userSessions = await sessionStore.getUserSessions(currentUserId);
 
-		// Actually list sessions (need to implement list variant)
-		const pattern = `session:app:*`;
-		const allSessionKeys = await cache.keys(pattern);
-
-		for (const key of allSessionKeys) {
-			const sessionData = await cache.get<{ userId: string; appId: string; metadata?: Record<string, unknown> }>(key);
-			if (sessionData && sessionData.userId === currentUserId) {
-				const sessionId = key.replace("session:app:", "");
-				activeSessions.push({
-					id: sessionId,
-					appId: sessionData.appId,
-					createdAt: (sessionData.metadata?.["createdAt"] as string) || new Date().toISOString(),
-					lastActivity: (sessionData.metadata?.["lastActivity"] as string) || new Date().toISOString(),
-					isCurrentSession: sessionId === parseSessionCookie(userCookie || adminCookie || ""),
-				});
-			}
+		for (const session of userSessions) {
+			const sessionData = session.sessionData;
+			activeSessions.push({
+				id: session.id,
+				appId: sessionData.appId,
+				createdAt: (sessionData.metadata?.["createdAt"] as string) || new Date().toISOString(),
+				lastActivity: (sessionData.metadata?.["lastActivity"] as string) || new Date().toISOString(),
+				isCurrentSession: session.id === parseSessionCookie(userCookie || adminCookie || ""),
+			});
 		}
 
 		return c.json({

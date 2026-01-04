@@ -61,7 +61,7 @@ export function getDb(): DbClient {
 }
 
 // Export drizzle-orm operators for queries
-export { and, asc, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
+export { and, asc, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 // Export JSONB utilities
 export {
 	buildJsonbMergeClause,

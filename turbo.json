@@ -10,7 +10,7 @@
 			"dependsOn": ["^build"]
 		},
 		"build": {
-			"dependsOn": ["^build"],
+			"dependsOn": ["^build", "typecheck"],
 			"outputs": ["dist/**", ".next/**", ".astro/**"],
 			"cache": true
 		},

@@ -585,6 +585,80 @@ export const payment_transactions = pgTable(
 );
 
 /**
+ * Subscriptions table
+ * Tracks recurring payment subscriptions across providers
+ */
+export const subscriptions = pgTable(
+	"subscriptions",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+
+		// Link to purchase & license
+		purchase_id: integer("purchase_id")
+			.notNull()
+			.references(() => purchases.id),
+		license_id: integer("license_id")
+			.notNull()
+			.references(() => licenses.id),
+
+		// Provider info
+		provider_config_id: integer("provider_config_id")
+			.notNull()
+			.references(() => payment_provider_configs.id),
+		provider: varchar("provider", { length: 50 }).notNull(), // 'stripe', 'lemon_squeezy', 'paddle'
+		provider_subscription_id: varchar("provider_subscription_id", { length: 255 }).notNull(),
+		provider_customer_id: varchar("provider_customer_id", { length: 255 }),
+
+		// Plan & pricing
+		plan_provider_price_id: integer("plan_provider_price_id")
+			.notNull()
+			.references(() => plan_provider_prices.id),
+
+		// Subscription status
+		status: varchar("status", { length: 50 }).notNull(), // 'active', 'canceled', 'past_due', 'unpaid', 'trialing', 'paused'
+		billing_interval: varchar("billing_interval", { length: 20 }).notNull(), // 'monthly', 'yearly', 'quarterly'
+
+		// Billing period tracking
+		billing_period_start: timestamp("billing_period_start"),
+		billing_period_end: timestamp("billing_period_end"),
+		next_billing_date: timestamp("next_billing_date"),
+
+		// Cancellation tracking
+		cancel_at_period_end: boolean("cancel_at_period_end").notNull().default(false),
+		canceled_at: timestamp("canceled_at"),
+		ended_at: timestamp("ended_at"),
+
+		// Trial tracking
+		trial_start: timestamp("trial_start"),
+		trial_end: timestamp("trial_end"),
+
+		// Amount tracking (always in smallest currency unit - cents)
+		amount_cents: integer("amount_cents").notNull(),
+		currency: varchar("currency", { length: 3 }).notNull().default("usd"),
+
+		// Metadata
+		metadata: jsonb("metadata"), // Provider-specific data
+
+		// Timeline
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [
+		index("subscriptions_purchase_id_idx").on(table.purchase_id),
+		index("subscriptions_license_id_idx").on(table.license_id),
+		index("subscriptions_provider_config_id_idx").on(table.provider_config_id),
+		index("subscriptions_provider_subscription_id_idx").on(table.provider_subscription_id),
+		index("subscriptions_status_idx").on(table.status),
+		index("subscriptions_next_billing_date_idx").on(table.next_billing_date),
+		unique("subscriptions_provider_subscription_unique").on(
+			table.provider_config_id,
+			table.provider_subscription_id,
+		),
+	],
+);
+
+/**
  * Webhook Logs table
  * Tracks all incoming webhook requests for debugging and reprocessing
  */

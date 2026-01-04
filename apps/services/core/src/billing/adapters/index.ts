@@ -1,10 +1,6 @@
 /**
- * Payment Provider Adapters
- *
- * Exports all provider adapter implementations and factory
+ * Adapters Index
+ * Phase 2 Implementation Pending
  */
-
+export * from "./factory.js";
 export * from "./types.js";
-export { StripeAdapter } from "./stripe.js";
-export { LemonSqueezyAdapter } from "./lemon-squeezy.js";
-export { ProviderAdapterFactory, ProviderRegistry, providerRegistry } from "./factory.js";

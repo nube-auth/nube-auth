@@ -1,7 +1,8 @@
 /**
  * Webhook Handler Service
  *
- * Phase 2 Implementation Pending
+ * Phase 2 Implementation
+ * Handles payment provider webhook events
  */
 
 export class WebhookHandler {

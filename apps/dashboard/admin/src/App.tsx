@@ -14,6 +14,10 @@ import AppPaymentSettingsPage from "./pages/AppPaymentSettings";
 import { AppSettingsPage } from "./pages/AppSettings";
 import { AppSetupPage } from "./pages/AppSetup";
 import { AppUsersPage } from "./pages/AppUsers";
+import { BillingDashboardPage } from "./pages/BillingDashboard";
+import WebhookMonitoringPage from "./pages/WebhookMonitoring";
+import RefundProcessingPage from "./pages/RefundProcessing";
+import TransactionExportPage from "./pages/TransactionExport";
 import { LicensesPage } from "./pages/Licenses";
 import { LoginPage } from "./pages/Login";
 import { OnboardingPage } from "./pages/Onboarding";
@@ -439,8 +443,8 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 				)}
 
 				<nav className="sidebar-nav">
-					{/* Context 1: Global View (at /projects) */}
-					{location.pathname === "/projects" && (
+					{/* Context 1: Global View (at /projects or /billing) */}
+					{(location.pathname === "/projects" || location.pathname === "/billing") && (
 						<div className="sidebar-section">
 							<SidebarLink
 								to="/projects"
@@ -456,6 +460,66 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 								}
 							>
 								Projects
+							</SidebarLink>
+							<SidebarLink
+								to="/billing"
+								icon={
+									<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+										/>
+									</svg>
+								}
+							>
+								Billing
+							</SidebarLink>
+							<SidebarLink
+								to="/webhooks"
+								icon={
+									<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+										/>
+									</svg>
+								}
+							>
+								Webhooks
+							</SidebarLink>
+							<SidebarLink
+								to="/refunds"
+								icon={
+									<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M9 15l3-3m0 0l3 3m-3-3v6m0 0H6a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2h-3"
+										/>
+									</svg>
+								}
+							>
+								Refunds
+							</SidebarLink>
+							<SidebarLink
+								to="/export"
+								icon={
+									<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+										/>
+									</svg>
+								}
+							>
+								Export
 							</SidebarLink>
 							<a href={config.docsUrl} target="_blank" rel="noopener noreferrer" className="sidebar-link">
 								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -962,6 +1026,38 @@ function App() {
 							element={
 								<ProtectedLayout>
 									<LicensesPage />
+								</ProtectedLayout>
+							}
+						/>
+						<Route
+							path="/billing"
+							element={
+								<ProtectedLayout>
+									<BillingDashboardPage />
+								</ProtectedLayout>
+							}
+						/>
+						<Route
+							path="/webhooks"
+							element={
+								<ProtectedLayout>
+									<WebhookMonitoringPage />
+								</ProtectedLayout>
+							}
+						/>
+						<Route
+							path="/refunds"
+							element={
+								<ProtectedLayout>
+									<RefundProcessingPage />
+								</ProtectedLayout>
+							}
+						/>
+						<Route
+							path="/export"
+							element={
+								<ProtectedLayout>
+									<TransactionExportPage />
 								</ProtectedLayout>
 							}
 						/>

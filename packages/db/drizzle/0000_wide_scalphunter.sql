@@ -328,6 +328,35 @@ CREATE TABLE "sessions" (
 	CONSTRAINT "sessions_public_id_unique" UNIQUE("public_id")
 );
 --> statement-breakpoint
+CREATE TABLE "subscriptions" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"public_id" varchar(255) NOT NULL,
+	"purchase_id" integer NOT NULL,
+	"license_id" integer NOT NULL,
+	"provider_config_id" integer NOT NULL,
+	"provider" varchar(50) NOT NULL,
+	"provider_subscription_id" varchar(255) NOT NULL,
+	"provider_customer_id" varchar(255),
+	"plan_provider_price_id" integer NOT NULL,
+	"status" varchar(50) NOT NULL,
+	"billing_interval" varchar(20) NOT NULL,
+	"billing_period_start" timestamp,
+	"billing_period_end" timestamp,
+	"next_billing_date" timestamp,
+	"cancel_at_period_end" boolean DEFAULT false NOT NULL,
+	"canceled_at" timestamp,
+	"ended_at" timestamp,
+	"trial_start" timestamp,
+	"trial_end" timestamp,
+	"amount_cents" integer NOT NULL,
+	"currency" varchar(3) DEFAULT 'usd' NOT NULL,
+	"metadata" jsonb,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "subscriptions_public_id_unique" UNIQUE("public_id"),
+	CONSTRAINT "subscriptions_provider_subscription_unique" UNIQUE("provider_config_id","provider_subscription_id")
+);
+--> statement-breakpoint
 CREATE TABLE "users" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"public_id" varchar(255) NOT NULL,
@@ -414,6 +443,10 @@ ALTER TABLE "purchases" ADD CONSTRAINT "purchases_app_id_apps_id_fk" FOREIGN KEY
 ALTER TABLE "purchases" ADD CONSTRAINT "purchases_plan_provider_price_id_plan_provider_prices_id_fk" FOREIGN KEY ("plan_provider_price_id") REFERENCES "public"."plan_provider_prices"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "purchases" ADD CONSTRAINT "purchases_provider_config_id_payment_provider_configs_id_fk" FOREIGN KEY ("provider_config_id") REFERENCES "public"."payment_provider_configs"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_purchase_id_purchases_id_fk" FOREIGN KEY ("purchase_id") REFERENCES "public"."purchases"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_license_id_licenses_id_fk" FOREIGN KEY ("license_id") REFERENCES "public"."licenses"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_provider_config_id_payment_provider_configs_id_fk" FOREIGN KEY ("provider_config_id") REFERENCES "public"."payment_provider_configs"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_plan_provider_price_id_plan_provider_prices_id_fk" FOREIGN KEY ("plan_provider_price_id") REFERENCES "public"."plan_provider_prices"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "webhook_logs" ADD CONSTRAINT "webhook_logs_payment_transaction_id_payment_transactions_id_fk" FOREIGN KEY ("payment_transaction_id") REFERENCES "public"."payment_transactions"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "webhook_logs" ADD CONSTRAINT "webhook_logs_license_id_licenses_id_fk" FOREIGN KEY ("license_id") REFERENCES "public"."licenses"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "apps_project_id_idx" ON "apps" USING btree ("project_id");--> statement-breakpoint
@@ -486,6 +519,12 @@ CREATE INDEX "purchases_payment_transaction_id_idx" ON "purchases" USING btree (
 CREATE INDEX "sessions_user_id_idx" ON "sessions" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "sessions_app_id_idx" ON "sessions" USING btree ("app_id");--> statement-breakpoint
 CREATE INDEX "sessions_expires_at_idx" ON "sessions" USING btree ("expires_at");--> statement-breakpoint
+CREATE INDEX "subscriptions_purchase_id_idx" ON "subscriptions" USING btree ("purchase_id");--> statement-breakpoint
+CREATE INDEX "subscriptions_license_id_idx" ON "subscriptions" USING btree ("license_id");--> statement-breakpoint
+CREATE INDEX "subscriptions_provider_config_id_idx" ON "subscriptions" USING btree ("provider_config_id");--> statement-breakpoint
+CREATE INDEX "subscriptions_provider_subscription_id_idx" ON "subscriptions" USING btree ("provider_subscription_id");--> statement-breakpoint
+CREATE INDEX "subscriptions_status_idx" ON "subscriptions" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "subscriptions_next_billing_date_idx" ON "subscriptions" USING btree ("next_billing_date");--> statement-breakpoint
 CREATE INDEX "users_primary_email_idx" ON "users" USING btree ("primary_email");--> statement-breakpoint
 CREATE INDEX "users_public_id_idx" ON "users" USING btree ("public_id");--> statement-breakpoint
 CREATE INDEX "webhook_logs_provider_idx" ON "webhook_logs" USING btree ("provider");--> statement-breakpoint

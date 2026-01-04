@@ -91,7 +91,7 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 		);
 
 		// Get Core session ID from metadata (stored during login)
-		const coreSessionId = appSession.metadata?.coreSessionId as string | undefined;
+		const coreSessionId = appSession.metadata?.["coreSessionId"] as string | undefined;
 		if (!coreSessionId) {
 			loggers.auth.warn("Core session ID not found in metadata");
 			return c.json({ error: "Core session not found" }, 401);

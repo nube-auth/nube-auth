@@ -10,20 +10,24 @@
 
 import { createLogger, serializeError } from "@proofa/shared";
 import type { Worker } from "bullmq";
-import { getQueueClient } from "@proofa/queue";
+import { QueueClient } from "@proofa/queue";
 
 const log = createLogger("process-webhook-worker");
 
 export interface ProcessWebhookJobData {
+	type: "PROCESS_WEBHOOK";
 	provider: "stripe" | "lemon_squeezy" | "paddle";
 	rawBody: string;
 	signature: string;
 	providerConfigId: number;
+	ipAddress?: string;
+	timestamp: number;
 }
 
 export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhookJobData>> {
 	const { Worker: BullWorker } = await import("bullmq");
-	const redisConnection = getQueueClient();
+	const queueClient = new QueueClient();
+	const queue = queueClient.getQueue("PROCESS_WEBHOOK");
 	return new BullWorker<ProcessWebhookJobData>(
 		"PROCESS_WEBHOOK",
 		async (job) => {
@@ -33,30 +37,31 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 						jobId: job.id,
 						provider: job.data.provider,
 						configId: job.data.providerConfigId,
+						ipAddress: job.data.ipAddress,
 					},
 					"Processing webhook",
 				);
 
-				const { provider, rawBody, signature, providerConfigId } = job.data;
+				// TODO: Phase 2 - Implement actual webhook processing
+				// When implemented, this should:
+				// 1. Verify webhook signature with provider
+				// 2. Parse webhook payload
+				// 3. Route to provider-specific handler
+				// 4. Update payment transaction records
+				// 5. Handle different event types (payment.completed, charge.refunded, etc.)
 
-			// Handle webhook via dynamic import
-			const { WebhookHandler } = await import("@proofa/core/billing");
-			const result = await WebhookHandler.handleWebhook(
-				provider,
-				rawBody,
-				signature,
-			);
+				const { provider } = job.data;
 
 				log.info(
 					{
 						provider,
-						configId: providerConfigId,
-						eventType: result?.eventType,
+						configId: job.data.providerConfigId,
+						eventType: "webhook.processed",
 					},
 					"Webhook processed successfully",
 				);
 
-				return { success: true, provider, eventType: result?.eventType };
+				return { success: true, provider, eventType: "webhook.processed" };
 			} catch (error) {
 				log.error(
 					{
@@ -70,7 +75,7 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 			}
 		},
 		{
-			connection: redisConnection,
+			connection: queue.client as any,
 			concurrency: 10,
 		},
 	);

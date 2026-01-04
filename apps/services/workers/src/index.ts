@@ -5,6 +5,7 @@
  * - Sets up PROCESS_PAYMENT worker
  * - Sets up PROCESS_WEBHOOK worker
  * - Sets up SYNC_LICENSE worker
+ * - Sets up PROCESS_REFUND worker
  */
 
 import { createLogger } from "@proofa/shared";
@@ -12,6 +13,7 @@ import type { Worker } from "bullmq";
 import { setupProcessPaymentWorker } from "./process-payment.js";
 import { setupProcessWebhookWorker } from "./process-webhook.js";
 import { setupSyncLicenseWorker } from "./sync-license.js";
+import { startProcessRefundWorker } from "./process-refund.js";
 
 const log = createLogger("worker-manager");
 
@@ -28,8 +30,9 @@ export async function initializeWorkers(): Promise<void> {
 		const paymentWorker = await setupProcessPaymentWorker();
 		const webhookWorker = await setupProcessWebhookWorker();
 		const licenseWorker = await setupSyncLicenseWorker();
+		const refundWorker = startProcessRefundWorker();
 
-		workers = [paymentWorker, webhookWorker, licenseWorker];
+		workers = [paymentWorker, webhookWorker, licenseWorker, refundWorker];
 
 		log.info(
 			{ workerCount: workers.length },

@@ -23,7 +23,7 @@ async function revokeGatewaySessions(userPublicId: string, targetCoreSessionId?:
 			const appSession = await sessionStore.getAppSession(sessionId);
 			if (!appSession) continue;
 
-			const coreSessionId = appSession.metadata?.coreSessionId as string | undefined;
+			const coreSessionId = appSession.metadata?.["coreSessionId"] as string | undefined;
 			if (appSession.userId !== userPublicId) continue;
 			if (targetCoreSessionId && coreSessionId !== targetCoreSessionId) continue;
 

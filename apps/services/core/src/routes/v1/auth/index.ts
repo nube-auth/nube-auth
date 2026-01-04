@@ -234,7 +234,6 @@ router.get("/callback/:provider", async (c: Context) => {
 		const existingIdentity = await identityQueries.findByProviderUserId(db, provider, profile.id);
 
 		let userId = existingIdentity?.user_id;
-		let _isNewUser = false;
 
 		if (!userId) {
 			// Create new user
@@ -248,7 +247,6 @@ router.get("/callback/:provider", async (c: Context) => {
 			};
 			const newUser = await userQueries.create(db, userData);
 			userId = newUser.id;
-			_isNewUser = true;
 			// Create identity
 			const identityData = {
 				public_id: createId("identity"),
@@ -296,7 +294,7 @@ router.get("/callback/:provider", async (c: Context) => {
 										app_id: app.id,
 										plan_id: plan.id,
 										status: "active",
-										activated_at: now,
+
 										valid_until: validUntil,
 										created_at: now,
 									});

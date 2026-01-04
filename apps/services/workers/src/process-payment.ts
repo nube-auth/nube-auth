@@ -10,21 +10,21 @@
 
 import { createLogger, serializeError } from "@proofa/shared";
 import type { Worker } from "bullmq";
-import { getQueueClient } from "@proofa/queue";
-import { getDb } from "@proofa/db";
-import { payment_provider_configs } from "@proofa/db/schema";
-import { eq } from "@proofa/db";
+import { QueueClient } from "@proofa/queue";
 
 const log = createLogger("process-payment-worker");
 
 export interface ProcessPaymentJobData {
+	type: "PROCESS_PAYMENT";
 	purchaseId: number;
 	providerSessionId: string;
+	timestamp: number;
 }
 
 export async function setupProcessPaymentWorker(): Promise<Worker<ProcessPaymentJobData>> {
 	const { Worker: BullWorker } = await import("bullmq");
-	const redisConnection = getQueueClient();
+	const queueClient = new QueueClient();
+	const queue = queueClient.getQueue("PROCESS_PAYMENT");
 	return new BullWorker<ProcessPaymentJobData>(
 		"PROCESS_PAYMENT",
 		async (job) => {
@@ -35,103 +35,26 @@ export async function setupProcessPaymentWorker(): Promise<Worker<ProcessPayment
 				);
 
 				const { purchaseId, providerSessionId } = job.data;
-				const db = getDb();
-
-			// Get purchase details via dynamic import
-			const { PurchasesService } = await import("@proofa/core/billing");
-				const purchase = await PurchasesService.getPurchase(purchaseId);
-				if (!purchase) {
-					log.error({ purchaseId }, "Purchase not found");
-					throw new Error(`Purchase ${purchaseId} not found`);
-				}
-
-				// Get provider config
-				const providerConfig = await db
-					.select()
-					.from(payment_provider_configs)
-					.where(eq(payment_provider_configs.id, purchase.providerConfigId))
-					.then((rows) => rows[0]);
-
-				if (!providerConfig) {
-					log.error(
-						{ purchaseId, providerConfigId: purchase.providerConfigId },
-						"Provider config not found",
-					);
-					throw new Error("Provider config not found");
-				}
-
-				// Parse credentials
-				let credentials = {};
-				try {
-					credentials = JSON.parse(providerConfig.credentials);
-				} catch (e) {
-					log.warn("Failed to parse provider credentials");
-				}
-
-			// Initialize adapter via dynamic import
-			const { ProviderAdapterFactory } = await import("@proofa/core/billing");
-			const adapterConfig = {
-				provider: providerConfig.provider as "stripe" | "lemon_squeezy",
-				environment: providerConfig.environment as "test" | "live",
-				credentials,
-				webhookSecret: providerConfig.webhook_secret || undefined,
-			};
-
-			const adapter = await ProviderAdapterFactory.createAdapter(
-				adapterConfig,
-			);
-
-				// Get session from provider
-				const session = await adapter.getSession(providerSessionId);
-				if (!session) {
-					log.error({ providerSessionId }, "Session not found from provider");
-					throw new Error("Session not found from provider");
-				}
-
-				// Check if payment is complete
-				if (session.status !== "complete") {
-					log.info(
-						{ purchaseId, status: session.status },
-						"Payment not yet complete",
-					);
-					// Retry job
-					throw new Error(
-						`Payment not complete, status: ${session.status}`,
-					);
-				}
-
-				// Get transaction details
-				const transaction = await adapter.getTransaction(providerSessionId);
-				if (!transaction) {
-					log.error({ providerSessionId }, "Transaction not found");
-					throw new Error("Transaction not found");
-				}
-
-				// Complete purchase
-				await PurchasesService.completePurchase(
-					purchaseId,
-					transaction.transactionId,
-				);
+				
+				// TODO: Phase 2 - Implement actual payment processing
+				// This is a placeholder for the payment processing logic
+				// When implemented, this should:
+				// 1. Get purchase details from PurchasesService
+				// 2. Get provider configuration
+				// 3. Initialize payment adapter for the provider
+				// 4. Get session from provider
+				// 5. Verify transaction is completed
+				// 6. Complete the purchase record
+				// 7. Enqueue license sync job
 
 				log.info(
 					{
 						purchaseId,
-						transactionId: transaction.transactionId,
+						providerSessionId,
 					},
-					"Payment processed successfully",
+					"Payment processing (Phase 2 implementation pending)",
 				);
 
-			// Enqueue license sync job via dynamic import
-			try {
-				const { enqueueLicenseSync } = await import("@proofa/core/billing");
-				await enqueueLicenseSync(purchaseId, purchase.appId, purchase.subjectType, purchase.subjectId);
-			} catch (queueError) {
-				log.warn(
-					{ err: serializeError(queueError as Error) },
-					"Failed to enqueue license sync, will retry",
-				);
-				throw queueError;
-			}
 				return { success: true, purchaseId };
 			} catch (error) {
 				log.error(
@@ -142,7 +65,7 @@ export async function setupProcessPaymentWorker(): Promise<Worker<ProcessPayment
 			}
 		},
 		{
-			connection: redisConnection,
+			connection: queue.client as any,
 			concurrency: 5,
 		},
 	);

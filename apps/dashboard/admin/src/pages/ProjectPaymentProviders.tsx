@@ -21,6 +21,7 @@ interface LemonSqueezyConfig {
 interface DodoConfig {
 	apiKey: string;
 	webhookSecret: string;
+	publicKey?: string;
 }
 
 interface StripeConfig {
@@ -54,6 +55,7 @@ export default function ProjectPaymentProvidersPage() {
 
 	const [showForm, setShowForm] = useState(false);
 	const [editingProvider, setEditingProvider] = useState<PaymentProviderItem | null>(null);
+	const [detailProvider, setDetailProvider] = useState<PaymentProviderItem | null>(null);
 
 	const [formData, setFormData] = useState({
 		name: "",
@@ -170,7 +172,7 @@ export default function ProjectPaymentProvidersPage() {
 			case "lemonsqueezy":
 				return { storeId: "", apiKey: "" };
 			case "dodo":
-				return { apiKey: "", webhookSecret: "" };
+				return { apiKey: "", webhookSecret: "", publicKey: "" };
 			case "stripe":
 				return { publishableKey: "", secretKey: "", webhookSecret: "" };
 			default:
@@ -256,6 +258,18 @@ export default function ProjectPaymentProvidersPage() {
 									setFormData({ ...formData, config: { ...config, webhookSecret: e.target.value } })
 								}
 								required
+							/>
+						</div>
+						<div className="form-group">
+							<label htmlFor="publicKey">Public Key (optional)</label>
+							<input
+								type="text"
+								id="publicKey"
+								value={(config as any).publicKey || ""}
+								onChange={(e) =>
+									setFormData({ ...formData, config: { ...config, publicKey: e.target.value } })
+								}
+								placeholder="Used for client-side validation"
 							/>
 						</div>
 					</>
@@ -461,6 +475,95 @@ export default function ProjectPaymentProvidersPage() {
 								</button>
 							</div>
 						</form>
+					</div>
+				</div>
+			)}
+
+			{/* Detail Modal */}
+			{detailProvider && (
+				<div className="modal-overlay" onClick={() => setDetailProvider(null)}>
+					<div className="modal" style={{ maxWidth: "600px" }} onClick={(e) => e.stopPropagation()}>
+						<div className="modal-header">
+							<h3>{detailProvider.name || "Provider Details"}</h3>
+							<button type="button" className="modal-close" onClick={() => setDetailProvider(null)}>
+								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={2}
+										d="M6 18L18 6M6 6l12 12"
+									/>
+								</svg>
+							</button>
+						</div>
+						<div className="modal-body" style={{ padding: "24px" }}>
+							{/* Provider Info */}
+							<div style={{ marginBottom: "24px" }}>
+								<h4 style={{ fontSize: "13px", fontWeight: "600", marginBottom: "12px", textTransform: "uppercase", color: "var(--text-tertiary)" }}>Provider Info</h4>
+								<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+									<div>
+										<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Provider</div>
+										<div style={{ fontSize: "14px", fontWeight: "500", textTransform: "capitalize" }}>{detailProvider.provider}</div>
+									</div>
+									<div>
+										<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Environment</div>
+										<div>
+											<span style={{ display: "inline-block", padding: "4px 10px", background: detailProvider.environment === "production" ? "rgba(34, 197, 94, 0.1)" : "rgba(251, 191, 36, 0.1)", color: detailProvider.environment === "production" ? "#22c55e" : "#f59e0b", borderRadius: "12px", fontSize: "12px", fontWeight: "500", textTransform: "capitalize" }}>
+												{detailProvider.environment}
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							{/* Webhook URLs */}
+							<div style={{ marginBottom: "24px" }}>
+								<h4 style={{ fontSize: "13px", fontWeight: "600", marginBottom: "12px", textTransform: "uppercase", color: "var(--text-tertiary)" }}>Webhook Configuration</h4>
+								<div style={{ background: "var(--bg-secondary)", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)", marginBottom: "12px" }}>
+									<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "6px" }}>Webhook URL</div>
+									<code style={{ display: "block", fontSize: "12px", fontFamily: "monospace", color: "var(--text-primary)", overflowX: "auto", padding: "8px", background: "var(--bg-primary)", borderRadius: "4px" }}>
+										{`${window.location.origin.replace(/\/$/, '')}/v1/webhooks/${detailProvider.provider}/${detailProvider.id}`}
+									</code>
+									<div style={{ fontSize: "11px", color: "var(--text-tertiary)", marginTop: "8px" }}>
+										Configure this URL in your {detailProvider.provider === "dodo" ? "Paddle" : detailProvider.provider} dashboard
+									</div>
+								</div>
+							</div>
+
+							{/* Status Info */}
+							<div style={{ marginBottom: "24px" }}>
+								<h4 style={{ fontSize: "13px", fontWeight: "600", marginBottom: "12px", textTransform: "uppercase", color: "var(--text-tertiary)" }}>Status</h4>
+								<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+									<div>
+										<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Status</div>
+										<span style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "4px 10px", background: detailProvider.isActive ? "rgba(34, 197, 94, 0.1)" : "var(--bg-secondary)", color: detailProvider.isActive ? "#22c55e" : "var(--text-tertiary)", borderRadius: "12px", fontSize: "12px", fontWeight: "500" }}>
+											<span style={{ width: "6px", height: "6px", background: "currentColor", borderRadius: "50%" }} />
+											{detailProvider.isActive ? "Active" : "Inactive"}
+										</span>
+									</div>
+									<div>
+										<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Created</div>
+										<div style={{ fontSize: "14px", fontWeight: "500" }}>{new Date(detailProvider.createdAt).toLocaleDateString()}</div>
+									</div>
+								</div>
+							</div>
+
+							{/* Help Text */}
+							<div style={{ background: "rgba(59, 130, 246, 0.1)", padding: "12px", borderRadius: "8px", borderLeft: "3px solid #3b82f6" }}>
+								<div style={{ fontSize: "13px", fontWeight: "500", color: "#3b82f6", marginBottom: "4px" }}>💡 Tip</div>
+								<div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+									Keep your API keys and webhook secrets secure. Never share them publicly or commit them to version control.
+								</div>
+							</div>
+						</div>
+						<div className="modal-footer">
+							<button type="button" className="btn btn-secondary" onClick={() => setDetailProvider(null)}>
+								Close
+							</button>
+							<button type="button" onClick={() => { handleEdit(detailProvider); setDetailProvider(null); }} className="btn btn-primary">
+								Edit Provider
+							</button>
+						</div>
 					</div>
 				</div>
 			)}
@@ -705,6 +808,13 @@ export default function ProjectPaymentProvidersPage() {
 									</td>
 									<td style={{ padding: "14px 16px", textAlign: "right" }}>
 										<div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+											<button
+												type="button"
+												onClick={() => setDetailProvider(provider)}
+												className="btn btn-secondary-outline btn-sm"
+											>
+												View
+											</button>
 											<button
 												type="button"
 												onClick={() => handleEdit(provider)}
