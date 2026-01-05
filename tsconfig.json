@@ -11,21 +11,25 @@
 		/* Bundler mode */
 		"moduleResolution": "bundler",
 		"baseUrl": ".",
-		"ignoreDeprecations": "6.0",
 		"allowImportingTsExtensions": true,
 		"resolveJsonModule": true,
 		"noEmit": true,
-
-		/* Strict Type Checking */
-		"strict": true,
-		"noImplicitAny": true,
-		"strictNullChecks": true,
-		"strictFunctionTypes": true,
-		"strictBindCallApply": true,
-		"strictPropertyInitialization": true,
-		"noImplicitThis": true,
-		"alwaysStrict": true,
-
+	"paths": {
+		"@proofa/auth": ["apps/packages/auth/src"],
+		"@proofa/auth/*": ["apps/packages/auth/src/*"],
+		"@proofa/cache": ["apps/packages/cache/src"],
+		"@proofa/cache/*": ["apps/packages/cache/src/*"],
+		"@proofa/client": ["apps/packages/client/src"],
+		"@proofa/client/*": ["apps/packages/client/src/*"],
+		"@proofa/db": ["apps/packages/db/src"],
+		"@proofa/db/*": ["apps/packages/db/src/*"],
+		"@proofa/queue": ["apps/packages/queue/src"],
+		"@proofa/queue/*": ["apps/packages/queue/src/*"],
+		"@proofa/react": ["apps/packages/react/src"],
+		"@proofa/react/*": ["apps/packages/react/src/*"],
+		"@proofa/shared": ["apps/packages/shared/src"],
+		"@proofa/shared/*": ["apps/packages/shared/src/*"]
+	},
 		/* Additional Checks */
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
@@ -39,6 +43,6 @@
 		"exactOptionalPropertyTypes": true,
 		"forceConsistentCasingInFileNames": true
 	},
-	"include": ["apps/*/src/**/*", "packages/*/src/**/*"],
+	"include": ["apps/*/src/**/*", "apps/packages/*/src/**/*"],
 	"exclude": ["node_modules", "**/dist", "**/build"]
 }

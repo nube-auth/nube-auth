@@ -2,7 +2,7 @@ import { generateOTP, hashOTP, verifyOTP } from "@proofa/auth";
 import { rateLimit } from "@proofa/cache";
 import { emailVerificationQueries, getDb, identityQueries, sessionQueries, userQueries } from "@proofa/db";
 import { createId, OTP_LENGTH, OTP_LOCKOUT_MINUTES, OTP_MAX_ATTEMPTS } from "@proofa/shared";
-import { createEmailService } from "@proofa/shared/dist/email.js";
+import { createEmailService } from "@proofa/shared/email";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { env } from "../../../config/env";

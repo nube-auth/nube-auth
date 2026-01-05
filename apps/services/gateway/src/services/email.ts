@@ -3,7 +3,7 @@
  * Uses shared email utility for Resend or Mailpit (local)
  */
 
-import { createEmailService } from "@proofa/shared/dist/email.js";
+import { createEmailService } from "@proofa/shared/email";
 
 import { env } from "../config/env";
 

@@ -11,11 +11,7 @@
 import { Worker, type Job } from "bullmq";
 import { QueueClient } from "@proofa/queue";
 import { createLogger } from "@proofa/shared";
-import { getDb, eq, and } from "@proofa/db";
-import {
-	purchases,
-	payment_transactions,
-} from "@proofa/db/schema";
+import { getDb, eq, and, purchases, payment_transactions } from "@proofa/db";
 
 const log = createLogger("process-refund-worker");
 
