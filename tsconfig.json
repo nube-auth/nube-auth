@@ -1,45 +1,42 @@
 {
 	"compilerOptions": {
 		"target": "ES2020",
-		"useDefineForClassFields": true,
 		"lib": ["ES2020", "DOM", "DOM.Iterable"],
 		"module": "ESNext",
 		"skipLibCheck": true,
-		"esModuleInterop": true,
-		"allowSyntheticDefaultImports": true,
 
 		/* Bundler mode */
 		"moduleResolution": "bundler",
 		"baseUrl": ".",
-		"allowImportingTsExtensions": true,
 		"resolveJsonModule": true,
 		"noEmit": true,
-	"paths": {
-		"@proofa/auth": ["apps/packages/auth/src"],
-		"@proofa/auth/*": ["apps/packages/auth/src/*"],
-		"@proofa/cache": ["apps/packages/cache/src"],
-		"@proofa/cache/*": ["apps/packages/cache/src/*"],
-		"@proofa/client": ["apps/packages/client/src"],
-		"@proofa/client/*": ["apps/packages/client/src/*"],
-		"@proofa/db": ["apps/packages/db/src"],
-		"@proofa/db/*": ["apps/packages/db/src/*"],
-		"@proofa/queue": ["apps/packages/queue/src"],
-		"@proofa/queue/*": ["apps/packages/queue/src/*"],
-		"@proofa/react": ["apps/packages/react/src"],
-		"@proofa/react/*": ["apps/packages/react/src/*"],
-		"@proofa/shared": ["apps/packages/shared/src"],
-		"@proofa/shared/*": ["apps/packages/shared/src/*"]
-	},
-		/* Additional Checks */
-		"noUnusedLocals": true,
-		"noUnusedParameters": true,
+		"ignoreDeprecations": "6.0",
+		"paths": {
+			"@proofa/auth": ["apps/packages/auth/src"],
+			"@proofa/auth/*": ["apps/packages/auth/src/*"],
+			"@proofa/cache": ["apps/packages/cache/src"],
+			"@proofa/cache/*": ["apps/packages/cache/src/*"],
+			"@proofa/client": ["apps/packages/client/src"],
+			"@proofa/client/*": ["apps/packages/client/src/*"],
+			"@proofa/db": ["apps/packages/db/src"],
+			"@proofa/db/*": ["apps/packages/db/src/*"],
+			"@proofa/queue": ["apps/packages/queue/src"],
+			"@proofa/queue/*": ["apps/packages/queue/src/*"],
+			"@proofa/react": ["apps/packages/react/src"],
+			"@proofa/react/*": ["apps/packages/react/src/*"],
+			"@proofa/shared": ["apps/packages/shared/src"],
+			"@proofa/shared/*": ["apps/packages/shared/src/*"]
+		},
+
+		/* Strict mode (enables strict null checks and type checking) */
+		"strict": true,
+
+		/* Additional recommended checks */
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedIndexedAccess": true,
 		"noImplicitOverride": true,
 		"noPropertyAccessFromIndexSignature": true,
-		"allowUnusedLabels": false,
-		"allowUnreachableCode": false,
 		"exactOptionalPropertyTypes": true,
 		"forceConsistentCasingInFileNames": true
 	},

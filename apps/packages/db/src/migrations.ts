@@ -28,12 +28,12 @@ const { Pool } = pg;
  * Run migrations on application startup
  */
 export async function runMigrations() {
-	if (!process.env.DATABASE_URL) {
+	if (!process.env['DATABASE_URL']) {
 		throw new Error("DATABASE_URL environment variable is required");
 	}
 
 	const pool = new Pool({
-		connectionString: process.env.DATABASE_URL,
+		connectionString: process.env['DATABASE_URL'],
 	});
 
 	const db = drizzle(pool, { schema });

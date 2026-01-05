@@ -1,24 +1,11 @@
 {
 	"compilerOptions": {
 		"target": "ES2020",
-		"useDefineForClassFields": true,
 		"lib": ["ES2020", "DOM", "DOM.Iterable"],
 		"module": "ESNext",
 		"skipLibCheck": true,
-		"esModuleInterop": true,
-		"allowSyntheticDefaultImports": true,
-		"strict": true,
-		"noImplicitAny": true,
-		"strictNullChecks": true,
-		"strictFunctionTypes": true,
-		"strictPropertyInitialization": true,
-		"strictBindCallApply": true,
-		"noImplicitThis": true,
-		"alwaysStrict": true,
-		"noUnusedLocals": true,
-		"noUnusedParameters": true,
-		"noImplicitReturns": true,
-		"noFallthroughCasesInSwitch": true,
+
+		/* Bundler mode */
 		"moduleResolution": "bundler",
 		"resolveJsonModule": true,
 		"isolatedModules": true,
@@ -27,8 +14,32 @@
 		"types": ["vite/client"],
 		"baseUrl": ".",
 		"paths": {
-			"@proofa/*": ["../../packages/*/src"]
-		}
+			"@proofa/auth": ["../../packages/auth/src"],
+			"@proofa/auth/*": ["../../packages/auth/src/*"],
+			"@proofa/cache": ["../../packages/cache/src"],
+			"@proofa/cache/*": ["../../packages/cache/src/*"],
+			"@proofa/client": ["../../packages/client/src"],
+			"@proofa/client/*": ["../../packages/client/src/*"],
+			"@proofa/db": ["../../packages/db/src"],
+			"@proofa/db/*": ["../../packages/db/src/*"],
+			"@proofa/queue": ["../../packages/queue/src"],
+			"@proofa/queue/*": ["../../packages/queue/src/*"],
+			"@proofa/react": ["../../packages/react/src"],
+			"@proofa/react/*": ["../../packages/react/src/*"],
+			"@proofa/shared": ["../../packages/shared/src"],
+			"@proofa/shared/*": ["../../packages/shared/src/*"]
+		},
+
+		/* Strict mode */
+		"strict": true,
+
+		/* Additional recommended checks */
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUncheckedIndexedAccess": true,
+		"noImplicitOverride": true,
+		"exactOptionalPropertyTypes": true,
+		"forceConsistentCasingInFileNames": true
 	},
 	"include": ["src"],
 	"exclude": ["node_modules"]
