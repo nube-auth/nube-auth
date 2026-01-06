@@ -124,7 +124,7 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
 				},
 			});
 
-			if (emailResponse.ok) {
+			if (emailResponse.ok()) {
 				const rawEmails = await emailResponse.json();
 				const emails = GitHubEmailsSchema.parse(rawEmails);
 				const primaryEmail = emails.find((e: GitHubEmail) => e.primary);

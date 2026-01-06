@@ -177,8 +177,11 @@ authRoutes.get("/callback", async (c: Context) => {
 			}),
 		});
 
-		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({}));
+		if (!response.ok()) {
+			let errorData: any = {};
+			try {
+				errorData = response.json();
+			} catch {}
 			log.error({ err: serializeError(new Error("exchange_failed")) }, "Code exchange failed:", response.status, errorData);
 			const dashboardUrl =
 				audience === "admin"

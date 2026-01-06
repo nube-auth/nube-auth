@@ -7,3 +7,5 @@ export type {
 	UpdateProfileData,
 	User,
 } from "./types";
+
+export { pingpong, pingpongFetch } from "./pingpong";

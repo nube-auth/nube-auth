@@ -10,7 +10,7 @@
 		"baseUrl": ".",
 		"resolveJsonModule": true,
 		"noEmit": true,
-		"ignoreDeprecations": "6.0",
+		"ignoreDeprecations": "5.0",
 		"paths": {
 			"@proofa/auth": ["apps/packages/auth/src"],
 			"@proofa/auth/*": ["apps/packages/auth/src/*"],

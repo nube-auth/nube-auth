@@ -1,6 +1,4 @@
-import { HttpClient } from "pingpong-fetch";
-
-const httpClient = new HttpClient();
+import { pingpong as pingpongFetch } from "@proofa/auth";
 
 type PingpongRequestOptions = {
 	method?: string;
@@ -8,17 +6,10 @@ type PingpongRequestOptions = {
 	body?: unknown;
 };
 
-export async function pingpong(url: string, options: PingpongRequestOptions = {}): Promise<Response> {
-	const res = await httpClient.send({
-		url,
-		method: (options.method ?? "GET") as any,
-		headers: options.headers,
-		body: options.body as any,
-	} as any);
-
-	return new Response(res.body, {
-		status: res.status,
-		statusText: res.statusText,
-		headers: (res as any).headers,
+export function pingpong(url: string, options: PingpongRequestOptions = {}) {
+	return pingpongFetch(url, {
+		...(options.method ? { method: options.method } : {}),
+		...(options.headers ? { headers: options.headers } : {}),
+		...(options.body !== undefined ? { body: options.body } : {}),
 	});
 }

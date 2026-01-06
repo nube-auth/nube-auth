@@ -29,11 +29,11 @@ export class CoreClient {
 				...(body ? { body: JSON.stringify(body) } : {}),
 			});
 
-			if (!response.ok) {
+			if (!response.ok()) {
 				throw new Error(`Core API error: ${response.status} ${response.statusText}`);
 			}
 
-			return (await response.json()) as T;
+			return response.json() as T;
 		} catch (error) {
 			console.error(`CoreClient request failed: ${method} ${path}`, error);
 			throw error;

@@ -32,7 +32,7 @@ export const coreService = {
 			...(config.body ? { body: JSON.stringify(config.body) } : {}),
 		});
 
-		if (!response.ok) {
+		if (!response.ok()) {
 			throw new Error(`Core API error: ${response.status} ${response.statusText}`);
 		}
 

@@ -1,15 +1,14 @@
-import { HttpClient } from "pingpong-fetch";
+import pingpong from "@pingpong-js/fetch";
 import type { ApiError, AuthStatus, ProofaClientConfig, Session, UpdateProfileData, User } from "./types";
 
 export class ProofaClient {
 	private baseUrl: string;
 	private s2sToken?: string | undefined;
-	private httpClient: HttpClient;
+	private httpClient = pingpong;
 
 	constructor(config: ProofaClientConfig) {
 		this.baseUrl = config.gatewayUrl.replace(/\/$/, "");
 		this.s2sToken = config.s2sToken;
-		this.httpClient = new HttpClient();
 	}
 
 	private async request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -31,13 +30,13 @@ export class ProofaClient {
 			method: (options?.method || "GET") as any,
 			headers,
 			body: options?.body as string,
-			credentials: "include", // Send cookies with requests (browser-only)
-		} as any); // Cast to any to support credentials option from newer pingpong-fetch
+			credentials: "include" as any,
+		});
 
-		if (!response.ok) {
+		if (!response.ok()) {
 			let error: ApiError;
 			try {
-				error = JSON.parse(response.body);
+				error = response.json();
 			} catch {
 				error = {
 					ok: false,
@@ -50,7 +49,7 @@ export class ProofaClient {
 			throw new ProofaError(error.error.message, error.error.code, response.status);
 		}
 
-		return JSON.parse(response.body);
+		return response.json();
 	}
 
 	// Authentication
