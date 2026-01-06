@@ -1,8 +1,5 @@
 // Import Node.js-only utilities from dedicated export to avoid browser bundling issues
-import { loadEnv, validateEnv as validateEnvVars } from "@proofa/shared/env-loader";
-
-// Load environment variables from .env and .env.local
-loadEnv();
+import { validateEnv as validateEnvVars } from "@proofa/shared/env-loader";
 
 export interface Env {
 	NODE_ENV: string;
