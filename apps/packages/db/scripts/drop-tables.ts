@@ -17,8 +17,7 @@ import pg from "pg";
 const configDir = typeof __dirname === "string" ? __dirname : dirname(fileURLToPath(import.meta.url));
 
 // Load .env and .env.local from workspace root
-dotenv.config({ path: resolve(configDir, "../../../.env") });
-dotenv.config({ path: resolve(configDir, "../../../.env.local"), override: true });
+dotenv.config({ path: resolve(configDir, "../../../../.env.local"), override: true });
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {

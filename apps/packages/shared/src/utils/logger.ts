@@ -18,11 +18,13 @@ export function createLogger(
 		pretty?: boolean;
 	} = {},
 ) {
-	const isProduction = process.env['NODE_ENV'] === "production";
+	// Check if running in Node.js or browser
+	const isNode = typeof process !== "undefined" && process.versions && process.versions.node;
+	const isProduction = isNode ? process.env['NODE_ENV'] === "production" : false;
 	const level = options.level ?? (isProduction ? "info" : "debug");
 	const pretty = options.pretty ?? !isProduction;
 
-	const transport = pretty
+	const transport = pretty && isNode
 		? {
 				target: "pino-pretty",
 				options: {
@@ -38,7 +40,7 @@ export function createLogger(
 		level,
 		...(transport && { transport }),
 		base: {
-			env: process.env['NODE_ENV'] ?? "development",
+			env: isNode ? (process.env['NODE_ENV'] ?? "development") : "browser",
 		},
 		formatters: {
 			level: (label) => ({ level: label }),

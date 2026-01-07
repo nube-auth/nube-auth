@@ -6,8 +6,7 @@ import { defineConfig } from "drizzle-kit";
 const configDir = typeof __dirname === "string" ? __dirname : dirname(fileURLToPath(import.meta.url));
 
 // Load .env and .env.local from workspace root
-dotenv.config({ path: resolve(configDir, "../../.env") });
-dotenv.config({ path: resolve(configDir, "../../.env.local"), override: true });
+dotenv.config({ path: resolve(configDir, "../../../.env.local"), override: true });
 
 const url = process.env.DATABASE_URL;
 if (!url) {
