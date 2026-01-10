@@ -179,9 +179,7 @@ await db.update(apps)
 ```
 
 **References:**
-- [docs/JSONB_RFC.md](../docs/JSONB_RFC.md) - Complete RFC with rationale
-- [docs/JSONB_QUICK_REFERENCE.md](../docs/JSONB_QUICK_REFERENCE.md) - Quick patterns
-- [docs/ATOMIC_JSONB_IMPLEMENTATION.md](../docs/ATOMIC_JSONB_IMPLEMENTATION.md) - Implementation guide
+- [docs/JSONB.md](../docs/JSONB.md) - Complete guide with quick reference and RFC
 
 ## Development Experience
 

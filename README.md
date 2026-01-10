@@ -238,27 +238,23 @@ pnpm typecheck            # Type check all packages
 
 ## 📚 Documentation
 
-**Complete Documentation Index**: See [DOCS_INDEX.md](./DOCS_INDEX.md) for all documentation files.
-
 ### Getting Started
-- [Quick Start Guide](./QUICKSTART.md) - Get up and running in 5 minutes
-- [Development Guide](./DEVELOPMENT.md) - Complete local setup and workflows
-- [Product Specification](./docs/PRODUCT_SPEC.md) - Full product specification
+- **[Quick Start Guide](./QUICKSTART.md)** - Get up and running in 5 minutes
+- **[Development Guide](./DEVELOPMENT.md)** - Complete local setup and workflows
+- **[Documentation Index](./docs/README.md)** - All documentation files
 
-### Security
-- [Security Overview](./docs/security/README.md) - A+ rated security documentation
-- [Session Hijacking Protection](./docs/security/SESSION_HIJACKING.md) - Multi-layered protection
-- [Audit Report](./docs/security/AUDIT_REPORT.md) - Security audit findings
+### Core Documentation
+- **[Architecture](./docs/ARCHITECTURE.md)** - System design, ID management, security patterns
+- **[Product Spec](./docs/PRODUCT_SPEC.md)** - Complete product specification and features
+- **[Payment System](./docs/PAYMENT_SYSTEM_DESIGN.md)** - Billing and payment architecture
+- **[JSONB Patterns](./docs/JSONB_RFC.md)** - Atomic database update patterns
+- **[Phase 2 Roadmap](./docs/PHASE_2_ROADMAP.md)** - Planned features and enhancements
 
-### API & SDK
-- [Gateway API](./apps/gateway/README.md) - REST API documentation
-- [TypeScript Client](./packages/client/README.md) - SDK reference and examples
-- [React Integration](./packages/react/README.md) - React hooks and components
-
-### Packages
-- [Database](./packages/db/README.md) - PostgreSQL + Drizzle ORM
-- [Cache](./packages/cache/README.md) - Redis client
-- [Shared](./packages/shared/README.md) - Common utilities
+### API References
+- **[Admin API](./docs/ADMIN_API_QUICK_REFERENCE.md)** - Admin endpoints reference
+- **[Gateway API](./apps/gateway/README.md)** - REST API documentation
+- **[TypeScript Client](./packages/client/README.md)** - SDK reference
+- **[React Integration](./packages/react/README.md)** - Hooks and components
 
 ## 🔒 Security
 
@@ -314,21 +310,19 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🗺️ Roadmap
 
-See [TODO.md](./TODO.md) for the complete roadmap and planned features.
+See [PHASE_2_ROADMAP.md](./docs/PHASE_2_ROADMAP.md) for detailed upcoming features.
 
-### Q1 2025
+### Near Term
 - [ ] Multi-factor authentication (MFA/2FA)
-- [ ] Passwordless authentication (WebAuthn)
-- [ ] Enhanced analytics dashboard
+- [ ] Enhanced payment provider features
+- [ ] Advanced analytics dashboard
 - [ ] GraphQL API option
-- [ ] Mobile SDKs (React Native)
 
-### Q2 2025
+### Future
 - [ ] SAML/SSO integration
-- [ ] Advanced role-based access control (RBAC)
-- [ ] Automated compliance reporting
+- [ ] Mobile SDKs (React Native)
+- [ ] Advanced RBAC
 - [ ] Custom branding per project
-- [ ] Advanced audit log search
 
 ## 🎯 Project Status
 
