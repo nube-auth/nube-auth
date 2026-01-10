@@ -80,6 +80,7 @@ export {
 	identityQueries,
 	invitationQueries,
 	licenseQueries,
+	paymentProviderConfigQueries,
 	planQueries,
 	projectInvitationQueries,
 	projectMemberQueries,

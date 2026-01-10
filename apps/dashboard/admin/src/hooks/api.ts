@@ -495,111 +495,6 @@ export function useRenewLicense(projectId: string, appId: string) {
 	});
 }
 
-// Payment Configuration
-export function useProjectPaymentConfig(projectId: string) {
-	return useQuery({
-		queryKey: ["project-payment-config", projectId],
-		queryFn: async () => {
-			return fetchAPI<{
-				configured: boolean;
-				id?: string;
-				name?: string;
-				slug?: string;
-				provider?: string;
-				testMode?: boolean;
-				isActive?: boolean;
-				createdAt?: number;
-				updatedAt?: number;
-			}>(`/v1/admin/projects/${projectId}/payment-config`);
-		},
-		enabled: !!projectId,
-		staleTime: 5 * 60 * 1000,
-		refetchOnWindowFocus: false,
-		refetchOnMount: false,
-	});
-}
-
-export function useSaveProjectPaymentConfig(projectId: string) {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: async (data: { name: string; slug?: string; provider: string; testMode: boolean; config: any }) => {
-			return fetchAPI<{
-				success: boolean;
-				id: string;
-				name: string;
-				slug: string;
-				provider: string;
-				testMode: boolean;
-			}>(`/v1/admin/projects/${projectId}/payment-config`, {
-				method: "POST",
-				body: JSON.stringify(data),
-			});
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["project-payment-config", projectId] });
-		},
-	});
-}
-
-export function useAppPaymentConfig(projectId: string, appId: string) {
-	return useQuery({
-		queryKey: ["app-payment-config", projectId, appId],
-		queryFn: async () => {
-			return fetchAPI<{
-				configured: boolean;
-				source?: "project" | "app";
-				id?: string;
-				provider?: string;
-				testMode?: boolean;
-				isActive?: boolean;
-				createdAt?: number;
-				updatedAt?: number;
-			}>(`/v1/admin/projects/${projectId}/apps/${appId}/payment-config`);
-		},
-		enabled: !!projectId && !!appId,
-		staleTime: 5 * 60 * 1000,
-		refetchOnWindowFocus: false,
-		refetchOnMount: false,
-	});
-}
-
-export function useSaveAppPaymentConfig(projectId: string, appId: string) {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: async (data: { provider: string; testMode: boolean; config: any }) => {
-			return fetchAPI<{
-				success: boolean;
-				id: string;
-				provider: string;
-				testMode: boolean;
-			}>(`/v1/admin/projects/${projectId}/apps/${appId}/payment-config`, {
-				method: "POST",
-				body: JSON.stringify(data),
-			});
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["app-payment-config", projectId, appId] });
-		},
-	});
-}
-
-export function useDeleteAppPaymentConfig(projectId: string, appId: string) {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: async () => {
-			return fetchAPI<{
-				success: boolean;
-				message: string;
-			}>(`/v1/admin/projects/${projectId}/apps/${appId}/payment-config`, {
-				method: "DELETE",
-			});
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["app-payment-config", projectId, appId] });
-		},
-	});
-}
-
 // ===== OAuth Provider Hooks =====
 
 /**
@@ -680,7 +575,7 @@ export function useProjectPaymentProviders(projectId: string) {
 	return useQuery({
 		queryKey: ["payment-providers", "project", projectId],
 		queryFn: async () => {
-			const data = await fetchAPI<{ providers: any[] }>(`/v1/admin/projects/${projectId}/payment-providers`);
+			const data = await fetchAPI<{ providers: any[] }>(`/v1/admin/providers/${projectId}/configs`);
 			return data.providers;
 		},
 		enabled: !!projectId,
@@ -693,16 +588,16 @@ export function useProjectPaymentProviders(projectId: string) {
 /**
  * Get available payment providers for an app
  */
-export function useAvailablePaymentProviders(appId: string, environment: "test" | "production" = "test") {
+export function useAvailablePaymentProviders() {
 	return useQuery({
-		queryKey: ["payment-providers", "available", appId, environment],
+		queryKey: ["payment-providers", "available"],
 		queryFn: async () => {
-			const data = await fetchAPI<{ providers: any[] }>(
-				`/v1/admin/apps/${appId}/payment/available?environment=${environment}`,
+			const data = await fetchAPI<{ providers: Array<{ id: string; name: string }>; environments: string[] }>(
+				`/v1/admin/providers/available`,
 			);
-			return data.providers;
+			return data;
 		},
-		enabled: !!appId,
+		enabled: true,
 		staleTime: 5 * 60 * 1000,
 		refetchOnWindowFocus: false,
 		refetchOnMount: false,
@@ -712,14 +607,16 @@ export function useAvailablePaymentProviders(appId: string, environment: "test" 
 /**
  * Get selected payment provider for an app
  */
-export function useSelectedPaymentProvider(appId: string) {
+export function useSelectedPaymentProvider(projectId: string, appId: string) {
 	return useQuery({
-		queryKey: ["payment-providers", "selected", appId],
+		queryKey: ["payment-providers", "selected", projectId, appId],
 		queryFn: async () => {
-			const data = await fetchAPI<{ provider: any | null }>(`/v1/admin/apps/${appId}/payment/selected`);
-			return data.provider;
+			const data = await fetchAPI<{ selected: any | null }>(
+				`/v1/admin/projects/${projectId}/apps/${appId}/provider-selection`,
+			);
+			return data.selected;
 		},
-		enabled: !!appId,
+		enabled: !!projectId && !!appId,
 		staleTime: 5 * 60 * 1000,
 		refetchOnWindowFocus: false,
 		refetchOnMount: false,
@@ -735,20 +632,22 @@ export function useCreatePaymentProvider() {
 		mutationFn: async (data: {
 			projectId: string;
 			data: {
-				name: string;
-				slug?: string;
-				entityType: "platform" | "project" | "app";
-				entityId?: number | null;
-				projectId?: string;
 				provider: string;
 				environment: "test" | "production";
 				credentials: Record<string, string>;
 				webhookSecret?: string;
+				metadata?: Record<string, any>;
 			};
 		}) => {
-			return fetchAPI<{ provider: any }>("/v1/admin/payment-providers", {
+			return fetchAPI<{ id: string }>(`/v1/admin/providers/${data.projectId}/configs`, {
 				method: "POST",
-				body: JSON.stringify(data.data),
+				body: JSON.stringify({
+					provider: data.data.provider,
+					environment: data.data.environment,
+					credentials: data.data.credentials,
+					webhookSecret: data.data.webhookSecret,
+					metadata: data.data.metadata,
+				}),
 			});
 		},
 		onSuccess: (_, variables) => {
@@ -767,18 +666,24 @@ export function useUpdatePaymentProvider() {
 			projectId: string;
 			providerId: string;
 			data: {
-				name?: string;
-				slug?: string;
 				credentials?: Record<string, string>;
 				webhookSecret?: string;
 				isActive?: boolean;
-				environment?: "test" | "production";
+				metadata?: Record<string, any>;
 			};
 		}) => {
-			return fetchAPI<{ success: boolean }>(`/v1/admin/payment-providers/${data.providerId}`, {
+			return fetchAPI<{ success?: boolean }>(
+				`/v1/admin/providers/${data.projectId}/configs/${data.providerId}`,
+				{
 				method: "PATCH",
-				body: JSON.stringify(data.data),
-			});
+					body: JSON.stringify({
+						credentials: data.data.credentials,
+						webhookSecret: data.data.webhookSecret,
+						isActive: data.data.isActive,
+						metadata: data.data.metadata,
+					}),
+				},
+			);
 		},
 		onSuccess: (_, variables) => {
 			queryClient.invalidateQueries({ queryKey: ["payment-providers", "project", variables.projectId] });
@@ -793,9 +698,12 @@ export function useDeletePaymentProvider() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async (data: { projectId: string; providerId: string }) => {
-			return fetchAPI<{ success: boolean }>(`/v1/admin/payment-providers/${data.providerId}`, {
-				method: "DELETE",
-			});
+			return fetchAPI<{ success: boolean }>(
+				`/v1/admin/providers/${data.projectId}/configs/${data.providerId}`,
+				{
+					method: "DELETE",
+				},
+			);
 		},
 		onSuccess: (_, variables) => {
 			queryClient.invalidateQueries({ queryKey: ["payment-providers", "project", variables.projectId] });
@@ -806,18 +714,38 @@ export function useDeletePaymentProvider() {
 /**
  * Select payment provider for app
  */
-export function useSelectPaymentProvider(appId: string) {
+export function useSelectPaymentProvider(projectId: string, appId: string) {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: async (paymentProviderId: number) => {
-			return fetchAPI<{ success: boolean }>(`/v1/admin/apps/${appId}/payment/select`, {
+		mutationFn: async (paymentConfigPublicId: string | null) => {
+			return fetchAPI<{ id: string; selected: any | null }>(
+				`/v1/admin/projects/${projectId}/apps/${appId}/provider-selection`,
+				{
+					method: "PATCH",
+					body: JSON.stringify({ paymentConfigId: paymentConfigPublicId }),
+				},
+			);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["payment-providers", "selected", projectId, appId] });
+			queryClient.invalidateQueries({ queryKey: ["app", appId] });
+		},
+	});
+}
+
+/**
+ * Select default payment provider for project
+ */
+export function useSelectDefaultProjectProvider(projectId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (providerPublicId: string) => {
+			return fetchAPI<{ id: string }>(`/v1/admin/providers/${projectId}/configs/${providerPublicId}/select`, {
 				method: "POST",
-				body: JSON.stringify({ paymentProviderId }),
 			});
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["payment-providers", "selected", appId] });
-			queryClient.invalidateQueries({ queryKey: ["app", appId] });
+			queryClient.invalidateQueries({ queryKey: ["payment-providers", "project", projectId] });
 		},
 	});
 }

@@ -19,6 +19,7 @@ export interface Environment {
 	REDIS_URL: string;
 	RESEND_API_KEY: string;
 	SEND_EMAILS: boolean;
+	PAYMENT_CONFIGS_KEY: string;
 	EMAIL_FROM: string;
 	// SMTP for local email testing (auto-enabled in development)
 	SMTP_HOST: string;
@@ -50,6 +51,7 @@ function getEnvironment(): Environment {
 		"S2S_SECRET",
 		"REDIS_URL",
 		"RESEND_API_KEY",
+		"PAYMENT_CONFIGS_KEY",
 	];
 
 	const missing = requiredVars.filter((key) => !process.env[key]);
@@ -76,6 +78,7 @@ function getEnvironment(): Environment {
 		RESEND_API_KEY: process.env["RESEND_API_KEY"]!,
 		SEND_EMAILS: process.env["SEND_EMAILS"] === "true",
 		EMAIL_FROM: process.env["EMAIL_FROM"] ?? "noreply@proofa.sh",
+		PAYMENT_CONFIGS_KEY: process.env["PAYMENT_CONFIGS_KEY"]!,
 		SMTP_HOST: process.env["SMTP_HOST"] ?? "localhost",
 		SMTP_PORT: parseInt(process.env["SMTP_PORT"] ?? "1025", 10),
 		LOG_LEVEL: (process.env["LOG_LEVEL"] as Environment["LOG_LEVEL"] | undefined) ?? "info",

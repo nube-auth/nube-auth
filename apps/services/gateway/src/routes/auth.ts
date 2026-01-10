@@ -117,7 +117,7 @@ authRoutes.get("/callback", async (c: Context) => {
 	let returnTo = "/";
 	let audience: "user" | "admin" = "user";
 	try {
-		console.log({ rawState: state }, "Decoding state parameter");
+		log.debug({ rawState: state }, "Decoding state parameter");
 		// Decode URL-safe base64 back to standard base64
 		const standardBase64 = state
 			.replace(/-/g, "+")
@@ -172,17 +172,21 @@ authRoutes.get("/callback", async (c: Context) => {
 				"Content-Type": "application/json",
 				"X-Proofa-Service-Token": env.CORE_S2S_TOKEN,
 			},
-			body: JSON.stringify({
+			body: {
 				sessionId: code, // Core passes session ID as "code" param
-			}),
+			},
 		});
 
 		if (!response.ok()) {
-			let errorData: any = {};
-			try {
-				errorData = response.json();
-			} catch {}
-			log.error({ err: serializeError(new Error("exchange_failed")) }, "Code exchange failed:", response.status, errorData);
+			// v1.4.0+: response.data is auto-parsed JSON
+			const errorData = response.data || {};
+			log.error({ 
+				status: response.status,
+				errorData, 
+				sessionId: code ? code.substring(0, 8) + "..." : undefined,
+				audience,
+				err: serializeError(new Error(`Exchange failed: ${JSON.stringify(errorData)}`))
+			}, "Code exchange failed");
 			const dashboardUrl =
 				audience === "admin"
 					? (env.ADMIN_DASHBOARD_URL ?? "http://localhost:5174")
@@ -190,7 +194,8 @@ authRoutes.get("/callback", async (c: Context) => {
 			return c.redirect(`${dashboardUrl}/login?error=exchange_failed`);
 		}
 
-		const data = (await response.json()) as {
+		// v1.4.0+: response.data is auto-parsed JSON
+		const data = response.data as {
 			userId: string;
 			email?: string;
 			name?: string;
@@ -265,7 +270,7 @@ authRoutes.get("/callback", async (c: Context) => {
 		}, "Login successful, redirecting");
 		return c.redirect(redirectUrl);
 	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "Auth callback error:");
+		log.error({ err: serializeError(error as Error), stack: error instanceof Error ? error.stack : undefined }, "Auth callback error:");
 		const audience = inferAudience(c);
 		const dashboardUrl =
 			audience === "admin"

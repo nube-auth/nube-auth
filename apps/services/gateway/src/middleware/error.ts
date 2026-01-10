@@ -1,6 +1,9 @@
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
+import { createLogger } from "@proofa/shared";
+
+const log = createLogger("error-middleware");
 
 interface ErrorResponse {
 	error: string;
@@ -48,12 +51,12 @@ export const errorMiddleware = createMiddleware(async (c: Context, next): Promis
 			...(requestId && { requestId }),
 		};
 
-		console.error("Request error:", {
+		log.error({
 			requestId,
 			statusCode,
 			error: errorMessage,
 			stack: error instanceof Error ? error.stack : undefined,
-		});
+		}, "Request error");
 
 		return c.json(response, statusCode);
 	}

@@ -112,7 +112,7 @@ CREATE TABLE "licenses" (
 CREATE TABLE "payment_provider_configs" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"public_id" varchar(255) NOT NULL,
-	"app_id" integer NOT NULL,
+	"project_id" integer NOT NULL,
 	"provider" varchar(50) NOT NULL,
 	"environment" varchar(20) NOT NULL,
 	"credentials" text NOT NULL,
@@ -125,7 +125,7 @@ CREATE TABLE "payment_provider_configs" (
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "payment_provider_configs_public_id_unique" UNIQUE("public_id"),
-	CONSTRAINT "payment_provider_configs_app_provider_env_unique" UNIQUE("app_id","provider","environment")
+	CONSTRAINT "payment_provider_configs_project_provider_env_unique" UNIQUE("project_id","provider","environment")
 );
 --> statement-breakpoint
 CREATE TABLE "payment_transactions" (
@@ -414,7 +414,7 @@ ALTER TABLE "invitations" ADD CONSTRAINT "invitations_consumed_by_user_id_users_
 ALTER TABLE "licenses" ADD CONSTRAINT "licenses_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "licenses" ADD CONSTRAINT "licenses_app_id_apps_id_fk" FOREIGN KEY ("app_id") REFERENCES "public"."apps"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "licenses" ADD CONSTRAINT "licenses_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "public"."plans"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "payment_provider_configs" ADD CONSTRAINT "payment_provider_configs_app_id_apps_id_fk" FOREIGN KEY ("app_id") REFERENCES "public"."apps"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "payment_provider_configs" ADD CONSTRAINT "payment_provider_configs_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payment_provider_configs" ADD CONSTRAINT "payment_provider_configs_created_by_user_id_users_id_fk" FOREIGN KEY ("created_by_user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payment_provider_configs" ADD CONSTRAINT "payment_provider_configs_updated_by_user_id_users_id_fk" FOREIGN KEY ("updated_by_user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payment_transactions" ADD CONSTRAINT "payment_transactions_purchase_id_purchases_id_fk" FOREIGN KEY ("purchase_id") REFERENCES "public"."purchases"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
@@ -472,7 +472,7 @@ CREATE INDEX "licenses_user_id_idx" ON "licenses" USING btree ("user_id");--> st
 CREATE INDEX "licenses_app_id_idx" ON "licenses" USING btree ("app_id");--> statement-breakpoint
 CREATE INDEX "licenses_plan_id_idx" ON "licenses" USING btree ("plan_id");--> statement-breakpoint
 CREATE INDEX "licenses_status_idx" ON "licenses" USING btree ("status");--> statement-breakpoint
-CREATE INDEX "payment_provider_configs_app_id_idx" ON "payment_provider_configs" USING btree ("app_id");--> statement-breakpoint
+CREATE INDEX "payment_provider_configs_project_id_idx" ON "payment_provider_configs" USING btree ("project_id");--> statement-breakpoint
 CREATE INDEX "payment_provider_configs_provider_idx" ON "payment_provider_configs" USING btree ("provider");--> statement-breakpoint
 CREATE INDEX "payment_provider_configs_is_default_idx" ON "payment_provider_configs" USING btree ("is_default");--> statement-breakpoint
 CREATE INDEX "payment_transactions_license_id_idx" ON "payment_transactions" USING btree ("license_id");--> statement-breakpoint

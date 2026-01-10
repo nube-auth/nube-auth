@@ -25,7 +25,6 @@ import { ProfilePage } from "./pages/Profile";
 import { ProjectAppsPage } from "./pages/ProjectApps";
 import { ProjectDetailPage } from "./pages/ProjectDetail";
 import ProjectPaymentProvidersPage from "./pages/ProjectPaymentProviders";
-import ProjectPaymentSettingsPage from "./pages/ProjectPaymentSettings";
 import { ProjectSettingsPage } from "./pages/ProjectSettings";
 import { ProjectStatsPage } from "./pages/ProjectStats";
 import { ProjectsPage } from "./pages/Projects";
@@ -930,14 +929,6 @@ function App() {
 							element={
 								<ProtectedLayout>
 									<ProjectSettingsPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects/:projectId/payment"
-							element={
-								<ProtectedLayout>
-									<ProjectPaymentSettingsPage />
 								</ProtectedLayout>
 							}
 						/>

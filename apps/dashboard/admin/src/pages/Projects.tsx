@@ -11,6 +11,24 @@ export function ProjectsPage() {
 	const [viewMode, setViewMode] = useState<ViewMode>("table");
 	const [formData, setFormData] = useState({ name: "", slug: "", description: "" });
 
+	const generateSlug = (name: string) => {
+		return name
+			.toLowerCase()
+			.trim()
+			.replace(/[^\w\s-]/g, "")
+			.replace(/\s+/g, "-")
+			.replace(/-+/g, "-")
+			.substring(0, 50);
+	};
+
+	const handleNameChange = (name: string) => {
+		setFormData({
+			...formData,
+			name,
+			slug: generateSlug(name),
+		});
+	};
+
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		createProjectMutation.mutate(formData, {
@@ -168,15 +186,29 @@ export function ProjectsPage() {
 						<form onSubmit={handleSubmit}>
 							<div className="modal-body">
 								<div className="form-group">
-									<label htmlFor="projectName">Project Name</label>
+									<label htmlFor="projectName">Project Name *</label>
 									<input
 										type="text"
 										id="projectName"
 										placeholder="My Awesome Project"
 										required
 										value={formData.name}
-										onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+										onChange={(e) => handleNameChange(e.target.value)}
 									/>
+								</div>
+								<div className="form-group">
+									<label htmlFor="projectSlug">Project Slug *</label>
+									<input
+										type="text"
+										id="projectSlug"
+										placeholder="my-awesome-project"
+										required
+										value={formData.slug}
+										onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+									/>
+									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+										Auto-generated from project name. Use only letters, numbers, and hyphens.
+									</p>
 								</div>
 								<div className="form-group">
 									<label htmlFor="projectDescription">Description (optional)</label>

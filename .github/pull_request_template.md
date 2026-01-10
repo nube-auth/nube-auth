@@ -37,6 +37,15 @@
 - [ ] Input validation using Zod schemas
 - [ ] Error handling for edge cases
 - [ ] No sensitive data in logs
+- [ ] **No internal database IDs in API responses** (use `public_id` only)
+- [ ] **Service headers use public IDs**, not internal IDs
+- [ ] Route parameters expect public IDs (`:userId`, not `:id`)
+
+#### Security
+- [ ] No credentials in error logs
+- [ ] No request bodies with sensitive data logged
+- [ ] Environment variables accessed through `config/env.ts`
+- [ ] Credentials encrypted at rest if stored
 
 #### TypeScript
 - [ ] No `any` types without explanation

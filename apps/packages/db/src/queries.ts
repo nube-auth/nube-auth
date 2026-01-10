@@ -14,6 +14,7 @@ import {
 	projects,
 	sessions,
 	users,
+	payment_provider_configs,
 } from "./schema.js";
 import { buildJsonbMergeClause, createJsonbUpdateChain } from "./utils/jsonb.js";
 
@@ -868,5 +869,109 @@ export const planQueries = {
 			.where(eq(licenses.plan_id, planId));
 
 		return result[0]?.count || 0;
+	},
+};
+
+/**
+ * Payment Provider Config queries
+ */
+export const paymentProviderConfigQueries = {
+	async findById(db: DbClient, configId: number) {
+		const results = await db
+			.select()
+			.from(payment_provider_configs)
+			.where(eq(payment_provider_configs.id, configId));
+		return results[0];
+	},
+
+	async findByPublicId(db: DbClient, publicId: string) {
+		const results = await db
+			.select()
+			.from(payment_provider_configs)
+			.where(eq(payment_provider_configs.public_id, publicId));
+		return results[0];
+	},
+
+	async findByProjectId(db: DbClient, projectId: number) {
+		return db
+			.select()
+			.from(payment_provider_configs)
+			.where(eq(payment_provider_configs.project_id, projectId))
+			.orderBy(desc(payment_provider_configs.is_default), desc(payment_provider_configs.created_at));
+	},
+
+	async findByProjectAndProvider(
+		db: DbClient,
+		projectId: number,
+		provider: string,
+		environment: string,
+	) {
+		const results = await db
+			.select()
+			.from(payment_provider_configs)
+			.where(
+				and(
+					eq(payment_provider_configs.project_id, projectId),
+					eq(payment_provider_configs.provider, provider),
+					eq(payment_provider_configs.environment, environment),
+				),
+			);
+		return results[0];
+	},
+
+	async findDefaultByProject(db: DbClient, projectId: number) {
+		const results = await db
+			.select()
+			.from(payment_provider_configs)
+			.where(
+				and(
+					eq(payment_provider_configs.project_id, projectId),
+					eq(payment_provider_configs.is_default, true),
+				),
+			);
+		return results[0];
+	},
+
+	async create(db: DbClient, data: typeof payment_provider_configs.$inferInsert) {
+		const results = await db
+			.insert(payment_provider_configs)
+			.values(data)
+			.returning();
+		return results[0]!;
+	},
+
+	async update(
+		db: DbClient,
+		configId: number,
+		data: Partial<typeof payment_provider_configs.$inferInsert>,
+	) {
+		return db
+			.update(payment_provider_configs)
+			.set({ ...data, updated_at: new Date() })
+			.where(eq(payment_provider_configs.id, configId))
+			.returning();
+	},
+
+	async delete(db: DbClient, configId: number) {
+		return db
+			.delete(payment_provider_configs)
+			.where(eq(payment_provider_configs.id, configId))
+			.returning();
+	},
+
+	async setAsDefault(db: DbClient, projectId: number, configId: number) {
+		// First, unset any existing defaults for this project
+		await db
+			.update(payment_provider_configs)
+			.set({ is_default: false })
+			.where(eq(payment_provider_configs.project_id, projectId));
+
+		// Then set this one as default
+		const results = await db
+			.update(payment_provider_configs)
+			.set({ is_default: true, updated_at: new Date() })
+			.where(eq(payment_provider_configs.id, configId))
+			.returning();
+		return results[0]!;
 	},
 };

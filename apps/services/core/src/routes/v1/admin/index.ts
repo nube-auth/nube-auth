@@ -1,9 +1,15 @@
 import { appQueries, getDb, licenseQueries, planQueries, userQueries } from "@proofa/db";
-import { createId } from "@proofa/shared";
+import { createId, createLogger, serializeError } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
-import * as providers from "./providers.js";
+import { providersRouter } from "./providers.js";
+import { projectsRouter } from "./projects.js";
+import { appsRouter } from "./apps.js";
+import { statsRouter } from "./stats.js";
+import { membersRouter } from "./members.js";
+import { licenseManagementRouter } from "./license-management.js";
 
+const log = createLogger("admin-routes");
 const router = new Hono();
 
 /**
@@ -70,7 +76,7 @@ router.post("/license/grant", async (c: Context) => {
 			grantedAt: now,
 		});
 	} catch (error) {
-		console.error("Admin license grant error:", error);
+		log.error({ err: serializeError(error as Error) }, "Admin license grant error");
 		return c.json({ error: "Failed to grant license" }, 500);
 	}
 });
@@ -104,7 +110,7 @@ router.get("/licenses/:userId", async (c: Context) => {
 			count: licenses?.length || 0,
 		});
 	} catch (error) {
-		console.error("Admin get licenses error:", error);
+		log.error({ err: serializeError(error as Error) }, "Admin get licenses error");
 		return c.json({ error: "Failed to get licenses" }, 500);
 	}
 });
@@ -128,17 +134,18 @@ router.delete("/licenses/:licenseId", async (c: Context) => {
 			licenseId,
 		});
 	} catch (error) {
-		console.error("Admin revoke license error:", error);
+		log.error({ err: serializeError(error as Error) }, "Admin revoke license error");
 		return c.json({ error: "Failed to revoke license" }, 500);
 	}
 });
 
-// Payment Provider Routes
-router.get("/apps/:appId/payment/available", providers.getAvailablePaymentProviders);
-router.get("/apps/:appId/payment/selected", providers.getSelectedPaymentProvider);
-router.post("/payment-providers", providers.createPaymentProvider);
-router.patch("/payment-providers/:providerId", providers.updatePaymentProvider);
-router.delete("/payment-providers/:providerId", providers.deletePaymentProvider);
-router.post("/apps/:appId/payment/select", providers.selectPaymentProvider);
+// Use the subrouters for nested routes
+// Mount each router with the appropriate prefix
+router.route("/projects", projectsRouter);
+router.route("/projects", appsRouter);
+router.route("/projects", statsRouter);
+router.route("/projects", membersRouter);
+router.route("/projects", licenseManagementRouter);
+router.route("/providers", providersRouter);
 
 export const adminRoutes = router;

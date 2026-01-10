@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useToast } from "../components/Toast";
-import { useApp, useAvailablePaymentProviders, useProject, useSelectPaymentProvider } from "../hooks/api";
+import { useApp, useProject, useProjectPaymentProviders, useSelectPaymentProvider, useSelectedPaymentProvider } from "../hooks/api";
 
 export default function AppPaymentSettingsPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -8,13 +8,14 @@ export default function AppPaymentSettingsPage() {
 
 	const { data: app, isLoading: appLoading, error: appError } = useApp(projectId!, appId!);
 	const { data: project, isLoading: projectLoading } = useProject(projectId!);
-	const { data: availableProviders = [], isLoading: loadingProviders } = useAvailablePaymentProviders(appId!);
+	const { data: availableProviders = [], isLoading: loadingProviders } = useProjectPaymentProviders(projectId!);
+	const { data: selectedProvider, isLoading: loadingSelected } = useSelectedPaymentProvider(projectId!, appId!);
 
-	const selectProviderMutation = useSelectPaymentProvider(appId!);
+	const selectProviderMutation = useSelectPaymentProvider(projectId!, appId!);
 
-	const handleSelectProvider = async (providerId: number) => {
+	const handleSelectProvider = async (providerPublicId: string | null) => {
 		try {
-			await selectProviderMutation.mutateAsync(providerId);
+			await selectProviderMutation.mutateAsync(providerPublicId);
 			showToast("Payment provider updated successfully", "success");
 		} catch (_error) {
 			showToast("Failed to update payment provider", "error");
@@ -60,7 +61,7 @@ export default function AppPaymentSettingsPage() {
 		);
 	};
 
-	if (appLoading || projectLoading || loadingProviders) {
+	if (appLoading || projectLoading || loadingProviders || loadingSelected) {
 		return (
 			<div className="loading">
 				<div className="spinner" />
@@ -71,8 +72,6 @@ export default function AppPaymentSettingsPage() {
 	if (appError || !app) {
 		return <div className="error-state">App not found</div>;
 	}
-
-	const selectedProviderId = app.selectedPaymentProviderId;
 
 	return (
 		<div className="page">
@@ -202,7 +201,7 @@ export default function AppPaymentSettingsPage() {
 			) : (
 				<div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 					{availableProviders.map((provider) => {
-						const isSelected = provider.id === selectedProviderId;
+						const isSelected = provider.id === selectedProvider?.id;
 						const isLoading = selectProviderMutation.isPending;
 
 						return (
@@ -288,7 +287,7 @@ export default function AppPaymentSettingsPage() {
 													textTransform: "capitalize",
 												}}
 											>
-												{provider.name || provider.provider}
+											{provider.provider}
 											</h3>
 											{getEnvironmentBadge(provider.environment)}
 											{isSelected && (

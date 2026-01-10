@@ -1,8 +1,9 @@
 import { appQueries, getDb, licenseQueries, planQueries, userQueries } from "@proofa/db";
-import { createId } from "@proofa/shared";
+import { createId, createLogger, serializeError } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 
+const log = createLogger("license-routes");
 const router = new Hono();
 
 /**
@@ -33,7 +34,7 @@ router.get("/", async (c: Context) => {
 			plan: "pro",
 		});
 	} catch (error) {
-		console.error("License get error:", error);
+		log.error({ err: serializeError(error as Error) }, "License get error");
 		return c.json({ error: "Failed to get license" }, 500);
 	}
 });
@@ -98,7 +99,7 @@ router.post("/grant", async (c: Context) => {
 			},
 		});
 	} catch (error) {
-		console.error("License grant error:", error);
+		log.error({ err: serializeError(error as Error) }, "License grant error");
 		return c.json({ error: "Failed to grant license" }, 500);
 	}
 });

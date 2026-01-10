@@ -8,6 +8,7 @@ import {
 	useProject,
 	useProjectPaymentProviders,
 	useUpdatePaymentProvider,
+	useSelectDefaultProjectProvider,
 } from "../hooks/api";
 
 type Provider = "lemonsqueezy" | "dodo" | "stripe";
@@ -34,13 +35,12 @@ type ProviderConfig = LemonSqueezyConfig | DodoConfig | StripeConfig;
 
 interface PaymentProviderItem {
 	id: string;
-	name: string | null;
-	slug: string | null;
 	provider: string;
 	environment: string;
 	isActive: boolean;
-	createdAt: string;
-	updatedAt: string;
+	isDefault: boolean;
+	createdAt: number | string;
+	updatedAt: number | string;
 }
 
 export default function ProjectPaymentProvidersPage() {
@@ -52,14 +52,13 @@ export default function ProjectPaymentProvidersPage() {
 	const createMutation = useCreatePaymentProvider();
 	const updateMutation = useUpdatePaymentProvider();
 	const deleteMutation = useDeletePaymentProvider();
+	const selectDefaultMutation = useSelectDefaultProjectProvider(projectId!);
 
 	const [showForm, setShowForm] = useState(false);
 	const [editingProvider, setEditingProvider] = useState<PaymentProviderItem | null>(null);
 	const [detailProvider, setDetailProvider] = useState<PaymentProviderItem | null>(null);
 
 	const [formData, setFormData] = useState({
-		name: "",
-		slug: "",
 		provider: "stripe" as Provider,
 		environment: "test" as Environment,
 		config: {} as ProviderConfig,
@@ -70,8 +69,6 @@ export default function ProjectPaymentProvidersPage() {
 	const handleCreate = () => {
 		setEditingProvider(null);
 		setFormData({
-			name: "",
-			slug: "",
 			provider: "stripe",
 			environment: "test",
 			config: { publishableKey: "", secretKey: "", webhookSecret: "" },
@@ -82,8 +79,6 @@ export default function ProjectPaymentProvidersPage() {
 	const handleEdit = (provider: PaymentProviderItem) => {
 		setEditingProvider(provider);
 		setFormData({
-			name: provider.name || "",
-			slug: provider.slug || "",
 			provider: provider.provider as Provider,
 			environment: provider.environment as Environment,
 			config: getEmptyConfig(provider.provider as Provider),
@@ -95,8 +90,6 @@ export default function ProjectPaymentProvidersPage() {
 		setShowForm(false);
 		setEditingProvider(null);
 		setFormData({
-			name: "",
-			slug: "",
 			provider: "stripe",
 			environment: "test",
 			config: getEmptyConfig("stripe"),
@@ -105,11 +98,6 @@ export default function ProjectPaymentProvidersPage() {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-
-		if (!formData.name.trim()) {
-			showToast("Provider name is required", "error");
-			return;
-		}
 
 		if (!validateConfig(formData.provider, formData.config)) {
 			showToast("Please fill in all required fields", "error");
@@ -122,10 +110,14 @@ export default function ProjectPaymentProvidersPage() {
 					projectId: projectId!,
 					providerId: editingProvider.id,
 					data: {
-						name: formData.name,
-						slug: formData.slug,
-						credentials: formData.config as unknown as Record<string, string>,
-						environment: formData.environment,
+						credentials: (() => {
+							const cfg = formData.config as any;
+							const copy = { ...cfg };
+							// Remove webhookSecret from credentials payload if present
+							if (copy.webhookSecret) delete copy.webhookSecret;
+							return copy as Record<string, string>;
+						})(),
+						webhookSecret: (formData.config as any).webhookSecret,
 						isActive: true,
 					},
 				});
@@ -134,13 +126,15 @@ export default function ProjectPaymentProvidersPage() {
 				await createMutation.mutateAsync({
 					projectId: projectId!,
 					data: {
-						name: formData.name,
-						slug: formData.slug,
-						entityType: "project",
-						projectId: projectId!,
 						provider: formData.provider,
 						environment: formData.environment,
-						credentials: formData.config as unknown as Record<string, string>,
+						credentials: (() => {
+							const cfg = formData.config as any;
+							const copy = { ...cfg };
+							if (copy.webhookSecret) delete copy.webhookSecret;
+							return copy as Record<string, string>;
+						})(),
+						webhookSecret: (formData.config as any).webhookSecret,
 					},
 				});
 				showToast("Provider created successfully", "success");
@@ -393,29 +387,6 @@ export default function ProjectPaymentProvidersPage() {
 						</div>
 						<form onSubmit={handleSubmit}>
 							<div className="modal-body">
-								<div className="form-group">
-									<label htmlFor="name">Provider Name</label>
-									<input
-										type="text"
-										id="name"
-										value={formData.name}
-										onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-										placeholder="e.g., Production Stripe, Test Payment"
-										required
-									/>
-								</div>
-
-								<div className="form-group">
-									<label htmlFor="slug">Slug (optional)</label>
-									<input
-										type="text"
-										id="slug"
-										value={formData.slug}
-										onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-										placeholder="Auto-generated from name if not provided"
-									/>
-								</div>
-
 								<div className="form-row">
 									<div className="form-group">
 										<label htmlFor="provider">Provider</label>
@@ -484,7 +455,7 @@ export default function ProjectPaymentProvidersPage() {
 				<div className="modal-overlay" onClick={() => setDetailProvider(null)}>
 					<div className="modal" style={{ maxWidth: "600px" }} onClick={(e) => e.stopPropagation()}>
 						<div className="modal-header">
-							<h3>{detailProvider.name || "Provider Details"}</h3>
+							<h3>Provider Details</h3>
 							<button type="button" className="modal-close" onClick={() => setDetailProvider(null)}>
 								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
@@ -618,32 +589,6 @@ export default function ProjectPaymentProvidersPage() {
 										letterSpacing: "0.5px",
 									}}
 								>
-									Name
-								</th>
-								<th
-									style={{
-										padding: "14px 16px",
-										textAlign: "left",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-tertiary)",
-										textTransform: "uppercase",
-										letterSpacing: "0.5px",
-									}}
-								>
-									Slug
-								</th>
-								<th
-									style={{
-										padding: "14px 16px",
-										textAlign: "left",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-tertiary)",
-										textTransform: "uppercase",
-										letterSpacing: "0.5px",
-									}}
-								>
 									Provider
 								</th>
 								<th
@@ -671,6 +616,19 @@ export default function ProjectPaymentProvidersPage() {
 									}}
 								>
 									Status
+								</th>
+								<th
+									style={{
+										padding: "14px 16px",
+										textAlign: "left",
+										fontSize: "12px",
+										fontWeight: "600",
+										color: "var(--text-tertiary)",
+										textTransform: "uppercase",
+										letterSpacing: "0.5px",
+									}}
+								>
+									Default
 								</th>
 								<th
 									style={{
@@ -712,26 +670,6 @@ export default function ProjectPaymentProvidersPage() {
 										e.currentTarget.style.background = "transparent";
 									}}
 								>
-									<td
-										style={{
-											padding: "14px 16px",
-											fontSize: "14px",
-											fontWeight: "500",
-											color: "var(--text-primary)",
-										}}
-									>
-										{provider.name || "Unnamed"}
-									</td>
-									<td
-										style={{
-											padding: "14px 16px",
-											fontSize: "13px",
-											fontFamily: "monospace",
-											color: "var(--text-secondary)",
-										}}
-									>
-										{provider.slug || "—"}
-									</td>
 									<td style={{ padding: "14px 16px" }}>
 										<span
 											style={{
@@ -797,6 +735,25 @@ export default function ProjectPaymentProvidersPage() {
 											{provider.isActive ? "Active" : "Inactive"}
 										</span>
 									</td>
+									<td style={{ padding: "14px 16px" }}>
+										{provider.isDefault ? (
+											<span
+												style={{
+													display: "inline-block",
+													padding: "4px 10px",
+													background: "rgba(59, 130, 246, 0.1)",
+													color: "var(--primary)",
+													borderRadius: "12px",
+													fontSize: "12px",
+													fontWeight: "500",
+												}}
+											>
+												Default
+											</span>
+										) : (
+											<span style={{ color: "var(--text-tertiary)", fontSize: "12px" }}>—</span>
+										)}
+									</td>
 									<td
 										style={{
 											padding: "14px 16px",
@@ -822,6 +779,24 @@ export default function ProjectPaymentProvidersPage() {
 											>
 												Edit
 											</button>
+											{!provider.isDefault && provider.isActive && (
+												<button
+													type="button"
+													onClick={async () => {
+														try {
+															await selectDefaultMutation.mutateAsync(provider.id);
+															showToast("Set as default", "success");
+															refetch();
+														} catch (err: any) {
+															showToast(err?.message || "Failed to set default", "error");
+														}
+													}}
+													className="btn btn-primary-outline btn-sm"
+													disabled={selectDefaultMutation.isPending}
+												>
+													Make Default
+												</button>
+											)}
 											<button
 												type="button"
 												onClick={() => handleDelete(provider.id)}

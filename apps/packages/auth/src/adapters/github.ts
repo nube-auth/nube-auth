@@ -72,12 +72,23 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
 			}),
 		});
 
-		if (!response.ok) {
-			const errorText = await response.text();
+		if (!response.ok()) {
+			const errorText = response.body;
 			throw new Error(`Failed to exchange code for token: ${response.status} ${errorText}`);
 		}
 
-		const rawData = await response.json();
+		// Get response data - handle both response.data and manual JSON parsing
+		let rawData = response.data;
+		if (!rawData && response.body) {
+			// Fallback: manually parse if response.data not available
+			try {
+				rawData = typeof response.body === 'string' 
+					? JSON.parse(response.body)
+					: response.body;
+			} catch {
+				throw new Error(`Failed to parse token response: ${response.body}`);
+			}
+		}
 
 		// Check for OAuth error response
 		const errorResult = OAuthErrorSchema.safeParse(rawData);
@@ -106,12 +117,13 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
 			},
 		});
 
-		if (!userResponse.ok) {
-			const errorText = await userResponse.text();
+		if (!userResponse.ok()) {
+			const errorText = userResponse.body;
 			throw new Error(`Failed to fetch user profile: ${userResponse.status} ${errorText}`);
 		}
 
-		const rawUserData = await userResponse.json();
+		// v1.4.0+: response.data is auto-parsed JSON
+		const rawUserData = userResponse.data;
 		const userData = GitHubUserSchema.parse(rawUserData);
 
 		// Fetch primary email if not in user data
@@ -125,7 +137,8 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
 			});
 
 			if (emailResponse.ok()) {
-				const rawEmails = await emailResponse.json();
+				// v1.4.0+: response.data is auto-parsed JSON
+				const rawEmails = emailResponse.data;
 				const emails = GitHubEmailsSchema.parse(rawEmails);
 				const primaryEmail = emails.find((e: GitHubEmail) => e.primary);
 				email = primaryEmail?.email || emails[0]?.email || null;

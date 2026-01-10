@@ -1,5 +1,17 @@
 // Re-export all types
 
+// Re-export ID types for type safety
+export {
+	type InternalId,
+	type PublicId,
+	internalId,
+	publicId,
+	unwrapInternalId,
+	unwrapPublicId,
+	isInternalId,
+	isPublicId,
+} from "./types/ids.js";
+
 // Re-export email service (Node.js only - not for browser)
 // Backend services should import directly: import { createEmailService } from "@proofa/shared/email"
 // Type-only export to prevent bundling in browser builds

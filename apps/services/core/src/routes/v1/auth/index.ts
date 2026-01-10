@@ -12,11 +12,12 @@ import {
 	sessionQueries,
 	userQueries,
 } from "@proofa/db";
-import { createId, idPatterns, type PlanSettings } from "@proofa/shared";
+import { createId, createLogger, idPatterns, serializeError, type PlanSettings } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { env } from "../../../config/env";
 
+const log = createLogger("auth-routes");
 const router = new Hono();
 
 // OAuth state storage helpers using Redis
@@ -61,13 +62,13 @@ async function ensureLicenseForApp(db: ReturnType<typeof getDb>, userId: number,
 		if (existing) return;
 
 		if (!planSettings?.defaultPlanId) {
-			console.warn({ appId: appPublicId }, "Auto-license skipped: defaultPlanId not set in plan_settings");
+		log.warn({ appId: appPublicId }, "Auto-license skipped: defaultPlanId not set in plan_settings");
 			return;
 		}
 
 		const plan = await planQueries.findById(db, planSettings.defaultPlanId);
 		if (!plan || plan.app_id !== app.id || plan.status !== "active" || plan.deleted_at) {
-			console.warn(
+		log.warn(
 				{ appId: appPublicId, planId: planSettings.defaultPlanId },
 				"Auto-license skipped: default plan invalid or inactive",
 			);
@@ -153,7 +154,7 @@ router.get("/start", async (c: Context) => {
 		// Redirect to OAuth provider
 		return c.redirect(authUrl);
 	} catch (error) {
-		console.error("Auth start error:", error);
+	log.error({ err: serializeError(error as Error) }, "Auth start error");
 		return c.json({ error: "Failed to start auth" }, 500);
 	}
 });
@@ -174,7 +175,7 @@ router.get("/callback/:provider", async (c: Context) => {
 
 	// Check for OAuth error
 	if (error) {
-		console.error("OAuth error from provider:", error);
+		log.error({ error }, "OAuth error from provider");
 		const storedState = state ? await getOAuthState(state) : null;
 		if (storedState) {
 			await deleteOAuthState(state!);
@@ -227,8 +228,14 @@ router.get("/callback/:provider", async (c: Context) => {
 		// Core's callback URL that was used for OAuth
 		const coreCallbackUrl = `${env.CORE_PUBLIC_URL}/v1/auth/callback/${provider}`;
 
+		log.debug({ provider, codePreview: code?.substring(0, 8) }, "Exchanging OAuth code for tokens");
 		const token = await adapter.exchangeCodeForTokens(code, coreCallbackUrl);
-		const profile = await adapter.fetchUserProfile(token.accessToken);
+		
+		log.debug({ provider, hasIdToken: !!(token as any).idToken }, "Fetching user profile");
+		// For OpenID Connect (Google), prefer idToken; fallback to accessToken for other providers
+		const tokenForProfile = (token as any).idToken || token.accessToken;
+		const profile = await adapter.fetchUserProfile(tokenForProfile);
+		log.debug({ email: profile.email, providerId: profile.id }, "User profile fetched");
 
 		// Find existing identity
 		const existingIdentity = await identityQueries.findByProviderUserId(db, provider, profile.id);
@@ -236,6 +243,7 @@ router.get("/callback/:provider", async (c: Context) => {
 		let userId = existingIdentity?.user_id;
 
 		if (!userId) {
+			log.debug({ email: profile.email, provider }, "Creating new user");
 			// Create new user
 			const userData = {
 				public_id: createId("user"),
@@ -247,6 +255,8 @@ router.get("/callback/:provider", async (c: Context) => {
 			};
 			const newUser = await userQueries.create(db, userData);
 			userId = newUser.id;
+			log.debug({ userId, email: profile.email }, "User created");
+			
 			// Create identity
 			const identityData = {
 				public_id: createId("identity"),
@@ -258,6 +268,7 @@ router.get("/callback/:provider", async (c: Context) => {
 				// created_at auto-set by .defaultNow() in schema
 			};
 			await identityQueries.create(db, identityData);
+			log.debug({ userId, provider }, "Identity created");
 
 			// Check for and consume pending app invitations
 			if (storedState.appId) {
@@ -303,7 +314,7 @@ router.get("/callback/:provider", async (c: Context) => {
 						}
 					}
 				} catch (invitationError) {
-					console.error("Error processing app invitations:", invitationError);
+					log.error({ err: serializeError(invitationError as Error), appId: storedState.appId }, "Error processing app invitations");
 					// Don't fail signup if invitation processing fails
 				}
 			}
@@ -372,10 +383,11 @@ router.get("/callback/:provider", async (c: Context) => {
 					}
 				}
 			} catch (projectInvitationError) {
-				console.error("Error processing project invitations:", projectInvitationError);
+				log.error({ err: serializeError(projectInvitationError as Error), invite: storedState.invite }, "Error processing project invitations");
 				// Don't fail signup if invitation processing fails
 			}
 		} else {
+			log.debug({ userId }, "User already exists, fetching user data");
 			await userQueries.findById(db, userId);
 		}
 
@@ -383,6 +395,7 @@ router.get("/callback/:provider", async (c: Context) => {
 		await ensureLicenseForApp(db, userId, storedState.appId);
 
 		// Create core session
+		log.debug({ userId }, "Creating session");
 		const sessionData = {
 			public_id: createId("session"),
 			user_id: userId,
@@ -390,6 +403,7 @@ router.get("/callback/:provider", async (c: Context) => {
 			expires_at: expiresAt,
 		};
 		const session = await sessionQueries.create(db, sessionData);
+		log.info({ userId, sessionPublicId: session.public_id.substring(0, 8) }, "Session created successfully");
 
 		// Redirect to Gateway callback with session ID as code
 		const redirectUrl = new URL(storedState.redirectUri);
@@ -399,9 +413,10 @@ router.get("/callback/:provider", async (c: Context) => {
 			redirectUrl.searchParams.set("state", storedState.gatewayState);
 		}
 
+		log.info({ redirectUri: storedState.redirectUri, provider }, "Redirecting to Gateway callback");
 		return c.redirect(redirectUrl.toString());
 	} catch (error) {
-		console.error("Auth callback error:", error);
+		log.error({ err: serializeError(error as Error), provider, stack: error instanceof Error ? error.stack : undefined }, "Auth callback error");
 		// Redirect back with error
 		const redirectUrl = new URL(storedState.redirectUri);
 		redirectUrl.searchParams.set("error", "auth_failed");
@@ -414,29 +429,36 @@ router.get("/callback/:provider", async (c: Context) => {
  * Exchange session token for user info
  */
 router.post("/exchange", async (c: Context) => {
-	const { sessionId } = await c.req.json();
-
-	if (!sessionId || !idPatterns.session.test(sessionId)) {
-		return c.json({ error: "Invalid session" }, 400);
-	}
-
 	try {
+		const { sessionId } = await c.req.json();
+
+		if (!sessionId || !idPatterns.session.test(sessionId)) {
+			log.warn({ sessionId, isValid: sessionId ? idPatterns.session.test(sessionId) : false }, "Invalid session format");
+			return c.json({ error: "Invalid session" }, 400);
+		}
+
 		const db = getDb();
 		const now = new Date();
 
+		log.debug({ sessionId: sessionId.substring(0, 8) + "..." }, "Looking up session");
 		const session = await sessionQueries.findByPublicId(db, sessionId);
 
 		if (!session) {
+			log.warn({ sessionId: sessionId.substring(0, 8) + "..." }, "Session not found");
 			return c.json({ error: "Session not found" }, 404);
 		}
 
+		log.debug({ sessionId: sessionId.substring(0, 8) + "...", expiresAt: session.expires_at, now }, "Session found, checking expiry");
 		if (session.expires_at < now) {
+			log.warn({ sessionId: sessionId.substring(0, 8) + "..." }, "Session expired");
 			return c.json({ error: "Session expired" }, 401);
 		}
 
+		log.debug({ userId: session.user_id }, "Looking up user");
 		const user = await userQueries.findById(db, session.user_id);
 
 		if (!user) {
+			log.warn({ userId: session.user_id }, "User not found");
 			return c.json({ error: "User not found" }, 404);
 		}
 
@@ -451,9 +473,11 @@ router.post("/exchange", async (c: Context) => {
 			updatedExpiresAt = new Date(now.getTime() + env.CORE_SESSION_TTL_DAYS * 24 * 60 * 60 * 1000);
 
 			// Update both last_seen_at and expires_at
+			log.debug({ sessionId: sessionId.substring(0, 8) + "..." }, "Extending session TTL");
 			await sessionQueries.updateLastSeenAndExpiry(db, session.id, now, updatedExpiresAt);
 		}
 
+		log.info({ userId: user.public_id, sessionId: sessionId.substring(0, 8) + "..." }, "Session exchange successful");
 		return c.json({
 			userId: user.public_id,
 			email: user.primary_email,
@@ -462,7 +486,7 @@ router.post("/exchange", async (c: Context) => {
 			expiresAt: updatedExpiresAt,
 		});
 	} catch (error) {
-		console.error("Auth exchange error:", error);
+		log.error({ err: serializeError(error as Error), stack: error instanceof Error ? error.stack : undefined }, "Auth exchange error");
 		return c.json({ error: "Failed to exchange session" }, 500);
 	}
 });

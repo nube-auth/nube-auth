@@ -1,11 +1,13 @@
 import { generateOTP, hashOTP, verifyOTP } from "@proofa/auth";
 import { rateLimit } from "@proofa/cache";
 import { emailVerificationQueries, getDb, identityQueries, sessionQueries, userQueries } from "@proofa/db";
-import { createId, OTP_LENGTH, OTP_LOCKOUT_MINUTES, OTP_MAX_ATTEMPTS } from "@proofa/shared";
+import { createId, createLogger, serializeError, OTP_LENGTH, OTP_LOCKOUT_MINUTES, OTP_MAX_ATTEMPTS } from "@proofa/shared";
 import { createEmailService } from "@proofa/shared/email";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { env } from "../../../config/env";
+
+const log = createLogger("email-routes");
 
 // Initialize email service
 const emailService = createEmailService({
@@ -30,10 +32,12 @@ router.post("/start", async (c: Context) => {
 		return c.json({ error: "Invalid email" }, 400);
 	}
 
-	// Rate limit: 5 OTP requests per email per hour
-	const allowed = await rateLimit.checkLimit(email, "otp_request", 5, 3600);
-	if (!allowed) {
-		return c.json({ error: "Too many OTP requests. Try again in 1 hour." }, 429);
+	// Rate limit: 5 OTP requests per email per hour (skip in development)
+	if (!env.IS_DEVELOPMENT) {
+		const allowed = await rateLimit.checkLimit(email, "otp_request", 5, 3600);
+		if (!allowed) {
+			return c.json({ error: "Too many OTP requests. Try again in 1 hour." }, 429);
+		}
 	}
 
 	try {
@@ -85,7 +89,7 @@ router.post("/start", async (c: Context) => {
 			expiresIn: 600, // 10 minutes in seconds
 		});
 	} catch (error) {
-		console.error("Email start error:", error);
+		log.error({ err: serializeError(error as Error) }, "Email start error");
 		return c.json({ error: "Failed to send OTP" }, 500);
 	}
 });
@@ -105,10 +109,12 @@ router.post("/verify", async (c: Context) => {
 		return c.json({ error: `OTP must be ${OTP_LENGTH} digits` }, 400);
 	}
 
-	// Rate limit: 5 OTP verification attempts per email per 5 minutes
-	const allowed = await rateLimit.checkLimit(email, "otp_verify", 5, 300);
-	if (!allowed) {
-		return c.json({ error: "Too many OTP attempts. Try again later." }, 429);
+	// Rate limit: 5 OTP verification attempts per email per 5 minutes (skip in development)
+	if (!env.IS_DEVELOPMENT) {
+		const allowed = await rateLimit.checkLimit(email, "otp_verify", 5, 300);
+		if (!allowed) {
+			return c.json({ error: "Too many OTP attempts. Try again later." }, 429);
+		}
 	}
 
 	try {
@@ -223,7 +229,7 @@ router.post("/verify", async (c: Context) => {
 			email,
 		});
 	} catch (error) {
-		console.error("Email verify error:", error);
+		log.error({ err: serializeError(error as Error) }, "Email verify error");
 		return c.json({ error: "Failed to verify OTP" }, 500);
 	}
 });

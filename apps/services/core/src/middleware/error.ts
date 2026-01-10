@@ -1,6 +1,9 @@
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { env } from "../config/env";
+import { createLogger } from "@proofa/shared";
+
+const log = createLogger("error-middleware");
 
 export interface AppError extends Error {
 	status?: number;
@@ -16,10 +19,12 @@ export async function errorHandler(err: AppError, c: Context) {
 	const status = (err.status || 500) as ContentfulStatusCode;
 	const code = err.code || "INTERNAL_ERROR";
 
-	console.error(`[${code}] ${err.message}`, {
+	log.error({
+		code,
+		message: err.message,
 		stack: err.stack,
 		details: err.details,
-	});
+	}, `[${code}] ${err.message}`);
 
 	return c.json(
 		{

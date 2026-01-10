@@ -29,14 +29,15 @@ export const coreService = {
 		const response = await pingpong(url, {
 			method: config.method,
 			headers,
-			...(config.body ? { body: JSON.stringify(config.body) } : {}),
+			...(config.body ? { body: config.body } : {}),
 		});
 
 		if (!response.ok()) {
 			throw new Error(`Core API error: ${response.status} ${response.statusText}`);
 		}
 
-		return response.json();
+		// v1.4.0+: response.data is auto-parsed JSON
+		return response.data;
 	},
 
 	/**

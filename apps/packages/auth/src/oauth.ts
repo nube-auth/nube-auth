@@ -79,20 +79,21 @@ export async function exchangeCodeForToken(
 			"Content-Type": "application/json",
 			Accept: "application/json",
 		},
-		body: JSON.stringify({
+		body: {
 			client_id: provider.clientId,
 			client_secret: provider.clientSecret,
 			code,
 			redirect_uri: redirectUri,
 			grant_type: "authorization_code",
-		}),
+		},
 	});
 
-	if (!response.ok) {
+	if (!response.ok()) {
 		throw new Error(`Failed to exchange code: ${response.statusText}`);
 	}
 
-	const data = (await response.json()) as any;
+	// v1.4.0+: response.data is auto-parsed JSON
+	const data = response.data as any;
 	return data.access_token;
 }
 
@@ -107,11 +108,12 @@ export async function fetchUserProfile(provider: OAuthProvider, accessToken: str
 		},
 	});
 
-	if (!response.ok) {
+	if (!response.ok()) {
 		throw new Error(`Failed to fetch user profile: ${response.statusText}`);
 	}
 
-	const data = (await response.json()) as any;
+	// v1.4.0+: response.data is auto-parsed JSON
+	const data = response.data as any;
 
 	// Normalize different provider response formats
 	if (provider.name === "google") {

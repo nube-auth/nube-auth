@@ -1,5 +1,5 @@
 {
-  "id": "53603980-1655-482f-a847-6913200d8801",
+  "id": "181966d8-8ab7-4bea-bf7a-6fd63ed4ea7c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1215,8 +1215,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "app_id": {
-          "name": "app_id",
+        "project_id": {
+          "name": "project_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -1293,11 +1293,11 @@
         }
       },
       "indexes": {
-        "payment_provider_configs_app_id_idx": {
-          "name": "payment_provider_configs_app_id_idx",
+        "payment_provider_configs_project_id_idx": {
+          "name": "payment_provider_configs_project_id_idx",
           "columns": [
             {
-              "expression": "app_id",
+              "expression": "project_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1340,12 +1340,12 @@
         }
       },
       "foreignKeys": {
-        "payment_provider_configs_app_id_apps_id_fk": {
-          "name": "payment_provider_configs_app_id_apps_id_fk",
+        "payment_provider_configs_project_id_projects_id_fk": {
+          "name": "payment_provider_configs_project_id_projects_id_fk",
           "tableFrom": "payment_provider_configs",
-          "tableTo": "apps",
+          "tableTo": "projects",
           "columnsFrom": [
-            "app_id"
+            "project_id"
           ],
           "columnsTo": [
             "id"
@@ -1389,11 +1389,11 @@
             "public_id"
           ]
         },
-        "payment_provider_configs_app_provider_env_unique": {
-          "name": "payment_provider_configs_app_provider_env_unique",
+        "payment_provider_configs_project_provider_env_unique": {
+          "name": "payment_provider_configs_project_provider_env_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "app_id",
+            "project_id",
             "provider",
             "environment"
           ]

@@ -1,6 +1,9 @@
 import type { User } from "@proofa/shared";
+import { createLogger, serializeError } from "@proofa/shared";
 import { env } from "../config/env";
 import { pingpong } from "./pingpong";
+
+const log = createLogger("core-client");
 
 /**
  * Client for calling Proofa Core API
@@ -26,16 +29,17 @@ export class CoreClient {
 			const response = await pingpong(url, {
 				method,
 				headers,
-				...(body ? { body: JSON.stringify(body) } : {}),
+				...(body ? { body } : {}),
 			});
 
 			if (!response.ok()) {
 				throw new Error(`Core API error: ${response.status} ${response.statusText}`);
 			}
 
-			return response.json() as T;
+			// v1.4.0+: response.data is auto-parsed JSON
+			return response.data as T;
 		} catch (error) {
-			console.error(`CoreClient request failed: ${method} ${path}`, error);
+			log.error({ method, path, err: serializeError(error as Error) }, "CoreClient request failed");
 			throw error;
 		}
 	}
