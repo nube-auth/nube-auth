@@ -1,6 +1,6 @@
 import { getEnv } from "../config/env";
 import { addS2SAuthHeader } from "../middleware/s2s";
-import { pingpong } from "../lib/pingpong";
+import { pingpong } from "@proofa/auth";
 
 interface CoreRequest {
 	method: "GET" | "POST" | "PATCH" | "DELETE";

@@ -10,6 +10,7 @@ import { httpLogger } from "./middleware/logger";
 import { rateLimitPresets } from "./middleware/rateLimit";
 import { adminRoutes } from "./routes/admin";
 import { authRoutes } from "./routes/auth";
+import { debugRoutes } from "./routes/debug";
 import { meRoutes } from "./routes/me";
 import { paymentsRoutes } from "./routes/payments";
 
@@ -99,6 +100,7 @@ app.route("/v1/auth", authRoutes);
 app.route("/v1/me", meRoutes);
 app.route("/v1/admin", adminRoutes);
 app.route("/v1/payment", paymentsRoutes);
+app.route("/v1/debug", debugRoutes);
 
 // Health check
 app.get("/health", (c) => {

@@ -12,6 +12,8 @@ type PingpongRequestOptions = {
  * - response.data (auto-parsed JSON, no need for .json())
  * - Convenience methods (.get(), .post(), etc.)
  * - Type-safe responses
+ * 
+ * @version 1.0.2+ - Headers now properly forwarded in GET/DELETE methods
  */
 export async function pingpongFetch(url: string, options: PingpongRequestOptions = {}) {
 	const method = (options.method ?? "GET").toUpperCase();
@@ -22,20 +24,26 @@ export async function pingpongFetch(url: string, options: PingpongRequestOptions
 		body = body.toString();
 	}
 
-	// Use convenience methods for better performance
+	const requestOptions = options.headers ? { headers: options.headers } : {};
+
+	// Use convenience methods for better performance and cleaner code
 	switch (method) {
 		case "GET":
-			return pingpong.get(url, options.headers ? { headers: options.headers } : {});
+			return pingpong.get(url, requestOptions);
 		case "POST":
-			return pingpong.post(url, body, options.headers ? { headers: options.headers } : {});
+			return pingpong.post(url, body, requestOptions);
 		case "PUT":
-			return pingpong.put(url, body, options.headers ? { headers: options.headers } : {});
+			return pingpong.put(url, body, requestOptions);
 		case "PATCH":
-			return pingpong.patch(url, body, options.headers ? { headers: options.headers } : {});
+			return pingpong.patch(url, body, requestOptions);
 		case "DELETE":
-			return pingpong.delete(url, options.headers ? { headers: options.headers } : {});
+			return pingpong.delete(url, requestOptions);
+		case "HEAD":
+			return pingpong.head(url, requestOptions);
+		case "OPTIONS":
+			return pingpong.options(url, requestOptions);
 		default:
-			// Fallback for other methods (HEAD, OPTIONS)
+			// Fallback for any other methods
 			return pingpong.send({
 				method: method as any,
 				url,

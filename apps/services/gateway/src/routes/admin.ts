@@ -9,7 +9,8 @@ import type { Context } from "hono";
 import { Hono } from "hono";
 import { getAuth } from "../middleware/auth";
 import { coreClient } from "../lib/core-client";
-import { pingpong } from "../lib/pingpong";
+import { pingpong } from "@proofa/auth";
+import { env } from "../config/env";
 
 const log = createLogger("admin-routes");
 
@@ -67,10 +68,12 @@ adminRoutes.all("/*", async (c: Context) => {
 		const coreUrl = `${process.env["CORE_URL"] || "http://localhost:3003"}${corePath}`;
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
-			"X-S2S-Token": process.env["CORE_S2S_TOKEN"] || "",
+			"X-S2S-Token": env.S2S_SECRET,
 			"X-User-Id": auth.userId, // Send public user ID
 			"X-Session-Id": auth.coreSessionId || "",
 		};
+
+
 
 		// Pass through x-project-id header if present (needed for authorization checks)
 		const projectId = c.req.header("x-project-id");
@@ -87,19 +90,19 @@ adminRoutes.all("/*", async (c: Context) => {
 
 		log.debug({ url: url.toString(), headers }, "Making request to Core");
 
-		const response = await pingpong(url.toString(), {
+		// Use native fetch instead of pingpong to avoid header issues with GET requests
+		const response = await fetch(url.toString(), {
 			method,
 			headers,
-			...(body ? { body } : {}),
+			...(body ? { body: JSON.stringify(body) } : {}),
 		});
 
-		// v1.4.0+: response.data is auto-parsed JSON
-		const responseData = response.data;
+		const responseData = await response.json();
 
 		log.debug({ status: response.status }, "Response from Core");
-		return c.json(responseData, response.status as any);
+		return c.json(responseData, response.status);
 	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "Admin proxy error");
+		log.error({ err: serializeError(error as Error), stack: (error as Error).stack }, "Admin proxy error");
 		return c.json({ error: "Internal server error" }, 500);
 	}
 });

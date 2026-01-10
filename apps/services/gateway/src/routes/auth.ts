@@ -9,7 +9,7 @@ import { getCookie, setCookie } from "hono/cookie";
 import { CSRF_TOKEN_BYTES, SESSION_ID_BYTES, SESSION_TTL } from "../config/constants";
 import { env } from "../config/env";
 import { coreClient } from "../lib/core-client";
-import { pingpong } from "../lib/pingpong";
+import { pingpong } from "@proofa/auth";
 import { sessionService } from "../services/sessionService";
 
 const log = createLogger("auth-routes");
@@ -170,7 +170,7 @@ authRoutes.get("/callback", async (c: Context) => {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
-				"X-Proofa-Service-Token": env.CORE_S2S_TOKEN,
+				"X-Proofa-Service-Token": env.S2S_SECRET,
 			},
 			body: {
 				sessionId: code, // Core passes session ID as "code" param
@@ -216,12 +216,19 @@ authRoutes.get("/callback", async (c: Context) => {
 		});
 
 		// Create signed cookie with domain for cross-subdomain access
-		const cookieDomain = env.COOKIE_DOMAIN; // e.g., ".proofa.sh"
+		const cookieDomain = env.COOKIE_DOMAIN; // e.g., ".proofa.sh" or "localhost"
 		const secureCookies =
 			env.NODE_ENV === "production" || (env.GATEWAY_PUBLIC_URL ? env.GATEWAY_PUBLIC_URL.startsWith("https://") : false);
+		
+		// For localhost development, don't set domain (browser will use current domain)
+		// For production *.proofa.sh, include domain for cross-subdomain access
+		const cookieOptions = cookieDomain && cookieDomain !== "localhost" 
+			? { domain: cookieDomain, secure: secureCookies }
+			: { secure: secureCookies };
+		
 		const { value, attributes } = createSessionCookie(
 			gatewaySessionId,
-			cookieDomain ? { domain: cookieDomain, secure: secureCookies } : { secure: secureCookies },
+			cookieOptions,
 		);
 
 		const httpOnly = safeAttrBoolean(attributes['httpOnly']);

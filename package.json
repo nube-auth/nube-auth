@@ -61,7 +61,7 @@
 	},
 	"packageManager": "pnpm@9.15.9",
 	"dependencies": {
-		"@pingpong-js/fetch": "^1.0.1",
+		"@pingpong-js/fetch": "^1.0.2",
 		"pino": "^10.1.0",
 		"pino-pretty": "^13.1.3"
 	},

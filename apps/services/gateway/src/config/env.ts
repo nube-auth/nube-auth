@@ -9,9 +9,9 @@ export interface Env {
 	REDIS_URL: string;
 	RESEND_API_KEY: string;
 	CORE_URL: string;
-	CORE_S2S_TOKEN: string;
+	S2S_SECRET: string;
 	X_PROOFA_SERVICE_TOKEN: string;
-	GATEWAY_SESSION_SECRET: string;
+	SESSION_SECRET: string;
 	GATEWAY_PUBLIC_URL: string;
 	USER_DASHBOARD_URL: string;
 	ADMIN_DASHBOARD_URL: string;
@@ -48,9 +48,9 @@ const requiredEnvVars = [
 	"RESEND_API_KEY",
 	"ENCRYPTION_KEY",
 	"CORE_URL",
-	"CORE_S2S_TOKEN",
+	"S2S_SECRET",
 	"X_PROOFA_SERVICE_TOKEN",
-	"GATEWAY_SESSION_SECRET",
+	"SESSION_SECRET",
 ] as const;
 
 function validateEnv(): Env {
@@ -65,9 +65,9 @@ function validateEnv(): Env {
 		REDIS_URL: process.env["REDIS_URL"]!,
 		RESEND_API_KEY: process.env["RESEND_API_KEY"]!,
 		CORE_URL: process.env["CORE_URL"]!,
-		CORE_S2S_TOKEN: process.env["CORE_S2S_TOKEN"]!,
+		S2S_SECRET: process.env["S2S_SECRET"]!,
 		X_PROOFA_SERVICE_TOKEN: process.env["X_PROOFA_SERVICE_TOKEN"]!,
-		GATEWAY_SESSION_SECRET: process.env["GATEWAY_SESSION_SECRET"]!,
+		SESSION_SECRET: process.env["SESSION_SECRET"]!,
 		GATEWAY_PUBLIC_URL: process.env["GATEWAY_PUBLIC_URL"] || "https://api.proofa.sh",
 		USER_DASHBOARD_URL: process.env["USER_DASHBOARD_URL"] || "https://user.proofa.sh",
 		ADMIN_DASHBOARD_URL: process.env["ADMIN_DASHBOARD_URL"] || "https://manage.proofa.sh",

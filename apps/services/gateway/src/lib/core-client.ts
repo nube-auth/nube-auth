@@ -1,7 +1,7 @@
 import type { User } from "@proofa/shared";
 import { createLogger, serializeError } from "@proofa/shared";
 import { env } from "../config/env";
-import { pingpong } from "./pingpong";
+import { pingpong } from "@proofa/auth";
 
 const log = createLogger("core-client");
 
@@ -15,7 +15,7 @@ export class CoreClient {
 
 	constructor(baseUrl: string = env.CORE_URL || "http://localhost:3003", s2sToken?: string) {
 		this.baseUrl = baseUrl;
-		this.s2sToken = s2sToken || env.CORE_S2S_TOKEN || "";
+		this.s2sToken = s2sToken || env.S2S_SECRET || "";
 	}
 
 	private async request<T>(method: string, path: string, body?: Record<string, unknown>): Promise<T> {

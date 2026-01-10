@@ -28,8 +28,8 @@ export interface AuthContext {
  */
 export const authMiddleware = createMiddleware(async (c: Context, next) => {
 	// Skip auth for public routes
-	const publicRoutes = ["/health", "/v1/auth/login", "/v1/auth/logout"];
-	if (publicRoutes.includes(c.req.path) || c.req.path.startsWith("/v1/auth")) {
+	const publicRoutes = ["/health", "/v1/auth/login", "/v1/auth/logout", "/v1/debug"];
+	if (publicRoutes.includes(c.req.path) || c.req.path.startsWith("/v1/auth") || c.req.path.startsWith("/v1/debug")) {
 		return next();
 	}
 
@@ -40,41 +40,55 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 	loggers.auth.info(
 		{
 			path: c.req.path,
+			isAdminRoute,
 			cookieName,
 			hasCookie: !!cookieValue,
+			allCookies: c.req.header("cookie"),
 			cookiePreview: cookieValue ? `${cookieValue.substring(0, 8)}...` : null,
 		},
 		"Auth middleware validating request",
 	);
 
 	if (!cookieValue) {
-		loggers.auth.warn({ path: c.req.path }, "No cookie found - returning 401");
+		loggers.auth.warn({ 
+			path: c.req.path,
+			cookieName,
+			allCookies: c.req.header("cookie") || "none",
+			isAdminRoute 
+		}, "No cookie found - returning 401");
 		return c.json({ error: "Unauthorized" }, 401);
 	}
 
 	try {
 		// Parse and verify signed session cookie
+		loggers.auth.debug({ cookiePreview: cookieValue ? `${cookieValue.substring(0, 20)}...` : null }, "Attempting to parse session cookie");
 		const sessionId = parseSessionCookie(cookieValue);
 
 		if (!sessionId) {
-			loggers.auth.warn("Failed to parse session cookie - returning 401");
+			loggers.auth.error({ 
+				cookieValue: cookieValue ? `${cookieValue.substring(0, 20)}...` : null,
+				cookieLength: cookieValue?.length 
+			}, "Failed to parse session cookie - returning 401");
 			return c.json({ error: "Invalid session" }, 401);
 		}
 
 		loggers.auth.info(
 			{
 				sessionId: `${sessionId.substring(0, 8)}...`,
+				cookieLength: cookieValue.length,
+				hasDot: cookieValue.includes('.'),
 			},
-			"Checking app session in Redis",
+			"Cookie parsed successfully, checking app session in Redis",
 		);
 
 		// Check if app session exists in Redis
 		const appSession = await sessionStore.getAppSession(sessionId);
 
 		if (!appSession) {
-			loggers.auth.warn(
+			loggers.auth.error(
 				{
 					sessionId: `${sessionId.substring(0, 8)}...`,
+					message: "Session exists in cookie but not found in Redis - may be expired or invalid"
 				},
 				"App session not found in Redis - returning 401",
 			);
@@ -86,6 +100,7 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 				sessionId: `${sessionId.substring(0, 8)}...`,
 				userId: appSession.userId,
 				appId: appSession.appId,
+				metadataKeys: appSession.metadata ? Object.keys(appSession.metadata) : [],
 			},
 			"App session found, checking Core session",
 		);
@@ -93,18 +108,33 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 		// Get Core session ID from metadata (stored during login)
 		const coreSessionId = appSession.metadata?.["coreSessionId"] as string | undefined;
 		if (!coreSessionId) {
-			loggers.auth.warn("Core session ID not found in metadata");
+			loggers.auth.error(
+				{
+					sessionId: `${sessionId.substring(0, 8)}...`,
+					metadata: appSession.metadata,
+					message: "Core session ID missing from metadata"
+				},
+				"Core session ID not found in metadata - returning 401",
+			);
 			return c.json({ error: "Core session not found" }, 401);
 		}
 
 		// Refresh gateway session TTL on access (rolling TTL for app session)
+		loggers.auth.debug({ sessionId: `${sessionId.substring(0, 8)}...` }, "Refreshing session TTL");
 		await cache.expire(`session:app:${sessionId}`, SESSION_TTL);
 
 		// Get user info from Core using Core session ID
+		loggers.auth.debug({ coreSessionId: `${coreSessionId.substring(0, 8)}...` }, "Exchanging Core session for user info");
 		const coreSession = await coreClient.exchangeSession(coreSessionId);
 
 		if (!coreSession) {
-			loggers.auth.warn({ coreSessionId: `${coreSessionId.substring(0, 8)}...` }, "Core session invalid");
+			loggers.auth.error(
+				{
+					coreSessionId: `${coreSessionId.substring(0, 8)}...`,
+					message: "Core session exchange returned null"
+				},
+				"Core session invalid - returning 401",
+			);
 			return c.json({ error: "Invalid session" }, 401);
 		}
 

@@ -56,7 +56,7 @@ export function signCookie(value: string): string {
 	const env = getEnv();
 	// Use a simple HMAC-like approach for demo
 	// In production, use a proper signing library
-	return `${value}.${Buffer.from(env.GATEWAY_SESSION_SECRET).toString("base64").slice(0, 8)}`;
+	return `${value}.${Buffer.from(env.SESSION_SECRET).toString("base64").slice(0, 8)}`;
 }
 
 /**
@@ -68,7 +68,7 @@ export function verifyCookie(signedValue: string): string | null {
 		return null;
 	}
 	const env = getEnv();
-	const expectedSignature = Buffer.from(env.GATEWAY_SESSION_SECRET).toString("base64").slice(0, 8);
+	const expectedSignature = Buffer.from(env.SESSION_SECRET).toString("base64").slice(0, 8);
 
 	if (signature !== expectedSignature) {
 		return null;

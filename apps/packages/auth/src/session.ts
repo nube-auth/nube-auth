@@ -1,6 +1,11 @@
 import * as crypto from "node:crypto";
 
-const SESSION_SECRET = process.env['SESSION_SECRET'] || "dev-session-secret-change-in-production";
+/**
+ * Get the session secret from environment
+ */
+function getSessionSecret(): string {
+	return process.env['SESSION_SECRET']!;
+}
 
 /**
  * Create a signed session cookie
@@ -45,7 +50,8 @@ export function parseSessionCookie(cookieValue: string): string | null {
  * Sign session ID with HMAC
  */
 export function signSessionId(sessionId: string): string {
-	const hmac = crypto.createHmac("sha256", SESSION_SECRET).update(sessionId).digest("hex");
+	const secret = getSessionSecret();
+	const hmac = crypto.createHmac("sha256", secret).update(sessionId).digest("hex");
 	return `${sessionId}.${hmac}`;
 }
 
@@ -58,7 +64,8 @@ export function verifySessionId(signed: string): string {
 		throw new Error("Invalid session format");
 	}
 
-	const expectedHmac = crypto.createHmac("sha256", SESSION_SECRET).update(sessionId).digest("hex");
+	const secret = getSessionSecret();
+	const expectedHmac = crypto.createHmac("sha256", secret).update(sessionId).digest("hex");
 
 	if (hmac !== expectedHmac) {
 		throw new Error("Session signature invalid");

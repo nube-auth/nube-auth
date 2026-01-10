@@ -12,8 +12,8 @@ importers:
   .:
     dependencies:
       '@pingpong-js/fetch':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: ^1.0.2
+        version: 1.0.2
       pino:
         specifier: ^10.1.0
         version: 10.1.0
@@ -182,8 +182,8 @@ importers:
   apps/packages/auth:
     dependencies:
       '@pingpong-js/fetch':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: ^1.0.2
+        version: 1.0.2
       '@proofa/shared':
         specifier: workspace:*
         version: link:../shared
@@ -1937,6 +1937,10 @@ packages:
 
   '@pingpong-js/fetch@1.0.1':
     resolution: {integrity: sha512-cuYnrldebBj4xU9rgNvOkURhkDM8mp0+y9sQNoh/9tPnk50pLQWYvDbJyB4lKkKZBzggwvRGUhcQny+ZcPhopA==}
+    engines: {node: '>=18.0.0'}
+
+  '@pingpong-js/fetch@1.0.2':
+    resolution: {integrity: sha512-4Ae4R/v9ncuKhO65XXgsDbs5uetDFssEWJBOPhpcYcDTilwKKwKtOLqQBmQpUvqKwAYJ58csJ7AWveG0qnwlrg==}
     engines: {node: '>=18.0.0'}
 
   '@pinojs/redact@0.4.0':
@@ -7120,6 +7124,11 @@ snapshots:
   '@pingpong-js/core@1.0.1': {}
 
   '@pingpong-js/fetch@1.0.1':
+    dependencies:
+      '@pingpong-js/core': 1.0.1
+      undici: 7.18.0
+
+  '@pingpong-js/fetch@1.0.2':
     dependencies:
       '@pingpong-js/core': 1.0.1
       undici: 7.18.0
