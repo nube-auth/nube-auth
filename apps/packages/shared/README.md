@@ -22,9 +22,20 @@ pnpm install @proofa/shared
 ```typescript
 import { id } from '@proofa/shared';
 
-const userId = id.user();
-const sessionId = id.session();
-const projectId = id.project();
+// Core entities
+const userId = id.user();                    // U0...
+const sessionId = id.session();              // S0...
+const projectId = id.project();              // P0...
+const appId = id.app();                      // A0...
+
+// Billing entities
+const planId = id.plan();                    // PL0...
+const purchaseId = id.purchase();            // PU0...
+const subscriptionId = id.subscription();    // SB0...
+const transactionId = id.transaction();      // TX0...
+
+// 23 total entity types with nanoid-based generation
+// See PRODUCT_SPEC.md Section 5 for complete list
 ```
 
 ### Types
@@ -36,7 +47,15 @@ import type { User, Session, Project, License } from '@proofa/shared';
 ### Constants
 
 ```typescript
-import { SESSION_TTL_DAYS, PROVIDERS, LICENSE_PLANS } from '@proofa/shared';
+import { 
+  CORE_SESSION_TTL_SECONDS,        // 31536000 (365 days users)
+  CORE_ADMIN_SESSION_TTL_SECONDS,  // 7200 (2 hours admins)
+  GATEWAY_SESSION_DEFAULT_TTL_SECONDS, // 2592000 (30 days)
+  PROVIDERS, 
+  LICENSE_PLANS 
+} from '@proofa/shared';
+
+// All time values are in seconds for consistency
 ```
 
 ### Utilities

@@ -78,6 +78,14 @@ GOOGLE_CLIENT_ID=your-client-id
 GOOGLE_CLIENT_SECRET=your-client-secret
 GITHUB_CLIENT_ID=your-client-id
 GITHUB_CLIENT_SECRET=your-client-secret
+
+# Session configuration (defaults shown)
+# Core sessions: 31536000 seconds = 365 days (users)
+# Admin sessions: 7200 seconds = 2 hours + 900 seconds = 15 min inactivity
+# Gateway sessions: 2592000 seconds = 30 days default (1-365 days per-app)
+CORE_SESSION_TTL_SECONDS=31536000
+CORE_ADMIN_SESSION_TTL_SECONDS=7200
+CORE_ADMIN_INACTIVITY_TIMEOUT_SECONDS=900
 ```
 
 ---
@@ -140,7 +148,7 @@ After setup, explore:
 
 ---
 
-**Last Updated**: January 1, 2026
+**Last Updated**: January 11, 2026
 
 ---
 

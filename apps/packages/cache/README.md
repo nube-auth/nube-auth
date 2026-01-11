@@ -52,7 +52,7 @@ if (!allowed) {
 }
 
 // Session storage
-await sessionStore.setAppSession(sessionId, userId, appId, 604800); // 7 days
+await sessionStore.setAppSession(sessionId, userId, appId, 2592000); // 30 days (in seconds)
 const session = await sessionStore.getAppSession(sessionId);
 await sessionStore.revokeAppSession(sessionId);
 await sessionStore.revokeUserSessions(userId);
@@ -142,7 +142,7 @@ await sessionStore.setAppSession(
   "sess_abc123",
   "usr_123",
   "app_456",
-  604800  // 7 days
+  2592000  // 30 days (default per-app session TTL)
 );
 ```
 
@@ -208,7 +208,7 @@ rateLimit.checkLimit("user:123", "api", 100, 60);
 // Creates key: ratelimit:user:123:api
 
 // Session storage
-sessionStore.setAppSession("sess_abc", "usr_123", "app_456", 604800);
+sessionStore.setAppSession("sess_abc", "usr_123", "app_456", 2592000);
 // Creates key: session:app:sess_abc
 ```
 

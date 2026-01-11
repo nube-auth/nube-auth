@@ -192,12 +192,19 @@ Foreign keys reference internal `id`. Public IDs are for API responses and loggi
 | `id` | INTEGER | NO | PK | Internal only |
 | `public_id` | TEXT | NO | UNIQUE | Externally exposed (S0xxx format) |
 | `user_id` | INTEGER | NO | FK → users.id | |
+| `audience` | TEXT | NO | DEFAULT 'user' | Enum: 'user' or 'admin' (determines TTL) |
 | `created_at` | INTEGER | NO | | Epoch seconds |
 | `last_seen_at` | INTEGER | NO | | Updated on each activity |
 | `expires_at` | INTEGER | NO | | Expiry time (epoch seconds) |
 | `revoked_at` | INTEGER | YES | | NULL = active; set on logout |
 
-**TTL**: 7 days rolling (see §9.1)
+**TTL**: 365 days rolling (user sessions), 2 hours + 15-min inactivity (admin sessions) (see §9.1)
+
+**Session Metadata** (stored in Redis):
+- `sessionType`: "admin" or "user" (determines TTL enforcement)
+- `createdAt`: Session creation timestamp (for absolute TTL check)
+- `lastActivityAt`: Last activity timestamp (for inactivity check)
+- Admin sessions validated on every request for both absolute and inactivity expiry
 
 #### `projects` (Multi-Tenant)
 
@@ -235,22 +242,70 @@ Foreign keys reference internal `id`. Public IDs are for API responses and loggi
 | `name` | TEXT | NO | | Display name |
 | `slug` | TEXT | NO | | URL-safe identifier |
 | `description` | TEXT | YES | | App description |
-| `allowed_hosts` | TEXT | NO | | JSON array of domains |
-| `redirect_uris` | TEXT | NO | | JSON array of valid redirect URIs |
 | `enabled_providers` | TEXT | NO | DEFAULT '["google"]' | JSON array of enabled OAuth providers (e.g., ["google", "github"]) |
+| `app_tokens` | TEXT | NO | | JSONB: API keys, secrets (currentKey, previousKey, rotatedAt) |
+| `security_settings` | TEXT | NO | | JSONB: sessionTtlDays, redirectUris, allowedOrigins, maxSessions, oauth config |
+| `plan_settings` | TEXT | NO | | JSONB: licensingRequired, defaultPlanId, autoCreateLicense |
+| `selected_payment_provider_id` | INTEGER | YES | FK → payment_provider_configs.id | Active payment provider |
 | `is_active` | BOOLEAN | NO | DEFAULT true | |
-| `licensing_required` | BOOLEAN | NO | DEFAULT true | |
-| `default_license_plan` | TEXT | NO | DEFAULT "free" | Enum: free or trial |
-| `trial_days` | INTEGER | YES | | Required if default_plan = trial |
-| `app_session_ttl_days` | INTEGER | NO | DEFAULT 28 | Per-app Gateway session TTL (1–365 days) |
-| `account_lockout_minutes` | INTEGER | NO | DEFAULT 15 | Lockout duration after failed login attempts |
-| `cache_ttl_minutes` | INTEGER | NO | DEFAULT 10 | Cache TTL for /me endpoint (user+license data) |
-| `cors_allowed_origins` | TEXT | NO | | JSON array of CORS-allowed origins (optional) |
-| `rate_limit_requests_per_minute` | INTEGER | NO | DEFAULT 100 | Global API rate limit for app |
 | `created_at` | INTEGER | NO | | Epoch seconds |
 | `updated_at` | INTEGER | NO | | Epoch seconds |
 
 **Constraints**: `UNIQUE(project_id, slug)` — One slug per project
+
+**JSONB Schema Details**:
+
+**`security_settings`**:
+```typescript
+{
+  sessionTtlDays: number;          // 1-365, default 30
+  redirectUris: string[];           // Allowed OAuth redirect URIs
+  allowedOrigins: string[];         // CORS allowed origins
+  maxSessions: number;              // Max concurrent sessions per user
+  sessionRefreshThresholdDays: number; // Refresh threshold
+  oauth: {
+    [provider]: {
+      enabled: boolean;
+      clientId?: string;
+      clientSecret?: string;         // Encrypted
+    }
+  }
+}
+```
+
+**`app_tokens`**:
+```typescript
+{
+  currentKey: {
+    value: string;                   // API key
+    createdAt: string;               // ISO timestamp
+    rotatedAt?: string;
+  };
+  previousKey?: {
+    value: string;
+    createdAt: string;
+    deprecatedAt: string;
+  };
+}
+```
+
+**`plan_settings`**:
+```typescript
+{
+  licensingRequired: boolean;       // Enforce licensing
+  defaultPlanId: string;            // Public ID of default plan
+  autoCreateLicense: boolean;       // Auto-create on first login
+  trialDays?: number;               // Trial duration if default is trial
+}
+```
+
+**JSONB Update Policy** (Critical):
+- ✅ **ALWAYS use atomic operations** (see [JSONB Operations](#jsonb-operations) below)
+- ❌ **NEVER read-modify-write** (causes race conditions)
+- ✅ Use `buildJsonbMergeClause()` for top-level updates
+- ✅ Use `buildJsonbSetClause()` for nested paths
+- ✅ Use `createJsonbUpdateChain()` for multiple updates
+- ✅ Always set `updated_at` with JSONB updates
 
 #### `auth_codes`
 
@@ -267,6 +322,68 @@ Foreign keys reference internal `id`. Public IDs are for API responses and loggi
 | `consumed_at` | INTEGER | YES | | NULL = unused; set on exchange |
 
 **TTL**: 120 seconds (single-use, consumed on exchange)
+
+### JSONB Operations
+
+**Critical Implementation Requirement**: All JSONB column updates MUST use atomic database operations to prevent race conditions.
+
+#### Problem: Read-Modify-Write Anti-Pattern
+
+```typescript
+// ❌ BANNED - Race condition!
+const app = await db.select().from(apps).where(eq(apps.id, appId));
+const settings = app.security_settings;
+settings.maxSessions = 10;  // Another request could update between read and write
+await db.update(apps).set({ security_settings: settings });
+```
+
+#### Solution: Atomic Operations
+
+**1. Top-level field updates** (1-3 fields):
+```typescript
+await db.update(apps)
+  .set({
+    security_settings: buildJsonbMergeClause(apps.security_settings, {
+      sessionTtlDays: 60,
+      maxSessions: 10,
+    }),
+    updated_at: new Date(),
+  })
+  .where(eq(apps.id, appId));
+```
+
+**2. Nested path updates** (single deep field):
+```typescript
+await db.update(apps)
+  .set({
+    security_settings: buildJsonbSetClause(apps.security_settings, {
+      path: "oauth.github.clientId",
+      value: "gh-client-123",
+    }),
+    updated_at: new Date(),
+  })
+  .where(eq(apps.id, appId));
+```
+
+**3. Multiple nested updates** (2-8 paths):
+```typescript
+const chain = createJsonbUpdateChain(apps.security_settings)
+  .set("oauth.github.enabled", true)
+  .set("oauth.github.clientId", "gh-123")
+  .set("redirectUris", ["https://example.com"])
+  .build();
+
+await db.update(apps)
+  .set({ security_settings: chain, updated_at: new Date() })
+  .where(eq(apps.id, appId));
+```
+
+**Implementation Details**:
+- Functions provided by `@proofa/db` package
+- Uses PostgreSQL `||` (merge) and `jsonb_set()` operators
+- Guarantees atomicity at database level
+- Zero race conditions even with high concurrency
+- See [docs/JSONB.md](../docs/JSONB.md) for complete guide
 
 #### `licenses`
 
@@ -324,6 +441,276 @@ Foreign keys reference internal `id`. Public IDs are for API responses and loggi
 
 **Constraints**: None (audit trail, not operational)
 
+#### `project_invitations`
+
+| Column | Type | Nullable | Constraints | Notes |
+|--------|------|----------|-------------|-------|
+| `id` | INTEGER | NO | PK | Internal only |
+| `public_id` | TEXT | NO | UNIQUE | Externally exposed (PI0xxx format) |
+| `project_id` | INTEGER | NO | FK → projects.id | |
+| `email` | TEXT | NO | | Email of invitee |
+| `role` | TEXT | NO | DEFAULT 'member' | Enum: owner, admin, member |
+| `invited_by_user_id` | INTEGER | NO | FK → users.id | |
+| `status` | TEXT | NO | DEFAULT 'pending' | Enum: pending, accepted, expired |
+| `expires_at` | INTEGER | NO | | Expiry timestamp (epoch seconds) |
+| `created_at` | INTEGER | NO | | Epoch seconds |
+| `accepted_at` | INTEGER | YES | | NULL = not accepted; epoch seconds |
+| `accepted_by_user_id` | INTEGER | YES | FK → users.id | User who accepted |
+| `deleted_at` | INTEGER | YES | | Soft delete |
+
+**Constraints**: Project-level team invitations
+
+#### `plans`
+
+| Column | Type | Nullable | Constraints | Notes |
+|--------|------|----------|-------------|-------|
+| `id` | INTEGER | NO | PK | Internal only |
+| `public_id` | TEXT | NO | UNIQUE | Externally exposed (PL0xxx format) |
+| `app_id` | INTEGER | NO | FK → apps.id | |
+| `name` | TEXT | NO | | Display name |
+| `slug` | TEXT | NO | | URL-safe identifier |
+| `description` | TEXT | YES | | Plan description |
+| `monthly_price` | INTEGER | YES | | Price in cents (null if not offered) |
+| `yearly_price` | INTEGER | YES | | Price in cents (null if not offered) |
+| `one_time_price` | INTEGER | YES | | Price in cents (null if not offered) |
+| `duration_days` | INTEGER | YES | | License duration (null = lifetime) |
+| `trial_enabled` | BOOLEAN | NO | DEFAULT false | Whether trial is enabled |
+| `trial_days` | INTEGER | YES | | Trial duration |
+| `features` | TEXT | YES | | JSON array of feature strings |
+| `status` | TEXT | NO | DEFAULT 'active' | Enum: active, archived |
+| `display_order` | INTEGER | NO | DEFAULT 0 | Sort order for display |
+| `is_active` | BOOLEAN | NO | DEFAULT true | |
+| `created_at` | INTEGER | NO | | Epoch seconds |
+| `updated_at` | INTEGER | NO | | Epoch seconds |
+| `deleted_at` | INTEGER | YES | | Soft delete |
+
+**Constraints**: Multiple pricing plans per app
+
+#### `payment_provider_configs`
+
+| Column | Type | Nullable | Constraints | Notes |
+|--------|------|----------|-------------|-------|
+| `id` | INTEGER | NO | PK | Internal only |
+| `public_id` | TEXT | NO | UNIQUE | Externally exposed (PC0xxx format) |
+| `project_id` | INTEGER | NO | FK → projects.id | |
+| `provider` | TEXT | NO | | Enum: stripe, lemonsqueezy, dodo |
+| `environment` | TEXT | NO | | Enum: test, production |
+| `credentials` | TEXT | NO | | Encrypted JSON (API keys) |
+| `webhook_secret` | TEXT | YES | | Provider webhook secret |
+| `is_active` | BOOLEAN | NO | DEFAULT true | |
+| `is_default` | BOOLEAN | NO | DEFAULT false | Default provider for project |
+| `metadata` | TEXT | YES | | JSON object (custom config) |
+| `created_by_user_id` | INTEGER | YES | FK → users.id | |
+| `updated_by_user_id` | INTEGER | YES | FK → users.id | |
+| `created_at` | INTEGER | NO | | Epoch seconds |
+| `updated_at` | INTEGER | NO | | Epoch seconds |
+
+**Constraints**: `UNIQUE(project_id, provider, environment)` — One config per provider per environment
+
+#### `plan_provider_prices`
+
+| Column | Type | Nullable | Constraints | Notes |
+|--------|------|----------|-------------|-------|
+| `id` | INTEGER | NO | PK | Internal only |
+| `public_id` | TEXT | NO | UNIQUE | Externally exposed (PP0xxx format) |
+| `plan_id` | INTEGER | NO | FK → plans.id | |
+| `provider_config_id` | INTEGER | NO | FK → payment_provider_configs.id | |
+| `billing_type` | TEXT | NO | | Enum: recurring, one-time |
+| `interval` | TEXT | YES | | Enum: month, year (null for one-time) |
+| `amount_cents` | INTEGER | NO | | Price in cents |
+| `currency` | TEXT | NO | DEFAULT 'usd' | ISO currency code |
+| `provider_price_id` | TEXT | NO | | Provider's price ID (e.g., Stripe price ID) |
+| `is_active` | BOOLEAN | NO | DEFAULT true | |
+| `created_at` | INTEGER | NO | | Epoch seconds |
+| `updated_at` | INTEGER | NO | | Epoch seconds |
+
+**Constraints**: `UNIQUE(provider_price_id)` — Provider price IDs are unique
+
+#### `purchases`
+
+| Column | Type | Nullable | Constraints | Notes |
+|--------|------|----------|-------------|-------|
+| `id` | INTEGER | NO | PK | Internal only |
+| `public_id` | TEXT | NO | UNIQUE | Externally exposed (PU0xxx format) |
+| `app_id` | INTEGER | NO | FK → apps.id | |
+| `subject_type` | TEXT | NO | DEFAULT 'user' | Enum: user, organization |
+| `subject_id` | INTEGER | NO | | user_id or organization_id |
+| `plan_provider_price_id` | INTEGER | NO | FK → plan_provider_prices.id | |
+| `provider_config_id` | INTEGER | NO | FK → payment_provider_configs.id | |
+| `promotion_code_id` | INTEGER | YES | FK → promotion_codes.id | |
+| `provider_session_id` | TEXT | NO | | Checkout session ID from provider |
+| `status` | TEXT | NO | DEFAULT 'pending' | Enum: pending, completed, expired, abandoned, failed |
+| `payment_transaction_id` | INTEGER | YES | | Set when completed (no FK to avoid circular dependency) |
+| `created_at` | INTEGER | NO | | Epoch seconds |
+| `updated_at` | INTEGER | NO | | Epoch seconds |
+
+**Constraints**: Tracks checkout sessions and links to transactions
+
+#### `promotions`
+
+| Column | Type | Nullable | Constraints | Notes |
+|--------|------|----------|-------------|-------|
+| `id` | INTEGER | NO | PK | Internal only |
+| `public_id` | TEXT | NO | UNIQUE | Externally exposed (PR0xxx format) |
+| `app_id` | INTEGER | NO | FK → apps.id | |
+| `name` | TEXT | NO | | Internal label (e.g., "Launch 50% off") |
+| `discount_type` | TEXT | NO | | Enum: percent, fixed |
+| `discount_value` | INTEGER | NO | | 50 (for 50%) or cents (for $50) |
+| `starts_at` | INTEGER | NO | | Campaign start (epoch seconds) |
+| `ends_at` | INTEGER | YES | | Campaign end (null = no end) |
+| `is_active` | BOOLEAN | NO | DEFAULT true | |
+| `created_at` | INTEGER | NO | | Epoch seconds |
+| `updated_at` | INTEGER | NO | | Epoch seconds |
+
+**Constraints**: Promotion campaigns
+
+#### `promotion_codes`
+
+| Column | Type | Nullable | Constraints | Notes |
+|--------|------|----------|-------------|-------|
+| `id` | INTEGER | NO | PK | Internal only |
+| `public_id` | TEXT | NO | UNIQUE | Externally exposed (PM0xxx format) |
+| `promotion_id` | INTEGER | NO | FK → promotions.id | |
+| `app_id` | INTEGER | NO | FK → apps.id | |
+| `code` | TEXT | NO | UNIQUE | Promo code string (e.g., "LAUNCH50") |
+| `max_uses` | INTEGER | YES | | NULL = unlimited |
+| `current_uses` | INTEGER | NO | DEFAULT 0 | Usage counter |
+| `is_active` | BOOLEAN | NO | DEFAULT true | |
+| `created_at` | INTEGER | NO | | Epoch seconds |
+| `updated_at` | INTEGER | NO | | Epoch seconds |
+
+**Constraints**: `UNIQUE(code)` — Promo codes are globally unique
+
+#### `promotion_redemptions`
+
+| Column | Type | Nullable | Constraints | Notes |
+|--------|------|----------|-------------|-------|
+| `id` | INTEGER | NO | PK | Internal only |
+| `public_id` | TEXT | NO | UNIQUE | Externally exposed (RD0xxx format) |
+| `promotion_code_id` | INTEGER | NO | FK → promotion_codes.id | |
+| `purchase_id` | INTEGER | NO | FK → purchases.id | |
+| `app_id` | INTEGER | NO | FK → apps.id | |
+| `subject_type` | TEXT | NO | | Enum: user, organization |
+| `subject_id` | INTEGER | NO | | user_id or organization_id |
+| `discount_cents` | INTEGER | NO | | Actual discount applied (cents) |
+| `created_at` | INTEGER | NO | | Epoch seconds |
+
+**Constraints**: Tracks when promo codes are used
+
+#### `payment_transactions`
+
+| Column | Type | Nullable | Constraints | Notes |
+|--------|------|----------|-------------|-------|
+| `id` | INTEGER | NO | PK | Internal only |
+| `public_id` | TEXT | NO | UNIQUE | Externally exposed (TX0xxx format) |
+| `purchase_id` | INTEGER | NO | FK → purchases.id | |
+| `license_id` | INTEGER | NO | FK → licenses.id | |
+| `provider_config_id` | INTEGER | NO | FK → payment_provider_configs.id | |
+| `provider` | TEXT | NO | | Denormalized: stripe, lemonsqueezy, dodo |
+| `provider_transaction_id` | TEXT | NO | | Provider's transaction ID |
+| `provider_customer_id` | TEXT | YES | | Provider's customer ID |
+| `type` | TEXT | NO | | Enum: purchase, renewal, refund, chargeback, manual_adjustment |
+| `status` | TEXT | NO | | Enum: success, failed, pending, disputed |
+| `amount_cents` | INTEGER | NO | | Amount in cents |
+| `currency` | TEXT | NO | DEFAULT 'usd' | ISO currency code |
+| `discount_applied_cents` | INTEGER | NO | DEFAULT 0 | Discount amount applied (cents) |
+| `discount_applied` | BOOLEAN | NO | DEFAULT false | Whether discount was applied |
+| `promotion_id` | INTEGER | YES | FK → promotions.id | |
+| `promotion_code_id` | INTEGER | YES | FK → promotion_codes.id | |
+| `provider_discount_id` | TEXT | YES | | Provider's discount ID |
+| `description` | TEXT | YES | | Transaction description |
+| `metadata` | TEXT | YES | | JSON object (provider data snapshot) |
+| `transaction_date` | INTEGER | NO | | When it happened (epoch seconds) |
+| `created_at` | INTEGER | NO | | Epoch seconds |
+| `dispute_reason` | TEXT | YES | | For chargebacks |
+| `resolved_at` | INTEGER | YES | | Dispute resolution timestamp |
+| `created_by_user_id` | INTEGER | YES | FK → users.id | Admin who created |
+| `notes` | TEXT | YES | | Admin notes |
+
+**Constraints**: `UNIQUE(provider_config_id, provider_transaction_id)` — Prevent duplicate transactions
+
+#### `subscriptions`
+
+| Column | Type | Nullable | Constraints | Notes |
+|--------|------|----------|-------------|-------|
+| `id` | INTEGER | NO | PK | Internal only |
+| `public_id` | TEXT | NO | UNIQUE | Externally exposed (SB0xxx format) |
+| `purchase_id` | INTEGER | NO | FK → purchases.id | |
+| `license_id` | INTEGER | NO | FK → licenses.id | |
+| `provider_config_id` | INTEGER | NO | FK → payment_provider_configs.id | |
+| `provider` | TEXT | NO | | Denormalized: stripe, lemonsqueezy, dodo |
+| `provider_subscription_id` | TEXT | NO | | Provider's subscription ID |
+| `provider_customer_id` | TEXT | YES | | Provider's customer ID |
+| `plan_provider_price_id` | INTEGER | NO | FK → plan_provider_prices.id | |
+| `status` | TEXT | NO | | Enum: active, canceled, past_due, unpaid, trialing, paused |
+| `billing_interval` | TEXT | NO | | Enum: monthly, yearly, quarterly |
+| `billing_period_start` | INTEGER | YES | | Current period start (epoch seconds) |
+| `billing_period_end` | INTEGER | YES | | Current period end (epoch seconds) |
+| `next_billing_date` | INTEGER | YES | | Next billing date (epoch seconds) |
+| `cancel_at_period_end` | BOOLEAN | NO | DEFAULT false | |
+| `canceled_at` | INTEGER | YES | | Cancellation timestamp |
+| `ended_at` | INTEGER | YES | | Subscription end timestamp |
+| `trial_start` | INTEGER | YES | | Trial start (epoch seconds) |
+| `trial_end` | INTEGER | YES | | Trial end (epoch seconds) |
+| `amount_cents` | INTEGER | NO | | Recurring amount in cents |
+| `currency` | TEXT | NO | DEFAULT 'usd' | ISO currency code |
+| `metadata` | TEXT | YES | | JSON object (provider data) |
+| `created_at` | INTEGER | NO | | Epoch seconds |
+| `updated_at` | INTEGER | NO | | Epoch seconds |
+
+**Constraints**: `UNIQUE(provider_config_id, provider_subscription_id)` — Prevent duplicate subscriptions
+
+#### `webhook_logs`
+
+| Column | Type | Nullable | Constraints | Notes |
+|--------|------|----------|-------------|-------|
+| `id` | INTEGER | NO | PK | Internal only |
+| `public_id` | TEXT | NO | UNIQUE | Externally exposed (WH0xxx format) |
+| `provider` | TEXT | NO | | Enum: stripe, lemonsqueezy, dodo |
+| `event_type` | TEXT | NO | | Provider event type (e.g., checkout.session.completed) |
+| `event_id` | TEXT | YES | | Provider's event ID (for deduplication) |
+| `request_body` | TEXT | NO | | JSON webhook payload |
+| `request_headers` | TEXT | YES | | JSON headers |
+| `signature` | TEXT | YES | | Webhook signature |
+| `ip_address` | TEXT | YES | | Sender IP |
+| `status` | TEXT | NO | DEFAULT 'not_started' | Enum: not_started, processing, completed, failed, signature_failed, skipped |
+| `received_at` | INTEGER | NO | | Webhook receipt timestamp (epoch seconds) |
+| `processing_started_at` | INTEGER | YES | | Processing start timestamp |
+| `processing_completed_at` | INTEGER | YES | | Processing completion timestamp |
+| `processing_duration_ms` | INTEGER | YES | | Duration in milliseconds |
+| `payment_transaction_id` | INTEGER | YES | FK → payment_transactions.id | |
+| `license_id` | INTEGER | YES | FK → licenses.id | |
+| `error_message` | TEXT | YES | | Error details |
+| `error_stack` | TEXT | YES | | Error stack trace |
+| `retry_count` | INTEGER | NO | DEFAULT 0 | Retry attempts |
+| `last_retry_at` | INTEGER | YES | | Last retry timestamp |
+| `response_status` | INTEGER | YES | | HTTP response code |
+| `response_body` | TEXT | YES | | JSON response |
+| `metadata` | TEXT | YES | | JSON extracted metadata |
+| `notes` | TEXT | YES | | Admin notes |
+| `created_at` | INTEGER | NO | | Epoch seconds |
+| `updated_at` | INTEGER | NO | | Epoch seconds |
+
+**Constraints**: `UNIQUE(provider, event_id)` — Prevent duplicate webhook processing
+
+#### `provider_usage_logs`
+
+| Column | Type | Nullable | Constraints | Notes |
+|--------|------|----------|-------------|-------|
+| `id` | INTEGER | NO | PK | Internal only |
+| `provider_type` | TEXT | NO | | Enum: oauth, payment |
+| `provider_id` | INTEGER | NO | | ID of provider config |
+| `app_id` | INTEGER | YES | FK → apps.id | |
+| `user_id` | INTEGER | YES | FK → users.id | |
+| `operation` | TEXT | NO | | Operation performed (e.g., token_exchange, create_checkout) |
+| `status` | TEXT | NO | | Enum: success, failed |
+| `error_message` | TEXT | YES | | Error details |
+| `metadata` | TEXT | YES | | JSON metadata |
+| `ip_address` | TEXT | YES | | Requester IP |
+| `created_at` | INTEGER | NO | | Epoch seconds |
+
+**Constraints**: Monitors OAuth and payment provider usage
+
 ---
 
 ## 5. ID Generation System
@@ -342,10 +729,23 @@ Foreign keys reference internal `id`. Public IDs are for API responses and loggi
 | License | L0 | L0kN2m7PqC | 11 | 9-char random |
 | Identity | I0 | I0aC9mKpNx | 11 | 9-char random |
 | Project Member | M0 | M0kN7pQmCa | 11 | 9-char random |
+| Project Invitation | PI0 | PI0mK9pNqX | 12 | 9-char random |
 | Email Verification | E0 | E0mK9pNqXc | 11 | 9-char random |
 | Session | S0 | S0mK9pQxCa | 13 | 11-char random (higher entropy) |
 | Auth Code | C0 | C0pN7mKqXc9A | 14 | 12-char random (security-critical) |
 | Audit Log | AL0 | AL0mK9pNqXc | 12 | 9-char random |
+| Plan | PL0 | PL0mK9pNqX | 12 | 9-char random |
+| Payment Provider Config | PC0 | PC0mK9pNqX | 12 | 9-char random |
+| Plan Provider Price | PP0 | PP0mK9pNqX | 12 | 9-char random |
+| Purchase | PU0 | PU0mK9pNqX | 12 | 9-char random |
+| Promotion | PR0 | PR0mK9pNqX | 12 | 9-char random |
+| Promotion Code | PM0 | PM0mK9pNqX | 12 | 9-char random |
+| Promotion Redemption | RD0 | RD0mK9pNqX | 12 | 9-char random |
+| Payment Transaction | TX0 | TX0mK9pNqX | 12 | 9-char random |
+| Subscription | SB0 | SB0mK9pNqX | 12 | 9-char random |
+| Webhook Log | WH0 | WH0mK9pNqX | 12 | 9-char random |
+| Provider Usage Log | PV0 | PV0mK9pNqX | 12 | 9-char random |
+| Invitation | IN0 | IN0mK9pNqX | 12 | 9-char random |
 
 ### Rationale
 
@@ -377,10 +777,23 @@ export const idGenerators = {
   license: () => `L0${nanoid(9, ALPHABET)}`,
   identity: () => `I0${nanoid(9, ALPHABET)}`,
   projectMember: () => `M0${nanoid(9, ALPHABET)}`,
+  projectInvitation: () => `PI0${nanoid(9, ALPHABET)}`,
   emailVerification: () => `E0${nanoid(9, ALPHABET)}`,
   session: () => `S0${nanoid(11, ALPHABET)}`,
   authCode: () => `C0${nanoid(12, ALPHABET)}`,
   auditLog: () => `AL0${nanoid(9, ALPHABET)}`,
+  plan: () => `PL0${nanoid(9, ALPHABET)}`,
+  paymentProviderConfig: () => `PC0${nanoid(9, ALPHABET)}`,
+  planProviderPrice: () => `PP0${nanoid(9, ALPHABET)}`,
+  purchase: () => `PU0${nanoid(9, ALPHABET)}`,
+  promotion: () => `PR0${nanoid(9, ALPHABET)}`,
+  promotionCode: () => `PM0${nanoid(9, ALPHABET)}`,
+  promotionRedemption: () => `RD0${nanoid(9, ALPHABET)}`,
+  paymentTransaction: () => `TX0${nanoid(9, ALPHABET)}`,
+  subscription: () => `SB0${nanoid(9, ALPHABET)}`,
+  webhookLog: () => `WH0${nanoid(9, ALPHABET)}`,
+  providerUsageLog: () => `PV0${nanoid(9, ALPHABET)}`,
+  invitation: () => `IN0${nanoid(9, ALPHABET)}`,
 };
 
 // Validation regex (per-entity)
@@ -391,6 +804,16 @@ export const idPatterns = {
   license: /^L0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
   session: /^S0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{11}$/,
   authCode: /^C0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{12}$/,
+  plan: /^PL0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  paymentProviderConfig: /^PC0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  planProviderPrice: /^PP0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  purchase: /^PU0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  promotion: /^PR0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  promotionCode: /^PM0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  paymentTransaction: /^TX0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  subscription: /^SB0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  webhookLog: /^WH0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  invitation: /^IN0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 };
 ```
 
@@ -1190,14 +1613,29 @@ Talks to Gateway `/admin/*` routes only.
 **Cookie**: `proofa_session`  
 **Stored**: Database `sessions` table  
 **Scope**: Shared across all apps  
-**TTL**: **7 days rolling**
+**TTL**: **365 days rolling** (standard users), **2 hours + 15-min inactivity** (admin users)
 
 **Rolling behavior:**
-- Expires 7 days after last **activity**
+- Expires 365 days after last **activity** (standard users)
 - Activity = any valid API call to Core
-- Refresh throttling: only extend if `last_seen_at < now() - 1 hour`
+- Refresh throttling: only extend if `last_seen_at < now() - 30 days`
 - Prevents excessive DB writes
 - Maintains security (expires if unused)
+
+**Admin Session Security:**
+- Admin sessions (`audience: "admin"`) have **strict TTLs**:
+  - **Absolute TTL**: 2 hours from creation
+  - **Inactivity TTL**: 15 minutes since last activity
+  - Session metadata includes: `sessionType: "admin"`, `createdAt`, `lastActivityAt`
+- Admin inactivity check enforced on every request via Gateway middleware
+- Forces logout if either TTL expires
+- Rationale: Admin operations are high-privilege; short sessions reduce attack surface
+
+**Why separate admin sessions?**
+- ✅ Security: Admin access is sensitive (license grants, payment configs, etc.)
+- ✅ Compliance: SOC 2, ISO 27001, GDPR recommend short TTLs for admin access
+- ✅ Best practice: Industry standard (AWS 12hr, GCP 1hr, Azure 1hr)
+- ✅ User convenience: Regular users keep long sessions; admins re-auth as needed
 
 **Why global?**
 - User logs into Core once
@@ -1387,10 +1825,27 @@ const appHostMap = {
 - Auth start: 10 per IP per 5 minutes (separate bucket)
 - Email verify: 5 attempts per OTP per 10 minutes (separate bucket)
 
+**Development Mode Bypass**:
+- ✅ Rate limiting **disabled** when `NODE_ENV=development`
+- ✅ Improves developer experience (no friction during local testing)
+- ✅ Production-safe: Always enforced when `NODE_ENV=production`
+- ✅ Implementation:
+  ```typescript
+  if (env.IS_DEVELOPMENT) {
+    await next();
+    return; // Skip rate limiting
+  }
+  // ... rate limit checks
+  ```
+
 ### Input Validation & Sanitization
 
 - **Framework**: Zod (TypeScript-native schema validation)
 - **Apply**: All HTTP endpoints (request body, query params, path params)
+- **JSONB Validation**: Typed schemas for security_settings, app_tokens, plan_settings
+  - Runtime validation with Zod
+  - Type-safe helpers prevent invalid state
+  - Example: `SecuritySettingsSchema`, `PlanSettingsSchema`
 - **Error handling**: Return standardized error format (see below)
 - **Database validation**: Foreign keys, unique constraints, type checks
 - **ID validation**: Never trust user-provided `app_id` without lookup
@@ -1439,6 +1894,33 @@ const appHostMap = {
 - **ACID guarantees**: All-or-nothing semantics
 - **Rollback on**: Validation failure, unique constraint violation, FK violation
 - **Drizzle transaction API**: Use wherever multiple inserts/updates occur
+
+### Configuration Standards
+
+**Time Unit Standardization**:
+- ✅ All duration configurations use **seconds** as the base unit
+- ✅ No mixing of hours, days, or other time units
+- ✅ Prevents conversion errors and improves code clarity
+- ✅ Industry standard (JWT expiry, Redis TTL, HTTP cache all use seconds)
+
+**Standard configuration variables**:
+- `CORE_SESSION_TTL_SECONDS` — Core session TTL (31536000 = 365 days)
+- `SESSION_REFRESH_THRESHOLD_SECONDS` — Refresh threshold (2592000 = 30 days)
+- `ADMIN_SESSION_TTL_SECONDS` — Admin session TTL (7200 = 2 hours)
+- `ADMIN_INACTIVITY_TIMEOUT_SECONDS` — Admin inactivity (900 = 15 minutes)
+- `SESSION_TTL_SECONDS` — User session TTL (31536000 = 365 days)
+- `INVITATION_EXPIRY_SECONDS` — Invitation expiry (604800 = 7 days)
+
+**Breaking Changes Policy**:
+- ✅ NO backward compatibility required when making changes
+- ✅ Make breaking changes freely to improve code quality
+- ✅ Update variable names, function signatures, and APIs as needed
+- ✅ Remove deprecated code immediately
+- ✅ Refactor aggressively for better patterns
+- ❌ Don't maintain old interfaces "just in case"
+- ❌ Don't add compatibility layers or deprecation warnings
+
+**This is an active development project. Clean, correct code takes priority over backward compatibility.**
 
 ### Secret Management
 
@@ -1504,17 +1986,18 @@ Follow this sequence for implementation:
 | Monorepo | pnpm + Turbo | Workspaces, fast builds |
 | Email | Resend | Simple API, abstracted (swappable) |
 | Deployment | Cloud-agnostic | Designed for Fly/VPS/etc. |
-| **Sessions** | **7 days rolling (core), 1-365 days per-app configurable** | Enhanced security; independent TTLs |
-| **IDs** | **Nanoid prefixed** | Human-readable, type-safe |
+| **Sessions** | **365 days rolling (core users), 2 hours + 15-min inactivity (admins), 1-365 days per-app configurable** | Enhanced security; admin privilege separation |
+| **IDs** | **Nanoid prefixed (23 entity types)** | Human-readable, type-safe, compact |
 | **Multi-tenant** | **Yes (projects)** | Flexibility for future |
 | **Admin access** | **Role-based (owner/admin/member)** | Scalable permission model |
 | **Auth pages** | **Core-hosted** | Security, consistency, branding |
 | **Authentication** | **OAuth-only for MVP (Google, GitHub); email/OTP in Q2 2026** | Simple, secure, modern |
 | **ID collision** | **OAuth provider uniqueness (MVP); email collision with OTP step-up in Phase 2 (Q2 2026)** | Prevents duplicates in MVP; account linking in Phase 2 |
 | **JWT** | **No JWT tokens; sessions only** | Stateful sessions more secure for this use case |
-| **Input Validation** | **Zod schemas (TypeScript-native)** | Type-safe runtime validation |
+| **Input Validation** | **Zod schemas (TypeScript-native) + JSONB validation** | Type-safe runtime validation |
+| **JSONB Updates** | **Atomic operations only (buildJsonbMergeClause, buildJsonbSetClause, createJsonbUpdateChain)** | Zero race conditions, data integrity |
 | **Error Format** | **Standard JSON structure (ok/error/code/message)** | Consistent, client-friendly API |
-| **Rate Limiting** | **Global per-app (config: 100/min default) + per-action buckets** | DDoS protection; flexible per app |
+| **Rate Limiting** | **Global per-app (config: 100/min default) + per-action buckets; disabled in dev mode** | DDoS protection; flexible per app; better DX |
 | **Account Lockout** | **Per-app configurable (default 15 min after failed attempts)** | Brute-force protection |
 | **Cache TTL** | **Per-app configurable (default 10 min for /me endpoint)** | Balances freshness vs. Core load |
 | **CORS** | **Per-app JSON array whitelist** | Origin-based security; prevent leaks |
@@ -1523,6 +2006,8 @@ Follow this sequence for implementation:
 | **Audit Trail** | **Yes (audit_logs table with actions/actors/changes)** | Compliance, transparency, security |
 | **OTP Lockout** | **Phase 2 (Q2 2026) - 3 failed attempts = 30 min lockout** | Brute-force protection for email login |
 | **S2S Token** | **Env var + manual script generation** | Simple, no infra needed for MVP |
+| **Config Units** | **All time durations in seconds** | Consistency, clarity, industry standard |
+| **Breaking Changes** | **No backward compatibility required** | Clean, correct code priority |
 
 ### Future (Phase 2 / Beyond)
 
@@ -1551,8 +2036,8 @@ Follow this sequence for implementation:
 
 | Cookie | Domain | TTL | Scope | Auth? |
 |--------|--------|-----|-------|-------|
-| `proofa_session` | Core | 7d rolling | Global | User ID |
-| `pp_app_session` | Gateway | Per-app config | Per-app | User ID + App ID |
+| `proofa_session` | Core | 365d rolling (users), 2hr + 15min inactivity (admins) | Global | User ID + Audience |
+| `pp_app_session` | Gateway | Per-app config (1-365d, default 30d) | Per-app | User ID + App ID |
 
 ### Key Endpoints (Cheat Sheet)
 
@@ -1581,6 +2066,8 @@ GITHUB_CLIENT_SECRET=...
 RESEND_API_KEY=...
 CORE_SESSION_SECRET=<32+ char>
 X_PROOFA_SERVICE_TOKEN=<32+ char>
+CORE_SESSION_TTL_SECONDS=31536000
+SESSION_REFRESH_THRESHOLD_SECONDS=2592000
 LOG_LEVEL=info
 ```
 
@@ -1591,6 +2078,10 @@ X_PROOFA_SERVICE_TOKEN=<same as core>
 SESSION_SECRET=<32+ char>
 UPSTASH_REDIS_REST_URL=https://...
 UPSTASH_REDIS_REST_TOKEN=...
+SESSION_TTL_SECONDS=31536000
+ADMIN_SESSION_TTL_SECONDS=7200
+ADMIN_INACTIVITY_TIMEOUT_SECONDS=900
+INVITATION_EXPIRY_SECONDS=604800
 LOG_LEVEL=info
 ```
 

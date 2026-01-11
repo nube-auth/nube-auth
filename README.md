@@ -14,8 +14,9 @@ Proofa is a comprehensive authentication and licensing platform that provides se
 ### 🔐 Authentication
 - **OAuth 2.0 Integration**: Google, GitHub, and custom providers
 - **Magic Link Authentication**: Passwordless email-based login
-- **Session Management**: Secure, Redis-backed sessions with fingerprinting
+- **Session Management**: Secure, Redis-backed sessions (365 days for users, 2 hours + 15-min inactivity for admins)
 - **Multi-tenancy**: Project and app-level isolation
+- **Admin Security**: Separate session policies with enhanced timeout protection
 
 ### 📋 Licensing & Subscriptions
 - **Flexible Plans**: Monthly, yearly, one-time, and trial periods
@@ -26,9 +27,10 @@ Proofa is a comprehensive authentication and licensing platform that provides se
 ### 🛡️ Security
 - **A+ Security Rating (94/100)**: Enterprise-grade security
 - **Session Hijacking Protection**: IP and User-Agent fingerprinting
-- **Rate Limiting**: Redis-based sliding window
+- **Rate Limiting**: Redis-based sliding window (disabled in dev mode for DX)
 - **CSRF Protection**: Token-based protection for state-changing operations
-- **Input Validation**: Comprehensive Zod schemas
+- **Input Validation**: Comprehensive Zod schemas + JSONB validation
+- **Atomic Database Operations**: Race-condition-free JSONB updates
 - **Audit Logging**: 40+ event types tracked
 
 ### 🎨 Admin Dashboard
@@ -348,7 +350,7 @@ Built with:
 
 **Made with ❤️ by the Proofa team**
 
-**Last Updated**: January 1, 2026  
-**Version**: 1.0.0  
+**Last Updated**: January 11, 2026  
+**Version**: 1.1.0  
 **Security Rating**: A+ (94/100)  
-**Session Duration**: 365 days (configurable)
+**Session Duration**: 365 days users, 2 hours + 15-min inactivity admins (per-app: 1-365 days configurable)

@@ -8,8 +8,9 @@ This is the core authentication and authorization service built with [Hono](http
 
 - OAuth authentication (Google, GitHub)
 - Email-based authentication
-- Session management
+- Session management (365 days for users, 2 hours + 15-min inactivity for admins)
 - License management
+- Atomic JSONB operations (race-condition-free database updates)
 - Server-to-server (S2S) authentication for gateway communication
 
 ## Quick Start
@@ -44,6 +45,11 @@ JWT_SECRET=your-jwt-secret-min-32-chars
 SESSION_SECRET=your-session-secret-min-32-chars
 S2S_SECRET=your-s2s-secret-min-32-chars
 REDIS_URL=redis://localhost:6379
+
+# Session Configuration (all values in seconds)
+CORE_SESSION_TTL_SECONDS=31536000        # 365 days (users)
+CORE_ADMIN_SESSION_TTL_SECONDS=7200      # 2 hours (admins)
+CORE_ADMIN_INACTIVITY_TIMEOUT_SECONDS=900  # 15 minutes
 ```
 
 ### Running the Application

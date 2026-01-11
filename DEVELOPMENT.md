@@ -159,11 +159,20 @@ X_PROOFA_SERVICE_TOKEN="<32+ char token>"
 ### Session Configuration
 
 ```bash
-# Session TTL in seconds (default: 31536000 = 365 days)
-SESSION_TTL=31536000
+# Core Sessions
+# Users: 31536000 seconds = 365 days rolling
+# Admins: 7200 seconds = 2 hours + 900 seconds = 15-min inactivity timeout
+CORE_SESSION_TTL_SECONDS=31536000
+CORE_ADMIN_SESSION_TTL_SECONDS=7200
+CORE_ADMIN_INACTIVITY_TIMEOUT_SECONDS=900
 
-# Session ID length in bytes (default: 32)
-SESSION_ID_BYTES=32
+# Gateway Sessions
+# Default: 2592000 seconds = 30 days
+# Per-app configurable: 86400-31536000 seconds (1-365 days)
+GATEWAY_SESSION_DEFAULT_TTL_SECONDS=2592000
+
+# Session Security
+SESSION_ID_BYTES=32  # Cryptographically secure session IDs
 ```
 
 ### OAuth Providers (Optional)
@@ -187,6 +196,19 @@ SMTP_PORT=587
 SMTP_USER="your-email@gmail.com"
 SMTP_PASS="your-app-password"
 SMTP_FROM="Proofa <noreply@proofa.sh>"
+```
+
+### Rate Limiting
+
+```bash
+# Rate limiting is automatically disabled in development mode
+# NODE_ENV=development → No rate limits (better DX)
+# NODE_ENV=production → Rate limits enforced
+
+# Production limits:
+# - Authentication: 10 requests per 5 minutes
+# - API: 100 requests per minute (configurable per-app)
+# - Admin: 60 requests per minute
 ```
 
 ---
@@ -553,5 +575,6 @@ After setup is complete:
 
 ---
 
-**Last Updated**: January 1, 2026  
+**Last Updated**: January 11, 2026  
+**Version**: 1.1.0  
 **Maintainers**: Proofa Team

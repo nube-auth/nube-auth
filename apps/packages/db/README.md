@@ -22,27 +22,38 @@ PostgreSQL database with Drizzle ORM, providing type-safe database access and mi
 ### Tables
 1. **users** - Platform users
 2. **identities** - OAuth provider identities
-3. **sessions** - User sessions (365-day TTL)
+3. **sessions** - User sessions (365 days users, 2 hours + 15-min inactivity admins)
 4. **projects** - User projects
 5. **project_members** - Project team members
 6. **project_invitations** - Team invitations
-7. **apps** - Applications
+7. **apps** - Applications with JSONB settings (security_settings, app_tokens, plan_settings)
 8. **plans** - Subscription/license plans
 9. **licenses** - User licenses
 10. **invitations** - User invitations
 11. **auth_codes** - OAuth authorization codes
 12. **email_verifications** - Email verification OTPs
 13. **audit_logs** - Audit trail (40+ event types)
-14. **payment_providers** - Payment provider configs
+14. **payment_provider_configs** - Payment provider configurations (encrypted credentials)
+15. **plan_provider_prices** - Provider-specific plan pricing
+16. **purchases** - One-time purchases
+17. **promotions** - Promotional campaigns
+18. **promotion_codes** - Promotion redemption codes
+19. **promotion_redemptions** - Code redemption tracking
+20. **payment_transactions** - Transaction history
+21. **subscriptions** - Active subscriptions
+22. **webhook_logs** - Payment webhook logs
+23. **provider_usage_logs** - Provider usage tracking
 
 ### Key Features
 - **Soft Deletes**: `deleted_at` timestamps with slug uniqueness handling
-- **Long Sessions**: 365-day session expiry (configurable)
+- **Differentiated Sessions**: 365-day rolling (users), 2-hour + 15-min inactivity (admins)
 - **Multi-Tenant**: Project-based isolation
 - **Type-Safe**: Full TypeScript support with Drizzle
-- **Encrypted Storage**: Secure credential storage
-- **Comprehensive Indexing**: Optimized queries
+- **Encrypted Storage**: Secure credential storage with AES-256-GCM
+- **JSONB Atomic Operations**: Race-condition-free updates (buildJsonbMergeClause, buildJsonbSetClause, createJsonbUpdateChain)
+- **Comprehensive Indexing**: Optimized queries with GIN indexes for JSONB
 - **Foreign Key Constraints**: Data integrity
+- **Time Unit Standardization**: All durations in seconds for consistency
 
 ---
 
@@ -123,6 +134,56 @@ paymentConfigQueries.create(db, data)
 paymentConfigQueries.update(db, id, data)
 paymentConfigQueries.delete(db, id)
 ```
+
+### JSONB Atomic Operations
+
+**⚠️ Never use read-modify-write pattern** - causes race conditions!
+
+```typescript
+// ❌ WRONG - Race condition
+const app = await db.select().from(apps).where(eq(apps.id, appId));
+const settings = app.security_settings;
+settings.maxSessions = 10;  // Lost update possible!
+await db.update(apps).set({ security_settings: settings });
+
+// ✅ CORRECT - Atomic operation
+import { buildJsonbMergeClause, buildJsonbSetClause, createJsonbUpdateChain } from '@proofa/db';
+
+// Top-level field updates
+await db.update(apps)
+  .set({
+    security_settings: buildJsonbMergeClause(apps.security_settings, {
+      maxSessions: 10,
+      sessionTtlDays: 30,
+    }),
+    updated_at: new Date(),
+  })
+  .where(eq(apps.id, appId));
+
+// Single nested path
+await db.update(apps)
+  .set({
+    security_settings: buildJsonbSetClause(apps.security_settings, {
+      path: "oauth.github.clientId",
+      value: "gh-123",
+    }),
+    updated_at: new Date(),
+  })
+  .where(eq(apps.id, appId));
+
+// Multiple nested paths
+const chain = createJsonbUpdateChain(apps.security_settings)
+  .set("oauth.github.enabled", true)
+  .set("oauth.github.clientId", "gh-123")
+  .set("redirectUris", ["https://example.com"])
+  .build();
+
+await db.update(apps)
+  .set({ security_settings: chain, updated_at: new Date() })
+  .where(eq(apps.id, appId));
+```
+
+**See [docs/JSONB.md](../../../docs/JSONB.md) for complete guide.**
 
 ---
 

@@ -56,4 +56,5 @@ We maintain **lean, actionable documentation**:
 - ❌ Remove: Historical changelogs, completed work, redundant guides
 - 🔄 Consolidate: Multiple docs on same topic into one authoritative source
 
-Last cleaned: January 10, 2026
+**Version**: 1.1.0  
+**Last Updated**: January 11, 2026

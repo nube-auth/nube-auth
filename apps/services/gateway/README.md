@@ -152,6 +152,14 @@ DASHBOARD_URL=http://localhost:5173
 # Service-to-Service (Core <-> Gateway)
 # Must match Core's X_PROOFA_SERVICE_TOKEN
 X_PROOFA_SERVICE_TOKEN=your-service-token-here
+
+# Session Configuration (all values in seconds)
+# Core sessions: 31536000 = 365 days (users), 7200 = 2 hours (admins)
+# Gateway sessions: 2592000 = 30 days default
+CORE_SESSION_TTL_SECONDS=31536000
+CORE_ADMIN_SESSION_TTL_SECONDS=7200
+CORE_ADMIN_INACTIVITY_TIMEOUT_SECONDS=900
+GATEWAY_SESSION_DEFAULT_TTL_SECONDS=2592000
 ```
 
 ---
@@ -183,9 +191,11 @@ pnpm lint
 ## Security
 
 ### Rate Limiting
-- **Authentication endpoints**: 5 requests per minute per IP
-- **API endpoints**: 100 requests per minute per user
-- **Admin endpoints**: 60 requests per minute per user
+- **Development Mode**: Disabled for better developer experience (`NODE_ENV=development`)
+- **Production Mode**:
+  - **Authentication endpoints**: 10 requests per 5 minutes per IP
+  - **API endpoints**: 100 requests per minute per user (configurable per-app)
+  - **Admin endpoints**: 60 requests per minute per user
 
 ### Encryption
 - OAuth credentials encrypted with AES-256-GCM
@@ -193,11 +203,15 @@ pnpm lint
 - Secrets never exposed in API responses
 
 ### Session Security
+- **Core Sessions**:
+  - **Users**: 365 days rolling (30-day refresh threshold)
+  - **Admins**: 2 hours + 15-minute inactivity timeout
+- **Gateway Sessions**: Per-app configurable (1-365 days, default 30 days)
 - HTTP-only cookies
 - Secure flag in production
 - SameSite=Lax
-- 7-day expiration
 - Redis-backed storage
+- IP and User-Agent fingerprinting
 
 ### CORS
 - Configurable allowed origins
