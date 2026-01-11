@@ -199,6 +199,7 @@ authRoutes.get("/callback", async (c: Context) => {
 			userId: string;
 			email?: string;
 			name?: string;
+			sessionTtlSeconds?: number;
 		};
 
 		// Generate NEW session ID for Gateway (session fixation protection)
@@ -206,8 +207,11 @@ authRoutes.get("/callback", async (c: Context) => {
 		const gatewaySessionId = crypto.randomBytes(SESSION_ID_BYTES).toString("hex");
 		const csrfToken = crypto.randomBytes(CSRF_TOKEN_BYTES).toString("hex"); // Generate CSRF token
 		
-		// Use shorter TTL for admin sessions (2 hours vs 365 days)
-		const ttlSeconds = audience === "admin" ? ADMIN_SESSION_TTL : SESSION_TTL;
+		// Use per-app TTL from Core if available, fallback to audience-based TTL
+		let ttlSeconds = audience === "admin" ? ADMIN_SESSION_TTL : SESSION_TTL;
+		if (data.sessionTtlSeconds && data.sessionTtlSeconds > 0) {
+			ttlSeconds = data.sessionTtlSeconds;
+		}
 
 		// Store app session in Redis with Gateway session ID
 		// Store Core session ID and CSRF token in metadata
@@ -421,50 +425,22 @@ authRoutes.post("/logout", async (c: Context) => {
 			log.warn({ inferredAudience: audience }, "No session cookie found, will clear based on inferred audience");
 		}
 
-		log.info(
-			{
-				cookieName,
-				hasSessionCookie: !!sessionCookie,
-				sessionCookiePreview: sessionCookie ? `${sessionCookie.substring(0, 8)}...` : null,
-			},
-			"Session cookie info",
-		);
-
 		// Parse the signed cookie to get the actual session ID
 		if (sessionCookie) {
 			try {
 				const sessionId = parseSessionCookie(sessionCookie);
 				if (sessionId) {
-					log.info(
-						{
-							sessionId: `${sessionId.substring(0, 8)}...`,
-							cookieName,
-							audience,
-						},
-						"Starting session deletion",
-					);
-
 					// Verify session exists before deletion
 					const appSessionBefore = await sessionStore.getAppSession(sessionId);
-					log.info(
-						{
-							sessionExists: !!appSessionBefore,
-							userId: appSessionBefore?.userId,
-							appId: appSessionBefore?.appId,
-						},
-						"App session before deletion",
-					);
 
 					// Get Core session ID to revoke database session
 					const coreSessionId = appSessionBefore?.metadata?.['coreSessionId'] as string | undefined;
 					// Delete from all three stores:
 					// 1. Delete from sessionService (gateway:session:xxx)
 					await sessionService.deleteSession(sessionId);
-					log.info({ sessionId: `${sessionId.substring(0, 8)}...` }, "Gateway session deleted from Redis");
 
 					// 2. Delete from sessionStore (session:app:xxx) - this is what auth middleware checks!
 					await sessionStore.revokeAppSession(sessionId);
-					log.info({ sessionId: `${sessionId.substring(0, 8)}...` }, "App session deleted from Redis");
 
 					// 3. Revoke Core database session
 					if (coreSessionId) {
@@ -473,15 +449,6 @@ authRoutes.post("/logout", async (c: Context) => {
 							const dbSession = await sessionQueries.findByPublicId(db, coreSessionId);
 							if (dbSession) {
 								await sessionQueries.revoke(db, dbSession.id);
-								log.info(
-									{ coreSessionId: `${coreSessionId.substring(0, 8)}...` },
-									"Core database session revoked",
-								);
-							} else {
-								log.warn(
-									{ coreSessionId: `${coreSessionId.substring(0, 8)}...` },
-									"Core database session not found",
-								);
 							}
 						} catch (dbError) {
 							log.error(
@@ -489,19 +456,10 @@ authRoutes.post("/logout", async (c: Context) => {
 								"Failed to revoke Core database session",
 							);
 						}
-					} else {
-						log.warn("No Core session ID found in metadata");
 					}
 
 					// Verify deletion was successful
 					const appSessionAfter = await sessionStore.getAppSession(sessionId);
-					log.info(
-						{
-							sessionStillExists: !!appSessionAfter,
-							deletionSuccessful: !appSessionAfter,
-						},
-						"App session after deletion verification",
-					);
 
 					if (appSessionAfter) {
 						log.error(

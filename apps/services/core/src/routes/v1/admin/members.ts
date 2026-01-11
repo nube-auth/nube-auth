@@ -1,4 +1,5 @@
 import {
+	auditLogQueries,
 	getDb,
 	projectInvitationQueries,
 	projectMemberQueries,
@@ -145,6 +146,22 @@ membersRouter.post("/:projectId/members", async (c: Context) => {
 				role,
 			});
 
+			// Audit log: member added
+			try {
+				await auditLogQueries.create(db, {
+					public_id: createId("auditLog"),
+					user_id: requestingUser.id,
+					project_id: project.id,
+					action: "project.member_added",
+					entity_type: "project_member",
+					entity_id: newMember.public_id,
+					changes: { userId: existingUser.public_id, email: existingUser.primary_email, role },
+					ip_address: c.req.header("X-Forwarded-For") || c.req.header("X-Real-IP") || null,
+				});
+			} catch (auditError) {
+				log.error({ err: serializeError(auditError as Error) }, "Failed to create audit log");
+			}
+
 			return c.json(
 				{
 					id: newMember.public_id,
@@ -168,6 +185,22 @@ membersRouter.post("/:projectId/members", async (c: Context) => {
 			invited_by_user_id: requestingUser.id,
 			expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
 		});
+
+		// Audit log: invitation sent
+		try {
+			await auditLogQueries.create(db, {
+				public_id: createId("auditLog"),
+				user_id: requestingUser.id,
+				project_id: project.id,
+				action: "invitation.sent",
+				entity_type: "project_invitation",
+				entity_id: invitation.public_id,
+				changes: { email, role, expiresAt: invitation.expires_at.toISOString() },
+				ip_address: c.req.header("X-Forwarded-For") || c.req.header("X-Real-IP") || null,
+			});
+		} catch (auditError) {
+			log.error({ err: serializeError(auditError as Error) }, "Failed to create audit log");
+		}
 
 		// Send invitation email
 		try {
@@ -288,6 +321,27 @@ membersRouter.patch("/:projectId/members/:memberId", async (c: Context) => {
 
 		// Update member
 		const updated = await projectMemberQueries.update(db, memberToUpdate.id, { role });
+
+		// Audit log: role changed
+		try {
+			const targetUser = await userQueries.findById(db, memberToUpdate.user_id);
+			await auditLogQueries.create(db, {
+				public_id: createId("auditLog"),
+				user_id: requestingUser.id,
+				project_id: project.id,
+				action: "project.member_role_changed",
+				entity_type: "project_member",
+				entity_id: updated.public_id,
+				changes: {
+					userId: targetUser?.public_id,
+					oldRole: memberToUpdate.role,
+					newRole: role,
+				},
+				ip_address: c.req.header("X-Forwarded-For") || c.req.header("X-Real-IP") || null,
+			});
+		} catch (auditError) {
+			log.error({ err: serializeError(auditError as Error) }, "Failed to create audit log");
+		}
 
 		return c.json({
 			id: updated.public_id,

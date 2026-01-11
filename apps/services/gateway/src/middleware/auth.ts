@@ -37,18 +37,6 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 	const cookieName = isAdminRoute ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
 	const cookieValue = getCookie(c, cookieName);
 
-	loggers.auth.info(
-		{
-			path: c.req.path,
-			isAdminRoute,
-			cookieName,
-			hasCookie: !!cookieValue,
-			allCookies: c.req.header("cookie"),
-			cookiePreview: cookieValue ? `${cookieValue.substring(0, 8)}...` : null,
-		},
-		"Auth middleware validating request",
-	);
-
 	if (!cookieValue) {
 		loggers.auth.warn({ 
 			path: c.req.path,
@@ -61,7 +49,6 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 
 	try {
 		// Parse and verify signed session cookie
-		loggers.auth.debug({ cookiePreview: cookieValue ? `${cookieValue.substring(0, 20)}...` : null }, "Attempting to parse session cookie");
 		const sessionId = parseSessionCookie(cookieValue);
 
 		if (!sessionId) {
@@ -71,15 +58,6 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 			}, "Failed to parse session cookie - returning 401");
 			return c.json({ error: "Invalid session" }, 401);
 		}
-
-		loggers.auth.info(
-			{
-				sessionId: `${sessionId.substring(0, 8)}...`,
-				cookieLength: cookieValue.length,
-				hasDot: cookieValue.includes('.'),
-			},
-			"Cookie parsed successfully, checking app session in Redis",
-		);
 
 		// Check if app session exists in Redis
 		const appSession = await sessionStore.getAppSession(sessionId);
@@ -94,16 +72,6 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 			);
 			return c.json({ error: "Session not found" }, 401);
 		}
-
-		loggers.auth.info(
-			{
-				sessionId: `${sessionId.substring(0, 8)}...`,
-				userId: appSession.userId,
-				appId: appSession.appId,
-				metadataKeys: appSession.metadata ? Object.keys(appSession.metadata) : [],
-			},
-			"App session found, checking Core session and inactivity",
-		);
 
 		// Get session metadata
 		const coreSessionId = appSession.metadata?.["coreSessionId"] as string | undefined;
@@ -140,7 +108,6 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 			}
 
 			// Update last activity timestamp for admin sessions
-			loggers.auth.debug({ sessionId: `${sessionId.substring(0, 8)}...` }, "Updating admin session activity");
 			await sessionStore.setAppSession(sessionId, appSession.userId, appSession.appId, ADMIN_INACTIVITY_TIMEOUT, {
 				...appSession.metadata,
 				lastActivityAt: Date.now(),
@@ -148,12 +115,10 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 		}
 
 		// Refresh gateway session TTL on access (rolling TTL for app session)
-		loggers.auth.debug({ sessionId: `${sessionId.substring(0, 8)}...` }, "Refreshing session TTL");
 		const ttl = isAdminRoute && sessionType === "admin" ? ADMIN_INACTIVITY_TIMEOUT : SESSION_TTL;
 		await cache.expire(`session:app:${sessionId}`, ttl);
 
 		// Get user info from Core using Core session ID
-		loggers.auth.debug({ coreSessionId: `${coreSessionId.substring(0, 8)}...` }, "Exchanging Core session for user info");
 		const coreSession = await coreClient.exchangeSession(coreSessionId);
 
 		if (!coreSession) {
@@ -166,14 +131,6 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 			);
 			return c.json({ error: "Invalid session" }, 401);
 		}
-
-		loggers.auth.info(
-			{
-				userId: coreSession.userId,
-				email: coreSession.email,
-			},
-			"Auth successful",
-		);
 
 		// Store auth context in Hono context
 		const auth: AuthContext = {

@@ -1,4 +1,4 @@
-import { getDb, projectMemberQueries, projectQueries, userQueries } from "@proofa/db";
+import { auditLogQueries, getDb, projectMemberQueries, projectQueries, userQueries } from "@proofa/db";
 import { createId, createLogger, idPatterns, serializeError } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -167,6 +167,22 @@ projectsRouter.post("/", async (c: Context) => {
 
 			return newProject;
 		});
+
+		// Audit log: project created
+		try {
+			await auditLogQueries.create(db, {
+				public_id: createId("auditLog"),
+				user_id: user.id,
+				project_id: project.id,
+				action: "project.created",
+				entity_type: "project",
+				entity_id: project.public_id,
+				changes: { name, slug, description },
+				ip_address: c.req.header("X-Forwarded-For") || c.req.header("X-Real-IP") || null,
+			});
+		} catch (auditError) {
+			log.error({ err: serializeError(auditError as Error) }, "Failed to create audit log");
+		}
 
 		return c.json(
 			{

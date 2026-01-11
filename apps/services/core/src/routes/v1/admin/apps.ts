@@ -1,4 +1,4 @@
-import { appQueries, getDb, projectMemberQueries, projectQueries, userQueries, paymentProviderConfigQueries, licenseQueries } from "@proofa/db";
+import { appQueries, auditLogQueries, getDb, projectMemberQueries, projectQueries, userQueries, paymentProviderConfigQueries, licenseQueries } from "@proofa/db";
 import { createId, createLogger, idPatterns, serializeError } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -262,6 +262,23 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 		// Extract JSONB fields
 		const securitySettings = newApp.security_settings as any;
 		const appTokens = newApp.app_tokens as any;
+
+		// Audit log: app created
+		try {
+			await auditLogQueries.create(db, {
+				public_id: createId("auditLog"),
+				user_id: user.id,
+				project_id: project.id,
+				app_id: newApp.id,
+				action: "app.created",
+				entity_type: "app",
+				entity_id: newApp.public_id,
+				changes: { name, slug, description },
+				ip_address: c.req.header("X-Forwarded-For") || c.req.header("X-Real-IP") || null,
+			});
+		} catch (auditError) {
+			log.error({ err: serializeError(auditError as Error) }, "Failed to create audit log");
+		}
 
 		return c.json(
 			{

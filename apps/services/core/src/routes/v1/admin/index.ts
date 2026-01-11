@@ -1,4 +1,4 @@
-import { appQueries, getDb, licenseQueries, planQueries, userQueries } from "@proofa/db";
+import { appQueries, auditLogQueries, getDb, licenseQueries, planQueries, userQueries } from "@proofa/db";
 import { createId, createLogger, serializeError } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -65,6 +65,31 @@ router.post("/license/grant", async (c: Context) => {
 			status: "active",
 			valid_until: validUntil ? new Date(validUntil) : null,
 		});
+
+		// Audit log: license granted
+		try {
+			const adminUserId = c.req.header("X-User-Id");
+			const adminUser = adminUserId ? await userQueries.findByPublicId(db, adminUserId) : null;
+
+			await auditLogQueries.create(db, {
+				public_id: createId("auditLog"),
+				user_id: adminUser?.id || user.id, // Use admin user if available, else the license holder
+				project_id: app.project_id,
+				app_id: app.id,
+				action: "license.granted",
+				entity_type: "license",
+				entity_id: license.public_id,
+				changes: {
+					userId: user.public_id,
+					appId: app.public_id,
+					plan: selectedPlan.slug,
+					validUntil: license.valid_until?.toISOString() || null,
+				},
+				ip_address: c.req.header("X-Forwarded-For") || c.req.header("X-Real-IP") || null,
+			});
+		} catch (auditError) {
+			log.error({ err: serializeError(auditError as Error) }, "Failed to create audit log");
+		}
 
 		return c.json({
 			message: "License granted successfully",

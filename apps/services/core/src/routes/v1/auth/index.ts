@@ -440,7 +440,6 @@ router.post("/exchange", async (c: Context) => {
 		const db = getDb();
 		const now = new Date();
 
-		log.debug({ sessionId: sessionId.substring(0, 8) + "..." }, "Looking up session");
 		const session = await sessionQueries.findByPublicId(db, sessionId);
 
 		if (!session) {
@@ -448,18 +447,29 @@ router.post("/exchange", async (c: Context) => {
 			return c.json({ error: "Session not found" }, 404);
 		}
 
-		log.debug({ sessionId: sessionId.substring(0, 8) + "...", expiresAt: session.expires_at, now }, "Session found, checking expiry");
 		if (session.expires_at < now) {
 			log.warn({ sessionId: sessionId.substring(0, 8) + "..." }, "Session expired");
 			return c.json({ error: "Session expired" }, 401);
 		}
 
-		log.debug({ userId: session.user_id }, "Looking up user");
 		const user = await userQueries.findById(db, session.user_id);
 
 		if (!user) {
 			log.warn({ userId: session.user_id }, "User not found");
 			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Get per-app session TTL from app's security settings
+		let sessionTtlSeconds = env.CORE_SESSION_TTL_SECONDS; // Default fallback
+		if (session.app_id) {
+			const app = await appQueries.findById(db, session.app_id);
+			if (app?.security_settings) {
+				const securitySettings = app.security_settings as any;
+				const sessionTtlDays = securitySettings.sessionTtlDays;
+				if (typeof sessionTtlDays === "number" && sessionTtlDays > 0) {
+					sessionTtlSeconds = sessionTtlDays * 24 * 60 * 60; // Convert days to seconds
+				}
+			}
 		}
 
 		// Implement rolling TTL: extend session if last_seen_at is older than threshold
@@ -469,11 +479,10 @@ router.post("/exchange", async (c: Context) => {
 		let updatedExpiresAt = session.expires_at;
 
 		if (timeSinceLastSeen > refreshThresholdMs) {
-			// Extend session expiry (rolling TTL)
-			updatedExpiresAt = new Date(now.getTime() + env.CORE_SESSION_TTL_SECONDS * 1000);
+			// Extend session expiry (rolling TTL) using per-app TTL
+			updatedExpiresAt = new Date(now.getTime() + sessionTtlSeconds * 1000);
 
 			// Update both last_seen_at and expires_at
-			log.debug({ sessionId: sessionId.substring(0, 8) + "..." }, "Extending session TTL");
 			await sessionQueries.updateLastSeenAndExpiry(db, session.id, now, updatedExpiresAt);
 		}
 
@@ -484,6 +493,7 @@ router.post("/exchange", async (c: Context) => {
 			name: user.name,
 			picture: user.avatar_url,
 			expiresAt: updatedExpiresAt,
+			sessionTtlSeconds, // Return TTL so Gateway knows how long to cache
 		});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error), stack: error instanceof Error ? error.stack : undefined }, "Auth exchange error");
