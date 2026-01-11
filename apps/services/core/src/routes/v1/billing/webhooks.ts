@@ -52,18 +52,18 @@ webhookRoutes.post("/:provider", async (c: Context) => {
 		const ipAddress = getClientIp(c);
 
 		// Validate provider
-		const validProviders = ["stripe", "lemon_squeezy", "lemon-squeezy", "paddle"];
+		const validProviders = ["stripe", "lemon_squeezy", "lemon-squeezy", "lemonsqueezy", "dodo", "paddle"];
 		if (!validProviders.includes(provider)) {
 			log.warn({ provider }, "Invalid provider in webhook");
 			return c.json({ error: "Invalid provider" }, 400);
 		}
 
 		// Normalize provider name
-		let normalizedProvider: "stripe" | "lemon_squeezy" | "paddle";
-		if (provider === "lemon-squeezy") {
+		let normalizedProvider: "stripe" | "lemon_squeezy" | "dodo" | "paddle";
+		if (provider === "lemon-squeezy" || provider === "lemonsqueezy") {
 			normalizedProvider = "lemon_squeezy";
 		} else {
-			normalizedProvider = provider as "stripe" | "lemon_squeezy" | "paddle";
+			normalizedProvider = provider as "stripe" | "lemon_squeezy" | "dodo" | "paddle";
 		}
 
 		// Enqueue webhook processing (async)

@@ -9,8 +9,8 @@ CREATE TABLE "apps" (
 	"app_tokens" jsonb NOT NULL,
 	"security_settings" jsonb NOT NULL,
 	"plan_settings" jsonb NOT NULL,
-	"selected_payment_provider_id" integer,
 	"is_active" boolean DEFAULT true NOT NULL,
+	"is_test" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"deleted_at" timestamp,
@@ -94,6 +94,22 @@ CREATE TABLE "invitations" (
 	CONSTRAINT "invitations_email_app_unique" UNIQUE("email","app_id")
 );
 --> statement-breakpoint
+CREATE TABLE "license_history" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"public_id" varchar(255) NOT NULL,
+	"license_id" integer NOT NULL,
+	"change_type" varchar(50) NOT NULL,
+	"old_value" jsonb,
+	"new_value" jsonb,
+	"reason" varchar(50) NOT NULL,
+	"changed_by_user_id" integer,
+	"changed_by_system" boolean DEFAULT false NOT NULL,
+	"payment_transaction_id" integer,
+	"notes" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "license_history_public_id_unique" UNIQUE("public_id")
+);
+--> statement-breakpoint
 CREATE TABLE "licenses" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"public_id" varchar(255) NOT NULL,
@@ -102,6 +118,7 @@ CREATE TABLE "licenses" (
 	"plan_id" integer NOT NULL,
 	"status" varchar(20) DEFAULT 'active' NOT NULL,
 	"valid_until" timestamp,
+	"is_test" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"deleted_at" timestamp,
@@ -126,6 +143,22 @@ CREATE TABLE "payment_provider_configs" (
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "payment_provider_configs_public_id_unique" UNIQUE("public_id"),
 	CONSTRAINT "payment_provider_configs_project_provider_env_unique" UNIQUE("project_id","provider","environment")
+);
+--> statement-breakpoint
+CREATE TABLE "payment_routing_rules" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"public_id" varchar(255) NOT NULL,
+	"app_id" integer NOT NULL,
+	"priority" integer DEFAULT 100 NOT NULL,
+	"conditions" jsonb DEFAULT '{}' NOT NULL,
+	"provider_config_id" integer NOT NULL,
+	"traffic_percentage" integer DEFAULT 100 NOT NULL,
+	"name" varchar(255),
+	"description" text,
+	"is_active" boolean DEFAULT true NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "payment_routing_rules_public_id_unique" UNIQUE("public_id")
 );
 --> statement-breakpoint
 CREATE TABLE "payment_transactions" (
@@ -357,6 +390,23 @@ CREATE TABLE "subscriptions" (
 	CONSTRAINT "subscriptions_provider_subscription_unique" UNIQUE("provider_config_id","provider_subscription_id")
 );
 --> statement-breakpoint
+CREATE TABLE "test_sessions" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"public_id" varchar(255) NOT NULL,
+	"admin_id" integer NOT NULL,
+	"provider" varchar(50) NOT NULL,
+	"mode" varchar(20) NOT NULL,
+	"status" varchar(20) DEFAULT 'active' NOT NULL,
+	"test_app_id" integer,
+	"test_user_id" integer,
+	"plan_id" varchar(255),
+	"checkout_url" text,
+	"expires_at" timestamp NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "test_sessions_public_id_unique" UNIQUE("public_id")
+);
+--> statement-breakpoint
 CREATE TABLE "users" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"public_id" varchar(255) NOT NULL,
@@ -365,6 +415,7 @@ CREATE TABLE "users" (
 	"name" varchar(255),
 	"avatar_url" text,
 	"is_admin" boolean DEFAULT false NOT NULL,
+	"is_test" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "users_public_id_unique" UNIQUE("public_id")
@@ -411,12 +462,17 @@ ALTER TABLE "invitations" ADD CONSTRAINT "invitations_app_id_apps_id_fk" FOREIGN
 ALTER TABLE "invitations" ADD CONSTRAINT "invitations_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "invitations" ADD CONSTRAINT "invitations_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "public"."plans"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "invitations" ADD CONSTRAINT "invitations_consumed_by_user_id_users_id_fk" FOREIGN KEY ("consumed_by_user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "license_history" ADD CONSTRAINT "license_history_license_id_licenses_id_fk" FOREIGN KEY ("license_id") REFERENCES "public"."licenses"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "license_history" ADD CONSTRAINT "license_history_changed_by_user_id_users_id_fk" FOREIGN KEY ("changed_by_user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "license_history" ADD CONSTRAINT "license_history_payment_transaction_id_payment_transactions_id_fk" FOREIGN KEY ("payment_transaction_id") REFERENCES "public"."payment_transactions"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "licenses" ADD CONSTRAINT "licenses_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "licenses" ADD CONSTRAINT "licenses_app_id_apps_id_fk" FOREIGN KEY ("app_id") REFERENCES "public"."apps"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "licenses" ADD CONSTRAINT "licenses_plan_id_plans_id_fk" FOREIGN KEY ("plan_id") REFERENCES "public"."plans"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payment_provider_configs" ADD CONSTRAINT "payment_provider_configs_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payment_provider_configs" ADD CONSTRAINT "payment_provider_configs_created_by_user_id_users_id_fk" FOREIGN KEY ("created_by_user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payment_provider_configs" ADD CONSTRAINT "payment_provider_configs_updated_by_user_id_users_id_fk" FOREIGN KEY ("updated_by_user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "payment_routing_rules" ADD CONSTRAINT "payment_routing_rules_app_id_apps_id_fk" FOREIGN KEY ("app_id") REFERENCES "public"."apps"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "payment_routing_rules" ADD CONSTRAINT "payment_routing_rules_provider_config_id_payment_provider_configs_id_fk" FOREIGN KEY ("provider_config_id") REFERENCES "public"."payment_provider_configs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payment_transactions" ADD CONSTRAINT "payment_transactions_purchase_id_purchases_id_fk" FOREIGN KEY ("purchase_id") REFERENCES "public"."purchases"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payment_transactions" ADD CONSTRAINT "payment_transactions_license_id_licenses_id_fk" FOREIGN KEY ("license_id") REFERENCES "public"."licenses"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payment_transactions" ADD CONSTRAINT "payment_transactions_provider_config_id_payment_provider_configs_id_fk" FOREIGN KEY ("provider_config_id") REFERENCES "public"."payment_provider_configs"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
@@ -447,9 +503,13 @@ ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_purchase_id_purchases_
 ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_license_id_licenses_id_fk" FOREIGN KEY ("license_id") REFERENCES "public"."licenses"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_provider_config_id_payment_provider_configs_id_fk" FOREIGN KEY ("provider_config_id") REFERENCES "public"."payment_provider_configs"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_plan_provider_price_id_plan_provider_prices_id_fk" FOREIGN KEY ("plan_provider_price_id") REFERENCES "public"."plan_provider_prices"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "test_sessions" ADD CONSTRAINT "test_sessions_admin_id_users_id_fk" FOREIGN KEY ("admin_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "test_sessions" ADD CONSTRAINT "test_sessions_test_app_id_apps_id_fk" FOREIGN KEY ("test_app_id") REFERENCES "public"."apps"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "test_sessions" ADD CONSTRAINT "test_sessions_test_user_id_users_id_fk" FOREIGN KEY ("test_user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "webhook_logs" ADD CONSTRAINT "webhook_logs_payment_transaction_id_payment_transactions_id_fk" FOREIGN KEY ("payment_transaction_id") REFERENCES "public"."payment_transactions"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "webhook_logs" ADD CONSTRAINT "webhook_logs_license_id_licenses_id_fk" FOREIGN KEY ("license_id") REFERENCES "public"."licenses"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "apps_project_id_idx" ON "apps" USING btree ("project_id");--> statement-breakpoint
+CREATE INDEX "apps_is_test_idx" ON "apps" USING btree ("is_test","created_at");--> statement-breakpoint
 CREATE INDEX "audit_logs_user_id_idx" ON "audit_logs" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "audit_logs_app_id_idx" ON "audit_logs" USING btree ("app_id");--> statement-breakpoint
 CREATE INDEX "audit_logs_project_id_idx" ON "audit_logs" USING btree ("project_id");--> statement-breakpoint
@@ -468,13 +528,21 @@ CREATE INDEX "invitations_project_id_idx" ON "invitations" USING btree ("project
 CREATE INDEX "invitations_plan_id_idx" ON "invitations" USING btree ("plan_id");--> statement-breakpoint
 CREATE INDEX "invitations_email_idx" ON "invitations" USING btree ("email");--> statement-breakpoint
 CREATE INDEX "invitations_expires_at_idx" ON "invitations" USING btree ("expires_at");--> statement-breakpoint
+CREATE INDEX "license_history_license_id_idx" ON "license_history" USING btree ("license_id");--> statement-breakpoint
+CREATE INDEX "license_history_change_type_idx" ON "license_history" USING btree ("change_type");--> statement-breakpoint
+CREATE INDEX "license_history_reason_idx" ON "license_history" USING btree ("reason");--> statement-breakpoint
+CREATE INDEX "license_history_created_at_idx" ON "license_history" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "licenses_user_id_idx" ON "licenses" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "licenses_app_id_idx" ON "licenses" USING btree ("app_id");--> statement-breakpoint
 CREATE INDEX "licenses_plan_id_idx" ON "licenses" USING btree ("plan_id");--> statement-breakpoint
 CREATE INDEX "licenses_status_idx" ON "licenses" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "licenses_is_test_idx" ON "licenses" USING btree ("is_test","created_at");--> statement-breakpoint
 CREATE INDEX "payment_provider_configs_project_id_idx" ON "payment_provider_configs" USING btree ("project_id");--> statement-breakpoint
 CREATE INDEX "payment_provider_configs_provider_idx" ON "payment_provider_configs" USING btree ("provider");--> statement-breakpoint
 CREATE INDEX "payment_provider_configs_is_default_idx" ON "payment_provider_configs" USING btree ("is_default");--> statement-breakpoint
+CREATE INDEX "idx_routing_rules_app_priority" ON "payment_routing_rules" USING btree ("app_id","priority");--> statement-breakpoint
+CREATE INDEX "idx_routing_rules_provider" ON "payment_routing_rules" USING btree ("provider_config_id");--> statement-breakpoint
+CREATE INDEX "idx_routing_rules_app_id" ON "payment_routing_rules" USING btree ("app_id");--> statement-breakpoint
 CREATE INDEX "payment_transactions_license_id_idx" ON "payment_transactions" USING btree ("license_id");--> statement-breakpoint
 CREATE INDEX "payment_transactions_purchase_id_idx" ON "payment_transactions" USING btree ("purchase_id");--> statement-breakpoint
 CREATE INDEX "payment_transactions_provider_transaction_idx" ON "payment_transactions" USING btree ("provider_transaction_id");--> statement-breakpoint
@@ -525,8 +593,14 @@ CREATE INDEX "subscriptions_provider_config_id_idx" ON "subscriptions" USING btr
 CREATE INDEX "subscriptions_provider_subscription_id_idx" ON "subscriptions" USING btree ("provider_subscription_id");--> statement-breakpoint
 CREATE INDEX "subscriptions_status_idx" ON "subscriptions" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "subscriptions_next_billing_date_idx" ON "subscriptions" USING btree ("next_billing_date");--> statement-breakpoint
+CREATE INDEX "test_sessions_admin_id_idx" ON "test_sessions" USING btree ("admin_id");--> statement-breakpoint
+CREATE INDEX "test_sessions_provider_idx" ON "test_sessions" USING btree ("provider");--> statement-breakpoint
+CREATE INDEX "test_sessions_status_idx" ON "test_sessions" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "test_sessions_expires_at_idx" ON "test_sessions" USING btree ("expires_at");--> statement-breakpoint
+CREATE INDEX "test_sessions_created_at_idx" ON "test_sessions" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "users_primary_email_idx" ON "users" USING btree ("primary_email");--> statement-breakpoint
 CREATE INDEX "users_public_id_idx" ON "users" USING btree ("public_id");--> statement-breakpoint
+CREATE INDEX "users_is_test_idx" ON "users" USING btree ("is_test","created_at");--> statement-breakpoint
 CREATE INDEX "webhook_logs_provider_idx" ON "webhook_logs" USING btree ("provider");--> statement-breakpoint
 CREATE INDEX "webhook_logs_event_type_idx" ON "webhook_logs" USING btree ("event_type");--> statement-breakpoint
 CREATE INDEX "webhook_logs_event_id_idx" ON "webhook_logs" USING btree ("event_id");--> statement-breakpoint

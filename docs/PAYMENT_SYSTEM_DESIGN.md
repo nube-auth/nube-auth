@@ -272,6 +272,95 @@ INDEX(billing_interval)
 
 **Example**: Plan `pro_monthly_v2` on Stripe has `price_abc123`, on Dodo has `price_dodo_456`
 
+#### `license_history` (Audit Trail for License Changes)
+```typescript
+{
+  id: integer (PK)
+  public_id: string (unique)
+  license_id: integer (FK → licenses) [NOT NULL]
+  
+  // What changed
+  change_type: enum [
+    'created',           // License created
+    'plan_changed',      // Upgraded/downgraded plan
+    'status_changed',    // active → expired, etc.
+    'expiry_extended',   // valid_until extended
+    'expiry_reduced',    // valid_until shortened
+    'deleted'            // Soft deleted
+  ] [NOT NULL]
+  
+  // Old vs new values (JSON snapshot)
+  old_value: jsonb (nullable)  // { plan_id: 1, status: 'active', valid_until: '...' }
+  new_value: jsonb (nullable)  // { plan_id: 2, status: 'active', valid_until: '...' }
+  
+  // Why it changed
+  reason: enum [
+    'purchase',          // New purchase
+    'renewal',           // Subscription renewed
+    'refund',            // Payment refunded
+    'admin_manual',      // Admin manually changed
+    'system_auto',       // System auto-expired/updated
+    'upgrade',           // User upgraded plan
+    'downgrade'          // User downgraded plan
+  ] [NOT NULL]
+  
+  // Who changed it
+  changed_by_user_id: integer (FK → users, nullable)  // Admin who made change
+  changed_by_system: boolean [default: false]
+  
+  // Link to payment (if applicable)
+  payment_transaction_id: integer (FK → payment_transactions, nullable)
+  
+  // Notes for admin/audit
+  notes: text (nullable)
+  
+  created_at: timestamp [NOT NULL, default: NOW()]
+}
+
+// Indexes
+INDEX(license_id)
+INDEX(change_type)
+INDEX(reason)
+INDEX(created_at)
+```
+
+**Purpose**:
+- Track ALL license changes (payment-related and non-payment)
+- Complete audit trail for compliance
+- Answer "who changed what when" for customer support
+- Track admin manual changes (extend expiry, grant access, etc.)
+- Debug access issues by reviewing change history
+
+**Key differences from payment_transactions**:
+- `payment_transactions` tracks **monetary events only** (purchase, renewal, refund)
+- `license_history` tracks **all license state changes** (including admin manual changes, system auto-expiry, etc.)
+
+**Example usage**:
+```typescript
+// Admin manually extends license (no payment)
+await updateLicense(licenseId, { valid_until: newDate });
+await createLicenseHistory({
+  license_id: licenseId,
+  change_type: 'expiry_extended',
+  reason: 'admin_manual',
+  old_value: { valid_until: oldDate },
+  new_value: { valid_until: newDate },
+  changed_by_user_id: adminUserId,
+  notes: 'Customer support request #1234',
+});
+
+// Webhook creates license (automatic)
+await createLicense({ userId, appId, planId, status: 'active', valid_until });
+await createLicenseHistory({
+  license_id: licenseId,
+  change_type: 'created',
+  reason: 'purchase',
+  new_value: { plan_id: planId, status: 'active', valid_until },
+  payment_transaction_id: transaction.id,
+  changed_by_system: true,
+});
+```
+
 #### `payment_transactions` (Provider-Specific Tracking)
 ```typescript
 {

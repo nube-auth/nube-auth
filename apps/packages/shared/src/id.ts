@@ -68,6 +68,9 @@ export const id = {
 
 	/** Generate payment provider ID (PAP0, 13 chars total) */
 	paymentProvider: () => `PAP0${nano9()}`,
+	
+	/** Generate plan provider price ID (PPP0, 13 chars total) */
+	planProviderPrice: () => `PPP0${nano9()}`,
 
 	/** Generate app OAuth selection ID (AOS0, 13 chars total) */
 	appOAuthSelection: () => `AOS0${nano9()}`,
@@ -108,6 +111,7 @@ export const idPatterns = {
 	invitation: /^INV0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 	state: /^STA0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 	paymentConfig: /^CFG0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+	planProviderPrice: /^PPP0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 } as const;
 
 /**

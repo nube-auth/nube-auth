@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, inArray, isNull, lt, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNull, lt, sql } from "drizzle-orm";
 import type { DbClient } from "./index.js";
 import {
 	apps,
@@ -15,6 +15,8 @@ import {
 	sessions,
 	users,
 	payment_provider_configs,
+	payment_routing_rules,
+	test_sessions,
 } from "./schema.js";
 import { buildJsonbMergeClause, createJsonbUpdateChain } from "./utils/jsonb.js";
 
@@ -973,5 +975,210 @@ export const paymentProviderConfigQueries = {
 			.where(eq(payment_provider_configs.id, configId))
 			.returning();
 		return results[0]!;
+	},
+};
+
+/**
+ * Payment Routing Rules queries
+ */
+export const routingRuleQueries = {
+	/**
+	 * Find all active routing rules for an app, ordered by priority (ascending)
+	 * Lower priority number = evaluated first
+	 */
+	async findActiveByAppId(db: DbClient, appId: number) {
+		return db
+			.select()
+			.from(payment_routing_rules)
+			.where(and(eq(payment_routing_rules.app_id, appId), eq(payment_routing_rules.is_active, true)))
+			.orderBy(asc(payment_routing_rules.priority));
+	},
+
+	/**
+	 * Find all routing rules for an app (active + inactive)
+	 */
+	async findByAppId(db: DbClient, appId: number) {
+		return db
+			.select()
+			.from(payment_routing_rules)
+			.where(eq(payment_routing_rules.app_id, appId))
+			.orderBy(asc(payment_routing_rules.priority));
+	},
+
+	/**
+	 * Find routing rule by ID
+	 */
+	async findById(db: DbClient, ruleId: number) {
+		const results = await db
+			.select()
+			.from(payment_routing_rules)
+			.where(eq(payment_routing_rules.id, ruleId));
+		return results[0];
+	},
+
+	/**
+	 * Find routing rule by public ID
+	 */
+	async findByPublicId(db: DbClient, publicId: string) {
+		const results = await db
+			.select()
+			.from(payment_routing_rules)
+			.where(eq(payment_routing_rules.public_id, publicId));
+		return results[0];
+	},
+
+	/**
+	 * Create new routing rule
+	 */
+	async create(db: DbClient, data: typeof payment_routing_rules.$inferInsert) {
+		const results = await db.insert(payment_routing_rules).values(data).returning();
+		return results[0]!;
+	},
+
+	/**
+	 * Update routing rule
+	 */
+	async update(
+		db: DbClient,
+		ruleId: number,
+		data: Partial<typeof payment_routing_rules.$inferInsert>,
+	) {
+		return db
+			.update(payment_routing_rules)
+			.set({ ...data, updated_at: new Date() })
+			.where(eq(payment_routing_rules.id, ruleId))
+			.returning();
+	},
+
+	/**
+	 * Deactivate routing rule (soft delete)
+	 */
+	async deactivate(db: DbClient, ruleId: number) {
+		return db
+			.update(payment_routing_rules)
+			.set({ is_active: false, updated_at: new Date() })
+			.where(eq(payment_routing_rules.id, ruleId))
+			.returning();
+	},
+
+	/**
+	 * Hard delete routing rule
+	 */
+	async delete(db: DbClient, ruleId: number) {
+		return db.delete(payment_routing_rules).where(eq(payment_routing_rules.id, ruleId));
+	},
+
+	/**
+	 * Check if app has any active routing rules
+	 */
+	async hasActiveRules(db: DbClient, appId: number): Promise<boolean> {
+		const results = await db
+			.select({ id: payment_routing_rules.id })
+			.from(payment_routing_rules)
+			.where(and(eq(payment_routing_rules.app_id, appId), eq(payment_routing_rules.is_active, true)))
+			.limit(1);
+		return results.length > 0;
+	},
+};
+
+/**
+ * Test Session queries
+ * For payment testing playground
+ */
+export const testSessionQueries = {
+	async create(db: DbClient, data: typeof test_sessions.$inferInsert) {
+		const results = await db.insert(test_sessions).values(data).returning();
+		return results[0]!;
+	},
+
+	async findById(db: DbClient, sessionId: number) {
+		const results = await db
+			.select()
+			.from(test_sessions)
+			.where(eq(test_sessions.id, sessionId));
+		return results[0];
+	},
+
+	async findByPublicId(db: DbClient, publicId: string) {
+		const results = await db
+			.select()
+			.from(test_sessions)
+			.where(eq(test_sessions.public_id, publicId));
+		return results[0];
+	},
+
+	async findByAdminId(db: DbClient, adminId: number, limit = 10) {
+		return db
+			.select()
+			.from(test_sessions)
+			.where(eq(test_sessions.admin_id, adminId))
+			.orderBy(desc(test_sessions.created_at))
+			.limit(limit);
+	},
+
+	async update(
+		db: DbClient,
+		sessionId: number,
+		data: Partial<typeof test_sessions.$inferInsert>
+	) {
+		const results = await db
+			.update(test_sessions)
+			.set({ ...data, updated_at: new Date() })
+			.where(eq(test_sessions.id, sessionId))
+			.returning();
+		return results[0];
+	},
+
+	async updateStatus(db: DbClient, sessionId: number, status: string) {
+		return this.update(db, sessionId, { status });
+	},
+
+	async delete(db: DbClient, sessionId: number) {
+		return db.delete(test_sessions).where(eq(test_sessions.id, sessionId));
+	},
+
+	async findExpired(db: DbClient) {
+		return db
+			.select()
+			.from(test_sessions)
+			.where(and(eq(test_sessions.status, "active"), lt(test_sessions.expires_at, new Date())));
+	},
+
+	async deleteExpired(db: DbClient) {
+		const expiredSessions = await this.findExpired(db);
+		if (expiredSessions.length === 0) return [];
+
+		const sessionIds = expiredSessions.map((s) => s.id);
+		return db
+			.delete(test_sessions)
+			.where(inArray(test_sessions.id, sessionIds))
+			.returning();
+	},
+
+	async cleanupTestData(db: DbClient, olderThanHours = 24) {
+		const cutoffTime = new Date(Date.now() - olderThanHours * 60 * 60 * 1000);
+
+		const deletedLicenses = await db
+			.delete(licenses)
+			.where(and(eq(licenses.is_test, true), lt(licenses.created_at, cutoffTime)))
+			.returning({ id: licenses.id });
+
+		const deletedApps = await db
+			.delete(apps)
+			.where(and(eq(apps.is_test, true), lt(apps.created_at, cutoffTime)))
+			.returning({ id: apps.id });
+
+		const deletedUsers = await db
+			.delete(users)
+			.where(
+				and(eq(users.is_test, true), eq(users.is_admin, false), lt(users.created_at, cutoffTime))
+			)
+			.returning({ id: users.id });
+
+		return {
+			licenses: deletedLicenses.length,
+			apps: deletedApps.length,
+			users: deletedUsers.length,
+		};
 	},
 };

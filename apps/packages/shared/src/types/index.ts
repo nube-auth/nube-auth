@@ -129,7 +129,7 @@ export interface App {
 	app_tokens: AppTokens;
 	security_settings: SecuritySettings;
 	plan_settings: PlanSettings;
-	selected_payment_provider_id: number | null;
+	// selected_payment_provider_id removed - use payment_routing_rules table
 	is_active: boolean;
 	created_at: number;
 	updated_at: number;

@@ -14,11 +14,12 @@
 
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, eq, getDb, paymentProviderConfigQueries, projectQueries, userQueries } from "@proofa/db";
+import { and, eq, getDb, paymentProviderConfigQueries, projectQueries, userQueries, routingRuleQueries } from "@proofa/db";
 import { payment_provider_configs } from "@proofa/db";
 import type { Context } from "hono";
 import { createLogger, createId } from "@proofa/shared";
 import { encryptCredentials, decryptCredentials } from "../../../utils";
+import { createDefaultRoutingRule } from "../../../billing/services/provider-selector.js";
 
 const log = createLogger("admin-providers");
 const providersRouter = new Hono();
@@ -303,6 +304,10 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
 			created_by_user_id: accessCheck.user!.id,
 			updated_by_user_id: accessCheck.user!.id,
 		});
+
+		// TODO: Auto-create default routing rule for each app in the project
+		// For now, routing rules must be created manually via /routing-rules API
+		// Future: When app is created, auto-create catch-all routing rule
 
 		return c.json(
 			{

@@ -103,7 +103,7 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 					"Admin session exceeded inactivity timeout - forcing re-auth",
 				);
 				// Clear the expired admin session
-				await sessionStore.deleteAppSession(sessionId);
+				await sessionStore.revokeAppSession(sessionId);
 				return c.json({ error: "Admin session expired due to inactivity", code: "ADMIN_INACTIVITY_TIMEOUT" }, 401);
 			}
 

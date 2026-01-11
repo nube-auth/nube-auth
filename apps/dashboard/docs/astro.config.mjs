@@ -28,6 +28,21 @@ export default defineConfig({
 					],
 				},
 				{
+					label: "Dashboards",
+					items: [
+						{ label: "Overview", link: "/dashboards/overview/" },
+						{ label: "Admin Dashboard", link: "/dashboards/admin-dashboard/" },
+						{ label: "User Dashboard", link: "/dashboards/user-dashboard/" },
+					],
+				},
+				{
+					label: "Integration",
+					items: [
+						{ label: "Quick Start", link: "/integration/quickstart/" },
+						{ label: "Browser Extension", link: "/integration/browser-extension/" },
+					],
+				},
+				{
 					label: "Authentication",
 					items: [
 						{ label: "Overview", link: "/authentication/overview/" },

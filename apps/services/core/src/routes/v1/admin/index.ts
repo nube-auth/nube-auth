@@ -8,6 +8,9 @@ import { appsRouter } from "./apps.js";
 import { statsRouter } from "./stats.js";
 import { membersRouter } from "./members.js";
 import { licenseManagementRouter } from "./license-management.js";
+import { plansRouter } from "./plans.js";
+import routingRulesRouter from "./routing-rules.js";
+import { testRouter } from "./test.js";
 
 const log = createLogger("admin-routes");
 const router = new Hono();
@@ -172,5 +175,8 @@ router.route("/projects", statsRouter);
 router.route("/projects", membersRouter);
 router.route("/projects", licenseManagementRouter);
 router.route("/providers", providersRouter);
+router.route("/routing-rules", routingRulesRouter);
+router.route("/plans", plansRouter);
+router.route("/test", testRouter);
 
 export const adminRoutes = router;

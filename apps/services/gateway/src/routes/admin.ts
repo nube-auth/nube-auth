@@ -5,12 +5,12 @@
 
 import { getDb, userQueries } from "@proofa/db";
 import { createLogger, serializeError } from "@proofa/shared";
+import { pingpong } from "@proofa/auth";
 import type { Context } from "hono";
 import { Hono } from "hono";
-import { getAuth } from "../middleware/auth";
-import { coreClient } from "../lib/core-client";
-import { pingpong } from "@proofa/auth";
+import type { StatusCode } from "hono/utils/http-status";
 import { env } from "../config/env";
+import { getAuth } from "../middleware/auth";
 
 const log = createLogger("admin-routes");
 
@@ -65,7 +65,7 @@ adminRoutes.all("/*", async (c: Context) => {
 
 		// Make request to Core service - remove /v1/admin prefix and let core handle /v1/admin routes
 		const corePath = path; // Keep the full path as Core expects /v1/admin/...
-		const coreUrl = `${process.env["CORE_URL"] || "http://localhost:3003"}${corePath}`;
+		const coreUrl = `${env.CORE_URL}${corePath}`;
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
 			"X-S2S-Token": env.S2S_SECRET,
@@ -90,17 +90,16 @@ adminRoutes.all("/*", async (c: Context) => {
 
 		log.debug({ url: url.toString(), headers }, "Making request to Core");
 
-		// Use native fetch instead of pingpong to avoid header issues with GET requests
-		const response = await fetch(url.toString(), {
+		const response = await pingpong(url.toString(), {
 			method,
 			headers,
-			...(body ? { body: JSON.stringify(body) } : {}),
+			...(body ? { body } : {}),
 		});
 
-		const responseData = await response.json();
-
 		log.debug({ status: response.status }, "Response from Core");
-		return c.json(responseData, response.status);
+		return c.newResponse(JSON.stringify(response.data), response.status as StatusCode, {
+			"content-type": "application/json",
+		});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error), stack: (error as Error).stack }, "Admin proxy error");
 		return c.json({ error: "Internal server error" }, 500);

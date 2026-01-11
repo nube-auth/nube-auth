@@ -2,18 +2,18 @@
 const steps = [
   {
     number: 1,
-    title: 'Create a Project',
-    description: 'Sign up and create your first project in the admin dashboard.'
+    title: 'Create Your Project',
+    description: 'Sign up at admin.proofa.com and create your first project. Invite team members and set up payment providers.'
   },
   {
     number: 2,
-    title: 'Add Your App',
-    description: 'Configure OAuth providers, redirect URIs, and licensing options.'
+    title: 'Configure Your App',
+    description: 'Add an app to your project. Set up OAuth providers (Google, GitHub), configure redirect URIs, and create licensing plans.'
   },
   {
     number: 3,
-    title: 'Integrate',
-    description: 'Add authentication to your app with our simple SDK and APIs.'
+    title: 'Integrate & Ship',
+    description: 'Use our React SDK, vanilla JavaScript client, or browser extension integration. Your users can login in minutes.'
   }
 ];
 
@@ -61,22 +61,29 @@ const user = await proofa.getUser();`;
         <span class="code-block-tab">app.ts</span>
       </div>
       <div class="code-block-body">
-        <pre><code><span class="code-comment"># Install the SDK</span>
-<span class="code-variable">npm install</span> <span class="code-string">@proofa/sdk</span>
+        <pre><code><span class="code-comment"># Install for React apps</span>
+<span class="code-variable">npm install</span> <span class="code-string">@proofa/client @proofa/react</span>
 
-<span class="code-comment"># Initialize in your app</span>
-<span class="code-keyword">import</span> {'{'} <span class="code-property">ProofaClient</span> {'}'} <span class="code-keyword">from</span> <span class="code-string">'@proofa/sdk'</span>;
+<span class="code-comment"># Or vanilla JavaScript</span>
+<span class="code-variable">npm install</span> <span class="code-string">@proofa/client</span>
 
-<span class="code-keyword">const</span> <span class="code-variable">proofa</span> = <span class="code-keyword">new</span> <span class="code-function">ProofaClient</span>({'{'}
-  <span class="code-property">appId</span>: <span class="code-string">'your-app-id'</span>,
-  <span class="code-property">apiUrl</span>: <span class="code-string">'https://api.proofa.com'</span>
-{'}'});
+<span class="code-comment"># React integration</span>
+<span class="code-keyword">import</span> {'{'} <span class="code-property">ProofaProvider</span>, <span class="code-property">useProofa</span> {'}'} <span class="code-keyword">from</span> <span class="code-string">'@proofa/react'</span>;
 
-<span class="code-comment">// Redirect to login</span>
-<span class="code-keyword">await</span> <span class="code-variable">proofa</span>.<span class="code-function">login</span>({'{'} <span class="code-property">provider</span>: <span class="code-string">'google'</span> {'}'});
+<span class="code-keyword">function</span> <span class="code-function">App</span>() {'{'}
+  <span class="code-keyword">return</span> (
+    <span class="code-tag">&lt;ProofaProvider</span>
+      <span class="code-property">appId</span>=<span class="code-string">"APP0abc123..."</span>
+      <span class="code-property">gatewayUrl</span>=<span class="code-string">"https://api.proofa.sh"</span>
+    <span class="code-tag">&gt;</span>
+      <span class="code-tag">&lt;YourApp /&gt;</span>
+    <span class="code-tag">&lt;/ProofaProvider&gt;</span>
+  );
+{'}'}
 
-<span class="code-comment">// Get current user</span>
-<span class="code-keyword">const</span> <span class="code-variable">user</span> = <span class="code-keyword">await</span> <span class="code-variable">proofa</span>.<span class="code-function">getUser</span>();</code></pre>
+<span class="code-comment">// Use in components</span>
+<span class="code-keyword">const</span> {'{'} <span class="code-variable">login</span>, <span class="code-variable">user</span> {'}'} = <span class="code-function">useProofa</span>();
+<span class="code-function">login</span>({'{'} <span class="code-property">provider</span>: <span class="code-string">'google'</span> {'}'});</code></pre>
       </div>
     </div>
   </div>

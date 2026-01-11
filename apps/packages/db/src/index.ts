@@ -43,17 +43,19 @@ export function createDbClient() {
 /**
  * Type for the database client
  */
-export type DbClient = ReturnType<typeof createDbClient>;
+export type Database = ReturnType<typeof createDbClient>;
+// Backward compatibility alias
+export type DbClient = Database;
 
 /**
  * Singleton database instance
  */
-let dbInstance: DbClient | null = null;
+let dbInstance: Database | null = null;
 
 /**
  * Get or create database instance
  */
-export function getDb(): DbClient {
+export function getDb(): Database {
 	if (!dbInstance) {
 		dbInstance = createDbClient();
 	}
@@ -85,7 +87,9 @@ export {
 	projectInvitationQueries,
 	projectMemberQueries,
 	projectQueries,
+	routingRuleQueries,
 	sessionQueries,
+	testSessionQueries,
 	userQueries,
 } from "./queries.js";
 // Export schema for migrations and types

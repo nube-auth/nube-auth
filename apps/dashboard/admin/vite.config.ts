@@ -9,7 +9,7 @@ export default defineConfig({
 			"@proofa/react": path.resolve(__dirname, "../../packages/react/dist/index.js"),
 			"@proofa/client": path.resolve(__dirname, "../../packages/client/dist/index.js"),
 			"@proofa/shared": path.resolve(__dirname, "../../packages/shared/dist/index.js"),
-			"@proofa/auth": path.resolve(__dirname, "../../packages/auth/dist/index.js"),
+			"@proofa/auth": path.resolve(__dirname, "../../packages/auth/dist"),
 			"@proofa/cache": path.resolve(__dirname, "../../packages/cache/dist/index.js"),
 			"@proofa/db": path.resolve(__dirname, "../../packages/db/dist/index.js"),
 			"@proofa/queue": path.resolve(__dirname, "../../packages/queue/dist/index.js"),

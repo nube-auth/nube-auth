@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PinboardGPT - AI-Powered Bookmarks</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="logo">
+        <img src="/images/logo.svg" alt="PinboardGPT">
+        <span>PinboardGPT</span>
+      </div>
+      <div id="nav-auth" class="nav-auth">
+        <!-- Will be populated by JavaScript -->
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <h1>Never Lose a Bookmark Again</h1>
+      <p>AI-powered bookmark management for developers</p>
+      <div class="cta">
+        <a href="#" id="get-started-btn" class="btn btn-primary">Get Started Free</a>
+        <a href="/pricing" class="btn btn-secondary">View Pricing</a>
+      </div>
+    </section>
+
+    <section class="features">
+      <h2>Features</h2>
+      <!-- Add your features here -->
+    </section>
+  </main>
+
+  <!-- Include Proofa Auth -->
+  <script src="/js/proofa-auth.js"></script>
+  
+  <script>
+    // Initialize Proofa client
+    const proofa = new ProofaAuth('https://api.proofa.sh', 'pinboardgpt');
+
+    // Check authentication status on page load
+    async function initAuth() {
+      const navAuthContainer = document.getElementById('nav-auth');
+      const getStartedBtn = document.getElementById('get-started-btn');
+
+      try {
+        const auth = await proofa.checkAuth();
+
+        if (auth.loggedIn) {
+          // User is logged in
+          navAuthContainer.innerHTML = `
+            <div class="user-menu">
+              <img src="${auth.user.avatar_url || '/images/default-avatar.png'}" 
+                   alt="${auth.user.name}" 
+                   class="avatar">
+              <span class="user-name">${auth.user.name}</span>
+              <div class="dropdown">
+                <a href="/account">My Account</a>
+                <a href="/pricing">Upgrade</a>
+                <a href="#" onclick="handleLogout(); return false;">Logout</a>
+              </div>
+            </div>
+          `;
+
+          // Update CTA button for logged-in users
+          getStartedBtn.textContent = 'Open Dashboard';
+          getStartedBtn.href = '/dashboard';
+        } else {
+          // User is not logged in
+          navAuthContainer.innerHTML = `
+            <a href="/auth/login" class="btn btn-outline">Login</a>
+            <a href="/auth/login" class="btn btn-primary">Sign Up</a>
+          `;
+
+          // Get started button redirects to login
+          getStartedBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = '/auth/login';
+          });
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        // Show login buttons on error
+        navAuthContainer.innerHTML = `
+          <a href="/auth/login" class="btn btn-outline">Login</a>
+        `;
+      }
+    }
+
+    // Logout handler
+    async function handleLogout() {
+      try {
+        await proofa.logout();
+        window.location.href = '/';
+      } catch (error) {
+        console.error('Logout failed:', error);
+        alert('Failed to logout. Please try again.');
+      }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', initAuth);
+  </script>
+</body>
+</html>

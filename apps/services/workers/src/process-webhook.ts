@@ -2,10 +2,6 @@
  * Webhook Processing Worker
  *
  * Handles async webhook event processing
- * - Verifies webhook signature
- * - Routes to provider-specific handler
- * - Creates payment transactions
- * - Updates purchase status
  */
 
 import { createLogger, serializeError } from "@proofa/shared";
@@ -15,53 +11,58 @@ import { QueueClient } from "@proofa/queue";
 const log = createLogger("process-webhook-worker");
 
 export interface ProcessWebhookJobData {
-	type: "PROCESS_WEBHOOK";
-	provider: "stripe" | "lemon_squeezy" | "paddle";
+	provider: string;
 	rawBody: string;
 	signature: string;
 	providerConfigId: number;
-	ipAddress?: string;
-	timestamp: number;
+	ipAddress: string;
 }
 
 export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhookJobData>> {
 	const { Worker: BullWorker } = await import("bullmq");
 	const queueClient = new QueueClient();
-	const queue = queueClient.getQueue("PROCESS_WEBHOOK");
+	const queue = queueClient.getQueue("billing");
+
+	// Dynamically import webhook handler to avoid circular dependencies
+	const { processWebhook } = await import("../../core/src/billing/services/webhook-handler.js");
+
 	return new BullWorker<ProcessWebhookJobData>(
-		"PROCESS_WEBHOOK",
+		"billing",
 		async (job) => {
+			if (job.name !== "process-webhook") {
+				return; // Skip non-webhook jobs
+			}
+
 			try {
 				log.info(
 					{
 						jobId: job.id,
 						provider: job.data.provider,
-						configId: job.data.providerConfigId,
 						ipAddress: job.data.ipAddress,
 					},
-					"Processing webhook",
+					"Processing webhook"
 				);
 
-				// TODO: Phase 2 - Implement actual webhook processing
-				// When implemented, this should:
-				// 1. Verify webhook signature with provider
-				// 2. Parse webhook payload
-				// 3. Route to provider-specific handler
-				// 4. Update payment transaction records
-				// 5. Handle different event types (payment.completed, charge.refunded, etc.)
+				const success = await processWebhook({
+					provider: job.data.provider,
+					rawBody: job.data.rawBody,
+					signature: job.data.signature,
+					providerConfigId: job.data.providerConfigId,
+				});
 
-				const { provider } = job.data;
+				if (!success) {
+					throw new Error("Webhook processing returned false");
+				}
 
 				log.info(
 					{
-						provider,
-						configId: job.data.providerConfigId,
-						eventType: "webhook.processed",
+						jobId: job.id,
+						provider: job.data.provider,
 					},
-					"Webhook processed successfully",
+					"Webhook processed successfully"
 				);
 
-				return { success: true, provider, eventType: "webhook.processed" };
+				return { success: true };
 			} catch (error) {
 				log.error(
 					{
@@ -69,14 +70,14 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 						jobId: job.id,
 						provider: job.data.provider,
 					},
-					"Webhook processing failed",
+					"Webhook processing failed"
 				);
 				throw error;
 			}
 		},
 		{
 			connection: queue.client as any,
-			concurrency: 10,
-		},
+			concurrency: 5,
+		}
 	);
 }

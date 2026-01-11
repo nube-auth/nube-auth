@@ -19,6 +19,7 @@ import WebhookMonitoringPage from "./pages/WebhookMonitoring";
 import RefundProcessingPage from "./pages/RefundProcessing";
 import TransactionExportPage from "./pages/TransactionExport";
 import { LicensesPage } from "./pages/Licenses";
+import PaymentTestingPlayground from "./pages/PaymentTestingPlayground";
 import { LoginPage } from "./pages/Login";
 import { OnboardingPage } from "./pages/Onboarding";
 import { ProfilePage } from "./pages/Profile";
@@ -519,6 +520,21 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 								}
 							>
 								Export
+							</SidebarLink>
+							<SidebarLink
+								to="/playground/payments"
+								icon={
+									<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+										/>
+									</svg>
+								}
+							>
+								🧪 Test Playground
 							</SidebarLink>
 							<a href={config.docsUrl} target="_blank" rel="noopener noreferrer" className="sidebar-link">
 								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1049,6 +1065,14 @@ function App() {
 							element={
 								<ProtectedLayout>
 									<TransactionExportPage />
+								</ProtectedLayout>
+							}
+						/>
+						<Route
+							path="/playground/payments"
+							element={
+								<ProtectedLayout>
+									<PaymentTestingPlayground />
 								</ProtectedLayout>
 							}
 						/>

@@ -10,6 +10,10 @@
 		".": {
 			"import": "./dist/index.js",
 			"types": "./dist/index.d.ts"
+		},
+		"./pingpong": {
+			"import": "./dist/pingpong.js",
+			"types": "./dist/pingpong.d.ts"
 		}
 	},
 	"scripts": {

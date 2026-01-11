@@ -4,6 +4,31 @@
  * Future-ready for RabbitMQ migration
  */
 
+import { QueueClient as QueueClientClass } from "./client";
+import type { QueueName, AllJobData } from "./types";
+
+// Global queue instance
+let queueInstance: QueueClientClass | null = null;
+
+/**
+ * Get or initialize the global queue client instance
+ */
+export function getQueueClient(): QueueClientClass {
+	if (!queueInstance) {
+		queueInstance = new QueueClientClass();
+	}
+	return queueInstance;
+}
+
+/**
+ * Get a queue by name
+ */
+export function getQueue<T extends AllJobData = AllJobData>(
+	queueName: QueueName | string
+) {
+	return getQueueClient().getQueue<T>(queueName);
+}
+
 export {
 	QueueClient,
 	WorkerClient,

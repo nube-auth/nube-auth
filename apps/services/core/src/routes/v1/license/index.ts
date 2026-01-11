@@ -1,5 +1,6 @@
-import { appQueries, getDb, licenseQueries, planQueries, userQueries } from "@proofa/db";
+import { appQueries, apps, getDb, gte, licenses, licenseQueries, planQueries, userQueries } from "@proofa/db";
 import { createId, createLogger, serializeError } from "@proofa/shared";
+import { and, eq, or, isNull } from "@proofa/db";
 import type { Context } from "hono";
 import { Hono } from "hono";
 
@@ -7,11 +8,16 @@ const log = createLogger("license-routes");
 const router = new Hono();
 
 /**
- * GET /v1/license
- * Get license information for an app
+ * GET /v1/license/:appId
+ * Check if the authenticated user has an active license for the specified app
  */
-router.get("/", async (c: Context) => {
-	const appId = c.req.query("appId");
+router.get("/:appId", async (c: Context) => {
+	const appId = c.req.param("appId");
+	const userPublicId = c.req.header("X-User-Id") ?? c.req.header("x-user-id");
+
+	if (!userPublicId) {
+		return c.json({ error: "Unauthorized - missing user ID" }, 401);
+	}
 
 	if (!appId) {
 		return c.json({ error: "Missing appId" }, 400);
@@ -20,22 +26,85 @@ router.get("/", async (c: Context) => {
 	try {
 		const db = getDb();
 
+		// Get user
+		const user = await userQueries.findByPublicId(db, userPublicId);
+		if (!user) {
+			log.warn({ userPublicId }, "User not found");
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Get app
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) {
+			log.warn({ appId }, "App not found");
 			return c.json({ error: "App not found" }, 404);
 		}
 
-		// In a real implementation, you'd query the license from the database
-		// For now, return a placeholder
+		// Check for active license (valid_until is null OR in the future)
+		const license = (await db.query.licenses.findFirst({
+			where: and(
+				eq(licenses.user_id, user.id),
+				eq(licenses.app_id, app.id),
+				eq(licenses.status, "active"),
+				or(
+					isNull(licenses.valid_until),
+					gte(licenses.valid_until, new Date())
+				)
+			),
+			with: {
+				plan: {
+					columns: {
+						id: true,
+						public_id: true,
+						name: true,
+						slug: true,
+						description: true,
+						features: true,
+					},
+				},
+			},
+		})) as any;
+
+		if (!license) {
+			log.info(
+				{ userId: user.public_id, appId },
+				"No active license found"
+			);
+			return c.json({
+				hasLicense: false,
+				appId,
+				message: "No active license found for this app",
+			});
+		}
+
+		log.info(
+			{
+				userId: user.public_id,
+				appId,
+				licenseId: license.public_id,
+				planId: license.plan.public_id,
+			},
+			"Active license found"
+		);
+
 		return c.json({
-			appId,
-			status: "active",
-			validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year from now
-			plan: "pro",
+			hasLicense: true,
+			license: {
+				id: license.public_id,
+				status: license.status,
+				validUntil: license.valid_until,
+				plan: {
+					id: license.plan.public_id,
+					name: license.plan.name,
+					slug: license.plan.slug,
+					description: license.plan.description,
+					features: license.plan.features,
+				},
+			},
 		});
 	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "License get error");
-		return c.json({ error: "Failed to get license" }, 500);
+		log.error({ err: serializeError(error as Error) }, "License check error");
+		return c.json({ error: "Failed to check license" }, 500);
 	}
 });
 

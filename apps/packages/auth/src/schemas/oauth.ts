@@ -19,12 +19,12 @@ export type GoogleTokenResponse = z.infer<typeof GoogleTokenResponseSchema>;
  */
 export const GoogleUserInfoSchema = z.object({
 	sub: z.string(),
-	email: z.email(),
+	email: z.string().email(),
 	email_verified: z.boolean().optional(),
 	name: z.string().optional(),
 	given_name: z.string().optional(),
 	family_name: z.string().optional(),
-	picture: z.url().optional(),
+	picture: z.string().url().optional(),
 	locale: z.string().optional(),
 });
 
@@ -52,9 +52,9 @@ export const GitHubUserSchema = z.object({
 	id: z.number(),
 	login: z.string(),
 	name: z.string().nullable(),
-	email: z.email().nullable(),
-	avatar_url: z.url().optional(),
-	html_url: z.url().optional(),
+	email: z.string().email().nullable(),
+	avatar_url: z.string().url().optional(),
+	html_url: z.string().url().optional(),
 	type: z.string().optional(),
 });
 
@@ -64,7 +64,7 @@ export type GitHubUser = z.infer<typeof GitHubUserSchema>;
  * GitHub email response schema
  */
 export const GitHubEmailSchema = z.object({
-	email: z.email(),
+	email: z.string().email(),
 	primary: z.boolean(),
 	verified: z.boolean(),
 	visibility: z.string().nullable().optional(),

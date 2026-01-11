@@ -14,12 +14,14 @@ export const users = pgTable(
 		name: varchar("name", { length: 255 }),
 		avatar_url: text("avatar_url"),
 		is_admin: boolean("is_admin").notNull().default(false),
+		is_test: boolean("is_test").notNull().default(false),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 		updated_at: timestamp("updated_at").notNull().defaultNow(),
 	},
 	(table) => [
 		index("users_primary_email_idx").on(table.primary_email),
 		index("users_public_id_idx").on(table.public_id),
+		index("users_is_test_idx").on(table.is_test, table.created_at),
 	],
 );
 
@@ -211,8 +213,9 @@ export const apps = pgTable(
 		app_tokens: jsonb("app_tokens").notNull(),
 		security_settings: jsonb("security_settings").notNull(),
 		plan_settings: jsonb("plan_settings").notNull(),
-		selected_payment_provider_id: integer("selected_payment_provider_id"),
+		// selected_payment_provider_id removed - use payment_routing_rules instead
 		is_active: boolean("is_active").notNull().default(true),
+		is_test: boolean("is_test").notNull().default(false),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 		updated_at: timestamp("updated_at").notNull().defaultNow(),
 		deleted_at: timestamp("deleted_at"),
@@ -220,6 +223,7 @@ export const apps = pgTable(
 	(table) => [
 		unique("apps_project_slug_unique").on(table.project_id, table.slug),
 		index("apps_project_id_idx").on(table.project_id),
+		index("apps_is_test_idx").on(table.is_test, table.created_at),
 	],
 );
 
@@ -271,6 +275,7 @@ export const licenses = pgTable(
 			.references(() => plans.id),
 		status: varchar("status", { length: 20 }).notNull().default("active"),
 		valid_until: timestamp("valid_until"),
+		is_test: boolean("is_test").notNull().default(false),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 		updated_at: timestamp("updated_at").notNull().defaultNow(),
 		deleted_at: timestamp("deleted_at"),
@@ -281,6 +286,45 @@ export const licenses = pgTable(
 		index("licenses_app_id_idx").on(table.app_id),
 		index("licenses_plan_id_idx").on(table.plan_id),
 		index("licenses_status_idx").on(table.status),
+		index("licenses_is_test_idx").on(table.is_test, table.created_at),
+	],
+);
+
+/**
+ * License History table
+ * Tracks all changes to licenses for audit trail
+ */
+export const license_history = pgTable(
+	"license_history",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		license_id: integer("license_id")
+			.notNull()
+			.references(() => licenses.id),
+		// What changed: created, plan_changed, status_changed, expiry_extended, expiry_reduced, deleted
+		change_type: varchar("change_type", { length: 50 }).notNull(),
+		// Old vs new values (JSON snapshot)
+		old_value: jsonb("old_value"),
+		new_value: jsonb("new_value"),
+		// Why it changed: purchase, renewal, refund, admin_manual, system_auto, upgrade, downgrade
+		reason: varchar("reason", { length: 50 }).notNull(),
+		// Who changed it
+		changed_by_user_id: integer("changed_by_user_id").references(() => users.id),
+		changed_by_system: boolean("changed_by_system").notNull().default(false),
+		// Link to payment (if applicable)
+		payment_transaction_id: integer("payment_transaction_id").references(
+			() => payment_transactions.id,
+		),
+		// Notes for admin/audit
+		notes: text("notes"),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+	},
+	(table) => [
+		index("license_history_license_id_idx").on(table.license_id),
+		index("license_history_change_type_idx").on(table.change_type),
+		index("license_history_reason_idx").on(table.reason),
+		index("license_history_created_at_idx").on(table.created_at),
 	],
 );
 
@@ -816,6 +860,45 @@ export const invitations = pgTable(
 );
 
 /**
+ * Payment Routing Rules table
+ * Controls dynamic provider selection based on context (country, currency, amount, etc.)
+ */
+export const payment_routing_rules = pgTable(
+	"payment_routing_rules",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		app_id: integer("app_id")
+			.notNull()
+			.references(() => apps.id, { onDelete: "cascade" }),
+
+		// Rule evaluation
+		priority: integer("priority").notNull().default(100), // Lower = higher priority
+		conditions: jsonb("conditions").notNull().default("{}"), // Empty = matches everything (catch-all)
+		provider_config_id: integer("provider_config_id")
+			.notNull()
+			.references(() => payment_provider_configs.id, { onDelete: "cascade" }),
+
+		// A/B testing support
+		traffic_percentage: integer("traffic_percentage").notNull().default(100), // 0-100
+
+		// Metadata
+		name: varchar("name", { length: 255 }),
+		description: text("description"),
+		is_active: boolean("is_active").notNull().default(true),
+
+		// Audit
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [
+		index("idx_routing_rules_app_priority").on(table.app_id, table.priority),
+		index("idx_routing_rules_provider").on(table.provider_config_id),
+		index("idx_routing_rules_app_id").on(table.app_id),
+	],
+);
+
+/**
  * Provider Usage Logs table
  * Tracks usage of OAuth and payment providers for monitoring and debugging
  */
@@ -840,5 +923,37 @@ export const provider_usage_logs = pgTable(
 		index("provider_usage_logs_created_at_idx").on(table.created_at),
 		index("provider_usage_logs_status_idx").on(table.status),
 		index("provider_usage_logs_type_operation_idx").on(table.provider_type, table.operation),
+	],
+);
+
+/**
+ * Test Sessions table
+ * Manages payment testing playground sessions for admin testing
+ */
+export const test_sessions = pgTable(
+	"test_sessions",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		admin_id: integer("admin_id")
+			.notNull()
+			.references(() => users.id),
+		provider: varchar("provider", { length: 50 }).notNull(),
+		mode: varchar("mode", { length: 20 }).notNull(), // 'simulate' | 'live'
+		status: varchar("status", { length: 20 }).notNull().default("active"), // 'active' | 'completed' | 'expired'
+		test_app_id: integer("test_app_id").references(() => apps.id, { onDelete: "cascade" }),
+		test_user_id: integer("test_user_id").references(() => users.id, { onDelete: "cascade" }),
+		plan_id: varchar("plan_id", { length: 255 }),
+		checkout_url: text("checkout_url"),
+		expires_at: timestamp("expires_at").notNull(),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [
+		index("test_sessions_admin_id_idx").on(table.admin_id),
+		index("test_sessions_provider_idx").on(table.provider),
+		index("test_sessions_status_idx").on(table.status),
+		index("test_sessions_expires_at_idx").on(table.expires_at),
+		index("test_sessions_created_at_idx").on(table.created_at),
 	],
 );

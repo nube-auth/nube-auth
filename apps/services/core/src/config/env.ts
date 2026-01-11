@@ -8,6 +8,7 @@ export interface Environment {
 	IS_DEVELOPMENT: boolean;
 	CORE_PORT: number;
 	CORE_PUBLIC_URL: string;
+	API_BASE_URL: string;
 	DATABASE_URL: string;
 	GOOGLE_CLIENT_ID: string;
 	GOOGLE_CLIENT_SECRET: string;
@@ -39,6 +40,11 @@ export interface Environment {
 	RATE_LIMIT_WINDOW_SECONDS: number;
 	MAX_EMAIL_ATTEMPTS: number;
 	MAX_OAUTH_ATTEMPTS: number;
+	// Payment provider keys (optional - for testing/integration)
+	STRIPE_SECRET_KEY?: string | undefined;
+	STRIPE_PUBLISHABLE_KEY?: string | undefined;
+	LEMONSQUEEZY_API_KEY?: string | undefined;
+	DODO_API_KEY?: string | undefined;
 }
 
 function getEnvironment(): Environment {
@@ -67,6 +73,7 @@ function getEnvironment(): Environment {
 		IS_DEVELOPMENT: nodeEnv === "development",
 		CORE_PORT: parseInt(process.env["CORE_PORT"] ?? "3003", 10),
 		CORE_PUBLIC_URL: process.env["CORE_PUBLIC_URL"]!,
+		API_BASE_URL: process.env["API_BASE_URL"] ?? (process.env["CORE_PUBLIC_URL"] || "http://localhost:3003"),
 		DATABASE_URL: process.env["DATABASE_URL"]!,
 		GOOGLE_CLIENT_ID: process.env["GOOGLE_CLIENT_ID"]!,
 		GOOGLE_CLIENT_SECRET: process.env["GOOGLE_CLIENT_SECRET"]!,
@@ -97,6 +104,11 @@ function getEnvironment(): Environment {
 		RATE_LIMIT_WINDOW_SECONDS: parseInt(process.env["RATE_LIMIT_WINDOW_SECONDS"] ?? "900", 10), // 15 minutes
 		MAX_EMAIL_ATTEMPTS: parseInt(process.env["MAX_EMAIL_ATTEMPTS"] ?? "3", 10),
 		MAX_OAUTH_ATTEMPTS: parseInt(process.env["MAX_OAUTH_ATTEMPTS"] ?? "3", 10),
+		// Payment provider keys (optional)
+		STRIPE_SECRET_KEY: process.env["STRIPE_SECRET_KEY"],
+		STRIPE_PUBLISHABLE_KEY: process.env["STRIPE_PUBLISHABLE_KEY"],
+		LEMONSQUEEZY_API_KEY: process.env["LEMONSQUEEZY_API_KEY"],
+		DODO_API_KEY: process.env["DODO_API_KEY"],
 	};
 
 	return environment;

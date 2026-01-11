@@ -23,27 +23,33 @@ export interface OAuthProfile {
 
 /**
  * Google OAuth provider
+ * Returns provider config - credentials should be passed from server-side env
  */
-export const GoogleOAuth: OAuthProvider = {
-	name: "google",
-	clientId: process.env['GOOGLE_CLIENT_ID'] || "",
-	clientSecret: process.env['GOOGLE_CLIENT_SECRET'] || "",
-	authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
-	tokenEndpoint: "https://oauth2.googleapis.com/token",
-	userInfoEndpoint: "https://openidconnect.googleapis.com/v1/userinfo",
-};
+export function createGoogleOAuth(clientId: string, clientSecret: string): OAuthProvider {
+	return {
+		name: "google",
+		clientId,
+		clientSecret,
+		authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+		tokenEndpoint: "https://oauth2.googleapis.com/token",
+		userInfoEndpoint: "https://openidconnect.googleapis.com/v1/userinfo",
+	};
+}
 
 /**
  * GitHub OAuth provider
+ * Returns provider config - credentials should be passed from server-side env
  */
-export const GitHubOAuth: OAuthProvider = {
-	name: "github",
-	clientId: process.env['GITHUB_CLIENT_ID'] || "",
-	clientSecret: process.env['GITHUB_CLIENT_SECRET'] || "",
-	authorizationEndpoint: "https://github.com/login/oauth/authorize",
-	tokenEndpoint: "https://github.com/login/oauth/access_token",
-	userInfoEndpoint: "https://api.github.com/user",
-};
+export function createGitHubOAuth(clientId: string, clientSecret: string): OAuthProvider {
+	return {
+		name: "github",
+		clientId,
+		clientSecret,
+		authorizationEndpoint: "https://github.com/login/oauth/authorize",
+		tokenEndpoint: "https://github.com/login/oauth/access_token",
+		userInfoEndpoint: "https://api.github.com/user",
+	};
+}
 
 /**
  * Build OAuth authorization URL

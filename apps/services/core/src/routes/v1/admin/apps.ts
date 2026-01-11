@@ -75,26 +75,14 @@ appsRouter.get("/:projectId/apps/:appId/provider-selection", async (c: Context) 
 			}
 		}
 
-		if (!app.selected_payment_provider_id) {
-			return c.json({ selected: null });
-		}
-
-		const config = await paymentProviderConfigQueries.findById(db, app.selected_payment_provider_id);
-		if (!config) {
-			// Config might have been deleted; clear the reference for consistency
-			await appQueries.update(db, app.id, { selected_payment_provider_id: null });
-			return c.json({ selected: null });
-		}
-
+		// selected_payment_provider_id removed - use /v1/admin/routing-rules/:appId
 		return c.json({
-			selected: {
-				id: config.public_id,
-				provider: config.provider,
-				environment: config.environment,
-				isActive: config.is_active,
-				isDefault: config.is_default,
+			error: "This endpoint is deprecated. Use /v1/admin/routing-rules/:appId instead",
+			migration: {
+				oldEndpoint: "/v1/admin/apps/:appId/provider-selection",
+				newEndpoint: "/v1/admin/routing-rules/:appId",
 			},
-		});
+		}, 410);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get app provider selection error");
 		return c.json({ error: "Failed to get app provider selection" }, 500);
@@ -108,83 +96,18 @@ appsRouter.get("/:projectId/apps/:appId/provider-selection", async (c: Context) 
  */
 appsRouter.patch("/:projectId/apps/:appId/provider-selection", async (c: Context) => {
 	try {
-		const projectId = c.req.param("projectId");
-		const appId = c.req.param("appId");
-		const { paymentConfigId } = (await c.req.json()) as { paymentConfigId?: string | null };
-
-		if (!appId || !idPatterns.app.test(appId)) {
-			return c.json({ error: "Invalid appId" }, 400);
-		}
-
-		const userId = c.req.header("X-User-Id");
-		if (!userId) {
-			return c.json({ error: "Unauthorized" }, 401);
-		}
-
-		const db = getDb();
-
-		const app = await appQueries.findByPublicId(db, appId);
-		if (!app) {
-			return c.json({ error: "App not found" }, 404);
-		}
-
-		// Verify app belongs to project if projectId provided
-		let project = null as Awaited<ReturnType<typeof projectQueries.findByPublicId>> | null;
-		if (projectId) {
-			project = await projectQueries.findByPublicId(db, projectId);
-			if (!project || app.project_id !== project.id) {
-				return c.json({ error: "App not found in this project" }, 404);
-			}
-		} else {
-			project = await projectQueries.findById(db, app.project_id);
-		}
-
-		// Check authorization
-		const user = await userQueries.findByPublicId(db, userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
-		if (project) {
-			const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
-			const userMember = member?.[0];
-			if (!userMember || (userMember.role !== "owner" && userMember.role !== "admin")) {
-				return c.json({ error: "Forbidden" }, 403);
-			}
-		}
-
-		// Clear selection
-		if (!paymentConfigId) {
-			const updated = await appQueries.update(db, app.id, { selected_payment_provider_id: null });
-			return c.json({
-				id: updated.public_id,
-				selected: null,
-			});
-		}
-
-		// Set selection: validate config belongs to same project
-		const configByPublic = await paymentProviderConfigQueries.findByPublicId(db, paymentConfigId);
-		if (!configByPublic) {
-			return c.json({ error: "Payment provider config not found" }, 404);
-		}
-		if (configByPublic.project_id !== app.project_id) {
-			return c.json({ error: "Provider config does not belong to the app's project" }, 400);
-		}
-
-		const updated = await appQueries.update(db, app.id, {
-			selected_payment_provider_id: configByPublic.id,
-		});
-
-		return c.json({
-			id: updated.public_id,
-			selected: {
-				id: configByPublic.public_id,
-				provider: configByPublic.provider,
-				environment: configByPublic.environment,
+		return c.json(
+			{
+				error: "This endpoint is deprecated. Use POST /v1/admin/routing-rules/:appId to create routing rules.",
+				deprecated: true,
+				newEndpoint: "/v1/admin/routing-rules/:appId",
+				help: "Create a routing rule with empty conditions {} for catch-all behavior (equivalent to selected provider).",
 			},
-		});
+			410,
+		); // 410 Gone
 	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "Set app provider selection error");
-		return c.json({ error: "Failed to set app provider selection" }, 500);
+		log.error({ err: serializeError(error as Error) }, "Deprecated endpoint called");
+		return c.json({ error: "Endpoint deprecated" }, 410);
 	}
 });
 
@@ -297,7 +220,7 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 				cacheTtlMinutes: securitySettings?.cacheTtlMinutes || 60,
 				rateLimit: securitySettings?.rateLimit || 100,
 				enabledProviders: newApp.enabled_providers || [],
-				selectedPaymentProviderId: newApp.selected_payment_provider_id,
+				// selectedPaymentProviderId removed - use /v1/admin/routing-rules/:appId
 				createdAt: new Date(newApp.created_at).toISOString(),
 				updatedAt: new Date(newApp.updated_at).toISOString(),
 			},
@@ -363,7 +286,7 @@ appsRouter.get("/:projectId/apps/:appId", async (c: Context) => {
 			cacheTtlMinutes: securitySettings?.cacheTtlMinutes || 60,
 			rateLimit: securitySettings?.rateLimit || 100,
 			enabledProviders: app.enabled_providers || [],
-			selectedPaymentProviderId: app.selected_payment_provider_id,
+			// selectedPaymentProviderId removed - use /v1/admin/routing-rules/:appId
 			createdAt: new Date(app.created_at).toISOString(),
 			updatedAt: new Date(app.updated_at).toISOString(),
 		});
@@ -468,7 +391,7 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 			cacheTtlMinutes: securitySettings?.cacheTtlMinutes || 60,
 			rateLimit: securitySettings?.rateLimit || 100,
 			enabledProviders: updated.enabled_providers || [],
-			selectedPaymentProviderId: updated.selected_payment_provider_id,
+			// selectedPaymentProviderId removed - use /v1/admin/routing-rules/:appId
 			createdAt: new Date(updated.created_at).toISOString(),
 			updatedAt: new Date(updated.updated_at).toISOString(),
 		});
@@ -587,7 +510,7 @@ appsRouter.get("/:projectId/apps/:appId/users", async (c: Context) => {
 					email: user.primary_email,
 					avatarUrl: user.avatar_url || null,
 					primaryEmailVerified: user.primary_email_verified,
-					plan: license.plan_slug || "unknown",
+				plan: "unknown", // plan_slug field removed from schema
 					status: license.status,
 					createdAt: Math.floor(new Date(user.created_at).getTime() / 1000),
 					licenseValidUntil: license.valid_until ? Math.floor(new Date(license.valid_until).getTime() / 1000) : null,

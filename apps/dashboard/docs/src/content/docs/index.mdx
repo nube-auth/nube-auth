@@ -43,30 +43,41 @@ Proofa has achieved an **A+ security rating** through comprehensive security mea
 
 ## ⚡ Quick Start
 
-Get up and running in 5 minutes:
+Integrate Proofa authentication into your app in 5 minutes:
 
 ```bash
-# Clone and install
-git clone https://github.com/yourorg/proofa-core.git
-cd proofa-core
-pnpm install
+# 1. Install the SDK
+npm install @proofa/client @proofa/react
 
-# Start infrastructure
-docker-compose up -d postgres redis
-
-# Setup environment
-cp .env.example .env
-cp .env.local.example .env.local
-# Edit .env.local with your configuration
-
-# Run migrations
-pnpm db:migrate
-
-# Start development
-pnpm dev
+# 2. Get your credentials from admin.proofa.com
+# - Create a project
+# - Add an app
+# - Copy your App ID
 ```
 
-Visit [Quick Start Guide](/getting-started/quickstart) for detailed instructions.
+```tsx
+// 3. Add to your React app
+import { ProofaProvider, useProofa } from '@proofa/react';
+
+function App() {
+  return (
+    <ProofaProvider
+      appId="APP0abc123..."
+      gatewayUrl="https://api.proofa.sh"
+    >
+      <YourApp />
+    </ProofaProvider>
+  );
+}
+
+// 4. Use authentication
+function LoginButton() {
+  const { login } = useProofa();
+  return <button onClick={() => login({ provider: 'google' })}>Login</button>;
+}
+```
+
+Visit [Integration Quick Start](/integration/quickstart) for detailed instructions.
 
 ## 🔒 Security Features
 
@@ -202,35 +213,31 @@ proofa-core/
   </Card>
 </CardGrid>
 
-## 🚀 Deployment
+## 🚀 Get Started
 
-### Docker
+### For Developers (Integrate Proofa)
 
-```bash
-docker-compose build
-docker-compose up -d
-```
+1. **Sign up** at [admin.proofa.com](https://admin.proofa.com)
+2. **Create a project** and add your app
+3. **Configure OAuth** providers (Google, GitHub)
+4. **Install SDK** in your application
+5. **Start authenticating** users
 
-### Vercel/Fly.io
+[Integration Guide →](/integration/quickstart)
 
-```bash
-# Deploy gateway
-fly deploy --config apps/gateway/fly.toml
+### For Self-Hosting (Advanced)
 
-# Deploy admin dashboard
-vercel --prod apps/dashboard/admin
-```
+Want to run Proofa on your own infrastructure? See our [Self-Hosting Guide](/self-hosting/docker) for Docker and Kubernetes deployment.
 
-[Full deployment guide →](/self-hosting/docker)
+## 🤝 Support & Community
 
-## 🤝 Contributing
+Need help integrating Proofa?
 
-We welcome contributions! Check out our [GitHub repository](https://github.com/yourorg/proofa-core) to get started.
-
-## 📝 License
-
-MIT License - see [LICENSE](https://github.com/yourorg/proofa-core/blob/main/LICENSE) for details.
+- 📧 **Email**: support@proofa.io
+- 📖 **Documentation**: You're here!
+- 💬 **GitHub Issues**: [Report bugs or request features](https://github.com/0xdps/proofa-core/issues)
+- 🌟 **Star us on GitHub**: [github.com/0xdps/proofa-core](https://github.com/0xdps/proofa-core)
 
 ---
 
-**Ready to get started?** [Follow the Quick Start Guide →](/getting-started/quickstart)
+**Ready to integrate Proofa?** [Start with the Integration Guide →](/integration/quickstart)

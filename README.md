@@ -51,7 +51,7 @@ Proofa is a comprehensive authentication and licensing platform that provides se
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        Frontend Layer                        │
+│                        Frontend Layer                       │
 ├──────────────┬──────────────┬──────────────┬────────────────┤
 │ Admin        │ User         │ Marketing    │ Documentation  │
 │ Dashboard    │ Dashboard    │ Website      │ Site           │
@@ -60,11 +60,11 @@ Proofa is a comprehensive authentication and licensing platform that provides se
                        │                │
                        ▼                ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                      Gateway Layer                           │
+│                      Gateway Layer                          │
 ├─────────────────────────────────────────────────────────────┤
-│  • Rate Limiting          • Session Management               │
-│  • CSRF Protection        • Request Routing                  │
-│  • Security Headers       • Audit Logging                    │
+│  • Rate Limiting          • Session Management              │
+│  • CSRF Protection        • Request Routing                 │
+│  • Security Headers       • Audit Logging                   │
 └──────────────┬──────────────┬──────────────┬────────────────┘
                │              │              │
                ▼              ▼              ▼
@@ -77,7 +77,7 @@ Proofa is a comprehensive authentication and licensing platform that provides se
                                │
                                ▼
          ┌──────────────────────────────────────────┐
-         │         Data & Cache Layer                │
+         │         Data & Cache Layer               │
          ├──────────────────┬───────────────────────┤
          │   PostgreSQL     │        Redis          │
          │   (Primary DB)   │   (Cache/Sessions)    │
