@@ -1,7 +1,8 @@
-import { appQueries, getDb, projectMemberQueries, projectQueries, userQueries, paymentProviderConfigQueries } from "@proofa/db";
+import { appQueries, getDb, projectMemberQueries, projectQueries, userQueries, paymentProviderConfigQueries, licenseQueries } from "@proofa/db";
 import { createId, createLogger, idPatterns, serializeError } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
+import { randomBytes } from "crypto";
 
 const log = createLogger("admin-apps-routes");
 
@@ -235,7 +236,7 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 		}
 
 		// Create app
-		const clientSecret = require("crypto").randomBytes(32).toString("hex");
+		const clientSecret = randomBytes(32).toString("hex");
 		const newApp = await appQueries.create(db, {
 			public_id: createId("app"),
 			project_id: project.id,
@@ -258,13 +259,28 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 			is_active: true,
 		});
 
+		// Extract JSONB fields
+		const securitySettings = newApp.security_settings as any;
+		const appTokens = newApp.app_tokens as any;
+
 		return c.json(
 			{
 				id: newApp.public_id,
+				projectId: project.public_id,
 				name: newApp.name,
 				slug: newApp.slug,
 				description: newApp.description,
+				redirectUris: securitySettings?.redirectUris || [],
+				allowedHosts: securitySettings?.allowedHosts || [],
+				corsOrigins: securitySettings?.corsOrigins || [],
+				clientSecret: appTokens?.clientSecret || "***",
+				serviceToken: appTokens?.serviceToken || "***",
+				sessionTtlDays: securitySettings?.sessionTtlDays || 28,
+				accountLockoutMinutes: securitySettings?.accountLockoutMinutes || 30,
+				cacheTtlMinutes: securitySettings?.cacheTtlMinutes || 60,
+				rateLimit: securitySettings?.rateLimit || 100,
 				enabledProviders: newApp.enabled_providers || [],
+				selectedPaymentProviderId: newApp.selected_payment_provider_id,
 				createdAt: new Date(newApp.created_at).toISOString(),
 				updatedAt: new Date(newApp.updated_at).toISOString(),
 			},
@@ -304,12 +320,33 @@ appsRouter.get("/:projectId/apps/:appId", async (c: Context) => {
 			}
 		}
 
+		// Get project for response
+		const project = await projectQueries.findById(db, app.project_id);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		// Extract JSONB fields
+		const securitySettings = app.security_settings as any;
+		const appTokens = app.app_tokens as any;
+
 		return c.json({
 			id: app.public_id,
+			projectId: project.public_id,
 			name: app.name,
 			slug: app.slug,
 			description: app.description,
+			redirectUris: securitySettings?.redirectUris || [],
+			allowedHosts: securitySettings?.allowedHosts || [],
+			corsOrigins: securitySettings?.corsOrigins || [],
+			clientSecret: appTokens?.clientSecret || "***",
+			serviceToken: appTokens?.serviceToken || "***",
+			sessionTtlDays: securitySettings?.sessionTtlDays || 28,
+			accountLockoutMinutes: securitySettings?.accountLockoutMinutes || 30,
+			cacheTtlMinutes: securitySettings?.cacheTtlMinutes || 60,
+			rateLimit: securitySettings?.rateLimit || 100,
 			enabledProviders: app.enabled_providers || [],
+			selectedPaymentProviderId: app.selected_payment_provider_id,
 			createdAt: new Date(app.created_at).toISOString(),
 			updatedAt: new Date(app.updated_at).toISOString(),
 		});
@@ -388,12 +425,33 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 			return c.json({ error: "App not found" }, 404);
 		}
 
+		// Get project for response
+		const projectForResponse = await projectQueries.findById(db, updated.project_id);
+		if (!projectForResponse) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		// Extract JSONB fields
+		const securitySettings = updated.security_settings as any;
+		const appTokens = updated.app_tokens as any;
+
 		return c.json({
 			id: updated.public_id,
+			projectId: projectForResponse.public_id,
 			name: updated.name,
 			slug: updated.slug,
 			description: updated.description,
+			redirectUris: securitySettings?.redirectUris || [],
+			allowedHosts: securitySettings?.allowedHosts || [],
+			corsOrigins: securitySettings?.corsOrigins || [],
+			clientSecret: appTokens?.clientSecret || "***",
+			serviceToken: appTokens?.serviceToken || "***",
+			sessionTtlDays: securitySettings?.sessionTtlDays || 28,
+			accountLockoutMinutes: securitySettings?.accountLockoutMinutes || 30,
+			cacheTtlMinutes: securitySettings?.cacheTtlMinutes || 60,
+			rateLimit: securitySettings?.rateLimit || 100,
 			enabledProviders: updated.enabled_providers || [],
+			selectedPaymentProviderId: updated.selected_payment_provider_id,
 			createdAt: new Date(updated.created_at).toISOString(),
 			updatedAt: new Date(updated.updated_at).toISOString(),
 		});
@@ -466,5 +524,69 @@ appsRouter.delete("/:projectId/apps/:appId", async (c: Context) => {
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Delete app error");
 		return c.json({ error: "Failed to delete app" }, 500);
+	}
+});
+
+/**
+ * GET /:projectId/apps/:appId/users
+ * List users of an app (via licenses)
+ */
+appsRouter.get("/:projectId/apps/:appId/users", async (c: Context) => {
+	try {
+		const projectId = c.req.param("projectId");
+		const appId = c.req.param("appId");
+
+		if (!appId || !idPatterns.app.test(appId)) {
+			return c.json({ error: "Invalid appId" }, 400);
+		}
+
+		const db = getDb();
+
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		// Verify app belongs to project if projectId provided
+		if (projectId) {
+			const project = await projectQueries.findByPublicId(db, projectId);
+			if (!project || app.project_id !== project.id) {
+				return c.json({ error: "App not found in this project" }, 404);
+			}
+		}
+
+		// Get all licenses for this app
+		const appLicenses = await licenseQueries.findByAppId(db, app.id);
+
+		// Get user details for each license
+		const usersList = await Promise.all(
+			appLicenses.map(async (license) => {
+				const user = await userQueries.findById(db, license.user_id);
+				if (!user) return null;
+
+				return {
+					id: user.public_id,
+					name: user.name || null,
+					email: user.primary_email,
+					avatarUrl: user.avatar_url || null,
+					primaryEmailVerified: user.primary_email_verified,
+					plan: license.plan_slug || "unknown",
+					status: license.status,
+					createdAt: Math.floor(new Date(user.created_at).getTime() / 1000),
+					licenseValidUntil: license.valid_until ? Math.floor(new Date(license.valid_until).getTime() / 1000) : null,
+				};
+			})
+		);
+
+		// Filter out null entries
+		const validUsers = usersList.filter(user => user !== null);
+
+		return c.json({
+			users: validUsers,
+			total: validUsers.length,
+		});
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Get app users error");
+		return c.json({ error: "Failed to get app users" }, 500);
 	}
 });
