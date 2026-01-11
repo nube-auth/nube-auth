@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { InviteTeamMemberModal } from "../components/InviteTeamMemberModal";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
+import { pingpong } from "../lib/pingpong";
 import {
 	useCancelInvitation,
 	useProject,
@@ -21,6 +23,22 @@ export function ProjectTeamPage() {
 	const updateMemberMutation = useUpdateTeamMember(projectId || "");
 	const removeMemberMutation = useRemoveTeamMember(projectId || "");
 	const cancelInvitationMutation = useCancelInvitation(projectId || "");
+
+	// Get current user info
+	const { data: currentUser } = useQuery({
+		queryKey: ["admin", "me"],
+		queryFn: async () => {
+			const gatewayUrl = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
+			const res = await pingpong(`${gatewayUrl}/v1/admin/me`, { credentials: "include" });
+			if (!res.ok) throw new Error("Unauthorized");
+			return res.json() as Promise<{ id: string; email?: string; name?: string }>;
+		},
+	});
+
+	// Find current user's role in this project
+	const currentUserMember = members?.find((m) => m.userId === currentUser?.id);
+	const currentUserRole = currentUserMember?.role;
+	const canManageMembers = currentUserRole === "owner" || currentUserRole === "admin";
 
 	const [showInviteModal, setShowInviteModal] = useState(false);
 	const [editingMember, setEditingMember] = useState<{ id: string; currentRole: string } | null>(null);
@@ -80,9 +98,11 @@ export function ProjectTeamPage() {
 						Manage team members and their roles for {project.name}
 					</p>
 				</div>
-				<button type="button" className="btn btn-primary" onClick={() => setShowInviteModal(true)}>
-					+ Invite Member
-				</button>
+				{canManageMembers && (
+					<button type="button" className="btn btn-primary" onClick={() => setShowInviteModal(true)}>
+						+ Invite Member
+					</button>
+				)}
 			</div>
 
 			{/* Team Members Table */}
@@ -204,7 +224,18 @@ export function ProjectTeamPage() {
 									</td>
 									<td style={{ padding: "14px 16px", textAlign: "right" }}>
 										<div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
-											{member.role !== "owner" && (
+											{member.role === "owner" && (
+												<span
+													style={{
+														fontSize: "13px",
+														color: "var(--text-tertiary)",
+														fontStyle: "italic",
+													}}
+												>
+													Project Owner
+												</span>
+											)}
+											{member.role !== "owner" && canManageMembers && (
 												<>
 													<button
 														type="button"
@@ -241,7 +272,7 @@ export function ProjectTeamPage() {
 													</button>
 												</>
 											)}
-											{member.role === "owner" && (
+											{member.role !== "owner" && !canManageMembers && (
 												<span
 													style={{
 														fontSize: "13px",
@@ -249,7 +280,7 @@ export function ProjectTeamPage() {
 														fontStyle: "italic",
 													}}
 												>
-													Owner
+													{member.userId === currentUser?.id ? "You" : "Team Member"}
 												</span>
 											)}
 										</div>

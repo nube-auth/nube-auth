@@ -21,6 +21,7 @@ export interface Environment {
 	SEND_EMAILS: boolean;
 	PAYMENT_CONFIGS_KEY: string;
 	EMAIL_FROM: string;
+	ADMIN_DASHBOARD_URL: string;
 	// SMTP for local email testing (auto-enabled in development)
 	SMTP_HOST: string;
 	SMTP_PORT: number;
@@ -78,6 +79,7 @@ function getEnvironment(): Environment {
 		RESEND_API_KEY: process.env["RESEND_API_KEY"]!,
 		SEND_EMAILS: process.env["SEND_EMAILS"] === "true",
 		EMAIL_FROM: process.env["EMAIL_FROM"] ?? "noreply@proofa.sh",
+		ADMIN_DASHBOARD_URL: process.env["ADMIN_DASHBOARD_URL"] ?? "http://localhost:5174",
 		PAYMENT_CONFIGS_KEY: process.env["PAYMENT_CONFIGS_KEY"]!,
 		SMTP_HOST: process.env["SMTP_HOST"] ?? "localhost",
 		SMTP_PORT: parseInt(process.env["SMTP_PORT"] ?? "1025", 10),

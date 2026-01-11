@@ -87,7 +87,7 @@
 ### Backend
 - **Runtime**: Node.js v18+ + TypeScript
 - **Framework**: Hono
-- **Database**: Turso (SQLite/libSQL)
+- **Database**: PostgreSQL (Neon/Supabase/self-hosted)
 - **ORM**: Drizzle
 - **Cache/KV**: Upstash Redis
 - **Email**: Resend (abstracted interface, swappable with Postmark later)
@@ -148,9 +148,9 @@ proofa/
 ### Global Conventions
 
 Every table includes:
-- `id` (auto-increment integer, internal only)
+- `id` (auto-increment integer/serial, internal only)
 - `public_id` (nanoid-based string, externally exposed)
-- `created_at`, `updated_at` (SQLite integers: seconds since epoch)
+- `created_at`, `updated_at` (PostgreSQL timestamps with defaultNow())
 
 Foreign keys reference internal `id`. Public IDs are for API responses and logging.
 
@@ -190,15 +190,19 @@ Foreign keys reference internal `id`. Public IDs are for API responses and loggi
 | Column | Type | Nullable | Constraints | Notes |
 |--------|------|----------|-------------|-------|
 | `id` | INTEGER | NO | PK | Internal only |
-| `public_id` | TEXT | NO | UNIQUE | Externally exposed (S0xxx format) |
+| `public_id` | TEXT | NO | UNIQUE | Externally exposed (SES0xxx format) |
 | `user_id` | INTEGER | NO | FK → users.id | |
-| `audience` | TEXT | NO | DEFAULT 'user' | Enum: 'user' or 'admin' (determines TTL) |
+| `app_id` | INTEGER | YES | FK → apps.id | Optional app context |
 | `created_at` | INTEGER | NO | | Epoch seconds |
 | `last_seen_at` | INTEGER | NO | | Updated on each activity |
 | `expires_at` | INTEGER | NO | | Expiry time (epoch seconds) |
 | `revoked_at` | INTEGER | YES | | NULL = active; set on logout |
 
 **TTL**: 365 days rolling (user sessions), 2 hours + 15-min inactivity (admin sessions) (see §9.1)
+
+**Session Type Identification**: Session type is determined by **cookie name**, not a database field:
+- `proofa_user_session` → User session (365 days rolling)
+- `proofa_admin_session` → Admin session (2hr absolute + 15min inactivity)
 
 **Session Metadata** (stored in Redis):
 - `sessionType`: "admin" or "user" (determines TTL enforcement)
@@ -406,22 +410,6 @@ await db.update(apps)
 | `updated_at` | INTEGER | NO | | Epoch seconds |
 
 **Constraints**: `UNIQUE(user_id, app_id)` — One license per user per app
-
-#### `email_verifications` (Phase 2 - Q2 2026)
-
-| Column | Type | Nullable | Constraints | Notes |
-|--------|------|----------|-------------|-------|
-| `id` | INTEGER | NO | PK | Internal only |
-| `public_id` | TEXT | NO | UNIQUE | Externally exposed (E0xxx format) |
-| `email` | TEXT | NO | | Email being verified |
-| `otp_hash` | TEXT | NO | | Hashed OTP (bcrypt) |
-| `attempts` | INTEGER | NO | DEFAULT 0 | Track failed OTP verify attempts |
-| `expires_at` | INTEGER | NO | | TTL 10 min from created_at |
-| `locked_until` | INTEGER | YES | | Lockout expiry (3 failed attempts = 30 min lockout) |
-| `consumed_at` | INTEGER | YES | | NULL = unused; set on verify |
-| `created_at` | INTEGER | NO | | Epoch seconds |
-
-**TTL**: 10 minutes (consumed on successful verify)
 
 #### `audit_logs`
 
@@ -717,43 +705,44 @@ await db.update(apps)
 
 ### Format
 
-`[EntityLetter][VariantDigit][nanoid(9-12 chars)]`
+`[3-letter prefix][0][nanoid(9-15 chars)]`
 
-**Total length**: 11–14 characters (compact, URL-friendly)
+**Total length**: 13–19 characters (descriptive, URL-friendly)
 
 | Entity | Prefix | Example | Length | Notes |
 |--------|--------|---------|--------|-------|
-| User | U0 | U0sFFDmgde | 11 | 9-char random |
-| Project | P0 | P0kMn7pQx2 | 11 | 9-char random |
-| App | A0 | A0aC7mK9pN | 11 | 9-char random |
-| License | L0 | L0kN2m7PqC | 11 | 9-char random |
-| Identity | I0 | I0aC9mKpNx | 11 | 9-char random |
-| Project Member | M0 | M0kN7pQmCa | 11 | 9-char random |
-| Project Invitation | PI0 | PI0mK9pNqX | 12 | 9-char random |
-| Email Verification | E0 | E0mK9pNqXc | 11 | 9-char random |
-| Session | S0 | S0mK9pQxCa | 13 | 11-char random (higher entropy) |
-| Auth Code | C0 | C0pN7mKqXc9A | 14 | 12-char random (security-critical) |
-| Audit Log | AL0 | AL0mK9pNqXc | 12 | 9-char random |
-| Plan | PL0 | PL0mK9pNqX | 12 | 9-char random |
-| Payment Provider Config | PC0 | PC0mK9pNqX | 12 | 9-char random |
-| Plan Provider Price | PP0 | PP0mK9pNqX | 12 | 9-char random |
-| Purchase | PU0 | PU0mK9pNqX | 12 | 9-char random |
-| Promotion | PR0 | PR0mK9pNqX | 12 | 9-char random |
-| Promotion Code | PM0 | PM0mK9pNqX | 12 | 9-char random |
-| Promotion Redemption | RD0 | RD0mK9pNqX | 12 | 9-char random |
-| Payment Transaction | TX0 | TX0mK9pNqX | 12 | 9-char random |
-| Subscription | SB0 | SB0mK9pNqX | 12 | 9-char random |
-| Webhook Log | WH0 | WH0mK9pNqX | 12 | 9-char random |
-| Provider Usage Log | PV0 | PV0mK9pNqX | 12 | 9-char random |
-| Invitation | IN0 | IN0mK9pNqX | 12 | 9-char random |
+| User | USR0 | USR0xY7mK9pQz | 13 | 9-char random |
+| Project | PRJ0 | PRJ0kMn7pQx2t | 13 | 9-char random |
+| App | APP0 | APP0aC7mK9pNx | 13 | 9-char random |
+| License | LIC0 | LIC0kN2m7PqCa | 13 | 9-char random |
+| Identity | IDN0 | IDN0aC9mKpNxy | 13 | 9-char random |
+| Project Member | MEM0 | MEM0kN7pQmCab | 13 | 9-char random |
+| Project Invitation | INV0 | INV0mK9pNqXcd | 13 | 9-char random |
+| Email Verification | EML0 | EML0mK9pNqXce | 13 | 9-char random |
+| Session | SES0 | SES0abc123xyz456789 | 19 | 15-char random (higher entropy) |
+| Auth Code | AUT0 | AUT0pN7mKqXcf | 13 | 9-char random |
+| Audit Log | AUD0 | AUD0mK9pNqXcg | 13 | 9-char random |
+| Plan | PLN0 | PLN0mK9pNqXch | 13 | 9-char random |
+| Payment Config | CFG0 | CFG0mK9pNqXci | 13 | 9-char random |
+| Plan Provider Price | PPR0 | PPR0mK9pNqXcj | 13 | 9-char random |
+| Purchase | PUR0 | PUR0mK9pNqXck | 13 | 9-char random |
+| Promotion | PRM0 | PRM0mK9pNqXcl | 13 | 9-char random |
+| Promotion Code | PMC0 | PMC0mK9pNqXcm | 13 | 9-char random |
+| Promotion Redemption | RDM0 | RDM0mK9pNqXcn | 13 | 9-char random |
+| Payment Transaction | TXN0 | TXN0mK9pNqXco | 13 | 9-char random |
+| Subscription | SUB0 | SUB0mK9pNqXcp | 13 | 9-char random |
+| Webhook Log | WHK0 | WHK0mK9pNqXcq | 13 | 9-char random |
+| Provider Usage Log | PUL0 | PUL0mK9pNqXcr | 13 | 9-char random |
+| Invitation | INV0 | INV0mK9pNqXcs | 13 | 9-char random |
 
 ### Rationale
 
-**Why letter + digit (vs letter only)?**
-- Avoids ambiguity: `P0kMn7...` is clearly a Project, not random chars starting with P
-- Letter + digit pattern can't naturally occur in the random part
-- Future-proof: Digit 0-9 reserves variants (e.g., U0 = user, U1 = service account)
-- Still compact: 11 chars vs 15+ with underscores
+**Why 3-letter + 0 (vs 1-letter + digit)?**
+- **Descriptive**: `USR0` is immediately recognizable as a User ID
+- **Scannable**: Easy to identify entity type at a glance in logs/debugging
+- **Unambiguous**: 3-letter prefix can't occur naturally in nanoid random portion
+- **Future-proof**: Digit 0-9 reserves variants (e.g., USR0 = regular user, USR1 = service account)
+- **Still compact**: 13 chars for standard entities, 19 for sessions (acceptable tradeoff for clarity)
 
 **Alphabet (56 characters)**:
 ```
@@ -766,65 +755,67 @@ Excludes: i, I, l, L, o, O (confusing in readability)
 Location: `packages/shared/src/id.ts`
 
 ```typescript
-import { nanoid } from 'nanoid';
+import { customAlphabet } from 'nanoid';
 
 const ALPHABET = '0123456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ';
 
-export const idGenerators = {
-  user: () => `U0${nanoid(9, ALPHABET)}`,
-  project: () => `P0${nanoid(9, ALPHABET)}`,
-  app: () => `A0${nanoid(9, ALPHABET)}`,
-  license: () => `L0${nanoid(9, ALPHABET)}`,
-  identity: () => `I0${nanoid(9, ALPHABET)}`,
-  projectMember: () => `M0${nanoid(9, ALPHABET)}`,
-  projectInvitation: () => `PI0${nanoid(9, ALPHABET)}`,
-  emailVerification: () => `E0${nanoid(9, ALPHABET)}`,
-  session: () => `S0${nanoid(11, ALPHABET)}`,
-  authCode: () => `C0${nanoid(12, ALPHABET)}`,
-  auditLog: () => `AL0${nanoid(9, ALPHABET)}`,
-  plan: () => `PL0${nanoid(9, ALPHABET)}`,
-  paymentProviderConfig: () => `PC0${nanoid(9, ALPHABET)}`,
-  planProviderPrice: () => `PP0${nanoid(9, ALPHABET)}`,
-  purchase: () => `PU0${nanoid(9, ALPHABET)}`,
-  promotion: () => `PR0${nanoid(9, ALPHABET)}`,
-  promotionCode: () => `PM0${nanoid(9, ALPHABET)}`,
-  promotionRedemption: () => `RD0${nanoid(9, ALPHABET)}`,
-  paymentTransaction: () => `TX0${nanoid(9, ALPHABET)}`,
-  subscription: () => `SB0${nanoid(9, ALPHABET)}`,
-  webhookLog: () => `WH0${nanoid(9, ALPHABET)}`,
-  providerUsageLog: () => `PV0${nanoid(9, ALPHABET)}`,
-  invitation: () => `IN0${nanoid(9, ALPHABET)}`,
-};
+// Create nanoid generators with specific lengths
+const nano9 = customAlphabet(ALPHABET, 9);  // Standard IDs (13 chars total)
+const nano15 = customAlphabet(ALPHABET, 15); // Sessions (19 chars total)
+
+export const id = {
+  user: () => `USR0${nano9()}`,
+  project: () => `PRJ0${nano9()}`,
+  app: () => `APP0${nano9()}`,
+  license: () => `LIC0${nano9()}`,
+  identity: () => `IDN0${nano9()}`,
+  projectMember: () => `MEM0${nano9()}`,
+  projectInvitation: () => `INV0${nano9()}`,
+  emailVerification: () => `EML0${nano9()}`,
+  session: () => `SES0${nano15()}`,
+  authCode: () => `AUT0${nano9()}`,
+  auditLog: () => `AUD0${nano9()}`,
+  plan: () => `PLN0${nano9()}`,
+  paymentConfig: () => `CFG0${nano9()}`,
+  planProviderPrice: () => `PPR0${nano9()}`,
+  purchase: () => `PUR0${nano9()}`,
+  promotion: () => `PRM0${nano9()}`,
+  promotionCode: () => `PMC0${nano9()}`,
+  promotionRedemption: () => `RDM0${nano9()}`,
+  paymentTransaction: () => `TXN0${nano9()}`,
+  subscription: () => `SUB0${nano9()}`,
+  webhookLog: () => `WHK0${nano9()}`,
+  providerUsageLog: () => `PUL0${nano9()}`,
+  invitation: () => `INV0${nano9()}`,
+} as const;
 
 // Validation regex (per-entity)
 export const idPatterns = {
-  user: /^U0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
-  project: /^P0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
-  app: /^A0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
-  license: /^L0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
-  session: /^S0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{11}$/,
-  authCode: /^C0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{12}$/,
-  plan: /^PL0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
-  paymentProviderConfig: /^PC0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
-  planProviderPrice: /^PP0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
-  purchase: /^PU0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
-  promotion: /^PR0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
-  promotionCode: /^PM0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
-  paymentTransaction: /^TX0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
-  subscription: /^SB0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
-  webhookLog: /^WH0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
-  invitation: /^IN0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
-};
+  user: /^USR0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  project: /^PRJ0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  app: /^APP0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  license: /^LIC0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  identity: /^IDN0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  projectMember: /^MEM0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  session: /^SES0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{15}$/,
+  authCode: /^AUT0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  emailVerification: /^EML0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  auditLog: /^AUD0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  plan: /^PLN0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  paymentConfig: /^CFG0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+  invitation: /^INV0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+} as const;
 ```
 
 ### Benefits
 
-- ✅ **Compact**: 11 chars vs 22+ (50% shorter)
-- ✅ **Unambiguous**: Letter + digit prefix can't occur naturally
-- ✅ **URL-friendly**: Clean URLs (`/projects/P0kMn7pQx2`)
-- ✅ **Scannable**: Easy to grep logs (`grep "^U0"`)
-- ✅ **Future-proof**: Digit 0-9 allows entity variants
+- ✅ **Descriptive**: 3-letter prefix immediately identifies entity type
+- ✅ **Unambiguous**: `USR0`, `PRJ0`, `APP0` can't occur naturally in random portion
+- ✅ **URL-friendly**: Clean URLs (`/projects/PRJ0kMn7pQx2t`)
+- ✅ **Scannable**: Easy to grep logs (`grep "^USR0"`, `grep "^PRJ0"`)
+- ✅ **Future-proof**: Digit 0-9 allows entity variants (USR0, USR1, etc.)
 - ✅ **Type-safe**: Prefix indicates entity type at a glance
+- ✅ **Debuggable**: Clear entity identification in logs and error messages
 
 ---
 
@@ -1094,7 +1085,7 @@ Set-Cookie: proofa_session=...; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=
 **Behavior:**
 1. **Always return 200 neutral response** (don't reveal if email exists)
 2. Generate 6-digit OTP
-3. Hash OTP, store in `email_verifications` with 10-min TTL
+3. Hash OTP, store in Redis with 10-min TTL
 4. Send OTP via email (Resend)
 
 **Response (200 OK):**
@@ -1117,7 +1108,7 @@ Set-Cookie: proofa_session=...; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=
 ```
 
 **Behavior:**
-1. Lookup `email_verifications` by email
+1. Lookup OTP data from Redis by email
 2. Check if locked out (locked_until > now) → return 429 Too Many Requests
 3. Validate OTP:
    - Not expired (now < expires_at)
@@ -1125,10 +1116,10 @@ Set-Cookie: proofa_session=...; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=
    - Hash matches
 4. If OTP invalid:
    - Increment `attempts` += 1
-   - If `attempts >= 3`: Set `locked_until = now() + 30 minutes`
+   - If `attempts >= 3`: Set `locked_until = now() + 30 minutes` in Redis
    - Return 400 Bad Request
 5. If OTP valid:
-   - Mark consumed
+   - Mark consumed in Redis
    - Check if user exists:
      - **If yes**: Create core session, return `{ ok: true, userExists: true }`
      - **If no**: Return `{ ok: true, userExists: false }`
@@ -1610,10 +1601,13 @@ Talks to Gateway `/admin/*` routes only.
 
 ### 9.1 Core Session (Global)
 
-**Cookie**: `proofa_session`  
-**Stored**: Database `sessions` table  
+**Cookies**: 
+- `proofa_user_session` (user sessions)
+- `proofa_admin_session` (admin sessions)
+
+**Stored**: Database `sessions` table + Redis metadata  
 **Scope**: Shared across all apps  
-**TTL**: **365 days rolling** (standard users), **2 hours + 15-min inactivity** (admin users)
+**TTL**: **365 days rolling** (user sessions), **2 hours + 15-min inactivity** (admin sessions)
 
 **Rolling behavior:**
 - Expires 365 days after last **activity** (standard users)

@@ -6,10 +6,23 @@ import {
 	userQueries,
 } from "@proofa/db";
 import { createId, createLogger, idPatterns, serializeError } from "@proofa/shared";
+import { createEmailService } from "@proofa/shared/email";
 import type { Context } from "hono";
 import { Hono } from "hono";
+import { env } from "../../../config/env";
+import { generateProjectTeamInvitationEmail } from "../../../utils/email-templates";
 
 const log = createLogger("admin-members-routes");
+
+// Initialize email service
+const emailService = createEmailService({
+	sendEmails: env.SEND_EMAILS,
+	resendApiKey: env.RESEND_API_KEY,
+	useMailpit: env.IS_DEVELOPMENT,
+	smtpHost: env.SMTP_HOST,
+	smtpPort: env.SMTP_PORT,
+	defaultFrom: env.EMAIL_FROM,
+});
 
 export const membersRouter = new Hono();
 
@@ -155,6 +168,29 @@ membersRouter.post("/:projectId/members", async (c: Context) => {
 			invited_by_user_id: requestingUser.id,
 			expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
 		});
+
+		// Send invitation email
+		try {
+			const emailHtml = generateProjectTeamInvitationEmail({
+				inviteeEmail: email,
+				projectName: project.name,
+				inviterName: requestingUser.name || requestingUser.primary_email || "A team member",
+				role,
+				invitationCode: invitation.public_id,
+				expiresInDays: 7,
+			});
+
+			await emailService.send({
+				to: email,
+				subject: `You've been invited to join ${project.name}`,
+				html: emailHtml,
+			});
+
+			log.info({ email, projectId: project.public_id }, "Team invitation email sent");
+		} catch (emailError) {
+			log.error({ err: serializeError(emailError as Error), email }, "Failed to send invitation email");
+			// Don't fail the request if email fails - invitation is still created
+		}
 
 		return c.json(
 			{

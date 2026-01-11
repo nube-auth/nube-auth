@@ -2,6 +2,7 @@ import { cache } from "@proofa/cache";
 import { createLogger } from "@proofa/shared";
 import type { Context, Next } from "hono";
 import { createMiddleware } from "hono/factory";
+import { env } from "../config/env";
 
 const log = createLogger("rate-limit");
 
@@ -30,6 +31,12 @@ export function rateLimitMiddleware(options: RateLimitOptions) {
 	const { maxRequests, windowSeconds, keyPrefix = "rate-limit", identifier } = options;
 
 	return createMiddleware(async (c: Context, next: Next): Promise<Response | undefined> => {
+		// Skip rate limiting in development
+		if (env.IS_DEVELOPMENT) {
+			await next();
+			return;
+		}
+
 		try {
 			// Get identifier (IP address by default)
 			const id = identifier ? await identifier(c) : getClientIp(c);
