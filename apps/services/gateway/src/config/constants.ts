@@ -2,11 +2,13 @@ import { env } from "./env";
 
 // Session & Token TTLs (in seconds)
 // Override with environment variables for production
-export const SESSION_TTL = env.SESSION_TTL_SECONDS ?? 365 * 24 * 60 * 60; // Default: 365 days
+export const SESSION_TTL = env.SESSION_TTL_SECONDS ?? 365 * 24 * 60 * 60; // Default: 365 days (user sessions)
+export const ADMIN_SESSION_TTL = env.ADMIN_SESSION_TTL_SECONDS ?? 2 * 60 * 60; // Default: 2 hours (admin sessions)
+export const ADMIN_INACTIVITY_TIMEOUT = env.ADMIN_INACTIVITY_TIMEOUT_SECONDS ?? 15 * 60; // Default: 15 minutes
 export const CACHE_TTL = env.CACHE_TTL_SECONDS ?? 2 * 60; // Default: 2 minutes
-export const REFRESH_TOKEN_TTL = env.REFRESH_TOKEN_TTL_SECONDS ?? 7 * 24 * 60 * 60; // Default: 7 days
+export const REFRESH_TOKEN_TTL = env.REFRESH_TOKEN_TTL_SECONDS ?? 365 * 24 * 60 * 60; // Default: 365 days
 export const TOKEN_EXPIRY_BUFFER = env.TOKEN_EXPIRY_BUFFER_SECONDS ?? 60; // Default: 1 minute
-export const INVITATION_EXPIRY_DAYS = env.INVITATION_EXPIRY_DAYS ?? 7; // Default: 7 days
+export const INVITATION_EXPIRY_SECONDS = env.INVITATION_EXPIRY_SECONDS ?? 7 * 24 * 60 * 60; // Default: 7 days
 
 // Security - Token/Session generation
 export const SESSION_ID_BYTES = env.SESSION_ID_BYTES ?? 32; // Default: 32 bytes (256 bits)

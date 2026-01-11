@@ -25,8 +25,8 @@ export interface Environment {
 	SMTP_HOST: string;
 	SMTP_PORT: number;
 	LOG_LEVEL: "debug" | "info" | "warn" | "error";
-	CORE_SESSION_TTL_DAYS: number;
-	SESSION_REFRESH_THRESHOLD_HOURS: number;
+	CORE_SESSION_TTL_SECONDS: number;
+	SESSION_REFRESH_THRESHOLD_SECONDS: number;
 	// TTL overrides (in seconds)
 	SESSION_TTL_SECONDS: number;
 	JWT_TTL_SECONDS: number;
@@ -82,8 +82,8 @@ function getEnvironment(): Environment {
 		SMTP_HOST: process.env["SMTP_HOST"] ?? "localhost",
 		SMTP_PORT: parseInt(process.env["SMTP_PORT"] ?? "1025", 10),
 		LOG_LEVEL: (process.env["LOG_LEVEL"] as Environment["LOG_LEVEL"] | undefined) ?? "info",
-		CORE_SESSION_TTL_DAYS: parseInt(process.env["CORE_SESSION_TTL_DAYS"] ?? "7", 10),
-		SESSION_REFRESH_THRESHOLD_HOURS: parseInt(process.env["SESSION_REFRESH_THRESHOLD_HOURS"] ?? "1", 10),
+		CORE_SESSION_TTL_SECONDS: parseInt(process.env["CORE_SESSION_TTL_SECONDS"] ?? String(365 * 24 * 60 * 60), 10), // 365 days
+		SESSION_REFRESH_THRESHOLD_SECONDS: parseInt(process.env["SESSION_REFRESH_THRESHOLD_SECONDS"] ?? String(30 * 24 * 60 * 60), 10), // 30 days
 		// TTL overrides (in seconds) - production defaults
 		SESSION_TTL_SECONDS: parseInt(process.env["SESSION_TTL_SECONDS"] ?? String(7 * 24 * 60 * 60), 10), // 7 days
 		JWT_TTL_SECONDS: parseInt(process.env["JWT_TTL_SECONDS"] ?? "3600", 10), // 1 hour

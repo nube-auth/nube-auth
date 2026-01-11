@@ -53,7 +53,7 @@ export function AppSetupPage() {
 		description: "",
 		redirectUris: [""],
 		allowedHosts: [""],
-		sessionTtlDays: 28,
+		sessionTtlDays: 30,
 		enabledProviders: ["google", "github"] as string[],
 		requiresLicensing: false,
 		defaultLicensePlan: {
@@ -148,7 +148,7 @@ export function AppSetupPage() {
 			description: formData.description,
 			redirectUris: formData.redirectUris.filter((uri) => uri.trim()),
 			allowedHosts: formData.allowedHosts.filter((host) => host.trim()),
-			sessionTtlDays: formData.sessionTtlDays || 28,
+			sessionTtlDays: formData.sessionTtlDays || 30,
 			enabledProviders: formData.enabledProviders,
 			requiresLicensing: formData.requiresLicensing,
 		};
@@ -748,7 +748,7 @@ export function AppSetupPage() {
 											style={{ marginBottom: "8px" }}
 										/>
 										<p style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>
-											How long user sessions remain active (1-365 days). Default: 28 days.
+											How long user sessions remain active (1-365 days). Default: 30 days.
 										</p>
 									</div>
 

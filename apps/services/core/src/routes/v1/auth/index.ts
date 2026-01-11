@@ -210,7 +210,7 @@ router.get("/callback/:provider", async (c: Context) => {
 
 	try {
 		const db = getDb();
-		const expiresAt = new Date(Date.now() + env.CORE_SESSION_TTL_DAYS * 24 * 60 * 60 * 1000);
+		const expiresAt = new Date(Date.now() + env.CORE_SESSION_TTL_SECONDS * 1000);
 
 		let adapter;
 		if (provider === "google") {
@@ -463,14 +463,14 @@ router.post("/exchange", async (c: Context) => {
 		}
 
 		// Implement rolling TTL: extend session if last_seen_at is older than threshold
-		const refreshThresholdMs = env.SESSION_REFRESH_THRESHOLD_HOURS * 60 * 60 * 1000;
+		const refreshThresholdMs = env.SESSION_REFRESH_THRESHOLD_SECONDS * 1000;
 		const timeSinceLastSeen = now.getTime() - new Date(session.last_seen_at).getTime();
 
 		let updatedExpiresAt = session.expires_at;
 
 		if (timeSinceLastSeen > refreshThresholdMs) {
 			// Extend session expiry (rolling TTL)
-			updatedExpiresAt = new Date(now.getTime() + env.CORE_SESSION_TTL_DAYS * 24 * 60 * 60 * 1000);
+			updatedExpiresAt = new Date(now.getTime() + env.CORE_SESSION_TTL_SECONDS * 1000);
 
 			// Update both last_seen_at and expires_at
 			log.debug({ sessionId: sessionId.substring(0, 8) + "..." }, "Extending session TTL");

@@ -324,7 +324,7 @@ export function ProjectDetailPage() {
 										</td>
 										<td>
 											<span style={{ color: "var(--text-secondary)" }}>
-												{app.sessionTtlDays || 28} days
+												{app.sessionTtlDays || 30} days
 											</span>
 										</td>
 										<td>

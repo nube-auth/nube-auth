@@ -29,10 +29,12 @@ export interface Env {
 	ENCRYPTION_KEY: string;
 	// TTL overrides (in seconds)
 	SESSION_TTL_SECONDS: number;
+	ADMIN_SESSION_TTL_SECONDS: number;
+	ADMIN_INACTIVITY_TIMEOUT_SECONDS: number;
 	CACHE_TTL_SECONDS: number;
 	REFRESH_TOKEN_TTL_SECONDS: number;
 	TOKEN_EXPIRY_BUFFER_SECONDS: number;
-	INVITATION_EXPIRY_DAYS: number;
+	INVITATION_EXPIRY_SECONDS: number;
 	// Security overrides
 	SESSION_ID_BYTES: number;
 	CSRF_TOKEN_BYTES: number;
@@ -83,11 +85,13 @@ function validateEnv(): Env {
 		ENCRYPTION_KEY: process.env["ENCRYPTION_KEY"]!,
 
 		// TTL defaults - production values
-		SESSION_TTL_SECONDS: parseInt(process.env["SESSION_TTL_SECONDS"] ?? String(7 * 24 * 60 * 60), 10), // 7 days
+		SESSION_TTL_SECONDS: parseInt(process.env["SESSION_TTL_SECONDS"] ?? String(365 * 24 * 60 * 60), 10), // 365 days (user sessions)
+		ADMIN_SESSION_TTL_SECONDS: parseInt(process.env["ADMIN_SESSION_TTL_SECONDS"] ?? String(2 * 60 * 60), 10), // 2 hours (admin sessions)
+		ADMIN_INACTIVITY_TIMEOUT_SECONDS: parseInt(process.env["ADMIN_INACTIVITY_TIMEOUT_SECONDS"] ?? String(15 * 60), 10), // 15 minutes
 		CACHE_TTL_SECONDS: parseInt(process.env["CACHE_TTL_SECONDS"] ?? String(2 * 60), 10), // 2 minutes
-		REFRESH_TOKEN_TTL_SECONDS: parseInt(process.env["REFRESH_TOKEN_TTL_SECONDS"] ?? String(7 * 24 * 60 * 60), 10), // 7 days
+		REFRESH_TOKEN_TTL_SECONDS: parseInt(process.env["REFRESH_TOKEN_TTL_SECONDS"] ?? String(365 * 24 * 60 * 60), 10), // 365 days
 		TOKEN_EXPIRY_BUFFER_SECONDS: parseInt(process.env["TOKEN_EXPIRY_BUFFER_SECONDS"] ?? "60", 10), // 1 minute
-		INVITATION_EXPIRY_DAYS: parseInt(process.env["INVITATION_EXPIRY_DAYS"] ?? "7", 10), // 7 days
+		INVITATION_EXPIRY_SECONDS: parseInt(process.env["INVITATION_EXPIRY_SECONDS"] ?? String(7 * 24 * 60 * 60), 10), // 7 days
 
 		// Security defaults
 		SESSION_ID_BYTES: parseInt(process.env["SESSION_ID_BYTES"] ?? "32", 10),

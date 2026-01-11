@@ -6,7 +6,7 @@ import { createLogger, GatewayLoginRequestSchema, serializeError } from "@proofa
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
-import { CSRF_TOKEN_BYTES, SESSION_ID_BYTES, SESSION_TTL } from "../config/constants";
+import { CSRF_TOKEN_BYTES, SESSION_ID_BYTES, SESSION_TTL, ADMIN_SESSION_TTL } from "../config/constants";
 import { env } from "../config/env";
 import { coreClient } from "../lib/core-client";
 import { pingpong } from "@proofa/auth";
@@ -205,7 +205,9 @@ authRoutes.get("/callback", async (c: Context) => {
 		// Don't reuse the Core's session ID
 		const gatewaySessionId = crypto.randomBytes(SESSION_ID_BYTES).toString("hex");
 		const csrfToken = crypto.randomBytes(CSRF_TOKEN_BYTES).toString("hex"); // Generate CSRF token
-		const ttlSeconds = SESSION_TTL;
+		
+		// Use shorter TTL for admin sessions (2 hours vs 365 days)
+		const ttlSeconds = audience === "admin" ? ADMIN_SESSION_TTL : SESSION_TTL;
 
 		// Store app session in Redis with Gateway session ID
 		// Store Core session ID and CSRF token in metadata
@@ -213,6 +215,9 @@ authRoutes.get("/callback", async (c: Context) => {
 		await sessionStore.setAppSession(gatewaySessionId, data.userId, appId, ttlSeconds, {
 			coreSessionId: code, // Store Core session in metadata
 			csrfToken, // Store CSRF token for validation
+			sessionType: audience, // Track session type for security
+			createdAt: Date.now(), // Track creation time for inactivity checks
+			lastActivityAt: Date.now(), // Track last activity
 		});
 
 		// Create signed cookie with domain for cross-subdomain access

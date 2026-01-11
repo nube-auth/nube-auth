@@ -6,7 +6,7 @@ import { createMiddleware } from "hono/factory";
 import { env } from "../config/env";
 import { coreClient } from "../lib/core-client";
 import { loggers, serializeError } from "../utils/logger";
-import { SESSION_TTL } from "../config/constants";
+import { SESSION_TTL, ADMIN_INACTIVITY_TIMEOUT } from "../config/constants";
 
 const USER_SESSION_COOKIE = "proofa_user_session";
 const ADMIN_SESSION_COOKIE = "proofa_admin_session";
@@ -102,11 +102,14 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 				appId: appSession.appId,
 				metadataKeys: appSession.metadata ? Object.keys(appSession.metadata) : [],
 			},
-			"App session found, checking Core session",
+			"App session found, checking Core session and inactivity",
 		);
 
-		// Get Core session ID from metadata (stored during login)
+		// Get session metadata
 		const coreSessionId = appSession.metadata?.["coreSessionId"] as string | undefined;
+		const sessionType = appSession.metadata?.["sessionType"] as string | undefined;
+		const lastActivityAt = appSession.metadata?.["lastActivityAt"] as number | undefined;
+
 		if (!coreSessionId) {
 			loggers.auth.error(
 				{
@@ -119,9 +122,35 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 			return c.json({ error: "Core session not found" }, 401);
 		}
 
+		// Admin-specific security: Check inactivity timeout (15 minutes)
+		if (isAdminRoute && sessionType === "admin" && lastActivityAt) {
+			const inactiveSeconds = (Date.now() - lastActivityAt) / 1000;
+			if (inactiveSeconds > ADMIN_INACTIVITY_TIMEOUT) {
+				loggers.auth.warn(
+					{
+						sessionId: `${sessionId.substring(0, 8)}...`,
+						inactiveSeconds,
+						threshold: ADMIN_INACTIVITY_TIMEOUT,
+					},
+					"Admin session exceeded inactivity timeout - forcing re-auth",
+				);
+				// Clear the expired admin session
+				await sessionStore.deleteAppSession(sessionId);
+				return c.json({ error: "Admin session expired due to inactivity", code: "ADMIN_INACTIVITY_TIMEOUT" }, 401);
+			}
+
+			// Update last activity timestamp for admin sessions
+			loggers.auth.debug({ sessionId: `${sessionId.substring(0, 8)}...` }, "Updating admin session activity");
+			await sessionStore.setAppSession(sessionId, appSession.userId, appSession.appId, ADMIN_INACTIVITY_TIMEOUT, {
+				...appSession.metadata,
+				lastActivityAt: Date.now(),
+			});
+		}
+
 		// Refresh gateway session TTL on access (rolling TTL for app session)
 		loggers.auth.debug({ sessionId: `${sessionId.substring(0, 8)}...` }, "Refreshing session TTL");
-		await cache.expire(`session:app:${sessionId}`, SESSION_TTL);
+		const ttl = isAdminRoute && sessionType === "admin" ? ADMIN_INACTIVITY_TIMEOUT : SESSION_TTL;
+		await cache.expire(`session:app:${sessionId}`, ttl);
 
 		// Get user info from Core using Core session ID
 		loggers.auth.debug({ coreSessionId: `${coreSessionId.substring(0, 8)}...` }, "Exchanging Core session for user info");

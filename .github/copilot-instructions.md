@@ -383,6 +383,18 @@ try {
 
 ## Code Quality
 
+### Breaking Changes Policy
+**NO backward compatibility required when making changes.**
+
+- ✅ Make breaking changes freely to improve code quality
+- ✅ Update variable names, function signatures, and APIs as needed
+- ✅ Remove deprecated code immediately
+- ✅ Refactor aggressively for better patterns
+- ❌ Don't maintain old interfaces "just in case"
+- ❌ Don't add compatibility layers or deprecation warnings
+
+**This is an active development project. Clean, correct code takes priority over backward compatibility.**
+
 ### Before Submitting PRs
 Check the PR template checklist:
 - [ ] No internal database IDs in API responses

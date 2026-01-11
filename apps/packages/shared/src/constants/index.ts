@@ -1,9 +1,8 @@
 /**
- * Core session TTL (7 days rolling)
+ * Core session TTL (365 days rolling)
  */
-export const CORE_SESSION_TTL_DAYS = 7;
-export const CORE_SESSION_TTL_SECONDS = CORE_SESSION_TTL_DAYS * 24 * 60 * 60;
-export const CORE_SESSION_REFRESH_INTERVAL_HOURS = 1;
+export const CORE_SESSION_TTL_SECONDS = 365 * 24 * 60 * 60; // 365 days = 31536000 seconds
+export const CORE_SESSION_REFRESH_INTERVAL_SECONDS = 30 * 24 * 60 * 60; // 30 days = 2592000 seconds
 
 /**
  * App session TTL constraints (in days)

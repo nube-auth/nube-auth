@@ -87,7 +87,7 @@ export interface SecuritySettings {
 	redirectUris: string[];
 	allowedHosts: string[];
 	corsOrigins: string[];
-	sessionTtlDays: number; // default 28 (1-365)
+	sessionTtlDays: number; // default 30 (1-365)
 	accountLockoutMinutes: number; // default 30
 	cacheTtlMinutes: number; // default 60
 	rateLimit: number; // default 100 requests per minute

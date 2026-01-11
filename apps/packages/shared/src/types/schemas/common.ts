@@ -43,7 +43,7 @@ export const CorsOriginsSchema = z.array(z.string()).default([]);
 /**
  * App configuration validators
  */
-export const AppSessionTtlDaysSchema = z.number().int().min(1).max(365).default(28);
+export const AppSessionTtlDaysSchema = z.number().int().min(1).max(365).default(30);
 export const AccountLockoutMinutesSchema = z.number().int().min(1).max(1440).default(30);
 export const CacheTtlMinutesSchema = z.number().int().min(1).max(1440).default(60);
 export const RateLimitSchema = z.number().int().min(1).max(10000).default(100);
