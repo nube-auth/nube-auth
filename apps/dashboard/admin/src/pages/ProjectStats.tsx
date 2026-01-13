@@ -21,128 +21,76 @@ export function ProjectStatsPage() {
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
-			<div style={{ marginBottom: "24px" }}>
-				<div
-					style={{
-						display: "flex",
-						gap: "8px",
-						alignItems: "center",
-						fontSize: "13px",
-						color: "var(--text-tertiary)",
-					}}
-				>
-					<Link to="/projects" style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+			<div className="mb-6">
+				<div className="breadcrumb">
+					<Link to="/projects" className="breadcrumb-link">
 						Projects
 					</Link>
 					<span>›</span>
 					<Link
 						to={`/projects/${projectId}`}
-						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
+						className="breadcrumb-link"
 					>
 						{project.name}
 					</Link>
 					<span>›</span>
-					<span style={{ color: "var(--text-primary)" }}>Statistics</span>
+					<span className="text-text-primary">Statistics</span>
 				</div>
 			</div>
 
 			{/* Page Header */}
-			<div style={{ marginBottom: "32px" }}>
-				<h1 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>Project Statistics</h1>
-				<p style={{ fontSize: "14px", color: "var(--text-tertiary)" }}>
+			<div className="mb-8">
+				<h1 className="page-title">Project Statistics</h1>
+				<p className="text-14px text-text-tertiary">
 					View detailed analytics and insights for {project.name}
 				</p>
 			</div>
 
 			{/* Stats Cards */}
-			<div
-				style={{
-					display: "grid",
-					gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-					gap: "20px",
-					marginBottom: "32px",
-				}}
-			>
-				<div className="card" style={{ padding: "20px" }}>
-					<div
-						style={{
-							fontSize: "13px",
-							color: "var(--text-tertiary)",
-							marginBottom: "8px",
-							fontWeight: "600",
-							textTransform: "uppercase",
-							letterSpacing: "0.5px",
-						}}
-					>
-						Total Apps
-					</div>
-					<div style={{ fontSize: "32px", fontWeight: "700", color: "var(--text-primary)" }}>
-						{stats?.totalApps || 0}
-					</div>
+		<div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-5 mb-8">
+			<div className="card p-5">
+				<div className="text-13px text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
+					Total Apps
 				</div>
-
-				<div className="card" style={{ padding: "20px" }}>
-					<div
-						style={{
-							fontSize: "13px",
-							color: "var(--text-tertiary)",
-							marginBottom: "8px",
-							fontWeight: "600",
-							textTransform: "uppercase",
-							letterSpacing: "0.5px",
-						}}
-					>
-						Total Users
-					</div>
-					<div style={{ fontSize: "32px", fontWeight: "700", color: "var(--text-primary)" }}>
-						{stats?.totalUsers || 0}
-					</div>
+				<div className="text-32px font-bold text-text-primary">
+					{stats?.totalApps || 0}
 				</div>
+			</div>
 
-				<div className="card" style={{ padding: "20px" }}>
-					<div
-						style={{
-							fontSize: "13px",
-							color: "var(--text-tertiary)",
-							marginBottom: "8px",
-							fontWeight: "600",
-							textTransform: "uppercase",
-							letterSpacing: "0.5px",
-						}}
-					>
-						Active Licenses
-					</div>
-					<div style={{ fontSize: "32px", fontWeight: "700", color: "var(--text-primary)" }}>
-						{stats?.activeLicenses || 0}
-					</div>
+			<div className="card p-5">
+				<div className="text-13px text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
+					Total Users
 				</div>
+				<div className="text-32px font-bold text-text-primary">
+					{stats?.totalUsers || 0}
+				</div>
+			</div>
 
-				<div className="card" style={{ padding: "20px" }}>
-					<div
-						style={{
-							fontSize: "13px",
-							color: "var(--text-tertiary)",
-							marginBottom: "8px",
-							fontWeight: "600",
-							textTransform: "uppercase",
-							letterSpacing: "0.5px",
-						}}
-					>
-						Monthly Revenue
-					</div>
-					<div style={{ fontSize: "32px", fontWeight: "700", color: "var(--text-primary)" }}>
-						${(stats?.totalRevenue || 0).toFixed(2)}
+			<div className="card p-5">
+				<div className="text-13px text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
+					Active Licenses
+				</div>
+				<div className="text-32px font-bold text-text-primary">
+					{stats?.activeLicenses || 0}
+				</div>
+			</div>
+
+			<div className="card p-5">
+				<div className="text-13px text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
+					Monthly Revenue
+				</div>
+				<div className="text-32px font-bold text-text-primary">
 					</div>
 				</div>
 			</div>
 
 			{/* Coming Soon Section */}
-			<div className="card" style={{ padding: "48px", textAlign: "center" }}>
-				<div style={{ fontSize: "48px", marginBottom: "16px" }}>📊</div>
-				<h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "8px", color: "var(--text-primary)" }}>
-					Advanced Analytics Coming Soon
-				</h2>
-				<p style={{ fontSize: "14px", color: "var(--text-tertiary)", maxWidth: "480px", margin: "0 auto" }}>
+		<div className="card p-12 text-center">
+			<div className="text-48px mb-4">📊</div>
+			<h2 className="text-20px font-semibold mb-2 text-text-primary">
+				Advanced Analytics Coming Soon
+			</h2>
+			<p className="text-14px text-text-tertiary max-w-[480px] mx-auto">
 					We're working on detailed charts, user growth trends, retention analytics, and more. Stay tuned for
 					updates!
 				</p>

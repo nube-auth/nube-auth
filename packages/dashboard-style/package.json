@@ -1,0 +1,15 @@
+{
+  "name": "@proofa/dashboard-style",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "uno.config.ts",
+  "exports": {
+    ".": "./uno.config.ts",
+    "./uno.config": "./uno.config.ts",
+    "./base.css": "./base.css"
+  },
+  "dependencies": {
+    "unocss": "^66.5.12"
+  }
+}

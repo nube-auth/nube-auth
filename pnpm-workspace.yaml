@@ -2,6 +2,7 @@ packages:
   - 'apps/services/*'
   - 'apps/dashboard/*'
   - 'apps/packages/*'
+  - 'packages/*'
 
 catalogs:
   default:

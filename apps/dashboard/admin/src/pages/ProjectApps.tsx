@@ -26,67 +26,43 @@ export function ProjectAppsPage() {
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
-			<div style={{ marginBottom: "24px" }}>
-				<div
-					style={{
-						display: "flex",
-						gap: "8px",
-						alignItems: "center",
-						fontSize: "13px",
-						color: "var(--text-tertiary)",
-					}}
-				>
-					<Link to="/projects" style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+			<div className="mb-6">
+				<div className="breadcrumbs">
+					<Link to="/projects" className="breadcrumb-item">
 						Projects
 					</Link>
 					<span>›</span>
 					<Link
 						to={`/projects/${projectId}`}
-						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
+						className="breadcrumb-item"
 					>
 						{project.name}
 					</Link>
 					<span>›</span>
-					<span style={{ color: "var(--text-primary)" }}>Apps</span>
+					<span className="breadcrumb-current">Apps</span>
 				</div>
 			</div>
 
 			{/* Page Header */}
-			<div
-				style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}
-			>
+			<div className="flex justify-between items-center mb-8">
 				<div>
-					<h1 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>Applications</h1>
-					<p style={{ fontSize: "14px", color: "var(--text-tertiary)" }}>
+					<h1 className="text-24px font-bold mb-2">Applications</h1>
+					<p className="text-14px text-text-tertiary">
 						{apps?.length || 0} {apps?.length === 1 ? "app" : "apps"} in {project.name}
 					</p>
 				</div>
-				<div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+				<div className="flex gap-3 items-center">
 					{/* View Mode Toggle */}
-					<div
-						style={{
-							display: "flex",
-							gap: "4px",
-							padding: "4px",
-							background: "var(--surface-secondary)",
-							borderRadius: "8px",
-						}}
-					>
+					<div className="flex gap-1 p-1 bg-bg-muted rounded-lg">
 						<button
 							type="button"
 							onClick={() => setViewMode("grid")}
-							style={{
-								padding: "8px 12px",
-								background: viewMode === "grid" ? "var(--content-bg)" : "transparent",
-								border: "none",
-								borderRadius: "6px",
-								cursor: "pointer",
-								color: viewMode === "grid" ? "var(--text-primary)" : "var(--text-tertiary)",
-								transition: "all 0.2s ease",
-							}}
+							className={`px-3 py-2 border-none rounded-md cursor-pointer transition-all ${
+								viewMode === "grid" ? "bg-bg-surface text-text-primary" : "bg-transparent text-text-tertiary"
+							}`}
 						>
 							<svg
-								style={{ width: "18px", height: "18px" }}
+								className="w-4.5 h-4.5"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
@@ -102,18 +78,12 @@ export function ProjectAppsPage() {
 						<button
 							type="button"
 							onClick={() => setViewMode("table")}
-							style={{
-								padding: "8px 12px",
-								background: viewMode === "table" ? "var(--content-bg)" : "transparent",
-								border: "none",
-								borderRadius: "6px",
-								cursor: "pointer",
-								color: viewMode === "table" ? "var(--text-primary)" : "var(--text-tertiary)",
-								transition: "all 0.2s ease",
-							}}
+							className={`px-3 py-2 border-none rounded-md cursor-pointer transition-all ${
+								viewMode === "table" ? "bg-bg-surface text-text-primary" : "bg-transparent text-text-tertiary"
+							}`}
 						>
 							<svg
-								style={{ width: "18px", height: "18px" }}
+								className="w-4.5 h-4.5"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
@@ -140,27 +110,12 @@ export function ProjectAppsPage() {
 
 			{/* Apps Content */}
 			{!apps || apps.length === 0 ? (
-				<div className="card" style={{ padding: "64px 24px", textAlign: "center" }}>
-					<div style={{ fontSize: "64px", marginBottom: "16px" }}>📱</div>
-					<h2
-						style={{
-							fontSize: "20px",
-							fontWeight: "600",
-							marginBottom: "12px",
-							color: "var(--text-primary)",
-						}}
-					>
+				<div className="card py-16 px-6 text-center">
+					<div className="text-6xl mb-4">📱</div>
+					<h2 className="text-20px font-semibold mb-3 text-text-primary">
 						No apps yet
 					</h2>
-					<p
-						style={{
-							fontSize: "14px",
-							color: "var(--text-tertiary)",
-							marginBottom: "24px",
-							maxWidth: "400px",
-							margin: "0 auto 24px",
-						}}
-					>
+					<p className="text-14px text-text-tertiary mb-6 max-w-sm mx-auto">
 						Get started by creating your first application in this project
 					</p>
 					<button
@@ -172,23 +127,11 @@ export function ProjectAppsPage() {
 					</button>
 				</div>
 			) : viewMode === "grid" ? (
-				<div
-					style={{
-						display: "grid",
-						gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-						gap: "20px",
-					}}
-				>
+				<div className="grid gap-5 grid-cols-auto-fill-320">
 					{apps.map((app) => (
 						<div
 							key={app.id}
-							className="card"
-							style={{
-								padding: "24px",
-								cursor: "pointer",
-								transition: "all 0.2s ease",
-								border: "1px solid var(--card-border)",
-							}}
+							className="card p-6 cursor-pointer transition-all border border-border"
 							onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
 							onMouseEnter={(e) => {
 								e.currentTarget.style.borderColor = "var(--primary)";
@@ -199,23 +142,9 @@ export function ProjectAppsPage() {
 								e.currentTarget.style.transform = "translateY(0)";
 							}}
 						>
-							<div
-								style={{ display: "flex", alignItems: "flex-start", gap: "16px", marginBottom: "16px" }}
-							>
-								<div
-									style={{
-										width: "48px",
-										height: "48px",
-										borderRadius: "12px",
-										background: "linear-gradient(135deg, var(--primary-light), #ddd6fe)",
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "center",
-										flexShrink: 0,
-									}}
-								>
-									<svg
-										style={{ width: "24px", height: "24px", color: "var(--primary)" }}
+							<div className="flex items-start gap-4 mb-4">
+								<div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary-light to-purple-200">
+									<svg className="w-6 h-6 text-primary"
 										fill="none"
 										stroke="currentColor"
 										viewBox="0 0 24 24"
@@ -228,145 +157,53 @@ export function ProjectAppsPage() {
 										/>
 									</svg>
 								</div>
-								<div style={{ flex: 1, minWidth: 0 }}>
-									<h3
-										style={{
-											fontSize: "16px",
-											fontWeight: "600",
-											marginBottom: "4px",
-											color: "var(--text-primary)",
-											overflow: "hidden",
-											textOverflow: "ellipsis",
-											whiteSpace: "nowrap",
-										}}
-									>
+							<div className="flex-1 min-w-0">
+								<h3 className="text-16px font-semibold mb-1 text-text-primary overflow-hidden text-ellipsis whitespace-nowrap">
 										{app.name}
 									</h3>
-									<p
-										style={{
-											fontSize: "13px",
-											color: "var(--text-tertiary)",
-											overflow: "hidden",
-											textOverflow: "ellipsis",
-											whiteSpace: "nowrap",
-										}}
-									>
+									<p className="text-13px text-text-tertiary overflow-hidden text-ellipsis whitespace-nowrap">
 										{app.slug}
 									</p>
 								</div>
 							</div>
 
 							{app.description && (
-								<p
-									style={{
-										fontSize: "14px",
-										color: "var(--text-secondary)",
-										marginBottom: "16px",
-										lineHeight: "1.5",
-										display: "-webkit-box",
-										WebkitLineClamp: 2,
-										WebkitBoxOrient: "vertical",
-										overflow: "hidden",
-									}}
-								>
+								<p className="text-14px text-text-secondary mb-4 leading-1.5 line-clamp-2">
 									{app.description}
 								</p>
 							)}
 
-							<div
-								style={{
-									display: "flex",
-									gap: "16px",
-									paddingTop: "16px",
-									borderTop: "1px solid var(--border-primary)",
-									fontSize: "13px",
-								}}
-							>
+							<div className="flex gap-4 pt-4 border-t border-border text-13px">
 								<div>
-									<span style={{ color: "var(--text-tertiary)" }}>Users: </span>
-									<span style={{ color: "var(--text-primary)", fontWeight: "600" }}>0</span>
+									<span className="text-text-tertiary">Users: </span>
+									<span className="text-text-primary font-semibold">0</span>
 								</div>
 								<div>
-									<span style={{ color: "var(--text-tertiary)" }}>Licenses: </span>
-									<span style={{ color: "var(--text-primary)", fontWeight: "600" }}>0</span>
+									<span className="text-text-tertiary">Licenses: </span>
+									<span className="text-text-primary font-semibold">0</span>
 								</div>
 							</div>
 						</div>
 					))}
 				</div>
 			) : (
-				<div className="card" style={{ padding: "0", overflow: "hidden" }}>
-					<table style={{ width: "100%", borderCollapse: "collapse" }}>
+				<div className="card p-0 overflow-hidden">
+					<table className="w-full border-collapse">
 						<thead>
-							<tr
-								style={{
-									borderBottom: "1px solid var(--border-primary)",
-									background: "var(--surface-secondary)",
-								}}
-							>
-								<th
-									style={{
-										padding: "14px 16px",
-										textAlign: "left",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-tertiary)",
-										textTransform: "uppercase",
-										letterSpacing: "0.5px",
-									}}
-								>
+							<tr className="border-b border-border bg-bg-muted">
+								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wider">
 									Application
 								</th>
-								<th
-									style={{
-										padding: "14px 16px",
-										textAlign: "left",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-tertiary)",
-										textTransform: "uppercase",
-										letterSpacing: "0.5px",
-									}}
-								>
+								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wider">
 									Users
 								</th>
-								<th
-									style={{
-										padding: "14px 16px",
-										textAlign: "left",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-tertiary)",
-										textTransform: "uppercase",
-										letterSpacing: "0.5px",
-									}}
-								>
+								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wide">
 									Licenses
 								</th>
-								<th
-									style={{
-										padding: "14px 16px",
-										textAlign: "left",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-tertiary)",
-										textTransform: "uppercase",
-										letterSpacing: "0.5px",
-									}}
-								>
+								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wide">
 									Created
 								</th>
-								<th
-									style={{
-										padding: "14px 16px",
-										textAlign: "right",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-tertiary)",
-										textTransform: "uppercase",
-										letterSpacing: "0.5px",
-									}}
-								>
+								<th className="px-4 py-3.5 text-right text-12px font-semibold text-text-tertiary uppercase tracking-wide">
 									Actions
 								</th>
 							</tr>
@@ -375,7 +212,7 @@ export function ProjectAppsPage() {
 							{apps.map((app) => (
 								<tr
 									key={app.id}
-									style={{ borderBottom: "1px solid var(--border-primary)", cursor: "pointer" }}
+									className="border-b border-border cursor-pointer hover:bg-bg-hover"
 									onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
 									onMouseEnter={(e) => {
 										e.currentTarget.style.background = "var(--surface-secondary)";
@@ -384,23 +221,11 @@ export function ProjectAppsPage() {
 										e.currentTarget.style.background = "transparent";
 									}}
 								>
-									<td style={{ padding: "14px 16px" }}>
-										<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-											<div
-												style={{
-													width: "40px",
-													height: "40px",
-													borderRadius: "8px",
-													background:
-														"linear-gradient(135deg, var(--primary-light), #ddd6fe)",
-													display: "flex",
-													alignItems: "center",
-													justifyContent: "center",
-													flexShrink: 0,
-												}}
-											>
+								<td className="px-4 py-3.5">
+									<div className="flex items-center gap-3">
+										<div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary-light to-purple-200">
 												<svg
-													style={{ width: "20px", height: "20px", color: "var(--primary)" }}
+												className="w-5 h-5 text-primary"
 													fill="none"
 													stroke="currentColor"
 													viewBox="0 0 24 24"
@@ -414,49 +239,25 @@ export function ProjectAppsPage() {
 												</svg>
 											</div>
 											<div>
-												<div
-													style={{
-														fontSize: "14px",
-														fontWeight: "500",
-														color: "var(--text-primary)",
-													}}
-												>
+												<div className="text-14px font-medium text-text-primary">
 													{app.name}
 												</div>
-												<div style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+											<div className="text-13px text-text-secondary">
 													{app.slug}
 												</div>
 											</div>
 										</div>
 									</td>
-									<td
-										style={{
-											padding: "14px 16px",
-											fontSize: "14px",
-											color: "var(--text-secondary)",
-										}}
-									>
+									<td className="px-4 py-3.5 text-14px text-text-secondary">
 										0
 									</td>
-									<td
-										style={{
-											padding: "14px 16px",
-											fontSize: "14px",
-											color: "var(--text-secondary)",
-										}}
-									>
+									<td className="px-4 py-3.5 text-14px text-text-secondary">
 										0
 									</td>
-									<td
-										style={{
-											padding: "14px 16px",
-											fontSize: "14px",
-											color: "var(--text-secondary)",
-										}}
-									>
+									<td className="px-4 py-3.5 text-14px text-text-secondary">
 										{new Date(app.createdAt).toLocaleDateString()}
 									</td>
-									<td style={{ padding: "14px 16px", textAlign: "right" }}>
+									<td className="px-4 py-3.5 text-right">
 										<button
 											type="button"
 											onClick={(e) => {

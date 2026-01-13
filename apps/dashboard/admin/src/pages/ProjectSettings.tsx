@@ -57,251 +57,111 @@ export function ProjectSettingsPage() {
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
-			<div style={{ marginBottom: "24px" }}>
-				<div
-					style={{
-						display: "flex",
-						gap: "8px",
-						alignItems: "center",
-						fontSize: "13px",
-						color: "var(--text-tertiary)",
-					}}
-				>
-					<Link to="/projects" style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+			<div className="mb-6">
+				<div className="breadcrumb">
+					<Link to="/projects" className="breadcrumb-item">
 						Projects
 					</Link>
 					<span>›</span>
-					<Link
-						to={`/projects/${projectId}`}
-						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
-					>
+					<Link to={`/projects/${projectId}`} className="breadcrumb-item">
 						{project.name}
 					</Link>
 					<span>›</span>
-					<span style={{ color: "var(--text-primary)" }}>Settings</span>
+					<span className="breadcrumb-current">Settings</span>
 				</div>
 			</div>
 
 			{/* Page Header */}
-			<div style={{ marginBottom: "32px" }}>
-				<h1 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>Project Settings</h1>
-				<p style={{ fontSize: "14px", color: "var(--text-tertiary)" }}>
-					Manage your project configuration and preferences
-				</p>
+			<div className="mb-8">
+				<h1 className="page-title">Project Settings</h1>
+				<p className="page-description">Manage your project configuration and preferences</p>
 			</div>
 
 			{/* Settings Content */}
 			{!isEditing ? (
 				<>
 					{/* View Mode */}
-					<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-						<div
-							style={{
-								display: "flex",
-								justifyContent: "space-between",
-								alignItems: "center",
-								marginBottom: "24px",
-							}}
-						>
-							<h2 style={{ fontSize: "18px", fontWeight: "600", color: "var(--text-primary)" }}>
-								Project Information
-							</h2>
-							<button
-								type="button"
-								onClick={() => setIsEditing(true)}
-								className="btn btn-secondary-outline"
-							>
+					<div className="card p-6 mb-4">
+						<div className="flex justify-between items-center mb-6">
+							<h2 className="text-18px font-semibold text-text-primary">Project Information</h2>
+							<button type="button" onClick={() => setIsEditing(true)} className="btn-secondary">
 								Edit
 							</button>
 						</div>
 
-						<div style={{ display: "grid", gap: "24px" }}>
+						<div className="grid gap-6">
 							<div>
-								<p
-									style={{
-										fontSize: "12px",
-										color: "var(--text-tertiary)",
-										marginBottom: "6px",
-										textTransform: "uppercase",
-										fontWeight: "600",
-										letterSpacing: "0.5px",
-									}}
-								>
-									Project Name
-								</p>
-								<p
-									style={{
-										fontSize: "15px",
-										color: "var(--text-primary)",
-										fontWeight: "600",
-										margin: 0,
-									}}
-								>
-									{project.name}
+							<p className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
+								Project Name
+							</p>
+							<p className="text-15px text-text-primary font-semibold m-0">
 								</p>
 							</div>
 
 							<div>
-								<p
-									style={{
-										fontSize: "12px",
-										color: "var(--text-tertiary)",
-										marginBottom: "6px",
-										textTransform: "uppercase",
-										fontWeight: "600",
-										letterSpacing: "0.5px",
-									}}
-								>
-									Project Slug
-								</p>
-								<p
-									style={{
-										fontSize: "15px",
-										color: "var(--text-primary)",
-										fontWeight: "600",
-										fontFamily: "monospace",
-										margin: 0,
-									}}
-								>
-									{project.slug || "—"}
+							<p className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
+								Project Slug
+							</p>
+							<p className="text-15px text-text-primary font-semibold font-mono m-0">
 								</p>
 							</div>
 
 							{project.description && (
 								<div>
-									<p
-										style={{
-											fontSize: "12px",
-											color: "var(--text-tertiary)",
-											marginBottom: "6px",
-											textTransform: "uppercase",
-											fontWeight: "600",
-											letterSpacing: "0.5px",
-										}}
-									>
-										Description
-									</p>
-									<p
-										style={{
-											fontSize: "15px",
-											color: "var(--text-secondary)",
-											margin: 0,
-											lineHeight: "1.6",
-										}}
-									>
-										{project.description}
-									</p>
-								</div>
-							)}
+							<p className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
+								Description
+							</p>
+							<p className="text-15px text-text-secondary m-0 leading-relaxed">
+								{project.description}
+							</p>
+						</div>
+					)}
 
-							<div>
-								<p
-									style={{
-										fontSize: "12px",
-										color: "var(--text-tertiary)",
-										marginBottom: "6px",
-										textTransform: "uppercase",
-										fontWeight: "600",
-										letterSpacing: "0.5px",
-									}}
-								>
-									Project ID
-								</p>
-								<code
-									style={{
-										display: "inline-block",
-										padding: "10px 14px",
-										background: "rgba(139, 92, 246, 0.1)",
-										border: "1px solid rgba(139, 92, 246, 0.3)",
-										borderRadius: "8px",
-										fontSize: "13px",
-										fontFamily: "'JetBrains Mono', 'Courier New', monospace",
-										color: "var(--primary)",
-										fontWeight: "600",
-										letterSpacing: "0.5px",
-									}}
-								>
-									{project.id}
-								</code>
-							</div>
+					<div>
+						<p className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
+							Project ID
+						</p>
+						<code className="inline-block py-2.5 px-3.5 rounded-lg text-13px font-mono text-primary font-semibold tracking-wider bg-primary bg-opacity-10 border border-primary border-opacity-30">
+							{project.id}
+						</code>
+					</div>
 
-							<div>
-								<p
-									style={{
-										fontSize: "12px",
-										color: "var(--text-tertiary)",
-										marginBottom: "6px",
-										textTransform: "uppercase",
-										fontWeight: "600",
-										letterSpacing: "0.5px",
-									}}
-								>
-									Created
-								</p>
-								<p style={{ fontSize: "15px", color: "var(--text-primary)", margin: 0 }}>
-									{project.createdAt
-										? new Date(project.createdAt).toLocaleDateString("en-US", {
-												year: "numeric",
-												month: "long",
-												day: "numeric",
-											})
-										: "—"}
-								</p>
-							</div>
+					<div>
+						<p className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
+							Created
+						</p>
+						<p className="text-15px text-text-primary m-0">
+							{project.createdAt
+								? new Date(project.createdAt).toLocaleDateString("en-US", {
+										year: "numeric",
+										month: "long",
+										day: "numeric",
+									})
+								: "—"}
+						</p>
+					</div>
 						</div>
 					</div>
 
 					{/* Danger Zone */}
-					<div className="card" style={{ padding: "24px", borderColor: "var(--danger)", borderWidth: "2px" }}>
-						<h3
-							style={{
-								fontSize: "16px",
-								fontWeight: "600",
-								marginBottom: "12px",
-								color: "var(--danger)",
-							}}
-						>
-							⚠️ Danger Zone
-						</h3>
-						<p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "20px" }}>
+					<div className="card p-6 border-2 border-danger">
+						<h3 className="text-16px font-semibold mb-3 text-danger">⚠️ Danger Zone</h3>
+						<p className="text-14px text-text-secondary mb-5">
 							These actions are permanent and cannot be undone.
 						</p>
 
-						<div
-							style={{
-								padding: "20px",
-								background: "rgba(239, 68, 68, 0.05)",
-								borderRadius: "8px",
-								border: "1px solid rgba(239, 68, 68, 0.2)",
-							}}
-						>
-							<h4
-								style={{
-									fontSize: "14px",
-									fontWeight: "600",
-									marginBottom: "8px",
-									color: "var(--danger)",
-								}}
-							>
-								Delete This Project
-							</h4>
-							<p style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "16px" }}>
+						<div className="p-5 bg-danger-bg bg-opacity-5 rounded-lg border border-danger border-opacity-20">
+							<h4 className="text-14px font-semibold mb-2 text-danger">Delete This Project</h4>
+							<p className="text-13px text-text-secondary mb-4">
 								Once you delete a project, there is no going back. This will:
 							</p>
-							<ul
-								style={{
-									fontSize: "13px",
-									color: "var(--text-secondary)",
-									marginBottom: "16px",
-									paddingLeft: "20px",
-								}}
-							>
+							<ul className="text-13px text-text-secondary mb-4 pl-5">
 								<li>Delete all apps in this project</li>
 								<li>Remove all user data and sessions</li>
 								<li>Revoke all active licenses</li>
 								<li>Remove all team members</li>
 							</ul>
-							<button type="button" onClick={() => setShowDeleteModal(true)} className="btn btn-danger">
+							<button type="button" onClick={() => setShowDeleteModal(true)} className="btn-danger">
 								Delete Project
 							</button>
 						</div>
@@ -310,19 +170,10 @@ export function ProjectSettingsPage() {
 			) : (
 				<>
 					{/* Edit Mode */}
-					<form onSubmit={handleSave} className="card" style={{ padding: "32px" }}>
-						<h2
-							style={{
-								fontSize: "18px",
-								fontWeight: "700",
-								marginBottom: "28px",
-								color: "var(--text-primary)",
-							}}
-						>
-							Edit Project Information
-						</h2>
+					<form onSubmit={handleSave} className="card p-8">
+						<h2 className="text-18px font-bold mb-7 text-text-primary">Edit Project Information</h2>
 
-						<div style={{ display: "grid", gap: "20px", marginBottom: "32px" }}>
+						<div className="grid gap-5 mb-8">
 							<div>
 								<label className="form-label">Project Name *</label>
 								<input
@@ -334,9 +185,7 @@ export function ProjectSettingsPage() {
 									required
 									placeholder="My Project"
 								/>
-								<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
-									The display name for your project
-								</p>
+								<p className="text-12px text-text-tertiary mt-1.5">The display name for your project</p>
 							</div>
 
 							<div>
@@ -351,7 +200,7 @@ export function ProjectSettingsPage() {
 									pattern="[a-z0-9-]+"
 									placeholder="my-project"
 								/>
-								<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+								<p className="text-12px text-text-tertiary mt-1.5">
 									URL-friendly identifier (lowercase, hyphens only)
 								</p>
 							</div>
@@ -360,28 +209,23 @@ export function ProjectSettingsPage() {
 								<label className="form-label">Description</label>
 								<textarea
 									name="description"
-									className="form-control"
+									className="form-control resize-y"
 									value={formData.description || ""}
 									onChange={(e) => setFormData({ ...formData, description: e.target.value })}
 									rows={3}
 									placeholder="A brief description of your project..."
-									style={{ resize: "vertical" }}
 								/>
-								<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+								<p className="text-12px text-text-tertiary mt-1.5">
 									Optional description for internal reference
 								</p>
 							</div>
 						</div>
 
-						<div style={{ display: "flex", gap: "12px" }}>
+						<div className="flex gap-3">
 							<button
 								type="submit"
 								disabled={updateProjectMutation.isPending}
-								className="btn btn-primary"
-								style={{
-									opacity: updateProjectMutation.isPending ? 0.6 : 1,
-									cursor: updateProjectMutation.isPending ? "not-allowed" : "pointer",
-								}}
+								className={`btn-primary ${updateProjectMutation.isPending ? "opacity-60 cursor-not-allowed" : ""}`}
 							>
 								{updateProjectMutation.isPending ? "Saving..." : "Save Changes"}
 							</button>
@@ -395,7 +239,7 @@ export function ProjectSettingsPage() {
 										description: project.description || "",
 									});
 								}}
-								className="btn btn-secondary-outline"
+								className="btn-secondary"
 							>
 								Cancel
 							</button>

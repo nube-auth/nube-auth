@@ -135,64 +135,44 @@ export function AppApiKeysPage() {
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
-			<div style={{ marginBottom: "24px" }}>
-				<div
-					style={{
-						display: "flex",
-						gap: "8px",
-						alignItems: "center",
-						fontSize: "13px",
-						color: "var(--text-tertiary)",
-					}}
-				>
-					<Link to="/projects" style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+			<div className="mb-6">
+				<div className="breadcrumb">
+					<Link to="/projects" className="breadcrumb-link">
 						Projects
 					</Link>
 					<span>›</span>
 					<Link
 						to={`/projects/${projectId}`}
-						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
+						className="breadcrumb-link"
 					>
 						{project.name}
 					</Link>
 					<span>›</span>
 					<Link
 						to={`/projects/${projectId}/apps/${appId}`}
-						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
+						className="breadcrumb-link"
 					>
 						{app.name}
 					</Link>
 					<span>›</span>
-					<span style={{ color: "var(--text-primary)" }}>API Keys</span>
+					<span className="text-text-primary">API Keys</span>
 				</div>
 			</div>
 
 			{/* Page Header */}
-			<div
-				style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}
-			>
+			<div className="page-header mb-8">
 				<div>
-					<h1 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>API Keys</h1>
-					<p style={{ fontSize: "14px", color: "var(--text-tertiary)" }}>
+					<h1 className="page-title">API Keys</h1>
+					<p className="text-14px text-text-tertiary">
 						Manage your app's API credentials for integration
 					</p>
 				</div>
 			</div>
 
 			{/* Warning Banner */}
-			<div
-				style={{
-					padding: "16px",
-					background: "rgba(251, 191, 36, 0.1)",
-					border: "1px solid rgba(251, 191, 36, 0.3)",
-					borderRadius: "8px",
-					marginBottom: "24px",
-					display: "flex",
-					gap: "12px",
-				}}
-			>
+			<div className="card-warning mb-6">
 				<svg
-					style={{ width: "20px", height: "20px", color: "#fbbf24", flexShrink: 0 }}
+					className="w-5 h-5 text-yellow-500 flex-shrink-0"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
@@ -205,10 +185,10 @@ export function AppApiKeysPage() {
 					/>
 				</svg>
 				<div>
-					<div style={{ fontWeight: "600", color: "#fbbf24", marginBottom: "4px" }}>
+					<div className="font-semibold text-yellow-500 mb-1">
 						Keep these keys secure!
 					</div>
-					<div style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+					<div className="text-13px text-text-secondary">
 						Never expose these keys in client-side code or public repositories. Store them securely as
 						environment variables.
 					</div>
@@ -216,44 +196,23 @@ export function AppApiKeysPage() {
 			</div>
 
 			{/* App ID Card */}
-			<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-				<div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-					<div style={{ flex: 1 }}>
-						<div
-							style={{
-								fontSize: "12px",
-								fontWeight: "600",
-								color: "var(--text-tertiary)",
-								textTransform: "uppercase",
-								letterSpacing: "0.5px",
-								marginBottom: "8px",
-							}}
-						>
+			<div className="card p-6 mb-4">
+				<div className="flex items-start justify-between">
+					<div className="flex-1">
+						<div className="form-label">
 							App ID (Public)
 						</div>
-						<code
-							style={{
-								display: "block",
-								padding: "12px 16px",
-								background: "var(--surface-secondary)",
-								borderRadius: "8px",
-								fontSize: "14px",
-								fontFamily: "monospace",
-								color: "var(--text-primary)",
-								wordBreak: "break-all",
-							}}
-						>
+						<code className="code-block">
 							{app.id}
 						</code>
-						<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "8px" }}>
+						<p className="text-12px text-text-tertiary mt-2">
 							This is your public app identifier. Safe to use in client-side code.
 						</p>
 					</div>
 					<button
 						type="button"
 						onClick={() => handleCopy(app.id, "appId")}
-						className="btn btn-secondary-outline btn-sm"
-						style={{ marginLeft: "16px" }}
+					className="btn btn-secondary-outline btn-sm ml-4"
 					>
 						{copying === "appId" ? "✓ Copied" : "Copy"}
 					</button>
@@ -261,47 +220,20 @@ export function AppApiKeysPage() {
 			</div>
 
 			{/* Client Secret Card */}
-			<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-				<div
-					style={{
-						display: "flex",
-						alignItems: "flex-start",
-						justifyContent: "space-between",
-						marginBottom: "16px",
-					}}
-				>
-					<div style={{ flex: 1 }}>
-						<div
-							style={{
-								fontSize: "12px",
-								fontWeight: "600",
-								color: "var(--text-tertiary)",
-								textTransform: "uppercase",
-								letterSpacing: "0.5px",
-								marginBottom: "8px",
-							}}
-						>
+			<div className="card p-6 mb-4">
+				<div className="flex items-start justify-between mb-4">
+					<div className="flex-1">
+						<div className="form-label">
 							Client Secret
 						</div>
-						<code
-							style={{
-								display: "block",
-								padding: "12px 16px",
-								background: "var(--surface-secondary)",
-								borderRadius: "8px",
-								fontSize: "14px",
-								fontFamily: "monospace",
-								color: "var(--text-primary)",
-								wordBreak: "break-all",
-							}}
-						>
+						<code className="code-block">
 							{showSecret && revealedKeys.clientSecret ? revealedKeys.clientSecret : app.clientSecret}
 						</code>
-						<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "8px" }}>
+						<p className="text-12px text-text-tertiary mt-2">
 							Used for server-to-server authentication. Keep this secret!
 						</p>
 					</div>
-					<div style={{ display: "flex", gap: "8px", marginLeft: "16px" }}>
+					<div className="flex gap-2 ml-4">
 						{showSecret && revealedKeys.clientSecret && (
 							<button
 								type="button"
@@ -330,47 +262,20 @@ export function AppApiKeysPage() {
 			</div>
 
 			{/* Service Token Card */}
-			<div className="card" style={{ padding: "24px", marginBottom: "24px" }}>
-				<div
-					style={{
-						display: "flex",
-						alignItems: "flex-start",
-						justifyContent: "space-between",
-						marginBottom: "16px",
-					}}
-				>
-					<div style={{ flex: 1 }}>
-						<div
-							style={{
-								fontSize: "12px",
-								fontWeight: "600",
-								color: "var(--text-tertiary)",
-								textTransform: "uppercase",
-								letterSpacing: "0.5px",
-								marginBottom: "8px",
-							}}
-						>
+			<div className="card p-6 mb-6">
+				<div className="flex items-start justify-between mb-4">
+					<div className="flex-1">
+						<div className="form-label">
 							Service Token
 						</div>
-						<code
-							style={{
-								display: "block",
-								padding: "12px 16px",
-								background: "var(--surface-secondary)",
-								borderRadius: "8px",
-								fontSize: "14px",
-								fontFamily: "monospace",
-								color: "var(--text-primary)",
-								wordBreak: "break-all",
-							}}
-						>
+						<code className="code-block">
 							{showToken && revealedKeys.serviceToken ? revealedKeys.serviceToken : app.serviceToken}
 						</code>
-						<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "8px" }}>
+						<p className="text-12px text-text-tertiary mt-2">
 							Used for API calls from your backend. Keep this secret!
 						</p>
 					</div>
-					<div style={{ display: "flex", gap: "8px", marginLeft: "16px" }}>
+					<div className="flex gap-2 ml-4">
 						{showToken && revealedKeys.serviceToken && (
 							<button
 								type="button"
@@ -399,10 +304,10 @@ export function AppApiKeysPage() {
 			</div>
 
 			{/* Integration Guide Link */}
-			<div className="card" style={{ padding: "24px", background: "var(--surface-secondary)" }}>
-				<div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+			<div className="card p-6 bg-surface-secondary">
+				<div className="flex items-center gap-4">
 					<svg
-						style={{ width: "24px", height: "24px", color: "var(--primary)" }}
+						className="w-6 h-6 text-primary"
 						fill="none"
 						stroke="currentColor"
 						viewBox="0 0 24 24"
@@ -414,18 +319,11 @@ export function AppApiKeysPage() {
 							d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
 						/>
 					</svg>
-					<div style={{ flex: 1 }}>
-						<div
-							style={{
-								fontSize: "14px",
-								fontWeight: "600",
-								color: "var(--text-primary)",
-								marginBottom: "4px",
-							}}
-						>
+					<div className="flex-1">
+						<div className="text-14px font-semibold text-text-primary mb-1">
 							Integration Guide
 						</div>
-						<div style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>
+						<div className="text-13px text-text-tertiary">
 							Learn how to integrate Proofa into your application with code examples
 						</div>
 					</div>
@@ -445,7 +343,6 @@ export function AppApiKeysPage() {
 				confirmText="Regenerate Secret"
 				variant="danger"
 				requireCaptcha={true}
-				isLoading={isRegenerating}
 			/>
 
 			{/* Regenerate Token Confirmation Modal with Captcha */}
@@ -458,7 +355,6 @@ export function AppApiKeysPage() {
 				confirmText="Regenerate Token"
 				variant="danger"
 				requireCaptcha={true}
-				isLoading={isRegenerating}
 			/>
 		</div>
 	);

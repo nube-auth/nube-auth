@@ -27,7 +27,7 @@ export function ProfilePage() {
 	if (isLoading) {
 		return (
 			<div className="loading">
-				<div className="spinner" />
+				<div className="spinner w-4 h-4 border-2" />
 				<span className="loading-text">Loading profile...</span>
 			</div>
 		);
@@ -131,7 +131,7 @@ export function ProfilePage() {
 
 			{/* Tabs */}
 			<div className="tabs">
-				<Link to="/profile" className={`tab ${location.pathname === "/profile" ? "active" : ""}`}>
+				<Link to="/profile" className={location.pathname === "/profile" ? "tab tab-active" : "tab"}>
 					<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							strokeLinecap="round"
@@ -142,7 +142,7 @@ export function ProfilePage() {
 					</svg>
 					Profile
 				</Link>
-				<Link to="/sessions" className={`tab ${location.pathname === "/sessions" ? "active" : ""}`}>
+				<Link to="/sessions" className={location.pathname === "/sessions" ? "tab tab-active" : "tab"}>
 					<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							strokeLinecap="round"
@@ -212,12 +212,11 @@ export function ProfilePage() {
 						</div>
 
 						<div className="flex justify-between items-center mt-6">
-							<button type="submit" disabled={isUpdating} className="btn btn-primary">
+							<button type="submit" disabled={isUpdating} className="btn-primary">
 								{isUpdating ? (
 									<>
 										<div
-											className="spinner"
-											style={{ width: "16px", height: "16px", borderWidth: "2px" }}
+											className="spinner w-4 h-4 border-2"
 										/>
 										Saving...
 									</>
@@ -271,7 +270,7 @@ export function ProfilePage() {
 							<div className="info-list-value">
 								<span className="badge badge-info">
 									<svg
-										style={{ width: "12px", height: "12px" }}
+									className="w-3 h-3"
 										viewBox="0 0 24 24"
 										fill="currentColor"
 									>

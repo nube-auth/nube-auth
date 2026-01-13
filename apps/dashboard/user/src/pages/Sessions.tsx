@@ -82,7 +82,7 @@ export function SessionsPage() {
 
 			{/* Tabs */}
 			<div className="tabs">
-				<Link to="/profile" className={`tab ${location.pathname === "/profile" ? "active" : ""}`}>
+				<Link to="/profile" className={location.pathname === "/profile" ? "tab tab-active" : "tab"}>
 					<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							strokeLinecap="round"
@@ -93,7 +93,7 @@ export function SessionsPage() {
 					</svg>
 					Profile
 				</Link>
-				<Link to="/sessions" className={`tab ${location.pathname === "/sessions" ? "active" : ""}`}>
+				<Link to="/sessions" className={location.pathname === "/sessions" ? "tab tab-active" : "tab"}>
 					<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							strokeLinecap="round"
@@ -133,15 +133,7 @@ export function SessionsPage() {
 					<button
 						type="button"
 						onClick={() => logout()}
-						style={{
-							background: "none",
-							border: "none",
-							color: "var(--primary)",
-							cursor: "pointer",
-							textDecoration: "underline",
-							padding: 0,
-							font: "inherit",
-						}}
+						className="bg-transparent border-none text-primary cursor-pointer underline p-0 font-inherit"
 					>
 						Logout all
 					</button>
@@ -189,14 +181,11 @@ export function SessionsPage() {
 						type="button"
 						onClick={() => logout()}
 						disabled={isLoggingOut}
-						className="btn btn-danger btn-sm"
+						className="btn-danger btn-sm"
 					>
 						{isLoggingOut ? (
 							<>
-								<div
-									className="spinner"
-									style={{ width: "14px", height: "14px", borderWidth: "2px" }}
-								/>
+								<div className="spinner w-3.5 h-3.5 border-2" />
 								Logging out...
 							</>
 						) : (
@@ -216,7 +205,7 @@ export function SessionsPage() {
 				</div>
 
 				{sessions && sessions.length > 0 ? (
-					<div className="table-container" style={{ border: "none", borderRadius: 0 }}>
+					<div className="table-container border-none rounded-none">
 						<table>
 							<thead>
 								<tr>
@@ -236,11 +225,7 @@ export function SessionsPage() {
 												<div className="table-account">
 													<div className="table-account-icon">
 														<svg
-															style={{
-																width: "18px",
-																height: "18px",
-																color: "var(--text-tertiary)",
-															}}
+														className="w-4.5 h-4.5 text-text-tertiary"
 															fill="none"
 															stroke="currentColor"
 															viewBox="0 0 24 24"
@@ -268,15 +253,7 @@ export function SessionsPage() {
 											<td>
 												{isCurrent ? (
 													<span className="badge badge-success">
-														<span
-															style={{
-																width: "6px",
-																height: "6px",
-																background: "currentColor",
-																borderRadius: "50%",
-																animation: "pulse 2s infinite",
-															}}
-														/>
+													<span className="w-1.5 h-1.5 bg-current rounded-full animate-pulse" />
 														Current
 													</span>
 												) : isExpired ? (

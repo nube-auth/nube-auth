@@ -1,10 +1,20 @@
-import tailwind from "@astrojs/tailwind";
 import vercel from "@astrojs/vercel/static";
 import { defineConfig } from "astro/config";
+import unocss from "unocss/astro";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // https://astro.build/config
 export default defineConfig({
-	integrations: [tailwind()],
+	site: "https://proofa.sh",
+	integrations: [
+		unocss({
+			configFile: path.resolve(__dirname, "../../packages/dashboard-style/uno.config.ts"),
+		}),
+	],
 	output: "static",
 	adapter: vercel({
 		webAnalytics: {

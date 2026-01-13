@@ -1,5 +1,5 @@
 {
-	"name": "@proofa/docs",
+	"name": "@proofa/dashboard-docs",
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
@@ -14,10 +14,12 @@
 	"dependencies": {
 		"@astrojs/starlight": "^0.37.1",
 		"astro": "^5.16.6",
-		"sharp": "^0.34.5"
+		"sharp": "^0.34.5",
+		"@proofa/dashboard-style": "workspace:*"
 	},
 	"devDependencies": {
 		"@types/node": "^25.0.3",
-		"typescript": "^5.9.3"
+		"typescript": "^5.9.3",
+		"unocss": "^66.5.12"
 	}
 }

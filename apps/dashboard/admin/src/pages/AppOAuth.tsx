@@ -51,7 +51,7 @@ export default function AppOAuthPage() {
 		switch (provider.toLowerCase()) {
 			case "google":
 				return (
-					<svg style={{ width: "24px", height: "24px" }} viewBox="0 0 24 24">
+					<svg className="w-6 h-6" viewBox="0 0 24 24">
 						<path
 							fill="#4285F4"
 							d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -72,12 +72,12 @@ export default function AppOAuthPage() {
 				);
 			case "github":
 				return (
-					<svg style={{ width: "24px", height: "24px" }} viewBox="0 0 24 24" fill="#181717">
+					<svg className="w-6 h-6" viewBox="0 0 24 24" fill="#181717">
 						<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
 					</svg>
 				);
 			default:
-				return <span style={{ fontSize: "24px" }}>🔐</span>;
+				return <span className="text-24px">🔐</span>;
 		}
 	};
 
@@ -96,57 +96,42 @@ export default function AppOAuthPage() {
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
-			<div style={{ marginBottom: "24px" }}>
-				<div
-					style={{
-						display: "flex",
-						gap: "8px",
-						alignItems: "center",
-						fontSize: "13px",
-						color: "var(--text-tertiary)",
-					}}
-				>
-					<Link to="/projects" style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+			<div className="mb-6">
+				<div className="breadcrumb">
+					<Link to="/projects" className="breadcrumb-link">
 						Projects
 					</Link>
 					<span>›</span>
 					<Link
 						to={`/projects/${projectId}`}
-						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
+						className="breadcrumb-link"
 					>
 						{project?.name}
 					</Link>
 					<span>›</span>
 					<Link
 						to={`/projects/${projectId}/apps`}
-						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
+						className="breadcrumb-link"
 					>
 						Apps
 					</Link>
 					<span>›</span>
 					<Link
 						to={`/projects/${projectId}/apps/${appId}`}
-						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
+						className="breadcrumb-link"
 					>
 						{app.name}
 					</Link>
 					<span>›</span>
-					<span style={{ color: "var(--text-primary)" }}>OAuth</span>
+					<span className="text-text-primary">OAuth</span>
 				</div>
 			</div>
 
 			{/* Page Header */}
-			<div
-				style={{
-					marginBottom: "32px",
-					display: "flex",
-					alignItems: "flex-start",
-					justifyContent: "space-between",
-				}}
-			>
+			<div className="page-header mb-8">
 				<div>
-					<h1 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>OAuth Providers</h1>
-					<p style={{ fontSize: "14px", color: "var(--text-tertiary)" }}>
+					<h1 className="page-title">OAuth Providers</h1>
+					<p className="text-14px text-text-tertiary">
 						Select which OAuth providers to enable for <strong>{app.name}</strong>
 					</p>
 				</div>
@@ -155,7 +140,7 @@ export default function AppOAuthPage() {
 						Edit
 					</button>
 				) : (
-					<div style={{ display: "flex", gap: "12px" }}>
+					<div className="flex gap-3">
 						<button type="button" onClick={handleCancel} className="btn btn-secondary">
 							Cancel
 						</button>
@@ -172,19 +157,9 @@ export default function AppOAuthPage() {
 			</div>
 
 			{/* Info Banner */}
-			<div
-				style={{
-					padding: "16px",
-					background: "var(--primary-light)",
-					border: "1px solid var(--primary)",
-					borderRadius: "12px",
-					marginBottom: "24px",
-					display: "flex",
-					gap: "12px",
-				}}
-			>
+			<div className="card-info mb-6">
 				<svg
-					style={{ width: "20px", height: "20px", color: "var(--primary)", flexShrink: 0 }}
+					className="w-5 h-5 text-primary flex-shrink-0"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
@@ -197,10 +172,10 @@ export default function AppOAuthPage() {
 					/>
 				</svg>
 				<div>
-					<p style={{ fontSize: "14px", fontWeight: "600", color: "var(--primary)", marginBottom: "4px" }}>
+					<p className="text-14px font-semibold text-primary mb-1">
 						Platform-Level Configuration
 					</p>
-					<p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>
+					<p className="text-13px text-text-secondary m-0">
 						OAuth credentials are managed at the platform level. Simply select which providers to enable for
 						your app.
 					</p>
@@ -208,122 +183,48 @@ export default function AppOAuthPage() {
 			</div>
 
 			{/* Providers Grid */}
-			<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "20px" }}>
+			<div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-5">
 				{AVAILABLE_PROVIDERS.map((provider) => {
 					const isSelected = selectedProviders.includes(provider.id);
 
 					return (
 						<div
 							key={provider.id}
-							className="card"
+							className="card p-6 transition-all duration-200"
 							style={{
-								padding: "24px",
 								border: `2px solid ${isSelected ? "var(--primary)" : "var(--card-border)"}`,
 								background: isSelected ? "var(--primary-light)" : "var(--card-bg)",
-								transition: "all 0.2s ease",
 								cursor: isEditing ? "pointer" : "default",
 								opacity: isEditing ? 1 : 0.8,
 							}}
 							onClick={() => isEditing && handleToggleProvider(provider.id)}
 						>
-							<div
-								style={{ display: "flex", alignItems: "flex-start", gap: "16px", marginBottom: "16px" }}
-							>
-								<div
-									style={{
-										width: "48px",
-										height: "48px",
-										borderRadius: "12px",
-										background: "var(--content-bg)",
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "center",
-										flexShrink: 0,
-									}}
-								>
+							<div className="flex items-start gap-4 mb-4">
+								<div className="w-12 h-12 rounded-12px bg-content-bg flex items-center justify-center flex-shrink-0">
 									{getProviderIcon(provider.id)}
 								</div>
-								<div style={{ flex: 1 }}>
-									<div
-										style={{
-											display: "flex",
-											alignItems: "center",
-											gap: "8px",
-											marginBottom: "4px",
-										}}
-									>
-										<h3
-											style={{
-												fontSize: "16px",
-												fontWeight: "600",
-												color: "var(--text-primary)",
-												margin: 0,
-											}}
-										>
+								<div className="flex-1">
+									<div className="flex items-center gap-2 mb-1">
+										<h3 className="text-16px font-semibold text-text-primary m-0">
 											{provider.name}
 										</h3>
-										<span
-											style={{
-												padding: "2px 8px",
-												borderRadius: "4px",
-												fontSize: "10px",
-												fontWeight: "600",
-												background: "var(--primary)",
-												color: "white",
-												textTransform: "uppercase",
-											}}
-										>
+										<span className="badge badge-primary">
 											Platform
 										</span>
 									</div>
-									<p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>
+									<p className="text-13px text-text-secondary m-0">
 										Managed by Proofa
 									</p>
 								</div>
 							</div>
 
-							<div
-								style={{
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "space-between",
-									paddingTop: "16px",
-									borderTop: "1px solid var(--border-primary)",
-								}}
-							>
-								<span
-									style={{
-										fontSize: "14px",
-										fontWeight: "500",
-										color: isSelected ? "var(--primary)" : "var(--text-secondary)",
-									}}
-								>
+							<div className="flex items-center justify-between pt-4 border-t border-border-primary">
+								<span className="text-sm font-medium" style={{ color: isSelected ? "var(--primary)" : "var(--text-secondary)" }}>
 									{isSelected ? "Enabled" : "Disabled"}
 								</span>
 								{isEditing && (
-									<div
-										style={{
-											width: "48px",
-											height: "24px",
-											borderRadius: "12px",
-											background: isSelected ? "var(--primary)" : "var(--border-primary)",
-											position: "relative",
-											transition: "all 0.2s ease",
-										}}
-									>
-										<div
-											style={{
-												width: "20px",
-												height: "20px",
-												borderRadius: "50%",
-												background: "white",
-												position: "absolute",
-												top: "2px",
-												left: isSelected ? "26px" : "2px",
-												transition: "all 0.2s ease",
-												boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-											}}
-										/>
+									<div className="toggle-switch" style={{ background: isSelected ? "var(--primary)" : "var(--border-primary)" }}>
+								<div className="toggle-button" style={{ left: isSelected ? "26px" : "2px" }} />
 									</div>
 								)}
 							</div>

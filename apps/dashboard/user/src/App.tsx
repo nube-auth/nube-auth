@@ -35,8 +35,8 @@ function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
 	const isActive = location.pathname === to;
 
 	return (
-		<Link to={to} className={`nav-link ${isActive ? "active" : ""}`}>
-			{children}
+		<Link to={to} className={isActive ? "nav-link nav-link-active" : "nav-link"}>
+		{children}
 		</Link>
 	);
 }
@@ -48,7 +48,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 	if (isLoading) {
 		return (
 			<div className="app-layout">
-				<div className="loading" style={{ minHeight: "100vh" }}>
+				<div className="loading min-h-screen">
 					<div className="spinner" />
 					<span className="loading-text">Loading...</span>
 				</div>

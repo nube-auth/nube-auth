@@ -328,38 +328,28 @@ export default function ProjectPaymentProvidersPage() {
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
-			<div style={{ marginBottom: "24px" }}>
-				<div
-					style={{
-						display: "flex",
-						gap: "8px",
-						alignItems: "center",
-						fontSize: "13px",
-						color: "var(--text-tertiary)",
-					}}
-				>
-					<Link to="/projects" style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+			<div className="mb-6">
+				<div className="flex gap-2 items-center text-13px text-text-tertiary">
+					<Link to="/projects" className="text-text-tertiary no-underline">
 						Projects
 					</Link>
 					<span>›</span>
 					<Link
 						to={`/projects/${projectId}`}
-						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
+						className="text-text-tertiary no-underline"
 					>
 						{project?.name}
 					</Link>
 					<span>›</span>
-					<span style={{ color: "var(--text-primary)" }}>Payment Providers</span>
+					<span className="text-text-primary">Payment Providers</span>
 				</div>
 			</div>
 
 			{/* Page Header */}
-			<div
-				style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}
-			>
+			<div className="flex justify-between items-center mb-8">
 				<div>
-					<h1 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>Payment Providers</h1>
-					<p style={{ fontSize: "14px", color: "var(--text-tertiary)" }}>
+					<h1 className="text-24px font-700 mb-2">Payment Providers</h1>
+					<p className="text-14px text-text-tertiary">
 						{providers?.length || 0} {providers?.length === 1 ? "provider" : "providers"} configured
 					</p>
 				</div>
@@ -453,7 +443,7 @@ export default function ProjectPaymentProvidersPage() {
 			{/* Detail Modal */}
 			{detailProvider && (
 				<div className="modal-overlay" onClick={() => setDetailProvider(null)}>
-					<div className="modal" style={{ maxWidth: "600px" }} onClick={(e) => e.stopPropagation()}>
+					<div className="modal max-w-600px" onClick={(e) => e.stopPropagation()}>
 						<div className="modal-header">
 							<h3>Provider Details</h3>
 							<button type="button" className="modal-close" onClick={() => setDetailProvider(null)}>
@@ -467,19 +457,25 @@ export default function ProjectPaymentProvidersPage() {
 								</svg>
 							</button>
 						</div>
-						<div className="modal-body" style={{ padding: "24px" }}>
+						<div className="modal-body p-6">
 							{/* Provider Info */}
-							<div style={{ marginBottom: "24px" }}>
-								<h4 style={{ fontSize: "13px", fontWeight: "600", marginBottom: "12px", textTransform: "uppercase", color: "var(--text-tertiary)" }}>Provider Info</h4>
-								<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+							<div className="mb-6">
+								<h4 className="text-13px font-600 mb-3 uppercase text-text-tertiary">Provider Info</h4>
+								<div className="grid grid-cols-2 gap-4">
 									<div>
-										<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Provider</div>
-										<div style={{ fontSize: "14px", fontWeight: "500", textTransform: "capitalize" }}>{detailProvider.provider}</div>
+										<div className="text-12px text-text-tertiary mb-1">Provider</div>
+										<div className="text-14px font-500 capitalize">{detailProvider.provider}</div>
 									</div>
 									<div>
-										<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Environment</div>
+										<div className="text-12px text-text-tertiary mb-1">Environment</div>
 										<div>
-											<span style={{ display: "inline-block", padding: "4px 10px", background: detailProvider.environment === "production" ? "rgba(34, 197, 94, 0.1)" : "rgba(251, 191, 36, 0.1)", color: detailProvider.environment === "production" ? "#22c55e" : "#f59e0b", borderRadius: "12px", fontSize: "12px", fontWeight: "500", textTransform: "capitalize" }}>
+											<span 
+												className={`inline-block px-2.5 py-1 rounded-3 text-12px font-500 capitalize ${
+													detailProvider.environment === "production" 
+														? "bg-green-100 text-green-600" 
+														: "bg-yellow-100 text-yellow-600"
+												}`}
+											>
 												{detailProvider.environment}
 											</span>
 										</div>
@@ -488,41 +484,47 @@ export default function ProjectPaymentProvidersPage() {
 							</div>
 
 							{/* Webhook URLs */}
-							<div style={{ marginBottom: "24px" }}>
-								<h4 style={{ fontSize: "13px", fontWeight: "600", marginBottom: "12px", textTransform: "uppercase", color: "var(--text-tertiary)" }}>Webhook Configuration</h4>
-								<div style={{ background: "var(--bg-secondary)", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)", marginBottom: "12px" }}>
-									<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "6px" }}>Webhook URL</div>
-									<code style={{ display: "block", fontSize: "12px", fontFamily: "monospace", color: "var(--text-primary)", overflowX: "auto", padding: "8px", background: "var(--bg-primary)", borderRadius: "4px" }}>
+							<div className="mb-6">
+								<h4 className="text-13px font-600 mb-3 uppercase text-text-tertiary">Webhook Configuration</h4>
+								<div className="bg-bg-secondary p-3 rounded-2 border border-border mb-3">
+									<div className="text-12px text-text-tertiary mb-1.5">Webhook URL</div>
+									<code className="block text-12px font-mono text-text-primary overflow-x-auto p-2 bg-bg-primary rounded-1">
 										{`${window.location.origin.replace(/\/$/, '')}/v1/webhooks/${detailProvider.provider}/${detailProvider.id}`}
 									</code>
-									<div style={{ fontSize: "11px", color: "var(--text-tertiary)", marginTop: "8px" }}>
+									<div className="text-11px text-text-tertiary mt-2">
 										Configure this URL in your {detailProvider.provider === "dodo" ? "Paddle" : detailProvider.provider} dashboard
 									</div>
 								</div>
 							</div>
 
 							{/* Status Info */}
-							<div style={{ marginBottom: "24px" }}>
-								<h4 style={{ fontSize: "13px", fontWeight: "600", marginBottom: "12px", textTransform: "uppercase", color: "var(--text-tertiary)" }}>Status</h4>
-								<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+							<div className="mb-6">
+								<h4 className="text-13px font-600 mb-3 uppercase text-text-tertiary">Status</h4>
+								<div className="grid grid-cols-2 gap-4">
 									<div>
-										<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Status</div>
-										<span style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "4px 10px", background: detailProvider.isActive ? "rgba(34, 197, 94, 0.1)" : "var(--bg-secondary)", color: detailProvider.isActive ? "#22c55e" : "var(--text-tertiary)", borderRadius: "12px", fontSize: "12px", fontWeight: "500" }}>
-											<span style={{ width: "6px", height: "6px", background: "currentColor", borderRadius: "50%" }} />
+										<div className="text-12px text-text-tertiary mb-1">Status</div>
+										<span 
+											className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-3 text-12px font-500 ${
+												detailProvider.isActive 
+													? "bg-green-100 text-green-600" 
+													: "bg-bg-secondary text-text-tertiary"
+											}`}
+										>
+											<span className="w-1.5 h-1.5 bg-current rounded-full" />
 											{detailProvider.isActive ? "Active" : "Inactive"}
 										</span>
 									</div>
 									<div>
-										<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Created</div>
-										<div style={{ fontSize: "14px", fontWeight: "500" }}>{new Date(detailProvider.createdAt).toLocaleDateString()}</div>
+										<div className="text-12px text-text-tertiary mb-1">Created</div>
+										<div className="text-14px font-500">{new Date(detailProvider.createdAt).toLocaleDateString()}</div>
 									</div>
 								</div>
 							</div>
 
 							{/* Help Text */}
-							<div style={{ background: "rgba(59, 130, 246, 0.1)", padding: "12px", borderRadius: "8px", borderLeft: "3px solid #3b82f6" }}>
-								<div style={{ fontSize: "13px", fontWeight: "500", color: "#3b82f6", marginBottom: "4px" }}>💡 Tip</div>
-								<div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+							<div className="p-3 rounded-2 border-l-3 bg-blue-100 border-l-blue-500">
+								<div className="text-13px font-500 mb-1 text-blue-500">💡 Tip</div>
+								<div className="text-12px text-text-secondary">
 									Keep your API keys and webhook secrets secure. Never share them publicly or commit them to version control.
 								</div>
 							</div>
@@ -541,27 +543,12 @@ export default function ProjectPaymentProvidersPage() {
 
 			{/* Table Content */}
 			{!providers || providers.length === 0 ? (
-				<div className="card" style={{ padding: "64px 24px", textAlign: "center" }}>
-					<div style={{ fontSize: "64px", marginBottom: "16px" }}>💳</div>
-					<h2
-						style={{
-							fontSize: "20px",
-							fontWeight: "600",
-							marginBottom: "12px",
-							color: "var(--text-primary)",
-						}}
-					>
+				<div className="card py-16 px-6 text-center">
+					<div className="text-64px mb-4">💳</div>
+					<h2 className="text-20px font-600 mb-3 text-text-primary">
 						No payment providers yet
 					</h2>
-					<p
-						style={{
-							fontSize: "14px",
-							color: "var(--text-tertiary)",
-							marginBottom: "24px",
-							maxWidth: "400px",
-							margin: "0 auto 24px",
-						}}
-					>
+					<p className="text-14px text-text-tertiary mb-6 max-w-400px mx-auto">
 						Get started by adding your first payment provider to accept payments
 					</p>
 					<button type="button" onClick={handleCreate} className="btn btn-primary">
@@ -569,91 +556,26 @@ export default function ProjectPaymentProvidersPage() {
 					</button>
 				</div>
 			) : (
-				<div className="card" style={{ padding: "0", overflow: "hidden" }}>
-					<table style={{ width: "100%", borderCollapse: "collapse" }}>
+				<div className="card p-0 overflow-hidden">
+					<table className="w-full border-collapse">
 						<thead>
-							<tr
-								style={{
-									borderBottom: "1px solid var(--border-primary)",
-									background: "var(--surface-secondary)",
-								}}
-							>
-								<th
-									style={{
-										padding: "14px 16px",
-										textAlign: "left",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-tertiary)",
-										textTransform: "uppercase",
-										letterSpacing: "0.5px",
-									}}
-								>
+							<tr className="border-b border-border bg-surface-secondary">
+								<th className="px-4 py-3.5 text-left text-12px font-600 text-text-tertiary uppercase tracking-wider">
 									Provider
 								</th>
-								<th
-									style={{
-										padding: "14px 16px",
-										textAlign: "left",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-tertiary)",
-										textTransform: "uppercase",
-										letterSpacing: "0.5px",
-									}}
-								>
+								<th className="px-4 py-3.5 text-left text-12px font-600 text-text-tertiary uppercase tracking-wider">
 									Environment
 								</th>
-								<th
-									style={{
-										padding: "14px 16px",
-										textAlign: "left",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-tertiary)",
-										textTransform: "uppercase",
-										letterSpacing: "0.5px",
-									}}
-								>
+								<th className="px-4 py-3.5 text-left text-12px font-600 text-text-tertiary uppercase tracking-wider">
 									Status
 								</th>
-								<th
-									style={{
-										padding: "14px 16px",
-										textAlign: "left",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-tertiary)",
-										textTransform: "uppercase",
-										letterSpacing: "0.5px",
-									}}
-								>
+								<th className="px-4 py-3.5 text-left text-12px font-600 text-text-tertiary uppercase tracking-wide">
 									Default
 								</th>
-								<th
-									style={{
-										padding: "14px 16px",
-										textAlign: "left",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-tertiary)",
-										textTransform: "uppercase",
-										letterSpacing: "0.5px",
-									}}
-								>
+								<th className="px-4 py-3.5 text-left text-12px font-600 text-text-tertiary uppercase tracking-wider">
 									Created
 								</th>
-								<th
-									style={{
-										padding: "14px 16px",
-										textAlign: "right",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-tertiary)",
-										textTransform: "uppercase",
-										letterSpacing: "0.5px",
-									}}
-								>
+								<th className="px-4 py-3.5 text-right text-12px font-600 text-text-tertiary uppercase tracking-wider">
 									Actions
 								</th>
 							</tr>
@@ -662,109 +584,46 @@ export default function ProjectPaymentProvidersPage() {
 							{providers.map((provider) => (
 								<tr
 									key={provider.id}
-									style={{ borderBottom: "1px solid var(--border-primary)" }}
-									onMouseEnter={(e) => {
-										e.currentTarget.style.background = "var(--surface-secondary)";
-									}}
-									onMouseLeave={(e) => {
-										e.currentTarget.style.background = "transparent";
-									}}
+									className="border-b border-border hover:bg-surface-secondary cursor-pointer"
 								>
-									<td style={{ padding: "14px 16px" }}>
-										<span
-											style={{
-												display: "inline-block",
-												padding: "4px 10px",
-												background: "var(--primary-light)",
-												color: "var(--primary)",
-												borderRadius: "12px",
-												fontSize: "12px",
-												fontWeight: "500",
-												textTransform: "capitalize",
-											}}
-										>
+									<td className="px-4 py-3.5">
+										<span className="inline-block px-2.5 py-1 bg-primary-light text-primary rounded-3 text-12px font-500 capitalize">
 											{provider.provider}
 										</span>
 									</td>
-									<td style={{ padding: "14px 16px" }}>
-										<span
-											style={{
-												display: "inline-block",
-												padding: "4px 10px",
-												background:
-													provider.environment === "production"
-														? "rgba(34, 197, 94, 0.1)"
-														: "rgba(251, 191, 36, 0.1)",
-												color:
-													provider.environment === "production"
-														? "var(--success)"
-														: "#f59e0b",
-												borderRadius: "12px",
-												fontSize: "12px",
-												fontWeight: "500",
-												textTransform: "capitalize",
-											}}
+									<td className="px-4 py-3.5">
+										<span 
+											className={`inline-block px-2.5 py-1 rounded-3 text-12px font-500 capitalize ${
+												provider.environment === "production"
+													? "bg-green-100 text-success"
+													: "bg-yellow-100 text-yellow-600"
+											}`}
 										>
 											{provider.environment}
 										</span>
 									</td>
-									<td style={{ padding: "14px 16px" }}>
+									<td className="px-4 py-3.5">
 										<span
-											style={{
-												display: "inline-flex",
-												alignItems: "center",
-												gap: "4px",
-												padding: "4px 10px",
-												background: provider.isActive
-													? "rgba(34, 197, 94, 0.1)"
-													: "var(--surface-secondary)",
-												color: provider.isActive ? "var(--success)" : "var(--text-tertiary)",
-												borderRadius: "12px",
-												fontSize: "12px",
-												fontWeight: "500",
-											}}
+										className={`badge ${provider.isActive ? "badge-success" : "badge-gray"}`}
 										>
-											<span
-												style={{
-													width: "6px",
-													height: "6px",
-													background: "currentColor",
-													borderRadius: "50%",
-												}}
-											/>
+											<span className="w-6px h-6px bg-current rounded-full" />
 											{provider.isActive ? "Active" : "Inactive"}
 										</span>
 									</td>
-									<td style={{ padding: "14px 16px" }}>
+									<td className="px-4 py-3.5">
 										{provider.isDefault ? (
-											<span
-												style={{
-													display: "inline-block",
-													padding: "4px 10px",
-													background: "rgba(59, 130, 246, 0.1)",
-													color: "var(--primary)",
-													borderRadius: "12px",
-													fontSize: "12px",
-													fontWeight: "500",
-												}}
-											>
+										<span className="badge badge-info">
 												Default
 											</span>
 										) : (
-											<span style={{ color: "var(--text-tertiary)", fontSize: "12px" }}>—</span>
+											<span className="text-text-tertiary text-12px">—</span>
 										)}
 									</td>
-									<td
-										style={{
-											padding: "14px 16px",
-											fontSize: "14px",
-											color: "var(--text-secondary)",
-										}}
-									>
+									<td className="px-4 py-3.5 text-14px text-text-secondary">
 										{new Date(provider.createdAt).toLocaleDateString()}
 									</td>
-									<td style={{ padding: "14px 16px", textAlign: "right" }}>
-										<div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+									<td className="px-4 py-3.5 text-right">
+										<div className="flex gap-2 justify-end">
 											<button
 												type="button"
 												onClick={() => setDetailProvider(provider)}

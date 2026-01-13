@@ -83,7 +83,7 @@ export function ProfilePage() {
 		return (
 			<div className="page-header">
 				<h1 className="page-title">Profile</h1>
-				<div style={{ marginTop: "24px" }}>
+				<div className="mt-6">
 					<div className="spinner" />
 				</div>
 			</div>
@@ -94,7 +94,7 @@ export function ProfilePage() {
 		return (
 			<div className="page-header">
 				<h1 className="page-title">Profile</h1>
-				<p style={{ color: "var(--text-secondary)", marginTop: "16px" }}>Failed to load profile</p>
+				<p className="text-text-secondary mt-4">Failed to load profile</p>
 			</div>
 		);
 	}
@@ -117,24 +117,12 @@ export function ProfilePage() {
 
 			{/* Success Message */}
 			{successMessage && (
-				<div
-					style={{
-						padding: "12px 16px",
-						backgroundColor: "rgba(34, 197, 94, 0.1)",
-						border: "1px solid rgba(34, 197, 94, 0.3)",
-						borderRadius: "8px",
-						color: "rgb(34, 197, 94)",
-						marginBottom: "24px",
-						display: "flex",
-						alignItems: "center",
-						gap: "8px",
-					}}
-				>
+				<div className="p-3 bg-green-100 border border-green-300 rounded-8px text-green-600 mb-6 flex items-center gap-2">
 					<svg
 						fill="none"
 						stroke="currentColor"
 						viewBox="0 0 24 24"
-						style={{ width: "20px", height: "20px", flexShrink: 0 }}
+						className="w-5 h-5 flex-shrink-0"
 					>
 						<path
 							strokeLinecap="round"
@@ -147,48 +135,17 @@ export function ProfilePage() {
 				</div>
 			)}
 
-			<div className="card" style={{ padding: "24px" }}>
+			<div className="card p-6">
 				{/* Profile Header */}
-				<div
-					style={{
-						display: "flex",
-						alignItems: "center",
-						gap: "20px",
-						paddingBottom: "24px",
-						borderBottom: "1px solid var(--border-color)",
-						marginBottom: "24px",
-					}}
-				>
-					<div
-						style={{
-							width: "80px",
-							height: "80px",
-							borderRadius: "50%",
-							background: "linear-gradient(135deg, var(--primary) 0%, #9333ea 100%)",
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							fontSize: "32px",
-							fontWeight: "600",
-							color: "white",
-							flexShrink: 0,
-							boxShadow: "0 4px 12px rgba(139, 92, 246, 0.25)",
-						}}
-					>
+				<div className="flex items-center gap-5 pb-6 border-b border-border-color mb-6">
+					<div className="w-20 h-20 rounded-full flex items-center justify-center text-32px font-semibold text-white flex-shrink-0 shadow-lg bg-gradient-to-br from-primary to-purple-600">
 						{initials}
 					</div>
-					<div style={{ flex: 1 }}>
-						<h2
-							style={{
-								fontSize: "24px",
-								fontWeight: "600",
-								marginBottom: "4px",
-								color: "var(--text-primary)",
-							}}
-						>
+					<div className="flex-1">
+						<h2 className="text-24px font-semibold mb-1 text-text-primary">
 							{profile.name || "Admin User"}
 						</h2>
-						<p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>
+						<p className="text-text-secondary text-14px">
 							{profile.email || profile.primary_email}
 						</p>
 					</div>
@@ -196,22 +153,13 @@ export function ProfilePage() {
 						<button
 							type="button"
 							onClick={handleEdit}
-							className="btn-secondary"
-							style={{
-								display: "flex",
-								alignItems: "center",
-								gap: "8px",
-								padding: "10px 16px",
-								fontSize: "14px",
-								fontWeight: "500",
-								borderRadius: "var(--radius)",
-							}}
+							className="btn-secondary flex items-center gap-2 px-4 py-2.5 text-14px font-medium rounded-[var(--radius)]"
 						>
 							<svg
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
-								style={{ width: "16px", height: "16px" }}
+								className="w-4 h-4"
 							>
 								<path
 									strokeLinecap="round"
@@ -227,29 +175,16 @@ export function ProfilePage() {
 
 				{/* Profile Information */}
 				<div>
-					<h3
-						style={{
-							fontSize: "16px",
-							fontWeight: "600",
-							marginBottom: "20px",
-							color: "var(--text-primary)",
-						}}
-					>
+					<h3 className="text-16px font-semibold mb-5 text-text-primary">
 						Personal Information
 					</h3>
 
-					<div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+					<div className="flex flex-col gap-5">
 						{/* Name Field */}
 						<div>
 							<label
 								htmlFor="name"
-								style={{
-									display: "block",
-									fontSize: "13px",
-									fontWeight: "500",
-									marginBottom: "8px",
-									color: "var(--text-secondary)",
-								}}
+								className="form-label"
 							>
 								Full Name
 							</label>
@@ -260,23 +195,13 @@ export function ProfilePage() {
 									value={name}
 									onChange={(e) => setName(e.target.value)}
 									placeholder="Enter your full name"
-									className="input"
-									style={{
-										maxWidth: "500px",
-										fontSize: "14px",
-									}}
+									className="input max-w-500px text-14px"
 								/>
 							) : (
-								<div
-									style={{
-										padding: "10px 14px",
-										backgroundColor: "var(--input-bg)",
-										border: "1px solid var(--input-border)",
-										borderRadius: "6px",
-										maxWidth: "500px",
-										color: profile.name ? "var(--text-primary)" : "var(--text-tertiary)",
-										fontSize: "14px",
-									}}
+								<div 
+									className={`px-3.5 py-2.5 bg-input-bg border border-input-border rounded-6px max-w-500px text-14px ${
+										profile.name ? "text-text-primary" : "text-text-tertiary"
+									}`}
 								>
 									{profile.name || "Not set"}
 								</div>
@@ -287,36 +212,17 @@ export function ProfilePage() {
 						<div>
 							<label
 								htmlFor="email"
-								style={{
-									display: "block",
-									fontSize: "13px",
-									fontWeight: "500",
-									marginBottom: "8px",
-									color: "var(--text-secondary)",
-								}}
+								className="form-label"
 							>
 								Email Address
 							</label>
-							<div
-								style={{
-									padding: "10px 14px",
-									backgroundColor: "var(--input-bg)",
-									border: "1px solid var(--input-border)",
-									borderRadius: "6px",
-									maxWidth: "500px",
-									color: "var(--text-secondary)",
-									display: "flex",
-									alignItems: "center",
-									gap: "10px",
-									fontSize: "14px",
-								}}
-							>
-								<span style={{ flex: 1 }}>{profile.email || profile.primary_email}</span>
+							<div className="px-3.5 py-2.5 bg-input-bg border border-input-border rounded-6px max-w-500px text-text-secondary flex items-center gap-2.5 text-14px">
+								<span className="flex-1">{profile.email || profile.primary_email}</span>
 								<svg
 									fill="none"
 									stroke="currentColor"
 									viewBox="0 0 24 24"
-									style={{ width: "16px", height: "16px", opacity: 0.4, flexShrink: 0 }}
+									className="w-4 h-4 opacity-40 flex-shrink-0"
 								>
 									<path
 										strokeLinecap="round"
@@ -326,13 +232,7 @@ export function ProfilePage() {
 									/>
 								</svg>
 							</div>
-							<p
-								style={{
-									fontSize: "12px",
-									color: "var(--text-tertiary)",
-									marginTop: "6px",
-								}}
-							>
+							<p className="text-12px text-text-tertiary mt-1.5">
 								Email address is managed by your authentication provider and cannot be changed here.
 							</p>
 						</div>
@@ -341,28 +241,11 @@ export function ProfilePage() {
 						<div>
 							<label
 								htmlFor="userId"
-								style={{
-									display: "block",
-									fontSize: "13px",
-									fontWeight: "500",
-									marginBottom: "8px",
-									color: "var(--text-secondary)",
-								}}
+								className="form-label"
 							>
 								User ID
 							</label>
-							<div
-								style={{
-									padding: "10px 14px",
-									backgroundColor: "var(--input-bg)",
-									border: "1px solid var(--input-border)",
-									borderRadius: "6px",
-									maxWidth: "500px",
-									fontFamily: "monospace",
-									fontSize: "13px",
-									color: "var(--text-secondary)",
-								}}
-							>
+							<div className="px-3.5 py-2.5 bg-input-bg border border-input-border rounded-6px max-w-500px font-mono text-13px text-text-secondary">
 								{profile.id}
 							</div>
 						</div>
@@ -370,35 +253,16 @@ export function ProfilePage() {
 
 					{/* Action Buttons */}
 					{isEditing && (
-						<div
-							style={{
-								display: "flex",
-								gap: "10px",
-								marginTop: "24px",
-								paddingTop: "24px",
-								borderTop: "1px solid var(--border-color)",
-							}}
-						>
+						<div className="flex gap-2.5 mt-6 pt-6 border-t border-border-color">
 							<button
 								type="button"
 								onClick={handleSave}
 								disabled={updateProfile.isPending || !name.trim()}
-								className="btn-primary"
-								style={{
-									minWidth: "110px",
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "center",
-									gap: "8px",
-									padding: "10px 16px",
-									fontSize: "14px",
-									fontWeight: "500",
-									borderRadius: "var(--radius)",
-								}}
+								className="btn-primary min-w-110px flex items-center justify-center gap-2 px-4 py-2.5 text-14px font-medium rounded-[var(--radius)]"
 							>
 								{updateProfile.isPending ? (
 									<>
-										<div className="spinner" style={{ width: "14px", height: "14px" }} />
+										<div className="spinner w-3.5 h-3.5" />
 										Saving...
 									</>
 								) : (
@@ -407,7 +271,7 @@ export function ProfilePage() {
 											fill="none"
 											stroke="currentColor"
 											viewBox="0 0 24 24"
-											style={{ width: "16px", height: "16px" }}
+											className="w-4 h-4"
 										>
 											<path
 												strokeLinecap="round"
@@ -424,13 +288,7 @@ export function ProfilePage() {
 								type="button"
 								onClick={handleCancel}
 								disabled={updateProfile.isPending}
-								className="btn-secondary"
-								style={{
-									padding: "10px 16px",
-									fontSize: "14px",
-									fontWeight: "500",
-									borderRadius: "var(--radius)",
-								}}
+								className="btn-secondary px-4 py-2.5 text-14px font-medium rounded-[var(--radius)]"
 							>
 								Cancel
 							</button>
@@ -439,17 +297,7 @@ export function ProfilePage() {
 
 					{/* Error Message */}
 					{updateProfile.isError && (
-						<div
-							style={{
-								marginTop: "16px",
-								padding: "12px 16px",
-								backgroundColor: "rgba(239, 68, 68, 0.1)",
-								border: "1px solid rgba(239, 68, 68, 0.3)",
-								borderRadius: "8px",
-								color: "rgb(239, 68, 68)",
-								fontSize: "14px",
-							}}
-						>
+						<div className="mt-4 p-3 bg-red-100 border border-red-300 rounded-8px text-red-600 text-14px">
 							{updateProfile.error instanceof Error
 								? updateProfile.error.message
 								: "Failed to update profile"}
@@ -459,39 +307,20 @@ export function ProfilePage() {
 			</div>
 
 			{/* Additional Settings Section */}
-			<div className="card" style={{ marginTop: "20px", padding: "24px" }}>
-				<h3
-					style={{
-						fontSize: "16px",
-						fontWeight: "600",
-						marginBottom: "8px",
-						color: "var(--text-primary)",
-					}}
-				>
+			<div className="card mt-5 p-6">
+				<h3 className="text-16px font-semibold mb-2 text-text-primary">
 					Account Settings
 				</h3>
-				<p style={{ color: "var(--text-secondary)", fontSize: "13px", marginBottom: "20px" }}>
-					Additional account preferences and security settings
-				</p>
+				<p className="text-text-secondary text-13px mb-5">Additional account preferences and security settings</p>
 
-				<div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+				<div className="flex flex-col gap-2.5">
 					{/* Theme Preference */}
-					<div
-						style={{
-							padding: "16px",
-							backgroundColor: "var(--input-bg)",
-							border: "1px solid var(--input-border)",
-							borderRadius: "6px",
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "space-between",
-						}}
-					>
+					<div className="p-4 bg-input-bg border border-input-border rounded-6px flex items-center justify-between">
 						<div>
-							<div style={{ fontWeight: "500", marginBottom: "4px", fontSize: "14px" }}>
+							<div className="font-medium mb-1 text-14px">
 								Theme Preference
 							</div>
-							<div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+							<div className="text-12px text-text-secondary">
 								Your theme preference is managed in the header
 							</div>
 						</div>
@@ -499,7 +328,7 @@ export function ProfilePage() {
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
-							style={{ width: "20px", height: "20px", color: "var(--text-tertiary)", flexShrink: 0 }}
+							className="w-5 h-5 text-text-tertiary flex-shrink-0"
 						>
 							<path
 								strokeLinecap="round"
@@ -511,22 +340,12 @@ export function ProfilePage() {
 					</div>
 
 					{/* Sessions */}
-					<div
-						style={{
-							padding: "16px",
-							backgroundColor: "var(--input-bg)",
-							border: "1px solid var(--input-border)",
-							borderRadius: "6px",
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "space-between",
-						}}
-					>
+					<div className="p-4 bg-input-bg border border-input-border rounded-6px flex items-center justify-between">
 						<div>
-							<div style={{ fontWeight: "500", marginBottom: "4px", fontSize: "14px" }}>
+							<div className="font-medium mb-1 text-14px">
 								Active Sessions
 							</div>
-							<div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+							<div className="text-12px text-text-secondary">
 								You are currently signed in
 							</div>
 						</div>
@@ -534,7 +353,7 @@ export function ProfilePage() {
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
-							style={{ width: "20px", height: "20px", color: "rgb(34, 197, 94)", flexShrink: 0 }}
+							className="w-5 h-5 text-green-600 flex-shrink-0"
 						>
 							<path
 								strokeLinecap="round"

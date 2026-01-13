@@ -1,8 +1,18 @@
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
+import unocss from "unocss/astro";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default defineConfig({
+	site: "https://docs.proofa.sh",
 	integrations: [
+		unocss({
+			configFile: path.resolve(__dirname, "../../packages/dashboard-style/uno.config.ts"),
+		}),
 		starlight({
 			title: "Proofa",
 			logo: {

@@ -11,7 +11,7 @@ interface InviteUserModalProps {
 }
 
 interface Plan {
-	id: number; // Internal numeric ID
+	id: number;
 	public_id: string;
 	name: string;
 	slug: string;
@@ -25,7 +25,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 	const [plans, setPlans] = useState<Plan[]>([]);
 	const [plansLoading, setPlansLoading] = useState(false);
 	const [grantLicense, setGrantLicense] = useState(true);
-	const [licenseDuration, setLicenseDuration] = useState<string>(""); // empty = no expiry
+	const [licenseDuration, setLicenseDuration] = useState<string>("");
 	const [customMessage, setCustomMessage] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -49,11 +49,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 			const data = await response.json();
 			setPlans(data.plans || []);
 
-			// Set default plan to first active plan if available
 			if (data.plans && data.plans.length > 0) {
-				// Find first plan (internal ID, not public_id)
-				// We need to convert public_id to internal id, but API should return internal id
-				// For now, assume plans[0] is the default
 				const firstPlan = data.plans[0];
 				if (firstPlan) {
 					setPlanId(firstPlan.id);
@@ -67,7 +63,6 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 		}
 	}, [projectId, appId]);
 
-	// Fetch plans when modal opens
 	useEffect(() => {
 		if (isOpen) {
 			fetchPlans();
@@ -113,14 +108,12 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 				action: data.action,
 			});
 
-			// Reset form
 			setEmail("");
 			setPlanId(plans.length > 0 && plans[0] ? plans[0].id : null);
 			setGrantLicense(true);
 			setLicenseDuration("");
 			setCustomMessage("");
 
-			// Call onSuccess after a delay to show the success message
 			setTimeout(() => {
 				onSuccess();
 				onClose();
@@ -146,147 +139,53 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 
 	return (
 		<div
-			className="modal-overlay"
+			className="modal-overlay fixed top-0 left-[260px] right-0 bottom-0 bg-black/60 flex items-center justify-center z-1000 p-8"
 			onClick={handleClose}
-			style={{
-				position: "fixed",
-				top: 0,
-				left: "260px",
-				right: 0,
-				bottom: 0,
-				background: "rgba(0, 0, 0, 0.6)",
-				display: "flex",
-				alignItems: "center",
-				justifyContent: "center",
-				zIndex: 1000,
-				padding: "32px",
-			}}
 		>
 			<div
-				className="modal-content"
+				className="modal-content bg-card-bg rounded-xl p-8 max-w-[900px] w-full max-h-[calc(100vh-64px)] overflow-y-auto shadow-[0_20px_25px_-5px_rgba(0,0,0,0.3),0_10px_10px_-5px_rgba(0,0,0,0.2)] border border-card-border"
 				onClick={(e) => e.stopPropagation()}
-				style={{
-					background: "var(--card-bg)",
-					borderRadius: "12px",
-					padding: "32px",
-					maxWidth: "900px",
-					width: "100%",
-					maxHeight: "calc(100vh - 64px)",
-					overflowY: "auto",
-					boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)",
-					border: "1px solid var(--card-border)",
-				}}
 			>
 				{/* Header */}
-				<div
-					style={{
-						marginBottom: "24px",
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "space-between",
-					}}
-				>
+				<div className="mb-6 flex items-center justify-between">
 					<div>
-						<h2
-							style={{
-								fontSize: "20px",
-								fontWeight: "700",
-								color: "var(--text-primary)",
-								marginBottom: "4px",
-							}}
-						>
-							Invite User
-						</h2>
-						<p style={{ fontSize: "14px", color: "var(--text-secondary)", margin: 0 }}>
-							Send an invitation or grant access to an existing user
-						</p>
+						<h2 className="text-20px font-bold text-text-primary mb-1">Invite User</h2>
+						<p className="text-14px text-text-secondary m-0">Send an invitation or grant access to an existing user</p>
 					</div>
 					<button
 						type="button"
 						onClick={handleClose}
 						disabled={loading}
-						style={{
-							background: "transparent",
-							border: "none",
-							color: "var(--text-secondary)",
-							cursor: loading ? "not-allowed" : "pointer",
-							padding: "4px",
-							borderRadius: "6px",
-							transition: "all 0.2s ease",
-						}}
-						onMouseEnter={(e) => {
-							if (!loading) {
-								e.currentTarget.style.background = "var(--content-bg)";
-								e.currentTarget.style.color = "var(--text-primary)";
-							}
-						}}
-						onMouseLeave={(e) => {
-							e.currentTarget.style.background = "transparent";
-							e.currentTarget.style.color = "var(--text-secondary)";
-						}}
+						className={`bg-transparent border-none text-text-secondary p-1 rounded-md transition-all duration-200 ${loading ? "cursor-not-allowed" : "cursor-pointer hover:bg-content-bg hover:text-text-primary"}`}
 					>
-						<svg
-							style={{ width: "20px", height: "20px" }}
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M6 18L18 6M6 6l12 12"
-							/>
+						<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
 						</svg>
 					</button>
 				</div>
 
 				{/* Success Message */}
 				{success && (
-					<div
-						style={{
-							background: "var(--success-bg)",
-							border: "1px solid var(--success)",
-							borderRadius: "8px",
-							padding: "12px 16px",
-							marginBottom: "20px",
-							display: "flex",
-							alignItems: "center",
-							gap: "12px",
-						}}
-					>
+					<div className="bg-success-bg border border-success rounded-lg p-3 mb-5 flex items-center gap-3">
 						<svg
-							style={{ width: "20px", height: "20px", color: "var(--success)", flexShrink: 0 }}
+							className="w-5 h-5 text-success flex-shrink-0"
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
 						>
 							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
 						</svg>
-						<div style={{ flex: 1 }}>
-							<p style={{ fontSize: "14px", fontWeight: "600", color: "var(--success-text)", margin: 0 }}>
-								{success.message}
-							</p>
+						<div className="flex-1">
+							<p className="text-14px font-semibold text-success-text m-0">{success.message}</p>
 						</div>
 					</div>
 				)}
 
 				{/* Error Message */}
 				{error && (
-					<div
-						style={{
-							background: "var(--danger-bg)",
-							border: "1px solid var(--danger)",
-							borderRadius: "8px",
-							padding: "12px 16px",
-							marginBottom: "20px",
-							display: "flex",
-							alignItems: "center",
-							gap: "12px",
-						}}
-					>
+					<div className="bg-danger-bg border border-danger rounded-lg p-3 mb-5 flex items-center gap-3">
 						<svg
-							style={{ width: "20px", height: "20px", color: "var(--danger)", flexShrink: 0 }}
+							className="w-5 h-5 text-danger flex-shrink-0"
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
@@ -298,25 +197,16 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 								d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 							/>
 						</svg>
-						<p style={{ fontSize: "14px", color: "var(--danger-text)", margin: 0 }}>{error}</p>
+						<p className="text-14px text-danger-text m-0">{error}</p>
 					</div>
 				)}
 
 				{/* Form */}
 				<form onSubmit={handleSubmit}>
 					{/* Email Field */}
-					<div style={{ marginBottom: "20px" }}>
-						<label
-							htmlFor="email"
-							style={{
-								display: "block",
-								fontSize: "13px",
-								fontWeight: "600",
-								color: "var(--text-secondary)",
-								marginBottom: "8px",
-							}}
-						>
-							Email Address <span style={{ color: "var(--danger)" }}>*</span>
+					<div className="mb-5">
+						<label htmlFor="email" className="form-label">
+							Email Address <span className="text-danger">*</span>
 						</label>
 						<input
 							type="email"
@@ -326,84 +216,36 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 							onChange={(e) => setEmail(e.target.value)}
 							disabled={loading}
 							placeholder="user@example.com"
-							style={{
-								width: "100%",
-								padding: "10px 12px",
-								border: "1px solid var(--card-border)",
-								borderRadius: "8px",
-								background: "var(--content-bg)",
-								color: "var(--text-primary)",
-								fontSize: "14px",
-								outline: "none",
-								transition: "all 0.2s ease",
-							}}
-							onFocus={(e) => {
-								e.currentTarget.style.borderColor = "var(--primary)";
-								e.currentTarget.style.boxShadow = "0 0 0 2px rgba(139, 92, 246, 0.2)";
-							}}
-							onBlur={(e) => {
-								e.currentTarget.style.borderColor = "var(--card-border)";
-								e.currentTarget.style.boxShadow = "none";
-							}}
+							className="form-control w-full px-3 py-2.5 border border-card-border rounded-lg bg-content-bg text-text-primary text-14px outline-none transition-all duration-200 focus:border-primary focus:shadow-[0_0_0_2px_rgba(139,92,246,0.2)]"
 						/>
-						<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
-							We'll check if this user exists before sending an invitation
-						</p>
+						<p className="text-12px text-text-tertiary mt-1.5">We'll check if this user exists before sending an invitation</p>
 					</div>
 
 					{/* Grant License Checkbox */}
-					<div style={{ marginBottom: "20px" }}>
+					<div className="mb-5">
 						<label
-							style={{
-								display: "flex",
-								alignItems: "center",
-								gap: "10px",
-								cursor: loading ? "not-allowed" : "pointer",
-								padding: "12px",
-								borderRadius: "8px",
-								background: grantLicense ? "var(--primary-light)" : "var(--content-bg)",
-								border: "1px solid",
-								borderColor: grantLicense ? "var(--primary)" : "var(--card-border)",
-								transition: "all 0.2s ease",
-							}}
+							className={`flex items-center gap-2.5 p-3 rounded-lg border transition-all duration-200 ${loading ? "cursor-not-allowed" : "cursor-pointer"} ${grantLicense ? "bg-primary-light border-primary" : "bg-content-bg border-card-border"}`}
 						>
 							<input
 								type="checkbox"
 								checked={grantLicense}
 								onChange={(e) => setGrantLicense(e.target.checked)}
 								disabled={loading}
-								style={{
-									width: "18px",
-									height: "18px",
-									cursor: loading ? "not-allowed" : "pointer",
-								}}
+								className={`w-4.5 h-4.5 ${loading ? "cursor-not-allowed" : "cursor-pointer"}`}
 							/>
-							<div style={{ flex: 1 }}>
-								<div style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
-									Grant License
-								</div>
-								<div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "2px" }}>
-									Automatically grant a license when the user signs up
-								</div>
+							<div className="flex-1">
+								<div className="text-14px font-semibold text-text-primary">Grant License</div>
+								<div className="text-12px text-text-secondary mt-0.5">Automatically grant a license when the user signs up</div>
 							</div>
 						</label>
 					</div>
 
-					{/* License Plan Select (only if grantLicense is true) */}
+					{/* License Plan Select */}
 					{grantLicense && (
 						<>
-							<div style={{ marginBottom: "20px" }}>
-								<label
-									htmlFor="plan"
-									style={{
-										display: "block",
-										fontSize: "13px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										marginBottom: "8px",
-									}}
-								>
-									License Plan <span style={{ color: "var(--danger)" }}>*</span>
+							<div className="mb-5">
+								<label htmlFor="plan" className="form-label">
+									License Plan <span className="text-danger">*</span>
 								</label>
 								<Select
 									value={planId?.toString() || ""}
@@ -425,36 +267,15 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 													}))
 									}
 									disabled={loading || plansLoading}
-									style={{
-										width: "100%",
-										padding: "10px 12px",
-										border: "1px solid var(--card-border)",
-										borderRadius: "8px",
-										background: "var(--content-bg)",
-										color: "var(--text-primary)",
-										fontSize: "14px",
-										outline: "none",
-										transition: "all 0.2s ease",
-									}}
 								/>
 							</div>
 
 							{/* License Duration */}
-							<div style={{ marginBottom: "20px" }}>
-								<label
-									htmlFor="licenseDuration"
-									style={{
-										display: "block",
-										fontSize: "13px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										marginBottom: "8px",
-									}}
-								>
-									License Duration{" "}
-									<span style={{ fontSize: "11px", fontWeight: "400" }}>(Optional)</span>
+							<div className="mb-5">
+								<label htmlFor="licenseDuration" className="form-label">
+									License Duration <span className="text-11px font-normal">(Optional)</span>
 								</label>
-								<div style={{ position: "relative" }}>
+								<div className="relative">
 									<input
 										type="number"
 										id="licenseDuration"
@@ -463,61 +284,23 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 										disabled={loading}
 										placeholder="Leave empty for no expiry"
 										min="1"
-										style={{
-											width: "100%",
-											padding: "10px 12px",
-											paddingRight: "60px",
-											border: "1px solid var(--card-border)",
-											borderRadius: "8px",
-											background: "var(--content-bg)",
-											color: "var(--text-primary)",
-											fontSize: "14px",
-											outline: "none",
-											transition: "all 0.2s ease",
-										}}
-										onFocus={(e) => {
-											e.currentTarget.style.borderColor = "var(--primary)";
-											e.currentTarget.style.boxShadow = "0 0 0 2px rgba(139, 92, 246, 0.2)";
-										}}
-										onBlur={(e) => {
-											e.currentTarget.style.borderColor = "var(--card-border)";
-											e.currentTarget.style.boxShadow = "none";
-										}}
+										className="form-control w-full px-3 py-2.5 pr-15 border border-card-border rounded-lg bg-content-bg text-text-primary text-14px outline-none transition-all duration-200 focus:border-primary focus:shadow-[0_0_0_2px_rgba(139,92,246,0.2)]"
 									/>
-									<span
-										style={{
-											position: "absolute",
-											right: "12px",
-											top: "50%",
-											transform: "translateY(-50%)",
-											fontSize: "13px",
-											color: "var(--text-tertiary)",
-											pointerEvents: "none",
-										}}
-									>
+									<span className="absolute right-3 top-1/2 -translate-y-1/2 text-13px text-text-tertiary pointer-events-none">
 										days
 									</span>
 								</div>
-								<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+								<p className="text-12px text-text-tertiary mt-1.5">
 									Leave empty for lifetime access. Set a number of days for time-limited licenses.
 								</p>
 							</div>
 						</>
 					)}
 
-					{/* Custom Message (Optional) */}
-					<div style={{ marginBottom: "24px" }}>
-						<label
-							htmlFor="customMessage"
-							style={{
-								display: "block",
-								fontSize: "13px",
-								fontWeight: "600",
-								color: "var(--text-secondary)",
-								marginBottom: "8px",
-							}}
-						>
-							Custom Message <span style={{ fontSize: "11px", fontWeight: "400" }}>(Optional)</span>
+					{/* Custom Message */}
+					<div className="mb-6">
+						<label htmlFor="customMessage" className="form-label">
+							Custom Message <span className="text-11px font-normal">(Optional)</span>
 						</label>
 						<textarea
 							id="customMessage"
@@ -526,96 +309,29 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 							disabled={loading}
 							placeholder="Add a personal message to the invitation..."
 							rows={3}
-							style={{
-								width: "100%",
-								padding: "10px 12px",
-								border: "1px solid var(--card-border)",
-								borderRadius: "8px",
-								background: "var(--content-bg)",
-								color: "var(--text-primary)",
-								fontSize: "14px",
-								outline: "none",
-								resize: "vertical",
-								fontFamily: "inherit",
-								transition: "all 0.2s ease",
-							}}
-							onFocus={(e) => {
-								e.currentTarget.style.borderColor = "var(--primary)";
-								e.currentTarget.style.boxShadow = "0 0 0 2px rgba(139, 92, 246, 0.2)";
-							}}
-							onBlur={(e) => {
-								e.currentTarget.style.borderColor = "var(--card-border)";
-								e.currentTarget.style.boxShadow = "none";
-							}}
+							className="form-control w-full px-3 py-2.5 border border-card-border rounded-lg bg-content-bg text-text-primary text-14px outline-none resize-vertical font-inherit transition-all duration-200 focus:border-primary focus:shadow-[0_0_0_2px_rgba(139,92,246,0.2)]"
 						/>
 					</div>
 
 					{/* Form Actions */}
-					<div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+					<div className="flex gap-3 justify-end">
 						<button
 							type="button"
 							onClick={handleClose}
 							disabled={loading}
-							style={{
-								padding: "10px 20px",
-								fontSize: "14px",
-								fontWeight: "600",
-								border: "1px solid var(--card-border)",
-								borderRadius: "8px",
-								background: "transparent",
-								color: "var(--text-secondary)",
-								cursor: loading ? "not-allowed" : "pointer",
-								transition: "all 0.2s ease",
-								opacity: loading ? 0.5 : 1,
-							}}
-							onMouseEnter={(e) => {
-								if (!loading) {
-									e.currentTarget.style.background = "var(--content-bg)";
-									e.currentTarget.style.color = "var(--text-primary)";
-								}
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.background = "transparent";
-								e.currentTarget.style.color = "var(--text-secondary)";
-							}}
+							className={`px-5 py-2.5 text-14px font-semibold border border-card-border rounded-lg bg-transparent text-text-secondary transition-all duration-200 ${loading ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-content-bg hover:text-text-primary"}`}
 						>
 							Cancel
 						</button>
 						<button
 							type="submit"
 							disabled={loading || !email}
-							style={{
-								padding: "10px 24px",
-								fontSize: "14px",
-								fontWeight: "600",
-								border: "none",
-								borderRadius: "8px",
-								background: loading || !email ? "var(--text-tertiary)" : "var(--primary)",
-								color: "white",
-								cursor: loading || !email ? "not-allowed" : "pointer",
-								transition: "all 0.2s ease",
-								display: "flex",
-								alignItems: "center",
-								gap: "8px",
-							}}
-							onMouseEnter={(e) => {
-								if (!loading && email) {
-									e.currentTarget.style.background = "var(--primary-hover)";
-									e.currentTarget.style.transform = "translateY(-1px)";
-									e.currentTarget.style.boxShadow = "0 4px 12px rgba(99, 102, 241, 0.3)";
-								}
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.background =
-									loading || !email ? "var(--text-tertiary)" : "var(--primary)";
-								e.currentTarget.style.transform = "translateY(0)";
-								e.currentTarget.style.boxShadow = "none";
-							}}
+							className={`px-6 py-2.5 text-14px font-semibold border-none rounded-lg text-white transition-all duration-200 flex items-center gap-2 ${loading || !email ? "bg-text-tertiary cursor-not-allowed" : "bg-primary cursor-pointer hover:bg-primary-hover hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(99,102,241,0.3)]"}`}
 						>
 							{loading ? (
 								<>
 									<svg
-										style={{ width: "16px", height: "16px", animation: "spin 1s linear infinite" }}
+										className="w-4 h-4 animate-spin"
 										fill="none"
 										stroke="currentColor"
 										viewBox="0 0 24 24"
@@ -631,12 +347,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 								</>
 							) : (
 								<>
-									<svg
-										style={{ width: "16px", height: "16px" }}
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
+									<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path
 											strokeLinecap="round"
 											strokeLinejoin="round"
@@ -650,16 +361,6 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 						</button>
 					</div>
 				</form>
-
-				{/* Add spinning animation */}
-				<style>
-					{`
-						@keyframes spin {
-							from { transform: rotate(0deg); }
-							to { transform: rotate(360deg); }
-						}
-					`}
-				</style>
 			</div>
 		</div>
 	);

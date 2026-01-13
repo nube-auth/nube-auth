@@ -28,7 +28,7 @@ export function ProjectDetailPage() {
 	if (!project) {
 		return (
 			<div className="alert alert-danger">
-				<svg style={{ width: "20px", height: "20px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
 						strokeLinecap="round"
 						strokeLinejoin="round"
@@ -44,38 +44,27 @@ export function ProjectDetailPage() {
 	return (
 		<div className="space-y-6">
 			{/* Breadcrumb */}
-			<nav style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px" }}>
-				<Link to="/projects" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>
+			<nav className="breadcrumb">
+				<Link to="/projects" className="breadcrumb-link">
 					Projects
 				</Link>
 				<svg
-					style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }}
+					className="w-3.5 h-3.5 text-text-tertiary"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
 				>
 					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
 				</svg>
-				<span style={{ color: "var(--text-primary)", fontWeight: "500" }}>{project.name}</span>
+				<span className="text-text-primary font-medium">{project.name}</span>
 			</nav>
 
 			{/* Project Header Card */}
-			<div className="card" style={{ padding: "24px" }}>
-				<div style={{ display: "flex", alignItems: "flex-start", gap: "20px" }}>
-					<div
-						style={{
-							width: "56px",
-							height: "56px",
-							background: "linear-gradient(135deg, var(--primary-light), #ddd6fe)",
-							borderRadius: "var(--radius-lg)",
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							flexShrink: 0,
-						}}
-					>
+			<div className="card p-6">
+				<div className="flex items-start gap-5">
+					<div className="w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary-light to-purple-200">
 						<svg
-							style={{ width: "28px", height: "28px", color: "var(--primary)" }}
+							className="w-7 h-7 text-primary"
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
@@ -88,27 +77,18 @@ export function ProjectDetailPage() {
 							/>
 						</svg>
 					</div>
-					<div style={{ flex: 1 }}>
-						<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "4px" }}>
-							<h1 style={{ fontSize: "24px", fontWeight: "700", color: "var(--text-primary)" }}>
+					<div className="flex-1">
+						<div className="flex items-center gap-3 mb-1">
+							<h1 className="text-24px font-bold text-text-primary">
 								{project.name}
 							</h1>
 							<span className="badge badge-success">Active</span>
 						</div>
 						{project.slug && (
-							<p style={{ color: "var(--text-secondary)", marginBottom: "12px" }}>{project.slug}</p>
+							<p className="text-text-secondary mb-3">{project.slug}</p>
 						)}
-						<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-							<code
-								style={{
-									padding: "6px 12px",
-									background: "var(--content-bg)",
-									borderRadius: "var(--radius)",
-									fontFamily: "'JetBrains Mono', monospace",
-									fontSize: "12px",
-									color: "var(--text-primary)",
-								}}
-							>
+						<div className="flex items-center gap-3">
+							<code className="code-block">
 								{project.id}
 							</code>
 							<button
@@ -119,7 +99,7 @@ export function ProjectDetailPage() {
 								{copied ? (
 									<>
 										<svg
-											style={{ width: "14px", height: "14px", color: "var(--success)" }}
+										className="w-3.5 h-3.5 text-success"
 											fill="none"
 											stroke="currentColor"
 											viewBox="0 0 24 24"
@@ -136,7 +116,7 @@ export function ProjectDetailPage() {
 								) : (
 									<>
 										<svg
-											style={{ width: "14px", height: "14px" }}
+										className="w-3.5 h-3.5"
 											fill="none"
 											stroke="currentColor"
 											viewBox="0 0 24 24"
@@ -158,7 +138,7 @@ export function ProjectDetailPage() {
 			</div>
 
 			{/* Stats Grid */}
-			<div className="stats-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
+			<div className="stats-grid grid-cols-4">
 				<div className="stat-card">
 					<div className="stat-card-header">
 						<div className="stat-icon blue">
@@ -207,7 +187,7 @@ export function ProjectDetailPage() {
 					<div className="stat-value">{statsLoading ? "—" : stats?.activeLicenses || 0}</div>
 					<div className="stat-label">Active Licenses</div>
 					{!statsLoading && stats && (
-						<div style={{ fontSize: "11px", color: "var(--text-tertiary)", marginTop: "4px" }}>
+						<div className="text-11px text-text-tertiary mt-1">
 							{stats.totalLicenses} total
 						</div>
 					)}
@@ -243,7 +223,7 @@ export function ProjectDetailPage() {
 						className="btn btn-primary"
 					>
 						<svg
-							style={{ width: "16px", height: "16px" }}
+							className="w-4 h-4"
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
@@ -267,31 +247,21 @@ export function ProjectDetailPage() {
 									<th>App ID</th>
 									<th>Session TTL</th>
 									<th>Status</th>
-									<th style={{ width: "32px" }}></th>
+									<th className="w-8"></th>
 								</tr>
 							</thead>
 							<tbody>
 								{apps.map((app) => (
 									<tr
 										key={app.id}
-										style={{ cursor: "pointer" }}
+										className="cursor-pointer"
 										onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
 									>
 										<td>
-											<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-												<div
-													style={{
-														width: "36px",
-														height: "36px",
-														background: "#ede9fe",
-														borderRadius: "var(--radius-md)",
-														display: "flex",
-														alignItems: "center",
-														justifyContent: "center",
-													}}
-												>
+											<div className="flex items-center gap-3">
+												<div className="w-9 h-9 bg-purple-100 rounded-md flex items-center justify-center">
 													<svg
-														style={{ width: "18px", height: "18px", color: "#7c3aed" }}
+														className="w-4.5 h-4.5 text-purple-600"
 														fill="none"
 														stroke="currentColor"
 														viewBox="0 0 24 24"
@@ -304,35 +274,27 @@ export function ProjectDetailPage() {
 														/>
 													</svg>
 												</div>
-												<span style={{ fontWeight: "500", color: "var(--text-primary)" }}>
+												<span className="font-medium text-text-primary">
 													{app.name}
 												</span>
 											</div>
 										</td>
 										<td>
-											<code
-												style={{
-													padding: "4px 8px",
-													background: "var(--content-bg)",
-													borderRadius: "var(--radius-sm)",
-													fontFamily: "'JetBrains Mono', monospace",
-													fontSize: "11px",
-												}}
-											>
+											<code className="px-2 py-1 bg-content-bg rounded-sm font-mono text-11px">
 												{app.id}
 											</code>
 										</td>
 										<td>
-											<span style={{ color: "var(--text-secondary)" }}>
+											<span className="text-text-secondary">
 												{app.sessionTtlDays || 30} days
 											</span>
 										</td>
 										<td>
 											<span className="badge badge-success">Active</span>
 										</td>
-										<td style={{ textAlign: "right", paddingRight: "16px" }}>
+										<td className="text-right pr-4">
 											<svg
-												style={{ width: "16px", height: "16px", color: "var(--text-tertiary)" }}
+												className="w-4.5 h-4.5 text-purple-600"
 												fill="none"
 												stroke="currentColor"
 												viewBox="0 0 24 24"
@@ -351,7 +313,7 @@ export function ProjectDetailPage() {
 						</table>
 					</div>
 				) : (
-					<div className="empty-state" style={{ padding: "48px 24px" }}>
+					<div className="empty-state py-12 px-6">
 						<div className="empty-state-icon">
 							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path
@@ -370,7 +332,7 @@ export function ProjectDetailPage() {
 							className="btn btn-primary"
 						>
 							<svg
-								style={{ width: "16px", height: "16px" }}
+								className="w-4 h-4"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
@@ -411,25 +373,17 @@ export function ProjectDetailPage() {
 								{members.map((member) => (
 									<tr key={member.id}>
 										<td>
-											<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+											<div className="flex items-center gap-3">
 												<div className="avatar avatar-sm">
 													{member.name?.charAt(0).toUpperCase() || "?"}
 												</div>
-												<span style={{ fontWeight: "500", color: "var(--text-primary)" }}>
+											<span className="font-medium text-text-primary">
 													{member.name}
 												</span>
 											</div>
 										</td>
 										<td>
-											<code
-												style={{
-													padding: "4px 8px",
-													background: "var(--content-bg)",
-													borderRadius: "var(--radius-sm)",
-													fontFamily: "'JetBrains Mono', monospace",
-													fontSize: "11px",
-												}}
-											>
+										<code className="code-block">
 												{member.userId}
 											</code>
 										</td>
@@ -440,7 +394,7 @@ export function ProjectDetailPage() {
 												{member.role}
 											</span>
 										</td>
-										<td style={{ color: "var(--text-secondary)" }}>
+									<td className="text-text-secondary">
 											{new Date(member.createdAt).toLocaleDateString()}
 										</td>
 									</tr>
@@ -449,8 +403,8 @@ export function ProjectDetailPage() {
 						</table>
 					</div>
 				) : (
-					<div className="empty-state" style={{ padding: "32px" }}>
-						<p style={{ color: "var(--text-secondary)" }}>No team members found</p>
+				<div className="empty-state py-8 px-8">
+					<p className="text-text-secondary">No team members found</p>
 					</div>
 				)}
 			</div>

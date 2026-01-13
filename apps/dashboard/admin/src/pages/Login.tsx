@@ -134,56 +134,28 @@ export function LoginPage() {
 	};
 
 	return (
-		<div
-			style={{
-				minHeight: "100vh",
-				background: "linear-gradient(135deg, #0f1117 0%, #1a1d27 50%, #0f1117 100%)",
-				display: "flex",
-				alignItems: "center",
-				justifyContent: "center",
-				padding: "24px",
-			}}
-		>
-			<div style={{ width: "100%", maxWidth: "420px" }}>
+		<div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-surface-primary via-surface-secondary to-surface-primary">
+			<div className="w-full max-w-420px">
 				{/* Logo & Branding */}
-				<div style={{ textAlign: "center", marginBottom: "32px" }}>
+				<div className="text-center mb-8">
 					<img
 						src="/favicon.png"
 						alt="Proofa"
-						style={{
-							width: "64px",
-							height: "64px",
-							margin: "0 auto 20px",
-							display: "block",
-						}}
+						className="w-16 h-16 mx-auto mb-5 block"
 					/>
-					<h1 style={{ fontSize: "28px", fontWeight: "700", color: "white", marginBottom: "8px" }}>
+					<h1 className="text-28px font-bold text-white mb-2">
 						Proofa Admin
 					</h1>
-					<p style={{ color: "#9ca3af", fontSize: "15px" }}>Sign in to access the admin console</p>
+					<p className="text-15px text-text-tertiary">Sign in to access the admin console</p>
 				</div>
 
 				{/* Login Card */}
-				<div
-					className="card"
-					style={{ padding: "32px", background: "var(--card-bg)", border: "1px solid var(--card-border)" }}
-				>
+				<div className="card p-8 bg-card-bg border border-card-border">
 					{status === "error" ? (
-						<div style={{ textAlign: "center" }}>
-							<div
-								style={{
-									width: "56px",
-									height: "56px",
-									background: "var(--danger-bg)",
-									borderRadius: "50%",
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "center",
-									margin: "0 auto 20px",
-								}}
-							>
+						<div className="text-center">
+							<div className="w-14 h-14 bg-danger-bg rounded-full flex items-center justify-center mx-auto mb-5">
 								<svg
-									style={{ width: "28px", height: "28px", color: "var(--danger)" }}
+									className="w-7 h-7 text-danger"
 									fill="none"
 									stroke="currentColor"
 									viewBox="0 0 24 24"
@@ -196,27 +168,19 @@ export function LoginPage() {
 									/>
 								</svg>
 							</div>
-							<h2
-								style={{
-									fontSize: "18px",
-									fontWeight: "600",
-									color: "var(--text-primary)",
-									marginBottom: "8px",
-								}}
-							>
+							<h2 className="text-18px font-semibold text-text-primary mb-2">
 								Login Failed
 							</h2>
-							<p style={{ color: "var(--text-secondary)", fontSize: "14px", marginBottom: "24px" }}>
+							<p className="text-14px text-text-secondary mb-6">
 								{errorMessage}
 							</p>
 							<button
 								type="button"
 								onClick={handleGoogleLogin}
-								className="btn btn-primary"
-								style={{ width: "100%" }}
+								className="btn btn-primary w-full"
 							>
 								<svg
-									style={{ width: "16px", height: "16px" }}
+									className="w-4 h-4"
 									fill="none"
 									stroke="currentColor"
 									viewBox="0 0 24 24"
@@ -232,57 +196,28 @@ export function LoginPage() {
 							</button>
 						</div>
 					) : status === "checking" || status === "processing" || status === "redirecting" ? (
-						<div style={{ textAlign: "center" }}>
-							<div className="spinner" style={{ margin: "0 auto 20px", width: "32px", height: "32px" }} />
-							<h2
-								style={{
-									fontSize: "18px",
-									fontWeight: "600",
-									color: "var(--text-primary)",
-									marginBottom: "8px",
-								}}
-							>
+						<div className="text-center">
+							<div className="spinner mx-auto mb-5 w-8 h-8" />
+							<h2 className="text-18px font-semibold text-text-primary mb-2">
 								{status === "checking" && "Checking authentication..."}
 								{status === "redirecting" && "Redirecting to Google..."}
 								{status === "processing" && "Completing sign in..."}
 							</h2>
-							<p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>Please wait a moment</p>
+							<p className="text-14px text-text-secondary">Please wait a moment</p>
 						</div>
 					) : (
-						<div style={{ textAlign: "center" }}>
-							<h2
-								style={{
-									fontSize: "18px",
-									fontWeight: "600",
-									color: "var(--text-primary)",
-									marginBottom: "8px",
-								}}
-							>
+						<div className="text-center">
+							<h2 className="text-18px font-semibold text-text-primary mb-2">
 								Sign in to continue
 							</h2>
-							<p style={{ color: "var(--text-secondary)", fontSize: "14px", marginBottom: "24px" }}>
+							<p className="text-14px text-text-secondary mb-6">
 								Use your Google account to access the admin console
 							</p>
 							<button
 								type="button"
 								onClick={handleGoogleLogin}
-								className="btn"
-								style={{
-									width: "100%",
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "center",
-									gap: "12px",
-									padding: "12px 20px",
-									background: "white",
-									color: "#374151",
-									border: "1px solid #e5e7eb",
-									borderRadius: "8px",
-									fontSize: "15px",
-									fontWeight: "500",
-									cursor: "pointer",
-									transition: "all 0.2s",
-								}}
+								className="btn w-full flex items-center justify-center gap-3 px-5 py-3 bg-white text-gray-700 border border-gray-200 rounded-lg text-15px font-medium cursor-pointer transition-all"
+
 								onMouseOver={(e) => {
 									e.currentTarget.style.background = "#f9fafb";
 									e.currentTarget.style.borderColor = "#d1d5db";
@@ -292,7 +227,7 @@ export function LoginPage() {
 									e.currentTarget.style.borderColor = "#e5e7eb";
 								}}
 							>
-								<svg style={{ width: "20px", height: "20px" }} viewBox="0 0 24 24">
+								<svg className="w-5 h-5" viewBox="0 0 24 24">
 									<path
 										fill="#4285F4"
 										d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -312,13 +247,13 @@ export function LoginPage() {
 								</svg>
 								Continue with Google
 							</button>
-							<p style={{ color: "#6b7280", fontSize: "12px", marginTop: "16px" }}>
+							<p className="text-12px text-gray-500 mt-4">
 								By continuing, you agree to our{" "}
 								<a
 									href={`${homeUrl}/terms`}
 									target="_blank"
 									rel="noopener noreferrer"
-									style={{ color: "#6366f1" }}
+									className="text-indigo-500"
 								>
 									Terms of Service
 								</a>{" "}
@@ -327,7 +262,7 @@ export function LoginPage() {
 									href={`${homeUrl}/privacy`}
 									target="_blank"
 									rel="noopener noreferrer"
-									style={{ color: "#6366f1" }}
+									className="text-indigo-500"
 								>
 									Privacy Policy
 								</a>
@@ -337,17 +272,9 @@ export function LoginPage() {
 				</div>
 
 				{/* Security Badge */}
-				<div
-					style={{
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						gap: "8px",
-						marginTop: "24px",
-					}}
-				>
+				<div className="flex items-center justify-center gap-2 mt-6">
 					<svg
-						style={{ width: "14px", height: "14px", color: "#6b7280" }}
+						className="w-3.5 h-3.5 text-gray-500"
 						fill="none"
 						stroke="currentColor"
 						viewBox="0 0 24 24"
@@ -359,7 +286,7 @@ export function LoginPage() {
 							d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
 						/>
 					</svg>
-					<span style={{ color: "#6b7280", fontSize: "13px" }}>Secure authentication powered by Proofa</span>
+					<span className="text-13px text-gray-500">Secure authentication powered by Proofa</span>
 				</div>
 			</div>
 		</div>

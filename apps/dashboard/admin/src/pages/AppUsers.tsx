@@ -192,44 +192,26 @@ export function AppUsersPage() {
 	return (
 		<div className="space-y-6">
 			{/* Breadcrumb */}
-			<nav style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px" }}>
-				<Link to="/projects" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>
+			<nav className="flex items-center gap-2 text-[13px]">
+				<Link to="/projects" className="no-underline text-text-secondary">
 					Projects
 				</Link>
-				<svg
-					style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }}
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-				>
+				<svg className="h-3.5 w-3.5 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
 				</svg>
-				<Link to={`/projects/${projectId}`} style={{ color: "var(--text-secondary)", textDecoration: "none" }}>
+				<Link to={`/projects/${projectId}`} className="no-underline text-text-secondary">
 					{project.name}
 				</Link>
-				<svg
-					style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }}
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-				>
+				<svg className="h-3.5 w-3.5 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
 				</svg>
-				<Link
-					to={`/projects/${projectId}/apps/${appId}`}
-					style={{ color: "var(--text-secondary)", textDecoration: "none" }}
-				>
+				<Link to={`/projects/${projectId}/apps/${appId}`} className="no-underline text-text-secondary">
 					{app.name}
 				</Link>
-				<svg
-					style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }}
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-				>
+				<svg className="h-3.5 w-3.5 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
 				</svg>
-				<span style={{ color: "var(--text-primary)", fontWeight: "500" }}>Users</span>
+				<span className="font-medium text-text-primary">Users</span>
 			</nav>
 
 			{/* Page Header */}
@@ -239,12 +221,7 @@ export function AppUsersPage() {
 					<p className="page-description">Manage users and their licenses for {app.name}</p>
 				</div>
 				<button type="button" className="btn btn-primary" onClick={() => setShowInviteModal(true)}>
-					<svg
-						style={{ width: "16px", height: "16px" }}
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-					>
+					<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							strokeLinecap="round"
 							strokeLinejoin="round"
@@ -257,96 +234,31 @@ export function AppUsersPage() {
 			</div>
 
 			{/* Filters */}
-			<div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "20px" }}>
-				<div style={{ flex: 1, maxWidth: "400px" }}>
-					<div style={{ position: "relative" }}>
-						<svg
-							style={{
-								position: "absolute",
-								left: "12px",
-								top: "50%",
-								transform: "translateY(-50%)",
-								width: "16px",
-								height: "16px",
-								color: "var(--text-tertiary)",
-								pointerEvents: "none",
-							}}
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-							/>
+			<div className="mb-5 flex items-center gap-3">
+				<div className="w-full max-w-[400px]">
+					<div className="relative">
+						<svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
 						</svg>
 						<input
 							type="text"
 							placeholder="Search by name or email..."
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
-							style={{
-								width: "100%",
-								padding: "10px 12px 10px 40px",
-								border: "1px solid var(--border-primary)",
-								borderRadius: "10px",
-								background: "var(--card-bg)",
-								color: "var(--text-primary)",
-								fontSize: "14px",
-								transition: "all 0.2s ease",
-								outline: "none",
-							}}
-							onFocus={(e) => {
-								e.currentTarget.style.borderColor = "var(--primary)";
-								e.currentTarget.style.boxShadow = "0 0 0 3px rgba(139, 92, 246, 0.1)";
-							}}
-							onBlur={(e) => {
-								e.currentTarget.style.borderColor = "var(--border-primary)";
-								e.currentTarget.style.boxShadow = "none";
-							}}
+							className="w-full rounded-[10px] border border-border bg-bg-surface px-3.5 py-2.5 pl-10 text-14px text-text-primary transition-all focus:border-primary focus:outline-none focus:shadow-[0_0_0_3px_rgba(139,92,246,0.1)]"
 						/>
 					</div>
 				</div>
 
 				{/* Custom Status Dropdown */}
-				<div style={{ position: "relative", minWidth: "160px" }}>
+				<div className="relative min-w-[160px]">
 					<button
 						type="button"
 						onClick={() => setShowStatusDropdown(!showStatusDropdown)}
-						style={{
-							width: "100%",
-							padding: "10px 12px",
-							border: "1px solid var(--border-primary)",
-							borderRadius: "10px",
-							background: "var(--card-bg)",
-							color: "var(--text-primary)",
-							fontSize: "14px",
-							cursor: "pointer",
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "space-between",
-							gap: "8px",
-							transition: "all 0.2s ease",
-							outline: "none",
-						}}
-						onMouseEnter={(e) => {
-							e.currentTarget.style.borderColor = "var(--primary-light)";
-						}}
-						onMouseLeave={(e) => {
-							if (!showStatusDropdown) {
-								e.currentTarget.style.borderColor = "var(--border-primary)";
-							}
-						}}
+						className={`flex w-full items-center justify-between gap-2 rounded-[10px] border bg-bg-surface px-3 py-2.5 text-14px text-text-primary transition-all focus:outline-none ${showStatusDropdown ? "border-primary" : "border-border hover:border-primary/70"}`}
 					>
-						<span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-							<svg
-								style={{ width: "16px", height: "16px", color: "var(--text-tertiary)" }}
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
+						<span className="flex items-center gap-2">
+							<svg className="h-4 w-4 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path
 									strokeLinecap="round"
 									strokeLinejoin="round"
@@ -354,18 +266,10 @@ export function AppUsersPage() {
 									d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
 								/>
 							</svg>
-							{filterStatus === "all"
-								? "All Status"
-								: filterStatus.charAt(0).toUpperCase() + filterStatus.slice(1)}
+							{filterStatus === "all" ? "All Status" : filterStatus.charAt(0).toUpperCase() + filterStatus.slice(1)}
 						</span>
 						<svg
-							style={{
-								width: "14px",
-								height: "14px",
-								color: "var(--text-tertiary)",
-								transition: "transform 0.2s ease",
-								transform: showStatusDropdown ? "rotate(180deg)" : "rotate(0deg)",
-							}}
+							className={`h-3.5 w-3.5 transition-transform text-text-tertiary ${showStatusDropdown ? "rotate-180" : "rotate-0"}`}
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
@@ -378,54 +282,15 @@ export function AppUsersPage() {
 					{showStatusDropdown && (
 						<>
 							{/* Backdrop */}
-							<div
-								style={{
-									position: "fixed",
-									top: 0,
-									left: 0,
-									right: 0,
-									bottom: 0,
-									zIndex: 999,
-								}}
-								onClick={() => setShowStatusDropdown(false)}
-							/>
+							<div className="fixed inset-0 z-[999]" onClick={() => setShowStatusDropdown(false)} />
 
 							{/* Dropdown */}
-							<div
-								style={{
-									position: "absolute",
-									top: "calc(100% + 6px)",
-									left: 0,
-									right: 0,
-									background: "var(--card-bg)",
-									border: "1px solid var(--border-primary)",
-									borderRadius: "10px",
-									boxShadow: "0 10px 40px rgba(0, 0, 0, 0.3)",
-									zIndex: 1000,
-									overflow: "hidden",
-								}}
-							>
+							<div className="absolute top-[calc(100%+6px)] left-0 right-0 z-[1000] overflow-hidden rounded-[10px] border border-border bg-bg-surface shadow-[0_10px_40px_rgba(0,0,0,0.3)]">
 								{[
-									{
-										value: "all",
-										label: "All Status",
-										icon: "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z",
-									},
-									{
-										value: "active",
-										label: "Active",
-										icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
-									},
-									{
-										value: "suspended",
-										label: "Suspended",
-										icon: "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z",
-									},
-									{
-										value: "trial",
-										label: "Trial",
-										icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
-									},
+									{ value: "all", label: "All Status", icon: "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" },
+									{ value: "active", label: "Active", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" },
+									{ value: "suspended", label: "Suspended", icon: "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" },
+									{ value: "trial", label: "Trial", icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" },
 								].map((option) => (
 									<button
 										key={option.value}
@@ -434,72 +299,15 @@ export function AppUsersPage() {
 											setFilterStatus(option.value);
 											setShowStatusDropdown(false);
 										}}
-										style={{
-											width: "100%",
-											padding: "10px 12px",
-											background:
-												filterStatus === option.value
-													? "rgba(139, 92, 246, 0.1)"
-													: "transparent",
-											border: "none",
-											borderBottom: "1px solid var(--border-secondary)",
-											color:
-												filterStatus === option.value
-													? "var(--primary)"
-													: "var(--text-primary)",
-											fontSize: "14px",
-											cursor: "pointer",
-											display: "flex",
-											alignItems: "center",
-											gap: "10px",
-											transition: "all 0.15s ease",
-											textAlign: "left",
-										}}
-										onMouseEnter={(e) => {
-											if (filterStatus !== option.value) {
-												e.currentTarget.style.background = "var(--surface-hover)";
-											}
-										}}
-										onMouseLeave={(e) => {
-											if (filterStatus !== option.value) {
-												e.currentTarget.style.background = "transparent";
-											}
-										}}
+										className={`flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-14px transition-all ${filterStatus === option.value ? "bg-primary/10 text-primary" : "text-text-primary hover:bg-surface/50"} ${option.value !== "trial" ? "border-b border-border/60" : ""}`}
 									>
-										<svg
-											style={{ width: "16px", height: "16px", flexShrink: 0 }}
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth={2}
-												d={option.icon}
-											/>
+										<svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={option.icon} />
 										</svg>
-										<span style={{ fontWeight: filterStatus === option.value ? "600" : "400" }}>
-											{option.label}
-										</span>
+										<span className={filterStatus === option.value ? "font-semibold" : "font-normal"}>{option.label}</span>
 										{filterStatus === option.value && (
-											<svg
-												style={{
-													width: "16px",
-													height: "16px",
-													marginLeft: "auto",
-													color: "var(--primary)",
-												}}
-												fill="none"
-												stroke="currentColor"
-												viewBox="0 0 24 24"
-											>
-												<path
-													strokeLinecap="round"
-													strokeLinejoin="round"
-													strokeWidth={2}
-													d="M5 13l4 4L19 7"
-												/>
+											<svg className="ml-auto h-4 w-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
 											</svg>
 										)}
 									</button>
@@ -512,34 +320,9 @@ export function AppUsersPage() {
 
 			{/* Empty State */}
 			{!usersLoading && filteredUsers.length === 0 && users.length === 0 && (
-				<div
-					style={{
-						display: "flex",
-						flexDirection: "column",
-						alignItems: "center",
-						justifyContent: "center",
-						padding: "80px 20px",
-						textAlign: "center",
-					}}
-				>
-					<div
-						style={{
-							width: "100px",
-							height: "100px",
-							background: "linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05))",
-							borderRadius: "50%",
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							marginBottom: "24px",
-						}}
-					>
-						<svg
-							style={{ width: "48px", height: "48px", color: "var(--primary)" }}
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
+				<div className="flex flex-col items-center justify-center py-20 px-5 text-center">
+					<div className="w-25 h-25 bg-gradient-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center mb-6">
+						<svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -548,24 +331,10 @@ export function AppUsersPage() {
 							/>
 						</svg>
 					</div>
-					<h2
-						style={{
-							fontSize: "20px",
-							fontWeight: "700",
-							color: "var(--text-primary)",
-							marginBottom: "8px",
-						}}
-					>
+					<h2 className="text-20px font-bold text-text-primary mb-2">
 						No users yet
 					</h2>
-					<p
-						style={{
-							fontSize: "14px",
-							color: "var(--text-secondary)",
-							maxWidth: "400px",
-							marginBottom: "24px",
-						}}
-					>
+					<p className="text-14px text-text-secondary max-w-100 mb-6">
 						Users will appear here after they sign up for your app. You can also invite users to get
 						started.
 					</p>
@@ -574,12 +343,7 @@ export function AppUsersPage() {
 						onClick={() => alert("Invite user functionality coming soon!")}
 						className="btn btn-primary"
 					>
-						<svg
-							style={{ width: "16px", height: "16px" }}
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
+						<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -594,92 +358,33 @@ export function AppUsersPage() {
 
 			{/* No Search Results */}
 			{!usersLoading && filteredUsers.length === 0 && users.length > 0 && (
-				<div style={{ textAlign: "center", padding: "40px", color: "var(--text-secondary)" }}>
+				<div className="text-center py-10 px-10 text-text-secondary">
 					<p>No users found matching your search criteria.</p>
 				</div>
 			)}
 
 			{/* Users Table */}
 			{!usersLoading && filteredUsers.length > 0 && (
-				<div className="card" style={{ padding: "0", overflow: "hidden" }}>
-					<table style={{ width: "100%", borderCollapse: "collapse" }}>
+				<div className="card p-0 overflow-hidden">
+					<table className="w-full border-collapse table-container">
 						<thead>
-							<tr
-								style={{
-									background: "var(--surface-secondary)",
-									borderBottom: "1px solid var(--border-secondary)",
-								}}
-							>
-								<th
-									style={{
-										padding: "12px 16px",
-										textAlign: "left",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										textTransform: "uppercase",
-									}}
-								>
+							<tr className="bg-surface-secondary border-b border-border-secondary">
+								<th className="px-4 py-3 text-left text-12px font-semibold text-text-secondary uppercase">
 									User
 								</th>
-								<th
-									style={{
-										padding: "12px 16px",
-										textAlign: "center",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										textTransform: "uppercase",
-									}}
-								>
+								<th className="px-4 py-3 text-center text-12px font-semibold text-text-secondary uppercase">
 									Plan
 								</th>
-								<th
-									style={{
-										padding: "12px 16px",
-										textAlign: "center",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										textTransform: "uppercase",
-									}}
-								>
+								<th className="px-4 py-3 text-center text-12px font-semibold text-text-secondary uppercase">
 									Status
 								</th>
-								<th
-									style={{
-										padding: "12px 16px",
-										textAlign: "center",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										textTransform: "uppercase",
-									}}
-								>
+								<th className="px-4 py-3 text-center text-12px font-semibold text-text-secondary uppercase">
 									Joined
 								</th>
-								<th
-									style={{
-										padding: "12px 16px",
-										textAlign: "center",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										textTransform: "uppercase",
-									}}
-								>
+								<th className="px-4 py-3 text-center text-12px font-semibold text-text-secondary uppercase">
 									License Valid Until
 								</th>
-								<th
-									style={{
-										padding: "12px 16px",
-										textAlign: "right",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										textTransform: "uppercase",
-									}}
-								>
+								<th className="px-4 py-3 text-right text-12px font-semibold text-text-secondary uppercase">
 									Actions
 								</th>
 							</tr>
@@ -688,49 +393,18 @@ export function AppUsersPage() {
 							{filteredUsers.map((user) => (
 								<tr
 									key={user.id}
-									style={{
-										borderBottom: "1px solid var(--border-secondary)",
-									}}
+									className="border-b border-border-secondary"
 								>
-									<td style={{ padding: "16px" }}>
-										<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-											<div
-												style={{
-													width: "40px",
-													height: "40px",
-													background:
-														"linear-gradient(135deg, var(--primary), rgba(139, 92, 246, 0.7))",
-													borderRadius: "50%",
-													display: "flex",
-													alignItems: "center",
-													justifyContent: "center",
-													color: "white",
-													fontSize: "14px",
-													fontWeight: "600",
-													flexShrink: 0,
-												}}
-											>
+									<td className="px-4 py-4">
+										<div className="flex items-center gap-3">
+											<div className="w-40px h-40px bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center text-white text-14px font-semibold shrink-0">
 												{(user.name || user.email).charAt(0).toUpperCase()}
 											</div>
 											<div>
-												<div
-													style={{
-														fontSize: "14px",
-														fontWeight: "500",
-														color: "var(--text-primary)",
-														marginBottom: "2px",
-													}}
-												>
+												<div className="text-14px font-medium text-text-primary mb-2px">
 													{user.name || "Anonymous"}
 													{user.primaryEmailVerified && (
-														<svg
-															style={{
-																width: "14px",
-																height: "14px",
-																color: "var(--primary)",
-																marginLeft: "4px",
-																display: "inline",
-															}}
+														<svg className="w-14px h-14px text-primary ml-4px inline"
 															fill="currentColor"
 															viewBox="0 0 20 20"
 														>
@@ -742,71 +416,39 @@ export function AppUsersPage() {
 														</svg>
 													)}
 												</div>
-												<div style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+												<div className="text-12px text-text-tertiary">
 													{user.email}
 												</div>
 											</div>
 										</div>
 									</td>
-									<td style={{ padding: "16px", textAlign: "center" }}>
+									<td className="px-4 py-4 text-center">
 										<span
-											style={{
-												display: "inline-block",
-												padding: "4px 12px",
-												background:
-													user.plan === "pro"
-														? "rgba(139, 92, 246, 0.1)"
-														: "rgba(156, 163, 175, 0.1)",
-												color: user.plan === "pro" ? "var(--primary)" : "var(--text-tertiary)",
-												borderRadius: "12px",
-												fontSize: "12px",
-												fontWeight: "600",
-												textTransform: "capitalize",
-											}}
+											className={`inline-block px-12px py-4px rounded-12px text-12px font-semibold capitalize ${
+												user.plan === "pro"
+													? "bg-purple-100 text-primary"
+													: "bg-gray-100 text-text-tertiary"
+											}`}
 										>
 											{user.plan}
 										</span>
 									</td>
-									<td style={{ padding: "16px", textAlign: "center" }}>
+									<td className="px-4 py-4 text-center">
 										<span
-											style={{
-												display: "inline-flex",
-												alignItems: "center",
-												gap: "4px",
-												padding: "4px 10px",
-												background:
-													user.status === "active"
-														? "rgba(34, 197, 94, 0.1)"
-														: "rgba(239, 68, 68, 0.1)",
-												color: user.status === "active" ? "var(--success)" : "var(--danger)",
-												borderRadius: "12px",
-												fontSize: "12px",
-												fontWeight: "500",
-												textTransform: "capitalize",
-											}}
+											className={`inline-flex items-center gap-4px px-10px py-4px rounded-12px text-12px font-medium capitalize ${
+												user.status === "active"
+													? "bg-green-100 text-success"
+													: "bg-red-100 text-danger"
+											}`}
 										>
-											<span
-												style={{
-													width: "6px",
-													height: "6px",
-													background: "currentColor",
-													borderRadius: "50%",
-												}}
-											/>
+											<span className="w-6px h-6px bg-current rounded-full" />
 											{user.status}
 										</span>
 									</td>
-									<td
-										style={{
-											padding: "16px",
-											textAlign: "center",
-											fontSize: "13px",
-											color: "var(--text-secondary)",
-										}}
-									>
+									<td className="px-4 py-4 text-center text-13px text-text-secondary">
 										{new Date(user.createdAt).toLocaleDateString()}
 									</td>
-									<td style={{ padding: "16px", textAlign: "center", fontSize: "13px" }}>
+									<td className="px-4 py-4 text-center text-13px">
 										{user.licenseValidUntil ? (
 											(() => {
 												const now = Math.floor(Date.now() / 1000);
@@ -817,52 +459,25 @@ export function AppUsersPage() {
 												const isExpiringSoon = daysUntilExpiry >= 0 && daysUntilExpiry <= 7;
 
 												return (
-													<div
-														style={{
-															display: "flex",
-															alignItems: "center",
-															justifyContent: "center",
-															gap: "6px",
-														}}
-													>
+														<div className="flex items-center justify-center gap-1.5">
 														<span
-															style={{
-																color: isExpired
-																	? "var(--danger)"
+															className={`${
+																isExpired
+																	? "text-danger"
 																	: isExpiringSoon
-																		? "var(--warning)"
-																		: "var(--text-secondary)",
-															}}
+																		? "text-warning"
+																		: "text-text-secondary"
+															}`}
 														>
 															{new Date(user.licenseValidUntil).toLocaleDateString()}
 														</span>
 														{isExpired && (
-															<span
-																style={{
-																	padding: "2px 6px",
-																	background: "rgba(239, 68, 68, 0.1)",
-																	border: "1px solid rgba(239, 68, 68, 0.2)",
-																	borderRadius: "4px",
-																	color: "var(--danger)",
-																	fontSize: "11px",
-																	fontWeight: "600",
-																}}
-															>
+															<span className="px-6px py-2px bg-red-100 border border-red-200 rounded-4px text-danger text-11px font-semibold">
 																EXPIRED
 															</span>
 														)}
 														{isExpiringSoon && !isExpired && (
-															<span
-																style={{
-																	padding: "2px 6px",
-																	background: "rgba(245, 158, 11, 0.1)",
-																	border: "1px solid rgba(245, 158, 11, 0.2)",
-																	borderRadius: "4px",
-																	color: "var(--warning)",
-																	fontSize: "11px",
-																	fontWeight: "600",
-																}}
-															>
+															<span className="px-6px py-2px bg-yellow-100 border border-yellow-200 rounded-4px text-warning text-11px font-semibold">
 																{daysUntilExpiry}d left
 															</span>
 														)}
@@ -870,18 +485,11 @@ export function AppUsersPage() {
 												);
 											})()
 										) : (
-											<span style={{ color: "var(--text-tertiary)" }}>Lifetime</span>
+											<span className="text-text-tertiary">Lifetime</span>
 										)}
 									</td>
-									<td style={{ padding: "16px", textAlign: "right" }}>
-										<div
-											style={{
-												display: "flex",
-												gap: "8px",
-												justifyContent: "flex-end",
-												alignItems: "center",
-											}}
-										>
+									<td className="px-4 py-4 text-right">
+										<div className="flex gap-2 justify-end items-center">
 											{/* Quick Suspend/Activate Toggle */}
 											<button
 												type="button"
@@ -889,50 +497,16 @@ export function AppUsersPage() {
 													e.stopPropagation();
 													handleSuspendToggle(user.id, user.status);
 												}}
-												style={{
-													padding: "6px 10px",
-													background:
-														user.status === "active"
-															? "rgba(239, 68, 68, 0.1)"
-															: "rgba(34, 197, 94, 0.1)",
-													border:
-														user.status === "active"
-															? "1px solid rgba(239, 68, 68, 0.2)"
-															: "1px solid rgba(34, 197, 94, 0.2)",
-													borderRadius: "6px",
-													color:
-														user.status === "active" ? "var(--danger)" : "var(--success)",
-													fontSize: "13px",
-													fontWeight: "500",
-													cursor: "pointer",
-													display: "inline-flex",
-													alignItems: "center",
-													gap: "4px",
-													transition: "all 0.15s ease",
-												}}
-												onMouseEnter={(e) => {
-													if (user.status === "active") {
-														e.currentTarget.style.background = "rgba(239, 68, 68, 0.15)";
-														e.currentTarget.style.borderColor = "var(--danger)";
-													} else {
-														e.currentTarget.style.background = "rgba(34, 197, 94, 0.15)";
-														e.currentTarget.style.borderColor = "var(--success)";
-													}
-												}}
-												onMouseLeave={(e) => {
-													if (user.status === "active") {
-														e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
-														e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.2)";
-													} else {
-														e.currentTarget.style.background = "rgba(34, 197, 94, 0.1)";
-														e.currentTarget.style.borderColor = "rgba(34, 197, 94, 0.2)";
-													}
-												}}
+												className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-13px font-medium rounded-lg border transition-all cursor-pointer ${
+													user.status === "active"
+														? "bg-danger/10 border-danger/20 text-danger hover:bg-danger/15 hover:border-danger"
+														: "bg-success/10 border-success/20 text-success hover:bg-success/15 hover:border-success"
+												}`}
 											>
 												{user.status === "active" ? (
 													<>
 														<svg
-															style={{ width: "14px", height: "14px" }}
+															className="w-14px h-14px"
 															fill="none"
 															stroke="currentColor"
 															viewBox="0 0 24 24"
@@ -949,7 +523,7 @@ export function AppUsersPage() {
 												) : (
 													<>
 														<svg
-															style={{ width: "14px", height: "14px" }}
+															className="w-14px h-14px"
 															fill="none"
 															stroke="currentColor"
 															viewBox="0 0 24 24"
@@ -978,31 +552,9 @@ export function AppUsersPage() {
 															email: user.email,
 														});
 													}}
-													style={{
-														padding: "6px 10px",
-														background: "rgba(139, 92, 246, 0.1)",
-														border: "1px solid rgba(139, 92, 246, 0.2)",
-														borderRadius: "6px",
-														color: "var(--primary)",
-														fontSize: "13px",
-														fontWeight: "500",
-														cursor: "pointer",
-														display: "inline-flex",
-														alignItems: "center",
-														gap: "4px",
-														transition: "all 0.15s ease",
-													}}
-													onMouseEnter={(e) => {
-														e.currentTarget.style.background = "rgba(139, 92, 246, 0.15)";
-														e.currentTarget.style.borderColor = "var(--primary)";
-													}}
-													onMouseLeave={(e) => {
-														e.currentTarget.style.background = "rgba(139, 92, 246, 0.1)";
-														e.currentTarget.style.borderColor = "rgba(139, 92, 246, 0.2)";
-													}}
-												>
+													className="inline-flex items-center gap-1 px-2.5 py-1.5 text-13px font-medium rounded-lg border bg-primary/10 border-primary/20 text-primary transition-all cursor-pointer hover:bg-primary/15 hover:border-primary">
 													<svg
-														style={{ width: "14px", height: "14px" }}
+														className="w-14px h-14px"
 														fill="none"
 														stroke="currentColor"
 														viewBox="0 0 24 24"
@@ -1025,31 +577,9 @@ export function AppUsersPage() {
 													e.stopPropagation();
 													handleOpenEditModal(user);
 												}}
-												style={{
-													padding: "6px 12px",
-													background: "var(--surface-secondary)",
-													border: "1px solid var(--border-primary)",
-													borderRadius: "6px",
-													color: "var(--text-primary)",
-													fontSize: "13px",
-													fontWeight: "500",
-													cursor: "pointer",
-													display: "inline-flex",
-													alignItems: "center",
-													gap: "4px",
-													transition: "all 0.15s ease",
-												}}
-												onMouseEnter={(e) => {
-													e.currentTarget.style.background = "var(--surface-hover)";
-													e.currentTarget.style.borderColor = "var(--primary)";
-												}}
-												onMouseLeave={(e) => {
-													e.currentTarget.style.background = "var(--surface-secondary)";
-													e.currentTarget.style.borderColor = "var(--border-primary)";
-												}}
-											>
+												className="inline-flex items-center gap-1 px-3 py-1.5 text-13px font-medium rounded-lg border bg-surface/60 border-border text-text-primary transition-all cursor-pointer hover:bg-surface hover:border-primary">
 												<svg
-													style={{ width: "14px", height: "14px" }}
+													className="w-14px h-14px"
 													fill="none"
 													stroke="currentColor"
 													viewBox="0 0 24 24"
@@ -1087,63 +617,25 @@ export function AppUsersPage() {
 			{/* Edit User Modal */}
 			{editingUser && (
 				<div
-					style={{
-						position: "fixed",
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						background: "rgba(0, 0, 0, 0.6)",
-						backdropFilter: "blur(4px)",
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						zIndex: 1000,
-						padding: "20px",
-					}}
+					className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-1000 p-5"
 					onClick={() => setEditingUser(null)}
 				>
 					<div
-						style={{
-							background: "var(--card-bg)",
-							borderRadius: "16px",
-							padding: "32px",
-							maxWidth: "500px",
-							width: "100%",
-							boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
-						}}
+						className="bg-card-bg rounded-16px p-8 max-w-500px w-full shadow-2xl"
 						onClick={(e) => e.stopPropagation()}
 					>
-						<h2
-							style={{
-								fontSize: "20px",
-								fontWeight: "700",
-								marginBottom: "8px",
-								color: "var(--text-primary)",
-							}}
-						>
+						<h2 className="text-20px font-bold mb-2 text-text-primary">
 							Edit User License
 						</h2>
-						<p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "24px" }}>
+						<p className="text-14px text-text-secondary mb-6">
 							Update license plan and status for {editingUser.name || editingUser.email}
 						</p>
 
 						{/* Error Message */}
 						{updateError && (
-							<div
-								style={{
-									background: "rgba(239, 68, 68, 0.1)",
-									border: "1px solid var(--danger)",
-									borderRadius: "8px",
-									padding: "12px 16px",
-									marginBottom: "20px",
-									display: "flex",
-									alignItems: "center",
-									gap: "12px",
-								}}
-							>
+							<div className="flex items-center gap-3 p-4 mb-5 bg-danger/10 border border-danger rounded-lg">
 								<svg
-									style={{ width: "20px", height: "20px", color: "var(--danger)", flexShrink: 0 }}
+									className="w-5 h-5 text-danger flex-shrink-0"
 									fill="none"
 									stroke="currentColor"
 									viewBox="0 0 24 24"
@@ -1155,21 +647,13 @@ export function AppUsersPage() {
 										d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 									/>
 								</svg>
-								<p style={{ fontSize: "14px", color: "var(--danger)", margin: 0 }}>{updateError}</p>
+								<p className="text-14px text-danger m-0">{updateError}</p>
 							</div>
 						)}
 
 						{/* Edit form content */}
-						<div style={{ marginBottom: "24px" }}>
-							<label
-								style={{
-									display: "block",
-									fontSize: "13px",
-									fontWeight: "600",
-									color: "var(--text-secondary)",
-									marginBottom: "8px",
-								}}
-							>
+						<div className="mb-6">
+							<label className="block text-13px font-semibold text-text-secondary mb-2">
 								License Plan
 							</label>
 							<Select
@@ -1192,29 +676,14 @@ export function AppUsersPage() {
 												}))
 								}
 								disabled={isUpdating || plansLoading}
-								style={{
-									width: "100%",
-									padding: "10px 12px",
-									border: "1px solid var(--border-primary)",
-									borderRadius: "8px",
-									background: "var(--content-bg)",
-									color: "var(--text-primary)",
-									fontSize: "14px",
-									opacity: isUpdating || plansLoading ? 0.6 : 1,
-								}}
+								className={`w-full px-3 py-2.5 border border-border rounded-lg bg-bg-content text-text-primary text-14px ${
+									isUpdating || plansLoading ? "opacity-60" : "opacity-100"
+								}`}
 							/>
 						</div>
 
-						<div style={{ marginBottom: "24px" }}>
-							<label
-								style={{
-									display: "block",
-									fontSize: "13px",
-									fontWeight: "600",
-									color: "var(--text-secondary)",
-									marginBottom: "8px",
-								}}
-							>
+						<div className="mb-6">
+							<label className="block text-13px font-semibold text-text-secondary mb-2">
 								Status
 							</label>
 							<Select
@@ -1226,20 +695,13 @@ export function AppUsersPage() {
 									{ value: "trial", label: "Trial" },
 								]}
 								disabled={isUpdating}
-								style={{
-									width: "100%",
-									padding: "10px 12px",
-									border: "1px solid var(--border-primary)",
-									borderRadius: "8px",
-									background: "var(--content-bg)",
-									color: "var(--text-primary)",
-									fontSize: "14px",
-									opacity: isUpdating ? 0.6 : 1,
-								}}
+									className={`w-full px-3 py-2.5 border border-border rounded-lg bg-bg-content text-text-primary text-14px ${
+										isUpdating ? "opacity-60" : "opacity-100"
+									}`}
 							/>
 						</div>
 
-						<div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+						<div className="flex gap-3 justify-end">
 							<button
 								type="button"
 								onClick={() => {
@@ -1247,11 +709,9 @@ export function AppUsersPage() {
 									setUpdateError(null);
 								}}
 								disabled={isUpdating}
-								className="btn btn-secondary"
-								style={{
-									opacity: isUpdating ? 0.6 : 1,
-									cursor: isUpdating ? "not-allowed" : "pointer",
-								}}
+								className={`btn btn-secondary ${
+									isUpdating ? "opacity-60 cursor-not-allowed" : "opacity-100 cursor-pointer"
+								}`}
 							>
 								Cancel
 							</button>
@@ -1259,18 +719,13 @@ export function AppUsersPage() {
 								type="button"
 								onClick={handleEditSave}
 								disabled={isUpdating}
-								className="btn btn-primary"
-								style={{
-									opacity: isUpdating ? 0.6 : 1,
-									cursor: isUpdating ? "not-allowed" : "pointer",
-									display: "flex",
-									alignItems: "center",
-									gap: "8px",
-								}}
+								className={`btn btn-primary flex items-center gap-2 ${
+									isUpdating ? "opacity-60 cursor-not-allowed" : "opacity-100 cursor-pointer"
+								}`}
 							>
 								{isUpdating && (
 									<svg
-										style={{ width: "16px", height: "16px", animation: "spin 1s linear infinite" }}
+										className="w-4 h-4 animate-spin"
 										fill="none"
 										stroke="currentColor"
 										viewBox="0 0 24 24"
@@ -1299,7 +754,6 @@ export function AppUsersPage() {
 				message={`Renew the license for ${userToRenew?.name || userToRenew?.email}? This will extend their access based on the plan duration.`}
 				confirmText="Renew License"
 				variant="info"
-				isLoading={renewLicenseMutation.isPending}
 			/>
 		</div>
 	);

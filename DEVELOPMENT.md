@@ -124,7 +124,7 @@ pnpm --filter @proofa/workers dev      # Workers Service (background jobs)
 pnpm --filter @proofa/dashboard-admin dev  # Admin UI (port 5174)
 pnpm --filter @proofa/dashboard-user dev   # User UI (port 5173)
 pnpm --filter @proofa/dashboard-home dev   # Marketing (port 4321)
-pnpm --filter @proofa/docs dev         # Documentation (port 4322)
+pnpm --filter @proofa/dashboard-docs dev         # Documentation (port 4322)
 ```
 
 ---

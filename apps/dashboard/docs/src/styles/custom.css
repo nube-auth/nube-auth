@@ -1,5 +1,7 @@
 /* Proofa Docs - Custom Theme (matching Home Dashboard) */
 
+@import "@proofa/dashboard-style/base.css";
+
 /* Dark mode colors (default in Starlight) */
 :root {
 	/* Layout - Sidebar and content widths */

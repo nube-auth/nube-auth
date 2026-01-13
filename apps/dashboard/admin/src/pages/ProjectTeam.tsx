@@ -613,7 +613,6 @@ export function ProjectTeamPage() {
 				confirmText="Remove Member"
 				variant="danger"
 				requireCaptcha={true}
-				isLoading={removeMemberMutation.isPending}
 			/>
 
 			{/* Cancel Invitation Confirmation Modal */}
@@ -641,7 +640,6 @@ export function ProjectTeamPage() {
 				message={`Cancel the invitation for ${invitationToCancel?.email}? They will no longer be able to join using this invitation link.`}
 				confirmText="Cancel Invitation"
 				variant="warning"
-				isLoading={cancelInvitationMutation.isPending}
 			/>
 		</div>
 	);

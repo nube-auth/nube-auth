@@ -31,36 +31,15 @@ export function Modal({ isOpen, onClose, children, size = "md" }: ModalProps) {
 
 	if (!isOpen) return null;
 
-	const maxWidth = size === "sm" ? "600px" : size === "lg" ? "1200px" : "900px";
+	const sizeClass = size === "sm" ? "max-w-600px" : size === "lg" ? "max-w-1200px" : "max-w-900px";
 
 	return (
 		<div
-			style={{
-				position: "fixed",
-				top: 0,
-				left: "260px",
-				right: 0,
-				bottom: 0,
-				background: "rgba(0, 0, 0, 0.6)",
-				display: "flex",
-				alignItems: "center",
-				justifyContent: "center",
-				zIndex: 9999,
-				padding: "32px",
-			}}
+			className="fixed top-0 left-260px right-0 bottom-0 bg-[rgba(0,0,0,0.6)] flex items-center justify-center z-[9999] p-8"
 			onClick={onClose}
 		>
 			<div
-				style={{
-					background: "var(--surface-primary)",
-					borderRadius: "12px",
-					maxWidth,
-					width: "100%",
-					maxHeight: "calc(100vh - 64px)",
-					overflow: "auto",
-					boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)",
-					border: "1px solid var(--border-primary)",
-				}}
+				className={`bg-surface-primary rounded-xl ${sizeClass} w-full max-h-[calc(100vh-64px)] overflow-auto shadow-2xl border border-border-primary`}
 				onClick={(e) => e.stopPropagation()}
 			>
 				{children}
@@ -76,47 +55,15 @@ interface ModalHeaderProps {
 
 export function ModalHeader({ children, onClose }: ModalHeaderProps) {
 	return (
-		<div
-			style={{
-				padding: "24px 24px 16px",
-				borderBottom: "1px solid var(--border-primary)",
-				display: "flex",
-				alignItems: "center",
-				justifyContent: "space-between",
-			}}
-		>
-			<h2 style={{ fontSize: "20px", fontWeight: "700", color: "var(--text-primary)", margin: 0 }}>{children}</h2>
+		<div className="p-6 pb-4 border-b border-border-primary flex items-center justify-between">
+			<h2 className="text-20px font-bold text-text-primary m-0">{children}</h2>
 			{onClose && (
 				<button
 					type="button"
 					onClick={onClose}
-					style={{
-						padding: "8px",
-						background: "transparent",
-						border: "none",
-						borderRadius: "6px",
-						cursor: "pointer",
-						color: "var(--text-tertiary)",
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						transition: "all 0.15s ease",
-					}}
-					onMouseEnter={(e) => {
-						e.currentTarget.style.background = "var(--surface-secondary)";
-						e.currentTarget.style.color = "var(--text-primary)";
-					}}
-					onMouseLeave={(e) => {
-						e.currentTarget.style.background = "transparent";
-						e.currentTarget.style.color = "var(--text-tertiary)";
-					}}
+					className="p-2 bg-transparent border-none rounded-md cursor-pointer text-text-tertiary flex items-center justify-center transition-all duration-150 hover:bg-surface-secondary hover:text-text-primary"
 				>
-					<svg
-						style={{ width: "20px", height: "20px" }}
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-					>
+					<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
 					</svg>
 				</button>
@@ -130,7 +77,7 @@ interface ModalBodyProps {
 }
 
 export function ModalBody({ children }: ModalBodyProps) {
-	return <div style={{ padding: "24px" }}>{children}</div>;
+	return <div className="p-6">{children}</div>;
 }
 
 interface ModalFooterProps {
@@ -139,16 +86,7 @@ interface ModalFooterProps {
 
 export function ModalFooter({ children }: ModalFooterProps) {
 	return (
-		<div
-			style={{
-				padding: "16px 24px",
-				borderTop: "1px solid var(--border-primary)",
-				display: "flex",
-				alignItems: "center",
-				justifyContent: "flex-end",
-				gap: "12px",
-			}}
-		>
+		<div className="p-4 px-6 border-t border-border-primary flex items-center justify-end gap-3">
 			{children}
 		</div>
 	);

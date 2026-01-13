@@ -98,60 +98,23 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 	return (
 		<ToastContext.Provider value={{ showToast }}>
 			{children}
-			<div
-				style={{
-					position: "fixed",
-					top: "20px",
-					right: "20px",
-					zIndex: 10000,
-					display: "flex",
-					flexDirection: "column",
-					gap: "12px",
-					maxWidth: "400px",
-				}}
-			>
+			<div className="fixed top-5 right-5 z-[10000] flex flex-col gap-3 max-w-400px">
 				{toasts.map((toast) => {
 					const styles = getToastStyles(toast.type);
 					return (
 						<div
 							key={toast.id}
-							style={{
-								background: styles.bg,
-								color: "white",
-								padding: "16px",
-								borderRadius: "8px",
-								boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)",
-								display: "flex",
-								alignItems: "center",
-								gap: "12px",
-								animation: "slideInRight 0.3s ease-out",
-							}}
+							className="text-white p-4 rounded-lg shadow-lg flex items-center gap-3 animate-[slideInRight_0.3s_ease-out]"
+							style={{ background: styles.bg }}
 						>
-							<div style={{ width: "20px", height: "20px", flexShrink: 0 }}>{styles.icon}</div>
-							<p style={{ margin: 0, fontSize: "14px", fontWeight: "500", flex: 1 }}>{toast.message}</p>
+							<div className="w-5 h-5 flex-shrink-0">{styles.icon}</div>
+							<p className="m-0 text-14px font-medium flex-1">{toast.message}</p>
 							<button
 								type="button"
 								onClick={() => removeToast(toast.id)}
-								style={{
-									background: "transparent",
-									border: "none",
-									color: "white",
-									cursor: "pointer",
-									padding: "4px",
-									display: "flex",
-									alignItems: "center",
-									opacity: 0.8,
-									transition: "opacity 0.15s ease",
-								}}
-								onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-								onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.8")}
+								className="bg-transparent border-none text-white cursor-pointer p-1 flex items-center opacity-80 hover:opacity-100 transition-opacity"
 							>
-								<svg
-									style={{ width: "16px", height: "16px" }}
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
+								<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
 										strokeLinecap="round"
 										strokeLinejoin="round"

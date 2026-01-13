@@ -2,6 +2,9 @@ import { ProofaProvider } from "@proofa/react";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
+import "@proofa/dashboard-style/base.css";
+import "virtual:uno.css";
+import "@unocss/reset/tailwind.css";
 import "./index.css";
 
 // Use direct Gateway URL for API calls (with CORS + credentials)

@@ -1,9 +1,15 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import path from "path";
+import UnoCSS from "unocss/vite";
 
 export default defineConfig({
-	plugins: [react()],
+	plugins: [
+		react(),
+		UnoCSS({
+			configFile: path.resolve(__dirname, "../../packages/dashboard-style/uno.config.ts"),
+		}),
+	],
 	resolve: {
 		alias: {
 			"@proofa/react": path.resolve(__dirname, "../../packages/react/dist/index.js"),

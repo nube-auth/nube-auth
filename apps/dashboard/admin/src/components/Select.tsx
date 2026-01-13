@@ -52,44 +52,12 @@ export const Select: React.FC<SelectProps> = ({
 	};
 
 	return (
-		<div
-			ref={dropdownRef}
-			className={className}
-			style={{
-				position: "relative",
-				...style,
-			}}
-		>
+		<div ref={dropdownRef} className={`relative ${className || ''}`} style={style}>
 			<button
 				type="button"
 				onClick={() => !disabled && setIsOpen(!isOpen)}
 				disabled={disabled}
-				style={{
-					width: "100%",
-					padding: "10px 12px",
-					border: "1px solid var(--border-primary)",
-					borderRadius: "8px",
-					background: disabled ? "var(--surface-secondary)" : "var(--content-bg)",
-					color: "var(--text-primary)",
-					fontSize: "14px",
-					cursor: disabled ? "not-allowed" : "pointer",
-					opacity: disabled ? 0.6 : 1,
-					display: "flex",
-					justifyContent: "space-between",
-					alignItems: "center",
-					textAlign: "left",
-					transition: "all 0.2s ease",
-				}}
-				onMouseEnter={(e) => {
-					if (!disabled) {
-						e.currentTarget.style.borderColor = "var(--primary)";
-						e.currentTarget.style.boxShadow = "0 0 0 2px rgba(139, 92, 246, 0.1)";
-					}
-				}}
-				onMouseLeave={(e) => {
-					e.currentTarget.style.borderColor = "var(--border-primary)";
-					e.currentTarget.style.boxShadow = "none";
-				}}
+				className={`w-full px-3 py-2.5 border border-border-primary rounded-lg text-14px transition-all duration-200 flex justify-between items-center text-left ${disabled ? "bg-surface-secondary cursor-not-allowed opacity-60" : "bg-content-bg cursor-pointer hover:border-primary hover:shadow-[0_0_0_2px_rgba(139,92,246,0.1)]"} text-text-primary`}
 			>
 				<span>{selectedOption ? selectedOption.label : placeholder}</span>
 				<svg
@@ -97,10 +65,7 @@ export const Select: React.FC<SelectProps> = ({
 					height="16"
 					viewBox="0 0 16 16"
 					fill="none"
-					style={{
-						transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-						transition: "transform 0.2s ease",
-					}}
+					className={`transition-transform duration-200 ${isOpen ? "rotate-180" : "rotate-0"}`}
 				>
 					<path
 						d="M4 6L8 10L12 6"
@@ -113,22 +78,7 @@ export const Select: React.FC<SelectProps> = ({
 			</button>
 
 			{isOpen && (
-				<div
-					style={{
-						position: "absolute",
-						top: "calc(100% + 4px)",
-						left: 0,
-						right: 0,
-						background: "var(--content-bg)",
-						border: "1px solid var(--border-primary)",
-						borderRadius: "8px",
-						boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-						zIndex: 1000,
-						maxHeight: "240px",
-						overflowY: "auto",
-						animation: "slideDown 0.15s ease-out",
-					}}
-				>
+				<div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-content-bg border border-border-primary rounded-lg shadow-lg z-1000 max-h-60 overflow-y-auto animate-slideDown">
 					<style>
 						{`
 							@keyframes slideDown {
@@ -141,6 +91,9 @@ export const Select: React.FC<SelectProps> = ({
 									transform: translateY(0);
 								}
 							}
+							.animate-slideDown {
+								animation: slideDown 0.15s ease-out;
+							}
 						`}
 					</style>
 					{options.map((option) => (
@@ -148,28 +101,7 @@ export const Select: React.FC<SelectProps> = ({
 							key={option.value}
 							type="button"
 							onClick={() => handleSelect(option.value)}
-							style={{
-								width: "100%",
-								padding: "10px 12px",
-								border: "none",
-								background: option.value === value ? "var(--primary-light)" : "transparent",
-								color: option.value === value ? "var(--primary)" : "var(--text-primary)",
-								fontSize: "14px",
-								cursor: "pointer",
-								textAlign: "left",
-								transition: "background 0.15s ease",
-								fontWeight: option.value === value ? "600" : "400",
-							}}
-							onMouseEnter={(e) => {
-								if (option.value !== value) {
-									e.currentTarget.style.background = "var(--surface-secondary)";
-								}
-							}}
-							onMouseLeave={(e) => {
-								if (option.value !== value) {
-									e.currentTarget.style.background = "transparent";
-								}
-							}}
+							className={`w-full px-3 py-2.5 border-none text-14px cursor-pointer text-left transition-background duration-150 ${option.value === value ? "bg-primary-light text-primary font-semibold" : "bg-transparent text-text-primary hover:bg-surface-secondary"}`}
 						>
 							{option.label}
 						</button>

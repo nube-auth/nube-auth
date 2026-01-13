@@ -150,66 +150,43 @@ export function AppSettingsPage() {
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
-			<div style={{ marginBottom: "24px" }}>
-				<div
-					style={{
-						display: "flex",
-						gap: "8px",
-						alignItems: "center",
-						fontSize: "13px",
-						color: "var(--text-tertiary)",
-					}}
-				>
-					<Link to="/projects" style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+			<div className="mb-6">
+				<div className="breadcrumb">
+					<Link to="/projects" className="breadcrumb-item">
 						Projects
 					</Link>
 					<span>›</span>
-					<Link
-						to={`/projects/${projectId}`}
-						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
-					>
+					<Link to={`/projects/${projectId}`} className="breadcrumb-item">
 						{project.name}
 					</Link>
 					<span>›</span>
-					<Link
-						to={`/projects/${projectId}/apps/${appId}`}
-						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
-					>
+					<Link to={`/projects/${projectId}/apps/${appId}`} className="breadcrumb-item">
 						{app.name}
 					</Link>
 					<span>›</span>
-					<span style={{ color: "var(--text-primary)" }}>Settings</span>
+					<span className="breadcrumb-current">Settings</span>
 				</div>
 			</div>
 
 			{/* Page Header */}
-			<div style={{ marginBottom: "32px" }}>
-				<h1 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>App Settings</h1>
-				<p style={{ fontSize: "14px", color: "var(--text-tertiary)" }}>
-					Configure your application settings and preferences
-				</p>
+			<div className="mb-8">
+				<h1 className="page-title">App Settings</h1>
+				<p className="page-description">Configure your application settings and preferences</p>
 			</div>
 
 			{/* Tabs */}
-			<div style={{ borderBottom: "1px solid var(--border-primary)", marginBottom: "32px" }}>
-				<div style={{ display: "flex", gap: "32px" }}>
+			<div className="border-b border-card-border mb-8">
+				<div className="flex gap-8">
 					{tabs.map((tab) => (
 						<button
 							key={tab.id}
 							type="button"
 							onClick={() => setActiveTab(tab.id)}
-							style={{
-								padding: "12px 0",
-								fontSize: "14px",
-								fontWeight: "600",
-								color: activeTab === tab.id ? "var(--primary)" : "var(--text-tertiary)",
-								background: "none",
-								border: "none",
-								borderBottom:
-									activeTab === tab.id ? "2px solid var(--primary)" : "2px solid transparent",
-								cursor: "pointer",
-								transition: "all 0.2s ease",
-							}}
+							className={`py-3 text-14px font-semibold bg-transparent border-none cursor-pointer transition-all ${
+								activeTab === tab.id
+									? "text-primary border-b-2 border-primary"
+									: "text-text-tertiary border-b-2 border-transparent"
+							}`}
 						>
 							{tab.label}
 						</button>
@@ -222,12 +199,10 @@ export function AppSettingsPage() {
 				{/* General Tab */}
 				{activeTab === "general" && (
 					<div>
-						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>
-								Basic Information
-							</h3>
+						<div className="card p-6 mb-4">
+							<h3 className="text-16px font-semibold mb-5">Basic Information</h3>
 
-							<div style={{ display: "grid", gap: "20px" }}>
+							<div className="grid gap-5">
 								<div>
 									<label className="form-label">App Name *</label>
 									<input
@@ -239,7 +214,7 @@ export function AppSettingsPage() {
 										required
 										placeholder="My Awesome App"
 									/>
-									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+									<p className="text-12px text-text-tertiary mt-1.5">
 										The public name of your application
 									</p>
 								</div>
@@ -256,7 +231,7 @@ export function AppSettingsPage() {
 										pattern="[a-z0-9-]+"
 										placeholder="my-awesome-app"
 									/>
-									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+									<p className="text-12px text-text-tertiary mt-1.5">
 										URL-friendly identifier (lowercase, hyphens only)
 									</p>
 								</div>
@@ -265,14 +240,13 @@ export function AppSettingsPage() {
 									<label className="form-label">Description</label>
 									<textarea
 										name="description"
-										className="form-control"
+										className="form-control resize-y"
 										value={formData.description || ""}
 										onChange={handleInputChange}
 										rows={3}
 										placeholder="A brief description of your application..."
-										style={{ resize: "vertical" }}
 									/>
-									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+									<p className="text-12px text-text-tertiary mt-1.5">
 										Optional description for internal reference
 									</p>
 								</div>
@@ -284,37 +258,31 @@ export function AppSettingsPage() {
 				{/* Authentication Tab */}
 				{activeTab === "authentication" && (
 					<div>
-						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>
-								OAuth Providers
-							</h3>
-							<p style={{ fontSize: "14px", color: "var(--text-tertiary)", marginBottom: "20px" }}>
+						<div className="card p-6 mb-4">
+							<h3 className="text-16px font-semibold mb-5">OAuth Providers</h3>
+							<p className="text-14px text-text-tertiary mb-5">
 								OAuth providers are now managed at the project level. Go to Project Settings to
 								configure authentication providers.
 							</p>
-							<p style={{ fontSize: "14px", color: "var(--text-tertiary)", marginBottom: "16px" }}>
+							<p className="text-14px text-text-tertiary mb-4">
 								Allowed callback URLs after successful authentication
 							</p>
 
 							{(formData.redirectUris || []).map((uri: string, index: number) => (
-								<div
-									key={`redirectUri-${index}`}
-									style={{ display: "flex", gap: "8px", marginBottom: "12px" }}
-								>
+								<div key={`redirectUri-${index}`} className="flex gap-2 mb-3">
 									<input
 										type="url"
-										className="form-control"
+										className="form-control flex-1"
 										value={uri}
 										onChange={(e) => handleArrayFieldChange("redirectUris", index, e.target.value)}
 										placeholder="https://myapp.com/callback"
-										style={{ flex: 1 }}
 									/>
 									<button
 										type="button"
 										onClick={() =>
 											removeArrayField("redirectUris", (formData.redirectUris || []).indexOf(uri))
 										}
-										className="btn btn-danger-outline btn-sm"
+										className="btn-danger btn-sm"
 									>
 										Remove
 									</button>
@@ -324,31 +292,26 @@ export function AppSettingsPage() {
 							<button
 								type="button"
 								onClick={() => addArrayField("redirectUris")}
-								className="btn btn-secondary-outline btn-sm"
-								style={{ marginTop: "8px" }}
+								className="btn-secondary btn-sm mt-2"
 							>
 								+ Add Redirect URI
 							</button>
 						</div>
 
-						<div className="card" style={{ padding: "24px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>Allowed Hosts</h3>
-							<p style={{ fontSize: "14px", color: "var(--text-tertiary)", marginBottom: "16px" }}>
+						<div className="card p-6">
+							<h3 className="text-16px font-semibold mb-5">Allowed Hosts</h3>
+							<p className="text-14px text-text-tertiary mb-4">
 								Domains allowed to make requests to your app
 							</p>
 
 							{(formData.allowedHosts || []).map((host: string, index: number) => (
-								<div
-									key={`allowedHost-${index}`}
-									style={{ display: "flex", gap: "8px", marginBottom: "12px" }}
-								>
+								<div key={`allowedHost-${index}`} className="flex gap-2 mb-3">
 									<input
 										type="text"
-										className="form-control"
+										className="form-control flex-1"
 										value={host}
 										onChange={(e) => handleArrayFieldChange("allowedHosts", index, e.target.value)}
 										placeholder="myapp.com or localhost:3000"
-										style={{ flex: 1 }}
 									/>
 									<button
 										type="button"
@@ -358,7 +321,7 @@ export function AppSettingsPage() {
 												(formData.allowedHosts || []).indexOf(host),
 											)
 										}
-										className="btn btn-danger-outline btn-sm"
+										className="btn-danger btn-sm"
 									>
 										Remove
 									</button>
@@ -368,8 +331,7 @@ export function AppSettingsPage() {
 							<button
 								type="button"
 								onClick={() => addArrayField("allowedHosts")}
-								className="btn btn-secondary-outline btn-sm"
-								style={{ marginTop: "8px" }}
+								className="btn-secondary btn-sm mt-2"
 							>
 								+ Add Allowed Host
 							</button>
@@ -380,12 +342,10 @@ export function AppSettingsPage() {
 				{/* Security Tab */}
 				{activeTab === "security" && (
 					<div>
-						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "20px" }}>
-								Security Settings
-							</h3>
+						<div className="card p-6 mb-4">
+							<h3 className="text-16px font-semibold mb-5">Security Settings</h3>
 
-							<div style={{ display: "grid", gap: "20px" }}>
+							<div className="grid gap-5">
 								<div>
 									<label className="form-label">Account Lockout Duration (Minutes)</label>
 									<input
@@ -398,7 +358,7 @@ export function AppSettingsPage() {
 										max={120}
 										required
 									/>
-									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+									<p className="text-12px text-text-tertiary mt-1.5">
 										Duration to lock accounts after failed login attempts (5-120 minutes)
 									</p>
 								</div>
@@ -415,7 +375,7 @@ export function AppSettingsPage() {
 										max={60}
 										required
 									/>
-									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+									<p className="text-12px text-text-tertiary mt-1.5">
 										How long to cache user session data (1-60 minutes)
 									</p>
 								</div>
@@ -432,23 +392,14 @@ export function AppSettingsPage() {
 										max={1000}
 										required
 									/>
-									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+									<p className="text-12px text-text-tertiary mt-1.5">
 										Maximum API requests per minute per user (10-1000)
 									</p>
 								</div>
 							</div>
 						</div>
 
-						<div
-							style={{
-								padding: "16px",
-								background: "var(--info-bg)",
-								border: "1px solid var(--info-border)",
-								borderRadius: "8px",
-								fontSize: "14px",
-								color: "var(--info-text)",
-							}}
-						>
+						<div className="p-4 bg-info-bg border border-info-border rounded-lg text-14px text-info-text">
 							<strong>💡 Pro Tip:</strong> Adjust these settings based on your app's needs. Higher values
 							provide better UX but may increase security risks.
 						</div>
@@ -458,63 +409,24 @@ export function AppSettingsPage() {
 				{/* Danger Zone Tab */}
 				{activeTab === "danger" && (
 					<div>
-						<div
-							className="card"
-							style={{ padding: "24px", borderColor: "var(--danger)", borderWidth: "2px" }}
-						>
-							<h3
-								style={{
-									fontSize: "16px",
-									fontWeight: "600",
-									marginBottom: "12px",
-									color: "var(--danger)",
-								}}
-							>
-								⚠️ Danger Zone
-							</h3>
-							<p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "20px" }}>
+						<div className="card p-6 border-2 border-danger">
+							<h3 className="text-16px font-semibold mb-3 text-danger">⚠️ Danger Zone</h3>
+							<p className="text-14px text-text-secondary mb-5">
 								These actions are permanent and cannot be undone.
 							</p>
 
-							<div
-								style={{
-									padding: "20px",
-									background: "rgba(239, 68, 68, 0.05)",
-									borderRadius: "8px",
-									border: "1px solid rgba(239, 68, 68, 0.2)",
-								}}
-							>
-								<h4
-									style={{
-										fontSize: "14px",
-										fontWeight: "600",
-										marginBottom: "8px",
-										color: "var(--danger)",
-									}}
-								>
-									Delete This App
-								</h4>
-								<p style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "16px" }}>
+							<div className="p-5 bg-danger-bg bg-opacity-5 rounded-lg border border-danger border-opacity-20">
+								<h4 className="text-14px font-semibold mb-2 text-danger">Delete This App</h4>
+								<p className="text-13px text-text-secondary mb-4">
 									Once you delete an app, there is no going back. This will:
 								</p>
-								<ul
-									style={{
-										fontSize: "13px",
-										color: "var(--text-secondary)",
-										marginBottom: "16px",
-										paddingLeft: "20px",
-									}}
-								>
+								<ul className="text-13px text-text-secondary mb-4 pl-5">
 									<li>Delete all user data and sessions</li>
 									<li>Revoke all active licenses</li>
 									<li>Remove all API keys and integrations</li>
 									<li>Cancel all active subscriptions</li>
 								</ul>
-								<button
-									type="button"
-									onClick={() => setShowDeleteModal(true)}
-									className="btn btn-danger"
-								>
+								<button type="button" onClick={() => setShowDeleteModal(true)} className="btn-danger">
 									Delete App
 								</button>
 							</div>
@@ -524,22 +436,18 @@ export function AppSettingsPage() {
 
 				{/* Save Button (shown for all tabs except danger zone) */}
 				{activeTab !== "danger" && (
-					<div style={{ marginTop: "24px", display: "flex", gap: "12px" }}>
+					<div className="mt-6 flex gap-3">
 						<button
 							type="submit"
 							disabled={isSaving || updateAppMutation.isPending}
-							className="btn btn-primary"
-							style={{
-								opacity: isSaving || updateAppMutation.isPending ? 0.6 : 1,
-								cursor: isSaving || updateAppMutation.isPending ? "not-allowed" : "pointer",
-							}}
+							className={`btn-primary ${isSaving || updateAppMutation.isPending ? "opacity-60 cursor-not-allowed" : ""}`}
 						>
 							{isSaving || updateAppMutation.isPending ? "Saving..." : "Save Changes"}
 						</button>
 						<button
 							type="button"
 							onClick={() => navigate(`/projects/${projectId}/apps/${appId}`)}
-							className="btn btn-secondary-outline"
+							className="btn-secondary"
 						>
 							Cancel
 						</button>
