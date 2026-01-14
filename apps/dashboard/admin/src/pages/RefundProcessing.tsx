@@ -88,27 +88,27 @@ export function RefundProcessingPage() {
 	if (activeTab === "create") {
 		return (
 			<div>
-				<div style={{ marginBottom: "24px" }}>
-					<button onClick={() => setActiveTab("refunds")} style={{ color: "var(--primary)", cursor: "pointer", background: "none", border: "none", fontSize: "14px", fontWeight: "500" }}>
+				<div className="mb-6">
+					<button onClick={() => setActiveTab("refunds")} className="text-primary cursor-pointer bg-transparent border-none text-sm font-medium">
 						← Back to Refunds
 					</button>
 				</div>
 
-				<div className="card" style={{ maxWidth: "600px" }}>
-					<div style={{ padding: "24px" }}>
-						<h2 style={{ marginTop: 0, marginBottom: "24px" }}>Create Refund</h2>
+				<div className="card max-w-[600px]">
+					<div className="p-6">
+					<h2 className="mt-0 mb-6">Create Refund</h2>
 
 						<form onSubmit={handleCreateRefund}>
-							<div className="form-group" style={{ marginBottom: "20px" }}>
-								<label htmlFor="purchase_id" style={{ fontWeight: "500", marginBottom: "8px", display: "block", fontSize: "14px" }}>
-									Purchase <span style={{ color: "var(--danger)" }}>*</span>
+							<div className="form-group mb-5">
+								<label htmlFor="purchase_id" className="font-medium mb-2 block text-sm">
+									Purchase <span className="text-danger">*</span>
 								</label>
 								<select
 									id="purchase_id"
 									value={refundForm.purchase_id}
 									onChange={(e) => setRefundForm({ ...refundForm, purchase_id: e.target.value })}
 									required
-									style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid var(--border-color)", fontSize: "14px" }}
+									className="w-full px-2.5 py-2.5 rounded-md border border-border-color text-sm"
 								>
 									<option value="">Select a purchase...</option>
 									{purchasesQuery.data?.data?.map((purchase) => (
@@ -120,17 +120,17 @@ export function RefundProcessingPage() {
 							</div>
 
 							{refundForm.purchase_id && purchasesQuery.data?.data && (
-								<div style={{ padding: "16px", backgroundColor: "var(--surface-secondary)", borderRadius: "8px", marginBottom: "20px" }}>
-									<h4 style={{ marginTop: 0, marginBottom: "12px", fontSize: "14px" }}>Purchase Details</h4>
+								<div className="p-4 bg-surface-secondary rounded-lg mb-5">
+									<h4 className="mt-0 mb-3 text-sm">Purchase Details</h4>
 									{(() => {
 										const purchase = purchasesQuery.data.data.find((p) => p.id === refundForm.purchase_id);
 										if (!purchase) return null;
 										return (
-											<div style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
-												<div style={{ marginBottom: "8px" }}>
+											<div className="text-sm text-text-secondary">
+												<div className="mb-2">
 													<strong>App:</strong> {purchase.app?.name || "—"}
 												</div>
-												<div style={{ marginBottom: "8px" }}>
+												<div className="mb-2">
 													<strong>Amount:</strong> {formatCurrency(purchase.amount, purchase.currency)}
 												</div>
 												<div>
@@ -142,9 +142,9 @@ export function RefundProcessingPage() {
 								</div>
 							)}
 
-							<div className="form-group" style={{ marginBottom: "20px" }}>
-								<label htmlFor="amount" style={{ fontWeight: "500", marginBottom: "8px", display: "block", fontSize: "14px" }}>
-									Refund Amount <span style={{ color: "var(--danger)" }}>*</span>
+							<div className="form-group mb-5">
+								<label htmlFor="amount" className="font-medium mb-2 block text-sm">
+									Refund Amount <span className="text-danger">*</span>
 								</label>
 								<input
 									type="number"
@@ -155,23 +155,23 @@ export function RefundProcessingPage() {
 									step="0.01"
 									min="0"
 									required
-									style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid var(--border-color)", fontSize: "14px" }}
+									className="w-full px-2.5 py-2.5 rounded-md border border-border-color text-sm"
 								/>
-								<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+								<div className="text-xs text-text-tertiary mt-1.5">
 									Partial refunds are supported. Enter the amount to refund.
 								</div>
 							</div>
 
-							<div className="form-group" style={{ marginBottom: "20px" }}>
-								<label htmlFor="reason" style={{ fontWeight: "500", marginBottom: "8px", display: "block", fontSize: "14px" }}>
-									Reason <span style={{ color: "var(--danger)" }}>*</span>
+							<div className="form-group mb-5">
+								<label htmlFor="reason" className="font-medium mb-2 block text-sm">
+									Reason <span className="text-danger">*</span>
 								</label>
 								<select
 									id="reason"
 									value={refundForm.reason}
 									onChange={(e) => setRefundForm({ ...refundForm, reason: e.target.value })}
 									required
-									style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid var(--border-color)", fontSize: "14px" }}
+									className="w-full px-2.5 py-2.5 rounded-md border border-border-color text-sm"
 								>
 									<option value="">Select a reason...</option>
 									<option value="customer_request">Customer Request</option>
@@ -183,13 +183,13 @@ export function RefundProcessingPage() {
 								</select>
 							</div>
 
-							<div style={{ padding: "12px", backgroundColor: "rgba(59, 130, 246, 0.1)", borderRadius: "6px", marginBottom: "24px", border: "1px solid rgba(59, 130, 246, 0.3)" }}>
-								<div style={{ fontSize: "13px", color: "#3b82f6", lineHeight: "1.5" }}>
+							<div className="p-3 bg-blue-50 rounded-md mb-6 border border-blue-200">
+								<div className="text-sm text-blue-600 leading-relaxed">
 									<strong>ℹ️ Note:</strong> Refund processing may take 24-48 hours depending on the payment provider.
 								</div>
 							</div>
 
-							<div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+							<div className="flex gap-2 justify-end">
 								<button type="button" onClick={() => setActiveTab("refunds")} className="btn btn-secondary">
 									Cancel
 								</button>
@@ -206,10 +206,10 @@ export function RefundProcessingPage() {
 
 	return (
 		<div>
-			<div style={{ marginBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+			<div className="mb-6 flex justify-between items-center">
 				<div>
-					<h1 style={{ margin: 0, marginBottom: "8px" }}>Refund Processing</h1>
-					<p style={{ margin: 0, color: "var(--text-secondary)" }}>Create and manage customer refunds</p>
+					<h1 className="m-0 mb-2">Refund Processing</h1>
+					<p className="m-0 text-text-secondary">Create and manage customer refunds</p>
 				</div>
 				<button onClick={() => setActiveTab("create")} className="btn btn-primary">
 					+ Create Refund
@@ -217,18 +217,18 @@ export function RefundProcessingPage() {
 			</div>
 
 			{/* Filters */}
-			<div className="card" style={{ marginBottom: "24px", padding: "24px" }}>
-				<h3 style={{ marginTop: 0, marginBottom: "16px", fontSize: "16px" }}>Filters</h3>
-				<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginBottom: "16px" }}>
-					<div className="form-group" style={{ margin: 0 }}>
-						<label htmlFor="provider" style={{ fontSize: "12px", marginBottom: "6px" }}>
+			<div className="card mb-6 p-6">
+				<h3 className="mt-0 mb-4 text-base">Filters</h3>
+				<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-4">
+					<div className="form-group m-0">
+						<label htmlFor="provider" className="text-xs mb-1.5">
 							Provider
 						</label>
 						<select
 							id="provider"
 							value={filters.provider}
 							onChange={(e) => setFilters({ ...filters, provider: e.target.value, offset: 0 })}
-							style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid var(--border-color)", fontSize: "14px" }}
+							className="w-full px-2 py-2 rounded-md border border-border-color text-sm"
 						>
 							<option value="">All Providers</option>
 							<option value="lemon_squeezy">LemonSqueezy</option>
@@ -236,15 +236,15 @@ export function RefundProcessingPage() {
 						</select>
 					</div>
 
-					<div className="form-group" style={{ margin: 0 }}>
-						<label htmlFor="status" style={{ fontSize: "12px", marginBottom: "6px" }}>
+					<div className="form-group m-0">
+						<label htmlFor="status" className="text-xs mb-1.5">
 							Status
 						</label>
 						<select
 							id="status"
 							value={filters.status}
 							onChange={(e) => setFilters({ ...filters, status: e.target.value, offset: 0 })}
-							style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid var(--border-color)", fontSize: "14px" }}
+							className="w-full px-2 py-2 rounded-md border border-border-color text-sm"
 						>
 							<option value="">All Statuses</option>
 							<option value="completed">Completed</option>
@@ -254,8 +254,8 @@ export function RefundProcessingPage() {
 						</select>
 					</div>
 
-					<div className="form-group" style={{ margin: 0 }}>
-						<label htmlFor="startDate" style={{ fontSize: "12px", marginBottom: "6px" }}>
+					<div className="form-group m-0">
+						<label htmlFor="startDate" className="text-xs mb-1.5">
 							Start Date
 						</label>
 						<input
@@ -263,12 +263,12 @@ export function RefundProcessingPage() {
 							id="startDate"
 							value={filters.start_date}
 							onChange={(e) => setFilters({ ...filters, start_date: e.target.value, offset: 0 })}
-							style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid var(--border-color)", fontSize: "14px" }}
+							className="w-full px-2 py-2 rounded-md border border-border-color text-sm"
 						/>
 					</div>
 
-					<div className="form-group" style={{ margin: 0 }}>
-						<label htmlFor="endDate" style={{ fontSize: "12px", marginBottom: "6px" }}>
+					<div className="form-group m-0">
+						<label htmlFor="endDate" className="text-xs mb-1.5">
 							End Date
 						</label>
 						<input
@@ -276,7 +276,7 @@ export function RefundProcessingPage() {
 							id="endDate"
 							value={filters.end_date}
 							onChange={(e) => setFilters({ ...filters, end_date: e.target.value, offset: 0 })}
-							style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid var(--border-color)", fontSize: "14px" }}
+							className="w-full px-2 py-2 rounded-md border border-border-color text-sm"
 						/>
 					</div>
 				</div>
@@ -300,12 +300,12 @@ export function RefundProcessingPage() {
 
 			{/* Refunds Table */}
 			{!refundsQuery.data || refundsQuery.data.refunds.length === 0 ? (
-				<div className="card" style={{ padding: "64px 24px", textAlign: "center" }}>
-					<div style={{ fontSize: "64px", marginBottom: "16px" }}>💰</div>
-					<h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px", color: "var(--text-primary)" }}>
+				<div className="card py-16 px-6 text-center">
+					<div className="text-6xl mb-4">💰</div>
+					<h2 className="text-xl font-semibold mb-3 text-text-primary">
 						No refunds yet
 					</h2>
-					<p style={{ fontSize: "14px", color: "var(--text-tertiary)", marginBottom: "24px", maxWidth: "400px", margin: "0 auto 24px" }}>
+					<p className="text-sm text-text-tertiary mb-6 max-w-[400px] mx-auto">
 						Start by creating a refund for a customer purchase
 					</p>
 					<button onClick={() => setActiveTab("create")} className="btn btn-primary">
@@ -313,45 +313,45 @@ export function RefundProcessingPage() {
 					</button>
 				</div>
 			) : (
-				<div className="card" style={{ padding: "0", overflow: "hidden" }}>
-					<table style={{ width: "100%", borderCollapse: "collapse" }}>
+				<div className="card p-0 overflow-hidden">
+					<table className="w-full border-collapse">
 						<thead>
-							<tr style={{ borderBottom: "1px solid var(--border-primary)", background: "var(--surface-secondary)" }}>
-								<th style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+							<tr className="border-b border-border-primary bg-surface-secondary">
+								<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
 									Status
 								</th>
-								<th style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+								<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
 									Amount
 								</th>
-								<th style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+								<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
 									Provider
 								</th>
-								<th style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+								<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
 									Reason
 								</th>
-								<th style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+								<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
 									Created
 								</th>
-								<th style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+								<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
 									App
 								</th>
 							</tr>
 						</thead>
 						<tbody>
 							{refundsQuery.data.refunds.map((refund) => (
-								<tr key={refund.id} style={{ borderBottom: "1px solid var(--border-primary)" }}>
-									<td style={{ padding: "14px 16px" }}>{handleStatusBadge(refund.status)}</td>
-									<td style={{ padding: "14px 16px", fontSize: "13px", fontWeight: "600", color: "var(--text-primary)" }}>
+								<tr key={refund.id} className="border-b border-border-primary">
+									<td className="px-4 py-3.5">{handleStatusBadge(refund.status)}</td>
+									<td className="px-4 py-3.5 text-sm font-semibold text-text-primary">
 										{formatCurrency(refund.amount, refund.currency)}
 									</td>
-									<td style={{ padding: "14px 16px" }}>{handleProviderBadge(refund.provider)}</td>
-									<td style={{ padding: "14px 16px", fontSize: "13px", color: "var(--text-secondary)", textTransform: "capitalize" }}>
+									<td className="px-4 py-3.5">{handleProviderBadge(refund.provider)}</td>
+									<td className="px-4 py-3.5 text-sm text-text-secondary capitalize">
 										{refund.reason?.replace(/_/g, " ") || "—"}
 									</td>
-									<td style={{ padding: "14px 16px", fontSize: "13px", color: "var(--text-secondary)" }}>
+									<td className="px-4 py-3.5 text-sm text-text-secondary">
 										{new Date(refund.created_at).toLocaleDateString()}
 									</td>
-									<td style={{ padding: "14px 16px", fontSize: "13px", color: "var(--text-secondary)" }}>
+									<td className="px-4 py-3.5 text-sm text-text-secondary">
 										{refund.purchase?.app?.name || "—"}
 									</td>
 								</tr>
@@ -363,12 +363,12 @@ export function RefundProcessingPage() {
 
 			{/* Pagination */}
 			{refundsQuery.data && refundsQuery.data.pagination && (
-				<div style={{ marginTop: "24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-					<div style={{ fontSize: "14px", color: "var(--text-secondary)" }}>
+				<div className="mt-6 flex items-center justify-between">
+					<div className="text-sm text-text-secondary">
 						Showing {filters.offset + 1} to {Math.min(filters.offset + filters.limit, refundsQuery.data.pagination.total)} of{" "}
 						{refundsQuery.data.pagination.total}
 					</div>
-					<div style={{ display: "flex", gap: "8px" }}>
+					<div className="flex gap-2">
 						<button
 							onClick={() =>
 								setFilters({

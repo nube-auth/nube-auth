@@ -63,38 +63,28 @@ export function ProjectTeamPage() {
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
-			<div style={{ marginBottom: "24px" }}>
-				<div
-					style={{
-						display: "flex",
-						gap: "8px",
-						alignItems: "center",
-						fontSize: "13px",
-						color: "var(--text-tertiary)",
-					}}
-				>
-					<Link to="/projects" style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+			<div className="mb-6">
+				<div className="flex gap-2 items-center text-xs text-text-tertiary">
+					<Link to="/projects" className="text-text-tertiary no-underline">
 						Projects
 					</Link>
 					<span>›</span>
 					<Link
 						to={`/projects/${projectId}`}
-						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
+						className="text-text-tertiary no-underline"
 					>
 						{project.name}
 					</Link>
 					<span>›</span>
-					<span style={{ color: "var(--text-primary)" }}>Team</span>
+					<span className="text-text-primary">Team</span>
 				</div>
 			</div>
 
 			{/* Page Header */}
-			<div
-				style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}
-			>
+			<div className="flex justify-between items-center mb-8">
 				<div>
-					<h1 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>Team Members</h1>
-					<p style={{ fontSize: "14px", color: "var(--text-tertiary)" }}>
+					<h1 className="text-2xl font-bold mb-2">Team Members</h1>
+					<p className="text-sm text-text-tertiary">
 						Manage team members and their roles for {project.name}
 					</p>
 				</div>
@@ -106,65 +96,20 @@ export function ProjectTeamPage() {
 			</div>
 
 			{/* Team Members Table */}
-			<div className="card" style={{ padding: "0", overflow: "hidden" }}>
-				<table style={{ width: "100%", borderCollapse: "collapse" }}>
+			<div className="card p-0 overflow-hidden">
+				<table className="w-full border-collapse">
 					<thead>
-						<tr
-							style={{
-								borderBottom: "1px solid var(--border-primary)",
-								background: "var(--surface-secondary)",
-							}}
-						>
-							<th
-								style={{
-									padding: "14px 16px",
-									textAlign: "left",
-									fontSize: "12px",
-									fontWeight: "600",
-									color: "var(--text-tertiary)",
-									textTransform: "uppercase",
-									letterSpacing: "0.5px",
-								}}
-							>
+						<tr className="border-b border-border-primary bg-surface-secondary">
+							<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
 								Member
 							</th>
-							<th
-								style={{
-									padding: "14px 16px",
-									textAlign: "left",
-									fontSize: "12px",
-									fontWeight: "600",
-									color: "var(--text-tertiary)",
-									textTransform: "uppercase",
-									letterSpacing: "0.5px",
-								}}
-							>
+							<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
 								Role
 							</th>
-							<th
-								style={{
-									padding: "14px 16px",
-									textAlign: "left",
-									fontSize: "12px",
-									fontWeight: "600",
-									color: "var(--text-tertiary)",
-									textTransform: "uppercase",
-									letterSpacing: "0.5px",
-								}}
-							>
+							<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
 								Joined
 							</th>
-							<th
-								style={{
-									padding: "14px 16px",
-									textAlign: "right",
-									fontSize: "12px",
-									fontWeight: "600",
-									color: "var(--text-tertiary)",
-									textTransform: "uppercase",
-									letterSpacing: "0.5px",
-								}}
-							>
+							<th className="px-4 py-3.5 text-right text-xs font-semibold text-text-tertiary uppercase tracking-wider">
 								Actions
 							</th>
 						</tr>
@@ -172,66 +117,34 @@ export function ProjectTeamPage() {
 					<tbody>
 						{members && members.length > 0 ? (
 							members.map((member) => (
-								<tr key={member.id} style={{ borderBottom: "1px solid var(--border-primary)" }}>
-									<td style={{ padding: "14px 16px" }}>
-										<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-											<div
-												style={{
-													width: "40px",
-													height: "40px",
-													borderRadius: "50%",
-													background: "var(--primary-light)",
-													display: "flex",
-													alignItems: "center",
-													justifyContent: "center",
-													fontSize: "14px",
-													fontWeight: "600",
-													color: "var(--primary)",
-													textTransform: "uppercase",
-												}}
-											>
+							<tr key={member.id} className="border-b border-border-primary">
+								<td className="px-4 py-3.5">
+										<div className="flex items-center gap-3">
+											<div className="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center text-sm font-semibold text-primary uppercase">
 												{member.name?.charAt(0) || "U"}
 											</div>
 											<div>
-												<div
-													style={{
-														fontSize: "14px",
-														fontWeight: "500",
-														color: "var(--text-primary)",
-													}}
-												>
-													{member.name || "Unknown User"}
-												</div>
-												<div style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+											<div className="text-sm font-medium text-text-primary">
+												{member.name || "Unknown User"}
+											</div>
+											<div className="text-xs text-text-secondary">
 													{member.email}
 												</div>
 											</div>
 										</div>
 									</td>
-									<td style={{ padding: "14px 16px" }}>
-										<span className="badge badge-info" style={{ textTransform: "capitalize" }}>
+								<td className="px-4 py-3.5">
+									<span className="badge badge-info capitalize">
 											{member.role}
 										</span>
 									</td>
-									<td
-										style={{
-											padding: "14px 16px",
-											fontSize: "14px",
-											color: "var(--text-secondary)",
-										}}
-									>
+									<td className="px-4 py-3.5 text-sm text-text-secondary">
 										{new Date(member.createdAt).toLocaleDateString()}
 									</td>
-									<td style={{ padding: "14px 16px", textAlign: "right" }}>
-										<div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+								<td className="px-4 py-3.5 text-right">
+									<div className="flex gap-2 justify-end">
 											{member.role === "owner" && (
-												<span
-													style={{
-														fontSize: "13px",
-														color: "var(--text-tertiary)",
-														fontStyle: "italic",
-													}}
-												>
+												<span className="text-xs text-text-tertiary italic">
 													Project Owner
 												</span>
 											)}
@@ -273,13 +186,7 @@ export function ProjectTeamPage() {
 												</>
 											)}
 											{member.role !== "owner" && !canManageMembers && (
-												<span
-													style={{
-														fontSize: "13px",
-														color: "var(--text-tertiary)",
-														fontStyle: "italic",
-													}}
-												>
+												<span className="text-xs text-text-tertiary italic">
 													{member.userId === currentUser?.id ? "You" : "Team Member"}
 												</span>
 											)}
@@ -289,25 +196,12 @@ export function ProjectTeamPage() {
 							))
 						) : (
 							<tr>
-								<td colSpan={4} style={{ padding: "48px", textAlign: "center" }}>
-									<div style={{ fontSize: "48px", marginBottom: "16px" }}>👥</div>
-									<h3
-										style={{
-											fontSize: "16px",
-											fontWeight: "600",
-											marginBottom: "8px",
-											color: "var(--text-primary)",
-										}}
-									>
+								<td colSpan={4} className="p-12 text-center">
+									<div className="text-5xl mb-4">👥</div>
+									<h3 className="text-base font-semibold mb-2 text-text-primary">
 										No team members yet
 									</h3>
-									<p
-										style={{
-											fontSize: "14px",
-											color: "var(--text-tertiary)",
-											marginBottom: "20px",
-										}}
-									>
+									<p className="text-sm text-text-tertiary mb-5">
 										Invite team members to collaborate on this project
 									</p>
 									<button
@@ -326,149 +220,61 @@ export function ProjectTeamPage() {
 
 			{/* Pending Invitations */}
 			{invitations.length > 0 && (
-				<div style={{ marginTop: "32px" }}>
-					<h2 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "16px" }}>
+				<div className="mt-8">
+					<h2 className="text-lg font-bold mb-4">
 						Pending Invitations ({invitations.length})
 					</h2>
-					<div className="card" style={{ padding: "0", overflow: "hidden" }}>
-						<table style={{ width: "100%", borderCollapse: "collapse" }}>
+					<div className="card p-0 overflow-hidden">
+						<table className="w-full border-collapse">
 							<thead>
-								<tr
-									style={{
-										borderBottom: "1px solid var(--border-primary)",
-										background: "var(--surface-secondary)",
-									}}
-								>
-									<th
-										style={{
-											padding: "14px 16px",
-											textAlign: "left",
-											fontSize: "12px",
-											fontWeight: "600",
-											color: "var(--text-tertiary)",
-											textTransform: "uppercase",
-											letterSpacing: "0.5px",
-										}}
-									>
+								<tr className="border-b border-border-primary bg-surface-secondary">
+									<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
 										Email
 									</th>
-									<th
-										style={{
-											padding: "14px 16px",
-											textAlign: "left",
-											fontSize: "12px",
-											fontWeight: "600",
-											color: "var(--text-tertiary)",
-											textTransform: "uppercase",
-											letterSpacing: "0.5px",
-										}}
-									>
+									<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
 										Role
 									</th>
-									<th
-										style={{
-											padding: "14px 16px",
-											textAlign: "left",
-											fontSize: "12px",
-											fontWeight: "600",
-											color: "var(--text-tertiary)",
-											textTransform: "uppercase",
-											letterSpacing: "0.5px",
-										}}
-									>
+								<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
 										Invited
 									</th>
-									<th
-										style={{
-											padding: "14px 16px",
-											textAlign: "left",
-											fontSize: "12px",
-											fontWeight: "600",
-											color: "var(--text-tertiary)",
-											textTransform: "uppercase",
-											letterSpacing: "0.5px",
-										}}
-									>
+								<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
 										Expires
 									</th>
-									<th
-										style={{
-											padding: "14px 16px",
-											textAlign: "right",
-											fontSize: "12px",
-											fontWeight: "600",
-											color: "var(--text-tertiary)",
-											textTransform: "uppercase",
-											letterSpacing: "0.5px",
-										}}
-									>
+								<th className="px-4 py-3.5 text-right text-xs font-semibold text-text-tertiary uppercase tracking-wider">
 										Actions
 									</th>
 								</tr>
 							</thead>
 							<tbody>
 								{invitations.map((invitation) => (
-									<tr key={invitation.id} style={{ borderBottom: "1px solid var(--border-primary)" }}>
-										<td style={{ padding: "14px 16px" }}>
-											<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-												<div
-													style={{
-														width: "40px",
-														height: "40px",
-														borderRadius: "50%",
-														background: "rgba(139, 92, 246, 0.1)",
-														border: "2px dashed rgba(139, 92, 246, 0.3)",
-														display: "flex",
-														alignItems: "center",
-														justifyContent: "center",
-														fontSize: "18px",
-													}}
-												>
+								<tr key={invitation.id} className="border-b border-border-primary">
+										<td className="px-4 py-3.5">
+											<div className="flex items-center gap-3">
+												<div className="w-10 h-10 rounded-full bg-primary-light border-2 border-dashed border-primary/30 flex items-center justify-center text-lg">
 													📧
 												</div>
 												<div>
-													<div
-														style={{
-															fontSize: "14px",
-															fontWeight: "500",
-															color: "var(--text-primary)",
-														}}
-													>
+												<div className="text-sm font-medium text-text-primary">
 														{invitation.email}
 													</div>
-													<div style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+												<div className="text-xs text-text-tertiary">
 														Pending signup
 													</div>
 												</div>
 											</div>
 										</td>
-										<td style={{ padding: "14px 16px" }}>
-											<span
-												className="badge badge-warning"
-												style={{ textTransform: "capitalize" }}
-											>
+									<td className="px-4 py-3.5">
+										<span className="badge badge-warning capitalize">
 												{invitation.role}
 											</span>
 										</td>
-										<td
-											style={{
-												padding: "14px 16px",
-												fontSize: "14px",
-												color: "var(--text-secondary)",
-											}}
-										>
+										<td className="px-4 py-3.5 text-sm text-text-secondary">
 											{new Date(invitation.createdAt).toLocaleDateString()}
 										</td>
-										<td
-											style={{
-												padding: "14px 16px",
-												fontSize: "14px",
-												color: "var(--text-secondary)",
-											}}
-										>
+										<td className="px-4 py-3.5 text-sm text-text-secondary">
 											{new Date(invitation.expiresAt).toLocaleDateString()}
 										</td>
-										<td style={{ padding: "14px 16px", textAlign: "right" }}>
+									<td className="px-4 py-3.5 text-right">
 											<button
 												type="button"
 												className="btn btn-danger-outline btn-sm"
@@ -499,46 +305,22 @@ export function ProjectTeamPage() {
 			{/* Edit Role Modal */}
 			{editingMember && (
 				<div
-					style={{
-						position: "fixed",
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						background: "rgba(0, 0, 0, 0.5)",
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						zIndex: 1000,
-					}}
+					className="fixed inset-0 bg-black/50 flex items-center justify-center z-1000"
 					onClick={() => setEditingMember(null)}
 				>
 					<div
-						style={{
-							background: "var(--card-bg)",
-							borderRadius: "12px",
-							padding: "28px",
-							width: "90%",
-							maxWidth: "400px",
-							boxShadow: "0 8px 24px rgba(0, 0, 0, 0.2)",
-						}}
+						className="card w-[90%] max-w-sm p-7"
 						onClick={(e) => e.stopPropagation()}
 					>
-						<h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "8px" }}>Edit Member Role</h2>
-						<p style={{ fontSize: "14px", color: "var(--text-tertiary)", marginBottom: "24px" }}>
+						<h2 className="text-xl font-bold mb-2">Edit Member Role</h2>
+						<p className="text-sm text-text-tertiary mb-6">
 							Change the role for this team member.
 						</p>
 
-						<div style={{ marginBottom: "24px" }}>
+						<div className="mb-6">
 							<label
 								htmlFor="edit-role"
-								style={{
-									display: "block",
-									fontSize: "13px",
-									fontWeight: "600",
-									marginBottom: "8px",
-									color: "var(--text-secondary)",
-								}}
+								className="block text-xs font-semibold mb-2 text-text-secondary"
 							>
 								Role
 							</label>
@@ -571,13 +353,11 @@ export function ProjectTeamPage() {
 										}
 									}
 								}}
-								style={{
-									width: "100%",
-								}}
+								className="w-full"
 							/>
 						</div>
 
-						<div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+						<div className="flex gap-3 justify-end">
 							<button
 								type="button"
 								className="btn btn-secondary-outline"
