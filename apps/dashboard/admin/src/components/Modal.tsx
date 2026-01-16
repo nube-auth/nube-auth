@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 
 interface ModalProps {
 	isOpen: boolean;
@@ -8,15 +8,17 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, children, size = "md" }: ModalProps) {
+	const dialogRef = useRef<HTMLDialogElement>(null);
+
 	useEffect(() => {
+		const dialog = dialogRef.current;
+		if (!dialog) return;
+
 		if (isOpen) {
-			document.body.style.overflow = "hidden";
+			dialog.showModal();
 		} else {
-			document.body.style.overflow = "unset";
+			dialog.close();
 		}
-		return () => {
-			document.body.style.overflow = "unset";
-		};
 	}, [isOpen]);
 
 	useEffect(() => {
@@ -29,22 +31,21 @@ export function Modal({ isOpen, onClose, children, size = "md" }: ModalProps) {
 		return () => document.removeEventListener("keydown", handleEscape);
 	}, [isOpen, onClose]);
 
-	if (!isOpen) return null;
-
 	const sizeClass = size === "sm" ? "max-w-600px" : size === "lg" ? "max-w-1200px" : "max-w-900px";
 
 	return (
-		<div
-			className="fixed top-0 left-260px right-0 bottom-0 bg-[rgba(0,0,0,0.6)] flex items-center justify-center z-[9999] p-8"
-			onClick={onClose}
+		<dialog
+			ref={dialogRef}
+			className="modal modal-middle"
+			onClose={onClose}
 		>
-			<div
-				className={`bg-surface-primary rounded-xl ${sizeClass} w-full max-h-[calc(100vh-64px)] overflow-auto shadow-2xl border border-border-primary`}
-				onClick={(e) => e.stopPropagation()}
-			>
+			<div className={`modal-box ${sizeClass} w-full max-h-[calc(100vh-64px)] p-0`}>
 				{children}
 			</div>
-		</div>
+			<form method="dialog" className="modal-backdrop">
+				<button type="button" onClick={onClose}>close</button>
+			</form>
+		</dialog>
 	);
 }
 
@@ -55,13 +56,13 @@ interface ModalHeaderProps {
 
 export function ModalHeader({ children, onClose }: ModalHeaderProps) {
 	return (
-		<div className="p-6 pb-4 border-b border-border-primary flex items-center justify-between">
-			<h2 className="text-20px font-bold text-text-primary m-0">{children}</h2>
+		<div className="p-6 pb-4 border-b border-base-300 flex items-center justify-between">
+			<h2 className="text-xl font-bold text-base-content m-0">{children}</h2>
 			{onClose && (
 				<button
 					type="button"
 					onClick={onClose}
-					className="p-2 bg-transparent border-none rounded-md cursor-pointer text-text-tertiary flex items-center justify-center transition-all duration-150 hover:bg-surface-secondary hover:text-text-primary"
+					className="btn btn-ghost btn-sm btn-circle"
 				>
 					<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -86,7 +87,7 @@ interface ModalFooterProps {
 
 export function ModalFooter({ children }: ModalFooterProps) {
 	return (
-		<div className="p-4 px-6 border-t border-border-primary flex items-center justify-end gap-3">
+		<div className="modal-action p-4 px-6 border-t border-base-300">
 			{children}
 		</div>
 	);

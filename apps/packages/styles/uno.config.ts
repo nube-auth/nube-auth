@@ -70,105 +70,126 @@ export default defineConfig({
 		},
 	},
 	shortcuts: {
-		// Buttons
-		"btn-base":
-			"inline-flex items-center justify-center gap-2 px-4.5 py-2.5 text-14px font-medium rounded border-none cursor-pointer transition-all",
-		"btn-primary":
-			"btn-base bg-primary text-white hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed",
-		"btn-secondary":
-			"btn-base bg-bg-surface border border-border text-text-primary hover:border-border-hover hover:bg-bg-hover disabled:opacity-50",
-		"btn-danger": "btn-base bg-danger text-white hover:bg-red-600 disabled:opacity-50",
-		"btn-ghost": "btn-base bg-transparent text-text-secondary hover:bg-bg-hover hover:text-text-primary",
+		// Buttons - Map to daisyUI btn classes
+		"btn-base": "btn",
+		"btn-primary": "btn btn-primary",
+		"btn-secondary": "btn btn-outline",
+		"btn-danger": "btn btn-error",
+		"btn-ghost": "btn btn-ghost",
 		"btn-google":
-			"flex items-center justify-center gap-3 px-5 py-3 bg-white text-gray-700 border border-gray-300 rounded-lg text-15px font-medium cursor-pointer transition-all hover:bg-gray-50 hover:border-gray-400",
-		"btn-sm": "px-3 py-1.5 text-12px",
+			"btn btn-outline gap-3 bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400",
+		"btn-sm": "btn-sm",
 
-		// Cards
-		card: "bg-bg-surface border border-border rounded-lg overflow-hidden",
-		"card-hover": "card hover:border-border-hover hover:shadow-md transition-all",
+		// Cards - Map to daisyUI card classes
+		card: "card bg-base-100 border border-base-300 shadow-sm",
+		"card-hover": "card bg-base-100 border border-base-300 shadow-sm hover:border-primary hover:shadow-md transition-all",
 
-		// Forms
-		"form-label": "block text-13px font-medium text-text-primary mb-1.5",
-		"form-control":
-			"w-full px-3.5 py-2.5 text-14px border border-border rounded-md bg-bg-surface text-text-primary transition-all focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(59,130,246,0.1)]",
+		// Forms - Map to daisyUI form classes
+		"form-label": "label",
+		"form-control": "input input-bordered w-full",
+		"form-select": "select select-bordered w-full",
+		"form-textarea": "textarea textarea-bordered w-full",
+		"form-checkbox": "checkbox checkbox-primary",
+		"form-toggle": "toggle toggle-primary",
 
-		// Badges
-		badge: "inline-flex items-center gap-1 px-2.5 py-1 text-11px font-medium rounded-full",
-		"badge-success": "badge bg-success-bg text-success-text",
-		"badge-warning": "badge bg-warning-bg text-warning-text",
-		"badge-danger": "badge bg-danger-bg text-danger-text",
-		"badge-info": "badge bg-info-bg text-info-text",
-		"badge-gray": "badge bg-bg-muted text-text-secondary",
+		// Badges - Map to daisyUI badge classes
+		badge: "badge",
+		"badge-success": "badge badge-success",
+		"badge-warning": "badge badge-warning",
+		"badge-danger": "badge badge-error",
+		"badge-info": "badge badge-info",
+		"badge-gray": "badge badge-ghost",
 
 		// Layout
-		"app-layout": "min-h-screen bg-bg-page",
+		"app-layout": "min-h-screen bg-base-200",
 		"main-content": "max-w-1100px mx-auto px-12 py-8",
 
 		// Header
 		"top-header":
-			"flex items-center justify-between px-8 py-3 bg-bg-surface border-b border-border sticky top-0 z-50",
+			"navbar bg-base-100 border-b border-base-300 sticky top-0 z-50 px-8",
 		"header-logo": "flex items-center gap-2.5 no-underline",
 		"header-nav": "flex items-center gap-1",
-		"header-btn":
-			"flex items-center gap-1.5 px-3.5 py-2 text-13px font-medium text-text-secondary bg-bg-surface border border-border rounded cursor-pointer transition-all hover:bg-bg-hover hover:border-border-hover hover:text-text-primary",
+		"header-btn": "btn btn-ghost btn-sm gap-1.5",
 		"nav-link":
-			"flex items-center gap-1.5 px-3.5 py-2 text-13px font-medium text-text-secondary no-underline rounded transition-all hover:text-text-primary hover:bg-bg-hover",
-		"nav-link-active": "text-primary bg-primary-light",
+			"btn btn-ghost btn-sm gap-1.5 font-medium",
+		"nav-link-active": "btn-active",
 
-		// Breadcrumbs
-		breadcrumbs: "flex items-center gap-2 mb-4 text-13px",
-		"breadcrumb-item": "text-text-secondary no-underline transition-colors hover:text-primary",
-		"breadcrumb-current": "font-medium text-text-primary",
+		// Breadcrumbs - Map to daisyUI breadcrumbs
+		breadcrumbs: "breadcrumbs text-sm",
+		"breadcrumb-item": "text-base-content/60 hover:text-primary",
+		"breadcrumb-current": "font-medium text-base-content",
 
 		// Profile
 		"profile-header": "flex items-center gap-3 mb-6",
-		"profile-avatar":
-			"w-10 h-10 bg-bg-muted border-2 border-border rounded-full flex items-center justify-center text-14px font-semibold text-text-secondary",
-		"profile-avatar-active": "bg-gradient-to-br from-primary to-purple-600 text-white border-none",
+		"profile-avatar": "avatar placeholder",
+		"profile-avatar-active": "bg-gradient-to-br from-primary to-secondary text-primary-content",
 
 		// Info grid
-		"info-grid": "grid grid-cols-4 gap-px bg-border border border-border rounded-lg mb-6 overflow-hidden",
-		"info-item": "bg-bg-surface px-5 py-4",
-		"info-label": "text-11px font-medium text-text-tertiary uppercase tracking-wide mb-1.5",
-		"info-value": "text-14px font-medium text-text-primary flex items-center gap-1.5",
+		"info-grid": "stats stats-vertical lg:stats-horizontal shadow border border-base-300 mb-6 w-full",
+		"info-item": "stat",
+		"info-label": "stat-title",
+		"info-value": "stat-value text-lg",
 
-		// Tabs
-		tabs: "flex items-center gap-2 border-b border-border mb-6",
-		tab: "flex items-center gap-2 px-4 py-3 text-14px font-medium text-text-secondary no-underline border-b-2 border-transparent mb--1px transition-all cursor-pointer bg-transparent hover:text-text-primary",
-		"tab-active": "text-primary border-b-primary",
-		"tab-badge": "px-2 py-0.5 text-11px font-medium bg-bg-muted rounded-full text-text-secondary",
+		// Tabs - Map to daisyUI tabs
+		tabs: "tabs tabs-bordered",
+		tab: "tab",
+		"tab-active": "tab-active",
+		"tab-badge": "badge badge-sm badge-ghost ml-2",
 
-		// Table
-		"table-container": "bg-bg-surface border border-border rounded-lg overflow-hidden",
+		// Table - Map to daisyUI table
+		"table-container": "overflow-x-auto bg-base-100 rounded-lg border border-base-300",
+		"data-table": "table table-zebra",
 
-		// Alert
-		alert: "flex items-start gap-3 px-4 py-3 rounded-md mb-5 text-13px",
-		"alert-success": "bg-success-bg text-success-text",
-		"alert-warning": "bg-warning-bg text-warning-text",
-		"alert-danger": "bg-danger-bg text-danger-text",
-		"alert-info": "bg-info-bg text-info-text",
-		"alert-bar": "flex items-center gap-2 px-4 py-3 bg-info-bg rounded-md mb-5 text-13px text-info-text",
+		// Alert - Map to daisyUI alert
+		alert: "alert",
+		"alert-success": "alert alert-success",
+		"alert-warning": "alert alert-warning",
+		"alert-danger": "alert alert-error",
+		"alert-info": "alert alert-info",
+		"alert-bar": "alert alert-info",
 
 		// Current Session Card
 		"current-session-card":
-			"bg-bg-surface border border-border border-l-3 border-l-success rounded-lg px-5 py-5 mb-6",
+			"card bg-base-100 border border-base-300 border-l-4 border-l-success p-5 mb-6",
 
-		// Loading
-		spinner: "w-6 h-6 border-2 border-border border-t-primary rounded-full animate-spin",
+		// Loading - Map to daisyUI loading
+		spinner: "loading loading-spinner",
+		"spinner-sm": "loading loading-spinner loading-sm",
+		"spinner-md": "loading loading-spinner loading-md",
+		"spinner-lg": "loading loading-spinner loading-lg",
 		loading: "flex items-center justify-center p-12",
 
 		// Empty state
 		"empty-state": "text-center py-12 px-6",
 		"empty-state-icon":
-			"w-14 h-14 mx-auto mb-4 bg-bg-muted rounded-lg flex items-center justify-center text-text-tertiary",
-		"empty-state-title": "text-15px font-semibold text-text-primary mb-2",
-		"empty-state-desc": "text-13px text-text-secondary max-w-280px mx-auto",
+			"w-14 h-14 mx-auto mb-4 bg-base-200 rounded-lg flex items-center justify-center text-base-content/50",
+		"empty-state-title": "text-lg font-semibold text-base-content mb-2",
+		"empty-state-desc": "text-sm text-base-content/70 max-w-280px mx-auto",
 
 		// Login page
-		"login-container": "min-h-screen flex items-center justify-center p-5 bg-bg-muted",
-		"login-card": "w-full max-w-400px bg-bg-surface border border-border rounded-lg px-10 py-10 text-center",
+		"login-container": "min-h-screen flex items-center justify-center p-5 bg-base-200",
+		"login-card": "card w-full max-w-400px bg-base-100 shadow-xl p-10 text-center",
 		"login-icon":
-			"w-14 h-14 bg-gradient-to-br from-primary to-purple-600 rounded-md flex items-center justify-center mx-auto mb-5",
+			"w-14 h-14 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center mx-auto mb-5",
+
+		// Modal - Map to daisyUI modal
+		"modal-overlay": "modal modal-open",
+		"modal-box": "modal-box",
+		"modal-header": "font-bold text-lg mb-4",
+		"modal-body": "py-4",
+		"modal-footer": "modal-action",
+
+		// Dropdown - Map to daisyUI dropdown
+		dropdown: "dropdown",
+		"dropdown-content": "dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-50",
+
+		// Tooltip - Map to daisyUI tooltip
+		tooltip: "tooltip",
+
+		// Progress - Map to daisyUI progress
+		progress: "progress",
+		"progress-primary": "progress progress-primary",
+		"progress-success": "progress progress-success",
 	},
 	safelist: [
 		"text-primary",

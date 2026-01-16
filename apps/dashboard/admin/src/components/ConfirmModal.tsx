@@ -15,22 +15,19 @@ interface ConfirmModalProps {
 
 const variantStyles = {
     danger: {
-        iconBg: "bg-[var(--danger-bg)]",
-        iconText: "text-[var(--danger)]",
-        buttonBg: "bg-danger",
-        buttonHover: "hover:bg-danger-hover",
+        iconBg: "bg-error/10",
+        iconText: "text-error",
+        btnClass: "btn-error",
     },
     warning: {
-        iconBg: "bg-[var(--warning-bg)]",
-        iconText: "text-[var(--warning)]",
-        buttonBg: "bg-warning",
-        buttonHover: "hover:bg-warning-hover",
+        iconBg: "bg-warning/10",
+        iconText: "text-warning",
+        btnClass: "btn-warning",
     },
     info: {
-        iconBg: "bg-[var(--primary-light)]",
-        iconText: "text-[var(--primary)]",
-        buttonBg: "bg-primary",
-        buttonHover: "hover:bg-primary-hover",
+        iconBg: "bg-primary/10",
+        iconText: "text-primary",
+        btnClass: "btn-primary",
     },
 } as const;
 
@@ -124,29 +121,24 @@ export function ConfirmModal({
 
     if (!isOpen) return null;
 
-    const buttonBase =
-        "px-5 py-2.5 text-14px font-medium rounded-md border-none text-white transition-all duration-150 inline-flex items-center gap-2";
-    const enabledClasses = `${styles.buttonBg} ${styles.buttonHover} cursor-pointer`;
-    const disabledClasses = "bg-surface-tertiary opacity-50 cursor-not-allowed";
-
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="md">
             <ModalHeader>{title}</ModalHeader>
             <ModalBody>
                 <div className="flex gap-4">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${styles.iconBg} ${styles.iconText}`}>
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${styles.iconBg} ${styles.iconText}`}>
                         {renderIcon()}
                     </div>
                     <div className="flex-1">
-                        <p className="text-14px text-text-secondary leading-relaxed m-0">{message}</p>
+                        <p className="text-sm text-base-content/70 leading-relaxed m-0">{message}</p>
 
                         {requireCaptcha && (
                             <div className="mt-5">
-                                <label className="block text-13px font-medium text-text-primary mb-2">
-                                    To confirm, solve this math problem:
+                                <label className="label">
+                                    <span className="label-text font-medium">To confirm, solve this math problem:</span>
                                 </label>
-                                <div className="p-3 bg-surface-secondary rounded-lg mb-3 text-center">
-                                    <span className="text-20px font-bold text-text-primary font-mono">
+                                <div className="p-3 bg-base-200 rounded-lg mb-3 text-center">
+                                    <span className="text-xl font-bold text-base-content font-mono">
                                         {captchaNumbers.num1} + {captchaNumbers.num2} = ?
                                     </span>
                                 </div>
@@ -158,32 +150,30 @@ export function ConfirmModal({
                                         setError("");
                                     }}
                                     placeholder="Enter the answer"
-                                    className={`w-full px-3.5 py-2.5 text-14px rounded-md bg-surface-primary text-text-primary outline-none ${
-                                        error ? "border border-red-500" : "border border-border-primary"
-                                    }`}
+                                    className={`input input-bordered w-full ${error ? "input-error" : ""}`}
                                     onKeyDown={(e) => {
                                         if (e.key === "Enter" && captchaAnswer) {
                                             handleConfirm();
                                         }
                                     }}
                                 />
-                                {error && <p className="text-13px text-red-500 mt-2 mb-0">{error}</p>}
+                                {error && <p className="text-sm text-error mt-2 mb-0">{error}</p>}
                             </div>
                         )}
                     </div>
                 </div>
             </ModalBody>
             <ModalFooter>
-                <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isLoading}>
+                <button type="button" onClick={onClose} className="btn btn-outline" disabled={isLoading}>
                     {cancelText}
                 </button>
                 <button
                     type="button"
                     onClick={handleConfirm}
                     disabled={isDisabled}
-                    className={`${buttonBase} ${isDisabled ? disabledClasses : enabledClasses}`}
+                    className={`btn ${styles.btnClass}`}
                 >
-                    {isLoading && <div className="spinner w-3.5 h-3.5 border-2 border-white border-t-transparent" />}
+                    {isLoading && <span className="loading loading-spinner loading-sm" />}
                     {confirmText}
                 </button>
             </ModalFooter>
