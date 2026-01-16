@@ -7,7 +7,7 @@ export default defineConfig({
 	plugins: [
 		react(),
 		UnoCSS({
-			configFile: path.resolve(__dirname, "../packages/styles/uno.config.ts"),
+			configFile: path.resolve(__dirname, "../../packages/styles/uno.config.ts"),
 		}),
 	],
 	resolve: {

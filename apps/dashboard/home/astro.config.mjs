@@ -12,7 +12,7 @@ export default defineConfig({
 	site: "https://proofa.sh",
 	integrations: [
 		unocss({
-			configFile: path.resolve(__dirname, "../../packages/styles/uno.config.ts"),
+			configFile: path.resolve(__dirname, "../../packages/styles/uno.astro.config.ts"),
 		}),
 	],
 	output: "static",
