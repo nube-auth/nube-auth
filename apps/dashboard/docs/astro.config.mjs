@@ -11,7 +11,7 @@ export default defineConfig({
 	site: "https://docs.proofa.sh",
 	integrations: [
 		unocss({
-			configFile: path.resolve(__dirname, "../../packages/dashboard-style/uno.config.ts"),
+			configFile: path.resolve(__dirname, "../../packages/styles/uno.config.ts"),
 		}),
 		starlight({
 			title: "Proofa",

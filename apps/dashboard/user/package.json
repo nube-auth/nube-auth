@@ -14,7 +14,7 @@
 		"@proofa/client": "workspace:*",
 		"@proofa/react": "workspace:*",
 		"@proofa/shared": "workspace:*",
-		"@proofa/dashboard-style": "workspace:*",
+		"@proofa/styles": "workspace:*",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"react-router-dom": "^6.20.0"

@@ -69,12 +69,12 @@ importers:
       '@proofa/client':
         specifier: workspace:*
         version: link:../../packages/client
-      '@proofa/dashboard-style':
-        specifier: workspace:*
-        version: link:../../../packages/dashboard-style
       '@proofa/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@proofa/styles':
+        specifier: workspace:*
+        version: link:../../packages/styles
       '@tanstack/react-query':
         specifier: ^5.90.12
         version: 5.90.16(react@18.3.1)
@@ -130,9 +130,9 @@ importers:
       '@astrojs/starlight':
         specifier: ^0.37.1
         version: 0.37.1(astro@5.16.6(@types/node@25.0.3)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.55.1)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2))
-      '@proofa/dashboard-style':
+      '@proofa/styles':
         specifier: workspace:*
-        version: link:../../../packages/dashboard-style
+        version: link:../../packages/styles
       astro:
         specifier: ^5.16.6
         version: 5.16.6(@types/node@25.0.3)(ioredis@5.8.2)(jiti@2.6.1)(rollup@4.55.1)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
@@ -155,9 +155,9 @@ importers:
       '@astrojs/vercel':
         specifier: ^7.0.0
         version: 7.8.2(astro@4.16.19(@types/node@20.19.27)(rollup@4.55.1)(typescript@5.9.3))(react@18.3.1)(rollup@4.55.1)
-      '@proofa/dashboard-style':
+      '@proofa/styles':
         specifier: workspace:*
-        version: link:../../../packages/dashboard-style
+        version: link:../../packages/styles
       astro:
         specifier: ^4.0.0
         version: 4.16.19(@types/node@20.19.27)(rollup@4.55.1)(typescript@5.9.3)
@@ -177,15 +177,15 @@ importers:
       '@proofa/client':
         specifier: workspace:*
         version: link:../../packages/client
-      '@proofa/dashboard-style':
-        specifier: workspace:*
-        version: link:../../../packages/dashboard-style
       '@proofa/react':
         specifier: workspace:*
         version: link:../../packages/react
       '@proofa/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@proofa/styles':
+        specifier: workspace:*
+        version: link:../../packages/styles
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -367,6 +367,12 @@ importers:
         specifier: ^5.3.3
         version: 5.9.3
 
+  apps/packages/styles:
+    dependencies:
+      unocss:
+        specifier: ^66.5.12
+        version: 66.5.12(postcss@8.5.6)(vite@6.4.1(@types/node@25.0.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
+
   apps/services/core:
     dependencies:
       '@hono/node-server':
@@ -510,12 +516,6 @@ importers:
       vitest:
         specifier: ^1.0.0
         version: 1.6.1(@types/node@20.19.27)
-
-  packages/dashboard-style:
-    dependencies:
-      unocss:
-        specifier: ^66.5.12
-        version: 66.5.12(postcss@8.5.6)(vite@6.4.1(@types/node@25.0.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
 
 packages:
 
