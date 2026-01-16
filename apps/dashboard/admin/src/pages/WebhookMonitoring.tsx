@@ -18,29 +18,29 @@ export function WebhookMonitoringPage() {
 	const detailQuery = useWebhookDetail(selectedWebhook || "");
 
 	const handleStatusBadge = (status: string) => {
-		const styles: Record<string, { bg: string; color: string; icon: string }> = {
-			success: { bg: "rgba(34, 197, 94, 0.1)", color: "#22c55e", icon: "✓" },
-			failed: { bg: "rgba(239, 68, 68, 0.1)", color: "#ef4444", icon: "✗" },
-			processing: { bg: "rgba(59, 130, 246, 0.1)", color: "#3b82f6", icon: "⟳" },
-			not_started: { bg: "rgba(107, 114, 128, 0.1)", color: "#6b7280", icon: "○" },
+		const styles: Record<string, { bgClass: string; textClass: string; icon: string }> = {
+			success: { bgClass: "bg-success/10", textClass: "text-success", icon: "✓" },
+			failed: { bgClass: "bg-danger/10", textClass: "text-danger", icon: "✗" },
+			processing: { bgClass: "bg-info/10", textClass: "text-info", icon: "⟳" },
+			not_started: { bgClass: "bg-text-tertiary/10", textClass: "text-text-tertiary", icon: "○" },
 		};
 		const style = styles[status] || styles["not_started"];
 		return (
-			<span style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "4px 10px", background: style!.bg, color: style!.color, borderRadius: "12px", fontSize: "12px", fontWeight: "500" }}>
+			<span className={`inline-flex items-center gap-1 px-2.5 py-1 ${style!.bgClass} ${style!.textClass} rounded-xl text-12px font-medium`}>
 				<span>{style!.icon}</span>
-				<span style={{ textTransform: "capitalize" }}>{status.replace("_", " ")}</span>
+				<span className="capitalize">{status.replace("_", " ")}</span>
 			</span>
 		);
 	};
 
 	const handleProviderBadge = (provider: string) => {
-		const colors: Record<string, { bg: string; color: string }> = {
-			lemon_squeezy: { bg: "rgba(34, 197, 94, 0.1)", color: "#22c55e" },
-			paddle: { bg: "rgba(59, 130, 246, 0.1)", color: "#3b82f6" },
+		const colors: Record<string, { bgClass: string; textClass: string }> = {
+			lemon_squeezy: { bgClass: "bg-success/10", textClass: "text-success" },
+			paddle: { bgClass: "bg-info/10", textClass: "text-info" },
 		};
-		const color = colors[provider] || { bg: "#f3f4f6", color: "#6b7280" };
+		const color = colors[provider] || { bgClass: "bg-gray-100", textClass: "text-text-tertiary" };
 		return (
-			<span style={{ display: "inline-block", padding: "4px 10px", background: color.bg, color: color.color, borderRadius: "12px", fontSize: "12px", fontWeight: "500", textTransform: "capitalize" }}>
+			<span className={`inline-block px-2.5 py-1 ${color.bgClass} ${color.textClass} rounded-xl text-12px font-medium capitalize`}>
 				{provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
 			</span>
 		);
@@ -50,70 +50,70 @@ export function WebhookMonitoringPage() {
 		const webhook = detailQuery.data;
 		return (
 			<div>
-				<div style={{ marginBottom: "24px" }}>
-					<button onClick={() => setActiveTab("logs")} style={{ color: "var(--primary)", cursor: "pointer", background: "none", border: "none", fontSize: "14px", fontWeight: "500" }}>
+				<div className="mb-6">
+					<button onClick={() => setActiveTab("logs")} className="text-primary cursor-pointer bg-transparent border-none text-14px font-medium">
 						← Back to Logs
 					</button>
 				</div>
 
 				<div className="card">
-					<div style={{ padding: "24px" }}>
-						<h2 style={{ marginTop: 0, marginBottom: "24px" }}>Webhook Details</h2>
+					<div className="p-6">
+						<h2 className="mt-0 mb-6">Webhook Details</h2>
 
 						{/* Header Info */}
-						<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginBottom: "32px" }}>
+						<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-8">
 							<div>
-								<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>ID</div>
-								<code style={{ fontSize: "13px", color: "var(--text-primary)", fontFamily: "monospace" }}>{webhook.id}</code>
+								<div className="text-12px text-text-tertiary mb-1">ID</div>
+								<code className="text-13px text-text-primary font-mono">{webhook.id}</code>
 							</div>
 							<div>
-								<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Provider</div>
+								<div className="text-12px text-text-tertiary mb-1">Provider</div>
 								<div>{handleProviderBadge(webhook.provider)}</div>
 							</div>
 							<div>
-								<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Status</div>
+								<div className="text-12px text-text-tertiary mb-1">Status</div>
 								<div>{handleStatusBadge(webhook.status)}</div>
 							</div>
 						</div>
 
 						{/* Event Info */}
-						<div style={{ padding: "16px", backgroundColor: "var(--surface-secondary)", borderRadius: "8px", marginBottom: "24px" }}>
-							<h4 style={{ marginTop: 0, marginBottom: "12px", fontSize: "14px" }}>Event Information</h4>
-							<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
+							<h4 className="mt-0 mb-3 text-14px">Event Information</h4>
+							<div className="grid grid-cols-2 gap-4">
 								<div>
-									<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Event Type</div>
-									<code style={{ fontSize: "13px", color: "var(--text-primary)", fontFamily: "monospace", textTransform: "uppercase" }}>{webhook.event_type}</code>
+									<div className="text-12px text-text-tertiary mb-1">Event Type</div>
+									<code className="text-13px text-text-primary font-mono uppercase">{webhook.event_type}</code>
 								</div>
 								<div>
-									<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Event ID</div>
-									<code style={{ fontSize: "13px", color: "var(--text-primary)", fontFamily: "monospace" }}>{webhook.event_id}</code>
+									<div className="text-12px text-text-tertiary mb-1">Event ID</div>
+									<code className="text-13px text-text-primary font-mono">{webhook.event_id}</code>
 								</div>
 							</div>
 						</div>
 
 						{/* Timing Info */}
-						<div style={{ padding: "16px", backgroundColor: "var(--surface-secondary)", borderRadius: "8px", marginBottom: "24px" }}>
-							<h4 style={{ marginTop: 0, marginBottom: "12px", fontSize: "14px" }}>Processing Timeline</h4>
-							<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
+						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
+							<h4 className="mt-0 mb-3 text-14px">Processing Timeline</h4>
+							<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
 								<div>
-									<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Received At</div>
-									<div style={{ fontSize: "13px", color: "var(--text-primary)" }}>{new Date(webhook.received_at).toLocaleString()}</div>
+									<div className="text-12px text-text-tertiary mb-1">Received At</div>
+									<div className="text-13px text-text-primary">{new Date(webhook.received_at).toLocaleString()}</div>
 								</div>
 								<div>
-									<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Processing Started</div>
-									<div style={{ fontSize: "13px", color: "var(--text-primary)" }}>
+									<div className="text-12px text-text-tertiary mb-1">Processing Started</div>
+									<div className="text-13px text-text-primary">
 										{webhook.processing_started_at ? new Date(webhook.processing_started_at).toLocaleString() : "—"}
 									</div>
 								</div>
 								<div>
-									<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Completed</div>
-									<div style={{ fontSize: "13px", color: "var(--text-primary)" }}>
+									<div className="text-12px text-text-tertiary mb-1">Completed</div>
+									<div className="text-13px text-text-primary">
 										{webhook.processing_completed_at ? new Date(webhook.processing_completed_at).toLocaleString() : "—"}
 									</div>
 								</div>
 								<div>
-									<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Duration</div>
-									<div style={{ fontSize: "13px", color: "var(--text-primary)", fontWeight: "600" }}>
+									<div className="text-12px text-text-tertiary mb-1">Duration</div>
+									<div className="text-13px text-text-primary font-semibold">
 										{webhook.processing_duration_ms ? `${webhook.processing_duration_ms}ms` : "—"}
 									</div>
 								</div>
@@ -121,16 +121,16 @@ export function WebhookMonitoringPage() {
 						</div>
 
 						{/* Retry Info */}
-						<div style={{ padding: "16px", backgroundColor: "var(--surface-secondary)", borderRadius: "8px", marginBottom: "24px" }}>
-							<h4 style={{ marginTop: 0, marginBottom: "12px", fontSize: "14px" }}>Retry Information</h4>
-							<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
+							<h4 className="mt-0 mb-3 text-14px">Retry Information</h4>
+							<div className="grid grid-cols-2 gap-4">
 								<div>
-									<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Retry Count</div>
-									<div style={{ fontSize: "13px", color: "var(--text-primary)", fontWeight: "600" }}>{webhook.retry_count}</div>
+									<div className="text-12px text-text-tertiary mb-1">Retry Count</div>
+									<div className="text-13px text-text-primary font-semibold">{webhook.retry_count}</div>
 								</div>
 								<div>
-									<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>Last Retry</div>
-									<div style={{ fontSize: "13px", color: "var(--text-primary)" }}>
+									<div className="text-12px text-text-tertiary mb-1">Last Retry</div>
+									<div className="text-13px text-text-primary">
 										{webhook.last_retry_at ? new Date(webhook.last_retry_at).toLocaleString() : "Never"}
 									</div>
 								</div>
@@ -138,59 +138,59 @@ export function WebhookMonitoringPage() {
 						</div>
 
 						{/* Network Info */}
-						<div style={{ padding: "16px", backgroundColor: "var(--surface-secondary)", borderRadius: "8px", marginBottom: "24px" }}>
-							<h4 style={{ marginTop: 0, marginBottom: "12px", fontSize: "14px" }}>Network Information</h4>
+						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
+							<h4 className="mt-0 mb-3 text-14px">Network Information</h4>
 							<div>
-								<div style={{ fontSize: "12px", color: "var(--text-tertiary)", marginBottom: "4px" }}>IP Address</div>
-								<code style={{ fontSize: "13px", color: "var(--text-primary)", fontFamily: "monospace" }}>{webhook.ip_address}</code>
+								<div className="text-12px text-text-tertiary mb-1">IP Address</div>
+								<code className="text-13px text-text-primary font-mono">{webhook.ip_address}</code>
 							</div>
 						</div>
 
 						{/* Request Headers */}
-						<div style={{ padding: "16px", backgroundColor: "var(--surface-secondary)", borderRadius: "8px", marginBottom: "24px" }}>
-							<h4 style={{ marginTop: 0, marginBottom: "12px", fontSize: "14px" }}>Request Headers</h4>
-							<div style={{ maxHeight: "300px", overflowY: "auto", background: "var(--bg-primary)", borderRadius: "4px", padding: "12px", fontFamily: "monospace", fontSize: "12px", color: "var(--text-secondary)" }}>
+						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
+							<h4 className="mt-0 mb-3 text-14px">Request Headers</h4>
+							<div className="max-h-75 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-12px text-text-secondary">
 								{Object.entries(webhook.request_headers || {}).map(([key, value]) => (
-									<div key={key} style={{ marginBottom: "4px" }}>
-										<span style={{ color: "var(--primary)", fontWeight: "600" }}>{key}:</span> <span style={{ color: "var(--text-secondary)" }}>{String(value)}</span>
+									<div key={key} className="mb-1">
+										<span className="text-primary font-semibold">{key}:</span> <span className="text-text-secondary">{String(value)}</span>
 									</div>
 								))}
 							</div>
 						</div>
 
 						{/* Request Body */}
-						<div style={{ padding: "16px", backgroundColor: "var(--surface-secondary)", borderRadius: "8px", marginBottom: "24px" }}>
-							<h4 style={{ marginTop: 0, marginBottom: "12px", fontSize: "14px" }}>Request Body</h4>
-							<div style={{ maxHeight: "400px", overflowY: "auto", background: "var(--bg-primary)", borderRadius: "4px", padding: "12px", fontFamily: "monospace", fontSize: "12px", color: "var(--text-secondary)" }}>
-								<pre style={{ margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
+							<h4 className="mt-0 mb-3 text-14px">Request Body</h4>
+							<div className="max-h-100 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-12px text-text-secondary">
+								<pre className="m-0 whitespace-pre-wrap break-words">
 									{JSON.stringify(webhook.request_body, null, 2)}
 								</pre>
 							</div>
 						</div>
 
 						{/* Signature */}
-						<div style={{ padding: "16px", backgroundColor: "var(--surface-secondary)", borderRadius: "8px", marginBottom: "24px" }}>
-							<h4 style={{ marginTop: 0, marginBottom: "12px", fontSize: "14px" }}>Signature</h4>
-							<div style={{ maxHeight: "200px", overflowY: "auto", background: "var(--bg-primary)", borderRadius: "4px", padding: "12px", fontFamily: "monospace", fontSize: "12px", color: "var(--text-secondary)", wordBreak: "break-all" }}>
+						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
+							<h4 className="mt-0 mb-3 text-14px">Signature</h4>
+							<div className="max-h-50 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-12px text-text-secondary break-all">
 								{webhook.signature}
 							</div>
 						</div>
 
 						{/* Error Section (if failed) */}
 						{webhook.status === "failed" && webhook.error_message && (
-							<div style={{ padding: "16px", backgroundColor: "rgba(239, 68, 68, 0.1)", borderLeft: "3px solid #ef4444", borderRadius: "8px", marginBottom: "24px" }}>
-								<h4 style={{ marginTop: 0, marginBottom: "12px", fontSize: "14px", color: "#ef4444" }}>Error Information</h4>
-								<div style={{ marginBottom: "12px" }}>
-									<div style={{ fontSize: "12px", color: "#dc2626", marginBottom: "4px", fontWeight: "600" }}>Error Message</div>
-									<code style={{ fontSize: "13px", color: "#dc2626", display: "block", background: "rgba(239, 68, 68, 0.05)", padding: "8px", borderRadius: "4px" }}>
+							<div className="p-4 bg-danger/10 border-l-3 border-danger rounded-lg mb-6">
+								<h4 className="mt-0 mb-3 text-14px text-danger">Error Information</h4>
+								<div className="mb-3">
+									<div className="text-12px text-danger mb-1 font-semibold">Error Message</div>
+									<code className="text-13px text-danger block bg-danger/5 p-2 rounded">
 										{webhook.error_message}
 									</code>
 								</div>
 								{webhook.error_stack && (
 									<div>
-										<div style={{ fontSize: "12px", color: "#dc2626", marginBottom: "4px", fontWeight: "600" }}>Stack Trace</div>
-										<div style={{ maxHeight: "200px", overflowY: "auto", background: "rgba(239, 68, 68, 0.05)", borderRadius: "4px", padding: "12px", fontFamily: "monospace", fontSize: "11px", color: "#dc2626" }}>
-											<pre style={{ margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{webhook.error_stack}</pre>
+										<div className="text-12px text-danger mb-1 font-semibold">Stack Trace</div>
+										<div className="max-h-50 overflow-y-auto bg-danger/5 rounded p-3 font-mono text-11px text-danger">
+											<pre className="m-0 whitespace-pre-wrap break-words">{webhook.error_stack}</pre>
 										</div>
 									</div>
 								)}
@@ -204,31 +204,26 @@ export function WebhookMonitoringPage() {
 
 	return (
 		<div>
-			<div style={{ marginBottom: "24px" }}>
-				<h1 style={{ margin: 0, marginBottom: "8px" }}>Webhook Monitoring</h1>
-				<p style={{ margin: 0, color: "var(--text-secondary)" }}>Monitor webhook deliveries and troubleshoot integration issues</p>
+			<div className="mb-6">
+				<h1 className="m-0 mb-2">Webhook Monitoring</h1>
+				<p className="m-0 text-text-secondary">Monitor webhook deliveries and troubleshoot integration issues</p>
 			</div>
 
 			{/* Filters */}
-			<div className="card" style={{ marginBottom: "24px", padding: "24px" }}>
-				<h3 style={{ marginTop: 0, marginBottom: "16px", fontSize: "16px" }}>Filters</h3>
+			<div className="card mb-6 p-6">
+				<h3 className="mt-0 mb-4 text-16px">Filters</h3>
 				<div
-					style={{
-						display: "grid",
-						gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-						gap: "16px",
-						marginBottom: "16px",
-					}}
+					className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-4"
 				>
-					<div className="form-group" style={{ margin: 0 }}>
-						<label htmlFor="provider" style={{ fontSize: "12px", marginBottom: "6px" }}>
+					<div className="form-group m-0">
+						<label htmlFor="provider" className="text-12px mb-1.5">
 							Provider
 						</label>
 						<select
 							id="provider"
 							value={filters.provider}
 							onChange={(e) => setFilters({ ...filters, provider: e.target.value, offset: 0 })}
-							style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid var(--border-color)", fontSize: "14px" }}
+							className="w-full p-2 rounded-md border border-border-color text-14px"
 						>
 							<option value="">All Providers</option>
 							<option value="lemon_squeezy">LemonSqueezy</option>
@@ -236,15 +231,15 @@ export function WebhookMonitoringPage() {
 						</select>
 					</div>
 
-					<div className="form-group" style={{ margin: 0 }}>
-						<label htmlFor="status" style={{ fontSize: "12px", marginBottom: "6px" }}>
+					<div className="form-group m-0">
+						<label htmlFor="status" className="text-12px mb-1.5">
 							Status
 						</label>
 						<select
 							id="status"
 							value={filters.status}
 							onChange={(e) => setFilters({ ...filters, status: e.target.value, offset: 0 })}
-							style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid var(--border-color)", fontSize: "14px" }}
+							className="w-full p-2 rounded-md border border-border-color text-14px"
 						>
 							<option value="">All Statuses</option>
 							<option value="success">Success</option>
@@ -254,8 +249,8 @@ export function WebhookMonitoringPage() {
 						</select>
 					</div>
 
-					<div className="form-group" style={{ margin: 0 }}>
-						<label htmlFor="startDate" style={{ fontSize: "12px", marginBottom: "6px" }}>
+					<div className="form-group m-0">
+						<label htmlFor="startDate" className="text-12px mb-1.5">
 							Start Date
 						</label>
 						<input
@@ -263,12 +258,12 @@ export function WebhookMonitoringPage() {
 							id="startDate"
 							value={filters.start_date}
 							onChange={(e) => setFilters({ ...filters, start_date: e.target.value, offset: 0 })}
-							style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid var(--border-color)", fontSize: "14px" }}
+							className="w-full p-2 rounded-md border border-border-color text-14px"
 						/>
 					</div>
 
-					<div className="form-group" style={{ margin: 0 }}>
-						<label htmlFor="endDate" style={{ fontSize: "12px", marginBottom: "6px" }}>
+					<div className="form-group m-0">
+						<label htmlFor="endDate" className="text-12px mb-1.5">
 							End Date
 						</label>
 						<input
@@ -276,7 +271,7 @@ export function WebhookMonitoringPage() {
 							id="endDate"
 							value={filters.end_date}
 							onChange={(e) => setFilters({ ...filters, end_date: e.target.value, offset: 0 })}
-							style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid var(--border-color)", fontSize: "14px" }}
+							className="w-full p-2 rounded-md border border-border-color text-14px"
 						/>
 					</div>
 				</div>
@@ -301,61 +296,61 @@ export function WebhookMonitoringPage() {
 
 			{/* Webhooks Table */}
 			{!webhooksQuery.data || webhooksQuery.data.webhooks.length === 0 ? (
-				<div className="card" style={{ padding: "64px 24px", textAlign: "center" }}>
-					<div style={{ fontSize: "64px", marginBottom: "16px" }}>🪝</div>
-					<h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px", color: "var(--text-primary)" }}>
+				<div className="card py-16 px-6 text-center">
+					<div className="text-64px mb-4">🪝</div>
+					<h2 className="text-20px font-semibold mb-3 text-text-primary">
 						No webhooks found
 					</h2>
-					<p style={{ fontSize: "14px", color: "var(--text-tertiary)", marginBottom: "24px", maxWidth: "400px", margin: "0 auto 24px" }}>
+					<p className="text-14px text-text-tertiary mb-6 max-w-100 mx-auto">
 						Webhooks will appear here as payment providers send events to your webhook endpoints
 					</p>
 				</div>
 			) : (
-				<div className="card" style={{ padding: "0", overflow: "hidden" }}>
-					<table style={{ width: "100%", borderCollapse: "collapse" }}>
+				<div className="card p-0 overflow-hidden">
+					<table className="w-full border-collapse">
 						<thead>
-							<tr style={{ borderBottom: "1px solid var(--border-primary)", background: "var(--surface-secondary)" }}>
-								<th style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+							<tr className="border-b border-border-primary bg-surface-secondary">
+								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wide">
 									Status
 								</th>
-								<th style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wide">
 									Event Type
 								</th>
-								<th style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wide">
 									Provider
 								</th>
-								<th style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wide">
 									Received
 								</th>
-								<th style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wide">
 									Duration
 								</th>
-								<th style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wide">
 									Retries
 								</th>
-								<th style={{ padding: "14px 16px", textAlign: "right", fontSize: "12px", fontWeight: "600", color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+								<th className="px-4 py-3.5 text-right text-12px font-semibold text-text-tertiary uppercase tracking-wide">
 									Actions
 								</th>
 							</tr>
 						</thead>
 						<tbody>
 							{webhooksQuery.data.webhooks.map((webhook) => (
-								<tr key={webhook.id} style={{ borderBottom: "1px solid var(--border-primary)" }}>
-									<td style={{ padding: "14px 16px" }}>{handleStatusBadge(webhook.status)}</td>
-									<td style={{ padding: "14px 16px", fontSize: "13px", fontFamily: "monospace", color: "var(--text-secondary)" }}>
+								<tr key={webhook.id} className="border-b border-border-primary">
+									<td className="px-4 py-3.5">{handleStatusBadge(webhook.status)}</td>
+									<td className="px-4 py-3.5 text-13px font-mono text-text-secondary">
 										{webhook.event_type}
 									</td>
-									<td style={{ padding: "14px 16px" }}>{handleProviderBadge(webhook.provider)}</td>
-									<td style={{ padding: "14px 16px", fontSize: "13px", color: "var(--text-secondary)" }}>
+									<td className="px-4 py-3.5">{handleProviderBadge(webhook.provider)}</td>
+									<td className="px-4 py-3.5 text-13px text-text-secondary">
 										{new Date(webhook.received_at).toLocaleString()}
 									</td>
-									<td style={{ padding: "14px 16px", fontSize: "13px", color: "var(--text-secondary)", fontWeight: "500" }}>
+									<td className="px-4 py-3.5 text-13px text-text-secondary font-medium">
 										{webhook.processing_duration_ms ? `${webhook.processing_duration_ms}ms` : "—"}
 									</td>
-									<td style={{ padding: "14px 16px", fontSize: "13px", color: "var(--text-secondary)", fontWeight: "500" }}>
+									<td className="px-4 py-3.5 text-13px text-text-secondary font-medium">
 										{webhook.retry_count}
 									</td>
-									<td style={{ padding: "14px 16px", textAlign: "right" }}>
+									<td className="px-4 py-3.5 text-right">
 										<button
 											onClick={() => {
 												setSelectedWebhook(webhook.id);
@@ -375,12 +370,12 @@ export function WebhookMonitoringPage() {
 
 			{/* Pagination */}
 			{webhooksQuery.data && webhooksQuery.data.pagination && (
-				<div style={{ marginTop: "24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-					<div style={{ fontSize: "14px", color: "var(--text-secondary)" }}>
+				<div className="mt-6 flex items-center justify-between">
+					<div className="text-14px text-text-secondary">
 						Showing {filters.offset + 1} to {Math.min(filters.offset + filters.limit, webhooksQuery.data.pagination.total)} of{" "}
 						{webhooksQuery.data.pagination.total}
 					</div>
-					<div style={{ display: "flex", gap: "8px" }}>
+					<div className="flex gap-2">
 						<button
 							onClick={() =>
 								setFilters({

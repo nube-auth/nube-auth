@@ -114,8 +114,8 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 		return (
 			<div className="min-h-screen flex items-center justify-center">
 				<div className="text-center">
-					<div className="spinner" style={{ margin: "0 auto 16px" }} />
-					<p style={{ color: "var(--text-secondary)" }}>Loading...</p>
+					<div className="spinner mx-auto mb-4" />
+					<p className="text-text-secondary">Loading...</p>
 				</div>
 			</div>
 		);
@@ -192,20 +192,11 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 				</div>
 
 				{/* Project Selector Dropdown */}
-				<div style={{ position: "relative", margin: "16px 12px" }}>
+				<div className="relative mx-3 my-4">
 					<button
 						type="button"
 						onClick={() => setShowProjectDropdown(!showProjectDropdown)}
-						className="project-selector"
-						style={{
-							width: "100%",
-							cursor: "pointer",
-							border: showProjectDropdown
-								? "1px solid var(--primary)"
-								: "1px solid var(--sidebar-border)",
-							outline: "none",
-							transition: "all 0.2s ease",
-						}}
+						className={`project-selector w-full cursor-pointer outline-none transition-all duration-200 ${showProjectDropdown ? "border border-primary" : "border border-sidebar-border"}`}
 					>
 						<div className="project-selector-info">
 							<div className="project-selector-icon">
@@ -226,13 +217,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
-							style={{
-								width: "16px",
-								height: "16px",
-								transition: "transform 0.2s",
-								transform: showProjectDropdown ? "rotate(180deg)" : "rotate(0deg)",
-								color: "var(--text-tertiary)",
-							}}
+							className={`w-4 h-4 text-text-tertiary transition-transform duration-200 ${showProjectDropdown ? "rotate-180" : "rotate-0"}`}
 						>
 							<path
 								strokeLinecap="round"
@@ -245,31 +230,9 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
 					{/* Dropdown Menu */}
 					{showProjectDropdown && (
-						<div
-							style={{
-								position: "absolute",
-								top: "calc(100% + 4px)",
-								left: "0",
-								right: "0",
-								backgroundColor: "var(--sidebar-bg)",
-								border: "1px solid var(--sidebar-border)",
-								borderRadius: "8px",
-								boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
-								zIndex: 10000,
-								maxHeight: "280px",
-								overflowY: "auto",
-								overflowX: "hidden",
-							}}
-						>
+						<div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-sidebar-bg border border-sidebar-border rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.4)] z-10000 max-h-[280px] overflow-y-auto overflow-x-hidden">
 							{projects.length === 0 ? (
-								<div
-									style={{
-										padding: "20px",
-										color: "var(--text-secondary)",
-										fontSize: "13px",
-										textAlign: "center",
-									}}
-								>
+								<div className="p-5 text-text-secondary text-13px text-center">
 									No projects available
 								</div>
 							) : (
@@ -281,36 +244,10 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 											navigate("/projects");
 											setShowProjectDropdown(false);
 										}}
-										style={{
-											width: "100%",
-											padding: "12px",
-											textAlign: "left",
-											background: !selectedProject ? "rgba(139, 92, 246, 0.15)" : "transparent",
-											border: "none",
-											borderBottom: "1px solid var(--sidebar-border)",
-											cursor: "pointer",
-											color: !selectedProject ? "var(--primary)" : "rgba(255, 255, 255, 0.8)",
-											fontSize: "13px",
-											fontWeight: "500",
-											transition: "all 0.15s ease",
-											display: "flex",
-											alignItems: "center",
-											gap: "10px",
-											outline: "none",
-										}}
-										onMouseEnter={(e) => {
-											if (selectedProject !== null) {
-												e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.05)";
-											}
-										}}
-										onMouseLeave={(e) => {
-											if (selectedProject !== null) {
-												e.currentTarget.style.backgroundColor = "transparent";
-											}
-										}}
+										className={`w-full p-3 text-left border-none border-b border-sidebar-border cursor-pointer text-13px font-medium transition-all duration-150 flex items-center gap-2.5 outline-none hover:bg-[rgba(255,255,255,0.05)] ${!selectedProject ? "bg-[rgba(139,92,246,0.15)] text-primary" : "bg-transparent text-[rgba(255,255,255,0.8)]"}`}
 									>
 										<svg
-											style={{ width: "16px", height: "16px", flexShrink: 0, opacity: 0.7 }}
+											className="w-4 h-4 shrink-0 opacity-70"
 											fill="none"
 											stroke="currentColor"
 											viewBox="0 0 24 24"
@@ -332,87 +269,20 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 												navigate(`/projects/${project.id}`);
 												setShowProjectDropdown(false);
 											}}
-											style={{
-												width: "100%",
-												padding: "10px 12px",
-												textAlign: "left",
-												background:
-													selectedProject === project.id
-														? "rgba(139, 92, 246, 0.15)"
-														: "transparent",
-												border: "none",
-												borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
-												cursor: "pointer",
-												color:
-													selectedProject === project.id
-														? "var(--primary)"
-														: "rgba(255, 255, 255, 0.8)",
-												fontSize: "13px",
-												transition: "all 0.15s ease",
-												display: "block",
-												outline: "none",
-											}}
-											onMouseEnter={(e) => {
-												if (selectedProject !== project.id) {
-													e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.05)";
-												}
-											}}
-											onMouseLeave={(e) => {
-												if (selectedProject !== project.id) {
-													e.currentTarget.style.backgroundColor = "transparent";
-												}
-											}}
+											className={`w-full py-2.5 px-3 text-left border-none border-b border-[rgba(255,255,255,0.05)] cursor-pointer text-13px transition-all duration-150 block outline-none hover:bg-[rgba(255,255,255,0.05)] ${selectedProject === project.id ? "bg-[rgba(139,92,246,0.15)] text-primary" : "bg-transparent text-[rgba(255,255,255,0.8)]"}`}
 										>
-											<div
-												style={{
-													display: "flex",
-													alignItems: "center",
-													gap: "10px",
-												}}
-											>
+											<div className="flex items-center gap-2.5">
 												<div
-													style={{
-														width: "32px",
-														height: "32px",
-														borderRadius: "6px",
-														background:
-															selectedProject === project.id
-																? "var(--primary)"
-																: "rgba(139, 92, 246, 0.2)",
-														display: "flex",
-														alignItems: "center",
-														justifyContent: "center",
-														fontSize: "13px",
-														fontWeight: "600",
-														color:
-															selectedProject === project.id ? "white" : "var(--primary)",
-														flexShrink: 0,
-													}}
+													className={`w-8 h-8 rounded-md flex items-center justify-center text-13px font-semibold shrink-0 ${selectedProject === project.id ? "bg-primary text-white" : "bg-[rgba(139,92,246,0.2)] text-primary"}`}
 												>
 													{project.name.charAt(0).toUpperCase()}
 												</div>
-												<div style={{ flex: 1, minWidth: 0 }}>
-													<div
-														style={{
-															fontWeight: "500",
-															marginBottom: project.slug ? "2px" : "0",
-															overflow: "hidden",
-															textOverflow: "ellipsis",
-															whiteSpace: "nowrap",
-														}}
-													>
+												<div className="flex-1 min-w-0">
+											<div className={`font-medium overflow-hidden text-ellipsis whitespace-nowrap ${project.slug ? "mb-0.5" : ""}`}>
 														{project.name}
 													</div>
 													{project.slug && (
-														<div
-															style={{
-																fontSize: "11px",
-																opacity: 0.5,
-																overflow: "hidden",
-																textOverflow: "ellipsis",
-																whiteSpace: "nowrap",
-															}}
-														>
+														<div className="text-11px opacity-50 overflow-hidden text-ellipsis whitespace-nowrap">
 															{project.slug}
 														</div>
 													)}
@@ -430,15 +300,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 				{showProjectDropdown && (
 					<div
 						onClick={() => setShowProjectDropdown(false)}
-						style={{
-							position: "fixed",
-							top: 0,
-							left: 0,
-							right: 0,
-							bottom: 0,
-							zIndex: 9999,
-							background: "transparent",
-						}}
+						className="fixed inset-0 z-9999 bg-transparent"
 					/>
 				)}
 
@@ -793,7 +655,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
 				{/* Sidebar Footer - User */}
 				<div className="sidebar-footer">
-					<Link to="/profile" className="sidebar-user" style={{ textDecoration: "none", cursor: "pointer" }}>
+					<Link to="/profile" className="sidebar-user no-underline cursor-pointer">
 						<div className="sidebar-avatar">{initials}</div>
 						<div className="sidebar-user-info">
 							<div className="sidebar-user-name">{data.name || "Admin"}</div>
@@ -808,20 +670,13 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 							}}
 							disabled={isLoggingOut}
 							title="Logout"
-							style={{
-								color: "var(--sidebar-text)",
-								padding: "4px",
-								background: "none",
-								border: "none",
-								cursor: isLoggingOut ? "wait" : "pointer",
-								opacity: isLoggingOut ? 0.5 : 1,
-							}}
+							className={`text-sidebar-text p-1 bg-none border-none ${isLoggingOut ? "cursor-wait opacity-50" : "cursor-pointer opacity-100"}`}
 						>
 							<svg
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
-								style={{ width: "18px", height: "18px" }}
+								className="w-4.5 h-4.5"
 							>
 								<path
 									strokeLinecap="round"

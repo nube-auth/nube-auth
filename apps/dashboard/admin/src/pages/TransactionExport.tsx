@@ -366,27 +366,13 @@ export function TransactionExportPage() {
 										</td>
 										<td className="px-4 py-3.5 text-sm">
 											<span
-												style={{
-													display: "inline-flex",
-													alignItems: "center",
-													gap: "4px",
-													padding: "4px 10px",
-													background:
-														txn.status === "completed"
-															? "rgba(34, 197, 94, 0.1)"
-															: txn.status === "pending"
-																? "rgba(251, 191, 36, 0.1)"
-																: "rgba(239, 68, 68, 0.1)",
-													color:
-														txn.status === "completed"
-															? "#22c55e"
-															: txn.status === "pending"
-																? "#f59e0b"
-																: "#ef4444",
-													borderRadius: "12px",
-													fontSize: "12px",
-													fontWeight: "500",
-												}}
+												className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-12px font-medium ${
+													txn.status === "completed"
+														? "badge-success"
+														: txn.status === "pending"
+															? "badge-warning"
+															: "badge-danger"
+												}`}
 											>
 												{txn.status === "completed" && "✓"}
 												{txn.status === "pending" && "⏱"}
@@ -399,15 +385,9 @@ export function TransactionExportPage() {
 										</td>
 										<td className="px-4 py-3.5 text-sm capitalize">
 											<span
-												style={{
-													display: "inline-block",
-													padding: "4px 10px",
-													background: txn.provider === "lemon_squeezy" ? "rgba(34, 197, 94, 0.1)" : "rgba(59, 130, 246, 0.1)",
-													color: txn.provider === "lemon_squeezy" ? "#22c55e" : "#3b82f6",
-													borderRadius: "12px",
-													fontSize: "12px",
-													fontWeight: "500",
-												}}
+													className={`inline-block px-2.5 py-1 rounded-xl text-12px font-medium ${
+														txn.provider === "lemon_squeezy" ? "badge-success" : "badge-info"
+													}`}
 											>
 												{txn.provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
 											</span>

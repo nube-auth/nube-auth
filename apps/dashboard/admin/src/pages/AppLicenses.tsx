@@ -324,23 +324,23 @@ export function AppLicensesPage() {
 	return (
 		<div className="space-y-6">
 			{/* Breadcrumb */}
-			<nav style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px" }}>
-				<Link to="/projects" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>
+			<nav className="flex items-center gap-2 text-13px">
+				<Link to="/projects" className="text-text-secondary no-underline">
 					Projects
 				</Link>
 				<svg
-					style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }}
+					className="w-3.5 h-3.5 text-text-tertiary"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
 				>
 					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
 				</svg>
-				<Link to={`/projects/${projectId}`} style={{ color: "var(--text-secondary)", textDecoration: "none" }}>
+				<Link to={`/projects/${projectId}`} className="text-text-secondary no-underline">
 					{project.name}
 				</Link>
 				<svg
-					style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }}
+					className="w-3.5 h-3.5 text-text-tertiary"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
@@ -349,19 +349,19 @@ export function AppLicensesPage() {
 				</svg>
 				<Link
 					to={`/projects/${projectId}/apps/${appId}`}
-					style={{ color: "var(--text-secondary)", textDecoration: "none" }}
+					className="text-text-secondary no-underline"
 				>
 					{app.name}
 				</Link>
 				<svg
-					style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }}
+					className="w-3.5 h-3.5 text-text-tertiary"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
 				>
 					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
 				</svg>
-				<span style={{ color: "var(--text-primary)", fontWeight: "500" }}>Licenses</span>
+				<span className="text-text-primary font-medium">Licenses</span>
 			</nav>
 
 			{/* Page Header */}
@@ -373,24 +373,13 @@ export function AppLicensesPage() {
 			</div>
 
 			{/* Stats Cards */}
-			<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "20px" }}>
+			<div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-5">
 				{/* Active Licenses */}
 				<div className="stat-card">
-					<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-						<div
-							style={{
-								width: "40px",
-								height: "40px",
-								background:
-									"linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05))",
-								borderRadius: "12px",
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-							}}
-						>
+					<div className="flex items-center gap-3 mb-2">
+						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[linear-gradient(135deg,rgba(139,92,246,0.1),rgba(139,92,246,0.05))]">
 							<svg
-								style={{ width: "20px", height: "20px", color: "var(--primary)" }}
+								className="w-5 h-5 text-primary"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
@@ -412,20 +401,10 @@ export function AppLicensesPage() {
 
 				{/* Free Plan Users */}
 				<div className="stat-card">
-					<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-						<div
-							style={{
-								width: "40px",
-								height: "40px",
-								background: "linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05))",
-								borderRadius: "12px",
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-							}}
-						>
+					<div className="flex items-center gap-3 mb-2">
+						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[linear-gradient(135deg,rgba(34,197,94,0.1),rgba(34,197,94,0.05))]">
 							<svg
-								style={{ width: "20px", height: "20px", color: "var(--success)" }}
+								className="w-5 h-5 text-success"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
@@ -442,20 +421,10 @@ export function AppLicensesPage() {
 
 				{/* Paid Plan Users */}
 				<div className="stat-card">
-					<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-						<div
-							style={{
-								width: "40px",
-								height: "40px",
-								background: "linear-gradient(135deg, rgba(234, 179, 8, 0.1), rgba(234, 179, 8, 0.05))",
-								borderRadius: "12px",
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-							}}
-						>
+					<div className="flex items-center gap-3 mb-2">
+						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[linear-gradient(135deg,rgba(234,179,8,0.1),rgba(234,179,8,0.05))]">
 							<svg
-								style={{ width: "20px", height: "20px", color: "#eab308" }}
+								className="w-5 h-5 text-[#eab308]"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
@@ -477,21 +446,10 @@ export function AppLicensesPage() {
 
 				{/* Monthly Revenue */}
 				<div className="stat-card">
-					<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-						<div
-							style={{
-								width: "40px",
-								height: "40px",
-								background:
-									"linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.05))",
-								borderRadius: "12px",
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-							}}
-						>
+					<div className="flex items-center gap-3 mb-2">
+						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[linear-gradient(135deg,rgba(99,102,241,0.1),rgba(99,102,241,0.05))]">
 							<svg
-								style={{ width: "20px", height: "20px", color: "#6366f1" }}
+								className="w-5 h-5 text-[#6366f1]"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
@@ -517,23 +475,11 @@ export function AppLicensesPage() {
 				<button
 					type="button"
 					onClick={() => setShowPlansSection(!showPlansSection)}
-					style={{
-						width: "100%",
-						padding: "16px",
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "space-between",
-						background: "transparent",
-						border: "none",
-						cursor: "pointer",
-						transition: "background 0.2s",
-					}}
-					onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface-hover)")}
-					onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+					className="w-full p-4 flex items-center justify-between bg-transparent border-none cursor-pointer transition-colors duration-200 hover:bg-surface-hover"
 				>
-					<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+					<div className="flex items-center gap-3">
 						<svg
-							style={{ width: "20px", height: "20px", color: "var(--primary)" }}
+							className="w-5 h-5 text-primary"
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
@@ -545,32 +491,17 @@ export function AppLicensesPage() {
 								d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
 							/>
 						</svg>
-						<div style={{ textAlign: "left" }}>
-							<h3
-								style={{ fontSize: "16px", fontWeight: "600", color: "var(--text-primary)", margin: 0 }}
-							>
+						<div className="text-left">
+							<h3 className="text-16px font-semibold text-text-primary m-0">
 								Pricing Plans
 							</h3>
-							<p
-								style={{
-									fontSize: "13px",
-									color: "var(--text-secondary)",
-									marginTop: "2px",
-									margin: 0,
-								}}
-							>
+							<p className="text-13px text-text-secondary m-0">
 								Configure plans and pricing for your app
 							</p>
 						</div>
 					</div>
 					<svg
-						style={{
-							width: "20px",
-							height: "20px",
-							color: "var(--text-tertiary)",
-							transition: "transform 0.2s",
-							transform: showPlansSection ? "rotate(180deg)" : "rotate(0deg)",
-						}}
+						className={`w-5 h-5 text-text-tertiary transition-transform duration-200 ${showPlansSection ? "rotate-180" : "rotate-0"}`}
 						fill="none"
 						stroke="currentColor"
 						viewBox="0 0 24 24"
@@ -580,17 +511,16 @@ export function AppLicensesPage() {
 				</button>
 
 				{showPlansSection && (
-					<div style={{ padding: "20px", borderTop: "1px solid var(--card-border)" }}>
+					<div className="p-5 border-t border-card-border">
 						{/* Create Plan Button */}
-						<div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+						<div className="flex justify-end mb-4">
 							<button
 								type="button"
 								onClick={handleCreatePlan}
-								className="btn btn-primary btn-sm"
-								style={{ display: "flex", alignItems: "center", gap: "6px" }}
+								className="btn btn-primary btn-sm flex items-center gap-1.5"
 							>
 								<svg
-									style={{ width: "16px", height: "16px" }}
+									className="w-4 h-4"
 									fill="none"
 									stroke="currentColor"
 									viewBox="0 0 24 24"
@@ -608,19 +538,13 @@ export function AppLicensesPage() {
 
 						{/* Plans List */}
 						{plansLoading ? (
-							<div style={{ textAlign: "center", padding: "40px 20px" }}>
-								<div className="spinner" style={{ margin: "0 auto" }} />
+							<div className="text-center py-10 px-5">
+								<div className="spinner mx-auto" />
 							</div>
 						) : plans.length === 0 ? (
-							<div
-								style={{
-									textAlign: "center",
-									padding: "60px 20px",
-									color: "var(--text-secondary)",
-								}}
-							>
+							<div className="text-center py-15 px-5 text-text-secondary">
 								<svg
-									style={{ width: "64px", height: "64px", margin: "0 auto 16px", opacity: 0.3 }}
+									className="w-16 h-16 mx-auto mb-4 opacity-30"
 									fill="none"
 									stroke="currentColor"
 									viewBox="0 0 24 24"
@@ -632,196 +556,97 @@ export function AppLicensesPage() {
 										d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
 									/>
 								</svg>
-								<p style={{ fontSize: "14px", fontWeight: "500" }}>No plans yet</p>
-								<p style={{ fontSize: "13px", marginTop: "8px", color: "var(--text-tertiary)" }}>
+								<p className="text-14px font-medium">No plans yet</p>
+								<p className="text-13px mt-2 text-text-tertiary">
 									Create your first pricing plan to get started
 								</p>
 							</div>
 						) : (
-							<div
-								style={{
-									display: "grid",
-									gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-									gap: "16px",
-									alignItems: "stretch",
-								}}
-							>
+							<div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 items-stretch">
 								{plans.map((plan) => (
 									<div
 										key={plan.id}
-										style={{
-											display: "flex",
-											flexDirection: "column",
-											background: "var(--content-bg)",
-											border: "1px solid var(--card-border)",
-											borderRadius: "12px",
-											padding: "20px",
-											height: "100%",
-											transition: "all 0.2s ease",
-										}}
+										className="flex flex-col bg-content-bg border border-card-border rounded-xl p-5 h-full transition-all duration-200"
 									>
-										<div
-											style={{
-												display: "flex",
-												justifyContent: "space-between",
-												alignItems: "flex-start",
-												marginBottom: "12px",
-											}}
-										>
+										<div className="flex justify-between items-start mb-3">
 											<div>
-												<h4
-													style={{
-														fontSize: "16px",
-														fontWeight: "600",
-														color: "var(--text-primary)",
-														margin: 0,
-													}}
-												>
+												<h4 className="text-16px font-semibold text-text-primary m-0">
 													{plan.name}
 												</h4>
-												<p
-													style={{
-														fontSize: "12px",
-														color: "var(--text-tertiary)",
-														marginTop: "2px",
-													}}
-												>
+												<p className="text-12px text-text-tertiary mt-0.5">
 													{plan.slug}
 												</p>
 											</div>
 											<span
-												style={{
-													display: "inline-block",
-													padding: "4px 8px",
-													borderRadius: "6px",
-													fontSize: "11px",
-													fontWeight: "600",
-													textTransform: "capitalize",
-													background:
-														plan.status === "active"
-															? "rgba(34, 197, 94, 0.1)"
-															: "rgba(107, 114, 128, 0.1)",
-													color: plan.status === "active" ? "var(--success)" : "#6b7280",
-												}}
+												className={`inline-block px-2 py-1 rounded-md text-11px font-semibold capitalize ${plan.status === "active" ? "bg-[rgba(34,197,94,0.1)] text-success" : "bg-[rgba(107,114,128,0.1)] text-[#6b7280]"}`}
 											>
 												{plan.status}
 											</span>
 										</div>
 
 										{plan.description && (
-											<p
-												style={{
-													fontSize: "13px",
-													color: "var(--text-secondary)",
-													marginBottom: "12px",
-													lineHeight: "1.5",
-												}}
-											>
+											<p className="text-13px text-text-secondary mb-3 leading-relaxed">
 												{plan.description}
 											</p>
 										)}
 
-										<div style={{ marginBottom: "12px" }}>
+										<div className="mb-3">
 											{plan.monthlyPrice && (
-												<div
-													style={{
-														fontSize: "14px",
-														color: "var(--text-primary)",
-														marginBottom: "4px",
-													}}
-												>
-													<span style={{ fontWeight: "600" }}>
+												<div className="text-14px text-text-primary mb-1">
+													<span className="font-semibold">
 														${(plan.monthlyPrice / 100).toFixed(2)}
 													</span>
-													<span style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+													<span className="text-12px text-text-tertiary">
 														/month
 													</span>
 												</div>
 											)}
 											{plan.yearlyPrice && (
-												<div
-													style={{
-														fontSize: "14px",
-														color: "var(--text-primary)",
-														marginBottom: "4px",
-													}}
-												>
-													<span style={{ fontWeight: "600" }}>
+												<div className="text-14px text-text-primary mb-1">
+													<span className="font-semibold">
 														${(plan.yearlyPrice / 100).toFixed(2)}
 													</span>
-													<span style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+													<span className="text-12px text-text-tertiary">
 														/year
 													</span>
 												</div>
 											)}
 											{plan.oneTimePrice && (
-												<div
-													style={{
-														fontSize: "14px",
-														color: "var(--text-primary)",
-														marginBottom: "4px",
-													}}
-												>
-													<span style={{ fontWeight: "600" }}>
+												<div className="text-14px text-text-primary mb-1">
+													<span className="font-semibold">
 														${(plan.oneTimePrice / 100).toFixed(2)}
 													</span>
-													<span style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+													<span className="text-12px text-text-tertiary">
 														{" "}
 														one-time
 													</span>
 												</div>
 											)}
 											{!plan.monthlyPrice && !plan.yearlyPrice && !plan.oneTimePrice && (
-												<div
-													style={{
-														fontSize: "14px",
-														color: "var(--text-primary)",
-														marginBottom: "4px",
-													}}
-												>
-													<span style={{ fontWeight: "600" }}>00</span>
+												<div className="text-14px text-text-primary mb-1">
+													<span className="font-semibold">00</span>
 												</div>
 											)}
 											{plan.trialEnabled && plan.trialDays && (
-												<div
-													style={{
-														fontSize: "12px",
-														color: "var(--primary)",
-														marginTop: "4px",
-													}}
-												>
+												<div className="text-12px text-primary mt-1">
 													{plan.trialDays} day free trial
 												</div>
 											)}
 										</div>
 
 										{plan.features.length > 0 && (
-											<div style={{ marginBottom: "16px" }}>
-												<p
-													style={{
-														fontSize: "12px",
-														fontWeight: "600",
-														color: "var(--text-secondary)",
-														marginBottom: "8px",
-													}}
-												>
+											<div className="mb-4">
+												<p className="text-12px font-semibold text-text-secondary mb-2">
 													Features:
 												</p>
-												<ul
-													style={{
-														margin: 0,
-														paddingLeft: "20px",
-														fontSize: "12px",
-														color: "var(--text-secondary)",
-													}}
-												>
+												<ul className="m-0 pl-5 text-12px text-text-secondary">
 													{plan.features.slice(0, 3).map((feature) => (
-														<li key={feature} style={{ marginBottom: "4px" }}>
+														<li key={feature} className="mb-1">
 															{feature}
 														</li>
 													))}
 													{plan.features.length > 3 && (
-														<li style={{ color: "var(--text-tertiary)" }}>
+														<li className="text-text-tertiary">
 															+{plan.features.length - 3} more
 														</li>
 													)}
@@ -829,28 +654,18 @@ export function AppLicensesPage() {
 											</div>
 										)}
 
-										<div
-											style={{
-												display: "flex",
-												gap: "8px",
-												paddingTop: "12px",
-												borderTop: "1px solid var(--card-border)",
-												marginTop: "auto",
-											}}
-										>
+										<div className="flex gap-2 pt-3 border-t border-card-border mt-auto">
 											<button
 												type="button"
 												onClick={() => handleEditPlan(plan)}
-												className="btn btn-secondary-outline btn-sm"
-												style={{ flex: 1 }}
+												className="btn btn-secondary-outline btn-sm flex-1"
 											>
 												Edit
 											</button>
 											<button
 												type="button"
 												onClick={() => setDeletingPlan(plan)}
-												className="btn btn-danger-outline btn-sm"
-												style={{ flex: 1 }}
+												className="btn btn-danger-outline btn-sm flex-1"
 											>
 												Delete
 											</button>
@@ -865,45 +680,21 @@ export function AppLicensesPage() {
 
 			{/* Licenses Table */}
 			<div className="card">
-				<div style={{ padding: "20px", borderBottom: "1px solid var(--card-border)" }}>
-					<h2
-						style={{
-							fontSize: "16px",
-							fontWeight: "600",
-							color: "var(--text-primary)",
-							marginBottom: "4px",
-						}}
-					>
+				<div className="p-5 border-b border-card-border">
+					<h2 className="text-16px font-semibold text-text-primary mb-1">
 						Active Licenses
 					</h2>
-					<p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>View and manage user licenses</p>
+					<p className="text-13px text-text-secondary">View and manage user licenses</p>
 				</div>
 
 				{/* Filters */}
-				<div
-					style={{
-						padding: "16px",
-						borderBottom: "1px solid var(--card-border)",
-						display: "flex",
-						gap: "12px",
-						flexWrap: "wrap",
-					}}
-				>
+				<div className="p-4 border-b border-card-border flex gap-3 flex-wrap">
 					<input
 						type="text"
 						placeholder="Search by name or email..."
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
-						style={{
-							flex: "1",
-							minWidth: "240px",
-							padding: "8px 12px",
-							border: "1px solid var(--border-primary)",
-							borderRadius: "8px",
-							fontSize: "14px",
-							background: "var(--content-bg)",
-							color: "var(--text-primary)",
-						}}
+						className="flex-1 min-w-60 py-2 px-3 border border-border-primary rounded-lg text-14px bg-content-bg text-text-primary"
 					/>
 					<Select
 						value={filterStatus}
@@ -914,204 +705,74 @@ export function AppLicensesPage() {
 							{ value: "suspended", label: "Suspended" },
 							{ value: "trial", label: "Trial" },
 						]}
-						style={{
-							padding: "8px 12px",
-							border: "1px solid var(--border-primary)",
-							borderRadius: "8px",
-							fontSize: "14px",
-							background: "var(--content-bg)",
-							color: "var(--text-primary)",
-						}}
+						className="py-2 px-3 border border-border-primary rounded-lg text-14px bg-content-bg text-text-primary"
 					/>
 				</div>
 
 				{/* Table */}
 				{!usersLoading && filteredLicenses.length > 0 ? (
-					<div style={{ overflowX: "auto" }}>
-						<table style={{ width: "100%", borderCollapse: "collapse" }}>
-							<thead
-								style={{
-									background: "var(--surface-secondary)",
-									borderBottom: "1px solid var(--card-border)",
-								}}
-							>
+					<div className="overflow-x-auto">
+						<table className="w-full border-collapse">
+							<thead className="bg-surface-secondary border-b border-card-border">
 								<tr>
-									<th
-										style={{
-											padding: "12px 16px",
-											textAlign: "left",
-											fontSize: "12px",
-											fontWeight: "600",
-											color: "var(--text-secondary)",
-											textTransform: "uppercase",
-											letterSpacing: "0.5px",
-										}}
-									>
+									<th className="py-3 px-4 text-left text-12px font-semibold text-text-secondary uppercase tracking-wide">
 										User
 									</th>
-									<th
-										style={{
-											padding: "12px 16px",
-											textAlign: "left",
-											fontSize: "12px",
-											fontWeight: "600",
-											color: "var(--text-secondary)",
-											textTransform: "uppercase",
-											letterSpacing: "0.5px",
-										}}
-									>
+									<th className="py-3 px-4 text-left text-12px font-semibold text-text-secondary uppercase tracking-wide">
 										Email
 									</th>
-									<th
-										style={{
-											padding: "12px 16px",
-											textAlign: "center",
-											fontSize: "12px",
-											fontWeight: "600",
-											color: "var(--text-secondary)",
-											textTransform: "uppercase",
-											letterSpacing: "0.5px",
-										}}
-									>
+									<th className="py-3 px-4 text-center text-12px font-semibold text-text-secondary uppercase tracking-wide">
 										Plan
 									</th>
-									<th
-										style={{
-											padding: "12px 16px",
-											textAlign: "center",
-											fontSize: "12px",
-											fontWeight: "600",
-											color: "var(--text-secondary)",
-											textTransform: "uppercase",
-											letterSpacing: "0.5px",
-										}}
-									>
+									<th className="py-3 px-4 text-center text-12px font-semibold text-text-secondary uppercase tracking-wide">
 										Status
 									</th>
-									<th
-										style={{
-											padding: "12px 16px",
-											textAlign: "center",
-											fontSize: "12px",
-											fontWeight: "600",
-											color: "var(--text-secondary)",
-											textTransform: "uppercase",
-											letterSpacing: "0.5px",
-										}}
-									>
+									<th className="py-3 px-4 text-center text-12px font-semibold text-text-secondary uppercase tracking-wide">
 										Valid Until
 									</th>
-									<th
-										style={{
-											padding: "12px 16px",
-											textAlign: "right",
-											fontSize: "12px",
-											fontWeight: "600",
-											color: "var(--text-secondary)",
-											textTransform: "uppercase",
-											letterSpacing: "0.5px",
-										}}
-									>
+									<th className="py-3 px-4 text-right text-12px font-semibold text-text-secondary uppercase tracking-wide">
 										Actions
 									</th>
 								</tr>
 							</thead>
 							<tbody>
 								{filteredLicenses.map((user) => (
-									<tr key={user.id} style={{ borderBottom: "1px solid var(--card-border)" }}>
-										<td style={{ padding: "14px 16px" }}>
-											<div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-												<div
-													style={{
-														width: "36px",
-														height: "36px",
-														borderRadius: "50%",
-														background: "var(--primary-light)",
-														display: "flex",
-														alignItems: "center",
-														justifyContent: "center",
-														fontSize: "13px",
-														fontWeight: "600",
-														color: "var(--primary)",
-														flexShrink: 0,
-													}}
-												>
+									<tr key={user.id} className="border-b border-card-border">
+										<td className="py-3.5 px-4">
+											<div className="flex items-center gap-2.5">
+												<div className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center text-13px font-semibold text-primary flex-shrink-0">
 													{user.name
 														? user.name.charAt(0).toUpperCase()
 														: user.email.charAt(0).toUpperCase()}
 												</div>
-												<span
-													style={{
-														fontSize: "14px",
-														fontWeight: "500",
-														color: "var(--text-primary)",
-													}}
-												>
+												<span className="text-14px font-medium text-text-primary">
 													{user.name || "—"}
 												</span>
 											</div>
 										</td>
-										<td
-											style={{
-												padding: "14px 16px",
-												fontSize: "13px",
-												color: "var(--text-secondary)",
-											}}
-										>
+										<td className="py-3.5 px-4 text-13px text-text-secondary">
 											{user.email}
 										</td>
-										<td style={{ padding: "14px 16px", textAlign: "center" }}>
+										<td className="py-3.5 px-4 text-center">
 											<span
-												style={{
-													display: "inline-block",
-													padding: "4px 10px",
-													borderRadius: "6px",
-													fontSize: "12px",
-													fontWeight: "600",
-													textTransform: "capitalize",
-													background:
-														user.plan === "free"
-															? "rgba(107, 114, 128, 0.1)"
-															: "rgba(139, 92, 246, 0.1)",
-													color: user.plan === "free" ? "#6b7280" : "var(--primary)",
-												}}
+												className={`inline-block px-2.5 py-1 rounded-md text-12px font-semibold capitalize ${user.plan === "free" ? "bg-[rgba(107,114,128,0.1)] text-[#6b7280]" : "bg-[rgba(139,92,246,0.1)] text-primary"}`}
 											>
 												{user.plan || "free"}
 											</span>
 										</td>
-										<td style={{ padding: "14px 16px", textAlign: "center" }}>
+										<td className="py-3.5 px-4 text-center">
 											<span
-												style={{
-													display: "inline-block",
-													padding: "4px 10px",
-													borderRadius: "6px",
-													fontSize: "12px",
-													fontWeight: "600",
-													textTransform: "capitalize",
-													background:
-														user.status === "active"
-															? "rgba(34, 197, 94, 0.1)"
-															: "rgba(239, 68, 68, 0.1)",
-													color:
-														user.status === "active" ? "var(--success)" : "var(--danger)",
-												}}
+												className={`inline-block px-2.5 py-1 rounded-md text-12px font-semibold capitalize ${user.status === "active" ? "bg-[rgba(34,197,94,0.1)] text-success" : "bg-[rgba(239,68,68,0.1)] text-danger"}`}
 											>
 												{user.status}
 											</span>
 										</td>
-										<td
-											style={{
-												padding: "14px 16px",
-												textAlign: "center",
-												fontSize: "13px",
-												color: "var(--text-secondary)",
-											}}
-										>
+										<td className="py-3.5 px-4 text-center text-13px text-text-secondary">
 											{user.licenseValidUntil
 												? new Date(user.licenseValidUntil).toLocaleDateString()
 												: "—"}
 										</td>
-										<td style={{ padding: "14px 16px", textAlign: "right" }}>
+										<td className="py-3.5 px-4 text-right">
 											<button
 												type="button"
 												onClick={() => {
@@ -1129,15 +790,9 @@ export function AppLicensesPage() {
 						</table>
 					</div>
 				) : (
-					<div
-						style={{
-							textAlign: "center",
-							padding: "80px 20px",
-							color: "var(--text-secondary)",
-						}}
-					>
+					<div className="text-center py-20 px-5 text-text-secondary">
 						<svg
-							style={{ width: "64px", height: "64px", margin: "0 auto 16px", opacity: 0.3 }}
+							className="w-16 h-16 mx-auto mb-4 opacity-30"
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
@@ -1149,17 +804,10 @@ export function AppLicensesPage() {
 								d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
 							/>
 						</svg>
-						<h3
-							style={{
-								fontSize: "16px",
-								fontWeight: "600",
-								color: "var(--text-primary)",
-								marginBottom: "8px",
-							}}
-						>
+						<h3 className="text-16px font-semibold text-text-primary mb-2">
 							No licenses found
 						</h3>
-						<p style={{ fontSize: "14px", color: "var(--text-secondary)" }}>
+						<p className="text-14px text-text-secondary">
 							{searchQuery || filterStatus !== "all"
 								? "Try adjusting your filters"
 								: "Licenses will appear here when users sign up"}
@@ -1171,57 +819,22 @@ export function AppLicensesPage() {
 			{/* Change Plan Modal */}
 			{changingLicense && (
 				<div
-					style={{
-						position: "fixed",
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						background: "rgba(0, 0, 0, 0.6)",
-						backdropFilter: "blur(4px)",
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						zIndex: 1000,
-						padding: "20px",
-					}}
+					className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-1000 p-5"
 					onClick={() => setChangingLicense(null)}
 				>
 					<div
-						style={{
-							background: "var(--card-bg)",
-							borderRadius: "16px",
-							padding: "32px",
-							maxWidth: "500px",
-							width: "100%",
-							boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
-						}}
+						className="bg-card-bg rounded-2xl p-8 max-w-[500px] w-full shadow-2xl"
 						onClick={(e) => e.stopPropagation()}
 					>
-						<h2
-							style={{
-								fontSize: "20px",
-								fontWeight: "700",
-								marginBottom: "8px",
-								color: "var(--text-primary)",
-							}}
-						>
+						<h2 className="text-20px font-bold mb-2 text-text-primary">
 							Change License Plan
 						</h2>
-						<p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "24px" }}>
+						<p className="text-14px text-text-secondary mb-6">
 							Update license plan for {changingLicense.name || changingLicense.email}
 						</p>
 
-						<div style={{ marginBottom: "24px" }}>
-							<label
-								style={{
-									display: "block",
-									fontSize: "13px",
-									fontWeight: "600",
-									color: "var(--text-secondary)",
-									marginBottom: "8px",
-								}}
-							>
+						<div className="mb-6">
+							<label className="block text-13px font-semibold text-text-secondary mb-2">
 								New Plan
 							</label>
 							<Select
@@ -1234,29 +847,16 @@ export function AppLicensesPage() {
 									{ value: "enterprise", label: "Enterprise" },
 								]}
 								disabled={isUpdating}
-								style={{
-									width: "100%",
-									padding: "10px 12px",
-									border: "1px solid var(--border-primary)",
-									borderRadius: "8px",
-									background: "var(--content-bg)",
-									color: "var(--text-primary)",
-									fontSize: "14px",
-									opacity: isUpdating ? 0.6 : 1,
-								}}
+								className={`w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px ${isUpdating ? "opacity-60" : ""}`}
 							/>
 						</div>
 
-						<div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+						<div className="flex gap-3 justify-end">
 							<button
 								type="button"
 								onClick={() => setChangingLicense(null)}
 								disabled={isUpdating}
-								className="btn btn-secondary"
-								style={{
-									opacity: isUpdating ? 0.6 : 1,
-									cursor: isUpdating ? "not-allowed" : "pointer",
-								}}
+								className={`btn btn-secondary ${isUpdating ? "opacity-60 cursor-not-allowed" : ""}`}
 							>
 								Cancel
 							</button>
@@ -1264,11 +864,7 @@ export function AppLicensesPage() {
 								type="button"
 								onClick={handleChangePlan}
 								disabled={isUpdating || newPlan === changingLicense.plan}
-								className="btn btn-primary"
-								style={{
-									opacity: isUpdating || newPlan === changingLicense.plan ? 0.6 : 1,
-									cursor: isUpdating || newPlan === changingLicense.plan ? "not-allowed" : "pointer",
-								}}
+								className={`btn btn-primary ${isUpdating || newPlan === changingLicense.plan ? "opacity-60 cursor-not-allowed" : ""}`}
 							>
 								{isUpdating ? "Saving..." : "Save Changes"}
 							</button>
@@ -1280,64 +876,24 @@ export function AppLicensesPage() {
 			{/* Plan Create/Edit Modal */}
 			{showPlanModal && (
 				<div
-					style={{
-						position: "fixed",
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						background: "rgba(0, 0, 0, 0.6)",
-						backdropFilter: "blur(4px)",
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						zIndex: 1000,
-						padding: "20px",
-					}}
+					className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-1000 p-5"
 					onClick={() => !isUpdating && setShowPlanModal(false)}
 				>
 					<div
-						style={{
-							background: "var(--card-bg)",
-							borderRadius: "16px",
-							padding: "32px",
-							maxWidth: "600px",
-							width: "100%",
-							maxHeight: "90vh",
-							overflowY: "auto",
-							boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
-						}}
+						className="bg-card-bg rounded-2xl p-8 max-w-[600px] w-full max-h-[90vh] overflow-y-auto shadow-2xl"
 						onClick={(e) => e.stopPropagation()}
 					>
-						<h2
-							style={{
-								fontSize: "20px",
-								fontWeight: "700",
-								marginBottom: "8px",
-								color: "var(--text-primary)",
-							}}
-						>
+						<h2 className="text-20px font-bold mb-2 text-text-primary">
 							{editingPlan ? "Edit Plan" : "Create Plan"}
 						</h2>
-						<p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "24px" }}>
+						<p className="text-14px text-text-secondary mb-6">
 							{editingPlan ? "Update plan details and pricing" : "Create a new pricing plan for your app"}
 						</p>
 
 						{planError && (
-							<div
-								style={{
-									background: "rgba(239, 68, 68, 0.1)",
-									border: "1px solid var(--danger)",
-									borderRadius: "8px",
-									padding: "12px 16px",
-									marginBottom: "20px",
-									display: "flex",
-									alignItems: "center",
-									gap: "12px",
-								}}
-							>
+							<div className="bg-[rgba(239,68,68,0.1)] border border-danger rounded-lg py-3 px-4 mb-5 flex items-center gap-3">
 								<svg
-									style={{ width: "20px", height: "20px", color: "var(--danger)", flexShrink: 0 }}
+									className="w-5 h-5 text-danger flex-shrink-0"
 									fill="none"
 									stroke="currentColor"
 									viewBox="0 0 24 24"
@@ -1349,7 +905,7 @@ export function AppLicensesPage() {
 										d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 									/>
 								</svg>
-								<p style={{ fontSize: "14px", color: "var(--danger)", margin: 0 }}>{planError}</p>
+								<p className="text-14px text-danger m-0">{planError}</p>
 							</div>
 						)}
 
@@ -1360,17 +916,9 @@ export function AppLicensesPage() {
 							}}
 						>
 							{/* Plan Name */}
-							<div style={{ marginBottom: "20px" }}>
-								<label
-									style={{
-										display: "block",
-										fontSize: "13px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										marginBottom: "8px",
-									}}
-								>
-									Plan Name <span style={{ color: "var(--danger)" }}>*</span>
+							<div className="mb-5">
+								<label className="block text-13px font-semibold text-text-secondary mb-2">
+									Plan Name <span className="text-danger">*</span>
 								</label>
 								<input
 									type="text"
@@ -1379,30 +927,14 @@ export function AppLicensesPage() {
 									disabled={isUpdating}
 									placeholder="e.g., Pro Plan"
 									required
-									style={{
-										width: "100%",
-										padding: "10px 12px",
-										border: "1px solid var(--border-primary)",
-										borderRadius: "8px",
-										background: "var(--content-bg)",
-										color: "var(--text-primary)",
-										fontSize: "14px",
-									}}
+									className="w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px"
 								/>
 							</div>
 
 							{/* Plan Slug */}
-							<div style={{ marginBottom: "20px" }}>
-								<label
-									style={{
-										display: "block",
-										fontSize: "13px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										marginBottom: "8px",
-									}}
-								>
-									Plan Slug <span style={{ color: "var(--danger)" }}>*</span>
+							<div className="mb-5">
+								<label className="block text-13px font-semibold text-text-secondary mb-2">
+									Plan Slug <span className="text-danger">*</span>
 								</label>
 								<input
 									type="text"
@@ -1416,35 +948,18 @@ export function AppLicensesPage() {
 									disabled={isUpdating || !!editingPlan}
 									placeholder="e.g., pro"
 									required
-									style={{
-										width: "100%",
-										padding: "10px 12px",
-										border: "1px solid var(--border-primary)",
-										borderRadius: "8px",
-										background: "var(--content-bg)",
-										color: "var(--text-primary)",
-										fontSize: "14px",
-										opacity: editingPlan ? 0.6 : 1,
-									}}
+									className={`w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px ${editingPlan ? "opacity-60" : ""}`}
 								/>
 								{editingPlan && (
-									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+									<p className="text-12px text-text-tertiary mt-1.5">
 										Slug cannot be changed after creation
 									</p>
 								)}
 							</div>
 
 							{/* Description */}
-							<div style={{ marginBottom: "20px" }}>
-								<label
-									style={{
-										display: "block",
-										fontSize: "13px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										marginBottom: "8px",
-									}}
-								>
+							<div className="mb-5">
+								<label className="block text-13px font-semibold text-text-secondary mb-2">
 									Description
 								</label>
 								<textarea
@@ -1453,39 +968,14 @@ export function AppLicensesPage() {
 									disabled={isUpdating}
 									placeholder="Brief description of this plan..."
 									rows={3}
-									style={{
-										width: "100%",
-										padding: "10px 12px",
-										border: "1px solid var(--border-primary)",
-										borderRadius: "8px",
-										background: "var(--content-bg)",
-										color: "var(--text-primary)",
-										fontSize: "14px",
-										resize: "vertical",
-										fontFamily: "inherit",
-									}}
+									className="w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px resize-y font-inherit"
 								/>
 							</div>
 
 							{/* Pricing */}
-							<div
-								style={{
-									display: "grid",
-									gridTemplateColumns: "1fr 1fr 1fr",
-									gap: "12px",
-									marginBottom: "20px",
-								}}
-							>
+							<div className="grid grid-cols-3 gap-3 mb-5">
 								<div>
-									<label
-										style={{
-											display: "block",
-											fontSize: "13px",
-											fontWeight: "600",
-											color: "var(--text-secondary)",
-											marginBottom: "8px",
-										}}
-									>
+									<label className="block text-13px font-semibold text-text-secondary mb-2">
 										Monthly Price ($)
 									</label>
 									<input
@@ -1496,27 +986,11 @@ export function AppLicensesPage() {
 										onChange={(e) => setPlanForm({ ...planForm, monthlyPrice: e.target.value })}
 										disabled={isUpdating}
 										placeholder="9.99"
-										style={{
-											width: "100%",
-											padding: "10px 12px",
-											border: "1px solid var(--border-primary)",
-											borderRadius: "8px",
-											background: "var(--content-bg)",
-											color: "var(--text-primary)",
-											fontSize: "14px",
-										}}
+										className="w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px"
 									/>
 								</div>
 								<div>
-									<label
-										style={{
-											display: "block",
-											fontSize: "13px",
-											fontWeight: "600",
-											color: "var(--text-secondary)",
-											marginBottom: "8px",
-										}}
-									>
+									<label className="block text-13px font-semibold text-text-secondary mb-2">
 										Yearly Price ($)
 									</label>
 									<input
@@ -1527,27 +1001,11 @@ export function AppLicensesPage() {
 										onChange={(e) => setPlanForm({ ...planForm, yearlyPrice: e.target.value })}
 										disabled={isUpdating}
 										placeholder="99.99"
-										style={{
-											width: "100%",
-											padding: "10px 12px",
-											border: "1px solid var(--border-primary)",
-											borderRadius: "8px",
-											background: "var(--content-bg)",
-											color: "var(--text-primary)",
-											fontSize: "14px",
-										}}
+										className="w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px"
 									/>
 								</div>
 								<div>
-									<label
-										style={{
-											display: "block",
-											fontSize: "13px",
-											fontWeight: "600",
-											color: "var(--text-secondary)",
-											marginBottom: "8px",
-										}}
-									>
+									<label className="block text-13px font-semibold text-text-secondary mb-2">
 										One-Time Price ($)
 									</label>
 									<input
@@ -1558,30 +1016,14 @@ export function AppLicensesPage() {
 										onChange={(e) => setPlanForm({ ...planForm, oneTimePrice: e.target.value })}
 										disabled={isUpdating}
 										placeholder="499.99"
-										style={{
-											width: "100%",
-											padding: "10px 12px",
-											border: "1px solid var(--border-primary)",
-											borderRadius: "8px",
-											background: "var(--content-bg)",
-											color: "var(--text-primary)",
-											fontSize: "14px",
-										}}
+										className="w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px"
 									/>
 								</div>
 							</div>
 
 							{/* Duration */}
-							<div style={{ marginBottom: "20px" }}>
-								<label
-									style={{
-										display: "block",
-										fontSize: "13px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										marginBottom: "8px",
-									}}
-								>
+							<div className="mb-5">
+								<label className="block text-13px font-semibold text-text-secondary mb-2">
 									License Duration (Days)
 								</label>
 								<input
@@ -1596,48 +1038,30 @@ export function AppLicensesPage() {
 									}
 									disabled={isUpdating}
 									placeholder="e.g., 30, 365 (leave empty for lifetime)"
-									style={{
-										width: "100%",
-										padding: "10px 12px",
-										border: "1px solid var(--border-primary)",
-										borderRadius: "8px",
-										background: "var(--content-bg)",
-										color: "var(--text-primary)",
-										fontSize: "14px",
-									}}
+									className="w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px"
 								/>
-								<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+								<p className="text-12px text-text-tertiary mt-1.5">
 									How long the license is valid after activation. Leave empty for lifetime access.
 								</p>
 							</div>
 
 							{/* Trial */}
-							<div style={{ marginBottom: "20px" }}>
-								<label
-									style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
-								>
+							<div className="mb-5">
+								<label className="flex items-center gap-2.5 cursor-pointer">
 									<input
 										type="checkbox"
 										checked={planForm.trialEnabled}
 										onChange={(e) => setPlanForm({ ...planForm, trialEnabled: e.target.checked })}
 										disabled={isUpdating}
-										style={{ width: "18px", height: "18px", cursor: "pointer" }}
+										className="w-4.5 h-4.5 cursor-pointer"
 									/>
-									<span style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-primary)" }}>
+									<span className="text-14px font-semibold text-text-primary">
 										Enable Free Trial
 									</span>
 								</label>
 								{planForm.trialEnabled && (
-									<div style={{ marginTop: "12px", marginLeft: "28px" }}>
-										<label
-											style={{
-												display: "block",
-												fontSize: "13px",
-												fontWeight: "600",
-												color: "var(--text-secondary)",
-												marginBottom: "8px",
-											}}
-										>
+									<div className="mt-3 ml-7">
+										<label className="block text-13px font-semibold text-text-secondary mb-2">
 											Trial Duration (days)
 										</label>
 										<input
@@ -1647,34 +1071,18 @@ export function AppLicensesPage() {
 											onChange={(e) => setPlanForm({ ...planForm, trialDays: e.target.value })}
 											disabled={isUpdating}
 											placeholder="14"
-											style={{
-												width: "120px",
-												padding: "10px 12px",
-												border: "1px solid var(--border-primary)",
-												borderRadius: "8px",
-												background: "var(--content-bg)",
-												color: "var(--text-primary)",
-												fontSize: "14px",
-											}}
+											className="w-[120px] py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px"
 										/>
 									</div>
 								)}
 							</div>
 
 							{/* Features */}
-							<div style={{ marginBottom: "24px" }}>
-								<label
-									style={{
-										display: "block",
-										fontSize: "13px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										marginBottom: "8px",
-									}}
-								>
+							<div className="mb-6">
+								<label className="block text-13px font-semibold text-text-secondary mb-2">
 									Features
 								</label>
-								<div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+								<div className="flex gap-2 mb-3">
 									<input
 										type="text"
 										value={featureInput}
@@ -1687,15 +1095,7 @@ export function AppLicensesPage() {
 										}}
 										disabled={isUpdating}
 										placeholder="Add a feature..."
-										style={{
-											flex: 1,
-											padding: "10px 12px",
-											border: "1px solid var(--border-primary)",
-											borderRadius: "8px",
-											background: "var(--content-bg)",
-											color: "var(--text-primary)",
-											fontSize: "14px",
-										}}
+										className="flex-1 py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px"
 									/>
 									<button
 										type="button"
@@ -1707,37 +1107,21 @@ export function AppLicensesPage() {
 									</button>
 								</div>
 								{planForm.features.length > 0 && (
-									<div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+									<div className="flex flex-col gap-2">
 										{planForm.features.map((feature, index) => (
 											<div
 												key={`feature-${index}`}
-												style={{
-													display: "flex",
-													alignItems: "center",
-													justifyContent: "space-between",
-													padding: "8px 12px",
-													background: "var(--content-bg)",
-													border: "1px solid var(--border-primary)",
-													borderRadius: "6px",
-													fontSize: "14px",
-													color: "var(--text-primary)",
-												}}
+												className="flex items-center justify-between py-2 px-3 bg-content-bg border border-border-primary rounded-md text-14px text-text-primary"
 											>
 												<span>{feature}</span>
 												<button
 													type="button"
 													onClick={() => handleRemoveFeature(index)}
 													disabled={isUpdating}
-													style={{
-														background: "transparent",
-														border: "none",
-														color: "var(--danger)",
-														cursor: "pointer",
-														padding: "4px",
-													}}
+													className="bg-transparent border-none text-danger cursor-pointer p-1"
 												>
 													<svg
-														style={{ width: "16px", height: "16px" }}
+														className="w-4 h-4"
 														fill="none"
 														stroke="currentColor"
 														viewBox="0 0 24 24"
@@ -1757,27 +1141,19 @@ export function AppLicensesPage() {
 							</div>
 
 							{/* Actions */}
-							<div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+							<div className="flex gap-3 justify-end">
 								<button
 									type="button"
 									onClick={() => setShowPlanModal(false)}
 									disabled={isUpdating}
-									className="btn btn-secondary"
-									style={{
-										opacity: isUpdating ? 0.6 : 1,
-										cursor: isUpdating ? "not-allowed" : "pointer",
-									}}
+									className={`btn btn-secondary ${isUpdating ? "opacity-60 cursor-not-allowed" : ""}`}
 								>
 									Cancel
 								</button>
 								<button
 									type="submit"
 									disabled={isUpdating}
-									className="btn btn-primary"
-									style={{
-										opacity: isUpdating ? 0.6 : 1,
-										cursor: isUpdating ? "not-allowed" : "pointer",
-									}}
+									className={`btn btn-primary ${isUpdating ? "opacity-60 cursor-not-allowed" : ""}`}
 								>
 									{isUpdating ? "Saving..." : editingPlan ? "Update Plan" : "Create Plan"}
 								</button>
@@ -1790,48 +1166,17 @@ export function AppLicensesPage() {
 			{/* Delete Plan Confirmation Dialog */}
 			{deletingPlan && (
 				<div
-					style={{
-						position: "fixed",
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						background: "rgba(0, 0, 0, 0.6)",
-						backdropFilter: "blur(4px)",
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						zIndex: 1000,
-						padding: "20px",
-					}}
+					className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-1000 p-5"
 					onClick={() => !isUpdating && setDeletingPlan(null)}
 				>
 					<div
-						style={{
-							background: "var(--card-bg)",
-							borderRadius: "16px",
-							padding: "32px",
-							maxWidth: "500px",
-							width: "100%",
-							boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
-						}}
+						className="bg-card-bg rounded-2xl p-8 max-w-[500px] w-full shadow-2xl"
 						onClick={(e) => e.stopPropagation()}
 					>
-						<div style={{ marginBottom: "24px" }}>
-							<div
-								style={{
-									width: "48px",
-									height: "48px",
-									borderRadius: "12px",
-									background: "rgba(239, 68, 68, 0.1)",
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "center",
-									marginBottom: "16px",
-								}}
-							>
+						<div className="mb-6">
+							<div className="w-12 h-12 rounded-xl bg-[rgba(239,68,68,0.1)] flex items-center justify-center mb-4">
 								<svg
-									style={{ width: "24px", height: "24px", color: "var(--danger)" }}
+									className="w-6 h-6 text-danger"
 									fill="none"
 									stroke="currentColor"
 									viewBox="0 0 24 24"
@@ -1844,35 +1189,24 @@ export function AppLicensesPage() {
 									/>
 								</svg>
 							</div>
-							<h2
-								style={{
-									fontSize: "20px",
-									fontWeight: "700",
-									marginBottom: "8px",
-									color: "var(--text-primary)",
-								}}
-							>
+							<h2 className="text-20px font-bold mb-2 text-text-primary">
 								Delete Plan?
 							</h2>
-							<p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "12px" }}>
+							<p className="text-14px text-text-secondary mb-3">
 								Are you sure you want to delete the <strong>{deletingPlan.name}</strong> plan? This
 								action cannot be undone.
 							</p>
-							<p style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>
+							<p className="text-13px text-text-tertiary">
 								Note: Plans with active licenses cannot be deleted.
 							</p>
 						</div>
 
-						<div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+						<div className="flex gap-3 justify-end">
 							<button
 								type="button"
 								onClick={() => setDeletingPlan(null)}
 								disabled={isUpdating}
-								className="btn btn-secondary"
-								style={{
-									opacity: isUpdating ? 0.6 : 1,
-									cursor: isUpdating ? "not-allowed" : "pointer",
-								}}
+								className={`btn btn-secondary ${isUpdating ? "opacity-60 cursor-not-allowed" : ""}`}
 							>
 								Cancel
 							</button>
@@ -1880,11 +1214,7 @@ export function AppLicensesPage() {
 								type="button"
 								onClick={handleDeletePlan}
 								disabled={isUpdating}
-								className="btn btn-danger"
-								style={{
-									opacity: isUpdating ? 0.6 : 1,
-									cursor: isUpdating ? "not-allowed" : "pointer",
-								}}
+								className={`btn btn-danger ${isUpdating ? "opacity-60 cursor-not-allowed" : ""}`}
 							>
 								{isUpdating ? "Deleting..." : "Delete Plan"}
 							</button>

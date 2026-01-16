@@ -53,29 +53,30 @@ export function RefundProcessingPage() {
 	};
 
 	const handleStatusBadge = (status: string) => {
-		const styles: Record<string, { bg: string; color: string; icon: string }> = {
-			completed: { bg: "rgba(34, 197, 94, 0.1)", color: "#22c55e", icon: "✓" },
-			pending: { bg: "rgba(251, 191, 36, 0.1)", color: "#f59e0b", icon: "⏱" },
-			processing: { bg: "rgba(59, 130, 246, 0.1)", color: "#3b82f6", icon: "⟳" },
-			failed: { bg: "rgba(239, 68, 68, 0.1)", color: "#ef4444", icon: "✗" },
+		const badgeClass: Record<string, string> = {
+			completed: "badge-success",
+			pending: "badge-warning",
+			processing: "badge-info",
+			failed: "badge-danger",
 		};
-		const style = styles[status] || styles["pending"];
+		const icons: Record<string, string> = {
+			completed: "✓",
+			pending: "⏱",
+			processing: "⟳",
+			failed: "✗",
+		};
 		return (
-			<span style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "4px 10px", background: style!.bg, color: style!.color, borderRadius: "12px", fontSize: "12px", fontWeight: "500" }}>
-				<span>{style!.icon}</span>
-				<span style={{ textTransform: "capitalize" }}>{status}</span>
+			<span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-12px font-medium ${badgeClass[status] || "badge-warning"}`}>
+				<span>{icons[status] || "⏱"}</span>
+				<span className="capitalize">{status}</span>
 			</span>
 		);
 	};
 
 	const handleProviderBadge = (provider: string) => {
-		const colors: Record<string, { bg: string; color: string }> = {
-			lemon_squeezy: { bg: "rgba(34, 197, 94, 0.1)", color: "#22c55e" },
-			paddle: { bg: "rgba(59, 130, 246, 0.1)", color: "#3b82f6" },
-		};
-		const color = colors[provider] || { bg: "#f3f4f6", color: "#6b7280" };
+		const badgeClass = provider === "lemon_squeezy" ? "badge-success" : "badge-info";
 		return (
-			<span style={{ display: "inline-block", padding: "4px 10px", background: color.bg, color: color.color, borderRadius: "12px", fontSize: "12px", fontWeight: "500", textTransform: "capitalize" }}>
+			<span className={`inline-block px-2.5 py-1 rounded-xl text-12px font-medium capitalize ${badgeClass}`}>
 				{provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
 			</span>
 		);

@@ -190,13 +190,9 @@ export default function AppOAuthPage() {
 					return (
 						<div
 							key={provider.id}
-							className="card p-6 transition-all duration-200"
-							style={{
-								border: `2px solid ${isSelected ? "var(--primary)" : "var(--card-border)"}`,
-								background: isSelected ? "var(--primary-light)" : "var(--card-bg)",
-								cursor: isEditing ? "pointer" : "default",
-								opacity: isEditing ? 1 : 0.8,
-							}}
+							className={`card p-6 transition-all duration-200 border-2 ${
+								isSelected ? "border-primary bg-primary-light" : "border-card-border bg-card-bg"
+							} ${isEditing ? "cursor-pointer opacity-100" : "cursor-default opacity-80"}`}
 							onClick={() => isEditing && handleToggleProvider(provider.id)}
 						>
 							<div className="flex items-start gap-4 mb-4">
@@ -219,12 +215,12 @@ export default function AppOAuthPage() {
 							</div>
 
 							<div className="flex items-center justify-between pt-4 border-t border-border-primary">
-								<span className="text-sm font-medium" style={{ color: isSelected ? "var(--primary)" : "var(--text-secondary)" }}>
+								<span className={`text-sm font-medium ${isSelected ? "text-primary" : "text-text-secondary"}`}>
 									{isSelected ? "Enabled" : "Disabled"}
 								</span>
 								{isEditing && (
-									<div className="toggle-switch" style={{ background: isSelected ? "var(--primary)" : "var(--border-primary)" }}>
-								<div className="toggle-button" style={{ left: isSelected ? "26px" : "2px" }} />
+									<div className={`toggle-switch ${isSelected ? "bg-primary" : "bg-border-primary"}`}>
+								<div className={`toggle-button ${isSelected ? "left-[26px]" : "left-[2px]"}`} />
 									</div>
 								)}
 							</div>

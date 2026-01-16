@@ -50,7 +50,7 @@ export function ProjectsPage() {
 	if (error) {
 		return (
 			<div className="alert alert-danger">
-				<svg style={{ width: "20px", height: "20px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
 						strokeLinecap="round"
 						strokeLinejoin="round"
@@ -73,37 +73,20 @@ export function ProjectsPage() {
 					<h1 className="page-title">Projects</h1>
 					<p className="page-description">Manage your authentication projects</p>
 				</div>
-				<div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+				<div className="flex gap-3 items-center">
 					{hasProjects && (
 						<div
-							style={{
-								display: "flex",
-								background: "var(--surface-secondary)",
-								borderRadius: "8px",
-								padding: "4px",
-								gap: "4px",
-							}}
+							className="flex bg-surface-secondary rounded-lg p-1 gap-1"
 						>
 							<button
 								type="button"
 								onClick={() => setViewMode("grid")}
-								style={{
-									padding: "6px 12px",
-									border: "none",
-									background: viewMode === "grid" ? "var(--background-primary)" : "transparent",
-									color: viewMode === "grid" ? "var(--text-primary)" : "var(--text-secondary)",
-									borderRadius: "6px",
-									cursor: "pointer",
-									transition: "all 0.2s ease",
-									display: "flex",
-									alignItems: "center",
-									gap: "6px",
-									fontSize: "13px",
-									fontWeight: "500",
-								}}
+								className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
+									viewMode === "grid" ? "bg-bg-primary text-text-primary" : "bg-transparent text-text-secondary"
+								}`}
 							>
 								<svg
-									style={{ width: "14px", height: "14px" }}
+									className="w-3.5 h-3.5"
 									fill="none"
 									stroke="currentColor"
 									viewBox="0 0 24 24"
@@ -120,23 +103,12 @@ export function ProjectsPage() {
 							<button
 								type="button"
 								onClick={() => setViewMode("table")}
-								style={{
-									padding: "6px 12px",
-									border: "none",
-									background: viewMode === "table" ? "var(--background-primary)" : "transparent",
-									color: viewMode === "table" ? "var(--text-primary)" : "var(--text-secondary)",
-									borderRadius: "6px",
-									cursor: "pointer",
-									transition: "all 0.2s ease",
-									display: "flex",
-									alignItems: "center",
-									gap: "6px",
-									fontSize: "13px",
-									fontWeight: "500",
-								}}
+								className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
+									viewMode === "table" ? "bg-bg-primary text-text-primary" : "bg-transparent text-text-secondary"
+								}`}
 							>
 								<svg
-									style={{ width: "14px", height: "14px" }}
+									className="w-3.5 h-3.5"
 									fill="none"
 									stroke="currentColor"
 									viewBox="0 0 24 24"
@@ -154,7 +126,7 @@ export function ProjectsPage() {
 					)}
 					<button type="button" onClick={() => setShowForm(!showForm)} className="btn btn-primary">
 						<svg
-							style={{ width: "16px", height: "16px" }}
+							className="w-4 h-4"
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
@@ -206,7 +178,7 @@ export function ProjectsPage() {
 										value={formData.slug}
 										onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
 									/>
-									<p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "6px" }}>
+									<p className="text-12px text-text-tertiary mt-1.5">
 										Auto-generated from project name. Use only letters, numbers, and hyphens.
 									</p>
 								</div>
@@ -241,29 +213,13 @@ export function ProjectsPage() {
 			{/* Empty State */}
 			{!hasProjects && (
 				<div
-					style={{
-						display: "flex",
-						flexDirection: "column",
-						alignItems: "center",
-						justifyContent: "center",
-						padding: "80px 20px",
-						textAlign: "center",
-					}}
+					className="flex flex-col items-center justify-center py-20 px-5 text-center"
 				>
 					<div
-						style={{
-							width: "120px",
-							height: "120px",
-							background: "linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05))",
-							borderRadius: "50%",
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							marginBottom: "24px",
-						}}
+						className="w-30 h-30 bg-gradient-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center mb-6"
 					>
 						<svg
-							style={{ width: "56px", height: "56px", color: "var(--primary)" }}
+							className="w-14 h-14 text-primary"
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
@@ -277,23 +233,12 @@ export function ProjectsPage() {
 						</svg>
 					</div>
 					<h2
-						style={{
-							fontSize: "24px",
-							fontWeight: "700",
-							color: "var(--text-primary)",
-							marginBottom: "12px",
-						}}
+						className="text-24px font-bold text-text-primary mb-3"
 					>
 						Welcome to Proofa!
 					</h2>
 					<p
-						style={{
-							fontSize: "15px",
-							color: "var(--text-secondary)",
-							maxWidth: "480px",
-							marginBottom: "32px",
-							lineHeight: "1.6",
-						}}
+						className="text-15px text-text-secondary max-w-120 mb-8 leading-relaxed"
 					>
 						Get started by creating your first project. Projects help you organize your applications and
 						manage authentication across your services.
@@ -301,11 +246,10 @@ export function ProjectsPage() {
 					<button
 						type="button"
 						onClick={() => setShowForm(true)}
-						className="btn btn-primary"
-						style={{ padding: "12px 24px", fontSize: "15px" }}
+						className="btn btn-primary py-3 px-6 text-15px"
 					>
 						<svg
-							style={{ width: "18px", height: "18px" }}
+							className="w-4.5 h-4.5"
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
@@ -315,17 +259,11 @@ export function ProjectsPage() {
 						Create Your First Project
 					</button>
 					<div
-						style={{
-							marginTop: "48px",
-							display: "flex",
-							gap: "32px",
-							color: "var(--text-tertiary)",
-							fontSize: "13px",
-						}}
+						className="mt-12 flex gap-8 text-text-tertiary text-13px"
 					>
-						<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+						<div className="flex items-center gap-2">
 							<svg
-								style={{ width: "16px", height: "16px" }}
+								className="w-4 h-4"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
@@ -339,9 +277,9 @@ export function ProjectsPage() {
 							</svg>
 							<span>Quick Setup</span>
 						</div>
-						<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+						<div className="flex items-center gap-2">
 							<svg
-								style={{ width: "16px", height: "16px" }}
+								className="w-4 h-4"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
@@ -355,9 +293,9 @@ export function ProjectsPage() {
 							</svg>
 							<span>Secure by Default</span>
 						</div>
-						<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+						<div className="flex items-center gap-2">
 							<svg
-								style={{ width: "16px", height: "16px" }}
+								className="w-4 h-4"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
@@ -378,101 +316,42 @@ export function ProjectsPage() {
 			{/* Grid View */}
 			{hasProjects && viewMode === "grid" && (
 				<div
-					style={{
-						display: "grid",
-						gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-						gap: "20px",
-					}}
+					className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-5"
 				>
 					{projects.map((project) => (
 						<Link
 							key={project.id}
 							to={`/projects/${project.id}`}
-							style={{
-								display: "block",
-								background: "var(--card-bg)",
-								border: "1px solid var(--border-secondary)",
-								borderRadius: "12px",
-								padding: "20px",
-								textDecoration: "none",
-								transition: "all 0.2s ease",
-							}}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.borderColor = "var(--primary)";
-								e.currentTarget.style.transform = "translateY(-2px)";
-								e.currentTarget.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.1)";
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.borderColor = "var(--border-secondary)";
-								e.currentTarget.style.transform = "translateY(0)";
-								e.currentTarget.style.boxShadow = "none";
-							}}
+							className="block bg-card-bg border border-border-secondary rounded-xl p-5 no-underline transition-all hover:border-primary hover:-translate-y-0.5 hover:shadow-lg"
 						>
 							{/* Header */}
 							<div
-								style={{
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "space-between",
-									marginBottom: "12px",
-								}}
+								className="flex items-center justify-between mb-3"
 							>
-								<div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+								<div className="flex items-center gap-2.5">
 									<div
-										style={{
-											width: "36px",
-											height: "36px",
-											background:
-												"linear-gradient(135deg, var(--primary), rgba(139, 92, 246, 0.7))",
-											borderRadius: "8px",
-											display: "flex",
-											alignItems: "center",
-											justifyContent: "center",
-											color: "white",
-											fontSize: "14px",
-											fontWeight: "600",
-										}}
+										className="w-9 h-9 bg-gradient-to-br from-primary to-primary/70 rounded-lg flex items-center justify-center text-white text-14px font-semibold"
 									>
 										{project.name.charAt(0).toUpperCase()}
 									</div>
 									<div>
 										<h3
-											style={{
-												fontSize: "16px",
-												fontWeight: "600",
-												color: "var(--text-primary)",
-												marginBottom: "2px",
-											}}
+											className="text-16px font-semibold text-text-primary mb-0.5"
 										>
 											{project.name}
 										</h3>
 										{project.slug && (
-											<p style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+											<p className="text-12px text-text-tertiary">
 												{project.slug}
 											</p>
 										)}
 									</div>
 								</div>
 								<span
-									style={{
-										display: "inline-flex",
-										alignItems: "center",
-										gap: "4px",
-										padding: "4px 8px",
-										background: "rgba(34, 197, 94, 0.1)",
-										color: "var(--success)",
-										borderRadius: "4px",
-										fontSize: "11px",
-										fontWeight: "500",
-									}}
+									className="inline-flex items-center gap-1 px-2 py-1 bg-success/10 text-success rounded text-11px font-medium"
 								>
 									<span
-										style={{
-											width: "6px",
-											height: "6px",
-											background: "currentColor",
-											borderRadius: "50%",
-										}}
+										className="w-1.5 h-1.5 bg-current rounded-full"
 									/>
 									Active
 								</span>
@@ -480,71 +359,41 @@ export function ProjectsPage() {
 
 							{/* Stats Grid */}
 							<div
-								style={{
-									display: "grid",
-									gridTemplateColumns: "repeat(3, 1fr)",
-									gap: "12px",
-									marginTop: "16px",
-									padding: "12px",
-									background: "var(--surface-secondary)",
-									borderRadius: "8px",
-								}}
+								className="grid grid-cols-3 gap-3 mt-4 p-3 bg-surface-secondary rounded-lg"
 							>
-								<div style={{ textAlign: "center" }}>
+								<div className="text-center">
 									<div
-										style={{
-											fontSize: "20px",
-											fontWeight: "700",
-											color: "var(--text-primary)",
-											marginBottom: "2px",
-										}}
+										className="text-20px font-bold text-text-primary mb-0.5"
 									>
 										{project.totalApps || 0}
 									</div>
-									<div style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>Apps</div>
+									<div className="text-11px text-text-tertiary">Apps</div>
 								</div>
-								<div style={{ textAlign: "center" }}>
+								<div className="text-center">
 									<div
-										style={{
-											fontSize: "20px",
-											fontWeight: "700",
-											color: "var(--text-primary)",
-											marginBottom: "2px",
-										}}
+										className="text-20px font-bold text-text-primary mb-0.5"
 									>
 										{project.totalUsers || 0}
 									</div>
-									<div style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>Users</div>
+									<div className="text-11px text-text-tertiary">Users</div>
 								</div>
-								<div style={{ textAlign: "center" }}>
+								<div className="text-center">
 									<div
-										style={{
-											fontSize: "20px",
-											fontWeight: "700",
-											color: "var(--text-primary)",
-											marginBottom: "2px",
-										}}
+										className="text-20px font-bold text-text-primary mb-0.5"
 									>
 										{project.activeLicenses || 0}
 									</div>
-									<div style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>Licenses</div>
+									<div className="text-11px text-text-tertiary">Licenses</div>
 								</div>
 							</div>
 
 							{/* Footer */}
 							<div
-								style={{
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "space-between",
-									marginTop: "12px",
-									paddingTop: "12px",
-									borderTop: "1px solid var(--border-secondary)",
-								}}
+								className="flex items-center justify-between mt-3 pt-3 border-t border-border-secondary"
 							>
-								<div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+								<div className="flex items-center gap-1.5">
 									<svg
-										style={{ width: "13px", height: "13px", color: "var(--success)" }}
+										className="w-3.5 h-3.5 text-success"
 										fill="none"
 										stroke="currentColor"
 										viewBox="0 0 24 24"
@@ -556,12 +405,12 @@ export function ProjectsPage() {
 											d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 										/>
 									</svg>
-									<span style={{ fontSize: "14px", fontWeight: "600", color: "var(--success)" }}>
+									<span className="text-14px font-semibold text-success">
 										${(project.totalRevenue || 0).toFixed(2)}
 									</span>
 								</div>
 								<span
-									style={{ fontSize: "11px", color: "var(--text-tertiary)", fontFamily: "monospace" }}
+									className="text-11px text-text-tertiary font-mono"
 								>
 									{project.id.substring(0, 8)}
 								</span>
@@ -573,222 +422,117 @@ export function ProjectsPage() {
 
 			{/* Table View */}
 			{hasProjects && viewMode === "table" && (
-				<div className="card" style={{ padding: "0", overflow: "hidden" }}>
-					<table style={{ width: "100%", borderCollapse: "collapse" }}>
+				<div className="card p-0 overflow-hidden">
+					<table className="w-full border-collapse">
 						<thead>
 							<tr
-								style={{
-									background: "var(--surface-secondary)",
-									borderBottom: "1px solid var(--border-secondary)",
-								}}
+								className="bg-surface-secondary border-b border-border-secondary"
 							>
 								<th
-									style={{
-										padding: "12px 16px",
-										textAlign: "left",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										textTransform: "uppercase",
-									}}
+									className="px-4 py-3 text-left text-12px font-semibold text-text-secondary uppercase"
 								>
 									Name
 								</th>
 								<th
-									style={{
-										padding: "12px 16px",
-										textAlign: "center",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										textTransform: "uppercase",
-									}}
+									className="px-4 py-3 text-center text-12px font-semibold text-text-secondary uppercase"
 								>
 									Apps
 								</th>
 								<th
-									style={{
-										padding: "12px 16px",
-										textAlign: "center",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										textTransform: "uppercase",
-									}}
+									className="px-4 py-3 text-center text-12px font-semibold text-text-secondary uppercase"
 								>
 									Users
 								</th>
 								<th
-									style={{
-										padding: "12px 16px",
-										textAlign: "center",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										textTransform: "uppercase",
-									}}
+									className="px-4 py-3 text-center text-12px font-semibold text-text-secondary uppercase"
 								>
 									Licenses
 								</th>
 								<th
-									style={{
-										padding: "12px 16px",
-										textAlign: "right",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										textTransform: "uppercase",
-									}}
+									className="px-4 py-3 text-right text-12px font-semibold text-text-secondary uppercase"
 								>
 									Revenue
 								</th>
 								<th
-									style={{
-										padding: "12px 16px",
-										textAlign: "center",
-										fontSize: "12px",
-										fontWeight: "600",
-										color: "var(--text-secondary)",
-										textTransform: "uppercase",
-									}}
+									className="px-4 py-3 text-center text-12px font-semibold text-text-secondary uppercase"
 								>
 									Status
 								</th>
-								<th style={{ padding: "12px 16px", width: "50px" }}></th>
+								<th className="px-4 py-3 w-12"></th>
 							</tr>
 						</thead>
 						<tbody>
 							{projects.map((project) => (
 								<tr
 									key={project.id}
-									style={{
-										borderBottom: "1px solid var(--border-secondary)",
-										transition: "background 0.15s ease",
-										cursor: "pointer",
-									}}
-									onMouseEnter={(e) => {
-										e.currentTarget.style.background = "var(--surface-hover)";
-									}}
-									onMouseLeave={(e) => {
-										e.currentTarget.style.background = "transparent";
-									}}
+									className="border-b border-border-secondary transition-colors cursor-pointer hover:bg-surface-hover"
 									onClick={() => (window.location.href = `/projects/${project.id}`)}
 								>
-									<td style={{ padding: "16px" }}>
-										<div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+									<td className="p-4">
+										<div className="flex items-center gap-3">
 											<div
-												style={{
-													width: "32px",
-													height: "32px",
-													background:
-														"linear-gradient(135deg, var(--primary), rgba(139, 92, 246, 0.7))",
-													borderRadius: "6px",
-													display: "flex",
-													alignItems: "center",
-													justifyContent: "center",
-													color: "white",
-													fontSize: "13px",
-													fontWeight: "600",
-													flexShrink: 0,
-												}}
+												className="w-8 h-8 bg-gradient-to-br from-primary to-primary/70 rounded-md flex items-center justify-center text-white text-13px font-semibold flex-shrink-0"
 											>
 												{project.name.charAt(0).toUpperCase()}
 											</div>
 											<div>
 												<div
-													style={{
-														fontSize: "14px",
-														fontWeight: "500",
-														color: "var(--text-primary)",
-														marginBottom: "2px",
-													}}
+													className="text-14px font-medium text-text-primary mb-0.5"
 												>
 													{project.name}
 												</div>
 												{project.slug && (
-													<div style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+													<div className="text-12px text-text-tertiary">
 														{project.slug}
 													</div>
 												)}
 											</div>
 										</div>
 									</td>
-									<td style={{ padding: "16px", textAlign: "center" }}>
+									<td className="p-4 text-center">
 										<span
-											style={{
-												fontSize: "15px",
-												fontWeight: "600",
-												color: "var(--text-primary)",
-											}}
+											className="text-15px font-semibold text-text-primary"
 										>
 											{project.totalApps || 0}
 										</span>
 									</td>
-									<td style={{ padding: "16px", textAlign: "center" }}>
+									<td className="p-4 text-center">
 										<span
-											style={{
-												fontSize: "15px",
-												fontWeight: "600",
-												color: "var(--text-primary)",
-											}}
+											className="text-15px font-semibold text-text-primary"
 										>
 											{project.totalUsers || 0}
 										</span>
 									</td>
-									<td style={{ padding: "16px", textAlign: "center" }}>
+									<td className="p-4 text-center">
 										<span
-											style={{
-												fontSize: "15px",
-												fontWeight: "600",
-												color: "var(--text-primary)",
-											}}
+											className="text-15px font-semibold text-text-primary"
 										>
 											{project.activeLicenses || 0}
 											<span
-												style={{
-													fontSize: "13px",
-													color: "var(--text-tertiary)",
-													fontWeight: "400",
-													marginLeft: "2px",
-												}}
+												className="text-13px text-text-tertiary font-normal ml-0.5"
 											>
 												/ {project.totalLicenses || 0}
 											</span>
 										</span>
 									</td>
-									<td style={{ padding: "16px", textAlign: "right" }}>
-										<span style={{ fontSize: "15px", fontWeight: "600", color: "var(--success)" }}>
+									<td className="p-4 text-right">
+										<span className="text-15px font-semibold text-success">
 											${(project.totalRevenue || 0).toFixed(2)}
 										</span>
 									</td>
-									<td style={{ padding: "16px", textAlign: "center" }}>
+									<td className="p-4 text-center">
 										<span
-											style={{
-												display: "inline-flex",
-												alignItems: "center",
-												gap: "4px",
-												padding: "4px 10px",
-												background: "rgba(34, 197, 94, 0.1)",
-												color: "var(--success)",
-												borderRadius: "12px",
-												fontSize: "12px",
-												fontWeight: "500",
-											}}
+											className="inline-flex items-center gap-1 px-2.5 py-1 bg-success/10 text-success rounded-xl text-12px font-medium"
 										>
 											<span
-												style={{
-													width: "6px",
-													height: "6px",
-													background: "currentColor",
-													borderRadius: "50%",
-												}}
+												className="w-1.5 h-1.5 bg-current rounded-full"
 											/>
 											Active
 										</span>
 									</td>
-									<td style={{ padding: "16px", textAlign: "center" }}>
+									<td className="p-4 text-center">
 										<svg
-											style={{ width: "16px", height: "16px", color: "var(--text-tertiary)" }}
+											className="w-4 h-4 text-text-tertiary"
 											fill="none"
 											stroke="currentColor"
 											viewBox="0 0 24 24"

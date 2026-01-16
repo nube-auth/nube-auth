@@ -43,7 +43,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 		switch (type) {
 			case "success":
 				return {
-					bg: "#10b981",
+					bgClass: "bg-[#10b981]",
 					icon: (
 						<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -52,7 +52,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 				};
 			case "error":
 				return {
-					bg: "#ef4444",
+					bgClass: "bg-[#ef4444]",
 					icon: (
 						<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
@@ -66,7 +66,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 				};
 			case "warning":
 				return {
-					bg: "#f59e0b",
+					bgClass: "bg-[#f59e0b]",
 					icon: (
 						<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
@@ -80,7 +80,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 				};
 			default:
 				return {
-					bg: "var(--primary)",
+					bgClass: "bg-primary",
 					icon: (
 						<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
@@ -98,16 +98,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 	return (
 		<ToastContext.Provider value={{ showToast }}>
 			{children}
-			<div className="fixed top-5 right-5 z-[10000] flex flex-col gap-3 max-w-400px">
+			<div className="fixed top-5 right-5 z-10000 flex flex-col gap-3 max-w-400px">
 				{toasts.map((toast) => {
 					const styles = getToastStyles(toast.type);
 					return (
 						<div
 							key={toast.id}
-							className="text-white p-4 rounded-lg shadow-lg flex items-center gap-3 animate-[slideInRight_0.3s_ease-out]"
-							style={{ background: styles.bg }}
+								className={`text-white p-4 rounded-lg shadow-lg flex items-center gap-3 animate-[slideInRight_0.3s_ease-out] ${styles.bgClass}`}
 						>
-							<div className="w-5 h-5 flex-shrink-0">{styles.icon}</div>
+							<div className="w-5 h-5 shrink-0">{styles.icon}</div>
 							<p className="m-0 text-14px font-medium flex-1">{toast.message}</p>
 							<button
 								type="button"

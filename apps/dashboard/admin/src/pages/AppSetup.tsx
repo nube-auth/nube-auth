@@ -7,7 +7,7 @@ const AVAILABLE_PROVIDERS = [
 		id: "google",
 		name: "Google",
 		icon: (
-			<svg viewBox="0 0 24 24" style={{ width: "20px", height: "20px" }}>
+			<svg viewBox="0 0 24 24" className="w-5 h-5">
 				<path
 					fill="#4285F4"
 					d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -32,7 +32,7 @@ const AVAILABLE_PROVIDERS = [
 		id: "github",
 		name: "GitHub",
 		icon: (
-			<svg viewBox="0 0 24 24" style={{ width: "20px", height: "20px" }} fill="currentColor">
+			<svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
 				<path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
 			</svg>
 		),
@@ -186,102 +186,72 @@ export function AppSetupPage() {
 	}
 
 	return (
-		<div className="page" style={{ background: "var(--content-bg)", minHeight: "100vh" }}>
+		<div className="page bg-content-bg min-h-screen">
 			{/* Breadcrumb */}
 			<nav
-				style={{
-					display: "flex",
-					alignItems: "center",
-					gap: "8px",
-					fontSize: "13px",
-					marginBottom: "24px",
-					padding: "20px 40px 0",
-				}}
+				className="flex items-center gap-2 text-13px mb-6 pt-5 px-10"
 			>
-				<Link to="/projects" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>
+				<Link to="/projects" className="text-text-secondary no-underline">
 					Projects
 				</Link>
 				<svg
-					style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }}
+					className="w-3.5 h-3.5 text-text-tertiary"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
 				>
 					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
 				</svg>
-				<Link to={`/projects/${projectId}`} style={{ color: "var(--text-secondary)", textDecoration: "none" }}>
+				<Link to={`/projects/${projectId}`} className="text-text-secondary no-underline">
 					{project.name}
 				</Link>
 				<svg
-					style={{ width: "14px", height: "14px", color: "var(--text-tertiary)" }}
+					className="w-3.5 h-3.5 text-text-tertiary"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
 				>
 					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
 				</svg>
-				<span style={{ color: "var(--text-primary)", fontWeight: "500" }}>Create New App</span>
+				<span className="text-text-primary font-medium">Create New App</span>
 			</nav>
 
 			{/* 2 Column Layout */}
 			<div
-				style={{
-					display: "grid",
-					gridTemplateColumns: "1.4fr 1fr",
-					gap: "40px",
-					padding: "20px 40px 40px",
-					maxWidth: "1600px",
-					margin: "0 auto",
-				}}
+				className="grid grid-cols-[1.4fr_1fr] gap-10 py-5 px-10 max-w-[1600px] mx-auto"
 			>
 				{/* Left Column - Form */}
 				<div>
-					<div style={{ marginBottom: "32px" }}>
+					<div className="mb-8">
 						<h1
-							style={{
-								fontSize: "32px",
-								fontWeight: "700",
-								marginBottom: "8px",
-								color: "var(--text-primary)",
-							}}
+							className="text-32px font-bold mb-2 text-text-primary"
 						>
 							Create New Application
 						</h1>
-						<p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>
+						<p className="text-text-secondary text-14px">
 							Configure your application's authentication settings and OAuth providers.
 						</p>
 
 						{/* Step Indicator */}
-						<div style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "24px" }}>
+						<div className="flex gap-2 items-center mt-6">
 							{[1, 2, 3, 4].map((num) => (
-								<div key={num} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+								<div key={num} className="flex items-center gap-2">
 									<button
 										type="button"
 										onClick={() => setStep(num)}
-										style={{
-											width: "36px",
-											height: "36px",
-											borderRadius: "50%",
-											border: "2px solid",
-											background: step >= num ? "var(--primary)" : "transparent",
-											borderColor: step >= num ? "var(--primary)" : "var(--border-secondary)",
-											color: step >= num ? "white" : "var(--text-secondary)",
-											fontWeight: "600",
-											cursor: "pointer",
-											fontSize: "14px",
-											transition: "all 0.2s ease",
-										}}
+										className={`w-9 h-9 rounded-full border-2 font-semibold cursor-pointer text-14px transition-all ${
+											step >= num
+												? "bg-primary border-primary text-white"
+												: "bg-transparent border-border-secondary text-text-secondary"
+										}`}
 									>
 										{num}
 									</button>
 									{num < 4 && (
 										<div
-											style={{
-												width: "32px",
-												height: "2px",
-												background: step > num ? "var(--primary)" : "var(--border-secondary)",
-												transition: "all 0.3s ease",
-											}}
+											className={`w-8 h-0.5 transition-all ${
+												step > num ? "bg-primary" : "bg-border-secondary"
+											}`}
 										/>
 									)}
 								</div>
@@ -289,14 +259,14 @@ export function AppSetupPage() {
 						</div>
 					</div>
 
-					<div className="card" style={{ padding: "32px" }}>
-						<form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+					<div className="card p-8">
+						<form onSubmit={handleSubmit} className="flex flex-col gap-8">
 							{/* Step 1: Basic Information */}
 							{step === 1 && (
 								<div className="space-y-6">
 									<div>
-										<label htmlFor="name" className="form-label" style={{ marginBottom: "8px" }}>
-											App Name <span style={{ color: "var(--danger)" }}>*</span>
+										<label htmlFor="name" className="form-label mb-2">
+											App Name <span className="text-danger">*</span>
 										</label>
 										<input
 											type="text"
@@ -306,16 +276,15 @@ export function AppSetupPage() {
 											required
 											value={formData.name}
 											onChange={handleInputChange}
-											className="form-control"
-											style={{ marginBottom: "8px" }}
+											className="form-control mb-2"
 										/>
-										<p style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>
+										<p className="text-13px text-text-tertiary">
 											A friendly name to identify your application
 										</p>
 									</div>
 
 									<div>
-										<label htmlFor="slug" className="form-label" style={{ marginBottom: "8px" }}>
+										<label htmlFor="slug" className="form-label mb-2">
 											App Slug
 										</label>
 										<input
@@ -325,10 +294,9 @@ export function AppSetupPage() {
 											placeholder="auto-generated from name if empty"
 											value={formData.slug}
 											onChange={handleInputChange}
-											className="form-control"
-											style={{ marginBottom: "8px" }}
+											className="form-control mb-2"
 										/>
-										<p style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>
+										<p className="text-13px text-text-tertiary">
 											URL-safe identifier. Auto-generated if left empty.
 										</p>
 									</div>
@@ -336,8 +304,7 @@ export function AppSetupPage() {
 									<div>
 										<label
 											htmlFor="description"
-											className="form-label"
-											style={{ marginBottom: "8px" }}
+											className="form-label mb-2"
 										>
 											Description
 										</label>
@@ -348,21 +315,15 @@ export function AppSetupPage() {
 											value={formData.description}
 											onChange={handleInputChange}
 											rows={4}
-											className="form-control"
-											style={{ marginBottom: "8px", resize: "vertical" }}
+											className="form-control mb-2 resize-y"
 										/>
-										<p style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>
+										<p className="text-13px text-text-tertiary">
 											Optional description of your application
 										</p>
 									</div>
 
 									<div
-										style={{
-											display: "flex",
-											gap: "12px",
-											justifyContent: "flex-end",
-											marginTop: "32px",
-										}}
+										className="flex gap-3 justify-end mt-8"
 									>
 										<button
 											type="button"
@@ -389,27 +350,18 @@ export function AppSetupPage() {
 									{/* OAuth Providers Section */}
 									<div>
 										<label
-											className="form-label"
-											style={{ marginBottom: "12px", display: "block" }}
+											className="form-label block mb-3"
 										>
-											OAuth Providers <span style={{ color: "var(--danger)" }}>*</span>
+											OAuth Providers <span className="text-danger">*</span>
 										</label>
 										<p
-											style={{
-												fontSize: "13px",
-												color: "var(--text-tertiary)",
-												marginBottom: "16px",
-											}}
+											className="text-13px text-text-tertiary mb-4"
 										>
 											Select which OAuth providers users can use to authenticate
 										</p>
 
 										<div
-											style={{
-												display: "grid",
-												gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-												gap: "12px",
-											}}
+											className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3"
 										>
 											{AVAILABLE_PROVIDERS.map((provider) => {
 												const isEnabled = formData.enabledProviders.includes(provider.id);
@@ -418,90 +370,34 @@ export function AppSetupPage() {
 														key={provider.id}
 														type="button"
 														onClick={() => toggleProvider(provider.id)}
-														style={{
-															padding: "16px",
-															borderRadius: "12px",
-															border: `2px solid ${isEnabled ? "var(--primary)" : "var(--border-primary)"}`,
-															background: isEnabled
-																? "var(--primary-light)"
-																: "var(--surface-secondary)",
-															cursor: "pointer",
-															transition: "all 0.2s ease",
-															textAlign: "left",
-															position: "relative",
-														}}
-														onMouseEnter={(e) => {
-															if (!isEnabled) {
-																e.currentTarget.style.borderColor =
-																	"var(--border-secondary)";
-															}
-														}}
-														onMouseLeave={(e) => {
-															if (!isEnabled) {
-																e.currentTarget.style.borderColor =
-																	"var(--border-primary)";
-															}
-														}}
+														className={`p-4 rounded-xl border-2 cursor-pointer transition-all text-left relative ${
+															isEnabled
+																? "border-primary bg-primary-light"
+																: "border-border-primary bg-surface-secondary hover:border-border-secondary"
+														}`}
 													>
-														<div
-															style={{
-																display: "flex",
-																alignItems: "center",
-																gap: "12px",
-															}}
-														>
-															<div
-																style={{
-																	display: "flex",
-																	alignItems: "center",
-																	justifyContent: "center",
-																	width: "32px",
-																	height: "32px",
-																}}
-															>
+														<div className="flex items-center gap-3">
+															<div className="flex items-center justify-center w-8 h-8">
 																{provider.icon}
 															</div>
-															<div style={{ flex: 1 }}>
-																<div
-																	style={{
-																		fontSize: "15px",
-																		fontWeight: "600",
-																		color: "var(--text-primary)",
-																		marginBottom: "4px",
-																	}}
-																>
+															<div className="flex-1">
+																<div className="text-15px font-semibold text-text-primary mb-1">
 																	{provider.name}
 																</div>
-																<div
-																	style={{
-																		fontSize: "12px",
-																		color: "var(--text-secondary)",
-																	}}
-																>
+																<div className="text-12px text-text-secondary">
 																	Platform managed
 																</div>
 															</div>
 															<div
-																style={{
-																	width: "20px",
-																	height: "20px",
-																	borderRadius: "50%",
-																	border: `2px solid ${isEnabled ? "var(--primary)" : "var(--border-secondary)"}`,
-																	background: isEnabled
-																		? "var(--primary)"
-																		: "transparent",
-																	display: "flex",
-																	alignItems: "center",
-																	justifyContent: "center",
-																}}
+																className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+																	isEnabled
+																		? "border-primary bg-primary"
+																		: "border-border-secondary bg-transparent"
+																}`}
 															>
 																{isEnabled && (
 																	<svg
-																		style={{
-																			width: "12px",
-																			height: "12px",
-																			color: "white",
-																		}}
+																		className="w-3 h-3 text-white"
 																		fill="none"
 																		stroke="currentColor"
 																		viewBox="0 0 24 24"
@@ -521,28 +417,23 @@ export function AppSetupPage() {
 											})}
 										</div>
 										{formData.enabledProviders.length === 0 && (
-											<p style={{ fontSize: "13px", color: "var(--danger)", marginTop: "8px" }}>
+											<p className="text-13px text-danger mt-2">
 												⚠️ Select at least one OAuth provider
 											</p>
 										)}
 									</div>
 
 									<div>
-										<label className="form-label" style={{ marginBottom: "8px" }}>
-											Redirect URIs <span style={{ color: "var(--danger)" }}>*</span>
+										<label className="form-label mb-2">
+											Redirect URIs <span className="text-danger">*</span>
 										</label>
 										<div
-											style={{
-												display: "flex",
-												flexDirection: "column",
-												gap: "8px",
-												marginBottom: "12px",
-											}}
+											className="flex flex-col gap-2 mb-3"
 										>
 											{formData.redirectUris.map((uri, index) => (
 												<div
 													key={`redirectUri-${index}`}
-													style={{ display: "flex", gap: "8px" }}
+													className="flex gap-2"
 												>
 													<input
 														type="url"
@@ -566,11 +457,10 @@ export function AppSetupPage() {
 																	formData.redirectUris.indexOf(uri),
 																)
 															}
-															className="btn btn-ghost btn-sm"
-															style={{ color: "var(--danger)" }}
+															className="btn btn-ghost btn-sm text-danger"
 														>
 															<svg
-																style={{ width: "16px", height: "16px" }}
+																className="w-4 h-4"
 																fill="none"
 																stroke="currentColor"
 																viewBox="0 0 24 24"
@@ -590,11 +480,10 @@ export function AppSetupPage() {
 										<button
 											type="button"
 											onClick={() => addArrayField("redirectUris")}
-											className="btn btn-secondary btn-sm"
-											style={{ marginBottom: "12px" }}
+											className="btn btn-secondary btn-sm mb-3"
 										>
 											<svg
-												style={{ width: "16px", height: "16px" }}
+												className="w-4 h-4"
 												fill="none"
 												stroke="currentColor"
 												viewBox="0 0 24 24"
@@ -608,27 +497,22 @@ export function AppSetupPage() {
 											</svg>
 											Add Redirect URI
 										</button>
-										<p style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>
+										<p className="text-13px text-text-tertiary">
 											URLs where users will be redirected after authentication
 										</p>
 									</div>
 
 									<div>
-										<label className="form-label" style={{ marginBottom: "8px" }}>
+										<label className="form-label mb-2">
 											Allowed Hosts
 										</label>
 										<div
-											style={{
-												display: "flex",
-												flexDirection: "column",
-												gap: "8px",
-												marginBottom: "12px",
-											}}
+											className="flex flex-col gap-2 mb-3"
 										>
 											{formData.allowedHosts.map((host, index) => (
 												<div
 													key={`allowedHost-${index}`}
-													style={{ display: "flex", gap: "8px" }}
+													className="flex gap-2"
 												>
 													<input
 														type="text"
@@ -652,11 +536,10 @@ export function AppSetupPage() {
 																	formData.allowedHosts.indexOf(host),
 																)
 															}
-															className="btn btn-ghost btn-sm"
-															style={{ color: "var(--danger)" }}
+															className="btn btn-ghost btn-sm text-danger"
 														>
 															<svg
-																style={{ width: "16px", height: "16px" }}
+																className="w-4 h-4"
 																fill="none"
 																stroke="currentColor"
 																viewBox="0 0 24 24"
@@ -676,11 +559,10 @@ export function AppSetupPage() {
 										<button
 											type="button"
 											onClick={() => addArrayField("allowedHosts")}
-											className="btn btn-secondary btn-sm"
-											style={{ marginBottom: "12px" }}
+											className="btn btn-secondary btn-sm mb-3"
 										>
 											<svg
-												style={{ width: "16px", height: "16px" }}
+												className="w-4 h-4"
 												fill="none"
 												stroke="currentColor"
 												viewBox="0 0 24 24"
@@ -694,18 +576,13 @@ export function AppSetupPage() {
 											</svg>
 											Add Allowed Host
 										</button>
-										<p style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>
+										<p className="text-13px text-text-tertiary">
 											Domains from which requests to your app will be accepted
 										</p>
 									</div>
 
 									<div
-										style={{
-											display: "flex",
-											gap: "12px",
-											justifyContent: "space-between",
-											marginTop: "32px",
-										}}
+										className="flex gap-3 justify-between mt-8"
 									>
 										<button type="button" onClick={() => setStep(1)} className="btn btn-secondary">
 											Back
@@ -731,8 +608,7 @@ export function AppSetupPage() {
 									<div>
 										<label
 											htmlFor="sessionTtlDays"
-											className="form-label"
-											style={{ marginBottom: "8px" }}
+											className="form-label mb-2"
 										>
 											Session TTL (days)
 										</label>
@@ -744,50 +620,34 @@ export function AppSetupPage() {
 											max="365"
 											value={formData.sessionTtlDays}
 											onChange={handleInputChange}
-											className="form-control"
-											style={{ marginBottom: "8px" }}
+											className="form-control mb-2"
 										/>
-										<p style={{ fontSize: "13px", color: "var(--text-tertiary)" }}>
+										<p className="text-13px text-text-tertiary">
 											How long user sessions remain active (1-365 days). Default: 30 days.
 										</p>
 									</div>
 
 									{/* Summary Section */}
 									<div
-										style={{
-											padding: "16px",
-											borderRadius: "12px",
-											background: "var(--surface-secondary)",
-											border: "1px solid var(--border-primary)",
-										}}
+										className="p-4 rounded-xl bg-surface-secondary border border-border-primary"
 									>
 										<h3
-											style={{
-												fontSize: "14px",
-												fontWeight: "600",
-												marginBottom: "12px",
-												color: "var(--text-primary)",
-											}}
+											className="text-14px font-semibold mb-3 text-text-primary"
 										>
 											Configuration Summary
 										</h3>
 										<div
-											style={{
-												display: "flex",
-												flexDirection: "column",
-												gap: "8px",
-												fontSize: "13px",
-											}}
+											className="flex flex-col gap-2 text-13px"
 										>
-											<div style={{ display: "flex", justifyContent: "space-between" }}>
-												<span style={{ color: "var(--text-tertiary)" }}>App Name:</span>
-												<span style={{ color: "var(--text-primary)", fontWeight: "500" }}>
+											<div className="flex justify-between">
+												<span className="text-text-tertiary">App Name:</span>
+												<span className="text-text-primary font-medium">
 													{formData.name}
 												</span>
 											</div>
-											<div style={{ display: "flex", justifyContent: "space-between" }}>
-												<span style={{ color: "var(--text-tertiary)" }}>OAuth Providers:</span>
-												<span style={{ color: "var(--text-primary)", fontWeight: "500" }}>
+											<div className="flex justify-between">
+												<span className="text-text-tertiary">OAuth Providers:</span>
+												<span className="text-text-primary font-medium">
 													{formData.enabledProviders.length > 0
 														? formData.enabledProviders
 																.map(
@@ -799,15 +659,15 @@ export function AppSetupPage() {
 														: "None"}
 												</span>
 											</div>
-											<div style={{ display: "flex", justifyContent: "space-between" }}>
-												<span style={{ color: "var(--text-tertiary)" }}>Redirect URIs:</span>
-												<span style={{ color: "var(--text-primary)", fontWeight: "500" }}>
+											<div className="flex justify-between">
+												<span className="text-text-tertiary">Redirect URIs:</span>
+												<span className="text-text-primary font-medium">
 													{formData.redirectUris.filter((uri) => uri.trim()).length}
 												</span>
 											</div>
-											<div style={{ display: "flex", justifyContent: "space-between" }}>
-												<span style={{ color: "var(--text-tertiary)" }}>Session TTL:</span>
-												<span style={{ color: "var(--text-primary)", fontWeight: "500" }}>
+											<div className="flex justify-between">
+												<span className="text-text-tertiary">Session TTL:</span>
+												<span className="text-text-primary font-medium">
 													{formData.sessionTtlDays} days
 												</span>
 											</div>
@@ -815,12 +675,7 @@ export function AppSetupPage() {
 									</div>
 
 									<div
-										style={{
-											display: "flex",
-											gap: "12px",
-											justifyContent: "flex-end",
-											marginTop: "32px",
-										}}
+										className="flex gap-3 justify-end mt-8"
 									>
 										<button type="button" onClick={() => setStep(2)} className="btn btn-secondary">
 											Back
@@ -843,14 +698,7 @@ export function AppSetupPage() {
 								<div className="space-y-6">
 									<div>
 										<label
-											className="form-label"
-											style={{
-												display: "flex",
-												alignItems: "center",
-												gap: "12px",
-												cursor: "pointer",
-												marginBottom: "12px",
-											}}
+											className="form-label flex items-center gap-3 cursor-pointer mb-3"
 										>
 											<input
 												type="checkbox"
@@ -858,18 +706,14 @@ export function AppSetupPage() {
 												onChange={(e) =>
 													setFormData({ ...formData, requiresLicensing: e.target.checked })
 												}
-												style={{ width: "18px", height: "18px", cursor: "pointer" }}
+												className="w-4.5 h-4.5 cursor-pointer"
 											/>
-											<span style={{ fontWeight: "600", fontSize: "15px" }}>
+											<span className="font-semibold text-15px">
 												Enable Licensing & Payments
 											</span>
 										</label>
 										<p
-											style={{
-												fontSize: "13px",
-												color: "var(--text-tertiary)",
-												marginLeft: "30px",
-											}}
+											className="text-13px text-text-tertiary ml-7.5"
 										>
 											Add subscription plans and payment processing. Disable if your app only
 											needs user management.
@@ -878,29 +722,15 @@ export function AppSetupPage() {
 
 									{formData.requiresLicensing && (
 										<div
-											style={{
-												padding: "20px",
-												borderRadius: "12px",
-												background: "var(--surface-secondary)",
-												border: "1px solid var(--border-primary)",
-											}}
+											className="p-5 rounded-xl bg-surface-secondary border border-border-primary"
 										>
 											<h3
-												style={{
-													fontSize: "14px",
-													fontWeight: "600",
-													marginBottom: "16px",
-													color: "var(--text-primary)",
-												}}
+												className="text-14px font-semibold mb-4 text-text-primary"
 											>
 												Default License Plan
 											</h3>
 											<p
-												style={{
-													fontSize: "13px",
-													color: "var(--text-tertiary)",
-													marginBottom: "20px",
-												}}
+												className="text-13px text-text-tertiary mb-5"
 											>
 												This plan will be automatically assigned to new users upon signup.
 											</p>
@@ -908,7 +738,7 @@ export function AppSetupPage() {
 											<div className="space-y-4">
 												<div>
 													<label htmlFor="planName" className="form-label">
-														Plan Name <span style={{ color: "var(--danger)" }}>*</span>
+														Plan Name <span className="text-danger">*</span>
 													</label>
 													<input
 														type="text"
@@ -952,15 +782,11 @@ export function AppSetupPage() {
 												</div>
 
 												<div
-													style={{
-														display: "grid",
-														gridTemplateColumns: "1fr 1fr",
-														gap: "16px",
-													}}
+													className="grid grid-cols-2 gap-4"
 												>
 													<div>
 														<label htmlFor="planPrice" className="form-label">
-															Price <span style={{ color: "var(--danger)" }}>*</span>
+															Price <span className="text-danger">*</span>
 														</label>
 														<input
 															type="number"
@@ -984,7 +810,7 @@ export function AppSetupPage() {
 
 													<div>
 														<label htmlFor="planCurrency" className="form-label">
-															Currency <span style={{ color: "var(--danger)" }}>*</span>
+															Currency <span className="text-danger">*</span>
 														</label>
 														<input
 															type="text"
@@ -1008,16 +834,12 @@ export function AppSetupPage() {
 												</div>
 
 												<div
-													style={{
-														display: "grid",
-														gridTemplateColumns: "1fr 1fr",
-														gap: "16px",
-													}}
+													className="grid grid-cols-2 gap-4"
 												>
 													<div>
 														<label htmlFor="billingPeriod" className="form-label">
 															Billing Period{" "}
-															<span style={{ color: "var(--danger)" }}>*</span>
+															<span className="text-danger">*</span>
 														</label>
 														<select
 															id="billingPeriod"
@@ -1070,12 +892,7 @@ export function AppSetupPage() {
 									)}
 
 									<div
-										style={{
-											display: "flex",
-											gap: "12px",
-											justifyContent: "space-between",
-											marginTop: "32px",
-										}}
+										className="flex gap-3 justify-between mt-8"
 									>
 										<button type="button" onClick={() => setStep(3)} className="btn btn-secondary">
 											Back
@@ -1086,10 +903,9 @@ export function AppSetupPage() {
 											className="btn btn-primary"
 										>
 											{createAppMutation.isPending ? (
-												<span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+												<span className="flex items-center gap-2">
 													<div
-														className="spinner"
-														style={{ width: "16px", height: "16px" }}
+														className="spinner w-4 h-4"
 													/>
 													Creating...
 												</span>
@@ -1112,47 +928,27 @@ export function AppSetupPage() {
 
 				{/* Right Column - Preview */}
 				<div>
-					<div style={{ position: "sticky", top: "20px" }}>
-						<div className="card" style={{ padding: "24px", background: "var(--surface-secondary)" }}>
+					<div className="sticky top-5">
+						<div className="card p-6 bg-surface-secondary">
 							<h2
-								style={{
-									fontSize: "16px",
-									fontWeight: "600",
-									marginBottom: "20px",
-									color: "var(--text-primary)",
-								}}
+								className="text-16px font-semibold mb-5 text-text-primary"
 							>
 								Login Preview
 							</h2>
-							<p style={{ fontSize: "13px", color: "var(--text-tertiary)", marginBottom: "24px" }}>
+							<p className="text-13px text-text-tertiary mb-6">
 								This is what users will see when they login to your app
 							</p>
 
 							{/* Mock Login Card */}
 							<div
-								style={{
-									background: "var(--content-bg)",
-									borderRadius: "16px",
-									padding: "40px 32px",
-									border: "1px solid var(--border-primary)",
-									textAlign: "center",
-								}}
+								className="bg-content-bg rounded-2xl py-10 px-8 border border-border-primary text-center"
 							>
 								{/* App Icon */}
 								<div
-									style={{
-										width: "56px",
-										height: "56px",
-										borderRadius: "16px",
-										background: "linear-gradient(135deg, var(--primary-light), #ddd6fe)",
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "center",
-										margin: "0 auto 20px",
-									}}
+									className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5 bg-linear-to-br from-primary-light to-[#ddd6fe]"
 								>
 									<svg
-										style={{ width: "28px", height: "28px", color: "var(--primary)" }}
+										className="w-7 h-7 text-primary"
 										fill="none"
 										stroke="currentColor"
 										viewBox="0 0 24 24"
@@ -1168,23 +964,13 @@ export function AppSetupPage() {
 
 								{/* App Name & Description */}
 								<h3
-									style={{
-										fontSize: "20px",
-										fontWeight: "700",
-										color: "var(--text-primary)",
-										marginBottom: "8px",
-									}}
+									className="text-20px font-bold text-text-primary mb-2"
 								>
 									{formData.name || "My Application"}
 								</h3>
 								{formData.description && (
 									<p
-										style={{
-											fontSize: "13px",
-											color: "var(--text-secondary)",
-											marginBottom: "24px",
-											lineHeight: "1.5",
-										}}
+										className="text-13px text-text-secondary mb-6 leading-relaxed"
 									>
 										{formData.description}
 									</p>
@@ -1193,12 +979,7 @@ export function AppSetupPage() {
 								{/* OAuth Provider Buttons */}
 								{formData.enabledProviders.length > 0 ? (
 									<div
-										style={{
-											display: "flex",
-											flexDirection: "column",
-											gap: "12px",
-											marginTop: "24px",
-										}}
+										className="flex flex-col gap-3 mt-6"
 									>
 										{formData.enabledProviders.map((providerId) => {
 											const provider = AVAILABLE_PROVIDERS.find((p) => p.id === providerId);
@@ -1209,31 +990,10 @@ export function AppSetupPage() {
 													key={provider.id}
 													type="button"
 													disabled
-													style={{
-														width: "100%",
-														padding: "12px 16px",
-														borderRadius: "8px",
-														border: "1px solid var(--border-primary)",
-														background: "var(--surface-secondary)",
-														display: "flex",
-														alignItems: "center",
-														justifyContent: "center",
-														gap: "12px",
-														fontSize: "14px",
-														fontWeight: "600",
-														color: "var(--text-primary)",
-														cursor: "default",
-														transition: "all 0.2s ease",
-													}}
+													className="w-full py-3 px-4 rounded-lg border border-border-primary bg-surface-secondary flex items-center justify-center gap-3 text-14px font-semibold text-text-primary cursor-default transition-all duration-200"
 												>
 													<div
-														style={{
-															width: "20px",
-															height: "20px",
-															display: "flex",
-															alignItems: "center",
-															justifyContent: "center",
-														}}
+														className="w-5 h-5 flex items-center justify-center"
 													>
 														{provider.icon}
 													</div>
@@ -1244,15 +1004,9 @@ export function AppSetupPage() {
 									</div>
 								) : (
 									<div
-										style={{
-											padding: "24px",
-											background: "var(--surface-secondary)",
-											borderRadius: "8px",
-											border: "1px dashed var(--border-primary)",
-											marginTop: "24px",
-										}}
+										className="p-6 bg-surface-secondary rounded-lg border border-dashed border-border-primary mt-6"
 									>
-										<p style={{ fontSize: "13px", color: "var(--text-tertiary)", margin: 0 }}>
+										<p className="text-13px text-text-tertiary m-0">
 											No OAuth providers enabled
 										</p>
 									</div>
@@ -1260,12 +1014,7 @@ export function AppSetupPage() {
 
 								{/* Footer Text */}
 								<p
-									style={{
-										fontSize: "11px",
-										color: "var(--text-tertiary)",
-										marginTop: "24px",
-										lineHeight: "1.5",
-									}}
+									className="text-11px text-text-tertiary mt-6 leading-relaxed"
 								>
 									By continuing, you agree to the Terms of Service and Privacy Policy
 								</p>
@@ -1273,25 +1022,10 @@ export function AppSetupPage() {
 
 							{/* Info Note */}
 							<div
-								style={{
-									marginTop: "20px",
-									padding: "12px",
-									background: "var(--primary-light)",
-									border: "1px solid var(--primary)",
-									borderRadius: "8px",
-									display: "flex",
-									gap: "8px",
-									alignItems: "flex-start",
-								}}
+								className="mt-5 p-3 bg-primary-light border border-primary rounded-lg flex gap-2 items-start"
 							>
 								<svg
-									style={{
-										width: "16px",
-										height: "16px",
-										color: "var(--primary)",
-										flexShrink: 0,
-										marginTop: "2px",
-									}}
+									className="w-4 h-4 text-primary shrink-0 mt-0.5"
 									fill="none"
 									stroke="currentColor"
 									viewBox="0 0 24 24"
@@ -1304,12 +1038,7 @@ export function AppSetupPage() {
 									/>
 								</svg>
 								<p
-									style={{
-										fontSize: "12px",
-										color: "var(--text-secondary)",
-										margin: 0,
-										lineHeight: "1.5",
-									}}
+									className="text-12px text-text-secondary m-0 leading-relaxed"
 								>
 									This preview shows the login screen with your app's branding and selected OAuth
 									providers

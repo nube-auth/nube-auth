@@ -44,66 +44,49 @@ export function AppDevelopersPage() {
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
-			<div style={{ marginBottom: "24px" }}>
+			<div className="mb-6">
 				<div
-					style={{
-						display: "flex",
-						gap: "8px",
-						alignItems: "center",
-						fontSize: "13px",
-						color: "var(--text-tertiary)",
-					}}
+					className="flex gap-2 items-center text-13px text-text-tertiary"
 				>
-					<Link to="/projects" style={{ color: "var(--text-tertiary)", textDecoration: "none" }}>
+					<Link to="/projects" className="text-text-tertiary no-underline">
 						Projects
 					</Link>
 					<span>›</span>
 					<Link
 						to={`/projects/${projectId}`}
-						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
+						className="text-text-tertiary no-underline"
 					>
 						{project.name}
 					</Link>
 					<span>›</span>
 					<Link
 						to={`/projects/${projectId}/apps/${appId}`}
-						style={{ color: "var(--text-tertiary)", textDecoration: "none" }}
+						className="text-text-tertiary no-underline"
 					>
 						{app.name}
 					</Link>
 					<span>›</span>
-					<span style={{ color: "var(--text-primary)" }}>Integration Guide</span>
+					<span className="text-text-primary">Integration Guide</span>
 				</div>
 			</div>
 
 			{/* Page Header */}
-			<div style={{ marginBottom: "32px" }}>
-				<h1 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>Integration Guide</h1>
-				<p style={{ fontSize: "14px", color: "var(--text-tertiary)" }}>
+			<div className="mb-8">
+				<h1 className="text-24px font-bold mb-2">Integration Guide</h1>
+				<p className="text-14px text-text-tertiary">
 					Learn how to integrate Proofa authentication into your application
 				</p>
 			</div>
 
 			{/* Tabs */}
-			<div style={{ borderBottom: "1px solid var(--border-primary)", marginBottom: "32px" }}>
-				<div style={{ display: "flex", gap: "32px" }}>
+			<div className="border-b border-border-primary mb-8">
+				<div className="flex gap-8">
 					{tabs.map((tab) => (
 						<button
 							key={tab.id}
 							type="button"
 							onClick={() => setActiveTab(tab.id)}
-							style={{
-								padding: "12px 0",
-								fontSize: "14px",
-								fontWeight: "600",
-								color: activeTab === tab.id ? "var(--primary)" : "var(--text-tertiary)",
-								background: "none",
-								border: "none",
-								borderBottom:
-									activeTab === tab.id ? "2px solid var(--primary)" : "2px solid transparent",
-								cursor: "pointer",
-								transition: "all 0.2s ease",
-							}}
+							className={`py-3 text-14px font-semibold bg-transparent border-none border-b-2 cursor-pointer transition-all duration-200 ${activeTab === tab.id ? "text-primary border-b-primary" : "text-text-tertiary border-b-transparent"}`}
 						>
 							{tab.label}
 						</button>
@@ -116,68 +99,33 @@ export function AppDevelopersPage() {
 				{/* Quick Start */}
 				{activeTab === "quickstart" && (
 					<div>
-						<h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "16px" }}>Quick Start</h2>
+						<h2 className="text-20px font-bold mb-4">Quick Start</h2>
 						<p
-							style={{
-								fontSize: "14px",
-								color: "var(--text-secondary)",
-								marginBottom: "24px",
-								lineHeight: "1.6",
-							}}
+							className="text-14px text-text-secondary mb-6 leading-relaxed"
 						>
 							Get started with Proofa in 5 minutes. This guide will walk you through the basic setup.
 						</p>
 
 						{/* Step 1 */}
-						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+						<div className="card p-6 mb-4">
+							<div className="flex items-center gap-3 mb-4">
 								<div
-									style={{
-										width: "32px",
-										height: "32px",
-										borderRadius: "50%",
-										background: "var(--primary)",
-										color: "white",
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "center",
-										fontSize: "14px",
-										fontWeight: "700",
-									}}
+									className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-14px font-bold"
 								>
 									1
 								</div>
-								<h3 style={{ fontSize: "16px", fontWeight: "600" }}>Install the Proofa SDK</h3>
+								<h3 className="text-16px font-semibold">Install the Proofa SDK</h3>
 							</div>
-							<div style={{ position: "relative" }}>
+							<div className="relative">
 								<pre
-									style={{
-										background: "#1e1e1e",
-										padding: "16px",
-										borderRadius: "8px",
-										overflow: "auto",
-										fontSize: "13px",
-										fontFamily: "monospace",
-										margin: 0,
-									}}
+									className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0"
 								>
-									<code style={{ color: "#d4d4d4" }}>npm install @proofa/react</code>
+									<code className="text-[#d4d4d4]">npm install @proofa/react</code>
 								</pre>
 								<button
 									type="button"
 									onClick={() => handleCopy("npm install @proofa/react")}
-									style={{
-										position: "absolute",
-										top: "12px",
-										right: "12px",
-										padding: "6px 12px",
-										fontSize: "12px",
-										background: "rgba(255, 255, 255, 0.1)",
-										color: "white",
-										border: "1px solid rgba(255, 255, 255, 0.2)",
-										borderRadius: "6px",
-										cursor: "pointer",
-									}}
+									className="absolute top-3 right-3 py-1.5 px-3 text-12px bg-white/10 text-white border border-white/20 rounded-md cursor-pointer"
 								>
 									{copied ? "✓ Copied" : "Copy"}
 								</button>
@@ -185,81 +133,42 @@ export function AppDevelopersPage() {
 						</div>
 
 						{/* Step 2 */}
-						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+						<div className="card p-6 mb-4">
+							<div className="flex items-center gap-3 mb-4">
 								<div
-									style={{
-										width: "32px",
-										height: "32px",
-										borderRadius: "50%",
-										background: "var(--primary)",
-										color: "white",
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "center",
-										fontSize: "14px",
-										fontWeight: "700",
-									}}
+									className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-14px font-bold"
 								>
 									2
 								</div>
-								<h3 style={{ fontSize: "16px", fontWeight: "600" }}>Get your App ID</h3>
+								<h3 className="text-16px font-semibold">Get your App ID</h3>
 							</div>
-							<p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "12px" }}>
+							<p className="text-14px text-text-secondary mb-3">
 								Your App ID is:
 							</p>
 							<code
-								style={{
-									display: "block",
-									padding: "12px 16px",
-									background: "var(--surface-secondary)",
-									borderRadius: "8px",
-									fontSize: "14px",
-									fontFamily: "monospace",
-									color: "var(--text-primary)",
-								}}
+								className="block py-3 px-4 bg-surface-secondary rounded-lg text-14px font-mono text-text-primary"
 							>
 								{app.id}
 							</code>
 						</div>
 
 						{/* Step 3 */}
-						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+						<div className="card p-6 mb-4">
+							<div className="flex items-center gap-3 mb-4">
 								<div
-									style={{
-										width: "32px",
-										height: "32px",
-										borderRadius: "50%",
-										background: "var(--primary)",
-										color: "white",
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "center",
-										fontSize: "14px",
-										fontWeight: "700",
-									}}
+									className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-14px font-bold"
 								>
 									3
 								</div>
-								<h3 style={{ fontSize: "16px", fontWeight: "600" }}>
+								<h3 className="text-16px font-semibold">
 									Wrap your app with ProofaProvider
 								</h3>
 							</div>
-							<div style={{ position: "relative" }}>
+							<div className="relative">
 								<pre
-									style={{
-										background: "#1e1e1e",
-										padding: "16px",
-										borderRadius: "8px",
-										overflow: "auto",
-										fontSize: "13px",
-										fontFamily: "monospace",
-										margin: 0,
-										lineHeight: "1.5",
-									}}
+									className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 								>
-									<code style={{ color: "#d4d4d4" }}>{`import { ProofaProvider } from '@proofa/react';
+									<code className="text-[#d4d4d4]">{`import { ProofaProvider } from '@proofa/react';
 
 function App() {
   return (
@@ -273,40 +182,20 @@ function App() {
 						</div>
 
 						{/* Step 4 */}
-						<div className="card" style={{ padding: "24px" }}>
-							<div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+						<div className="card p-6">
+							<div className="flex items-center gap-3 mb-4">
 								<div
-									style={{
-										width: "32px",
-										height: "32px",
-										borderRadius: "50%",
-										background: "var(--primary)",
-										color: "white",
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "center",
-										fontSize: "14px",
-										fontWeight: "700",
-									}}
+									className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-14px font-bold"
 								>
 									4
 								</div>
-								<h3 style={{ fontSize: "16px", fontWeight: "600" }}>Use the auth hook</h3>
+								<h3 className="text-16px font-semibold">Use the auth hook</h3>
 							</div>
-							<div style={{ position: "relative" }}>
+							<div className="relative">
 								<pre
-									style={{
-										background: "#1e1e1e",
-										padding: "16px",
-										borderRadius: "8px",
-										overflow: "auto",
-										fontSize: "13px",
-										fontFamily: "monospace",
-										margin: 0,
-										lineHeight: "1.5",
-									}}
+									className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 								>
-									<code style={{ color: "#d4d4d4" }}>{`import { useAuth } from '@proofa/react';
+									<code className="text-[#d4d4d4]">{`import { useAuth } from '@proofa/react';
 
 function YourComponent() {
   const { user, isAuthenticated, login, logout } = useAuth();
@@ -328,23 +217,11 @@ function YourComponent() {
 
 						{/* Next Steps */}
 						<div
-							style={{
-								marginTop: "32px",
-								padding: "20px",
-								background: "var(--surface-secondary)",
-								borderRadius: "8px",
-								border: "1px solid var(--border-primary)",
-							}}
+							className="mt-8 p-5 bg-surface-secondary rounded-lg border border-border-primary"
 						>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px" }}>Next Steps</h3>
+							<h3 className="text-16px font-semibold mb-3">Next Steps</h3>
 							<ul
-								style={{
-									margin: 0,
-									paddingLeft: "20px",
-									fontSize: "14px",
-									color: "var(--text-secondary)",
-									lineHeight: "1.8",
-								}}
+								className="m-0 pl-5 text-14px text-text-secondary leading-loose"
 							>
 								<li>Check out framework-specific guides in the tabs above</li>
 								<li>Configure OAuth providers in your app settings</li>
@@ -352,7 +229,7 @@ function YourComponent() {
 								<li>
 									<Link
 										to={`/projects/${projectId}/apps/${appId}/api-keys`}
-										style={{ color: "var(--primary)" }}
+										className="text-primary"
 									>
 										Get your API keys
 									</Link>{" "}
@@ -366,55 +243,33 @@ function YourComponent() {
 				{/* React Tab */}
 				{activeTab === "react" && (
 					<div>
-						<h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "16px" }}>React Integration</h2>
+						<h2 className="text-20px font-bold mb-4">React Integration</h2>
 						<p
-							style={{
-								fontSize: "14px",
-								color: "var(--text-secondary)",
-								marginBottom: "24px",
-								lineHeight: "1.6",
-							}}
+							className="text-14px text-text-secondary mb-6 leading-relaxed"
 						>
 							Complete guide for integrating Proofa into your React application.
 						</p>
 
-						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px" }}>Installation</h3>
+						<div className="card p-6 mb-4">
+							<h3 className="text-16px font-semibold mb-3">Installation</h3>
 							<pre
-								style={{
-									background: "#1e1e1e",
-									padding: "16px",
-									borderRadius: "8px",
-									overflow: "auto",
-									fontSize: "13px",
-									fontFamily: "monospace",
-									margin: 0,
-								}}
+								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0"
 							>
-								<code style={{ color: "#d4d4d4" }}>npm install @proofa/react</code>
+								<code className="text-[#d4d4d4]">npm install @proofa/react</code>
 							</pre>
 						</div>
 
-						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px" }}>
+						<div className="card p-6 mb-4">
+							<h3 className="text-16px font-semibold mb-3">
 								Setup Provider
 							</h3>
-							<p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "12px" }}>
+							<p className="text-14px text-text-secondary mb-3">
 								Wrap your root component with the ProofaProvider:
 							</p>
 							<pre
-								style={{
-									background: "#1e1e1e",
-									padding: "16px",
-									borderRadius: "8px",
-									overflow: "auto",
-									fontSize: "13px",
-									fontFamily: "monospace",
-									margin: 0,
-									lineHeight: "1.5",
-								}}
+								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code style={{ color: "#d4d4d4" }}>{`import { ProofaProvider } from '@proofa/react';
+								<code className="text-[#d4d4d4]">{`import { ProofaProvider } from '@proofa/react';
 import { BrowserRouter } from 'react-router-dom';
 
 function App() {
@@ -434,24 +289,15 @@ export default App;`}</code>
 							</pre>
 						</div>
 
-						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px" }}>useAuth Hook</h3>
-							<p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "12px" }}>
+						<div className="card p-6 mb-4">
+							<h3 className="text-16px font-semibold mb-3">useAuth Hook</h3>
+							<p className="text-14px text-text-secondary mb-3">
 								Access authentication state and methods:
 							</p>
 							<pre
-								style={{
-									background: "#1e1e1e",
-									padding: "16px",
-									borderRadius: "8px",
-									overflow: "auto",
-									fontSize: "13px",
-									fontFamily: "monospace",
-									margin: 0,
-									lineHeight: "1.5",
-								}}
+								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code style={{ color: "#d4d4d4" }}>{`import { useAuth } from '@proofa/react';
+								<code className="text-[#d4d4d4]">{`import { useAuth } from '@proofa/react';
 
 function Dashboard() {
   const { 
@@ -491,26 +337,17 @@ function Dashboard() {
 							</pre>
 						</div>
 
-						<div className="card" style={{ padding: "24px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px" }}>
+						<div className="card p-6">
+							<h3 className="text-16px font-semibold mb-3">
 								Protected Routes
 							</h3>
-							<p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "12px" }}>
+							<p className="text-14px text-text-secondary mb-3">
 								Create a component to protect routes:
 							</p>
 							<pre
-								style={{
-									background: "#1e1e1e",
-									padding: "16px",
-									borderRadius: "8px",
-									overflow: "auto",
-									fontSize: "13px",
-									fontFamily: "monospace",
-									margin: 0,
-									lineHeight: "1.5",
-								}}
+								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code style={{ color: "#d4d4d4" }}>{`import { useAuth } from '@proofa/react';
+								<code className="text-[#d4d4d4]">{`import { useAuth } from '@proofa/react';
 import { Navigate } from 'react-router-dom';
 
 function ProtectedRoute({ children }) {
@@ -541,54 +378,32 @@ function ProtectedRoute({ children }) {
 				{/* Next.js Tab */}
 				{activeTab === "nextjs" && (
 					<div>
-						<h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "16px" }}>
+						<h2 className="text-20px font-bold mb-4">
 							Next.js Integration
 						</h2>
 						<p
-							style={{
-								fontSize: "14px",
-								color: "var(--text-secondary)",
-								marginBottom: "24px",
-								lineHeight: "1.6",
-							}}
+							className="text-14px text-text-secondary mb-6 leading-relaxed"
 						>
 							Complete guide for integrating Proofa into your Next.js application (App Router).
 						</p>
 
-						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px" }}>Installation</h3>
+						<div className="card p-6 mb-4">
+							<h3 className="text-16px font-semibold mb-3">Installation</h3>
 							<pre
-								style={{
-									background: "#1e1e1e",
-									padding: "16px",
-									borderRadius: "8px",
-									overflow: "auto",
-									fontSize: "13px",
-									fontFamily: "monospace",
-									margin: 0,
-								}}
+								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0"
 							>
-								<code style={{ color: "#d4d4d4" }}>npm install @proofa/react</code>
+								<code className="text-[#d4d4d4]">npm install @proofa/react</code>
 							</pre>
 						</div>
 
-						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px" }}>
+						<div className="card p-6 mb-4">
+							<h3 className="text-16px font-semibold mb-3">
 								Setup Provider (app/layout.tsx)
 							</h3>
 							<pre
-								style={{
-									background: "#1e1e1e",
-									padding: "16px",
-									borderRadius: "8px",
-									overflow: "auto",
-									fontSize: "13px",
-									fontFamily: "monospace",
-									margin: 0,
-									lineHeight: "1.5",
-								}}
+								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code style={{ color: "#d4d4d4" }}>{`'use client';
+								<code className="text-[#d4d4d4]">{`'use client';
 
 import { ProofaProvider } from '@proofa/react';
 
@@ -609,23 +424,14 @@ export default function RootLayout({ children }) {
 							</pre>
 						</div>
 
-						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px" }}>
+						<div className="card p-6 mb-4">
+							<h3 className="text-16px font-semibold mb-3">
 								Client Component
 							</h3>
 							<pre
-								style={{
-									background: "#1e1e1e",
-									padding: "16px",
-									borderRadius: "8px",
-									overflow: "auto",
-									fontSize: "13px",
-									fontFamily: "monospace",
-									margin: 0,
-									lineHeight: "1.5",
-								}}
+								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code style={{ color: "#d4d4d4" }}>{`'use client';
+								<code className="text-[#d4d4d4]">{`'use client';
 
 import { useAuth } from '@proofa/react';
 
@@ -646,26 +452,17 @@ export default function Dashboard() {
 							</pre>
 						</div>
 
-						<div className="card" style={{ padding: "24px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px" }}>
+						<div className="card p-6">
+							<h3 className="text-16px font-semibold mb-3">
 								Server-Side Verification
 							</h3>
-							<p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "12px" }}>
+							<p className="text-14px text-text-secondary mb-3">
 								Verify sessions in Server Components or API Routes:
 							</p>
 							<pre
-								style={{
-									background: "#1e1e1e",
-									padding: "16px",
-									borderRadius: "8px",
-									overflow: "auto",
-									fontSize: "13px",
-									fontFamily: "monospace",
-									margin: 0,
-									lineHeight: "1.5",
-								}}
+								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code style={{ color: "#d4d4d4" }}>{`// app/api/protected/route.ts
+								<code className="text-[#d4d4d4]">{`// app/api/protected/route.ts
 import { verifySession } from '@proofa/next';
 
 export async function GET(request: Request) {
@@ -688,54 +485,32 @@ export async function GET(request: Request) {
 				{/* JavaScript Tab */}
 				{activeTab === "javascript" && (
 					<div>
-						<h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "16px" }}>
+						<h2 className="text-20px font-bold mb-4">
 							Vanilla JavaScript
 						</h2>
 						<p
-							style={{
-								fontSize: "14px",
-								color: "var(--text-secondary)",
-								marginBottom: "24px",
-								lineHeight: "1.6",
-							}}
+							className="text-14px text-text-secondary mb-6 leading-relaxed"
 						>
 							Use Proofa without any framework.
 						</p>
 
-						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px" }}>Installation</h3>
+						<div className="card p-6 mb-4">
+							<h3 className="text-16px font-semibold mb-3">Installation</h3>
 							<pre
-								style={{
-									background: "#1e1e1e",
-									padding: "16px",
-									borderRadius: "8px",
-									overflow: "auto",
-									fontSize: "13px",
-									fontFamily: "monospace",
-									margin: 0,
-								}}
+								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0"
 							>
-								<code style={{ color: "#d4d4d4" }}>npm install @proofa/client</code>
+								<code className="text-[#d4d4d4]">npm install @proofa/client</code>
 							</pre>
 						</div>
 
-						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px" }}>
+						<div className="card p-6 mb-4">
+							<h3 className="text-16px font-semibold mb-3">
 								Initialize Client
 							</h3>
 							<pre
-								style={{
-									background: "#1e1e1e",
-									padding: "16px",
-									borderRadius: "8px",
-									overflow: "auto",
-									fontSize: "13px",
-									fontFamily: "monospace",
-									margin: 0,
-									lineHeight: "1.5",
-								}}
+								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code style={{ color: "#d4d4d4" }}>{`import { ProofaClient } from '@proofa/client';
+								<code className="text-[#d4d4d4]">{`import { ProofaClient } from '@proofa/client';
 
 const client = new ProofaClient({
   appId: '${app.id}',
@@ -769,21 +544,12 @@ checkAuth();`}</code>
 							</pre>
 						</div>
 
-						<div className="card" style={{ padding: "24px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px" }}>HTML Example</h3>
+						<div className="card p-6">
+							<h3 className="text-16px font-semibold mb-3">HTML Example</h3>
 							<pre
-								style={{
-									background: "#1e1e1e",
-									padding: "16px",
-									borderRadius: "8px",
-									overflow: "auto",
-									fontSize: "13px",
-									fontFamily: "monospace",
-									margin: 0,
-									lineHeight: "1.5",
-								}}
+								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code style={{ color: "#d4d4d4" }}>{`<!DOCTYPE html>
+								<code className="text-[#d4d4d4]">{`<!DOCTYPE html>
 <html>
 <head>
   <title>My App</title>
@@ -808,37 +574,23 @@ checkAuth();`}</code>
 				{/* Backend Tab */}
 				{activeTab === "backend" && (
 					<div>
-						<h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "16px" }}>
+						<h2 className="text-20px font-bold mb-4">
 							Backend Verification
 						</h2>
 						<p
-							style={{
-								fontSize: "14px",
-								color: "var(--text-secondary)",
-								marginBottom: "24px",
-								lineHeight: "1.6",
-							}}
+							className="text-14px text-text-secondary mb-6 leading-relaxed"
 						>
 							Verify user sessions and protect your API endpoints.
 						</p>
 
-						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px" }}>
+						<div className="card p-6 mb-4">
+							<h3 className="text-16px font-semibold mb-3">
 								Node.js/Express
 							</h3>
 							<pre
-								style={{
-									background: "#1e1e1e",
-									padding: "16px",
-									borderRadius: "8px",
-									overflow: "auto",
-									fontSize: "13px",
-									fontFamily: "monospace",
-									margin: 0,
-									lineHeight: "1.5",
-								}}
+								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code style={{ color: "#d4d4d4" }}>{`import { verifySession } from '@proofa/node';
+								<code className="text-[#d4d4d4]">{`import { verifySession } from '@proofa/node';
 
 // Middleware
 async function requireAuth(req, res, next) {
@@ -866,21 +618,12 @@ app.get('/api/protected', requireAuth, (req, res) => {
 							</pre>
 						</div>
 
-						<div className="card" style={{ padding: "24px", marginBottom: "16px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px" }}>Python/Flask</h3>
+						<div className="card p-6 mb-4">
+							<h3 className="text-16px font-semibold mb-3">Python/Flask</h3>
 							<pre
-								style={{
-									background: "#1e1e1e",
-									padding: "16px",
-									borderRadius: "8px",
-									overflow: "auto",
-									fontSize: "13px",
-									fontFamily: "monospace",
-									margin: 0,
-									lineHeight: "1.5",
-								}}
+								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code style={{ color: "#d4d4d4" }}>{`from functools import wraps
+								<code className="text-[#d4d4d4]">{`from functools import wraps
 import requests
 
 PROOFA_API = "https://api.proofa.com"
@@ -918,24 +661,15 @@ def protected_route():
 							</pre>
 						</div>
 
-						<div className="card" style={{ padding: "24px" }}>
-							<h3 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px" }}>API Keys</h3>
-							<p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "12px" }}>
+						<div className="card p-6">
+							<h3 className="text-16px font-semibold mb-3">API Keys</h3>
+							<p className="text-14px text-text-secondary mb-3">
 								For server-to-server communication, use your Service Token:
 							</p>
 							<pre
-								style={{
-									background: "#1e1e1e",
-									padding: "16px",
-									borderRadius: "8px",
-									overflow: "auto",
-									fontSize: "13px",
-									fontFamily: "monospace",
-									margin: 0,
-									lineHeight: "1.5",
-								}}
+								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code style={{ color: "#d4d4d4" }}>{`// Get user by email (admin operation)
+								<code className="text-[#d4d4d4]">{`// Get user by email (admin operation)
 const response = await fetch('https://api.proofa.com/v1/users/by-email', {
   method: 'POST',
   headers: {
@@ -948,21 +682,13 @@ const response = await fetch('https://api.proofa.com/v1/users/by-email', {
 const user = await response.json();`}</code>
 							</pre>
 							<div
-								style={{
-									marginTop: "16px",
-									padding: "12px",
-									background: "rgba(251, 191, 36, 0.1)",
-									border: "1px solid rgba(251, 191, 36, 0.3)",
-									borderRadius: "6px",
-									fontSize: "13px",
-									color: "var(--text-secondary)",
-								}}
+								className="mt-4 p-3 bg-[rgba(251,191,36,0.1)] border border-[rgba(251,191,36,0.3)] rounded-md text-13px text-text-secondary"
 							>
-								<strong style={{ color: "#fbbf24" }}>Important:</strong> Never expose your Service Token
+								<strong className="text-[#fbbf24]">Important:</strong> Never expose your Service Token
 								in client-side code!{" "}
 								<Link
 									to={`/projects/${projectId}/apps/${appId}/api-keys`}
-									style={{ color: "var(--primary)" }}
+									className="text-primary"
 								>
 									Get your API keys →
 								</Link>
