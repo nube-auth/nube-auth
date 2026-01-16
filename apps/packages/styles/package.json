@@ -11,5 +11,9 @@
   },
   "dependencies": {
     "unocss": "^66.5.12"
+  },
+  "devDependencies": {
+    "@ameinhardt/unocss-preset-daisy": "^1.1.8",
+    "daisyui": "^5.5.14"
   }
 }

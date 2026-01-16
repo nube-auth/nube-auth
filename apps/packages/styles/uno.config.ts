@@ -6,9 +6,18 @@ import {
 	transformerDirectives,
 	transformerVariantGroup,
 } from "unocss";
+import { presetDaisy } from "@ameinhardt/unocss-preset-daisy";
 
 export default defineConfig({
-	presets: [presetUno(), presetAttributify(), presetIcons({ scale: 1.2, warn: true })],
+	presets: [
+		presetUno(),
+		presetAttributify(),
+		presetIcons({ scale: 1.2, warn: true }),
+		presetDaisy({
+			// Use your custom theme colors
+			themes: ["light", "dark"],
+		}),
+	],
 	transformers: [transformerDirectives(), transformerVariantGroup()],
 	theme: {
 		colors: {
