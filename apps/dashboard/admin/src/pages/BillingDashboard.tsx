@@ -116,7 +116,7 @@ export function BillingDashboardPage() {
 							<div className="text-[13px] text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
 								Refunds
 							</div>
-							<div className="text-[32px] font-bold text-red-500">
+							<div className="text-[32px] font-bold text-danger">
 								{formatCurrency(stats?.refunds.total || 0)}
 							</div>
 							{stats?.refunds.percentage && (
@@ -143,7 +143,7 @@ export function BillingDashboardPage() {
 								{stats?.webhooks?.success ?? 0}
 							</div>
 							{(stats?.webhooks?.failed ?? 0) > 0 && (
-								<div className="text-xs text-red-500 mt-2">{stats?.webhooks?.failed} failed</div>
+								<div className="text-xs text-danger mt-2">{stats?.webhooks?.failed} failed</div>
 							)}
 						</div>
 					</div>
@@ -269,10 +269,10 @@ export function BillingDashboardPage() {
 														<span
 															className={`inline-block px-2 py-1 rounded text-xs font-medium capitalize ${
 																purchase.status === "completed"
-																	? "bg-green-500/10 text-green-500"
+																	? "bg-success/10 text-success"
 																	: purchase.status === "pending"
-																		? "bg-blue-500/10 text-blue-500"
-																		: "bg-red-500/10 text-red-500"
+																		? "bg-info/10 text-info"
+																		: "bg-danger/10 text-danger"
 															}`}
 														>
 															{purchase.status}
@@ -331,10 +331,10 @@ export function BillingDashboardPage() {
 														<span
 															className={`inline-block px-2 py-1 rounded text-xs font-medium capitalize ${
 																txn.status === "completed"
-																	? "bg-green-500/10 text-green-500"
+																	? "bg-success/10 text-success"
 																	: txn.status === "pending"
-																		? "bg-blue-500/10 text-blue-500"
-																		: "bg-red-500/10 text-red-500"
+																		? "bg-info/10 text-info"
+																		: "bg-danger/10 text-danger"
 															}`}
 														>
 															{txn.status}

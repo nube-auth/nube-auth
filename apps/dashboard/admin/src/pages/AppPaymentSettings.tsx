@@ -46,7 +46,7 @@ export default function AppPaymentSettingsPage() {
 		const isProduction = environment === "production";
 		return (
 			<span
-				className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold uppercase ${isProduction ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}
+				className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold uppercase ${isProduction ? "bg-success-bg text-success-text" : "bg-warning-bg text-warning-text"}`}
 			>
 				{environment}
 			</span>

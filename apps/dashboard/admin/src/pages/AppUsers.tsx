@@ -427,7 +427,7 @@ export function AppUsersPage() {
 											className={`inline-block px-12px py-4px rounded-12px text-12px font-semibold capitalize ${
 												user.plan === "pro"
 													? "bg-purple-100 text-primary"
-													: "bg-gray-100 text-text-tertiary"
+													: "bg-bg-muted text-text-tertiary"
 											}`}
 										>
 											{user.plan}
@@ -437,8 +437,8 @@ export function AppUsersPage() {
 										<span
 											className={`inline-flex items-center gap-4px px-10px py-4px rounded-12px text-12px font-medium capitalize ${
 												user.status === "active"
-													? "bg-green-100 text-success"
-													: "bg-red-100 text-danger"
+													? "bg-success-bg text-success"
+													: "bg-danger-bg text-danger"
 											}`}
 										>
 											<span className="w-6px h-6px bg-current rounded-full" />
@@ -472,12 +472,12 @@ export function AppUsersPage() {
 															{new Date(user.licenseValidUntil).toLocaleDateString()}
 														</span>
 														{isExpired && (
-															<span className="px-6px py-2px bg-red-100 border border-red-200 rounded-4px text-danger text-11px font-semibold">
+															<span className="px-6px py-2px bg-danger-bg border border-danger/30 rounded-4px text-danger text-11px font-semibold">
 																EXPIRED
 															</span>
 														)}
 														{isExpiringSoon && !isExpired && (
-															<span className="px-6px py-2px bg-yellow-100 border border-yellow-200 rounded-4px text-warning text-11px font-semibold">
+															<span className="px-6px py-2px bg-warning-bg border border-warning/30 rounded-4px text-warning text-11px font-semibold">
 																{daysUntilExpiry}d left
 															</span>
 														)}

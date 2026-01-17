@@ -45,13 +45,13 @@ export function LicensesPage() {
 				</div>
 				<div className="stat-card">
 					<p className="stat-label">Active</p>
-					<p className="stat-value text-green-600">
+					<p className="stat-value text-success">
 						{licenses?.filter((l) => l.status === "active").length || 0}
 					</p>
 				</div>
 				<div className="stat-card">
 					<p className="stat-label">Expired</p>
-					<p className="stat-value text-gray-400">
+					<p className="stat-value text-text-tertiary">
 						{licenses?.filter((l) => l.status !== "active").length || 0}
 					</p>
 				</div>
@@ -60,8 +60,8 @@ export function LicensesPage() {
 			{/* Licenses Table */}
 			<div className="card">
 				<div className="card-header">
-					<h2 className="font-semibold text-gray-900">All Licenses</h2>
-					<p className="text-sm text-gray-500 mt-0.5">Your registered license keys and their status</p>
+					<h2 className="font-semibold text-text-primary">All Licenses</h2>
+					<p className="text-sm text-text-secondary mt-0.5">Your registered license keys and their status</p>
 				</div>
 
 				{licenses && licenses.length > 0 ? (
@@ -86,9 +86,9 @@ export function LicensesPage() {
 										<tr key={license.id}>
 											<td>
 												<div className="flex items-center gap-3">
-													<div className="w-8 h-8 bg-yellow-50 rounded-lg flex items-center justify-center">
+													<div className="w-8 h-8 bg-warning-bg rounded-lg flex items-center justify-center">
 														<svg
-															className="w-4 h-4 text-yellow-600"
+															className="w-4 h-4 text-warning"
 															fill="none"
 															stroke="currentColor"
 															viewBox="0 0 24 24"
@@ -105,7 +105,7 @@ export function LicensesPage() {
 												</div>
 											</td>
 											<td>
-												<span className="text-gray-600">{license.appId || "—"}</span>
+												<span className="text-text-secondary">{license.appId || "—"}</span>
 											</td>
 											<td>
 												<span className="badge badge-info capitalize">
@@ -121,7 +121,7 @@ export function LicensesPage() {
 													<span className="badge badge-warning">Inactive</span>
 												)}
 											</td>
-											<td className="text-gray-500">
+											<td className="text-text-secondary">
 												{expiryDate
 													? new Date(expiryDate).toLocaleDateString("en-US", {
 															year: "numeric",

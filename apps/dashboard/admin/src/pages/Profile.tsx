@@ -117,7 +117,7 @@ export function ProfilePage() {
 
 			{/* Success Message */}
 			{successMessage && (
-				<div className="p-3 bg-green-100 border border-green-300 rounded-8px text-green-600 mb-6 flex items-center gap-2">
+				<div className="alert-success mb-6 flex items-center gap-2">
 					<svg
 						fill="none"
 						stroke="currentColor"
@@ -297,7 +297,7 @@ export function ProfilePage() {
 
 					{/* Error Message */}
 					{updateProfile.isError && (
-						<div className="mt-4 p-3 bg-red-100 border border-red-300 rounded-8px text-red-600 text-14px">
+						<div className="alert-danger mt-4">
 							{updateProfile.error instanceof Error
 								? updateProfile.error.message
 								: "Failed to update profile"}
@@ -353,7 +353,7 @@ export function ProfilePage() {
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
-							className="w-5 h-5 text-green-600 flex-shrink-0"
+							className="w-5 h-5 text-success flex-shrink-0"
 						>
 							<path
 								strokeLinecap="round"

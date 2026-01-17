@@ -216,16 +216,7 @@ export function LoginPage() {
 							<button
 								type="button"
 								onClick={handleGoogleLogin}
-								className="btn w-full flex items-center justify-center gap-3 px-5 py-3 bg-white text-gray-700 border border-gray-200 rounded-lg text-15px font-medium cursor-pointer transition-all"
-
-								onMouseOver={(e) => {
-									e.currentTarget.style.background = "#f9fafb";
-									e.currentTarget.style.borderColor = "#d1d5db";
-								}}
-								onMouseOut={(e) => {
-									e.currentTarget.style.background = "white";
-									e.currentTarget.style.borderColor = "#e5e7eb";
-								}}
+								className="btn-google"
 							>
 								<svg className="w-5 h-5" viewBox="0 0 24 24">
 									<path
@@ -247,13 +238,13 @@ export function LoginPage() {
 								</svg>
 								Continue with Google
 							</button>
-							<p className="text-12px text-gray-500 mt-4">
+							<p className="text-12px text-text-tertiary mt-4">
 								By continuing, you agree to our{" "}
 								<a
 									href={`${homeUrl}/terms`}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="text-indigo-500"
+									className="text-primary underline"
 								>
 									Terms of Service
 								</a>{" "}
@@ -262,7 +253,7 @@ export function LoginPage() {
 									href={`${homeUrl}/privacy`}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="text-indigo-500"
+									className="text-primary underline"
 								>
 									Privacy Policy
 								</a>
@@ -274,7 +265,7 @@ export function LoginPage() {
 				{/* Security Badge */}
 				<div className="flex items-center justify-center gap-2 mt-6">
 					<svg
-						className="w-3.5 h-3.5 text-gray-500"
+						className="w-3.5 h-3.5 text-text-tertiary"
 						fill="none"
 						stroke="currentColor"
 						viewBox="0 0 24 24"
@@ -286,7 +277,7 @@ export function LoginPage() {
 							d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
 						/>
 					</svg>
-					<span className="text-13px text-gray-500">Secure authentication powered by Proofa</span>
+					<span className="text-13px text-text-tertiary">Secure authentication powered by Proofa</span>
 				</div>
 			</div>
 		</div>

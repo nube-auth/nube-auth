@@ -472,8 +472,8 @@ export default function ProjectPaymentProvidersPage() {
 											<span 
 												className={`inline-block px-2.5 py-1 rounded-3 text-12px font-500 capitalize ${
 													detailProvider.environment === "production" 
-														? "bg-green-100 text-green-600" 
-														: "bg-yellow-100 text-yellow-600"
+														? "bg-success-bg text-success" 
+														: "bg-warning-bg text-warning"
 												}`}
 											>
 												{detailProvider.environment}
@@ -506,7 +506,7 @@ export default function ProjectPaymentProvidersPage() {
 										<span 
 											className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-3 text-12px font-500 ${
 												detailProvider.isActive 
-													? "bg-green-100 text-green-600" 
+													? "bg-success-bg text-success" 
 													: "bg-bg-secondary text-text-tertiary"
 											}`}
 										>
@@ -522,8 +522,8 @@ export default function ProjectPaymentProvidersPage() {
 							</div>
 
 							{/* Help Text */}
-							<div className="p-3 rounded-2 border-l-3 bg-blue-100 border-l-blue-500">
-								<div className="text-13px font-500 mb-1 text-blue-500">💡 Tip</div>
+							<div className="p-3 rounded-2 border-l-3 bg-info-bg border-l-info">
+								<div className="text-13px font-500 mb-1 text-info">💡 Tip</div>
 								<div className="text-12px text-text-secondary">
 									Keep your API keys and webhook secrets secure. Never share them publicly or commit them to version control.
 								</div>
@@ -595,8 +595,8 @@ export default function ProjectPaymentProvidersPage() {
 										<span 
 											className={`inline-block px-2.5 py-1 rounded-3 text-12px font-500 capitalize ${
 												provider.environment === "production"
-													? "bg-green-100 text-success"
-													: "bg-yellow-100 text-yellow-600"
+													? "bg-success-bg text-success"
+													: "bg-warning-bg text-warning"
 											}`}
 										>
 											{provider.environment}

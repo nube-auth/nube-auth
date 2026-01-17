@@ -149,8 +149,8 @@ export default function PaymentTestingPlayground() {
 		<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 			{/* Header */}
 			<div className="mb-8">
-				<h1 className="text-3xl font-bold text-gray-900">🧪 Payment Testing Playground</h1>
-				<p className="mt-2 text-gray-600">
+				<h1 className="text-3xl font-bold text-text-primary">🧪 Payment Testing Playground</h1>
+				<p className="mt-2 text-text-secondary">
 					Test payment flows for all providers without manual setup
 				</p>
 			</div>
@@ -172,12 +172,12 @@ export default function PaymentTestingPlayground() {
 				{/* Left Column - Configuration */}
 				<div className="space-y-6">
 					{/* Provider Configuration */}
-					<div className="bg-white rounded-lg shadow p-6">
+					<div className="card p-6">
 						<h2 className="text-lg font-semibold mb-4">🔧 Provider Configuration</h2>
 						
 						<div className="space-y-4">
 							<div>
-								<label className="block text-sm font-medium text-gray-700 mb-2">
+								<label className="block text-sm font-medium text-text-primary mb-2">
 									Provider
 								</label>
 								<Select
@@ -193,7 +193,7 @@ export default function PaymentTestingPlayground() {
 							</div>
 
 							<div>
-								<label className="block text-sm font-medium text-gray-700 mb-2">
+								<label className="block text-sm font-medium text-text-primary mb-2">
 									Mode
 								</label>
 								<Select
@@ -205,7 +205,7 @@ export default function PaymentTestingPlayground() {
 									]}
 									disabled={!!session}
 								/>
-								<p className="mt-1 text-xs text-gray-500">
+								<p className="mt-1 text-xs text-text-tertiary">
 									{mode === "simulate" 
 										? "Instantly simulate webhook events without real payment provider" 
 										: "Create real checkout session with provider sandbox"}
@@ -215,17 +215,17 @@ export default function PaymentTestingPlayground() {
 					</div>
 
 					{/* Quick Test Setup */}
-					<div className="bg-white rounded-lg shadow p-6">
+					<div className="card p-6">
 						<h2 className="text-lg font-semibold mb-4">⚡ Quick Test Setup</h2>
 						
-						<p className="text-sm text-gray-600 mb-4">
+						<p className="text-sm text-text-secondary mb-4">
 							Auto-creates test app, user, and session in one click
 						</p>
 
 						<button
 							onClick={handleInitialize}
 							disabled={loading || !!session}
-							className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+							className="w-full btn-primary px-4 py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition"
 						>
 							{loading ? "Creating..." : session ? "✓ Test Session Active" : "🚀 Start Test Flow"}
 						</button>
@@ -233,7 +233,7 @@ export default function PaymentTestingPlayground() {
 						{session && (
 							<button
 								onClick={handleCleanup}
-								className="w-full mt-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition"
+								className="w-full mt-2 bg-bg-muted text-text-secondary px-4 py-2 rounded-lg text-sm hover:bg-bg-hover transition"
 							>
 								Clear Test Data
 							</button>
@@ -242,35 +242,35 @@ export default function PaymentTestingPlayground() {
 
 					{/* Webhook Simulator */}
 					{session && (
-						<div className="bg-white rounded-lg shadow p-6">
+						<div className="card p-6">
 							<h2 className="text-lg font-semibold mb-4">🎭 Simulate Events</h2>
 							
 							<div className="grid grid-cols-2 gap-2">
 								<button
 									onClick={() => handleSimulateEvent("payment.succeeded")}
 									disabled={loading}
-									className="bg-green-50 text-green-700 px-3 py-2 rounded text-sm font-medium hover:bg-green-100 disabled:opacity-50 transition"
+									className="bg-success-bg text-success px-3 py-2 rounded text-sm font-medium hover:opacity-80 disabled:opacity-50 transition"
 								>
 									✓ Success
 								</button>
 								<button
 									onClick={() => handleSimulateEvent("payment.failed")}
 									disabled={loading}
-									className="bg-yellow-50 text-yellow-700 px-3 py-2 rounded text-sm font-medium hover:bg-yellow-100 disabled:opacity-50 transition"
+									className="bg-warning-bg text-warning px-3 py-2 rounded text-sm font-medium hover:opacity-80 disabled:opacity-50 transition"
 								>
 									⚠️ Failed
 								</button>
 								<button
 									onClick={() => handleSimulateEvent("subscription.canceled")}
 									disabled={loading}
-									className="bg-red-50 text-red-700 px-3 py-2 rounded text-sm font-medium hover:bg-red-100 disabled:opacity-50 transition"
+									className="bg-danger-bg text-danger px-3 py-2 rounded text-sm font-medium hover:opacity-80 disabled:opacity-50 transition"
 								>
 									❌ Cancel
 								</button>
 								<button
 									onClick={() => handleSimulateEvent("charge.refunded")}
 									disabled={loading}
-									className="bg-purple-50 text-purple-700 px-3 py-2 rounded text-sm font-medium hover:bg-purple-100 disabled:opacity-50 transition"
+									className="bg-purple-100 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400 px-3 py-2 rounded text-sm font-medium hover:opacity-80 disabled:opacity-50 transition"
 								>
 									💰 Refund
 								</button>
@@ -282,8 +282,8 @@ export default function PaymentTestingPlayground() {
 				{/* Right Column - Results */}
 				<div className="space-y-6">
 					{error && (
-						<div className="bg-red-50 border border-red-200 rounded-lg p-4">
-							<p className="text-red-800">{error}</p>
+						<div className="alert-danger">
+							<p className="text-danger">{error}</p>
 						</div>
 					)}
 
@@ -291,16 +291,16 @@ export default function PaymentTestingPlayground() {
 						<>
 							{/* Checkout URL */}
 							{session.checkoutUrl && (
-								<div className="bg-white rounded-lg shadow p-6">
+								<div className="card p-6">
 									<h3 className="text-lg font-semibold mb-3">💳 Checkout Session</h3>
-									<div className="bg-gray-50 p-3 rounded border border-gray-200">
-										<p className="text-xs text-gray-500 mb-1">Checkout URL</p>
+									<div className="bg-bg-muted p-3 rounded border border-border">
+										<p className="text-xs text-text-tertiary mb-1">Checkout URL</p>
 										<p className="text-sm font-mono break-all">{session.checkoutUrl}</p>
 									</div>
 									<div className="mt-3 flex gap-2">
 										<button
 											onClick={() => navigator.clipboard.writeText(session.checkoutUrl!)}
-											className="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded text-sm hover:bg-gray-200 transition"
+											className="flex-1 bg-bg-muted text-text-secondary px-3 py-2 rounded text-sm hover:bg-bg-hover transition"
 										>
 											📋 Copy
 										</button>
@@ -308,7 +308,7 @@ export default function PaymentTestingPlayground() {
 											href={session.checkoutUrl}
 											target="_blank"
 											rel="noopener noreferrer"
-											className="flex-1 bg-blue-600 text-white px-3 py-2 rounded text-sm text-center hover:bg-blue-700 transition"
+											className="flex-1 btn-primary px-3 py-2 rounded text-sm text-center transition"
 										>
 											🔗 Open
 										</a>
@@ -317,21 +317,21 @@ export default function PaymentTestingPlayground() {
 							)}
 
 							{/* Test Data */}
-							<div className="bg-white rounded-lg shadow p-6">
+							<div className="card p-6">
 								<h3 className="text-lg font-semibold mb-3">📊 Test Data</h3>
 								<div className="space-y-3 text-sm">
 									<div>
-										<p className="text-gray-500">App</p>
+										<p className="text-text-secondary">App</p>
 										<p className="font-mono">{session.testData.app.name}</p>
-										<p className="text-xs text-gray-400">{session.testData.app.id}</p>
+										<p className="text-xs text-text-tertiary">{session.testData.app.id}</p>
 									</div>
 									<div>
-										<p className="text-gray-500">User</p>
+										<p className="text-text-secondary">User</p>
 										<p className="font-mono">{session.testData.user.email}</p>
-										<p className="text-xs text-gray-400">{session.testData.user.id}</p>
+										<p className="text-xs text-text-tertiary">{session.testData.user.id}</p>
 									</div>
 									<div>
-										<p className="text-gray-500">Plan</p>
+										<p className="text-text-secondary">Plan</p>
 										<p className="font-mono">{session.testData.plan.name} - ${session.testData.plan.amount / 100}/{session.testData.plan.interval}</p>
 									</div>
 								</div>
@@ -339,20 +339,20 @@ export default function PaymentTestingPlayground() {
 
 							{/* License Status */}
 							{sessionStatus?.license && (
-								<div className="bg-white rounded-lg shadow p-6">
+								<div className="card p-6">
 									<h3 className="text-lg font-semibold mb-3">📜 License Status</h3>
 									<div className="space-y-2 text-sm">
 										<div className="flex justify-between">
-											<span className="text-gray-500">Status</span>
+											<span className="text-text-secondary">Status</span>
 											<span className={`font-semibold ${
-												sessionStatus.license.status === "active" ? "text-green-600" : "text-gray-600"
+												sessionStatus.license.status === "active" ? "text-success" : "text-text-secondary"
 											}`}>
 												{sessionStatus.license.status === "active" ? "✓ Active" : sessionStatus.license.status}
 											</span>
 										</div>
 										{sessionStatus.license.validUntil && (
 											<div className="flex justify-between">
-												<span className="text-gray-500">Expires</span>
+												<span className="text-text-secondary">Expires</span>
 												<span className="font-mono text-xs">
 													{new Date(sessionStatus.license.validUntil).toLocaleDateString()}
 												</span>
@@ -363,15 +363,15 @@ export default function PaymentTestingPlayground() {
 							)}
 
 							{/* Auto-refresh indicator */}
-							<div className="text-center text-xs text-gray-400">
+							<div className="text-center text-xs text-text-tertiary">
 								⏱️ Auto-refreshing every 2 seconds
 							</div>
 						</>
 					)}
 
 					{!session && (
-						<div className="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
-							<p className="text-gray-500">
+						<div className="bg-bg-muted rounded-lg border-2 border-dashed border-border p-12 text-center">
+							<p className="text-text-secondary">
 								Click "Start Test Flow" to begin testing
 							</p>
 						</div>

@@ -184,8 +184,8 @@ export function RefundProcessingPage() {
 								</select>
 							</div>
 
-							<div className="p-3 bg-blue-50 rounded-md mb-6 border border-blue-200">
-								<div className="text-sm text-blue-600 leading-relaxed">
+							<div className="p-3 alert-info mb-6">
+								<div className="text-info leading-relaxed">
 									<strong>ℹ️ Note:</strong> Refund processing may take 24-48 hours depending on the payment provider.
 								</div>
 							</div>

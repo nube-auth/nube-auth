@@ -38,7 +38,7 @@ export function WebhookMonitoringPage() {
 			lemon_squeezy: { bgClass: "bg-success/10", textClass: "text-success" },
 			paddle: { bgClass: "bg-info/10", textClass: "text-info" },
 		};
-		const color = colors[provider] || { bgClass: "bg-gray-100", textClass: "text-text-tertiary" };
+		const color = colors[provider] || { bgClass: "bg-bg-muted", textClass: "text-text-tertiary" };
 		return (
 			<span className={`inline-block px-2.5 py-1 ${color.bgClass} ${color.textClass} rounded-xl text-12px font-medium capitalize`}>
 				{provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
