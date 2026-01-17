@@ -118,9 +118,9 @@ export function AppDevelopersPage() {
 							</div>
 							<div className="relative">
 								<pre
-									className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0"
+									className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0"
 								>
-									<code className="text-[#d4d4d4]">npm install @proofa/react</code>
+									<code className="text-code-text">npm install @proofa/react</code>
 								</pre>
 								<button
 									type="button"
@@ -166,9 +166,9 @@ export function AppDevelopersPage() {
 							</div>
 							<div className="relative">
 								<pre
-									className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+									className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 								>
-									<code className="text-[#d4d4d4]">{`import { ProofaProvider } from '@proofa/react';
+									<code className="text-code-text">{`import { ProofaProvider } from '@proofa/react';
 
 function App() {
   return (
@@ -193,9 +193,9 @@ function App() {
 							</div>
 							<div className="relative">
 								<pre
-									className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+									className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 								>
-									<code className="text-[#d4d4d4]">{`import { useAuth } from '@proofa/react';
+									<code className="text-code-text">{`import { useAuth } from '@proofa/react';
 
 function YourComponent() {
   const { user, isAuthenticated, login, logout } = useAuth();
@@ -253,9 +253,9 @@ function YourComponent() {
 						<div className="card p-6 mb-4">
 							<h3 className="text-16px font-semibold mb-3">Installation</h3>
 							<pre
-								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0"
+								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0"
 							>
-								<code className="text-[#d4d4d4]">npm install @proofa/react</code>
+								<code className="text-code-text">npm install @proofa/react</code>
 							</pre>
 						</div>
 
@@ -267,9 +267,9 @@ function YourComponent() {
 								Wrap your root component with the ProofaProvider:
 							</p>
 							<pre
-								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code className="text-[#d4d4d4]">{`import { ProofaProvider } from '@proofa/react';
+								<code className="text-code-text">{`import { ProofaProvider } from '@proofa/react';
 import { BrowserRouter } from 'react-router-dom';
 
 function App() {
@@ -295,9 +295,9 @@ export default App;`}</code>
 								Access authentication state and methods:
 							</p>
 							<pre
-								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code className="text-[#d4d4d4]">{`import { useAuth } from '@proofa/react';
+								<code className="text-code-text">{`import { useAuth } from '@proofa/react';
 
 function Dashboard() {
   const { 
@@ -345,9 +345,9 @@ function Dashboard() {
 								Create a component to protect routes:
 							</p>
 							<pre
-								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code className="text-[#d4d4d4]">{`import { useAuth } from '@proofa/react';
+								<code className="text-code-text">{`import { useAuth } from '@proofa/react';
 import { Navigate } from 'react-router-dom';
 
 function ProtectedRoute({ children }) {
@@ -390,9 +390,9 @@ function ProtectedRoute({ children }) {
 						<div className="card p-6 mb-4">
 							<h3 className="text-16px font-semibold mb-3">Installation</h3>
 							<pre
-								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0"
+								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0"
 							>
-								<code className="text-[#d4d4d4]">npm install @proofa/react</code>
+								<code className="text-code-text">npm install @proofa/react</code>
 							</pre>
 						</div>
 
@@ -401,9 +401,9 @@ function ProtectedRoute({ children }) {
 								Setup Provider (app/layout.tsx)
 							</h3>
 							<pre
-								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code className="text-[#d4d4d4]">{`'use client';
+								<code className="text-code-text">{`'use client';
 
 import { ProofaProvider } from '@proofa/react';
 
@@ -429,9 +429,9 @@ export default function RootLayout({ children }) {
 								Client Component
 							</h3>
 							<pre
-								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code className="text-[#d4d4d4]">{`'use client';
+								<code className="text-code-text">{`'use client';
 
 import { useAuth } from '@proofa/react';
 
@@ -460,9 +460,9 @@ export default function Dashboard() {
 								Verify sessions in Server Components or API Routes:
 							</p>
 							<pre
-								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code className="text-[#d4d4d4]">{`// app/api/protected/route.ts
+								<code className="text-code-text">{`// app/api/protected/route.ts
 import { verifySession } from '@proofa/next';
 
 export async function GET(request: Request) {
@@ -497,9 +497,9 @@ export async function GET(request: Request) {
 						<div className="card p-6 mb-4">
 							<h3 className="text-16px font-semibold mb-3">Installation</h3>
 							<pre
-								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0"
+								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0"
 							>
-								<code className="text-[#d4d4d4]">npm install @proofa/client</code>
+								<code className="text-code-text">npm install @proofa/client</code>
 							</pre>
 						</div>
 
@@ -508,9 +508,9 @@ export async function GET(request: Request) {
 								Initialize Client
 							</h3>
 							<pre
-								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code className="text-[#d4d4d4]">{`import { ProofaClient } from '@proofa/client';
+								<code className="text-code-text">{`import { ProofaClient } from '@proofa/client';
 
 const client = new ProofaClient({
   appId: '${app.id}',
@@ -547,9 +547,9 @@ checkAuth();`}</code>
 						<div className="card p-6">
 							<h3 className="text-16px font-semibold mb-3">HTML Example</h3>
 							<pre
-								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code className="text-[#d4d4d4]">{`<!DOCTYPE html>
+								<code className="text-code-text">{`<!DOCTYPE html>
 <html>
 <head>
   <title>My App</title>
@@ -588,9 +588,9 @@ checkAuth();`}</code>
 								Node.js/Express
 							</h3>
 							<pre
-								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code className="text-[#d4d4d4]">{`import { verifySession } from '@proofa/node';
+								<code className="text-code-text">{`import { verifySession } from '@proofa/node';
 
 // Middleware
 async function requireAuth(req, res, next) {
@@ -621,9 +621,9 @@ app.get('/api/protected', requireAuth, (req, res) => {
 						<div className="card p-6 mb-4">
 							<h3 className="text-16px font-semibold mb-3">Python/Flask</h3>
 							<pre
-								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code className="text-[#d4d4d4]">{`from functools import wraps
+								<code className="text-code-text">{`from functools import wraps
 import requests
 
 PROOFA_API = "https://api.proofa.com"
@@ -667,9 +667,9 @@ def protected_route():
 								For server-to-server communication, use your Service Token:
 							</p>
 							<pre
-								className="bg-[#1e1e1e] p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
-								<code className="text-[#d4d4d4]">{`// Get user by email (admin operation)
+								<code className="text-code-text">{`// Get user by email (admin operation)
 const response = await fetch('https://api.proofa.com/v1/users/by-email', {
   method: 'POST',
   headers: {
@@ -682,9 +682,9 @@ const response = await fetch('https://api.proofa.com/v1/users/by-email', {
 const user = await response.json();`}</code>
 							</pre>
 							<div
-								className="mt-4 p-3 bg-[rgba(251,191,36,0.1)] border border-[rgba(251,191,36,0.3)] rounded-md text-13px text-text-secondary"
+								className="mt-4 p-3 bg-warning/10 border border-warning/30 rounded-md text-13px text-text-secondary"
 							>
-								<strong className="text-[#fbbf24]">Important:</strong> Never expose your Service Token
+								<strong className="text-warning">Important:</strong> Never expose your Service Token
 								in client-side code!{" "}
 								<Link
 									to={`/projects/${projectId}/apps/${appId}/api-keys`}

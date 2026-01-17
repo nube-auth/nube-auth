@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { Icon } from "../components/Icon";
+import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
 import {
@@ -365,14 +367,7 @@ export default function ProjectPaymentProvidersPage() {
 						<div className="flex items-center justify-between p-4 px-5 border-b border-card-border">
 							<h3 className="text-18px font-600 text-text-primary m-0">{editingProvider ? "Edit Payment Provider" : "Add Payment Provider"}</h3>
 							<button type="button" className="w-8 h-8 flex items-center justify-center border-none bg-transparent text-text-secondary cursor-pointer rounded-md transition-all hover:bg-surface-secondary hover:text-text-primary" onClick={handleCancel}>
-								<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M6 18L18 6M6 6l12 12"
-									/>
-								</svg>
+								<Icon icon={Cancel01Icon} size={20} />
 							</button>
 						</div>
 						<form onSubmit={handleSubmit}>
@@ -447,14 +442,7 @@ export default function ProjectPaymentProvidersPage() {
 						<div className="flex items-center justify-between p-4 px-5 border-b border-card-border">
 							<h3 className="text-18px font-600 text-text-primary m-0">Provider Details</h3>
 							<button type="button" className="w-8 h-8 flex items-center justify-center border-none bg-transparent text-text-secondary cursor-pointer rounded-md transition-all hover:bg-surface-secondary hover:text-text-primary" onClick={() => setDetailProvider(null)}>
-								<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M6 18L18 6M6 6l12 12"
-									/>
-								</svg>
+							<Icon icon={Cancel01Icon} size={20} />
 							</button>
 						</div>
 						<div className="p-6 text-text-primary">

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useCreateProject, useProjects } from "../hooks/api";
 import { Icon } from "../components/Icon";
 import {
-	Alert02Icon,
+	AlertCircleIcon,
 	GridViewIcon,
 	Menu01Icon,
 	Add01Icon,
@@ -65,7 +65,7 @@ export function ProjectsPage() {
 	if (error) {
 		return (
 			<div className="alert-danger">
-				<Icon icon={Alert02Icon} size={20} bold className="alert-icon" />
+				<Icon icon={AlertCircleIcon} size={20} bold className="alert-icon" />
 				<span>Error loading projects. Please try again.</span>
 			</div>
 		);
@@ -188,7 +188,7 @@ export function ProjectsPage() {
 				>
 					<div className="relative mb-6">
 						<div
-							className="w-25 h-25 bg-[rgba(99,102,241,0.1)] rounded-full flex items-center justify-center border border-[rgba(99,102,241,0.25)]"
+							className="w-25 h-25 bg-primary/10 rounded-full flex items-center justify-center border border-primary/25"
 						>
 							<Icon icon={Layers01Icon} size={44} className="text-primary" />
 						</div>

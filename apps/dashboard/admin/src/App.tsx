@@ -225,7 +225,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
 					{/* Dropdown Menu */}
 					{showProjectDropdown && (
-						<div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-[#0f1117] border border-sidebar-border rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.4)] z-10000 max-h-[180px] overflow-y-auto overflow-x-hidden">
+						<div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-content-bg border border-sidebar-border rounded-lg shadow-2xl z-10000 max-h-[180px] overflow-y-auto overflow-x-hidden">
 							{projects.length === 0 ? (
 								<div className="p-5 text-text-secondary text-13px text-center">
 									No projects available
@@ -239,7 +239,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 											navigate("/projects");
 											setShowProjectDropdown(false);
 										}}
-										className={`w-full p-3 text-left border-none border-b border-sidebar-border cursor-pointer text-13px font-medium transition-all duration-150 flex items-center gap-2.5 outline-none hover:bg-[rgba(255,255,255,0.05)] ${!selectedProject ? "bg-[rgba(139,92,246,0.15)] text-primary" : "bg-transparent text-[rgba(255,255,255,0.8)]"}`}
+										className={`w-full p-3 text-left border-none border-b border-sidebar-border cursor-pointer text-13px font-medium transition-all duration-150 flex items-center gap-2.5 outline-none hover:bg-white/5 ${!selectedProject ? "bg-primary/15 text-primary" : "bg-transparent text-text-secondary"}` }
 									>
 										<Icon icon={Layers01Icon} size={16} className="shrink-0 opacity-70" />
 										<span>All Projects</span>
@@ -252,11 +252,11 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 												navigate(`/projects/${project.id}`);
 												setShowProjectDropdown(false);
 											}}
-											className={`w-full py-2.5 px-3 text-left border-none border-b border-[rgba(255,255,255,0.05)] cursor-pointer text-13px transition-all duration-150 block outline-none hover:bg-[rgba(255,255,255,0.05)] ${selectedProject === project.id ? "bg-[rgba(139,92,246,0.15)] text-primary" : "bg-transparent text-[rgba(255,255,255,0.8)]"}`}
+										className={`w-full py-2.5 px-3 text-left border-none border-b border-white/5 cursor-pointer text-13px transition-all duration-150 block outline-none hover:bg-white/5 ${selectedProject === project.id ? "bg-primary/15 text-primary" : "bg-transparent text-text-secondary"}` }
 										>
 											<div className="flex items-center gap-2.5">
 												<div
-													className={`w-8 h-8 rounded-md flex items-center justify-center text-13px font-semibold shrink-0 ${selectedProject === project.id ? "bg-primary text-white" : "bg-[rgba(139,92,246,0.2)] text-primary"}`}
+												className={`w-8 h-8 rounded-md flex items-center justify-center text-13px font-semibold shrink-0 ${selectedProject === project.id ? "bg-primary text-white" : "bg-primary/20 text-primary"}` }
 												>
 													{project.name.charAt(0).toUpperCase()}
 												</div>

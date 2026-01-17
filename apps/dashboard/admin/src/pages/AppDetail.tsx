@@ -169,7 +169,7 @@ export function AppDetailPage() {
 						onClick={() => navigate(`/projects/${projectId}/apps/${appId}/users`)}
 						className="bg-card-bg border border-border-secondary rounded-lg p-5 cursor-pointer transition-all flex flex-col items-center gap-3 text-center hover:border-primary hover:-translate-y-0.5 hover:shadow-md"
 					>
-						<div className="w-12 h-12 rounded-lg bg-[linear-gradient(135deg,rgba(139,92,246,0.1),rgba(139,92,246,0.05))] flex items-center justify-center">
+					<div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
 							<Icon icon={UserMultiple02Icon} size={24} className="text-primary" />
 						</div>
 						<div>
@@ -185,7 +185,7 @@ export function AppDetailPage() {
 						onClick={() => navigate(`/projects/${projectId}/apps/${appId}/licenses`)}
 						className="bg-card-bg border border-border-secondary rounded-lg p-5 cursor-pointer transition-all flex flex-col items-center gap-3 text-center hover:border-primary hover:-translate-y-0.5 hover:shadow-md"
 					>
-						<div className="w-12 h-12 rounded-lg bg-[linear-gradient(135deg,rgba(34,197,94,0.1),rgba(34,197,94,0.05))] flex items-center justify-center">
+					<div className="w-12 h-12 rounded-lg bg-success/10 flex items-center justify-center">
 							<Icon icon={LicenseIcon} size={24} className="text-success" />
 						</div>
 						<div>
@@ -201,8 +201,8 @@ export function AppDetailPage() {
 						onClick={() => navigate(`/projects/${projectId}/apps/${appId}/settings`)}
 						className="bg-card-bg border border-border-secondary rounded-lg p-5 cursor-pointer transition-all flex flex-col items-center gap-3 text-center hover:border-primary hover:-translate-y-0.5 hover:shadow-md"
 					>
-						<div className="w-12 h-12 rounded-lg bg-[linear-gradient(135deg,rgba(59,130,246,0.1),rgba(59,130,246,0.05))] flex items-center justify-center">
-							<Icon icon={Settings02Icon} size={24} className="text-[rgb(59,130,246)]" />
+					<div className="w-12 h-12 rounded-lg bg-info/10 flex items-center justify-center">
+						<Icon icon={Settings02Icon} size={24} className="text-info" />
 						</div>
 						<div>
 							<div className="text-14px font-semibold text-text-primary mb-1">
@@ -217,8 +217,8 @@ export function AppDetailPage() {
 						onClick={() => navigate(`/projects/${projectId}/apps/${appId}/api-keys`)}
 						className="bg-card-bg border border-border-secondary rounded-lg p-5 cursor-pointer transition-all flex flex-col items-center gap-3 text-center hover:border-primary hover:-translate-y-0.5 hover:shadow-md"
 					>
-						<div className="w-12 h-12 rounded-lg bg-[linear-gradient(135deg,rgba(251,146,60,0.1),rgba(251,146,60,0.05))] flex items-center justify-center">
-							<Icon icon={Key01Icon} size={24} className="text-[rgb(251,146,60)]" />
+					<div className="w-12 h-12 rounded-lg bg-warning/10 flex items-center justify-center">
+						<Icon icon={Key01Icon} size={24} className="text-warning" />
 						</div>
 						<div>
 							<div className="text-14px font-semibold text-text-primary mb-1">

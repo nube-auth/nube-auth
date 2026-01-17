@@ -1,5 +1,18 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { Icon } from "../components/Icon";
+import {
+	AlertCircleIcon,
+	ArrowRight01Icon,
+	Folder01Icon,
+	Copy01Icon,
+	CheckmarkCircle02Icon,
+	Layers01Icon,
+	UserMultiple02Icon,
+	Key01Icon,
+	DollarCircleIcon,
+	Add01Icon,
+} from "@hugeicons/core-free-icons";
 import { useProject, useProjectApps, useProjectMembers, useProjectStats } from "../hooks/api";
 
 export function ProjectDetailPage() {
@@ -28,14 +41,7 @@ export function ProjectDetailPage() {
 	if (!project) {
 		return (
 			<div className="alert alert-danger">
-				<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path
-						strokeLinecap="round"
-						strokeLinejoin="round"
-						strokeWidth={2}
-						d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-					/>
-				</svg>
+				<Icon icon={AlertCircleIcon} size={20} className="text-danger" />
 				<span>Project not found</span>
 			</div>
 		);
@@ -48,14 +54,7 @@ export function ProjectDetailPage() {
 				<Link to="/projects" className="breadcrumb-link">
 					Projects
 				</Link>
-				<svg
-					className="w-3.5 h-3.5 text-text-tertiary"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-				>
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-				</svg>
+				<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
 				<span className="text-text-primary font-medium">{project.name}</span>
 			</nav>
 
@@ -63,19 +62,7 @@ export function ProjectDetailPage() {
 			<div className="card p-6">
 				<div className="flex items-start gap-5">
 					<div className="w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary-light to-purple-200">
-						<svg
-							className="w-7 h-7 text-primary"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-							/>
-						</svg>
+						<Icon icon={Folder01Icon} size={28} className="text-primary" />
 					</div>
 					<div className="flex-1">
 						<div className="flex items-center gap-3 mb-1">
@@ -98,36 +85,12 @@ export function ProjectDetailPage() {
 							>
 								{copied ? (
 									<>
-										<svg
-										className="w-3.5 h-3.5 text-success"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth={2}
-												d="M5 13l4 4L19 7"
-											/>
-										</svg>
+										<Icon icon={CheckmarkCircle02Icon} size={14} className="text-success" />
 										Copied!
 									</>
 								) : (
 									<>
-										<svg
-										className="w-3.5 h-3.5"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth={2}
-												d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-											/>
-										</svg>
+										<Icon icon={Copy01Icon} size={14} className="text-text-primary" />
 										Copy ID
 									</>
 								)}
@@ -142,14 +105,7 @@ export function ProjectDetailPage() {
 				<div className="stat-card">
 					<div className="stat-card-header">
 						<div className="stat-icon blue">
-							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-								/>
-							</svg>
+							<Icon icon={Layers01Icon} size={20} className="text-current" />
 						</div>
 					</div>
 					<div className="stat-value">{statsLoading ? "—" : stats?.totalApps || 0}</div>
@@ -158,14 +114,7 @@ export function ProjectDetailPage() {
 				<div className="stat-card">
 					<div className="stat-card-header">
 						<div className="stat-icon purple">
-							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-								/>
-							</svg>
+							<Icon icon={UserMultiple02Icon} size={20} className="text-current" />
 						</div>
 					</div>
 					<div className="stat-value">{statsLoading ? "—" : stats?.totalUsers || 0}</div>
@@ -174,14 +123,7 @@ export function ProjectDetailPage() {
 				<div className="stat-card">
 					<div className="stat-card-header">
 						<div className="stat-icon green">
-							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-								/>
-							</svg>
+							<Icon icon={Key01Icon} size={20} className="text-current" />
 						</div>
 					</div>
 					<div className="stat-value">{statsLoading ? "—" : stats?.activeLicenses || 0}</div>
@@ -195,14 +137,7 @@ export function ProjectDetailPage() {
 				<div className="stat-card">
 					<div className="stat-card-header">
 						<div className="stat-icon orange">
-							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-								/>
-							</svg>
+							<Icon icon={DollarCircleIcon} size={20} className="text-current" />
 						</div>
 					</div>
 					<div className="stat-value">${statsLoading ? "—" : (stats?.totalRevenue || 0).toFixed(2)}</div>
@@ -222,14 +157,7 @@ export function ProjectDetailPage() {
 						onClick={() => navigate(`/projects/${projectId}/apps/new`)}
 						className="btn btn-primary"
 					>
-						<svg
-							className="w-4 h-4"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-						</svg>
+						<Icon icon={Add01Icon} size={16} />
 						New App
 					</button>
 				</div>
@@ -260,19 +188,7 @@ export function ProjectDetailPage() {
 										<td>
 											<div className="flex items-center gap-3">
 												<div className="w-9 h-9 bg-purple-100 rounded-md flex items-center justify-center">
-													<svg
-														className="w-4.5 h-4.5 text-purple-600"
-														fill="none"
-														stroke="currentColor"
-														viewBox="0 0 24 24"
-													>
-														<path
-															strokeLinecap="round"
-															strokeLinejoin="round"
-															strokeWidth={2}
-															d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-														/>
-													</svg>
+													<Icon icon={Layers01Icon} size={18} className="text-purple-600" />
 												</div>
 												<span className="font-medium text-text-primary">
 													{app.name}
@@ -293,19 +209,7 @@ export function ProjectDetailPage() {
 											<span className="badge badge-success">Active</span>
 										</td>
 										<td className="text-right pr-4">
-											<svg
-												className="w-4.5 h-4.5 text-purple-600"
-												fill="none"
-												stroke="currentColor"
-												viewBox="0 0 24 24"
-											>
-												<path
-													strokeLinecap="round"
-													strokeLinejoin="round"
-													strokeWidth={2}
-													d="M9 5l7 7-7 7"
-												/>
-											</svg>
+											<Icon icon={ArrowRight01Icon} size={18} className="text-purple-600" />
 										</td>
 									</tr>
 								))}
@@ -315,14 +219,7 @@ export function ProjectDetailPage() {
 				) : (
 					<div className="empty-state py-12 px-6">
 						<div className="empty-state-icon">
-							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={1.5}
-									d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-								/>
-							</svg>
+							<Icon icon={Layers01Icon} size={28} className="text-text-tertiary" />
 						</div>
 						<h3 className="empty-state-title">No applications yet</h3>
 						<p className="empty-state-desc">Create your first app to start managing authentication.</p>
@@ -331,14 +228,7 @@ export function ProjectDetailPage() {
 							onClick={() => navigate(`/projects/${projectId}/apps/new`)}
 							className="btn btn-primary"
 						>
-							<svg
-								className="w-4 h-4"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-							</svg>
+							<Icon icon={Add01Icon} size={16} />
 							Create App
 						</button>
 					</div>

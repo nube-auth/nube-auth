@@ -1,6 +1,18 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { Icon } from "../components/Icon";
+import {
+	Key01Icon,
+	UserMultiple02Icon,
+	DollarCircleIcon,
+	ArrowUp01Icon,
+	ArrowDown01Icon,
+	AlertCircleIcon,
+	Delete01Icon,
+	ArrowRight01Icon,
+	Add01Icon,
+} from "@hugeicons/core-free-icons";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
 import { useApp, useAppUsers, useProject } from "../hooks/api";
@@ -328,39 +340,18 @@ export function AppLicensesPage() {
 				<Link to="/projects" className="text-text-secondary no-underline">
 					Projects
 				</Link>
-				<svg
-					className="w-3.5 h-3.5 text-text-tertiary"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-				>
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-				</svg>
+				<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
 				<Link to={`/projects/${projectId}`} className="text-text-secondary no-underline">
 					{project.name}
 				</Link>
-				<svg
-					className="w-3.5 h-3.5 text-text-tertiary"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-				>
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-				</svg>
+				<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
 				<Link
 					to={`/projects/${projectId}/apps/${appId}`}
 					className="text-text-secondary no-underline"
 				>
 					{app.name}
 				</Link>
-				<svg
-					className="w-3.5 h-3.5 text-text-tertiary"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-				>
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-				</svg>
+				<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
 				<span className="text-text-primary font-medium">Licenses</span>
 			</nav>
 
@@ -377,20 +368,8 @@ export function AppLicensesPage() {
 				{/* Active Licenses */}
 				<div className="stat-card">
 					<div className="flex items-center gap-3 mb-2">
-						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[linear-gradient(135deg,rgba(139,92,246,0.1),rgba(139,92,246,0.05))]">
-							<svg
-								className="w-5 h-5 text-primary"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-								/>
-							</svg>
+						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10">
+							<Icon icon={Key01Icon} size={20} className="text-primary" />
 						</div>
 						<div>
 							<p className="stat-label">Active Licenses</p>
@@ -402,15 +381,8 @@ export function AppLicensesPage() {
 				{/* Free Plan Users */}
 				<div className="stat-card">
 					<div className="flex items-center gap-3 mb-2">
-						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[linear-gradient(135deg,rgba(34,197,94,0.1),rgba(34,197,94,0.05))]">
-							<svg
-								className="w-5 h-5 text-success"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-							</svg>
+						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-success/10">
+							<Icon icon={UserMultiple02Icon} size={20} className="text-success" />
 						</div>
 						<div>
 							<p className="stat-label">Free Plan</p>
@@ -422,20 +394,8 @@ export function AppLicensesPage() {
 				{/* Paid Plan Users */}
 				<div className="stat-card">
 					<div className="flex items-center gap-3 mb-2">
-						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[linear-gradient(135deg,rgba(234,179,8,0.1),rgba(234,179,8,0.05))]">
-							<svg
-								className="w-5 h-5 text-[#eab308]"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-								/>
-							</svg>
+						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-warning/10">
+							<Icon icon={DollarCircleIcon} size={20} className="text-warning" />
 						</div>
 						<div>
 							<p className="stat-label">Paid Plans</p>
@@ -447,20 +407,8 @@ export function AppLicensesPage() {
 				{/* Monthly Revenue */}
 				<div className="stat-card">
 					<div className="flex items-center gap-3 mb-2">
-						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[linear-gradient(135deg,rgba(99,102,241,0.1),rgba(99,102,241,0.05))]">
-							<svg
-								className="w-5 h-5 text-[#6366f1]"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-								/>
-							</svg>
+						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-info/10">
+							<Icon icon={ArrowUp01Icon} size={20} className="text-info" />
 						</div>
 						<div>
 							<p className="stat-label">Monthly Revenue</p>
@@ -478,19 +426,7 @@ export function AppLicensesPage() {
 					className="w-full p-4 flex items-center justify-between bg-transparent border-none cursor-pointer transition-colors duration-200 hover:bg-surface-hover"
 				>
 					<div className="flex items-center gap-3">
-						<svg
-							className="w-5 h-5 text-primary"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-							/>
-						</svg>
+						<Icon icon={Key01Icon} size={20} className="text-primary" />
 						<div className="text-left">
 							<h3 className="text-16px font-semibold text-text-primary m-0">
 								Pricing Plans
@@ -500,14 +436,11 @@ export function AppLicensesPage() {
 							</p>
 						</div>
 					</div>
-					<svg
-						className={`w-5 h-5 text-text-tertiary transition-transform duration-200 ${showPlansSection ? "rotate-180" : "rotate-0"}`}
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-					>
-						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-					</svg>
+					<Icon
+						icon={showPlansSection ? ArrowUp01Icon : ArrowDown01Icon}
+						size={20}
+						className="text-text-tertiary transition-transform duration-200"
+					/>
 				</button>
 
 				{showPlansSection && (
@@ -519,19 +452,7 @@ export function AppLicensesPage() {
 								onClick={handleCreatePlan}
 								className="btn btn-primary btn-sm flex items-center gap-1.5"
 							>
-								<svg
-									className="w-4 h-4"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M12 4v16m8-8H4"
-									/>
-								</svg>
+								<Icon icon={Add01Icon} size={16} />
 								Create Plan
 							</button>
 						</div>
@@ -543,19 +464,7 @@ export function AppLicensesPage() {
 							</div>
 						) : plans.length === 0 ? (
 							<div className="text-center py-15 px-5 text-text-secondary">
-								<svg
-									className="w-16 h-16 mx-auto mb-4 opacity-30"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={1.5}
-										d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-									/>
-								</svg>
+								<Icon icon={AlertCircleIcon} size={48} className="mx-auto mb-4 opacity-30 text-text-tertiary" />
 								<p className="text-14px font-medium">No plans yet</p>
 								<p className="text-13px mt-2 text-text-tertiary">
 									Create your first pricing plan to get started
@@ -578,7 +487,7 @@ export function AppLicensesPage() {
 												</p>
 											</div>
 											<span
-												className={`inline-block px-2 py-1 rounded-md text-11px font-semibold capitalize ${plan.status === "active" ? "bg-[rgba(34,197,94,0.1)] text-success" : "bg-[rgba(107,114,128,0.1)] text-[#6b7280]"}`}
+												className={`inline-block px-2 py-1 rounded-md text-11px font-semibold capitalize ${plan.status === "active" ? "bg-success/10 text-success" : "bg-content-bg text-text-tertiary"}`}
 											>
 												{plan.status}
 											</span>
@@ -755,14 +664,14 @@ export function AppLicensesPage() {
 										</td>
 										<td className="py-3.5 px-4 text-center">
 											<span
-												className={`inline-block px-2.5 py-1 rounded-md text-12px font-semibold capitalize ${user.plan === "free" ? "bg-[rgba(107,114,128,0.1)] text-[#6b7280]" : "bg-[rgba(139,92,246,0.1)] text-primary"}`}
+												className={`inline-block px-2.5 py-1 rounded-md text-12px font-semibold capitalize ${user.plan === "free" ? "bg-content-bg text-text-tertiary" : "bg-primary/10 text-primary"}`}
 											>
 												{user.plan || "free"}
 											</span>
 										</td>
 										<td className="py-3.5 px-4 text-center">
 											<span
-												className={`inline-block px-2.5 py-1 rounded-md text-12px font-semibold capitalize ${user.status === "active" ? "bg-[rgba(34,197,94,0.1)] text-success" : "bg-[rgba(239,68,68,0.1)] text-danger"}`}
+												className={`inline-block px-2.5 py-1 rounded-md text-12px font-semibold capitalize ${user.status === "active" ? "bg-success/10 text-success" : "bg-danger/10 text-danger"}`}
 											>
 												{user.status}
 											</span>
@@ -791,19 +700,7 @@ export function AppLicensesPage() {
 					</div>
 				) : (
 					<div className="text-center py-20 px-5 text-text-secondary">
-						<svg
-							className="w-16 h-16 mx-auto mb-4 opacity-30"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={1.5}
-								d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-							/>
-						</svg>
+						<Icon icon={AlertCircleIcon} size={48} className="mx-auto mb-4 opacity-30" />
 						<h3 className="text-16px font-semibold text-text-primary mb-2">
 							No licenses found
 						</h3>
@@ -891,20 +788,8 @@ export function AppLicensesPage() {
 						</p>
 
 						{planError && (
-							<div className="bg-[rgba(239,68,68,0.1)] border border-danger rounded-lg py-3 px-4 mb-5 flex items-center gap-3">
-								<svg
-									className="w-5 h-5 text-danger flex-shrink-0"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-									/>
-								</svg>
+							<div className="bg-danger/10 border border-danger rounded-lg py-3 px-4 mb-5 flex items-center gap-3">
+								<Icon icon={AlertCircleIcon} size={20} className="text-danger flex-shrink-0" />
 								<p className="text-14px text-danger m-0">{planError}</p>
 							</div>
 						)}
@@ -1120,19 +1005,7 @@ export function AppLicensesPage() {
 													disabled={isUpdating}
 													className="bg-transparent border-none text-danger cursor-pointer p-1"
 												>
-													<svg
-														className="w-4 h-4"
-														fill="none"
-														stroke="currentColor"
-														viewBox="0 0 24 24"
-													>
-														<path
-															strokeLinecap="round"
-															strokeLinejoin="round"
-															strokeWidth={2}
-															d="M6 18L18 6M6 6l12 12"
-														/>
-													</svg>
+													<Icon icon={Delete01Icon} size={16} className="text-danger" />
 												</button>
 											</div>
 										))}
@@ -1174,20 +1047,8 @@ export function AppLicensesPage() {
 						onClick={(e) => e.stopPropagation()}
 					>
 						<div className="mb-6">
-							<div className="w-12 h-12 rounded-xl bg-[rgba(239,68,68,0.1)] flex items-center justify-center mb-4">
-								<svg
-									className="w-6 h-6 text-danger"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-									/>
-								</svg>
+							<div className="w-12 h-12 rounded-xl bg-danger/10 flex items-center justify-center mb-4">
+													<Icon icon={AlertCircleIcon} size={24} className="text-danger" />
 							</div>
 							<h2 className="text-20px font-bold mb-2 text-text-primary">
 								Delete Plan?

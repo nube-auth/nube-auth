@@ -1,5 +1,7 @@
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
+import { Icon } from "./Icon";
+import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
 
 interface SelectOption {
 	value: string;
@@ -57,24 +59,14 @@ export const Select: React.FC<SelectProps> = ({
 				type="button"
 				onClick={() => !disabled && setIsOpen(!isOpen)}
 				disabled={disabled}
-				className={`w-full px-3 py-2.5 border border-border-primary rounded-lg text-14px transition-all duration-200 flex justify-between items-center text-left ${disabled ? "bg-surface-secondary cursor-not-allowed opacity-60" : "bg-content-bg cursor-pointer hover:border-primary hover:shadow-[0_0_0_2px_rgba(139,92,246,0.1)]"} text-text-primary`}
+				className={`w-full px-3 py-2.5 border border-border-primary rounded-lg text-14px transition-all duration-200 flex justify-between items-center text-left ${disabled ? "bg-surface-secondary cursor-not-allowed opacity-60" : "bg-content-bg cursor-pointer hover:border-primary hover:ring-2 hover:ring-primary/10"} text-text-primary`}
 			>
 				<span>{selectedOption ? selectedOption.label : placeholder}</span>
-				<svg
-					width="16"
-					height="16"
-					viewBox="0 0 16 16"
-					fill="none"
+				<Icon
+					icon={ArrowDown01Icon}
+					size={16}
 					className={`transition-transform duration-200 ${isOpen ? "rotate-180" : "rotate-0"}`}
-				>
-					<path
-						d="M4 6L8 10L12 6"
-						stroke="currentColor"
-						strokeWidth="1.5"
-						strokeLinecap="round"
-						strokeLinejoin="round"
-					/>
-				</svg>
+				/>
 			</button>
 
 			{isOpen && (

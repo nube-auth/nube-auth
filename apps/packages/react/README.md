@@ -162,3 +162,74 @@ function App() {
   );
 }
 ```
+
+## Brand Logos
+
+Centralized brand logo components for consistent branding across all dashboards:
+
+```tsx
+import {
+  GoogleLogo,
+  GitHubLogo,
+  StripeLogo,
+  NextJsLogo,
+  ReactLogo,
+  JavaScriptLogo,
+  FlutterLogo,
+  NodeJsLogo,
+  TailwindLogo,
+} from '@proofa/react';
+
+function LoginButtons() {
+  return (
+    <div className="flex gap-4">
+      <button className="flex items-center gap-2">
+        <GoogleLogo className="w-5 h-5" />
+        Sign in with Google
+      </button>
+      <button className="flex items-center gap-2">
+        <GitHubLogo className="w-5 h-5" />
+        Sign in with GitHub
+      </button>
+    </div>
+  );
+}
+
+function PaymentProviders() {
+  return (
+    <div>
+      <div className="flex items-center gap-2">
+        <StripeLogo className="w-6 h-6" />
+        <span>Stripe</span>
+      </div>
+    </div>
+  );
+}
+
+function IntegrationShowcase() {
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      <div className="flex items-center gap-2">
+        <NextJsLogo className="w-8 h-8" />
+        <span>Next.js</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <ReactLogo className="w-8 h-8" />
+        <span>React</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <FlutterLogo className="w-8 h-8" />
+        <span>Flutter</span>
+      </div>
+    </div>
+  );
+}
+```
+
+### Available Logos
+
+- **OAuth Providers**: `GoogleLogo`, `GitHubLogo`
+- **Payment Providers**: `StripeLogo`
+- **Framework SDKs**: `NextJsLogo`, `ReactLogo`, `JavaScriptLogo`, `FlutterLogo`, `NodeJsLogo`, `TailwindLogo`
+
+All logo components accept a `className` prop for sizing and styling.

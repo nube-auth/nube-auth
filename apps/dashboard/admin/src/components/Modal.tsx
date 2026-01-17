@@ -1,4 +1,6 @@
 import { type ReactNode, useEffect, useRef } from "react";
+import { Icon } from "./Icon";
+import { Cancel01Icon } from "@hugeicons/core-free-icons";
 
 interface ModalProps {
 	isOpen: boolean;
@@ -64,9 +66,7 @@ export function ModalHeader({ children, onClose }: ModalHeaderProps) {
 					onClick={onClose}
 					className="btn btn-ghost btn-sm btn-circle"
 				>
-					<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-					</svg>
+					<Icon icon={Cancel01Icon} size={20} />
 				</button>
 			)}
 		</div>

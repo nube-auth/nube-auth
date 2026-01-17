@@ -164,6 +164,12 @@ export default defineConfig({
 		"stat-icon-purple": "stat-icon bg-purple-100 text-purple-600",
 		"stat-icon-orange": "stat-icon bg-warning-bg text-warning",
 		"stat-trend": "flex items-center gap-1 text-11px font-medium",
+
+		// Icon gradient backgrounds
+		"icon-gradient-primary": "bg-primary/10",
+		"icon-gradient-success": "bg-success/10",
+		"icon-gradient-info": "bg-info/10",
+		"icon-gradient-warning": "bg-warning/10",
 		"stat-trend-up": "stat-trend text-success",
 		"stat-trend-down": "stat-trend text-danger",
 		"stat-value": "text-28px font-bold text-text-primary leading-none",

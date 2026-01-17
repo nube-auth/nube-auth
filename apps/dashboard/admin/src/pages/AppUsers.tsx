@@ -1,6 +1,25 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { Icon } from "../components/Icon";
+import {
+	ArrowRight01Icon,
+	UserAdd01Icon,
+	Search01Icon,
+	ArrowDown01Icon,
+	ArrowUp01Icon,
+	FilterIcon,
+	UserMultiple02Icon,
+	ViewIcon,
+	Edit02Icon,
+	Delete01Icon,
+	Tick02Icon,
+	Refresh01Icon,
+	Grid02Icon,
+	ShieldIcon,
+	Clock01Icon,
+	AlertCircleIcon,
+} from "@hugeicons/core-free-icons";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { InviteUserModal } from "../components/InviteUserModal";
 import { Select } from "../components/Select";
@@ -73,6 +92,13 @@ export function AppUsersPage() {
 
 		return matchesSearch && matchesStatus;
 	});
+
+	const statusIcons = {
+		all: Grid02Icon,
+		active: Tick02Icon,
+		suspended: ShieldIcon,
+		trial: Clock01Icon,
+	} as const;
 
 	// Handler for Suspend/Activate toggle
 	const handleSuspendToggle = async (userId: string, currentStatus: string) => {
@@ -196,21 +222,15 @@ export function AppUsersPage() {
 				<Link to="/projects" className="no-underline text-text-secondary">
 					Projects
 				</Link>
-				<svg className="h-3.5 w-3.5 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-				</svg>
-				<Link to={`/projects/${projectId}`} className="no-underline text-text-secondary">
-					{project.name}
-				</Link>
-				<svg className="h-3.5 w-3.5 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-				</svg>
-				<Link to={`/projects/${projectId}/apps/${appId}`} className="no-underline text-text-secondary">
-					{app.name}
-				</Link>
-				<svg className="h-3.5 w-3.5 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-				</svg>
+			<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
+			<Link to={`/projects/${projectId}`} className="no-underline text-text-secondary">
+				{project.name}
+			</Link>
+			<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
+			<Link to={`/projects/${projectId}/apps/${appId}`} className="no-underline text-text-secondary">
+				{app.name}
+			</Link>
+			<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
 				<span className="font-medium text-text-primary">Users</span>
 			</nav>
 
@@ -221,14 +241,7 @@ export function AppUsersPage() {
 					<p className="page-description">Manage users and their licenses for {app.name}</p>
 				</div>
 				<button type="button" className="btn btn-primary" onClick={() => setShowInviteModal(true)}>
-					<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-						/>
-					</svg>
+					<Icon icon={UserAdd01Icon} size={16} />
 					Invite User
 				</button>
 			</div>
@@ -237,15 +250,13 @@ export function AppUsersPage() {
 			<div className="mb-5 flex items-center gap-3">
 				<div className="w-full max-w-[400px]">
 					<div className="relative">
-						<svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-						</svg>
+					<Icon icon={Search01Icon} size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
 						<input
 							type="text"
 							placeholder="Search by name or email..."
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
-							className="w-full rounded-[10px] border border-border bg-bg-surface px-3.5 py-2.5 pl-10 text-14px text-text-primary transition-all focus:border-primary focus:outline-none focus:shadow-[0_0_0_3px_rgba(139,92,246,0.1)]"
+							className="w-full rounded-[10px] border border-border bg-bg-surface px-3.5 py-2.5 pl-10 text-14px text-text-primary transition-all focus:border-primary focus:outline-none focus:ring-3 ring-primary/10"
 						/>
 					</div>
 				</div>
@@ -258,24 +269,14 @@ export function AppUsersPage() {
 						className={`flex w-full items-center justify-between gap-2 rounded-[10px] border bg-bg-surface px-3 py-2.5 text-14px text-text-primary transition-all focus:outline-none ${showStatusDropdown ? "border-primary" : "border-border hover:border-primary/70"}`}
 					>
 						<span className="flex items-center gap-2">
-							<svg className="h-4 w-4 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-								/>
-							</svg>
+							<Icon icon={FilterIcon} size={16} className="text-text-tertiary" />
 							{filterStatus === "all" ? "All Status" : filterStatus.charAt(0).toUpperCase() + filterStatus.slice(1)}
 						</span>
-						<svg
-							className={`h-3.5 w-3.5 transition-transform text-text-tertiary ${showStatusDropdown ? "rotate-180" : "rotate-0"}`}
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-						</svg>
+						<Icon
+							icon={showStatusDropdown ? ArrowUp01Icon : ArrowDown01Icon}
+							size={14}
+							className="text-text-tertiary"
+						/>
 					</button>
 
 					{/* Dropdown Menu */}
@@ -285,7 +286,7 @@ export function AppUsersPage() {
 							<div className="fixed inset-0 z-[999]" onClick={() => setShowStatusDropdown(false)} />
 
 							{/* Dropdown */}
-							<div className="absolute top-[calc(100%+6px)] left-0 right-0 z-[1000] overflow-hidden rounded-[10px] border border-border bg-bg-surface shadow-[0_10px_40px_rgba(0,0,0,0.3)]">
+							<div className="absolute top-[calc(100%+6px)] left-0 right-0 z-[1000] overflow-hidden rounded-[10px] border border-border bg-bg-surface shadow-xl">
 								{[
 									{ value: "all", label: "All Status", icon: "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" },
 									{ value: "active", label: "Active", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" },
@@ -301,14 +302,10 @@ export function AppUsersPage() {
 										}}
 										className={`flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-14px transition-all ${filterStatus === option.value ? "bg-primary/10 text-primary" : "text-text-primary hover:bg-surface/50"} ${option.value !== "trial" ? "border-b border-border/60" : ""}`}
 									>
-										<svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={option.icon} />
-										</svg>
+										<Icon icon={statusIcons[option.value as keyof typeof statusIcons]} size={16} className="flex-shrink-0" />
 										<span className={filterStatus === option.value ? "font-semibold" : "font-normal"}>{option.label}</span>
 										{filterStatus === option.value && (
-											<svg className="ml-auto h-4 w-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-											</svg>
+											<Icon icon={Tick02Icon} size={16} className="ml-auto text-primary" />
 										)}
 									</button>
 								))}
@@ -322,14 +319,7 @@ export function AppUsersPage() {
 			{!usersLoading && filteredUsers.length === 0 && users.length === 0 && (
 				<div className="flex flex-col items-center justify-center py-20 px-5 text-center">
 					<div className="w-25 h-25 bg-gradient-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center mb-6">
-						<svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={1.5}
-								d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-							/>
-						</svg>
+						<Icon icon={UserMultiple02Icon} size={48} className="text-primary" />
 					</div>
 					<h2 className="text-20px font-bold text-text-primary mb-2">
 						No users yet
@@ -343,14 +333,7 @@ export function AppUsersPage() {
 						onClick={() => alert("Invite user functionality coming soon!")}
 						className="btn btn-primary"
 					>
-						<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-							/>
-						</svg>
+						<Icon icon={UserAdd01Icon} size={16} />
 						Invite Your First User
 					</button>
 				</div>
@@ -404,16 +387,7 @@ export function AppUsersPage() {
 												<div className="text-14px font-medium text-text-primary mb-2px">
 													{user.name || "Anonymous"}
 													{user.primaryEmailVerified && (
-														<svg className="w-14px h-14px text-primary ml-4px inline"
-															fill="currentColor"
-															viewBox="0 0 20 20"
-														>
-															<path
-																fillRule="evenodd"
-																d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-																clipRule="evenodd"
-															/>
-														</svg>
+														<Icon icon={Tick02Icon} size={14} className="text-primary ml-4px inline" />
 													)}
 												</div>
 												<div className="text-12px text-text-tertiary">
@@ -505,36 +479,12 @@ export function AppUsersPage() {
 											>
 												{user.status === "active" ? (
 													<>
-														<svg
-															className="w-14px h-14px"
-															fill="none"
-															stroke="currentColor"
-															viewBox="0 0 24 24"
-														>
-															<path
-																strokeLinecap="round"
-																strokeLinejoin="round"
-																strokeWidth={2}
-																d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
-															/>
-														</svg>
+														<Icon icon={ShieldIcon} size={14} />
 														Suspend
 													</>
 												) : (
 													<>
-														<svg
-															className="w-14px h-14px"
-															fill="none"
-															stroke="currentColor"
-															viewBox="0 0 24 24"
-														>
-															<path
-																strokeLinecap="round"
-																strokeLinejoin="round"
-																strokeWidth={2}
-																d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-															/>
-														</svg>
+														<Icon icon={Tick02Icon} size={14} />
 														Activate
 													</>
 												)}
@@ -553,47 +503,24 @@ export function AppUsersPage() {
 														});
 													}}
 													className="inline-flex items-center gap-1 px-2.5 py-1.5 text-13px font-medium rounded-lg border bg-primary/10 border-primary/20 text-primary transition-all cursor-pointer hover:bg-primary/15 hover:border-primary">
-													<svg
-														className="w-14px h-14px"
-														fill="none"
-														stroke="currentColor"
-														viewBox="0 0 24 24"
-													>
-														<path
-															strokeLinecap="round"
-															strokeLinejoin="round"
-															strokeWidth={2}
-															d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-														/>
-													</svg>
+													<Icon icon={Refresh01Icon} size={14} />
 													Renew
 												</button>
 											)}
 
-											{/* Edit Button */}
-											<button
-												type="button"
-												onClick={(e) => {
-													e.stopPropagation();
-													handleOpenEditModal(user);
-												}}
-												className="inline-flex items-center gap-1 px-3 py-1.5 text-13px font-medium rounded-lg border bg-surface/60 border-border text-text-primary transition-all cursor-pointer hover:bg-surface hover:border-primary">
-												<svg
-													className="w-14px h-14px"
-													fill="none"
-													stroke="currentColor"
-													viewBox="0 0 24 24"
-												>
-													<path
-														strokeLinecap="round"
-														strokeLinejoin="round"
-														strokeWidth={2}
-														d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-													/>
-												</svg>
-												Edit
-											</button>
-										</div>
+										{/* Edit User Button */}
+										<button
+											type="button"
+											onClick={(e) => {
+												e.stopPropagation();
+												setEditingUser(user);
+											}}
+											className="inline-flex items-center gap-1 px-2.5 py-1.5 text-13px font-medium rounded-lg border bg-secondary/10 border-secondary/20 text-secondary transition-all cursor-pointer hover:bg-secondary/15 hover:border-secondary"
+										>
+											<Icon icon={Edit02Icon} size={14} />
+											Edit
+										</button>
+									</div>
 									</td>
 								</tr>
 							))}
@@ -634,19 +561,7 @@ export function AppUsersPage() {
 						{/* Error Message */}
 						{updateError && (
 							<div className="flex items-center gap-3 p-4 mb-5 bg-danger/10 border border-danger rounded-lg">
-								<svg
-									className="w-5 h-5 text-danger flex-shrink-0"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-									/>
-								</svg>
+								<Icon icon={AlertCircleIcon} size={20} className="text-danger flex-shrink-0" />
 								<p className="text-14px text-danger m-0">{updateError}</p>
 							</div>
 						)}
@@ -724,19 +639,7 @@ export function AppUsersPage() {
 								}`}
 							>
 								{isUpdating && (
-									<svg
-										className="w-4 h-4 animate-spin"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											strokeWidth={2}
-											d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-										/>
-									</svg>
+									<Icon icon={Refresh01Icon} size={16} className="animate-spin" />
 								)}
 								{isUpdating ? "Saving..." : "Save Changes"}
 							</button>

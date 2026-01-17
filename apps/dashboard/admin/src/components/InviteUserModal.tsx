@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import { Icon } from "./Icon";
+import { AlertCircleIcon, ArrowRight01Icon, Cancel01Icon, Refresh01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
 import { Select } from "./Select";
 import { pingpong } from "../lib/pingpong";
 
@@ -143,7 +145,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 			onClick={handleClose}
 		>
 			<div
-				className="modal-content bg-card-bg rounded-xl p-8 max-w-[900px] w-full max-h-[calc(100vh-64px)] overflow-y-auto shadow-[0_20px_25px_-5px_rgba(0,0,0,0.3),0_10px_10px_-5px_rgba(0,0,0,0.2)] border border-card-border"
+				className="modal-content bg-card-bg rounded-xl p-8 max-w-[900px] w-full max-h-[calc(100vh-64px)] overflow-y-auto shadow-2xl border border-card-border"
 				onClick={(e) => e.stopPropagation()}
 			>
 				{/* Header */}
@@ -158,23 +160,14 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 						disabled={loading}
 						className={`bg-transparent border-none text-text-secondary p-1 rounded-md transition-all duration-200 ${loading ? "cursor-not-allowed" : "cursor-pointer hover:bg-content-bg hover:text-text-primary"}`}
 					>
-						<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-						</svg>
+						<Icon icon={Cancel01Icon} size={20} />
 					</button>
 				</div>
 
 				{/* Success Message */}
 				{success && (
 					<div className="bg-success-bg border border-success rounded-lg p-3 mb-5 flex items-center gap-3">
-						<svg
-							className="w-5 h-5 text-success flex-shrink-0"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-						</svg>
+						<Icon icon={Tick02Icon} size={20} className="text-success flex-shrink-0" />
 						<div className="flex-1">
 							<p className="text-14px font-semibold text-success-text m-0">{success.message}</p>
 						</div>
@@ -184,23 +177,10 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 				{/* Error Message */}
 				{error && (
 					<div className="bg-danger-bg border border-danger rounded-lg p-3 mb-5 flex items-center gap-3">
-						<svg
-							className="w-5 h-5 text-danger flex-shrink-0"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-							/>
-						</svg>
+						<Icon icon={AlertCircleIcon} size={20} className="text-danger flex-shrink-0" />
 						<p className="text-14px text-danger-text m-0">{error}</p>
 					</div>
 				)}
-
 				{/* Form */}
 				<form onSubmit={handleSubmit}>
 					{/* Email Field */}
@@ -216,7 +196,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 							onChange={(e) => setEmail(e.target.value)}
 							disabled={loading}
 							placeholder="user@example.com"
-							className="form-control w-full px-3 py-2.5 border border-card-border rounded-lg bg-content-bg text-text-primary text-14px outline-none transition-all duration-200 focus:border-primary focus:shadow-[0_0_0_2px_rgba(139,92,246,0.2)]"
+								className="form-control w-full px-3 py-2.5 border border-card-border rounded-lg bg-content-bg text-text-primary text-14px outline-none transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
 						/>
 						<p className="text-12px text-text-tertiary mt-1.5">We'll check if this user exists before sending an invitation</p>
 					</div>
@@ -284,7 +264,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 										disabled={loading}
 										placeholder="Leave empty for no expiry"
 										min="1"
-										className="form-control w-full px-3 py-2.5 pr-15 border border-card-border rounded-lg bg-content-bg text-text-primary text-14px outline-none transition-all duration-200 focus:border-primary focus:shadow-[0_0_0_2px_rgba(139,92,246,0.2)]"
+										className="form-control w-full px-3 py-2.5 pr-15 border border-card-border rounded-lg bg-content-bg text-text-primary text-14px outline-none transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
 									/>
 									<span className="absolute right-3 top-1/2 -translate-y-1/2 text-13px text-text-tertiary pointer-events-none">
 										days
@@ -309,7 +289,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 							disabled={loading}
 							placeholder="Add a personal message to the invitation..."
 							rows={3}
-							className="form-control w-full px-3 py-2.5 border border-card-border rounded-lg bg-content-bg text-text-primary text-14px outline-none resize-vertical font-inherit transition-all duration-200 focus:border-primary focus:shadow-[0_0_0_2px_rgba(139,92,246,0.2)]"
+							className="form-control w-full px-3 py-2.5 border border-card-border rounded-lg bg-content-bg text-text-primary text-14px outline-none resize-vertical font-inherit transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
 						/>
 					</div>
 
@@ -326,35 +306,16 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 						<button
 							type="submit"
 							disabled={loading || !email}
-							className={`px-6 py-2.5 text-14px font-semibold border-none rounded-lg text-white transition-all duration-200 flex items-center gap-2 ${loading || !email ? "bg-text-tertiary cursor-not-allowed" : "bg-primary cursor-pointer hover:bg-primary-hover hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(99,102,241,0.3)]"}`}
+							className={`px-6 py-2.5 text-14px font-semibold border-none rounded-lg text-white transition-all duration-200 flex items-center gap-2 ${loading || !email ? "bg-text-tertiary cursor-not-allowed" : "bg-primary cursor-pointer hover:bg-primary-hover hover:-translate-y-px hover:shadow-lg"}`}
 						>
 							{loading ? (
 								<>
-									<svg
-										className="w-4 h-4 animate-spin"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											strokeWidth={2}
-											d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-										/>
-									</svg>
+									<Icon icon={Refresh01Icon} size={16} className="animate-spin" />
 									Sending...
 								</>
 							) : (
 								<>
-									<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											strokeWidth={2}
-											d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-										/>
-									</svg>
+									<Icon icon={ArrowRight01Icon} size={16} />
 									Send Invitation
 								</>
 							)}

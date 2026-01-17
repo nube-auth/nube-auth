@@ -44,7 +44,7 @@ export function InviteTeamMemberModal({ projectId, onClose }: InviteTeamMemberMo
 			className="fixed top-0 left-0 right-0 bottom-0 bg-black/50 flex items-center justify-center z-1000"
 			onClick={onClose}
 		>
-			<div className="bg-card-bg rounded-xl p-7 w-[90%] max-w-[500px] shadow-[0_8px_24px_rgba(0,0,0,0.2)]" onClick={(e) => e.stopPropagation()}>
+			<div className="bg-card-bg rounded-xl p-7 w-[90%] max-w-[500px] shadow-xl" onClick={(e) => e.stopPropagation()}>
 				<h2 className="text-20px font-bold mb-2">Invite Team Member</h2>
 				<p className="text-14px text-text-tertiary mb-6">
 					Add a team member to this project. They must have a Proofa account.
