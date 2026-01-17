@@ -1,6 +1,13 @@
 /* ==========================================================================
    Proofa Admin Dashboard - Modern Design System
    Inspired by WorkOS/Clerk dashboard designs
+   
+   Color Philosophy: Neutral base + Purple accents
+   - Sidebar: Slightly darker neutral frame (#0B0F16)
+   - Main: Slightly lighter neutral canvas (#0F1624)
+   - Topbar: Bridge between them (#0C121D)
+   - Purple lives in buttons, badges, and accents only
+   - Dividers: subtle rgba(255,255,255,0.06)
    ========================================================================== */
 
 /* CSS Variables - Light Theme (Default) */
@@ -10,14 +17,17 @@
   --primary-hover: #4f46e5;
   --primary-light: #eef2ff;
   
-  /* Sidebar (Always Dark) */
-  --sidebar-bg: #0f1117;
-  --sidebar-border: #1f2937;
-  --sidebar-text: #9ca3af;
+  /* Sidebar (Frame) - Neutral, slightly darker */
+  --sidebar-bg: #0B0F16;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-text: #8b92a8;
   --sidebar-text-hover: #ffffff;
-  --sidebar-active-bg: rgba(99, 102, 241, 0.1);
-  --sidebar-active-text: #818cf8;
-  --sidebar-section-text: #6b7280;
+  --sidebar-active-bg: rgba(255, 255, 255, 0.04);
+  --sidebar-active-text: #a5b4fc;
+  --sidebar-section-text: #5a6078;
+  
+  /* Topbar (Bridge) */
+  --top-header-bg: #0C121D;
   
   /* Content Area - Light Theme */
   --content-bg: #f8fafc;
@@ -65,51 +75,61 @@
 
 /* Dark Theme - Manual Override */
 [data-theme="dark"] {
-  --content-bg: #111318;
-  --card-bg: #16181f;
-  --card-border: #1f2937;
-  --card-hover-border: #374151;
-  --text-primary: #f9fafb;
-  --text-secondary: #9ca3af;
+  /* Canvas - Lighter neutral background */
+  --content-bg: #0F1624;
+  --card-bg: rgba(255, 255, 255, 0.04);
+  --card-border: rgba(255, 255, 255, 0.06);
+  --card-hover-border: rgba(255, 255, 255, 0.08);
+  
+  /* Text - brighter for contrast on darker bg */
+  --text-primary: #f8fafc;
+  --text-secondary: #a8b2c1;
   --text-tertiary: #6b7280;
-  --primary-light: #312e81;
-  --success-bg: #064e3b;
+  
+  /* Adjusted for dark theme */
+  --primary-light: rgba(99, 102, 241, 0.12);
+  --success-bg: rgba(16, 185, 129, 0.12);
   --success-text: #6ee7b7;
-  --warning-bg: #78350f;
+  --warning-bg: rgba(245, 158, 11, 0.12);
   --warning-text: #fcd34d;
-  --danger-bg: #7f1d1d;
+  --danger-bg: rgba(239, 68, 68, 0.12);
   --danger-text: #fca5a5;
-  --info-bg: #1e3a8a;
+  --info-bg: rgba(59, 130, 246, 0.12);
   --info-text: #93c5fd;
   
-  /* Surface colors for cards/sections */
-  --surface-secondary: rgba(255, 255, 255, 0.03);
-  --surface-hover: rgba(255, 255, 255, 0.05);
+  /* Surface colors for elevation */
+  --surface-secondary: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.06);
 }
 
 /* Auto Dark Theme Detection */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --content-bg: #111318;
-    --card-bg: #16181f;
-    --card-border: #1f2937;
-    --card-hover-border: #374151;
-    --text-primary: #f9fafb;
-    --text-secondary: #9ca3af;
+    /* Canvas - Lighter neutral background */
+    --content-bg: #0F1624;
+    --card-bg: rgba(255, 255, 255, 0.04);
+    --card-border: rgba(255, 255, 255, 0.06);
+    --card-hover-border: rgba(255, 255, 255, 0.08);
+    
+    /* Text - brighter for contrast on darker bg */
+    --text-primary: #f8fafc;
+    --text-secondary: #a8b2c1;
     --text-tertiary: #6b7280;
-    --primary-light: #312e81;
-    --success-bg: #064e3b;
+    
+    /* Adjusted for dark theme */
+    --primary-light: rgba(99, 102, 241, 0.12);
+    --success-bg: rgba(16, 185, 129, 0.12);
     --success-text: #6ee7b7;
-    --warning-bg: #78350f;
+    --warning-bg: rgba(245, 158, 11, 0.12);
     --warning-text: #fcd34d;
-    --danger-bg: #7f1d1d;
+    --danger-bg: rgba(239, 68, 68, 0.12);
     --danger-text: #fca5a5;
-    --info-bg: #1e3a8a;
+    --info-bg: rgba(59, 130, 246, 0.12);
     --info-text: #93c5fd;
     
-    /* Surface colors for cards/sections */
-    --surface-secondary: rgba(255, 255, 255, 0.03);
-    --surface-hover: rgba(255, 255, 255, 0.05);
+    /* Surface colors for elevation */
+    --surface-secondary: rgba(255, 255, 255, 0.04);
+    --surface-hover: rgba(255, 255, 255, 0.06);
   }
 }
 
@@ -419,7 +439,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  background: var(--content-bg);
+  background: var(--top-header-bg);
   border-bottom: 1px solid var(--card-border);
   position: sticky;
   top: 0;
@@ -1026,23 +1046,23 @@ tbody tr:hover {
 }
 
 .btn-primary {
-  background: var(--primary);
+  background: #6366f1;
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--primary-hover);
+  background: #4f46e5;
 }
 
 .btn-secondary {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  color: var(--text-primary);
+  background: #1e2028;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  border-color: var(--card-hover-border);
-  background: var(--content-bg);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: #252830;
 }
 
 .btn-danger {
@@ -1102,11 +1122,19 @@ tbody tr:hover {
   margin-bottom: 16px;
 }
 
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
 .form-label {
   display: block;
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-primary);
+  color: #ffffff;
   margin-bottom: 6px;
 }
 
@@ -1119,24 +1147,24 @@ select {
   width: 100%;
   padding: 10px 14px;
   font-size: 13px;
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius);
-  background: var(--card-bg);
-  color: var(--text-primary);
-  transition: all var(--transition);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  background: #111318;
+  color: #ffffff;
+  transition: all 0.15s ease;
 }
 
 input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: var(--text-tertiary);
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .form-control {
@@ -1355,11 +1383,7 @@ input[type="url"].form-control {
   .admin-main-content {
     margin-left: 0;
   }
-  
-  .modal-overlay {
-    left: 0;
-  }
-  
+
   .integrations-grid {
     grid-template-columns: 1fr;
   }
@@ -1636,89 +1660,10 @@ input[type="url"].form-control {
     grid-template-columns: 1fr;
   }
 }
-
 /* ==========================================================================
-   MODAL
+   MODAL - Now using UnoCSS utility classes directly in JSX
+   See: Projects.tsx, Onboarding.tsx, ProjectPaymentProviders.tsx
    ========================================================================== */
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 260px;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10001;
-  padding: 32px;
-}
-
-.modal {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
-  width: 100%;
-  max-width: 900px;
-  max-height: calc(100vh - 64px);
-  overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-  position: relative;
-  z-index: 10002;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--card-border);
-}
-
-.modal-header h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.modal-close {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  border-radius: var(--radius);
-  transition: all var(--transition);
-}
-
-.modal-close:hover {
-  background: var(--content-bg);
-  color: var(--text-primary);
-}
-
-.modal-close svg {
-  width: 20px;
-  height: 20px;
-}
-
-.modal-body {
-  padding: 20px;
-}
-
-.modal-footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 16px 20px;
-  border-top: 1px solid var(--card-border);
-}
-
 /* ==========================================================================
    PAGE HEADER
    ========================================================================== */

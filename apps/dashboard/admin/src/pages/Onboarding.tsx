@@ -197,12 +197,12 @@ const user = await auth.getUser();`}
 
 			{/* Create Project Modal/Form */}
 			{showForm && (
-				<div className="modal-overlay" onClick={() => setShowForm(false)}>
-					<div className="modal" onClick={(e) => e.stopPropagation()}>
-						<div className="modal-header">
-							<h3>Create New Project</h3>
-							<button type="button" className="modal-close" onClick={() => setShowForm(false)}>
-								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[10001] p-8 pl-[292px]" onClick={() => setShowForm(false)}>
+					<div className="bg-card-bg border border-card-border rounded-xl w-full max-w-500px max-h-[calc(100vh-64px)] overflow-y-auto shadow-lg" onClick={(e) => e.stopPropagation()}>
+						<div className="flex items-center justify-between p-4 px-5 border-b border-card-border">
+							<h3 className="text-18px font-600 text-text-primary m-0">Create New Project</h3>
+							<button type="button" className="w-8 h-8 flex items-center justify-center border-none bg-transparent text-text-secondary cursor-pointer rounded-md transition-all hover:bg-surface-secondary hover:text-text-primary" onClick={() => setShowForm(false)}>
+								<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
 										strokeLinecap="round"
 										strokeLinejoin="round"
@@ -213,7 +213,7 @@ const user = await auth.getUser();`}
 							</button>
 						</div>
 						<form onSubmit={handleSubmit}>
-							<div className="modal-body">
+							<div className="p-5 text-text-primary">
 								<div className="form-group">
 									<label htmlFor="projectName">Project Name</label>
 									<input
@@ -236,7 +236,7 @@ const user = await auth.getUser();`}
 									/>
 								</div>
 							</div>
-							<div className="modal-footer">
+							<div className="flex items-center justify-end gap-3 p-4 px-5 border-t border-card-border">
 								<button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>
 									Cancel
 								</button>

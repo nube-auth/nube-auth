@@ -28,6 +28,7 @@ import {
 	Sun03Icon,
 	Moon02Icon,
 	ComputerIcon,
+	Layers01Icon,
 } from "@hugeicons/core-free-icons";
 import config from "./config";
 import { useLogout, useProjects } from "./hooks/api";
@@ -207,7 +208,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 											.find((p) => p.id === selectedProject)
 											?.name?.charAt(0)
 											.toUpperCase() || "P"
-									: "A"}
+									: <Icon icon={Layers01Icon} size={18} className="text-white" />}
 							</div>
 							<span className="project-selector-name">
 								{selectedProject
@@ -240,7 +241,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 										}}
 										className={`w-full p-3 text-left border-none border-b border-sidebar-border cursor-pointer text-13px font-medium transition-all duration-150 flex items-center gap-2.5 outline-none hover:bg-[rgba(255,255,255,0.05)] ${!selectedProject ? "bg-[rgba(139,92,246,0.15)] text-primary" : "bg-transparent text-[rgba(255,255,255,0.8)]"}`}
 									>
-										<Icon icon={LayoutGridIcon} size={16} className="shrink-0 opacity-70" />
+										<Icon icon={Layers01Icon} size={16} className="shrink-0 opacity-70" />
 										<span>All Projects</span>
 									</button>
 									{projects.map((project) => (

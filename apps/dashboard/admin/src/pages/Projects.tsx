@@ -8,7 +8,7 @@ import {
 	Menu01Icon,
 	Add01Icon,
 	Cancel01Icon,
-	Folder01Icon,
+	Layers01Icon,
 	FlashIcon,
 	LockIcon,
 	SecurityCheckIcon,
@@ -73,59 +73,19 @@ export function ProjectsPage() {
 	const hasProjects = projects && projects.length > 0;
 
 	return (
-		<div className="space-y-6">
-			{/* Page Header */}
-			<div className="page-header">
-				<div>
-					<h1 className="page-title">Projects</h1>
-					<p className="page-description">Manage your authentication projects</p>
-				</div>
-				{hasProjects && (
-					<div className="flex gap-3 items-center">
-						<div
-							className="flex bg-surface-secondary rounded-lg p-1 gap-1"
-						>
-							<button
-								type="button"
-								onClick={() => setViewMode("grid")}
-								className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
-									viewMode === "grid" ? "bg-bg-primary text-text-primary" : "bg-transparent text-text-secondary"
-								}`}
-							>
-								<Icon icon={GridViewIcon} size={14} bold={viewMode === "grid"} />
-								Grid
-							</button>
-							<button
-								type="button"
-								onClick={() => setViewMode("table")}
-								className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
-									viewMode === "table" ? "bg-bg-primary text-text-primary" : "bg-transparent text-text-secondary"
-								}`}
-							>
-								<Icon icon={Menu01Icon} size={14} bold={viewMode === "table"} />
-								Table
-							</button>
-						</div>
-						<button type="button" onClick={() => setShowForm(!showForm)} className="btn btn-primary">
-							<Icon icon={Add01Icon} size={16} bold />
-							New Project
-						</button>
-					</div>
-				)}
-			</div>
-
+		<>
 			{/* Create Project Modal/Form */}
 			{showForm && (
-				<div className="modal-overlay" onClick={() => setShowForm(false)}>
-					<div className="modal" onClick={(e) => e.stopPropagation()}>
-						<div className="modal-header">
-							<h3>Create New Project</h3>
-							<button type="button" className="modal-close" onClick={() => setShowForm(false)}>
+				<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[10001] p-8 pl-[292px]" onClick={() => setShowForm(false)}>
+					<div className="bg-card-bg border border-card-border rounded-xl w-full max-w-500px max-h-[calc(100vh-64px)] overflow-y-auto shadow-lg" onClick={(e) => e.stopPropagation()}>
+						<div className="flex items-center justify-between p-4 px-5 border-b border-card-border">
+							<h3 className="text-18px font-600 text-text-primary m-0">Create New Project</h3>
+							<button type="button" className="w-8 h-8 flex items-center justify-center border-none bg-transparent text-text-secondary cursor-pointer rounded-md transition-all hover:bg-surface-secondary hover:text-text-primary" onClick={() => setShowForm(false)}>
 								<Icon icon={Cancel01Icon} size={20} />
 							</button>
 						</div>
 						<form onSubmit={handleSubmit}>
-							<div className="modal-body">
+							<div className="p-5 text-text-primary">
 								<div className="form-group">
 									<label htmlFor="projectName">Project Name *</label>
 									<input
@@ -162,7 +122,7 @@ export function ProjectsPage() {
 									/>
 								</div>
 							</div>
-							<div className="modal-footer">
+							<div className="flex items-center justify-end gap-3 p-4 px-5 border-t border-card-border">
 								<button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>
 									Cancel
 								</button>
@@ -179,15 +139,61 @@ export function ProjectsPage() {
 				</div>
 			)}
 
+			<div className="space-y-6">
+				{/* Page Header */}
+				<div className="page-header">
+					<div>
+						<h1 className="page-title">Projects</h1>
+						<p className="page-description">Manage your authentication projects</p>
+					</div>
+					{hasProjects && (
+						<div className="flex gap-3 items-center">
+							<div
+								className="flex bg-surface-secondary rounded-lg p-1 gap-1"
+							>
+								<button
+									type="button"
+									onClick={() => setViewMode("grid")}
+									className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
+										viewMode === "grid" ? "bg-bg-primary text-text-primary" : "bg-transparent text-text-secondary"
+									}`}
+								>
+									<Icon icon={GridViewIcon} size={14} bold={viewMode === "grid"} />
+									Grid
+								</button>
+								<button
+									type="button"
+									onClick={() => setViewMode("table")}
+									className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
+										viewMode === "table" ? "bg-bg-primary text-text-primary" : "bg-transparent text-text-secondary"
+									}`}
+								>
+									<Icon icon={Menu01Icon} size={14} bold={viewMode === "table"} />
+									Table
+								</button>
+							</div>
+							<button type="button" onClick={() => setShowForm(!showForm)} className="btn btn-primary">
+								<Icon icon={Add01Icon} size={16} bold />
+								New Project
+							</button>
+						</div>
+					)}
+				</div>
+
 			{/* Empty State */}
 			{!hasProjects && (
 				<div
 					className="flex flex-col items-center justify-center py-20 px-5 text-center"
 				>
-					<div
-						className="w-25 h-25 bg-gradient-to-br from-primary/15 to-primary/5 rounded-full flex items-center justify-center mb-6 border border-primary/20"
-					>
-						<Icon icon={Folder01Icon} size={48} className="text-primary" />
+					<div className="relative mb-6">
+						<div
+							className="w-25 h-25 bg-[rgba(99,102,241,0.1)] rounded-full flex items-center justify-center border border-[rgba(99,102,241,0.25)]"
+						>
+							<Icon icon={Layers01Icon} size={44} className="text-primary" />
+						</div>
+						<div className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary rounded-full flex items-center justify-center border-2 border-[var(--content-bg)]">
+							<Icon icon={Add01Icon} size={16} className="text-white" bold />
+						</div>
 					</div>
 					<h2
 						className="text-24px font-bold text-text-primary mb-3"
@@ -440,6 +446,6 @@ export function ProjectsPage() {
 					</table>
 				</div>
 			)}
-		</div>
-	);
+			</div>
+		</>	);
 }

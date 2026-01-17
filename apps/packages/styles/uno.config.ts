@@ -25,6 +25,11 @@ export default defineConfig({
 			"bg-muted": "var(--bg-muted)",
 			"bg-hover": "var(--bg-hover)",
 
+			// Card colors (admin dashboard)
+			"card-bg": "var(--card-bg)",
+			"card-border": "var(--card-border)",
+			"surface-secondary": "var(--surface-secondary, rgba(255, 255, 255, 0.03))",
+
 			border: "var(--border)",
 			"border-hover": "var(--border-hover)",
 
@@ -309,8 +314,11 @@ export default defineConfig({
 		["w-400px", { width: "400px" }],
 		["max-w-280px", { "max-width": "280px" }],
 		["max-w-400px", { "max-width": "400px" }],
+		["max-w-500px", { "max-width": "500px" }],
+		["max-w-600px", { "max-width": "600px" }],
 		["max-w-1100px", { "max-width": "1100px" }],
 		["mb--1px", { "margin-bottom": "-1px" }],
 		["border-l-3", { "border-left-width": "3px" }],
+		["pl-292px", { "padding-left": "292px" }],
 	],
 });
