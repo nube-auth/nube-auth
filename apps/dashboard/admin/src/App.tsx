@@ -132,6 +132,11 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 	const navigate = useNavigate();
 	const location = useLocation();
 
+	// Close dropdown when location changes
+	useEffect(() => {
+		setShowProjectDropdown(false);
+	}, [location.pathname]);
+
 	// Detect current project from URL
 	const urlMatch = location.pathname.match(/\/projects\/([^/]+)/);
 	const selectedProject = urlMatch ? urlMatch[1] : null;
@@ -189,7 +194,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 				</div>
 
 				{/* Project Selector Dropdown */}
-				<div className="relative mx-3 my-4">
+				<div className="relative mx-3 my-4 z-10000">
 					<button
 						type="button"
 						onClick={() => setShowProjectDropdown(!showProjectDropdown)}
@@ -219,7 +224,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
 					{/* Dropdown Menu */}
 					{showProjectDropdown && (
-						<div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-sidebar-bg border border-sidebar-border rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.4)] z-10000 max-h-[280px] overflow-y-auto overflow-x-hidden">
+						<div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-[#0f1117] border border-sidebar-border rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.4)] z-10000 max-h-[180px] overflow-y-auto overflow-x-hidden">
 							{projects.length === 0 ? (
 								<div className="p-5 text-text-secondary text-13px text-center">
 									No projects available
@@ -321,10 +326,6 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 							>
 								Test Playground
 							</SidebarLink>
-							<a href={config.docsUrl} target="_blank" rel="noopener noreferrer" className="sidebar-link">
-								<Icon icon={BookOpen01Icon} size={18} />
-								Documentation
-							</a>
 						</div>
 					)}
 
@@ -405,7 +406,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 							</SidebarLink>
 							<SidebarLink
 								to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}/oauth`}
-								icon={<Icon icon={SecurityCheckIcon} size={18} />}
+								icon={<Icon icon={ShieldKeyIcon} size={18} />}
 							>
 								OAuth Config
 							</SidebarLink>
@@ -465,6 +466,20 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 							<Link to="/projects" className="breadcrumb-item">
 								Dashboard
 							</Link>
+							{selectedProject && (
+								<>
+									<span className="breadcrumb-divider">/</span>
+									<Link to={`/projects/${selectedProject}`} className="breadcrumb-item">
+										{projects.find((p) => p.id === selectedProject)?.name || "Project"}
+									</Link>
+								</>
+							)}
+							{location.pathname.includes("/apps/") && (
+								<>
+									<span className="breadcrumb-divider">/</span>
+									<span className="breadcrumb-item breadcrumb-current">App</span>
+								</>
+							)}
 						</nav>
 					</div>
 					<div className="top-header-right">

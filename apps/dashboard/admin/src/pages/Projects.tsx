@@ -80,8 +80,8 @@ export function ProjectsPage() {
 					<h1 className="page-title">Projects</h1>
 					<p className="page-description">Manage your authentication projects</p>
 				</div>
-				<div className="flex gap-3 items-center">
-					{hasProjects && (
+				{hasProjects && (
+					<div className="flex gap-3 items-center">
 						<div
 							className="flex bg-surface-secondary rounded-lg p-1 gap-1"
 						>
@@ -106,12 +106,12 @@ export function ProjectsPage() {
 								Table
 							</button>
 						</div>
-					)}
-					<button type="button" onClick={() => setShowForm(!showForm)} className="btn btn-primary">
-						<Icon icon={Add01Icon} size={16} bold />
-						New Project
-					</button>
-				</div>
+						<button type="button" onClick={() => setShowForm(!showForm)} className="btn btn-primary">
+							<Icon icon={Add01Icon} size={16} bold />
+							New Project
+						</button>
+					</div>
+				)}
 			</div>
 
 			{/* Create Project Modal/Form */}
@@ -185,20 +185,19 @@ export function ProjectsPage() {
 					className="flex flex-col items-center justify-center py-20 px-5 text-center"
 				>
 					<div
-						className="w-30 h-30 bg-gradient-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center mb-6"
+						className="w-25 h-25 bg-gradient-to-br from-primary/15 to-primary/5 rounded-full flex items-center justify-center mb-6 border border-primary/20"
 					>
-						<Icon icon={Folder01Icon} size={56} className="text-primary" />
+						<Icon icon={Folder01Icon} size={48} className="text-primary" />
 					</div>
 					<h2
 						className="text-24px font-bold text-text-primary mb-3"
 					>
-						Welcome to Proofa!
+						Create your first project
 					</h2>
 					<p
-						className="text-15px text-text-secondary max-w-120 mb-8 leading-relaxed"
+						className="text-15px text-text-secondary max-w-100 mb-8 leading-relaxed"
 					>
-						Get started by creating your first project. Projects help you organize your applications and
-						manage authentication across your services.
+						Projects help you organize your applications and manage authentication across your services.
 					</p>
 					<button
 						type="button"
@@ -206,10 +205,10 @@ export function ProjectsPage() {
 						className="btn btn-primary py-3 px-6 text-15px"
 					>
 						<Icon icon={Add01Icon} size={18} bold />
-						Create Your First Project
+						New Project
 					</button>
 					<div
-						className="mt-12 flex gap-8 text-text-tertiary text-13px"
+						className="mt-10 flex gap-8 text-text-tertiary text-13px"
 					>
 						<div className="flex items-center gap-2">
 							<Icon icon={FlashIcon} size={16} />
