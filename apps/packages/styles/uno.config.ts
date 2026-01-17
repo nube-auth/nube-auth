@@ -138,9 +138,9 @@ export default defineConfig({
 		"breadcrumb-current": "font-medium text-text-primary",
 
 		// Buttons - Enhanced for admin
-		"btn": "inline-flex items-center justify-center gap-2 px-4 py-2.5 text-13px font-medium rounded-md border-none cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed",
-		"btn-primary": "btn bg-primary text-white hover:bg-primary-hover",
-		"btn-secondary": "btn bg-card-bg border border-card-border text-text-secondary hover:border-card-hover-border hover:text-text-primary",
+		"btn": "inline-flex items-center justify-center gap-2 px-4 py-2.5 text-13px font-medium rounded-md cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed border-none",
+		"btn-primary": "btn bg-primary text-white hover:bg-primary-hover border-none",
+		"btn-secondary": "btn bg-card-bg text-text-secondary hover:bg-card-hover-bg hover:text-text-primary border border-card-border",
 		"btn-danger": "btn bg-danger text-white hover:bg-red-600",
 		"btn-ghost": "btn bg-transparent text-text-secondary hover:bg-content-bg hover:text-text-primary",
 		"btn-sm": "px-3 py-1.5 text-12px",

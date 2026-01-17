@@ -77,9 +77,9 @@ export function ProjectsPage() {
 		<>
 			{/* Create Project Modal/Form */}
 			{showForm && (
-				<div className="modal-overlay pl-[292px]" onClick={() => setShowForm(false)}>
-					<div className="modal-box max-w-500px max-h-[calc(100vh-64px)] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-						<div className="card-header">
+			<div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 pl-[292px]" onClick={() => setShowForm(false)}>
+				<div className="bg-[#0F1624] border border-card-border rounded-xl w-full max-w-500px max-h-[calc(100vh-64px)] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+					<div className="flex items-center justify-between px-5 py-4 border-b border-card-border">
 							<h3 className="text-18px font-600 text-text-primary m-0">Create New Project</h3>
 							<button type="button" className="btn-ghost w-8 h-8 p-0" onClick={() => setShowForm(false)}>
 								<Icon icon={Cancel01Icon} size={20} />
@@ -371,7 +371,7 @@ export function ProjectsPage() {
 							{projects.map((project) => (
 								<tr
 									key={project.id}
-									className="border-b border-border-secondary transition-colors cursor-pointer hover:bg-surface-hover"
+									className="border-border-secondary transition-colors cursor-pointer hover:bg-surface-hover"
 									onClick={() => (window.location.href = `/projects/${project.id}`)}
 								>
 									<td className="p-4">
