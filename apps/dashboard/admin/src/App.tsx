@@ -239,7 +239,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 											navigate("/projects");
 											setShowProjectDropdown(false);
 										}}
-										className={`w-full p-3 text-left border-none border-b border-sidebar-border cursor-pointer text-13px font-medium transition-all duration-150 flex items-center gap-2.5 outline-none hover:bg-white/5 ${!selectedProject ? "bg-primary/15 text-primary" : "bg-transparent text-text-secondary"}` }
+									className={`w-full p-3 text-left border-none border-b border-sidebar-border cursor-pointer text-13px font-medium transition-all duration-150 flex items-center gap-2.5 outline-none hover:bg-white/5 ${!selectedProject ? "bg-white/5 text-primary" : "bg-transparent text-text-secondary"}` }
 									>
 										<Icon icon={Layers01Icon} size={16} className="shrink-0 opacity-70" />
 										<span>All Projects</span>
@@ -252,11 +252,11 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 												navigate(`/projects/${project.id}`);
 												setShowProjectDropdown(false);
 											}}
-										className={`w-full py-2.5 px-3 text-left border-none border-b border-white/5 cursor-pointer text-13px transition-all duration-150 block outline-none hover:bg-white/5 ${selectedProject === project.id ? "bg-primary/15 text-primary" : "bg-transparent text-text-secondary"}` }
+										className={`w-full py-2.5 px-3 text-left border-none border-b border-white/5 cursor-pointer text-13px transition-all duration-150 block outline-none hover:bg-white/5 ${selectedProject === project.id ? "bg-white/5 text-primary" : "bg-transparent text-text-secondary"}` }
 										>
 											<div className="flex items-center gap-2.5">
 												<div
-												className={`w-8 h-8 rounded-md flex items-center justify-center text-13px font-semibold shrink-0 ${selectedProject === project.id ? "bg-primary text-white" : "bg-primary/20 text-primary"}` }
+												className={`w-8 h-8 rounded-md flex items-center justify-center text-13px font-semibold shrink-0 ${selectedProject === project.id ? "bg-primary text-white" : "bg-white/5 text-text-secondary"}` }
 												>
 													{project.name.charAt(0).toUpperCase()}
 												</div>

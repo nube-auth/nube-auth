@@ -14,6 +14,7 @@ import {
 	SecurityCheckIcon,
 	DollarCircleIcon,
 	ArrowRight01Icon,
+	Tick02Icon,
 } from "@hugeicons/core-free-icons";
 
 type ViewMode = "grid" | "table";
@@ -150,13 +151,13 @@ export function ProjectsPage() {
 					{hasProjects && (
 						<div className="flex gap-3 items-center">
 							<div
-								className="flex bg-surface-secondary rounded-lg p-1 gap-1"
+								className="flex bg-card-bg border border-card-border rounded-lg p-1 gap-1"
 							>
 								<button
 									type="button"
 									onClick={() => setViewMode("grid")}
 									className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
-										viewMode === "grid" ? "bg-bg-primary text-text-primary" : "bg-transparent text-text-secondary"
+										viewMode === "grid" ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:text-text-primary"
 									}`}
 								>
 									<Icon icon={GridViewIcon} size={14} bold={viewMode === "grid"} />
@@ -166,7 +167,7 @@ export function ProjectsPage() {
 									type="button"
 									onClick={() => setViewMode("table")}
 									className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
-										viewMode === "table" ? "bg-bg-primary text-text-primary" : "bg-transparent text-text-secondary"
+										viewMode === "table" ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:text-text-primary"
 									}`}
 								>
 									<Icon icon={Menu01Icon} size={14} bold={viewMode === "table"} />
@@ -371,7 +372,7 @@ export function ProjectsPage() {
 							{projects.map((project) => (
 								<tr
 									key={project.id}
-									className="border-border-secondary transition-colors cursor-pointer hover:bg-surface-hover"
+								className="transition-colors cursor-pointer hover:bg-surface-hover"
 									onClick={() => (window.location.href = `/projects/${project.id}`)}
 								>
 									<td className="p-4">
@@ -426,15 +427,10 @@ export function ProjectsPage() {
 											${(project.totalRevenue || 0).toFixed(2)}
 										</span>
 									</td>
-									<td className="p-4 text-center">
-										<span
-											className="inline-flex items-center gap-1 px-2.5 py-1 bg-success/10 text-success rounded-xl text-12px font-medium"
-										>
-											<span
-												className="w-1.5 h-1.5 bg-current rounded-full"
-											/>
-											Active
-										</span>
+									<td className="p-4">
+										<div className="flex items-center justify-center">
+											<Icon icon={Tick02Icon} size={18} className="text-success" bold />
+										</div>
 									</td>
 									<td className="p-4 text-center">
 										<Icon icon={ArrowRight01Icon} size={16} className="text-text-tertiary" />

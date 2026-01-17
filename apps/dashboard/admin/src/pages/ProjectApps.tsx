@@ -55,24 +55,26 @@ export function ProjectAppsPage() {
 				</div>
 				<div className="flex gap-3 items-center">
 					{/* View Mode Toggle */}
-					<div className="flex gap-1 p-1 bg-bg-muted rounded-lg">
+					<div className="flex gap-1 p-1 bg-card-bg border border-card-border rounded-lg">
 						<button
 							type="button"
 							onClick={() => setViewMode("grid")}
-							className={`px-3 py-2 border-none rounded-md cursor-pointer transition-all ${
-								viewMode === "grid" ? "bg-bg-surface text-text-primary" : "bg-transparent text-text-tertiary"
+							className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
+								viewMode === "grid" ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:text-text-primary"
 							}`}
 						>
-							<Icon icon={LayoutGridIcon} size={18} />
+							<Icon icon={LayoutGridIcon} size={14} bold={viewMode === "grid"} />
+							Grid
 						</button>
 						<button
 							type="button"
 							onClick={() => setViewMode("table")}
-							className={`px-3 py-2 border-none rounded-md cursor-pointer transition-all ${
-								viewMode === "table" ? "bg-bg-surface text-text-primary" : "bg-transparent text-text-tertiary"
+							className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
+								viewMode === "table" ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:text-text-primary"
 							}`}
 						>
-							<Icon icon={MenuIcon} size={18} />
+							<Icon icon={MenuIcon} size={14} bold={viewMode === "table"} />
+							Table
 						</button>
 					</div>
 
