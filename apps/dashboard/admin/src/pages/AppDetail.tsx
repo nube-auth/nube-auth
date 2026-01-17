@@ -14,7 +14,7 @@ import {
 	Key01Icon,
 	Share08Icon,
 	CreditCardIcon,
-	PluginIcon,
+	PlugIcon,
 } from "@hugeicons/core-free-icons";
 
 export function AppDetailPage() {

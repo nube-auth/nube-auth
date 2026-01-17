@@ -5,6 +5,7 @@ import App from "./App";
 import "@unocss/reset/tailwind.css";
 import "daisyui/daisyui.css";
 import "@proofa/styles/base.css";
+import "@proofa/styles/theme.css";
 import "virtual:uno.css";
 import "./index.css";
 

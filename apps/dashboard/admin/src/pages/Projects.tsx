@@ -57,14 +57,15 @@ export function ProjectsPage() {
 		return (
 			<div className="loading">
 				<div className="spinner" />
+				<span className="loading-text">Loading projects...</span>
 			</div>
 		);
 	}
 
 	if (error) {
 		return (
-			<div className="alert alert-danger">
-				<Icon icon={Alert02Icon} size={20} bold className="text-danger" />
+			<div className="alert-danger">
+				<Icon icon={Alert02Icon} size={20} bold className="alert-icon" />
 				<span>Error loading projects. Please try again.</span>
 			</div>
 		);
@@ -76,11 +77,11 @@ export function ProjectsPage() {
 		<>
 			{/* Create Project Modal/Form */}
 			{showForm && (
-				<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[10001] p-8 pl-[292px]" onClick={() => setShowForm(false)}>
-					<div className="bg-card-bg border border-card-border rounded-xl w-full max-w-500px max-h-[calc(100vh-64px)] overflow-y-auto shadow-lg" onClick={(e) => e.stopPropagation()}>
-						<div className="flex items-center justify-between p-4 px-5 border-b border-card-border">
+				<div className="modal-overlay pl-[292px]" onClick={() => setShowForm(false)}>
+					<div className="modal-box max-w-500px max-h-[calc(100vh-64px)] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+						<div className="card-header">
 							<h3 className="text-18px font-600 text-text-primary m-0">Create New Project</h3>
-							<button type="button" className="w-8 h-8 flex items-center justify-center border-none bg-transparent text-text-secondary cursor-pointer rounded-md transition-all hover:bg-surface-secondary hover:text-text-primary" onClick={() => setShowForm(false)}>
+							<button type="button" className="btn-ghost w-8 h-8 p-0" onClick={() => setShowForm(false)}>
 								<Icon icon={Cancel01Icon} size={20} />
 							</button>
 						</div>
@@ -254,13 +255,11 @@ export function ProjectsPage() {
 										{project.name.charAt(0).toUpperCase()}
 									</div>
 									<div>
-										<h3
-											className="text-16px font-semibold text-text-primary mb-0.5"
-										>
+										<h3 className="project-name">
 											{project.name}
 										</h3>
 										{project.slug && (
-											<p className="text-12px text-text-tertiary">
+												<p className="project-slug">
 												{project.slug}
 											</p>
 										)}
@@ -329,7 +328,7 @@ export function ProjectsPage() {
 
 			{/* Table View */}
 			{hasProjects && viewMode === "table" && (
-				<div className="card p-0 overflow-hidden">
+				<div className="card-hover p-0">
 					<table className="w-full border-collapse">
 						<thead>
 							<tr

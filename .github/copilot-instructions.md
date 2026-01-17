@@ -195,6 +195,120 @@ if (env.IS_DEVELOPMENT) {
 
 ## UI/Dashboard Standards
 
+### CSS and Styling Architecture
+**Use CSS Variables + UnoCSS pattern. NEVER mix component CSS classes with UnoCSS utilities.**
+
+**Pattern: Shared Theme + UnoCSS Utilities**
+
+#### What Goes Where:
+
+**`apps/packages/styles/theme.css` (shared theme - single source of truth):**
+- ✅ All CSS Variables for theming (colors, typography, spacing)
+- ✅ Dark theme overrides ([data-theme="dark"])
+- ✅ Auto dark mode (@media (prefers-color-scheme: dark))
+- ✅ Imported by all dashboards
+- ❌ Component classes
+- ❌ Dashboard-specific styles
+
+**`apps/dashboard/*/src/index.css` (dashboard-specific only):**
+- ✅ Global resets (*, body, html)
+- ✅ Font imports (@font-face)
+- ✅ Base typography styles (h1-h6, p, a)
+- ✅ Dashboard-specific overrides (rare)
+- ❌ Theme variables (use shared theme.css)
+- ❌ Component classes (.card, .button, .modal)
+- ❌ Layout classes (.sidebar, .main-content, .grid)
+- ❌ Utility classes (.flex, .mt-4, .text-center)
+
+**`apps/packages/styles/uno.config.ts` (shared config):**
+- ✅ Theme tokens referencing CSS variables
+- ✅ Custom shortcuts for repeated patterns
+- ✅ Custom rules for missing utilities
+- ✅ Shared across all dashboards
+
+**Component files (TSX/TSX):**
+- ✅ All styling via UnoCSS utility classes
+- ✅ className="flex items-center gap-4 bg-card-bg border border-card-border rounded-lg p-6"
+- ✅ Co-located with markup for better DX
+
+**Implementation:**
+```css
+/* ❌ WRONG - Component classes in index.css */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 24px;
+}
+```
+```tsx
+// ❌ WRONG - Using CSS class
+<div className="card">Content</div>
+```
+
+```css
+/* ❌ WRONG - Theme variables duplicated in each dashboard's index.css */
+/* apps/dashboard/admin/src/index.css */
+:root {
+  --card-bg: rgba(255, 255, 255, 0.04);
+  --card-border: rgba(255, 255, 255, 0.06);
+}
+
+/* apps/dashboard/user/src/index.css */
+:root {
+  --card-bg: rgba(255, 255, 255, 0.04);  /* Duplicated! */
+  --card-border: rgba(255, 255, 255, 0.06);
+}
+```
+
+```css
+/* ✅ CORRECT - Single shared theme file */
+/* apps/packages/styles/theme.css */
+:root {
+  --card-bg: rgba(255, 255, 255, 0.04);
+  --card-border: rgba(255, 255, 255, 0.06);
+  --primary: #6366f1;
+  /* ... all theme variables ... */
+}
+
+[data-theme="dark"] {
+  --content-bg: #0F1624;
+  /* ... dark theme overrides ... */
+}
+```
+```typescript
+// Import in each dashboard's main.tsx
+import '@proofa/styles/theme.css';
+import './index.css'; // Dashboard-specific styles only
+```
+```tsx
+// ✅ CORRECT - UnoCSS utilities
+<div className="bg-card-bg border border-card-border rounded-lg p-6">
+  Content
+</div>
+
+// ✅ ALSO CORRECT - UnoCSS shortcut for repeated patterns
+// Define in uno.config.ts: shortcuts: { 'card': 'bg-card-bg border border-card-border rounded-lg p-6' }
+<div className="card">Content</div>
+```
+
+**Benefits:**
+- Single source of truth (theme.css defines all colors, change once = update everywhere)
+- Zero duplication across dashboards
+- Smaller bundle size (atomic CSS is more efficient)
+- Better DX (see all styles inline, no file jumping)
+- Consistency guaranteed across all dashboards
+- No CSS specificity conflicts
+
+**Migration Pattern:**
+1. Extract all theme variables from dashboard index.css files
+2. Create shared `apps/packages/styles/theme.css` with all theme variables
+3. Import theme.css in each dashboard's main.tsx
+4. Keep only global resets + dashboard-specific styles in index.css
+5. Convert all component classes to UnoCSS utilities
+6. Use UnoCSS shortcuts for repeated patterns (e.g., card, button variants)
+7. Remove component CSS from index.css files
+
 ### Dropdown Components
 **NEVER use browser default `<select>` elements.**
 
@@ -423,6 +537,8 @@ See [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) for detailed guidelines on:
 8. **Array element mutations**: Replace entire arrays, never update by index
 9. **Native select elements**: Use custom dropdown components
 10. **Native fetch**: Use pingpong-fetch library instead
+11. **Component CSS classes**: Use UnoCSS utilities, not .card/.button in index.css
+12. **Mixed styling**: Never use both CSS classes and UnoCSS for same purpose
 
 ## Quick Reference
 

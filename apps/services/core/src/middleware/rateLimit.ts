@@ -104,7 +104,7 @@ export function rateLimitMiddleware(options: RateLimitOptions) {
  * Get client IP address from request headers
  * Checks common headers in order of preference
  */
-export function getClientIp(c: Context): string {
+export function getClientIp(c: Context): string | null {
 	// Cloudflare
 	const cfConnectingIp = c.req.header("cf-connecting-ip");
 	if (cfConnectingIp) return cfConnectingIp;

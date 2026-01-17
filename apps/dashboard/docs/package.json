@@ -5,21 +5,18 @@
 	"type": "module",
 	"packageManager": "pnpm@9.15.9",
 	"scripts": {
-		"dev": "astro dev --port 4322",
-		"build": "astro build",
+		"dev": "vitepress dev --port 4322",
+		"build": "vitepress build",
 		"typecheck": "tsc --noEmit",
-		"preview": "astro preview --port 4322",
-		"astro": "astro"
+		"preview": "vitepress preview --port 4322"
 	},
 	"dependencies": {
-		"@astrojs/starlight": "^0.37.1",
-		"astro": "^5.16.6",
-		"sharp": "^0.34.5",
 		"@proofa/styles": "workspace:*"
 	},
 	"devDependencies": {
 		"@types/node": "^25.0.3",
 		"typescript": "^5.9.3",
-		"unocss": "^66.5.12"
+		"vitepress": "^1.5.0",
+		"vue": "^3.5.13"
 	}
 }

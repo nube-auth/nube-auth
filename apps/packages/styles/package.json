@@ -7,7 +7,8 @@
   "exports": {
     ".": "./uno.config.ts",
     "./uno.config": "./uno.config.ts",
-    "./base.css": "./base.css"
+    "./base.css": "./base.css",
+    "./theme.css": "./theme.css"
   },
   "dependencies": {
     "unocss": "^66.5.12"
