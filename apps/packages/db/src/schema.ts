@@ -67,6 +67,10 @@ export const sessions = pgTable(
 		last_seen_at: timestamp("last_seen_at").notNull().defaultNow(),
 		expires_at: timestamp("expires_at").notNull(),
 		revoked_at: timestamp("revoked_at"),
+		// Device/location tracking
+		ip_address: varchar("ip_address", { length: 50 }),
+		user_agent: text("user_agent"),
+		country: varchar("country", { length: 2 }), // ISO 3166-1 alpha-2 country code
 	},
 	(table) => [
 		index("sessions_user_id_idx").on(table.user_id),

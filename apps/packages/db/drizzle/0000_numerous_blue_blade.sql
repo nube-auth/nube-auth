@@ -358,6 +358,8 @@ CREATE TABLE "sessions" (
 	"last_seen_at" timestamp DEFAULT now() NOT NULL,
 	"expires_at" timestamp NOT NULL,
 	"revoked_at" timestamp,
+	"ip_address" varchar(50),
+	"user_agent" text,
 	CONSTRAINT "sessions_public_id_unique" UNIQUE("public_id")
 );
 --> statement-breakpoint

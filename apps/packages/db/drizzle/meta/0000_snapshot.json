@@ -1,5 +1,5 @@
 {
-  "id": "442708d9-6f9a-43ca-9abe-c727b08738ef",
+  "id": "794de3ed-8a3b-4b7d-a270-07297ff86e34",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -3999,6 +3999,18 @@
         "revoked_at": {
           "name": "revoked_at",
           "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         }

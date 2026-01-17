@@ -153,6 +153,9 @@ meRoutes.get("/sessions", async (c: Context) => {
 				lastSeenAt: new Date(s.last_seen_at).toISOString(),
 				expiresAt: new Date(s.expires_at).toISOString(),
 				isCurrent: s.public_id === auth.coreSessionId,
+				ipAddress: s.ip_address || null,
+				userAgent: s.user_agent || null,
+				country: s.country || null,
 			})),
 		});
 	} catch (error) {

@@ -1,6 +1,6 @@
 import type React from "react";
 import { useEffect, useState } from "react";
-import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./hooks/api";
 import { LoginPage } from "./pages/Login";
 import { ProfilePage } from "./pages/Profile";
@@ -28,17 +28,6 @@ function useTheme() {
 	}, [theme]);
 
 	return { theme, setTheme };
-}
-
-function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
-	const location = useLocation();
-	const isActive = location.pathname === to;
-
-	return (
-		<Link to={to} className={isActive ? "nav-link nav-link-active" : "nav-link"}>
-		{children}
-		</Link>
-	);
 }
 
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -78,7 +67,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 	const getThemeIcon = () => {
 		if (theme === "light") {
 			return (
-				<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
 						strokeLinecap="round"
 						strokeLinejoin="round"
@@ -90,7 +79,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 		}
 		if (theme === "dark") {
 			return (
-				<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
 						strokeLinecap="round"
 						strokeLinejoin="round"
@@ -101,7 +90,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 			);
 		}
 		return (
-			<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path
 					strokeLinecap="round"
 					strokeLinejoin="round"
@@ -122,37 +111,12 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 						<span className="header-logo-text">Proofa</span>
 						<span className="header-beta-badge">Beta</span>
 					</Link>
-
-					<nav className="header-nav">
-						<NavLink to="/profile">
-							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-								/>
-							</svg>
-							Profile
-						</NavLink>
-						<NavLink to="/sessions">
-							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-								/>
-							</svg>
-							Sessions
-						</NavLink>
-					</nav>
 				</div>
 
 				<div className="header-right">
-					<button type="button" onClick={cycleTheme} className="header-btn" title={`Current: ${theme} mode`}>
+					<button type="button" onClick={cycleTheme} className="header-theme-btn" title={`Current: ${theme} mode`}>
 						{getThemeIcon()}
-						<span className="theme-label">{theme.charAt(0).toUpperCase() + theme.slice(1)}</span>
+						<span className="header-theme-label">{theme.charAt(0).toUpperCase() + theme.slice(1)}</span>
 					</button>
 
 					<div className="header-user">

@@ -104,7 +104,7 @@ export function rateLimitMiddleware(options: RateLimitOptions) {
  * Get client IP address from request headers
  * Checks common headers in order of preference
  */
-function getClientIp(c: Context): string | null {
+export function getClientIp(c: Context): string {
 	// Cloudflare
 	const cfConnectingIp = c.req.header("cf-connecting-ip");
 	if (cfConnectingIp) return cfConnectingIp;
@@ -130,6 +130,23 @@ function getClientIp(c: Context): string | null {
 	// For local development, use localhost as identifier
 	// This allows local development without being blocked
 	return "127.0.0.1";
+}
+
+/**
+ * Get client country from request headers
+ * Uses Cloudflare's cf-ipcountry header if available
+ */
+export function getClientCountry(c: Context): string | null {
+	// Cloudflare provides country code
+	const cfCountry = c.req.header("cf-ipcountry");
+	if (cfCountry && cfCountry !== "XX") return cfCountry;
+
+	// Vercel/other platforms may use x-vercel-ip-country
+	const vercelCountry = c.req.header("x-vercel-ip-country");
+	if (vercelCountry) return vercelCountry;
+
+	// For local development, return null (unknown)
+	return null;
 }
 
 /**

@@ -1,6 +1,6 @@
 /* ==========================================================================
-   Proofa User Dashboard - CSS Variables Only
-   All component styles moved to UnoCSS
+   Proofa User Dashboard - CSS Variables & Base Styles
+   Component styles are in UnoCSS shortcuts (uno.config.ts)
    ========================================================================== */
 
 /* CSS Variables - Light Theme */
@@ -11,10 +11,10 @@
   --primary-light: #eff6ff;
   
   /* Background colors */
-  --bg-page: #ffffff;
+  --bg-page: #f9fafb;
   --bg-surface: #ffffff;
-  --bg-muted: #f9fafb;
-  --bg-hover: #f3f4f6;
+  --bg-muted: #f3f4f6;
+  --bg-hover: #e5e7eb;
   
   /* Border colors */
   --border: #e5e7eb;
@@ -40,6 +40,7 @@
   --info-text: #1e40af;
   
   /* Border radius */
+  --radius-sm: 4px;
   --radius: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
@@ -114,7 +115,10 @@
   }
 }
 
-/* Reset */
+/* ==========================================================================
+   Base Reset & Body
+   ========================================================================== */
+
 *, *::before, *::after {
   margin: 0;
   padding: 0;
@@ -129,15 +133,42 @@ body {
   line-height: 1.5;
 }
 
-/* Custom styles for specific elements that need complex selectors */
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--success);
+/* ==========================================================================
+   Form Elements (need base styling for proper resets)
+   ========================================================================== */
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  transition: border-color var(--transition);
 }
 
-/* Table styles (complex selectors need custom CSS) */
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+input:disabled,
+textarea:disabled {
+  background: var(--bg-muted);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   Table Styles (complex selectors not possible with utilities)
+   ========================================================================== */
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -174,61 +205,9 @@ tbody tr:hover {
   background: var(--bg-muted);
 }
 
-/* Table sub-components */
-.table-account {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.table-account-icon {
-  width: 36px;
-  height: 36px;
-  background: var(--bg-muted);
-  border-radius: var(--radius);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-}
-
-.table-account-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.table-account-name {
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.table-account-email {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-/* Info list (Profile page specific) */
-.info-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.info-list-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.info-list-item:last-child {
-  border-bottom: none;
-}
-
-.info-list-label {
-  display: flex;
-  flex-direction: column;
-}
+/* ==========================================================================
+   Info List (Profile page - complex child selectors)
+   ========================================================================== */
 
 .info-list-label span:first-child {
   font-size: 14px;
@@ -242,11 +221,6 @@ tbody tr:hover {
   margin-top: 2px;
 }
 
-.info-list-value {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
 .info-list-value code {
   font-family: 'SF Mono', Monaco, monospace;
   font-size: 11px;
@@ -255,61 +229,20 @@ tbody tr:hover {
   border-radius: 4px;
 }
 
-/* Current session card sub-components */
-.current-session-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+/* ==========================================================================
+   Profile Avatar Gradient Variant
+   ========================================================================== */
+
+.profile-avatar.has-icon {
+  background: linear-gradient(135deg, var(--primary), #8b5cf6);
+  color: white;
+  border: none;
 }
 
-.current-session-icon {
-  width: 40px;
-  height: 40px;
-  background: var(--success-bg);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--success);
-}
+/* ==========================================================================
+   Animations
+   ========================================================================== */
 
-.current-session-icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.current-session-info h3 {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.current-session-info p {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-.current-session-meta {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.current-session-meta-item label {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  display: block;
-  margin-bottom: 4px;
-}
-
-.current-session-meta-item span {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-/* Animation */
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
@@ -319,7 +252,10 @@ tbody tr:hover {
   50% { opacity: 0.5; }
 }
 
-/* Responsive */
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
 @media (max-width: 768px) {
   .main-content {
     padding: 24px 16px;

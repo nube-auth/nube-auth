@@ -16,6 +16,7 @@ import { createId, createLogger, idPatterns, serializeError, type PlanSettings }
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { env } from "../../../config/env";
+import { getClientIp, getClientCountry } from "../../../middleware/rateLimit";
 
 const log = createLogger("auth-routes");
 const router = new Hono();
@@ -394,6 +395,11 @@ router.get("/callback/:provider", async (c: Context) => {
 		// Auto-provision license for the app on first login (if app_id provided)
 		await ensureLicenseForApp(db, userId, storedState.appId);
 
+		// Capture IP address, user-agent, and location for session tracking
+		const ipAddress = getClientIp(c);
+		const userAgent = c.req.header("user-agent") || null;
+		const country = getClientCountry(c);
+
 		// Create core session
 		log.debug({ userId }, "Creating session");
 		const sessionData = {
@@ -401,6 +407,9 @@ router.get("/callback/:provider", async (c: Context) => {
 			user_id: userId,
 			// created_at and last_seen_at will be set automatically by .defaultNow() in schema
 			expires_at: expiresAt,
+			ip_address: ipAddress,
+			user_agent: userAgent,
+			country: country,
 		};
 		const session = await sessionQueries.create(db, sessionData);
 		log.info({ userId, sessionPublicId: session.public_id.substring(0, 8) }, "Session created successfully");

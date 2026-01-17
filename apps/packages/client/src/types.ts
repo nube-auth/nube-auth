@@ -24,9 +24,13 @@ export interface AuthStatus {
 
 export interface Session {
 	id: string;
-	createdAt: string;
+	createdAt: string | number;
 	expiresAt: string;
 	isCurrent?: boolean;
+	// Device/location info
+	ipAddress?: string | null;
+	userAgent?: string | null;
+	country?: string | null; // ISO 3166-1 alpha-2 country code
 }
 
 export interface License {

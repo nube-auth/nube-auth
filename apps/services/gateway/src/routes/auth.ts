@@ -216,12 +216,21 @@ authRoutes.get("/callback", async (c: Context) => {
 		// Store app session in Redis with Gateway session ID
 		// Store Core session ID and CSRF token in metadata
 		const appId = audience === "admin" ? "admin-dashboard" : "user-dashboard";
+		
+		// Capture IP address and user-agent for session tracking
+		const ipAddress = c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || 
+			c.req.header("x-real-ip") || 
+			"unknown";
+		const userAgent = c.req.header("user-agent") || "unknown";
+		
 		await sessionStore.setAppSession(gatewaySessionId, data.userId, appId, ttlSeconds, {
 			coreSessionId: code, // Store Core session in metadata
 			csrfToken, // Store CSRF token for validation
 			sessionType: audience, // Track session type for security
 			createdAt: Date.now(), // Track creation time for inactivity checks
 			lastActivityAt: Date.now(), // Track last activity
+			ipAddress, // IP address for location/security tracking
+			userAgent, // Browser/device info
 		});
 
 		// Create signed cookie with domain for cross-subdomain access
@@ -319,6 +328,12 @@ authRoutes.post("/login", async (c: Context) => {
 		const ttlSeconds = SESSION_TTL;
 		const resolvedAudience = audience === "admin" ? "admin" : "user";
 
+		// Capture IP address and user-agent for session tracking
+		const ipAddress = c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || 
+			c.req.header("x-real-ip") || 
+			"unknown";
+		const userAgent = c.req.header("user-agent") || "unknown";
+
 		// Store app session with Gateway session ID and CSRF token
 		await sessionStore.setAppSession(
 			gatewaySessionId,
@@ -328,6 +343,10 @@ authRoutes.post("/login", async (c: Context) => {
 			{
 				coreSessionId, // Store Core session in metadata
 				csrfToken, // Store CSRF token for validation
+				createdAt: Date.now(), // Track creation time
+				lastActivityAt: Date.now(), // Track last activity
+				ipAddress, // IP address for location/security tracking
+				userAgent, // Browser/device info
 			},
 		);
 
@@ -678,12 +697,16 @@ authRoutes.get("/sessions", async (c: Context) => {
 
 		for (const session of userSessions) {
 			const sessionData = session.sessionData;
+			const metadata = sessionData.metadata || {};
 			activeSessions.push({
 				id: session.id,
 				appId: sessionData.appId,
-				createdAt: (sessionData.metadata?.["createdAt"] as string) || new Date().toISOString(),
-				lastActivity: (sessionData.metadata?.["lastActivity"] as string) || new Date().toISOString(),
+				createdAt: (metadata["createdAt"] as number) || Date.now(),
+				lastActivity: (metadata["lastActivityAt"] as number) || Date.now(),
 				isCurrentSession: session.id === parseSessionCookie(userCookie || adminCookie || ""),
+				// Device/location info
+				ipAddress: (metadata["ipAddress"] as string) || null,
+				userAgent: (metadata["userAgent"] as string) || null,
 			});
 		}
 

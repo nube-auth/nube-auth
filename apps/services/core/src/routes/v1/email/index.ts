@@ -6,6 +6,7 @@ import { createEmailService } from "@proofa/shared/email";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { env } from "../../../config/env";
+import { getClientIp, getClientCountry } from "../../../middleware/rateLimit";
 
 const log = createLogger("email-routes");
 
@@ -209,6 +210,11 @@ router.post("/verify", async (c: Context) => {
 			});
 		}
 
+		// Capture IP address, user-agent, and location for session tracking
+		const ipAddress = getClientIp(c);
+		const userAgent = c.req.header("user-agent") || null;
+		const country = getClientCountry(c);
+
 		// Create core session
 		const sessionData = {
 			public_id: createId("session"),
@@ -216,6 +222,9 @@ router.post("/verify", async (c: Context) => {
 			created_at: now,
 			last_seen_at: now,
 			expires_at: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days
+			ip_address: ipAddress,
+			user_agent: userAgent,
+			country: country,
 		};
 
 		const session = await sessionQueries.create(db, sessionData);

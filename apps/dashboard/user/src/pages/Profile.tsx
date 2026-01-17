@@ -112,7 +112,7 @@ export function ProfilePage() {
 				<div className="info-item">
 					<div className="info-label">Account Type</div>
 					<div className="info-value">
-						<svg className="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -132,7 +132,7 @@ export function ProfilePage() {
 			{/* Tabs */}
 			<div className="tabs">
 				<Link to="/profile" className={location.pathname === "/profile" ? "tab tab-active" : "tab"}>
-					<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							strokeLinecap="round"
 							strokeLinejoin="round"
@@ -143,7 +143,7 @@ export function ProfilePage() {
 					Profile
 				</Link>
 				<Link to="/sessions" className={location.pathname === "/sessions" ? "tab tab-active" : "tab"}>
-					<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							strokeLinecap="round"
 							strokeLinejoin="round"
@@ -154,7 +154,7 @@ export function ProfilePage() {
 					Sessions
 				</Link>
 				<button type="button" className="tab" disabled>
-					<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							strokeLinecap="round"
 							strokeLinejoin="round"
@@ -222,7 +222,7 @@ export function ProfilePage() {
 									</>
 								) : (
 									<>
-										<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path
 												strokeLinecap="round"
 												strokeLinejoin="round"
