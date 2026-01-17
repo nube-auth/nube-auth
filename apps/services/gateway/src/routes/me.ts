@@ -89,6 +89,7 @@ meRoutes.patch("/", async (c: Context) => {
 			id: updated.public_id,
 			email: updated.primary_email,
 			name: updated.name,
+			createdAt: updated.created_at ? new Date(updated.created_at).toISOString() : null,
 		});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Update profile error:");
