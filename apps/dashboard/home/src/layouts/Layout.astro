@@ -25,6 +25,22 @@ const { title, description = "Proofa - Authentication, session management, and l
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
     
+    <!-- Critical CSS to prevent flash of white background -->
+    <style>
+      html, body {
+        min-height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      /* Default to dark, light for prefers-color-scheme: light */
+      html { background: #0f172a; }
+      @media (prefers-color-scheme: light) {
+        html:not([data-theme="dark"]) { background: #f8fafc; }
+      }
+      html[data-theme="light"] { background: #f8fafc; }
+      html[data-theme="dark"] { background: #0f172a; }
+    </style>
+    
     <!-- Theme Detection (prevents flash) -->
     <script is:inline>
       // Get theme preference: system, light, or dark

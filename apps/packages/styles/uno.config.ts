@@ -129,7 +129,7 @@ export default defineConfig({
 		"header-logo": "flex items-center gap-2 no-underline",
 		"header-logo-img": "w-7 h-7 object-contain",
 		"header-logo-text": "text-base font-semibold text-text-primary",
-		"header-beta-badge": "px-2 py-0.5 text-10px font-semibold uppercase tracking-wide text-primary border border-primary rounded-full ml-1",
+		"header-beta-badge": "px-2 py-0.5 text-10px font-semibold uppercase tracking-wider text-primary border border-primary/60 rounded-full ml-1",
 		"header-theme-btn":
 			"w-24 flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium text-text-secondary bg-bg-surface border border-border rounded-md cursor-pointer transition-all hover:bg-bg-hover hover:border-border-hover hover:text-text-primary",
 		"header-theme-label": "text-13px",

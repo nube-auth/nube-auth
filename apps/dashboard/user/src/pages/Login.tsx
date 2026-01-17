@@ -47,9 +47,9 @@ export function LoginPage() {
 
 	if (status === "error" && error) {
 		return (
-			<div className="min-h-screen flex items-center justify-center p-5 bg-gray-100">
-				<div className="w-full max-w-md bg-white rounded-xl shadow-xl p-10 text-center">
-					<div className="w-14 h-14 bg-red-100 text-red-500 rounded-lg flex items-center justify-center mx-auto mb-5">
+			<div className="login-container">
+				<div className="login-card">
+					<div className="w-14 h-14 bg-danger-bg text-danger rounded-lg flex items-center justify-center mx-auto mb-5">
 						<svg
 							className="w-8 h-8"
 							fill="none"
@@ -64,15 +64,15 @@ export function LoginPage() {
 							/>
 						</svg>
 					</div>
-					<h1 className="text-xl font-semibold text-gray-900 mb-2">Login Failed</h1>
-					<p className="text-sm text-gray-600 mb-6">
+					<h1 className="login-title">Login Failed</h1>
+					<p className="login-subtitle">
 						{error === "missing_code" && "Authentication code was missing from the response."}
 						{error === "exchange_failed" && "Failed to complete the authentication process."}
 						{error === "internal_error" && "An internal server error occurred."}
 						{!["missing_code", "exchange_failed", "internal_error"].includes(error) && `Error: ${error}`}
 					</p>
 
-					<div className="flex items-start gap-3 px-4 py-3 rounded-md mb-6 bg-red-50 text-red-700 text-sm">
+					<div className="alert-danger mb-6">
 						<svg
 							className="w-5 h-5 shrink-0"
 							fill="none"
@@ -92,7 +92,7 @@ export function LoginPage() {
 					<button
 						type="button"
 						onClick={handleGoogleLogin}
-						className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-blue-500 text-white rounded-md font-medium text-sm hover:bg-blue-600 transition-colors"
+						className="btn-google"
 					>
 						<svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
 							<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -103,8 +103,8 @@ export function LoginPage() {
 						Try Again with Google
 					</button>
 
-					<p className="text-xs text-gray-500 mt-6">
-						Having trouble? <a href="mailto:support@proofa.io" className="text-blue-500">Contact support</a>
+					<p className="login-footer">
+						Having trouble? <a href="mailto:support@proofa.io" className="text-primary underline">Contact support</a>
 					</p>
 				</div>
 			</div>
@@ -113,16 +113,16 @@ export function LoginPage() {
 
 	if (status === "checking") {
 		return (
-			<div className="min-h-screen flex items-center justify-center p-5 bg-gray-100">
-				<div className="w-full max-w-md bg-white rounded-xl shadow-xl p-10 text-center">
+			<div className="login-container">
+				<div className="login-card">
 					<img
 						src="/favicon.png"
 						alt="Proofa"
 						className="w-12 h-12 mx-auto mb-4"
 					/>
-					<h1 className="text-xl font-semibold text-gray-900 mb-2">Welcome to Proofa</h1>
-					<div className="flex flex-col items-center gap-4 py-8">
-						<div className="w-6 h-6 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
+					<h1 className="login-title">Welcome to Proofa</h1>
+					<div className="login-loading">
+						<div className="spinner" />
 					</div>
 				</div>
 			</div>
@@ -131,18 +131,18 @@ export function LoginPage() {
 
 	if (status === "redirecting") {
 		return (
-			<div className="min-h-screen flex items-center justify-center p-5 bg-gray-100">
-				<div className="w-full max-w-md bg-white rounded-xl shadow-xl p-10 text-center">
+			<div className="login-container">
+				<div className="login-card">
 					<img
 						src="/favicon.png"
 						alt="Proofa"
 						className="w-12 h-12 mx-auto mb-4"
 					/>
-					<h1 className="text-xl font-semibold text-gray-900 mb-2">Welcome to Proofa</h1>
-					<p className="text-sm text-gray-600 mb-6">Redirecting to Google sign-in...</p>
-					<div className="flex flex-col items-center gap-4 py-8">
-						<div className="w-6 h-6 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
-						<div className="flex items-center gap-2 text-sm text-gray-500">
+					<h1 className="login-title">Welcome to Proofa</h1>
+					<p className="login-subtitle">Redirecting to Google sign-in...</p>
+					<div className="login-loading">
+						<div className="spinner" />
+						<div className="login-loading-text">
 							<svg
 								className="w-4 h-4 opacity-70"
 								viewBox="0 0 24 24"
@@ -198,11 +198,11 @@ export function LoginPage() {
 
 				<p className="login-terms">
 					By continuing, you agree to our{" "}
-					<a href={`${homeUrl}/terms`} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+					<a href={`${homeUrl}/terms`} target="_blank" rel="noopener noreferrer" className="text-primary underline">
 						Terms of Service
 					</a>{" "}
 					and{" "}
-					<a href={`${homeUrl}/privacy`} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+					<a href={`${homeUrl}/privacy`} target="_blank" rel="noopener noreferrer" className="text-primary underline">
 						Privacy Policy
 					</a>
 				</p>
