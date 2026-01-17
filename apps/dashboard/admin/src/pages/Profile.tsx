@@ -1,6 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { pingpong } from "../lib/pingpong";
+import { Icon } from "../components/Icon";
+import {
+	CheckmarkCircle02Icon,
+	PencilEdit01Icon,
+	Tick02Icon,
+	LockIcon,
+	Moon02Icon,
+	CheckmarkBadge01Icon,
+} from "@hugeicons/core-free-icons";
 
 interface AdminProfile {
 	id: string;
@@ -118,19 +127,7 @@ export function ProfilePage() {
 			{/* Success Message */}
 			{successMessage && (
 				<div className="alert-success mb-6 flex items-center gap-2">
-					<svg
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						className="w-5 h-5 flex-shrink-0"
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-						/>
-					</svg>
+					<Icon icon={CheckmarkCircle02Icon} size={20} bold className="flex-shrink-0 text-success" />
 					{successMessage}
 				</div>
 			)}
@@ -155,19 +152,7 @@ export function ProfilePage() {
 							onClick={handleEdit}
 							className="btn-secondary flex items-center gap-2 px-4 py-2.5 text-14px font-medium rounded-[var(--radius)]"
 						>
-							<svg
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-								className="w-4 h-4"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-								/>
-							</svg>
+							<Icon icon={PencilEdit01Icon} size={16} />
 							Edit Profile
 						</button>
 					)}
@@ -218,19 +203,7 @@ export function ProfilePage() {
 							</label>
 							<div className="px-3.5 py-2.5 bg-input-bg border border-input-border rounded-6px max-w-500px text-text-secondary flex items-center gap-2.5 text-14px">
 								<span className="flex-1">{profile.email || profile.primary_email}</span>
-								<svg
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-									className="w-4 h-4 opacity-40 flex-shrink-0"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-									/>
-								</svg>
+								<Icon icon={LockIcon} size={16} className="opacity-40 flex-shrink-0" />
 							</div>
 							<p className="text-12px text-text-tertiary mt-1.5">
 								Email address is managed by your authentication provider and cannot be changed here.
@@ -267,19 +240,7 @@ export function ProfilePage() {
 									</>
 								) : (
 									<>
-										<svg
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-											className="w-4 h-4"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth={2}
-												d="M5 13l4 4L19 7"
-											/>
-										</svg>
+										<Icon icon={Tick02Icon} size={18} bold />
 										Save Changes
 									</>
 								)}
@@ -324,19 +285,7 @@ export function ProfilePage() {
 								Your theme preference is managed in the header
 							</div>
 						</div>
-						<svg
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-							className="w-5 h-5 text-text-tertiary flex-shrink-0"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-							/>
-						</svg>
+						<Icon icon={Moon02Icon} size={20} className="text-text-tertiary flex-shrink-0" />
 					</div>
 
 					{/* Sessions */}
@@ -349,19 +298,7 @@ export function ProfilePage() {
 								You are currently signed in
 							</div>
 						</div>
-						<svg
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-							className="w-5 h-5 text-success flex-shrink-0"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-							/>
-						</svg>
+						<Icon icon={CheckmarkBadge01Icon} size={20} bold className="text-success flex-shrink-0" />
 					</div>
 				</div>
 			</div>

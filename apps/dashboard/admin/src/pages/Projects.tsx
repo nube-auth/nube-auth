@@ -1,6 +1,20 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCreateProject, useProjects } from "../hooks/api";
+import { Icon } from "../components/Icon";
+import {
+	Alert02Icon,
+	GridViewIcon,
+	Menu01Icon,
+	Add01Icon,
+	Cancel01Icon,
+	Folder01Icon,
+	FlashIcon,
+	LockIcon,
+	SecurityCheckIcon,
+	DollarCircleIcon,
+	ArrowRight01Icon,
+} from "@hugeicons/core-free-icons";
 
 type ViewMode = "grid" | "table";
 
@@ -50,14 +64,7 @@ export function ProjectsPage() {
 	if (error) {
 		return (
 			<div className="alert alert-danger">
-				<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path
-						strokeLinecap="round"
-						strokeLinejoin="round"
-						strokeWidth={2}
-						d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-					/>
-				</svg>
+				<Icon icon={Alert02Icon} size={20} bold className="text-danger" />
 				<span>Error loading projects. Please try again.</span>
 			</div>
 		);
@@ -85,19 +92,7 @@ export function ProjectsPage() {
 									viewMode === "grid" ? "bg-bg-primary text-text-primary" : "bg-transparent text-text-secondary"
 								}`}
 							>
-								<svg
-									className="w-3.5 h-3.5"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-									/>
-								</svg>
+								<Icon icon={GridViewIcon} size={14} bold={viewMode === "grid"} />
 								Grid
 							</button>
 							<button
@@ -107,32 +102,13 @@ export function ProjectsPage() {
 									viewMode === "table" ? "bg-bg-primary text-text-primary" : "bg-transparent text-text-secondary"
 								}`}
 							>
-								<svg
-									className="w-3.5 h-3.5"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-									/>
-								</svg>
+								<Icon icon={Menu01Icon} size={14} bold={viewMode === "table"} />
 								Table
 							</button>
 						</div>
 					)}
 					<button type="button" onClick={() => setShowForm(!showForm)} className="btn btn-primary">
-						<svg
-							className="w-4 h-4"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-						</svg>
+						<Icon icon={Add01Icon} size={16} bold />
 						New Project
 					</button>
 				</div>
@@ -145,14 +121,7 @@ export function ProjectsPage() {
 						<div className="modal-header">
 							<h3>Create New Project</h3>
 							<button type="button" className="modal-close" onClick={() => setShowForm(false)}>
-								<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M6 18L18 6M6 6l12 12"
-									/>
-								</svg>
+								<Icon icon={Cancel01Icon} size={20} />
 							</button>
 						</div>
 						<form onSubmit={handleSubmit}>
@@ -218,19 +187,7 @@ export function ProjectsPage() {
 					<div
 						className="w-30 h-30 bg-gradient-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center mb-6"
 					>
-						<svg
-							className="w-14 h-14 text-primary"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={1.5}
-								d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-							/>
-						</svg>
+						<Icon icon={Folder01Icon} size={56} className="text-primary" />
 					</div>
 					<h2
 						className="text-24px font-bold text-text-primary mb-3"
@@ -248,65 +205,22 @@ export function ProjectsPage() {
 						onClick={() => setShowForm(true)}
 						className="btn btn-primary py-3 px-6 text-15px"
 					>
-						<svg
-							className="w-4.5 h-4.5"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-						</svg>
+						<Icon icon={Add01Icon} size={18} bold />
 						Create Your First Project
 					</button>
 					<div
 						className="mt-12 flex gap-8 text-text-tertiary text-13px"
 					>
 						<div className="flex items-center gap-2">
-							<svg
-								className="w-4 h-4"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M13 10V3L4 14h7v7l9-11h-7z"
-								/>
-							</svg>
+							<Icon icon={FlashIcon} size={16} />
 							<span>Quick Setup</span>
 						</div>
 						<div className="flex items-center gap-2">
-							<svg
-								className="w-4 h-4"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-								/>
-							</svg>
+							<Icon icon={LockIcon} size={16} />
 							<span>Secure by Default</span>
 						</div>
 						<div className="flex items-center gap-2">
-							<svg
-								className="w-4 h-4"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-								/>
-							</svg>
+							<Icon icon={SecurityCheckIcon} size={16} />
 							<span>Production Ready</span>
 						</div>
 					</div>
@@ -392,19 +306,7 @@ export function ProjectsPage() {
 								className="flex items-center justify-between mt-3 pt-3 border-t border-border-secondary"
 							>
 								<div className="flex items-center gap-1.5">
-									<svg
-										className="w-3.5 h-3.5 text-success"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											strokeWidth={2}
-											d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-										/>
-									</svg>
+									<Icon icon={DollarCircleIcon} size={14} className="text-success" />
 									<span className="text-14px font-semibold text-success">
 										${(project.totalRevenue || 0).toFixed(2)}
 									</span>
@@ -531,19 +433,7 @@ export function ProjectsPage() {
 										</span>
 									</td>
 									<td className="p-4 text-center">
-										<svg
-											className="w-4 h-4 text-text-tertiary"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth={2}
-												d="M9 5l7 7-7 7"
-											/>
-										</svg>
+										<Icon icon={ArrowRight01Icon} size={16} className="text-text-tertiary" />
 									</td>
 								</tr>
 							))}

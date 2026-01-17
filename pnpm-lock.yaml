@@ -66,6 +66,12 @@ importers:
 
   apps/dashboard/admin:
     dependencies:
+      '@hugeicons/core-free-icons':
+        specifier: ^3.1.1
+        version: 3.1.1
+      '@hugeicons/react':
+        specifier: ^1.1.4
+        version: 1.1.4(react@18.3.1)
       '@proofa/client':
         specifier: workspace:*
         version: link:../../packages/client

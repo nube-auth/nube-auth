@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { pingpong } from "../lib/pingpong";
+import { Icon } from "../components/Icon";
+import {
+	Cancel01Icon,
+	RotateClockwiseIcon,
+	LockIcon,
+} from "@hugeicons/core-free-icons";
 
 export function LoginPage() {
 	const [searchParams] = useSearchParams();
@@ -154,19 +160,7 @@ export function LoginPage() {
 					{status === "error" ? (
 						<div className="text-center">
 							<div className="w-14 h-14 bg-danger-bg rounded-full flex items-center justify-center mx-auto mb-5">
-								<svg
-									className="w-7 h-7 text-danger"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M6 18L18 6M6 6l12 12"
-									/>
-								</svg>
+								<Icon icon={Cancel01Icon} size={28} bold className="text-danger" />
 							</div>
 							<h2 className="text-18px font-semibold text-text-primary mb-2">
 								Login Failed
@@ -179,19 +173,7 @@ export function LoginPage() {
 								onClick={handleGoogleLogin}
 								className="btn btn-primary w-full"
 							>
-								<svg
-									className="w-4 h-4"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-									/>
-								</svg>
+								<Icon icon={RotateClockwiseIcon} size={16} />
 								Try Again
 							</button>
 						</div>
@@ -264,19 +246,7 @@ export function LoginPage() {
 
 				{/* Security Badge */}
 				<div className="flex items-center justify-center gap-2 mt-6">
-					<svg
-						className="w-3.5 h-3.5 text-text-tertiary"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-						/>
-					</svg>
+					<Icon icon={LockIcon} size={14} className="text-text-tertiary" />
 					<span className="text-13px text-text-tertiary">Secure authentication powered by Proofa</span>
 				</div>
 			</div>

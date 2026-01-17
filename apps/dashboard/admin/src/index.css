@@ -65,10 +65,10 @@
 
 /* Dark Theme - Manual Override */
 [data-theme="dark"] {
-  --content-bg: #0f1117;
-  --card-bg: #1a1d27;
-  --card-border: #2d3140;
-  --card-hover-border: #3d4150;
+  --content-bg: #111318;
+  --card-bg: #16181f;
+  --card-border: #1f2937;
+  --card-hover-border: #374151;
   --text-primary: #f9fafb;
   --text-secondary: #9ca3af;
   --text-tertiary: #6b7280;
@@ -81,15 +81,19 @@
   --danger-text: #fca5a5;
   --info-bg: #1e3a8a;
   --info-text: #93c5fd;
+  
+  /* Surface colors for cards/sections */
+  --surface-secondary: rgba(255, 255, 255, 0.03);
+  --surface-hover: rgba(255, 255, 255, 0.05);
 }
 
 /* Auto Dark Theme Detection */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --content-bg: #0f1117;
-    --card-bg: #1a1d27;
-    --card-border: #2d3140;
-    --card-hover-border: #3d4150;
+    --content-bg: #111318;
+    --card-bg: #16181f;
+    --card-border: #1f2937;
+    --card-hover-border: #374151;
     --text-primary: #f9fafb;
     --text-secondary: #9ca3af;
     --text-tertiary: #6b7280;
@@ -102,6 +106,10 @@
     --danger-text: #fca5a5;
     --info-bg: #1e3a8a;
     --info-text: #93c5fd;
+    
+    /* Surface colors for cards/sections */
+    --surface-secondary: rgba(255, 255, 255, 0.03);
+    --surface-hover: rgba(255, 255, 255, 0.05);
   }
 }
 
@@ -156,7 +164,10 @@ body {
 }
 
 .sidebar-header {
-  padding: 16px 20px;
+  height: 61px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
   border-bottom: 1px solid var(--sidebar-border);
 }
 
@@ -379,7 +390,7 @@ body {
 }
 
 /* Main Content */
-.main-content {
+.admin-main-content {
   flex: 1;
   margin-left: 260px;
   min-height: 100vh;
@@ -387,11 +398,12 @@ body {
 
 /* Top Header */
 .top-header {
+  height: 61px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 24px;
-  background: var(--card-bg);
+  padding: 0 24px;
+  background: var(--content-bg);
   border-bottom: 1px solid var(--card-border);
   position: sticky;
   top: 0;
@@ -487,8 +499,7 @@ body {
 
 /* Page Content */
 .page-content {
-  padding: 24px;
-  /* max-width: 1400px; */
+  padding: 20px 24px;
 }
 
 /* ==========================================================================
@@ -1325,7 +1336,7 @@ input[type="url"].form-control {
     display: none;
   }
   
-  .main-content {
+  .admin-main-content {
     margin-left: 0;
   }
   

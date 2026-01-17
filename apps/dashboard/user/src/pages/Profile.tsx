@@ -47,7 +47,7 @@ export function ProfilePage() {
 			<div className="card">
 				<div className="empty-state">
 					<div className="empty-state-icon">
-						<Icon icon={Alert02Icon} size={24} />
+						<Icon icon={Alert02Icon} size={28} bold className="text-amber-500" />
 					</div>
 					<h3 className="empty-state-title">User not found</h3>
 					<p className="empty-state-desc">Unable to load your profile information.</p>
@@ -114,7 +114,7 @@ export function ProfilePage() {
 				<div className="info-item">
 					<div className="info-label">Account Type</div>
 					<div className="info-value">
-						<Icon icon={UserIcon} size={16} />
+						<Icon icon={UserIcon} size={16} bold className="text-indigo-500" />
 						User
 					</div>
 				</div>
@@ -127,15 +127,15 @@ export function ProfilePage() {
 			{/* Tabs */}
 			<div className="tabs">
 				<Link to="/profile" className={location.pathname === "/profile" ? "tab tab-active" : "tab"}>
-					<Icon icon={UserIcon} size={16} />
+					<Icon icon={UserIcon} size={18} bold={location.pathname === "/profile"} />
 					Profile
 				</Link>
 				<Link to="/sessions" className={location.pathname === "/sessions" ? "tab tab-active" : "tab"}>
-					<Icon icon={ComputerIcon} size={16} />
+					<Icon icon={ComputerIcon} size={18} bold={location.pathname === "/sessions"} />
 					Sessions
 				</Link>
 				<button type="button" className="tab" disabled>
-					<Icon icon={SecurityCheckIcon} size={16} />
+					<Icon icon={SecurityCheckIcon} size={18} />
 					Security
 				</button>
 			</div>
@@ -143,7 +143,7 @@ export function ProfilePage() {
 			{/* Success Alert */}
 			{showSuccess && (
 				<div className="alert alert-success">
-					<Icon icon={CheckmarkCircle02Icon} size={20} className="flex-shrink-0" />
+					<Icon icon={CheckmarkCircle02Icon} size={20} bold className="flex-shrink-0 text-emerald-600" />
 					<span>Profile updated successfully!</span>
 				</div>
 			)}
@@ -189,7 +189,7 @@ export function ProfilePage() {
 									</>
 								) : (
 									<>
-										<Icon icon={Tick02Icon} size={16} />
+										<Icon icon={Tick02Icon} size={18} bold />
 										Save Changes
 									</>
 								)}

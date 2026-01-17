@@ -1,6 +1,21 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useApp, useAppStats, useProject } from "../hooks/api";
+import { Icon } from "../components/Icon";
+import {
+	ArrowRight01Icon,
+	Settings02Icon,
+	UserMultiple02Icon,
+	CheckmarkCircle02Icon,
+	FlashIcon,
+	DollarCircleIcon,
+	UserIcon,
+	LicenseIcon,
+	Key01Icon,
+	Share08Icon,
+	CreditCardIcon,
+	PluginIcon,
+} from "@hugeicons/core-free-icons";
 
 export function AppDetailPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -50,15 +65,11 @@ export function AppDetailPage() {
 			<button onClick={() => navigate(`/projects/${projectId}`)} className="bg-transparent border-none text-primary cursor-pointer underline p-0">
 				{project.name}
 			</button>
-			<svg className="w-3.5 h-3.5 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-			</svg>
+			<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
 			<button onClick={() => navigate(`/projects/${projectId}`)} className="bg-transparent border-none text-text-secondary cursor-pointer underline p-0">
 				Apps
 			</button>
-			<svg className="w-3.5 h-3.5 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-			</svg>
+			<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
 			<span className="breadcrumb-current">{app.name}</span>
 		</nav>
 
@@ -97,22 +108,9 @@ export function AppDetailPage() {
 					onClick={() => navigate(`/projects/${projectId}/apps/${appId}/settings`)}
 					className="btn btn-secondary shrink-0"
 				>
-					<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path
-						strokeLinecap="round"
-						strokeLinejoin="round"
-						strokeWidth={2}
-						d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-					/>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-							/>
-						</svg>
-						Settings
-					</button>
+					<Icon icon={Settings02Icon} size={14} />
+					Settings
+				</button>
 				</div>
 			</div>
 
@@ -121,14 +119,7 @@ export function AppDetailPage() {
 			<div className="stat-card">
 				<div className="stat-card-header">
 					<div className="stat-icon purple">
-						<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-							/>
-						</svg>
+						<Icon icon={UserMultiple02Icon} size={24} />
 					</div>
 				</div>
 				<div className="stat-value">{statsLoading ? "—" : stats?.totalUsers || 0}</div>
@@ -137,14 +128,7 @@ export function AppDetailPage() {
 			<div className="stat-card">
 				<div className="stat-card-header">
 					<div className="stat-icon green">
-						<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-							/>
-						</svg>
+						<Icon icon={CheckmarkCircle02Icon} size={24} />
 					</div>
 				</div>
 				<div className="stat-value">{statsLoading ? "—" : stats?.activeLicenses || 0}</div>
@@ -157,14 +141,7 @@ export function AppDetailPage() {
 				<div className="stat-card">
 					<div className="stat-card-header">
 						<div className="stat-icon blue">
-							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M13 10V3L4 14h7v7l9-11h-7z"
-								/>
-							</svg>
+							<Icon icon={FlashIcon} size={24} />
 						</div>
 					</div>
 					<div className="stat-value">{statsLoading ? "—" : stats?.totalSessions || 0}</div>
@@ -173,14 +150,7 @@ export function AppDetailPage() {
 				<div className="stat-card">
 					<div className="stat-card-header">
 						<div className="stat-icon orange">
-							<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-								/>
-							</svg>
+							<Icon icon={DollarCircleIcon} size={24} />
 						</div>
 					</div>
 					<div className="stat-value">${statsLoading ? "—" : (stats?.totalRevenue || 0).toFixed(2)}</div>
@@ -200,14 +170,7 @@ export function AppDetailPage() {
 						className="bg-card-bg border border-border-secondary rounded-lg p-5 cursor-pointer transition-all flex flex-col items-center gap-3 text-center hover:border-primary hover:-translate-y-0.5 hover:shadow-md"
 					>
 						<div className="w-12 h-12 rounded-lg bg-[linear-gradient(135deg,rgba(139,92,246,0.1),rgba(139,92,246,0.05))] flex items-center justify-center">
-							<svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-								/>
-						</svg>
+							<Icon icon={UserMultiple02Icon} size={24} className="text-primary" />
 						</div>
 						<div>
 							<div className="text-14px font-semibold text-text-primary mb-1">
@@ -223,14 +186,7 @@ export function AppDetailPage() {
 						className="bg-card-bg border border-border-secondary rounded-lg p-5 cursor-pointer transition-all flex flex-col items-center gap-3 text-center hover:border-primary hover:-translate-y-0.5 hover:shadow-md"
 					>
 						<div className="w-12 h-12 rounded-lg bg-[linear-gradient(135deg,rgba(34,197,94,0.1),rgba(34,197,94,0.05))] flex items-center justify-center">
-							<svg className="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-								/>
-							</svg>
+							<Icon icon={LicenseIcon} size={24} className="text-success" />
 						</div>
 						<div>
 							<div className="text-14px font-semibold text-text-primary mb-1">
@@ -246,20 +202,7 @@ export function AppDetailPage() {
 						className="bg-card-bg border border-border-secondary rounded-lg p-5 cursor-pointer transition-all flex flex-col items-center gap-3 text-center hover:border-primary hover:-translate-y-0.5 hover:shadow-md"
 					>
 						<div className="w-12 h-12 rounded-lg bg-[linear-gradient(135deg,rgba(59,130,246,0.1),rgba(59,130,246,0.05))] flex items-center justify-center">
-							<svg className="w-6 h-6 text-[rgb(59,130,246)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-								/>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-								/>
-							</svg>
+							<Icon icon={Settings02Icon} size={24} className="text-[rgb(59,130,246)]" />
 						</div>
 						<div>
 							<div className="text-14px font-semibold text-text-primary mb-1">
@@ -275,14 +218,7 @@ export function AppDetailPage() {
 						className="bg-card-bg border border-border-secondary rounded-lg p-5 cursor-pointer transition-all flex flex-col items-center gap-3 text-center hover:border-primary hover:-translate-y-0.5 hover:shadow-md"
 					>
 						<div className="w-12 h-12 rounded-lg bg-[linear-gradient(135deg,rgba(251,146,60,0.1),rgba(251,146,60,0.05))] flex items-center justify-center">
-							<svg className="w-6 h-6 text-[rgb(251,146,60)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-								/>
-							</svg>
+							<Icon icon={Key01Icon} size={24} className="text-[rgb(251,146,60)]" />
 						</div>
 						<div>
 							<div className="text-14px font-semibold text-text-primary mb-1">
