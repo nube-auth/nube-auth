@@ -188,7 +188,7 @@ export function ProjectsPage() {
 				>
 					<div className="relative mb-6">
 						<div
-							className="w-25 h-25 bg-primary/10 rounded-full flex items-center justify-center border border-primary/25"
+							className="w-25 h-25 rounded-full flex items-center justify-center border border-primary/25"
 						>
 							<Icon icon={Layers01Icon} size={44} className="text-primary" />
 						</div>
