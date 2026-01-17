@@ -1,6 +1,5 @@
 /* Proofa Docs - Custom Theme (matching Home Dashboard) */
-
-@import "@proofa/styles/base.css";
+/* Note: Do NOT import base.css here - it conflicts with Starlight's theming */
 
 /* Prevent flash of white background */
 html, body {
@@ -59,8 +58,9 @@ html, body {
 	--sl-font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
 }
 
-/* Smooth transitions */
-* {
+/* Smooth transitions - apply only to specific elements */
+/* Avoid * selector as it can break third-party component animations */
+a, button, .sl-link-card, nav.sidebar a {
 	transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
