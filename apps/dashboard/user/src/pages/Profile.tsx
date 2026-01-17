@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useMe } from "../hooks/api";
+import { Icon } from "../components/Icon";
+import {
+	UserIcon,
+	ComputerIcon,
+	SecurityCheckIcon,
+	CheckmarkCircle02Icon,
+	Tick02Icon,
+	Alert02Icon,
+} from "@hugeicons/core-free-icons";
 
 export function ProfilePage() {
 	const location = useLocation();
@@ -38,14 +47,7 @@ export function ProfilePage() {
 			<div className="card">
 				<div className="empty-state">
 					<div className="empty-state-icon">
-						<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-							/>
-						</svg>
+						<Icon icon={Alert02Icon} size={24} />
 					</div>
 					<h3 className="empty-state-title">User not found</h3>
 					<p className="empty-state-desc">Unable to load your profile information.</p>
@@ -112,14 +114,7 @@ export function ProfilePage() {
 				<div className="info-item">
 					<div className="info-label">Account Type</div>
 					<div className="info-value">
-						<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-							/>
-						</svg>
+						<Icon icon={UserIcon} size={16} />
 						User
 					</div>
 				</div>
@@ -132,36 +127,15 @@ export function ProfilePage() {
 			{/* Tabs */}
 			<div className="tabs">
 				<Link to="/profile" className={location.pathname === "/profile" ? "tab tab-active" : "tab"}>
-					<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-						/>
-					</svg>
+					<Icon icon={UserIcon} size={16} />
 					Profile
 				</Link>
 				<Link to="/sessions" className={location.pathname === "/sessions" ? "tab tab-active" : "tab"}>
-					<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-						/>
-					</svg>
+					<Icon icon={ComputerIcon} size={16} />
 					Sessions
 				</Link>
 				<button type="button" className="tab" disabled>
-					<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-						/>
-					</svg>
+					<Icon icon={SecurityCheckIcon} size={16} />
 					Security
 				</button>
 			</div>
@@ -169,14 +143,7 @@ export function ProfilePage() {
 			{/* Success Alert */}
 			{showSuccess && (
 				<div className="alert alert-success">
-					<svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-						/>
-					</svg>
+					<Icon icon={CheckmarkCircle02Icon} size={20} className="flex-shrink-0" />
 					<span>Profile updated successfully!</span>
 				</div>
 			)}
@@ -222,14 +189,7 @@ export function ProfilePage() {
 									</>
 								) : (
 									<>
-										<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth={2}
-												d="M5 13l4 4L19 7"
-											/>
-										</svg>
+										<Icon icon={Tick02Icon} size={16} />
 										Save Changes
 									</>
 								)}

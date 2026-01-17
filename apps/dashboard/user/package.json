@@ -11,6 +11,8 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
+		"@hugeicons/core-free-icons": "^3.1.1",
+		"@hugeicons/react": "^1.1.4",
 		"@proofa/client": "workspace:*",
 		"@proofa/react": "workspace:*",
 		"@proofa/shared": "workspace:*",
