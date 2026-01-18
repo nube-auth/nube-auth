@@ -1,14 +1,7 @@
 import { useState } from "react";
-import { Icon } from "../components/Icon";
-import { Add01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
 import {
-	NextJsLogo,
-	ReactLogo,
-	JavaScriptLogo,
-	FlutterLogo,
-	NodeJsLogo,
-	TailwindLogo,
-} from "@proofa/react";
+	Icon, IconType
+} from "@proofa/components";
 import { useCreateProject } from "../hooks/api";
 
 export function OnboardingPage() {
@@ -69,7 +62,7 @@ export function OnboardingPage() {
 							providers, sessions, and more so you can focus on building your product.
 						</p>
 						<button type="button" onClick={() => setShowForm(true)} className="btn btn-primary">
-							<Icon icon={Add01Icon} size={16} />
+							<Icon icon={IconType.Add01Icon} size={16} />
 							Create Project
 						</button>
 					</div>
@@ -107,7 +100,7 @@ const user = await auth.getUser();`}
 				<div className="integrations-grid">
 					<div className="integration-card">
 						<div className="integration-icon bg-black">
-						<NextJsLogo className="w-6 h-6" />
+							<Icon icon={IconType.NextJS} size={24} />
 							<span className="integration-name">Next.js</span>
 							<span className="integration-desc">React framework</span>
 						</div>
@@ -115,7 +108,7 @@ const user = await auth.getUser();`}
 
 					<div className="integration-card">
 						<div className="integration-icon bg-[#61DAFB]">
-						<ReactLogo className="w-6 h-6" />
+							<Icon icon={IconType.React} size={24} />
 							<span className="integration-name">React</span>
 							<span className="integration-desc">JavaScript library</span>
 						</div>
@@ -123,7 +116,7 @@ const user = await auth.getUser();`}
 
 					<div className="integration-card">
 						<div className="integration-icon bg-[#F7DF1E]">
-							<JavaScriptLogo className="w-6 h-6" />
+							<Icon icon={IconType.JavaScript} size={24} />
 						</div>
 						<div className="integration-info">
 							<span className="integration-name">JavaScript</span>
@@ -133,7 +126,7 @@ const user = await auth.getUser();`}
 
 					<div className="integration-card">
 						<div className="integration-icon bg-[#02569B]">
-							<FlutterLogo className="w-6 h-6" />
+							<Icon icon={IconType.Flutter} size={24} />
 						</div>
 						<div className="integration-info">
 							<span className="integration-name">Flutter</span>
@@ -143,7 +136,7 @@ const user = await auth.getUser();`}
 
 					<div className="integration-card">
 						<div className="integration-icon bg-[#47A248]">
-							<NodeJsLogo className="w-6 h-6" />
+							<Icon icon={IconType.NodeJS} size={24} />
 						</div>
 						<div className="integration-info">
 							<span className="integration-name">Node.js</span>
@@ -153,7 +146,7 @@ const user = await auth.getUser();`}
 
 					<div className="integration-card">
 						<div className="integration-icon bg-[#FF6B6B]">
-							<TailwindLogo className="w-6 h-6" />
+							<Icon icon={IconType.Tailwind} size={24} />
 						</div>
 						<div className="integration-info">
 							<span className="integration-name">REST API</span>
@@ -207,7 +200,7 @@ const user = await auth.getUser();`}
 					<div className="flex items-center justify-between p-6 border-b border-card-border flex-shrink-0">
 						<h3 className="text-18px font-600 text-text-primary m-0">Create New Project</h3>
 						<button type="button" className="w-8 h-8 flex items-center justify-center border-none bg-transparent text-text-secondary cursor-pointer rounded-md transition-all hover:bg-surface-secondary hover:text-text-primary" onClick={() => setShowForm(false)}>
-							<Icon icon={Cancel01Icon} size={20} />
+							<Icon icon={IconType.Cancel01Icon} size={20} />
 						</button>
 					</div>
 					<form onSubmit={handleSubmit} className="flex flex-col flex-1">

@@ -1,11 +1,5 @@
 import { createContext, type ReactNode, useContext, useState } from "react";
-import { Icon } from "./Icon";
-import {
-	Tick02Icon,
-	Cancel01Icon,
-	AlertCircleIcon,
-	InformationCircleIcon,
-} from "@hugeicons/core-free-icons";
+import { Icon, IconType } from "@proofa/components";
 
 interface Toast {
 	id: string;
@@ -62,13 +56,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 	const getIcon = (type: Toast["type"]) => {
 		switch (type) {
 			case "success":
-				return <Icon icon={Tick02Icon} size={20} className="shrink-0" />;
+				return <Icon icon={IconType.Tick02Icon} size={20} className="shrink-0" />;
 			case "error":
-				return <Icon icon={Cancel01Icon} size={20} className="shrink-0" />;
+				return <Icon icon={IconType.Cancel01Icon} size={20} className="shrink-0" />;
 			case "warning":
-				return <Icon icon={AlertCircleIcon} size={20} className="shrink-0" />;
+				return <Icon icon={IconType.AlertCircleIcon} size={20} className="shrink-0" />;
 			default:
-				return <Icon icon={InformationCircleIcon} size={20} className="shrink-0" />;
+				return <Icon icon={IconType.InformationCircleIcon} size={20} className="shrink-0" />;
 		}
 	};
 
@@ -88,7 +82,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 							onClick={() => removeToast(toast.id)}
 							className="btn btn-ghost btn-xs btn-circle"
 						>
-							<Icon icon={Cancel01Icon} size={16} />
+							<Icon icon={IconType.Cancel01Icon} size={16} />
 						</button>
 					</div>
 				))}

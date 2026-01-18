@@ -1,7 +1,7 @@
 /* Proofa VitePress Theme - Custom Styles */
 
 /* Import existing Proofa theme variables */
-@import '@proofa/styles/theme.css';
+@import '@proofa/components/styles/theme.css';
 
 /* ==========================================================================
    VitePress Variable Overrides - Map to Proofa theme

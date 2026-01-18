@@ -1,7 +1,6 @@
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
-import { Icon } from "./Icon";
-import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
+import { Icon, IconType } from "@proofa/components";
 
 interface SelectOption {
 	value: string;
@@ -63,7 +62,7 @@ export const Select: React.FC<SelectProps> = ({
 			>
 				<span>{selectedOption ? selectedOption.label : placeholder}</span>
 				<Icon
-					icon={ArrowDown01Icon}
+					icon={IconType.ArrowDown01Icon}
 					size={16}
 					className={`transition-transform duration-200 ${isOpen ? "rotate-180" : "rotate-0"}`}
 				/>

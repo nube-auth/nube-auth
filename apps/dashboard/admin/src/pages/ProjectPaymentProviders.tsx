@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Icon } from "../components/Icon";
+import {Icon, IconType} from "@proofa/components";;
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";

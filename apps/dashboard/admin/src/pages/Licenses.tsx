@@ -1,5 +1,5 @@
 import { useLicenses } from "../hooks/api";
-import { Icon } from "../components/Icon";
+import {Icon, IconType} from "@proofa/components";;
 import { AlertCircleIcon, LicenseIcon, TicketIcon } from "@hugeicons/core-free-icons";
 
 export function LicensesPage() {

@@ -1,14 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth, useMe, useSessions } from "../hooks/api";
-import { Icon } from "../components/Icon";
-import {
-	UserIcon,
-	ComputerIcon,
-	SecurityCheckIcon,
-	SmartPhone01Icon,
-	InformationCircleIcon,
-	Logout03Icon,
-} from "@hugeicons/core-free-icons";
+import { Icon, IconType } from "@proofa/components";
 
 // Common country codes to names mapping
 const COUNTRY_NAMES: Record<string, string> = {
@@ -71,10 +63,10 @@ function parseUserAgent(ua: string | null | undefined): { browser: string; os: s
 function getDeviceIcon(os: string) {
 	if (os === "iOS" || os === "Android") {
 		// Mobile icon
-		return <Icon icon={SmartPhone01Icon} size={18} className="text-text-tertiary" />;
+		return <Icon icon={IconType.SmartPhone01Icon} size={18} className="text-text-tertiary" />;
 	}
 	// Desktop icon
-	return <Icon icon={ComputerIcon} size={18} className="text-text-tertiary" />;
+	return <Icon icon={IconType.ComputerIcon} size={18} className="text-text-tertiary" />;
 }
 
 export function SessionsPage() {
@@ -159,16 +151,16 @@ export function SessionsPage() {
 			{/* Tabs */}
 			<div className="tabs">
 				<Link to="/profile" className={location.pathname === "/profile" ? "tab tab-active" : "tab"}>
-					<Icon icon={UserIcon} size={18} bold={location.pathname === "/profile"} />
+					<Icon icon={IconType.UserIcon} size={18} bold={location.pathname === "/profile"} />
 					Profile
 				</Link>
 				<Link to="/sessions" className={location.pathname === "/sessions" ? "tab tab-active" : "tab"}>
-					<Icon icon={ComputerIcon} size={18} bold={location.pathname === "/sessions"} />
+					<Icon icon={IconType.ComputerIcon} size={18} bold={location.pathname === "/sessions"} />
 					Sessions
 					<span className="tab-badge">{sessions?.length || 0}</span>
 				</Link>
 				<button type="button" className="tab" disabled>
-					<Icon icon={SecurityCheckIcon} size={18} />
+					<Icon icon={IconType.SecurityCheckIcon} size={18} />
 					Security
 				</button>
 			</div>
@@ -176,7 +168,7 @@ export function SessionsPage() {
 			{/* Alert Bar */}
 			{activeSessions.length > 1 && (
 				<div className="alert-bar">
-					<Icon icon={InformationCircleIcon} size={18} className="shrink-0" />
+					<Icon icon={IconType.InformationCircleIcon} size={18} className="shrink-0" />
 					You have {activeSessions.length} active sessions across your devices.
 					<button
 						type="button"
@@ -254,7 +246,7 @@ export function SessionsPage() {
 							</>
 						) : (
 							<>
-								<Icon icon={Logout03Icon} size={18} bold />
+								<Icon icon={IconType.Logout03Icon} size={18} bold />
 								Logout All
 							</>
 						)}
@@ -346,7 +338,7 @@ export function SessionsPage() {
 				) : (
 					<div className="empty-state">
 						<div className="empty-state-icon">
-							<Icon icon={ComputerIcon} size={28} bold className="text-text-tertiary" />
+							<Icon icon={IconType.ComputerIcon} size={28} bold className="text-text-tertiary" />
 						</div>
 						<h3 className="empty-state-title">No active sessions</h3>
 						<p className="empty-state-desc">You don't have any active sessions at the moment.</p>

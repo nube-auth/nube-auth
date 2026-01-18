@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Icon } from "../components/Icon";
+import {Icon, IconType} from "@proofa/components";;
 import {
 	Key01Icon,
 	UserMultiple02Icon,

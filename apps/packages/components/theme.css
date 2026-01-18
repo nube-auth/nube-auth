@@ -1,0 +1,187 @@
+/* ==========================================================================
+   Proofa Design System - Shared Theme
+   Single source of truth for all dashboard theming
+   
+   Color Philosophy: Theme-aware with neutral base + Purple accents
+   
+   Light Theme:
+   - Sidebar: Clean white frame with gray text (#ffffff)
+   - Main: Light neutral canvas (#f8fafc)
+   - Topbar: White bridge (#ffffff)
+   - Text: Dark gray hierarchy
+   
+   Dark Theme:
+   - Sidebar: Slightly darker neutral frame (#0B0F16)
+   - Main: Slightly lighter neutral canvas (#0F1624)
+   - Topbar: Dark bridge (#0C121D)
+   - Text: Light gray hierarchy
+   
+   Purple lives in buttons, badges, and accents only
+   Dividers: subtle borders that adapt to theme
+   
+   Usage:
+   Import in each dashboard's main.tsx:
+   import '@proofa/styles/theme.css';
+   ========================================================================== */
+
+/* CSS Variables - Light Theme (Default) */
+:root {
+  /* Primary Colors */
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --primary-light: #eef2ff;
+  
+  /* Sidebar (Frame) - Light theme matches content bg */
+  --sidebar-bg: #f8fafc;
+  --sidebar-border: #e5e7eb;
+  --sidebar-text: #6b7280;
+  --sidebar-text-hover: #111827;
+  --sidebar-active-bg: rgba(99, 102, 241, 0.08);
+  --sidebar-active-text: #6366f1;
+  --sidebar-section-text: #9ca3af;
+  
+  /* Topbar (Bridge) - Light theme */
+  --top-header-bg: #f8fafc;
+  
+  /* Content Area - Light Theme */
+  --content-bg: #f8fafc;
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --card-hover-border: #d1d5db;
+  --bg-surface: #ffffff;
+  --bg-muted: #f3f4f6;
+  --border: #e5e7eb;
+  
+  /* Text Colors - Light Theme */
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  --text-link: #6366f1;
+  
+  /* Status Colors */
+  --success: #10b981;
+  --success-bg: #d1fae5;
+  --success-text: #065f46;
+  --warning: #f59e0b;
+  --warning-bg: #fef3c7;
+  --warning-text: #92400e;
+  --danger: #ef4444;
+  --danger-bg: #fee2e2;
+  --danger-text: #991b1b;
+  --info: #3b82f6;
+  --info-bg: #dbeafe;
+  --info-text: #1e40af;
+  
+  /* Code Block (Always Dark) */
+  --code-bg: #1e1e2e;
+  --code-text: #cdd6f4;
+  --code-border: #313244;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  
+  /* Transitions */
+  --transition: 150ms ease;
+}
+
+/* Dark Theme - Manual Override */
+[data-theme="dark"] {
+  /* Sidebar (Frame) - Matches content bg */
+  --sidebar-bg: #0F1624;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-text: #8b92a8;
+  --sidebar-text-hover: #ffffff;
+  --sidebar-active-bg: rgba(99, 102, 241, 0.15);
+  --sidebar-active-text: #a5b4fc;
+  --sidebar-section-text: #6b7280;
+  
+  /* Topbar (Bridge) */
+  --top-header-bg: #0F1624;
+  
+  /* Canvas - Lighter neutral background */
+  --content-bg: #0F1624;
+  --card-bg: rgba(255, 255, 255, 0.04);
+  --card-border: rgba(255, 255, 255, 0.06);
+  --card-hover-border: rgba(255, 255, 255, 0.08);
+  --bg-surface: rgba(20, 27, 48, 0.8);
+  --bg-muted: rgba(255, 255, 255, 0.02);
+  --border: rgba(255, 255, 255, 0.06);
+  
+  /* Text - brighter for contrast on darker bg */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --text-link: #818cf8;
+  
+  /* Adjusted for dark theme */
+  --primary-light: rgba(99, 102, 241, 0.12);
+  --success-bg: rgba(16, 185, 129, 0.12);
+  --success-text: #6ee7b7;
+  --warning-bg: rgba(245, 158, 11, 0.12);
+  --warning-text: #fcd34d;
+  --danger-bg: rgba(239, 68, 68, 0.12);
+  --danger-text: #fca5a5;
+  --info-bg: rgba(59, 130, 246, 0.12);
+  --info-text: #93c5fd;
+  
+  /* Surface colors for elevation */
+  --surface-secondary: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.06);
+}
+
+/* Auto Dark Theme Detection */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    /* Sidebar (Frame) - Matches content bg */
+    --sidebar-bg: #0F1624;
+    --sidebar-border: rgba(255, 255, 255, 0.06);
+    --sidebar-text: #8b92a8;
+    --sidebar-text-hover: #ffffff;
+    --sidebar-active-bg: rgba(99, 102, 241, 0.15);
+    --sidebar-active-text: #a5b4fc;
+    --sidebar-section-text: #6b7280;
+    
+    /* Topbar (Bridge) */
+    --top-header-bg: #0F1624;
+    
+    /* Canvas - Lighter neutral background */
+    --content-bg: #0F1624;
+    --card-bg: rgba(255, 255, 255, 0.04);
+    --card-border: rgba(255, 255, 255, 0.06);
+    --card-hover-border: rgba(255, 255, 255, 0.08);
+    --bg-surface: rgba(20, 27, 48, 0.8);
+    --bg-muted: rgba(255, 255, 255, 0.02);
+    --border: rgba(255, 255, 255, 0.06);
+    
+    /* Text - brighter for contrast on darker bg */
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #94a3b8;
+    --text-link: #818cf8;
+    
+    /* Adjusted for dark theme */
+    --primary-light: rgba(99, 102, 241, 0.12);
+    --success-bg: rgba(16, 185, 129, 0.12);
+    --success-text: #6ee7b7;
+    --warning-bg: rgba(245, 158, 11, 0.12);
+    --warning-text: #fcd34d;
+    --danger-bg: rgba(239, 68, 68, 0.12);
+    --danger-text: #fca5a5;
+    --info-bg: rgba(59, 130, 246, 0.12);
+    --info-text: #93c5fd;
+    
+    /* Surface colors for elevation */
+    --surface-secondary: rgba(255, 255, 255, 0.04);
+    --surface-hover: rgba(255, 255, 255, 0.06);
+  }
+}

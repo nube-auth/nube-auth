@@ -1,7 +1,6 @@
 import { Link, useParams } from "react-router-dom";
-import { Icon } from "../components/Icon";
+import { Icon, IconType } from "@proofa/components";
 import { AlertCircleIcon, Add01Icon, Tick02Icon, Settings01Icon } from "@hugeicons/core-free-icons";
-import { StripeLogo } from "@proofa/react";
 import { useToast } from "../components/Toast";
 import { useApp, useProject, useProjectPaymentProviders, useSelectPaymentProvider, useSelectedPaymentProvider } from "../hooks/api";
 
@@ -28,7 +27,7 @@ export default function AppPaymentSettingsPage() {
 	const getProviderIcon = (provider: string) => {
 		switch (provider.toLowerCase()) {
 			case "stripe":
-				return <StripeLogo className="w-6 h-6" />;
+				return <Icon icon={IconType.Stripe} size={24} />;
 			case "lemonsqueezy":
 				return <span className="text-2xl">🍋</span>;
 			case "dodo":

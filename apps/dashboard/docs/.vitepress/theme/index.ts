@@ -1,6 +1,6 @@
 import DefaultTheme from 'vitepress/theme';
 import type { Theme } from 'vitepress';
-import '@proofa/styles/theme.css';
+import '@proofa/components/styles/theme.css';
 import './custom.css';
 import ThemeToggle from './components/ThemeToggle.vue';
 import Card from './components/Card.vue';

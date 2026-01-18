@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useApp, useAppStats, useProject } from "../hooks/api";
-import { Icon } from "../components/Icon";
+import {Icon, IconType} from "@proofa/components";
 import {
 	Settings02Icon,
 	UserMultiple02Icon,
@@ -90,7 +90,7 @@ export function AppDetailPage() {
 					onClick={() => navigate(`/projects/${projectId}/apps/${appId}/settings`)}
 					className="btn btn-secondary shrink-0"
 				>
-					<Icon icon={Settings02Icon} size={14} />
+					<Icon icon={IconType.SettingsIcon} size={14} />
 					Settings
 				</button>
 				</div>
@@ -101,7 +101,7 @@ export function AppDetailPage() {
 			<div className="stat-card">
 				<div className="stat-card-header">
 					<div className="stat-icon purple">
-						<Icon icon={UserMultiple02Icon} size={24} />
+						<Icon icon={IconType.UserMultiple02Icon} size={24} />
 					</div>
 				</div>
 				<div className="stat-value">{statsLoading ? "—" : stats?.totalUsers || 0}</div>
@@ -110,7 +110,7 @@ export function AppDetailPage() {
 			<div className="stat-card">
 				<div className="stat-card-header">
 					<div className="stat-icon green">
-						<Icon icon={CheckmarkCircle02Icon} size={24} />
+						<Icon icon={IconType.CheckmarkCircle02Icon} size={24} />
 					</div>
 				</div>
 				<div className="stat-value">{statsLoading ? "—" : stats?.activeLicenses || 0}</div>

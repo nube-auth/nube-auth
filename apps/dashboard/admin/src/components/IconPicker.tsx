@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Icon } from "./Icon";
+import { Icon, IconType } from "@proofa/components";
 import type { IconSvgElement } from "@hugeicons/react";
 import {
 	GridIcon,

@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { pingpong } from "../lib/pingpong";
-import { Icon } from "../components/Icon";
+import { Icon, IconType } from "@proofa/components";
 import {
 	Cancel01Icon,
 	RotateClockwiseIcon,
 	LockIcon,
 } from "@hugeicons/core-free-icons";
-import { GoogleLogo } from "@proofa/react";
 
 export function LoginPage() {
 	const [searchParams] = useSearchParams();
@@ -201,7 +200,7 @@ export function LoginPage() {
 								onClick={handleGoogleLogin}
 								className="btn-google"
 							>
-								<GoogleLogo className="w-5 h-5" />
+								<Icon icon={IconType.Google} size={20} />
 								Continue with Google
 							</button>
 							<p className="text-13px text-text-tertiary mt-6 leading-relaxed">

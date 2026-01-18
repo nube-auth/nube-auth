@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Icon } from "../components/Icon";
+import { Icon, IconType } from "@proofa/components";
 import { AlertCircleIcon, BookmarkIcon } from "@hugeicons/core-free-icons";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { useToast } from "../components/Toast";
@@ -174,7 +174,7 @@ export function AppApiKeysPage() {
 			{/* Warning Banner */}
 			<div className="card-warning mb-6">
 				<div className="flex gap-4">
-					<Icon icon={AlertCircleIcon} size={20} className="text-yellow-500 flex-shrink-0" />
+					<Icon icon={IconType.AlertCircleIcon} size={20} className="text-yellow-500 flex-shrink-0" />
 					<div>
 						<div className="font-semibold text-text-primary">
 							Keep these keys secure!
@@ -298,7 +298,7 @@ export function AppApiKeysPage() {
 			{/* Integration Guide Link */}
 			<div className="card p-6 bg-surface-secondary">
 				<div className="flex items-center gap-4 mb-4">
-					<Icon icon={BookmarkIcon} size={24} className="text-primary" />
+					<Icon icon={IconType.BookmarkIcon} size={24} className="text-primary" />
 					<div>
 						<div className="font-semibold text-text-primary">
 							Integration Guide

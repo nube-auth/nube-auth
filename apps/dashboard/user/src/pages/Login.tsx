@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Icon } from "../components/Icon";
-import { AlertCircleIcon } from "@hugeicons/core-free-icons";
-import { GoogleLogo } from "@proofa/react";
+import { Icon, IconType } from "@proofa/components";
 import { pingpong } from "../lib/pingpong";
 
 export function LoginPage() {
@@ -53,7 +51,7 @@ export function LoginPage() {
 			<div className="login-container">
 				<div className="login-card">
 					<div className="w-14 h-14 bg-danger-bg text-danger rounded-lg flex items-center justify-center mx-auto mb-5">
-						<Icon icon={AlertCircleIcon} size={32} className="text-danger" />
+						<Icon icon={IconType.AlertCircleIcon} size={32} className="text-danger" />
 					</div>
 					<h1 className="login-title">Login Failed</h1>
 					<p className="login-subtitle">
@@ -64,7 +62,7 @@ export function LoginPage() {
 					</p>
 
 					<div className="alert-danger mb-6">
-						<Icon icon={AlertCircleIcon} size={20} className="shrink-0" />
+						<Icon icon={IconType.AlertCircleIcon} size={20} className="shrink-0" />
 						<span>Please try again or contact support if the issue persists.</span>
 					</div>
 
@@ -73,7 +71,7 @@ export function LoginPage() {
 						onClick={handleGoogleLogin}
 						className="btn-google"
 					>
-						<GoogleLogo className="w-5 h-5" />
+						<Icon icon={IconType.Google} size={20} />
 						Continue with Google
 					</button>
 				</div>
@@ -113,7 +111,7 @@ export function LoginPage() {
 					<div className="login-loading">
 						<div className="spinner" />
 						<div className="login-loading-text">
-								<GoogleLogo className="w-4 h-4" />
+							<Icon icon={IconType.Google} size={16} />
 							<span>Connecting to Google...</span>
 						</div>
 					</div>
@@ -136,7 +134,7 @@ export function LoginPage() {
 					onClick={handleGoogleLogin}
 					className="btn-google"
 				>
-					<GoogleLogo className="w-5 h-5" />
+					<Icon icon={IconType.Google} size={20} />
 					Continue with Google
 				</button>
 

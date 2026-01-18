@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Icon } from "../components/Icon";
+import {Icon, IconType} from "@proofa/components";;
 import { LayoutGridIcon, MenuIcon, Key01Icon } from "@hugeicons/core-free-icons";
 import { useProject, useProjectApps } from "../hooks/api";
 

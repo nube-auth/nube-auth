@@ -1,6 +1,5 @@
 import { type ReactNode, useEffect, useRef } from "react";
-import { Icon } from "./Icon";
-import { Cancel01Icon } from "@hugeicons/core-free-icons";
+import { Icon, IconType } from "@proofa/components";
 
 interface ModalProps {
 	isOpen: boolean;
@@ -66,7 +65,7 @@ export function ModalHeader({ children, onClose }: ModalHeaderProps) {
 					onClick={onClose}
 					className="btn btn-ghost btn-sm btn-circle"
 				>
-					<Icon icon={Cancel01Icon} size={20} />
+					<Icon icon={IconType.Cancel01Icon} size={20} />
 				</button>
 			)}
 		</div>

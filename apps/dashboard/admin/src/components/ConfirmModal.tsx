@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Icon } from "./Icon";
-import { AlertCircleIcon, InformationCircleIcon, UserWarningIcon } from "@hugeicons/core-free-icons";
+import { Icon, IconType } from "@proofa/components";
 import { Modal, ModalBody, ModalFooter, ModalHeader } from "./Modal";
 
 interface ConfirmModalProps {
@@ -90,14 +89,14 @@ export function ConfirmModal({
 
     const renderIcon = () => {
         if (variant === "info") {
-            return <Icon icon={InformationCircleIcon} size={24} />;
+            return <Icon icon={IconType.InformationCircleIcon} size={24} />;
         }
 
         if (variant === "warning") {
-            return <Icon icon={UserWarningIcon} size={24} />;
+            return <Icon icon={IconType.UserWarningIcon} size={24} />;
         }
 
-        return <Icon icon={AlertCircleIcon} size={24} />;
+        return <Icon icon={IconType.AlertCircleIcon} size={24} />;
     };
 
     if (!isOpen) return null;

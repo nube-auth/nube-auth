@@ -11,7 +11,7 @@
 		"preview": "vitepress preview --port 4322"
 	},
 	"dependencies": {
-		"@proofa/styles": "workspace:*"
+		"@proofa/components": "workspace:*"
 	},
 	"devDependencies": {
 		"@types/node": "^25.0.3",

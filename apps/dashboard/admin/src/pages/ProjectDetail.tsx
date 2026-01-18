@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Icon } from "../components/Icon";
+import {Icon, IconType} from "@proofa/components";;
 import { getIconById } from "../components/IconPicker";
 import {
 	AlertCircleIcon,

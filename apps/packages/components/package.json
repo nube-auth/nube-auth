@@ -1,0 +1,53 @@
+{
+  "name": "@proofa/components",
+  "version": "0.1.0",
+  "description": "Shared components, styles, and design system for Proofa dashboards and applications",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./components/*": {
+      "import": "./dist/components/*.js",
+      "types": "./dist/components/*.d.ts"
+    },
+    "./styles": "./uno.config.ts",
+    "./styles/uno.config": "./uno.config.ts",
+    "./styles/base.css": "./base.css",
+    "./styles/theme.css": "./theme.css",
+    "./styles/tailwind.preset": "./tailwind.preset.ts",
+    "./styles/tailwind.css": "./tailwind.css"
+  },
+  "files": [
+    "dist",
+    "src",
+    "*.css",
+    "*.ts"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "clsx": "^2.0.0",
+    "daisyui": "^5.5.14",
+    "tailwind-merge": "^2.0.0",
+    "unocss": "^66.5.12",
+    "@hugeicons/react": "^1.1.4",
+    "@hugeicons/core-free-icons": "^3.1.1"
+  },
+  "devDependencies": {
+    "@ameinhardt/unocss-preset-daisy": "^1.1.8",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  }
+}

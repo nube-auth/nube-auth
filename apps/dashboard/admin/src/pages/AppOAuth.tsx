@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Icon } from "../components/Icon";
+import { Icon, IconType } from "@proofa/components";
 import { AlertCircleIcon } from "@hugeicons/core-free-icons";
-import { GoogleLogo, GitHubLogo } from "@proofa/react";
 import { useToast } from "../components/Toast";
 import { useApp, useProject, useUpdateApp } from "../hooks/api";
 
@@ -53,9 +52,9 @@ export default function AppOAuthPage() {
 	const getProviderIcon = (provider: string) => {
 		switch (provider.toLowerCase()) {
 			case "google":
-				return <GoogleLogo className="w-6 h-6" />;
+				return <Icon icon={IconType.Google} size={24} />;
 			case "github":
-				return <GitHubLogo className="w-6 h-6" />;
+				return <Icon icon={IconType.GitHub} size={24} />;
 			default:
 				return <span className="text-24px">🔐</span>;
 		}

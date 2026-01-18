@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Icon } from "./Icon";
+import { Icon, IconType } from "@proofa/components";
 import { AlertCircleIcon, ArrowRight01Icon, Cancel01Icon, Refresh01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
 import { Select } from "./Select";
 import { pingpong } from "../lib/pingpong";

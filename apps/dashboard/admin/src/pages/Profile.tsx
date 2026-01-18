@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { pingpong } from "../lib/pingpong";
-import { Icon } from "../components/Icon";
+import {Icon, IconType} from "@proofa/components";;
 import {
 	CheckmarkCircle02Icon,
 	PencilEdit01Icon,

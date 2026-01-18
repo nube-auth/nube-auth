@@ -1,21 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useProjects } from "../hooks/api";
-import { Icon } from "../components/Icon";
+import { Icon, IconType } from "@proofa/components";
 import { getIconById } from "../components/IconPicker";
-import {
-	AlertCircleIcon,
-	GridViewIcon,
-	Menu01Icon,
-	Add01Icon,
-	Layers01Icon,
-	FlashIcon,
-	LockIcon,
-	SecurityCheckIcon,
-	DollarCircleIcon,
-	ArrowRight01Icon,
-	Tick02Icon,
-} from "@hugeicons/core-free-icons";
 
 type ViewMode = "grid" | "table";
 
@@ -36,7 +23,7 @@ export function ProjectsPage() {
 	if (error) {
 		return (
 			<div className="alert-danger">
-				<Icon icon={AlertCircleIcon} size={20} bold className="alert-icon" />
+				<Icon icon={IconType.AlertCircleIcon} size={20} bold className="alert-icon" />
 				<span>Error loading projects. Please try again.</span>
 			</div>
 		);
@@ -64,7 +51,7 @@ export function ProjectsPage() {
 									viewMode === "grid" ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:text-text-primary"
 								}`}
 							>
-								<Icon icon={GridViewIcon} size={14} bold={viewMode === "grid"} />
+								<Icon icon={IconType.GridViewIcon} size={14} bold={viewMode === "grid"} />
 								Grid
 							</button>
 							<button
@@ -74,12 +61,12 @@ export function ProjectsPage() {
 									viewMode === "table" ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:text-text-primary"
 								}`}
 							>
-								<Icon icon={Menu01Icon} size={14} bold={viewMode === "table"} />
+								<Icon icon={IconType.Menu01Icon} size={14} bold={viewMode === "table"} />
 								Table
 							</button>
 						</div>
 						<button type="button" onClick={() => navigate("/projects/new")} className="btn btn-primary">
-							<Icon icon={Add01Icon} size={16} bold />
+							<Icon icon={IconType.Add01Icon} size={16} bold />
 							New Project
 						</button>
 					</div>
@@ -95,10 +82,10 @@ export function ProjectsPage() {
 					<div
 						className="w-25 h-25 rounded-full flex items-center justify-center border border-primary/25"
 					>
-						<Icon icon={Layers01Icon} size={44} className="text-primary" />
+						<Icon icon={IconType.Layers01Icon} size={44} className="text-primary" />
 					</div>
 					<div className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary rounded-full flex items-center justify-center border-2 border-[var(--content-bg)]">
-						<Icon icon={Add01Icon} size={16} className="text-white" bold />
+						<Icon icon={IconType.Add01Icon} size={16} className="text-white" bold />
 					</div>
 				</div>
 				<h2
@@ -116,22 +103,22 @@ export function ProjectsPage() {
 					onClick={() => navigate("/projects/new")}
 						className="btn btn-primary py-3 px-6 text-15px"
 					>
-						<Icon icon={Add01Icon} size={18} bold />
+					<Icon icon={IconType.Add01Icon} size={18} bold />
 						New Project
 					</button>
 					<div
 						className="mt-10 flex gap-8 text-text-tertiary text-13px"
 					>
 						<div className="flex items-center gap-2">
-							<Icon icon={FlashIcon} size={16} />
+							<Icon icon={IconType.FlashIcon} size={16} />
 							<span>Quick Setup</span>
 						</div>
 						<div className="flex items-center gap-2">
-							<Icon icon={LockIcon} size={16} />
+							<Icon icon={IconType.LockIcon} size={16} />
 							<span>Secure by Default</span>
 						</div>
 						<div className="flex items-center gap-2">
-							<Icon icon={SecurityCheckIcon} size={16} />
+							<Icon icon={IconType.SecurityCheckIcon} size={16} />
 							<span>Production Ready</span>
 						</div>
 					</div>
@@ -171,7 +158,7 @@ export function ProjectsPage() {
 									</div>
 								</div>
 								<div className="flex items-center justify-center">
-									<Icon icon={Tick02Icon} size={18} className="text-success" bold />
+								<Icon icon={IconType.Tick02Icon} size={18} className="text-success" bold />
 								</div>
 							</div>
 
@@ -210,7 +197,7 @@ export function ProjectsPage() {
 								className="flex items-center justify-between mt-3 pt-3 border-t border-border-secondary"
 							>
 								<div className="flex items-center gap-1.5">
-									<Icon icon={DollarCircleIcon} size={14} className="text-success" />
+									<Icon icon={IconType.DollarCircleIcon} size={14} className="text-success" />
 									<span className="text-14px font-semibold text-success">
 										${(project.totalRevenue || 0).toFixed(2)}
 									</span>
@@ -328,11 +315,11 @@ export function ProjectsPage() {
 									</td>
 									<td className="p-4">
 										<div className="flex items-center justify-center">
-											<Icon icon={Tick02Icon} size={18} className="text-success" bold />
+											<Icon icon={IconType.Tick02Icon} size={18} className="text-success" bold />
 										</div>
 									</td>
 									<td className="p-4 text-center">
-										<Icon icon={ArrowRight01Icon} size={16} className="text-text-tertiary" />
+										<Icon icon={IconType.ArrowRight01Icon} size={16} className="text-text-tertiary" />
 									</td>
 								</tr>
 							))}

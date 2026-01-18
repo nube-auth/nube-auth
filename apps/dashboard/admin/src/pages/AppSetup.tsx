@@ -1,7 +1,7 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Icon } from "../components/Icon";
+import { Icon, IconType } from "@proofa/components";
 import { IconPicker } from "../components/IconPicker";
 import {
 	ArrowRight01Icon,
@@ -11,20 +11,19 @@ import {
 	Key01Icon,
 	AlertCircleIcon,
 } from "@hugeicons/core-free-icons";
-import { GoogleLogo, GitHubLogo } from "@proofa/react";
 import { useCreateApp, useProject } from "../hooks/api";
 
 const AVAILABLE_PROVIDERS = [
 	{
 		id: "google",
 		name: "Google",
-		icon: <GoogleLogo className="w-5 h-5" />,
+		icon: <Icon icon={IconType.Google} size={20} />,
 		color: "#4285F4",
 	},
 	{
 		id: "github",
 		name: "GitHub",
-		icon: <GitHubLogo className="w-5 h-5" />,
+		icon: <Icon icon={IconType.GitHub} size={20} />,
 		color: "#333",
 	},
 ] as const;
