@@ -1,8 +1,8 @@
-/* Import Tailwind + theme variables */
-@import '@proofa/styles/tailwind.css';
+/* Import theme variables */
+@import '@proofa/styles/theme.css';
 
-/* Proofa Docs - Custom Theme (matching Home Dashboard) */
-/* Note: Starlight theming extends Tailwind styling */
+/* Proofa Docs - Custom Theme for VitePress */
+/* Note: VitePress uses its own theming system */
 
 /* Prevent flash of white background */
 html, body {
