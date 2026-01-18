@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {Icon, IconType} from "@proofa/components";;
-import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
 import {
@@ -367,7 +366,7 @@ export default function ProjectPaymentProvidersPage() {
 						<div className="flex items-center justify-between p-4 px-5 border-b border-card-border">
 							<h3 className="text-18px font-600 text-text-primary m-0">{editingProvider ? "Edit Payment Provider" : "Add Payment Provider"}</h3>
 							<button type="button" className="w-8 h-8 flex items-center justify-center border-none bg-transparent text-text-secondary cursor-pointer rounded-md transition-all hover:bg-surface-secondary hover:text-text-primary" onClick={handleCancel}>
-								<Icon icon={Cancel01Icon} size={20} />
+								<Icon icon={IconType.Cancel} size={20} />
 							</button>
 						</div>
 						<form onSubmit={handleSubmit}>
@@ -442,7 +441,7 @@ export default function ProjectPaymentProvidersPage() {
 						<div className="flex items-center justify-between p-4 px-5 border-b border-card-border">
 							<h3 className="text-18px font-600 text-text-primary m-0">Provider Details</h3>
 							<button type="button" className="w-8 h-8 flex items-center justify-center border-none bg-transparent text-text-secondary cursor-pointer rounded-md transition-all hover:bg-surface-secondary hover:text-text-primary" onClick={() => setDetailProvider(null)}>
-							<Icon icon={Cancel01Icon} size={20} />
+							<Icon icon={IconType.Cancel} size={20} />
 							</button>
 						</div>
 						<div className="p-6 text-text-primary">

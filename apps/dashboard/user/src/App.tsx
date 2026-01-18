@@ -1,8 +1,7 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
-import { Icon } from "./components/Icon";
-import { Sun03Icon, Moon02Icon, ComputerIcon } from "@hugeicons/core-free-icons";
+import { Icon, IconType } from "@proofa/components";
 import { useAuth } from "./hooks/api";
 import { LoginPage } from "./pages/Login";
 import { ProfilePage } from "./pages/Profile";
@@ -68,12 +67,12 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
 	const getThemeIcon = () => {
 		if (theme === "light") {
-			return <Icon icon={Sun03Icon} size={16} className="text-current" />;
+			return <Icon icon={IconType.Sun} size={16} className="text-current" />;
 		}
 		if (theme === "dark") {
-			return <Icon icon={Moon02Icon} size={16} className="text-current" />;
+			return <Icon icon={IconType.Moon} size={16} className="text-current" />;
 		}
-		return <Icon icon={ComputerIcon} size={16} className="text-current" />;
+		return <Icon icon={IconType.Computer} size={16} className="text-current" />;
 	};
 
 	return (

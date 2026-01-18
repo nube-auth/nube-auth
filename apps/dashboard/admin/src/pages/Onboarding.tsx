@@ -62,7 +62,7 @@ export function OnboardingPage() {
 							providers, sessions, and more so you can focus on building your product.
 						</p>
 						<button type="button" onClick={() => setShowForm(true)} className="btn btn-primary">
-							<Icon icon={IconType.Add01Icon} size={16} />
+							<Icon icon={IconType.Add} size={16} />
 							Create Project
 						</button>
 					</div>
@@ -200,7 +200,7 @@ const user = await auth.getUser();`}
 					<div className="flex items-center justify-between p-6 border-b border-card-border flex-shrink-0">
 						<h3 className="text-18px font-600 text-text-primary m-0">Create New Project</h3>
 						<button type="button" className="w-8 h-8 flex items-center justify-center border-none bg-transparent text-text-secondary cursor-pointer rounded-md transition-all hover:bg-surface-secondary hover:text-text-primary" onClick={() => setShowForm(false)}>
-							<Icon icon={IconType.Cancel01Icon} size={20} />
+							<Icon icon={IconType.Close} size={20} />
 						</button>
 					</div>
 					<form onSubmit={handleSubmit} className="flex flex-col flex-1">

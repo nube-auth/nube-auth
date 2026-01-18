@@ -1,23 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import {Icon, IconType} from "@proofa/components";;
-import {
-	ArrowRight01Icon,
-	UserAdd01Icon,
-	Search01Icon,
-	ArrowDown01Icon,
-	ArrowUp01Icon,
-	FilterIcon,
-	UserMultiple02Icon,
-	Edit02Icon,
-	Tick02Icon,
-	Refresh01Icon,
-	Grid02Icon,
-	ShieldIcon,
-	Clock01Icon,
-	AlertCircleIcon,
-} from "@hugeicons/core-free-icons";
+import {Icon, IconType } from "@proofa/components";;
+
 import { ConfirmModal } from "../components/ConfirmModal";
 import { InviteUserModal } from "../components/InviteUserModal";
 import { Select } from "../components/Select";
@@ -92,10 +77,10 @@ export function AppUsersPage() {
 	});
 
 	const statusIcons = {
-		all: Grid02Icon,
-		active: Tick02Icon,
-		suspended: ShieldIcon,
-		trial: Clock01Icon,
+		all: IconType.Grid,
+		active: IconType.Check,
+		suspended: IconType.Shield,
+		trial: IconType.Clock,
 	} as const;
 
 	// Handler for Suspend/Activate toggle
@@ -220,26 +205,26 @@ export function AppUsersPage() {
 				<Link to="/projects" className="no-underline text-text-secondary">
 					Projects
 				</Link>
-			<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
+			<Icon icon={IconType.ArrowRight} size={14} className="text-text-tertiary" />
 			<Link to={`/projects/${projectId}`} className="no-underline text-text-secondary">
 				{project.name}
 			</Link>
-			<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
+			<Icon icon={IconType.ArrowRight} size={14} className="text-text-tertiary" />
 			<Link to={`/projects/${projectId}/apps/${appId}`} className="no-underline text-text-secondary">
 				{app.name}
 			</Link>
-			<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
-				<span className="font-medium text-text-primary">Users</span>
-			</nav>
+			<Icon icon={IconType.ArrowRight} size={14} className="text-text-tertiary" />
+			<span className="font-medium text-text-primary">Users</span>
+		</nav>
 
-			{/* Page Header */}
+		{/* Page Header */}
 			<div className="page-header">
 				<div>
 					<h1 className="page-title">Users</h1>
 					<p className="page-description">Manage users and their licenses for {app.name}</p>
 				</div>
 				<button type="button" className="btn btn-primary" onClick={() => setShowInviteModal(true)}>
-					<Icon icon={UserAdd01Icon} size={16} />
+					<Icon icon={IconType.UserAdd} size={16} />
 					Invite User
 				</button>
 			</div>
@@ -248,7 +233,7 @@ export function AppUsersPage() {
 			<div className="mb-5 flex items-center gap-3">
 				<div className="w-full max-w-[400px]">
 					<div className="relative">
-					<Icon icon={Search01Icon} size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
+					<Icon icon={IconType.Search} size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
 						<input
 							type="text"
 							placeholder="Search by name or email..."
@@ -267,11 +252,11 @@ export function AppUsersPage() {
 						className={`flex w-full items-center justify-between gap-2 rounded-[10px] border bg-bg-surface px-3 py-2.5 text-14px text-text-primary transition-all focus:outline-none ${showStatusDropdown ? "border-primary" : "border-border hover:border-primary/70"}`}
 					>
 						<span className="flex items-center gap-2">
-							<Icon icon={FilterIcon} size={16} className="text-text-tertiary" />
+							<Icon icon={IconType.Filter} size={16} className="text-text-tertiary" />
 							{filterStatus === "all" ? "All Status" : filterStatus.charAt(0).toUpperCase() + filterStatus.slice(1)}
 						</span>
 						<Icon
-							icon={showStatusDropdown ? ArrowUp01Icon : ArrowDown01Icon}
+							icon={showStatusDropdown ? IconType.ArrowUp : IconType.ArrowDown}
 							size={14}
 							className="text-text-tertiary"
 						/>
@@ -303,7 +288,7 @@ export function AppUsersPage() {
 										<Icon icon={statusIcons[option.value as keyof typeof statusIcons]} size={16} className="flex-shrink-0" />
 										<span className={filterStatus === option.value ? "font-semibold" : "font-normal"}>{option.label}</span>
 										{filterStatus === option.value && (
-											<Icon icon={Tick02Icon} size={16} className="ml-auto text-primary" />
+											<Icon icon={IconType.Check} size={16} className="ml-auto text-primary" />
 										)}
 									</button>
 								))}
@@ -317,7 +302,7 @@ export function AppUsersPage() {
 			{!usersLoading && filteredUsers.length === 0 && users.length === 0 && (
 				<div className="flex flex-col items-center justify-center py-20 px-5 text-center">
 					<div className="w-25 h-25 bg-gradient-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center mb-6">
-						<Icon icon={UserMultiple02Icon} size={48} className="text-primary" />
+						<Icon icon={IconType.UserMultiple} size={48} className="text-primary" />
 					</div>
 					<h2 className="text-20px font-bold text-text-primary mb-2">
 						No users yet
@@ -331,7 +316,7 @@ export function AppUsersPage() {
 						onClick={() => alert("Invite user functionality coming soon!")}
 						className="btn btn-primary"
 					>
-						<Icon icon={UserAdd01Icon} size={16} />
+						<Icon icon={IconType.UserAdd} size={16} />
 						Invite Your First User
 					</button>
 				</div>
@@ -385,7 +370,7 @@ export function AppUsersPage() {
 												<div className="text-14px font-medium text-text-primary mb-2px">
 													{user.name || "Anonymous"}
 													{user.primaryEmailVerified && (
-														<Icon icon={Tick02Icon} size={14} className="text-primary ml-4px inline" />
+														<Icon icon={IconType.Check} size={14} className="text-primary ml-4px inline" />
 													)}
 												</div>
 												<div className="text-12px text-text-tertiary">
@@ -477,12 +462,12 @@ export function AppUsersPage() {
 											>
 												{user.status === "active" ? (
 													<>
-														<Icon icon={ShieldIcon} size={14} />
+														<Icon icon={IconType.Shield} size={14} />
 														Suspend
 													</>
 												) : (
 													<>
-														<Icon icon={Tick02Icon} size={14} />
+														<Icon icon={IconType.Check} size={14} />
 														Activate
 													</>
 												)}
@@ -501,7 +486,7 @@ export function AppUsersPage() {
 														});
 													}}
 													className="inline-flex items-center gap-1 px-2.5 py-1.5 text-13px font-medium rounded-lg border bg-primary/10 border-primary/20 text-primary transition-all cursor-pointer hover:bg-primary/15 hover:border-primary">
-													<Icon icon={Refresh01Icon} size={14} />
+													<Icon icon={IconType.Refresh} size={14} />
 													Renew
 												</button>
 											)}
@@ -515,7 +500,7 @@ export function AppUsersPage() {
 											}}
 											className="inline-flex items-center gap-1 px-2.5 py-1.5 text-13px font-medium rounded-lg border bg-secondary/10 border-secondary/20 text-secondary transition-all cursor-pointer hover:bg-secondary/15 hover:border-secondary"
 										>
-											<Icon icon={Edit02Icon} size={14} />
+											<Icon icon={IconType.Edit} size={14} />
 											Edit
 										</button>
 									</div>
@@ -559,7 +544,7 @@ export function AppUsersPage() {
 						{/* Error Message */}
 						{updateError && (
 							<div className="flex items-center gap-3 p-4 mb-5 bg-danger/10 border border-danger rounded-lg">
-								<Icon icon={AlertCircleIcon} size={20} className="text-danger flex-shrink-0" />
+								<Icon icon={IconType.AlertCircle} size={20} className="text-danger flex-shrink-0" />
 								<p className="text-14px text-danger m-0">{updateError}</p>
 							</div>
 						)}
@@ -637,7 +622,7 @@ export function AppUsersPage() {
 								}`}
 							>
 								{isUpdating && (
-									<Icon icon={Refresh01Icon} size={16} className="animate-spin" />
+									<Icon icon={IconType.Refresh} size={16} className="animate-spin" />
 								)}
 								{isUpdating ? "Saving..." : "Save Changes"}
 							</button>

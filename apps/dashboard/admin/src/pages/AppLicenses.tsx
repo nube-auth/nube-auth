@@ -2,17 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {Icon, IconType} from "@proofa/components";;
-import {
-	Key01Icon,
-	UserMultiple02Icon,
-	DollarCircleIcon,
-	ArrowUp01Icon,
-	ArrowDown01Icon,
-	AlertCircleIcon,
-	Delete01Icon,
-	ArrowRight01Icon,
-	Add01Icon,
-} from "@hugeicons/core-free-icons";
+
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
 import { useApp, useAppUsers, useProject } from "../hooks/api";
@@ -340,18 +330,18 @@ export function AppLicensesPage() {
 				<Link to="/projects" className="text-text-secondary no-underline">
 					Projects
 				</Link>
-				<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
+				<Icon icon={IconType.ArrowRight} size={14} className="text-text-tertiary" />
 				<Link to={`/projects/${projectId}`} className="text-text-secondary no-underline">
 					{project.name}
 				</Link>
-				<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
+				<Icon icon={IconType.ArrowRight} size={14} className="text-text-tertiary" />
 				<Link
 					to={`/projects/${projectId}/apps/${appId}`}
 					className="text-text-secondary no-underline"
 				>
 					{app.name}
 				</Link>
-				<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
+				<Icon icon={IconType.ArrowRight} size={14} className="text-text-tertiary" />
 				<span className="text-text-primary font-medium">Licenses</span>
 			</nav>
 
@@ -369,7 +359,7 @@ export function AppLicensesPage() {
 				<div className="stat-card">
 					<div className="flex items-center gap-3 mb-2">
 						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10">
-							<Icon icon={Key01Icon} size={20} className="text-primary" />
+							<Icon icon={IconType.Key} size={20} className="text-primary" />
 						</div>
 						<div>
 							<p className="stat-label">Active Licenses</p>
@@ -382,7 +372,7 @@ export function AppLicensesPage() {
 				<div className="stat-card">
 					<div className="flex items-center gap-3 mb-2">
 						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-surface-secondary">
-							<Icon icon={UserMultiple02Icon} size={20} className="text-success" />
+							<Icon icon={IconType.UserMultiple} size={20} className="text-success" />
 						</div>
 						<div>
 							<p className="stat-label">Free Plan</p>
@@ -395,7 +385,7 @@ export function AppLicensesPage() {
 				<div className="stat-card">
 					<div className="flex items-center gap-3 mb-2">
 						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-surface-secondary">
-							<Icon icon={DollarCircleIcon} size={20} className="text-warning" />
+							<Icon icon={IconType.DollarCircle} size={20} className="text-warning" />
 						</div>
 						<div>
 							<p className="stat-label">Paid Plans</p>
@@ -408,7 +398,7 @@ export function AppLicensesPage() {
 				<div className="stat-card">
 					<div className="flex items-center gap-3 mb-2">
 						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-surface-secondary">
-							<Icon icon={ArrowUp01Icon} size={20} className="text-info" />
+							<Icon icon={IconType.ArrowDown} size={20} className="text-info" />
 						</div>
 						<div>
 							<p className="stat-label">Monthly Revenue</p>
@@ -426,7 +416,7 @@ export function AppLicensesPage() {
 					className="w-full p-4 flex items-center justify-between bg-transparent border-none cursor-pointer transition-colors duration-200 hover:bg-surface-hover"
 				>
 					<div className="flex items-center gap-3">
-						<Icon icon={Key01Icon} size={20} className="text-primary" />
+						<Icon icon={IconType.Key} size={20} className="text-primary" />
 						<div className="text-left">
 							<h3 className="text-16px font-semibold text-text-primary m-0">
 								Pricing Plans
@@ -437,7 +427,7 @@ export function AppLicensesPage() {
 						</div>
 					</div>
 					<Icon
-						icon={showPlansSection ? ArrowUp01Icon : ArrowDown01Icon}
+						icon={showPlansSection ? IconType.ArrowDown : IconType.ArrowDown}
 						size={20}
 						className="text-text-tertiary transition-transform duration-200"
 					/>
@@ -452,7 +442,7 @@ export function AppLicensesPage() {
 								onClick={handleCreatePlan}
 								className="btn btn-primary btn-sm flex items-center gap-1.5"
 							>
-								<Icon icon={Add01Icon} size={16} />
+								<Icon icon={IconType.Add} size={16} />
 								Create Plan
 							</button>
 						</div>
@@ -464,7 +454,7 @@ export function AppLicensesPage() {
 							</div>
 						) : plans.length === 0 ? (
 							<div className="text-center py-15 px-5 text-text-secondary">
-								<Icon icon={AlertCircleIcon} size={48} className="mx-auto mb-4 opacity-30 text-text-tertiary" />
+								<Icon icon={IconType.AlertCircle} size={48} className="mx-auto mb-4 opacity-30 text-text-tertiary" />
 								<p className="text-14px font-medium">No plans yet</p>
 								<p className="text-13px mt-2 text-text-tertiary">
 									Create your first pricing plan to get started
@@ -700,7 +690,7 @@ export function AppLicensesPage() {
 					</div>
 				) : (
 					<div className="text-center py-20 px-5 text-text-secondary">
-						<Icon icon={AlertCircleIcon} size={48} className="mx-auto mb-4 opacity-30" />
+						<Icon icon={IconType.AlertCircle} size={48} className="mx-auto mb-4 opacity-30" />
 						<h3 className="text-16px font-semibold text-text-primary mb-2">
 							No licenses found
 						</h3>
@@ -789,7 +779,7 @@ export function AppLicensesPage() {
 
 						{planError && (
 							<div className="bg-danger/10 border border-danger rounded-lg py-3 px-4 mb-5 flex items-center gap-3">
-								<Icon icon={AlertCircleIcon} size={20} className="text-danger flex-shrink-0" />
+								<Icon icon={IconType.AlertCircle} size={20} className="text-danger flex-shrink-0" />
 								<p className="text-14px text-danger m-0">{planError}</p>
 							</div>
 						)}
@@ -1005,7 +995,7 @@ export function AppLicensesPage() {
 													disabled={isUpdating}
 													className="bg-transparent border-none text-danger cursor-pointer p-1"
 												>
-													<Icon icon={Delete01Icon} size={16} className="text-danger" />
+													<Icon icon={IconType.Delete} size={16} className="text-danger" />
 												</button>
 											</div>
 										))}
@@ -1048,7 +1038,7 @@ export function AppLicensesPage() {
 					>
 						<div className="mb-6">
 							<div className="w-12 h-12 rounded-xl bg-danger/10 flex items-center justify-center mb-4">
-													<Icon icon={AlertCircleIcon} size={24} className="text-danger" />
+													<Icon icon={IconType.AlertCircle} size={24} className="text-danger" />
 							</div>
 							<h2 className="text-20px font-bold mb-2 text-text-primary">
 								Delete Plan?

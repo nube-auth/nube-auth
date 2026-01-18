@@ -2,19 +2,6 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {Icon, IconType} from "@proofa/components";;
 import { getIconById } from "../components/IconPicker";
-import {
-	AlertCircleIcon,
-	ArrowRight01Icon,
-	Folder01Icon,
-	Copy01Icon,
-	CheckmarkCircle02Icon,
-	DashboardSquare02Icon,
-	UserMultiple02Icon,
-	Key01Icon,
-	DollarCircleIcon,
-	Add01Icon,
-	Layers01Icon,
-} from "@hugeicons/core-free-icons";
 import { useProject, useProjectApps, useProjectMembers, useProjectStats } from "../hooks/api";
 
 export function ProjectDetailPage() {
@@ -43,7 +30,7 @@ export function ProjectDetailPage() {
 	if (!project) {
 		return (
 			<div className="alert alert-danger">
-				<Icon icon={AlertCircleIcon} size={20} className="text-danger" />
+				<Icon icon={IconType.AlertCircle} size={20} className="text-danger" />
 				<span>Project not found</span>
 			</div>
 		);
@@ -55,7 +42,7 @@ export function ProjectDetailPage() {
 			<div className="card p-6">
 				<div className="flex items-start gap-5">
 					<div className="w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary-light to-purple-200">
-						<Icon icon={Folder01Icon} size={28} className="text-primary" />
+						<Icon icon={IconType.Folder} size={28} className="text-primary" />
 					</div>
 					<div className="flex-1">
 						<div className="flex items-center gap-3 mb-1">
@@ -78,12 +65,12 @@ export function ProjectDetailPage() {
 							>
 								{copied ? (
 									<>
-										<Icon icon={CheckmarkCircle02Icon} size={14} className="text-success" />
+										<Icon icon={IconType.CheckCircle} size={14} className="text-success" />
 										Copied!
 									</>
 								) : (
 									<>
-										<Icon icon={Copy01Icon} size={14} className="text-text-primary" />
+										<Icon icon={IconType.Copy} size={14} className="text-text-primary" />
 										Copy ID
 									</>
 								)}
@@ -98,7 +85,7 @@ export function ProjectDetailPage() {
 				<div className="stat-card">
 					<div className="stat-card-header">
 						<div className="stat-icon blue">
-							<Icon icon={Layers01Icon} size={20} className="text-current" />
+							<Icon icon={IconType.Layers} size={20} className="text-current" />
 						</div>
 					</div>
 					<div className="stat-value">{statsLoading ? "—" : stats?.totalApps || 0}</div>
@@ -107,7 +94,7 @@ export function ProjectDetailPage() {
 				<div className="stat-card">
 					<div className="stat-card-header">
 						<div className="stat-icon purple">
-							<Icon icon={UserMultiple02Icon} size={20} className="text-current" />
+							<Icon icon={IconType.UserMultiple} size={20} className="text-current" />
 						</div>
 					</div>
 					<div className="stat-value">{statsLoading ? "—" : stats?.totalUsers || 0}</div>
@@ -116,7 +103,7 @@ export function ProjectDetailPage() {
 				<div className="stat-card">
 					<div className="stat-card-header">
 						<div className="stat-icon green">
-							<Icon icon={Key01Icon} size={20} className="text-current" />
+							<Icon icon={IconType.Key} size={20} className="text-current" />
 						</div>
 					</div>
 					<div className="stat-value">{statsLoading ? "—" : stats?.activeLicenses || 0}</div>
@@ -130,7 +117,7 @@ export function ProjectDetailPage() {
 				<div className="stat-card">
 					<div className="stat-card-header">
 						<div className="stat-icon orange">
-							<Icon icon={DollarCircleIcon} size={20} className="text-current" />
+							<Icon icon={IconType.DollarCircle} size={20} className="text-current" />
 						</div>
 					</div>
 					<div className="stat-value">${statsLoading ? "—" : (stats?.totalRevenue || 0).toFixed(2)}</div>
@@ -150,7 +137,7 @@ export function ProjectDetailPage() {
 						onClick={() => navigate(`/projects/${projectId}/apps/new`)}
 						className="btn btn-primary"
 					>
-						<Icon icon={Add01Icon} size={16} />
+						<Icon icon={IconType.Add} size={16} />
 						New App
 					</button>
 				</div>
@@ -202,7 +189,7 @@ export function ProjectDetailPage() {
 											<span className="badge badge-success">Active</span>
 										</td>
 										<td className="text-right pr-4">
-											<Icon icon={ArrowRight01Icon} size={18} className="text-purple-600" />
+												<Icon icon={IconType.ArrowRight} size={18} className="text-purple-600" />
 										</td>
 									</tr>
 								))}
@@ -212,7 +199,7 @@ export function ProjectDetailPage() {
 				) : (
 					<div className="empty-state py-12 px-6">
 						<div className="empty-state-icon">
-							<Icon icon={DashboardSquare02Icon} size={28} className="text-text-tertiary" />
+							<Icon icon={IconType.Dashboard} size={28} className="text-text-tertiary" />
 						</div>
 						<h3 className="empty-state-title">No applications yet</h3>
 						<p className="empty-state-desc">Create your first app to start managing authentication.</p>
@@ -221,7 +208,7 @@ export function ProjectDetailPage() {
 							onClick={() => navigate(`/projects/${projectId}/apps/new`)}
 							className="btn btn-primary"
 						>
-							<Icon icon={Add01Icon} size={16} />
+							<Icon icon={IconType.Add} size={16} />
 							Create App
 						</button>
 					</div>

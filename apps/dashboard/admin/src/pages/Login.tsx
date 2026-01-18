@@ -2,11 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { pingpong } from "../lib/pingpong";
 import { Icon, IconType } from "@proofa/components";
-import {
-	Cancel01Icon,
-	RotateClockwiseIcon,
-	LockIcon,
-} from "@hugeicons/core-free-icons";
 
 export function LoginPage() {
 	const [searchParams] = useSearchParams();
@@ -160,7 +155,7 @@ export function LoginPage() {
 					{status === "error" ? (
 						<div className="text-center">
 							<div className="w-16 h-16 bg-danger-bg rounded-full flex items-center justify-center mx-auto mb-6">
-								<Icon icon={Cancel01Icon} size={32} bold className="text-danger" />
+								<Icon icon={IconType.Cancel} size={32} bold className="text-danger" />
 							</div>
 							<h2 className="text-20px font-semibold text-text-primary mb-3">
 								Login Failed
@@ -173,7 +168,7 @@ export function LoginPage() {
 								onClick={handleGoogleLogin}
 								className="btn btn-primary w-full"
 							>
-								<Icon icon={RotateClockwiseIcon} size={16} />
+								<Icon icon={IconType.RotateClockwise} size={16} />
 								Try Again
 							</button>
 						</div>
@@ -229,7 +224,7 @@ export function LoginPage() {
 
 				{/* Security Badge */}
 				<div className="flex items-center justify-center gap-2 mt-8">
-					<Icon icon={LockIcon} size={16} className="text-text-tertiary" />
+					<Icon icon={IconType.Lock} size={16} className="text-text-tertiary" />
 					<span className="text-14px text-text-tertiary">Secure authentication powered by Proofa</span>
 				</div>
 			</div>

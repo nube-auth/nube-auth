@@ -150,12 +150,12 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
 	const getThemeIcon = () => {
 		if (theme === "light") {
-				return <Icon icon={IconType.Sun03Icon} size={16} className="text-current" />;
+				return <Icon icon={IconType.Sun} size={16} className="text-current" />;
 		}
 		if (theme === "dark") {
-				return <Icon icon={IconType.Moon02Icon} size={16} className="text-current" />;
+				return <Icon icon={IconType.Moon} size={16} className="text-current" />;
 		}
-		return <Icon icon={IconType.ComputerIcon} size={16} className="text-current" />;
+		return <Icon icon={IconType.Computer} size={16} className="text-current" />;
 	};
 
 	return (
@@ -188,7 +188,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 										className="text-primary" 
 									/>
 								) : (
-									<Icon icon={IconType.Layers01Icon} size={18} className="text-primary" />
+									<Icon icon={IconType.Layers} size={18} className="text-primary" />
 								)}
 							</div>
 							<span className="text-13px font-medium text-white truncate">
@@ -198,7 +198,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 							</span>
 						</div>
 						<Icon
-						icon={IconType.ArrowDown01Icon}
+						icon={IconType.ArrowDown}
 							size={16}
 							className={`text-text-tertiary transition-transform duration-200 ${showProjectDropdown ? "rotate-180" : "rotate-0"}`}
 						/>
@@ -222,7 +222,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 										}}
 									className={`w-full p-3 text-left border-none border-b border-sidebar-border cursor-pointer text-13px font-medium transition-all duration-150 flex items-center gap-2.5 outline-none hover:bg-white/5 ${!selectedProject ? "bg-white/5 text-primary" : "bg-transparent text-text-secondary"}` }
 									>
-										<Icon icon={IconType.Layers01Icon} size={16} className="shrink-0 opacity-70" />
+										<Icon icon={IconType.Layers} size={16} className="shrink-0 opacity-70" />
 										<span>All Projects</span>
 									</button>
 									{projects.map((project) => (
@@ -278,37 +278,37 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 						<div className="sidebar-section">
 							<SidebarLink
 								to="/projects"
-							icon={<Icon icon={IconType.Home01Icon} size={18} />}
+							icon={<Icon icon={IconType.Home} size={18} />}
 							>
 								Projects
 							</SidebarLink>
 							<SidebarLink
 								to="/billing"
-							icon={<Icon icon={IconType.CreditCardIcon} size={18} />}
+							icon={<Icon icon={IconType.CreditCard} size={18} />}
 							>
 								Billing
 							</SidebarLink>
 							<SidebarLink
 								to="/webhooks"
-							icon={<Icon icon={IconType.CloudUploadIcon} size={18} />}
+							icon={<Icon icon={IconType.CloudUpload} size={18} />}
 							>
 								Webhooks
 							</SidebarLink>
 							<SidebarLink
 								to="/refunds"
-							icon={<Icon icon={IconType.ReturnRequestIcon} size={18} />}
+							icon={<Icon icon={IconType.ReturnRequest} size={18} />}
 							>
 								Refunds
 							</SidebarLink>
 							<SidebarLink
 								to="/export"
-							icon={<Icon icon={IconType.FileExportIcon} size={18} />}
+							icon={<Icon icon={IconType.FileExport} size={18} />}
 							>
 								Export
 							</SidebarLink>
 							<SidebarLink
 								to="/playground/payments"
-							icon={<Icon icon={IconType.TestTubeIcon} size={18} />}
+							icon={<Icon icon={IconType.TestTube} size={18} />}
 							>
 								Test Playground
 							</SidebarLink>
@@ -322,13 +322,13 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 								<div className="sidebar-section-title">Project</div>
 								<SidebarLink
 									to={`/projects/${selectedProject}`}
-								icon={<Icon icon={IconType.DashboardSquare02Icon} size={18} />}
+								icon={<Icon icon={IconType.Dashboard} size={18} />}
 								>
 									Overview
 								</SidebarLink>
 								<SidebarLink
 									to={`/projects/${selectedProject}/stats`}
-								icon={<Icon icon={IconType.ChartColumnIcon} size={18} />}
+								icon={<Icon icon={IconType.ChartColumn} size={18} />}
 								>
 									Statistics
 								</SidebarLink>
@@ -337,25 +337,25 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 								<div className="sidebar-section-title">Management</div>
 								<SidebarLink
 									to={`/projects/${selectedProject}/apps`}
-								icon={<Icon icon={IconType.LayoutGridIcon} size={18} />}
+								icon={<Icon icon={IconType.LayoutGrid} size={18} />}
 								>
 									Apps
 								</SidebarLink>
 								<SidebarLink
 									to={`/projects/${selectedProject}/team`}
-								icon={<Icon icon={IconType.UserGroupIcon} size={18} />}
+								icon={<Icon icon={IconType.UserGroup} size={18} />}
 								>
 									Team
 								</SidebarLink>
 								<SidebarLink
 									to={`/projects/${selectedProject}/payment-providers`}
-								icon={<Icon icon={IconType.CreditCardIcon} size={18} />}
+								icon={<Icon icon={IconType.CreditCard} size={18} />}
 								>
 									Payment Providers
 								</SidebarLink>
 								<SidebarLink
 									to={`/projects/${selectedProject}/settings`}
-								icon={<Icon icon={IconType.Settings02Icon} size={18} />}
+							icon={<Icon icon={IconType.Settings} size={18} />}
 								>
 									Settings
 								</SidebarLink>
@@ -368,49 +368,49 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 						<div className="sidebar-section">
 							<SidebarLink
 								to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}`}
-							icon={<Icon icon={IconType.DashboardSquare02Icon} size={18} />}
+							icon={<Icon icon={IconType.Dashboard} size={18} />}
 						>
 							Dashboard
 						</SidebarLink>
 						<SidebarLink
 							to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}/users`}
-							icon={<Icon icon={IconType.UserMultiple02Icon} size={18} />}
+							icon={<Icon icon={IconType.User} size={18} />}
 							>
 								Users
 							</SidebarLink>
 							<SidebarLink
 								to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}/licenses`}
-							icon={<Icon icon={IconType.LicenseIcon} size={18} />}
+							icon={<Icon icon={IconType.License} size={18} />}
 						>
 							Licenses & Plans
 						</SidebarLink>
 						<SidebarLink
 							to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}/api-keys`}
-							icon={<Icon icon={IconType.Key01Icon} size={18} />}
+							icon={<Icon icon={IconType.Key} size={18} />}
 							>
 								API Keys
 							</SidebarLink>
 							<SidebarLink
 								to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}/oauth`}
-							icon={<Icon icon={IconType.ShieldKeyIcon} size={18} />}
+							icon={<Icon icon={IconType.ShieldKey} size={18} />}
 						>
 							OAuth Config
 						</SidebarLink>
 						<SidebarLink
 							to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}/payment`}
-							icon={<Icon icon={IconType.CreditCardIcon} size={18} />}
+							icon={<Icon icon={IconType.CreditCard} size={18} />}
 							>
 								Payment Config
 							</SidebarLink>
 							<SidebarLink
 								to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}/developers`}
-							icon={<Icon icon={IconType.CodeIcon} size={18} />}
+							icon={<Icon icon={IconType.Code} size={18} />}
 						>
 							Integration Guide
 						</SidebarLink>
 						<SidebarLink
 							to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}/settings`}
-							icon={<Icon icon={IconType.Settings02Icon} size={18} />}
+							icon={<Icon icon={IconType.Settings} size={18} />}
 							>
 								App Settings
 							</SidebarLink>
@@ -437,7 +437,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 							title="Logout"
 							className={`text-sidebar-text p-1 bg-none border-none ${isLoggingOut ? "cursor-wait opacity-50" : "cursor-pointer opacity-100"}`}
 						>
-							<Icon icon={IconType.Logout03Icon} size={18} className="text-current" />
+							<Icon icon={IconType.Logout} size={18} className="text-current" />
 						</button>
 				</Link>
 			</div>
@@ -504,7 +504,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 						<span className="theme-label">{theme.charAt(0).toUpperCase() + theme.slice(1)}</span>
 					</button>
 					<a href={config.docsUrl} target="_blank" rel="noopener noreferrer" className="header-btn">
-					<Icon icon={IconType.BookOpen01Icon} size={16} />
+					<Icon icon={IconType.BookOpen} size={16} />
 						Docs
 					</a>
 				</div>

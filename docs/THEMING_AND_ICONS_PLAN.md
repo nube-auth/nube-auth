@@ -213,24 +213,24 @@ export function Icon({ icon, size = 20, strokeWidth, bold = false, color = "curr
 | Chevron down/up | `ArrowDown01Icon` / `ArrowUp01Icon` |
 | Close/X | `Cancel01Icon` |
 | Check/Checkmark | `Tick01Icon` |
-| Plus | `Add01Icon` |
-| Settings/Gear | `Settings01Icon` |
+| Plus | `Add` |
+| Settings/Gear | `Settings01` |
 | Search | `Search01Icon` |
 | User | `User01Icon` |
-| Copy | `Copy01Icon` |
+| Copy | `Copy` |
 | Edit/Pencil | `Edit01Icon` |
-| Trash/Delete | `Delete01Icon` |
+| Trash/Delete | `Delete` |
 | Eye/View | `View01Icon` |
 | Warning/Alert | `Alert02Icon` |
 | Info | `InformationCircleIcon` |
-| Success | `CheckmarkCircle02Icon` |
+| Success | `CheckCircle` |
 | Error | `AlertCircleIcon` |
 | Download | `Download01Icon` |
 | Upload | `Upload01Icon` |
 | External link | `LinkSquare02Icon` |
 | Refresh | `Refresh01Icon` |
 | Menu | `Menu01Icon` |
-| Lock | `LockIcon` |
+| Lock | `Lock` |
 | Key | `Key01Icon` |
 
 ---
@@ -276,7 +276,7 @@ Create an `icons/` folder with individual Astro icon components:
 
 ```astro
 ---
-// src/icons/ShieldIcon.astro
+// src/icons/Shield.astro
 const { class: className, size = 24 } = Astro.props;
 ---
 <svg class={className} width={size} height={size} viewBox="0 0 24 24">

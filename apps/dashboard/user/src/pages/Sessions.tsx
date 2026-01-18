@@ -63,10 +63,10 @@ function parseUserAgent(ua: string | null | undefined): { browser: string; os: s
 function getDeviceIcon(os: string) {
 	if (os === "iOS" || os === "Android") {
 		// Mobile icon
-		return <Icon icon={IconType.SmartPhone01Icon} size={18} className="text-text-tertiary" />;
+		return <Icon icon={IconType.Phone} size={18} className="text-text-tertiary" />;
 	}
 	// Desktop icon
-	return <Icon icon={IconType.ComputerIcon} size={18} className="text-text-tertiary" />;
+	return <Icon icon={IconType.Computer} size={18} className="text-text-tertiary" />;
 }
 
 export function SessionsPage() {
@@ -151,16 +151,16 @@ export function SessionsPage() {
 			{/* Tabs */}
 			<div className="tabs">
 				<Link to="/profile" className={location.pathname === "/profile" ? "tab tab-active" : "tab"}>
-					<Icon icon={IconType.UserIcon} size={18} bold={location.pathname === "/profile"} />
+					<Icon icon={IconType.User} size={18} bold={location.pathname === "/profile"} />
 					Profile
 				</Link>
 				<Link to="/sessions" className={location.pathname === "/sessions" ? "tab tab-active" : "tab"}>
-					<Icon icon={IconType.ComputerIcon} size={18} bold={location.pathname === "/sessions"} />
+					<Icon icon={IconType.Computer} size={18} bold={location.pathname === "/sessions"} />
 					Sessions
 					<span className="tab-badge">{sessions?.length || 0}</span>
 				</Link>
 				<button type="button" className="tab" disabled>
-					<Icon icon={IconType.SecurityCheckIcon} size={18} />
+					<Icon icon={IconType.SecurityCheck} size={18} />
 					Security
 				</button>
 			</div>
@@ -168,7 +168,7 @@ export function SessionsPage() {
 			{/* Alert Bar */}
 			{activeSessions.length > 1 && (
 				<div className="alert-bar">
-					<Icon icon={IconType.InformationCircleIcon} size={18} className="shrink-0" />
+					<Icon icon={IconType.Info} size={18} className="shrink-0" />
 					You have {activeSessions.length} active sessions across your devices.
 					<button
 						type="button"
@@ -246,7 +246,7 @@ export function SessionsPage() {
 							</>
 						) : (
 							<>
-								<Icon icon={IconType.Logout03Icon} size={18} bold />
+								<Icon icon={IconType.Logout} size={18} bold />
 								Logout All
 							</>
 						)}
@@ -338,7 +338,7 @@ export function SessionsPage() {
 				) : (
 					<div className="empty-state">
 						<div className="empty-state-icon">
-							<Icon icon={IconType.ComputerIcon} size={28} bold className="text-text-tertiary" />
+							<Icon icon={IconType.Computer} size={28} bold className="text-text-tertiary" />
 						</div>
 						<h3 className="empty-state-title">No active sessions</h3>
 						<p className="empty-state-desc">You don't have any active sessions at the moment.</p>

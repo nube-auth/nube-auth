@@ -51,7 +51,7 @@ Implemented a curated icon picker component that allows users to select custom i
 9. ShieldCheckIcon - "shield"
 10. PackageIcon - "package"
 11. Box01Icon - "box"
-12. Folder01Icon - "folder" (default for projects)
+12. Folder - "folder" (default for projects)
 13. FlashIcon - "flash"
 14. StarIcon - "star"
 15. SettingsIcon - "settings"

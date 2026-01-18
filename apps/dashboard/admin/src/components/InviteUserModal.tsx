@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Icon, IconType } from "@proofa/components";
-import { AlertCircleIcon, ArrowRight01Icon, Cancel01Icon, Refresh01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
+
 import { Select } from "./Select";
 import { pingpong } from "../lib/pingpong";
 
@@ -160,14 +160,14 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 						disabled={loading}
 						className={`bg-transparent border-none text-text-secondary p-1 rounded-md transition-all duration-200 ${loading ? "cursor-not-allowed" : "cursor-pointer hover:bg-content-bg hover:text-text-primary"}`}
 					>
-						<Icon icon={Cancel01Icon} size={20} />
+						<Icon icon={IconType.Cancel} size={20} />
 					</button>
 				</div>
 
 				{/* Success Message */}
 				{success && (
 					<div className="bg-success-bg border border-success rounded-lg p-3 mb-5 flex items-center gap-3">
-						<Icon icon={Tick02Icon} size={20} className="text-success flex-shrink-0" />
+						<Icon icon={IconType.Check} size={20} className="text-success flex-shrink-0" />
 						<div className="flex-1">
 							<p className="text-14px font-semibold text-success-text m-0">{success.message}</p>
 						</div>
@@ -177,7 +177,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 				{/* Error Message */}
 				{error && (
 					<div className="bg-danger-bg border border-danger rounded-lg p-3 mb-5 flex items-center gap-3">
-						<Icon icon={AlertCircleIcon} size={20} className="text-danger flex-shrink-0" />
+						<Icon icon={IconType.AlertCircle} size={20} className="text-danger flex-shrink-0" />
 						<p className="text-14px text-danger-text m-0">{error}</p>
 					</div>
 				)}
@@ -310,12 +310,12 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 						>
 							{loading ? (
 								<>
-									<Icon icon={Refresh01Icon} size={16} className="animate-spin" />
+									<Icon icon={IconType.Refresh} size={16} className="animate-spin" />
 									Sending...
 								</>
 							) : (
 								<>
-									<Icon icon={ArrowRight01Icon} size={16} />
+									<Icon icon={IconType.ArrowRight} size={16} />
 									Send Invitation
 								</>
 							)}

@@ -51,7 +51,7 @@ export function LoginPage() {
 			<div className="login-container">
 				<div className="login-card">
 					<div className="w-14 h-14 bg-danger-bg text-danger rounded-lg flex items-center justify-center mx-auto mb-5">
-						<Icon icon={IconType.AlertCircleIcon} size={32} className="text-danger" />
+						<Icon icon={IconType.AlertCircle} size={32} className="text-danger" />
 					</div>
 					<h1 className="login-title">Login Failed</h1>
 					<p className="login-subtitle">
@@ -62,7 +62,7 @@ export function LoginPage() {
 					</p>
 
 					<div className="alert-danger mb-6">
-						<Icon icon={IconType.AlertCircleIcon} size={20} className="shrink-0" />
+						<Icon icon={IconType.AlertCircle} size={20} className="shrink-0" />
 						<span>Please try again or contact support if the issue persists.</span>
 					</div>
 

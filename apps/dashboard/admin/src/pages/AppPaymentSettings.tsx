@@ -1,6 +1,5 @@
 import { Link, useParams } from "react-router-dom";
 import { Icon, IconType } from "@proofa/components";
-import { AlertCircleIcon, Add01Icon, Tick02Icon, Settings01Icon } from "@hugeicons/core-free-icons";
 import { useToast } from "../components/Toast";
 import { useApp, useProject, useProjectPaymentProviders, useSelectPaymentProvider, useSelectedPaymentProvider } from "../hooks/api";
 
@@ -95,7 +94,7 @@ export default function AppPaymentSettingsPage() {
 
 			{/* Info Banner */}
 			<div className="mb-6 flex gap-3 rounded-xl border border-primary bg-primary-light p-4">
-				<Icon icon={AlertCircleIcon} size={20} className="text-primary flex-shrink-0" />
+				<Icon icon={IconType.AlertCircle} size={20} className="text-primary flex-shrink-0" />
 				<div>
 					<p className="mb-1 text-sm font-semibold text-primary">Project-Level Configuration</p>
 					<p className="m-0 text-xs text-text-secondary">
@@ -119,7 +118,7 @@ export default function AppPaymentSettingsPage() {
 						Configure payment providers at the project level to enable payments for this app.
 					</p>
 					<Link to={`/projects/${projectId}/payment-providers`} className="btn btn-primary inline-flex items-center gap-2">
-						<Icon icon={Add01Icon} size={16} />
+								<Icon icon={IconType.Add} size={16} />
 						Configure Payment Providers
 					</Link>
 				</div>
@@ -140,7 +139,7 @@ export default function AppPaymentSettingsPage() {
 									<div
 										className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[4px] border-2 transition-all duration-200 ${isSelected ? "border-primary bg-primary" : "border-card-border bg-transparent"}`}
 									>
-										{isSelected && <Icon icon={Tick02Icon} size={14} className="text-white" />}
+										{isSelected && <Icon icon={IconType.Check} size={14} className="text-white" />}
 									</div>
 
 									{/* Provider Icon */}
@@ -184,7 +183,7 @@ export default function AppPaymentSettingsPage() {
 						Payment providers are managed at the project level. Visit the Payment Providers page to add new providers or update existing ones.
 					</p>
 					<Link to={`/projects/${projectId}/payment-providers`} className="btn btn-secondary inline-flex items-center gap-2">
-						<Icon icon={Settings01Icon} size={16} />
+						<Icon icon={IconType.Settings01} size={16} />
 						Manage Payment Providers
 					</Link>
 				</div>

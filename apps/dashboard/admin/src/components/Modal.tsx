@@ -65,7 +65,7 @@ export function ModalHeader({ children, onClose }: ModalHeaderProps) {
 					onClick={onClose}
 					className="btn btn-ghost btn-sm btn-circle"
 				>
-					<Icon icon={IconType.Cancel01Icon} size={20} />
+					<Icon icon={IconType.Close} size={20} />
 				</button>
 			)}
 		</div>

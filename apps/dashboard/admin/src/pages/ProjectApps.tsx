@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {Icon, IconType} from "@proofa/components";;
-import { LayoutGridIcon, MenuIcon, Key01Icon } from "@hugeicons/core-free-icons";
 import { useProject, useProjectApps } from "../hooks/api";
 
 type ViewMode = "grid" | "table";
@@ -63,7 +62,7 @@ export function ProjectAppsPage() {
 								viewMode === "grid" ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:text-text-primary"
 							}`}
 						>
-							<Icon icon={LayoutGridIcon} size={14} bold={viewMode === "grid"} />
+							<Icon icon={IconType.LayoutGrid} size={14} bold={viewMode === "grid"} />
 							Grid
 						</button>
 						<button
@@ -73,7 +72,7 @@ export function ProjectAppsPage() {
 								viewMode === "table" ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:text-text-primary"
 							}`}
 						>
-							<Icon icon={MenuIcon} size={14} bold={viewMode === "table"} />
+							<Icon icon={IconType.Menu} size={14} bold={viewMode === "table"} />
 							Table
 						</button>
 					</div>
@@ -124,7 +123,7 @@ export function ProjectAppsPage() {
 						>
 							<div className="flex items-start gap-4 mb-4">
 								<div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary-light to-purple-200">
-									<Icon icon={Key01Icon} size={24} className="text-primary" />
+									<Icon icon={IconType.Key} size={24} className="text-primary" />
 								</div>
 							<div className="flex-1 min-w-0">
 								<h3 className="text-16px font-semibold mb-1 text-text-primary overflow-hidden text-ellipsis whitespace-nowrap">
@@ -193,7 +192,7 @@ export function ProjectAppsPage() {
 								<td className="px-4 py-3.5">
 									<div className="flex items-center gap-3">
 										<div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary-light to-purple-200">
-											<Icon icon={Key01Icon} size={20} className="text-primary" />
+											<Icon icon={IconType.Key} size={20} className="text-primary" />
 											</div>
 											<div>
 												<div className="text-14px font-medium text-text-primary">

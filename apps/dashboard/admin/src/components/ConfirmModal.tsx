@@ -89,14 +89,14 @@ export function ConfirmModal({
 
     const renderIcon = () => {
         if (variant === "info") {
-            return <Icon icon={IconType.InformationCircleIcon} size={24} />;
+            return <Icon icon={IconType.Info} size={24} />;
         }
 
         if (variant === "warning") {
-            return <Icon icon={IconType.UserWarningIcon} size={24} />;
+            return <Icon icon={IconType.UserWarning} size={24} />;
         }
 
-        return <Icon icon={IconType.AlertCircleIcon} size={24} />;
+        return <Icon icon={IconType.AlertCircle} size={24} />;
     };
 
     if (!isOpen) return null;

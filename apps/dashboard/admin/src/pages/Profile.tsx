@@ -2,14 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { pingpong } from "../lib/pingpong";
 import {Icon, IconType} from "@proofa/components";;
-import {
-	CheckmarkCircle02Icon,
-	PencilEdit01Icon,
-	Tick02Icon,
-	LockIcon,
-	Moon02Icon,
-	CheckmarkBadge01Icon,
-} from "@hugeicons/core-free-icons";
 
 interface AdminProfile {
 	id: string;
@@ -127,7 +119,7 @@ export function ProfilePage() {
 			{/* Success Message */}
 			{successMessage && (
 				<div className="alert-success mb-6 flex items-center gap-2">
-					<Icon icon={CheckmarkCircle02Icon} size={20} bold className="flex-shrink-0 text-success" />
+					<Icon icon={IconType.CheckCircle} size={20} bold className="flex-shrink-0 text-success" />
 					{successMessage}
 				</div>
 			)}
@@ -152,7 +144,7 @@ export function ProfilePage() {
 							onClick={handleEdit}
 							className="btn-secondary flex items-center gap-2 px-4 py-2.5 text-14px font-medium rounded-[var(--radius)]"
 						>
-							<Icon icon={PencilEdit01Icon} size={16} />
+							<Icon icon={IconType.Edit} size={16} />
 							Edit Profile
 						</button>
 					)}
@@ -203,7 +195,7 @@ export function ProfilePage() {
 							</label>
 							<div className="px-3.5 py-2.5 bg-input-bg border border-input-border rounded-6px max-w-500px text-text-secondary flex items-center gap-2.5 text-14px">
 								<span className="flex-1">{profile.email || profile.primary_email}</span>
-								<Icon icon={LockIcon} size={16} className="opacity-40 flex-shrink-0" />
+								<Icon icon={IconType.Lock} size={16} className="opacity-40 flex-shrink-0" />
 							</div>
 							<p className="text-12px text-text-tertiary mt-1.5">
 								Email address is managed by your authentication provider and cannot be changed here.
@@ -240,7 +232,7 @@ export function ProfilePage() {
 									</>
 								) : (
 									<>
-										<Icon icon={Tick02Icon} size={18} bold />
+										<Icon icon={IconType.Check} size={18} bold />
 										Save Changes
 									</>
 								)}
@@ -285,7 +277,7 @@ export function ProfilePage() {
 								Your theme preference is managed in the header
 							</div>
 						</div>
-						<Icon icon={Moon02Icon} size={20} className="text-text-tertiary flex-shrink-0" />
+						<Icon icon={IconType.Moon} size={20} className="text-text-tertiary flex-shrink-0" />
 					</div>
 
 					{/* Sessions */}
@@ -298,7 +290,7 @@ export function ProfilePage() {
 								You are currently signed in
 							</div>
 						</div>
-						<Icon icon={CheckmarkBadge01Icon} size={20} bold className="text-success flex-shrink-0" />
+						<Icon icon={IconType.CheckBadge} size={20} bold className="text-success flex-shrink-0" />
 					</div>
 				</div>
 			</div>

@@ -2,15 +2,6 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useApp, useAppStats, useProject } from "../hooks/api";
 import {Icon, IconType} from "@proofa/components";
-import {
-	Settings02Icon,
-	UserMultiple02Icon,
-	CheckmarkCircle02Icon,
-	FlashIcon,
-	DollarCircleIcon,
-	LicenseIcon,
-	Key01Icon,
-} from "@hugeicons/core-free-icons";
 
 export function AppDetailPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -90,7 +81,7 @@ export function AppDetailPage() {
 					onClick={() => navigate(`/projects/${projectId}/apps/${appId}/settings`)}
 					className="btn btn-secondary shrink-0"
 				>
-					<Icon icon={IconType.SettingsIcon} size={14} />
+					<Icon icon={IconType.Settings} size={14} />
 					Settings
 				</button>
 				</div>
@@ -101,7 +92,7 @@ export function AppDetailPage() {
 			<div className="stat-card">
 				<div className="stat-card-header">
 					<div className="stat-icon purple">
-						<Icon icon={IconType.UserMultiple02Icon} size={24} />
+						<Icon icon={IconType.Users} size={24} />
 					</div>
 				</div>
 				<div className="stat-value">{statsLoading ? "—" : stats?.totalUsers || 0}</div>
@@ -110,7 +101,7 @@ export function AppDetailPage() {
 			<div className="stat-card">
 				<div className="stat-card-header">
 					<div className="stat-icon green">
-						<Icon icon={IconType.CheckmarkCircle02Icon} size={24} />
+						<Icon icon={IconType.CheckCircle} size={24} />
 					</div>
 				</div>
 				<div className="stat-value">{statsLoading ? "—" : stats?.activeLicenses || 0}</div>
@@ -123,7 +114,7 @@ export function AppDetailPage() {
 				<div className="stat-card">
 					<div className="stat-card-header">
 						<div className="stat-icon blue">
-							<Icon icon={FlashIcon} size={24} />
+							<Icon icon={IconType.Flash} size={24} />
 						</div>
 					</div>
 					<div className="stat-value">{statsLoading ? "—" : stats?.totalSessions || 0}</div>
@@ -132,7 +123,7 @@ export function AppDetailPage() {
 				<div className="stat-card">
 					<div className="stat-card-header">
 						<div className="stat-icon orange">
-							<Icon icon={DollarCircleIcon} size={24} />
+						<Icon icon={IconType.DollarCircle} size={24} />
 						</div>
 					</div>
 					<div className="stat-value">${statsLoading ? "—" : (stats?.totalRevenue || 0).toFixed(2)}</div>
@@ -152,7 +143,7 @@ export function AppDetailPage() {
 						className="bg-card-bg border border-border-secondary rounded-lg p-5 cursor-pointer transition-all flex flex-col items-center gap-3 text-center hover:border-primary hover:-translate-y-0.5 hover:shadow-md"
 					>
 				<div className="w-12 h-12 rounded-lg bg-surface-secondary flex items-center justify-center">
-							<Icon icon={UserMultiple02Icon} size={24} className="text-primary" />
+						<Icon icon={IconType.UserMultiple} size={24} className="text-primary" />
 						</div>
 						<div>
 							<div className="text-14px font-semibold text-text-primary mb-1">
@@ -168,7 +159,7 @@ export function AppDetailPage() {
 						className="bg-card-bg border border-border-secondary rounded-lg p-5 cursor-pointer transition-all flex flex-col items-center gap-3 text-center hover:border-primary hover:-translate-y-0.5 hover:shadow-md"
 					>
 				<div className="w-12 h-12 rounded-lg bg-surface-secondary flex items-center justify-center">
-							<Icon icon={LicenseIcon} size={24} className="text-success" />
+							<Icon icon={IconType.License} size={24} className="text-success" />
 						</div>
 						<div>
 							<div className="text-14px font-semibold text-text-primary mb-1">
@@ -184,7 +175,7 @@ export function AppDetailPage() {
 						className="bg-card-bg border border-border-secondary rounded-lg p-5 cursor-pointer transition-all flex flex-col items-center gap-3 text-center hover:border-primary hover:-translate-y-0.5 hover:shadow-md"
 					>
 				<div className="w-12 h-12 rounded-lg bg-surface-secondary flex items-center justify-center">
-						<Icon icon={Settings02Icon} size={24} className="text-info" />
+								<Icon icon={IconType.Settings} size={24} className="text-info" />
 						</div>
 						<div>
 							<div className="text-14px font-semibold text-text-primary mb-1">
@@ -200,7 +191,7 @@ export function AppDetailPage() {
 						className="bg-card-bg border border-border-secondary rounded-lg p-5 cursor-pointer transition-all flex flex-col items-center gap-3 text-center hover:border-primary hover:-translate-y-0.5 hover:shadow-md"
 					>
 					<div className="w-12 h-12 rounded-lg bg-surface-secondary flex items-center justify-center">
-						<Icon icon={Key01Icon} size={24} className="text-warning" />
+						<Icon icon={IconType.Key} size={24} className="text-warning" />
 						</div>
 						<div>
 							<div className="text-14px font-semibold text-text-primary mb-1">

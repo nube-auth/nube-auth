@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Icon, IconType } from "@proofa/components";
-import { AlertCircleIcon } from "@hugeicons/core-free-icons";
 import { useToast } from "../components/Toast";
 import { useApp, useProject, useUpdateApp } from "../hooks/api";
 
@@ -137,7 +136,7 @@ export default function AppOAuthPage() {
 
 			{/* Info Banner */}
 			<div className="card-info mb-6">
-				<Icon icon={AlertCircleIcon} size={20} className="text-primary shrink-0" />
+				<Icon icon={IconType.AlertCircle} size={20} className="text-primary shrink-0" />
 				<div>
 					<p className="text-14px font-semibold text-primary mb-1">
 						Platform-Level Configuration

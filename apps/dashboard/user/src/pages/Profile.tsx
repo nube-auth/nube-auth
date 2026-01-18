@@ -39,7 +39,7 @@ export function ProfilePage() {
 			<div className="card">
 				<div className="empty-state">
 					<div className="empty-state-icon">
-						<Icon icon={IconType.Alert02Icon} size={28} bold className="text-amber-500" />
+						<Icon icon={IconType.Alert} size={28} bold className="text-amber-500" />
 					</div>
 					<h3 className="empty-state-title">User not found</h3>
 					<p className="empty-state-desc">Unable to load your profile information.</p>
@@ -106,7 +106,7 @@ export function ProfilePage() {
 				<div className="info-item">
 					<div className="info-label">Account Type</div>
 					<div className="info-value">
-						<Icon icon={IconType.UserIcon} size={16} bold className="text-indigo-500" />
+						<Icon icon={IconType.User} size={16} bold className="text-indigo-500" />
 						User
 					</div>
 				</div>
@@ -119,15 +119,15 @@ export function ProfilePage() {
 			{/* Tabs */}
 			<div className="tabs">
 				<Link to="/profile" className={location.pathname === "/profile" ? "tab tab-active" : "tab"}>
-					<Icon icon={IconType.UserIcon} size={18} bold={location.pathname === "/profile"} />
+					<Icon icon={IconType.User} size={18} bold={location.pathname === "/profile"} />
 					Profile
 				</Link>
 				<Link to="/sessions" className={location.pathname === "/sessions" ? "tab tab-active" : "tab"}>
-					<Icon icon={IconType.ComputerIcon} size={18} bold={location.pathname === "/sessions"} />
+					<Icon icon={IconType.Computer} size={18} bold={location.pathname === "/sessions"} />
 					Sessions
 				</Link>
 				<button type="button" className="tab" disabled>
-					<Icon icon={IconType.SecurityCheckIcon} size={18} />
+					<Icon icon={IconType.SecurityCheck} size={18} />
 					Security
 				</button>
 			</div>
@@ -135,7 +135,7 @@ export function ProfilePage() {
 			{/* Success Alert */}
 			{showSuccess && (
 				<div className="alert alert-success">
-					<Icon icon={IconType.CheckmarkCircle02Icon} size={20} bold className="flex-shrink-0 text-emerald-600" />
+					<Icon icon={IconType.CheckCircle} size={20} bold className="flex-shrink-0 text-emerald-600" />
 					<span>Profile updated successfully!</span>
 				</div>
 			)}
@@ -181,7 +181,7 @@ export function ProfilePage() {
 									</>
 								) : (
 									<>
-										<Icon icon={IconType.Tick02Icon} size={18} bold />
+										<Icon icon={IconType.Check} size={18} bold />
 										Save Changes
 									</>
 								)}

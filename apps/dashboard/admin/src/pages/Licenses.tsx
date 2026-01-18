@@ -1,6 +1,5 @@
 import { useLicenses } from "../hooks/api";
 import {Icon, IconType} from "@proofa/components";;
-import { AlertCircleIcon, LicenseIcon, TicketIcon } from "@hugeicons/core-free-icons";
 
 export function LicensesPage() {
 	const { data: licenses, isLoading, error } = useLicenses();
@@ -16,7 +15,7 @@ export function LicensesPage() {
 	if (error) {
 		return (
 			<div className="alert alert-danger">
-				<Icon icon={AlertCircleIcon} size={20} bold className="text-danger" />
+				<Icon icon={IconType.AlertCircle} size={20} bold className="text-danger" />
 				<span>Error loading licenses. Please try again.</span>
 			</div>
 		);
@@ -82,7 +81,7 @@ export function LicensesPage() {
 											<td>
 												<div className="flex items-center gap-3">
 													<div className="w-8 h-8 bg-warning-bg rounded-lg flex items-center justify-center">
-														<Icon icon={TicketIcon} size={16} className="text-warning" />
+														<Icon icon={IconType.Ticket} size={16} className="text-warning" />
 													</div>
 													<span className="code-inline">{license.id}</span>
 												</div>
@@ -122,7 +121,7 @@ export function LicensesPage() {
 				) : (
 					<div className="empty-state">
 						<div className="empty-state-icon">
-							<Icon icon={LicenseIcon} size={40} className="text-text-tertiary" />
+							<Icon icon={IconType.License} size={40} className="text-text-tertiary" />
 						</div>
 						<h3 className="empty-state-title">No licenses found</h3>
 						<p className="empty-state-description">

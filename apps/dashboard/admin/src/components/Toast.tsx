@@ -56,13 +56,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 	const getIcon = (type: Toast["type"]) => {
 		switch (type) {
 			case "success":
-				return <Icon icon={IconType.Tick02Icon} size={20} className="shrink-0" />;
+				return <Icon icon={IconType.Check} size={20} className="shrink-0" />;
 			case "error":
-				return <Icon icon={IconType.Cancel01Icon} size={20} className="shrink-0" />;
+				return <Icon icon={IconType.Close} size={20} className="shrink-0" />;
 			case "warning":
-				return <Icon icon={IconType.AlertCircleIcon} size={20} className="shrink-0" />;
+				return <Icon icon={IconType.AlertCircle} size={20} className="shrink-0" />;
 			default:
-				return <Icon icon={IconType.InformationCircleIcon} size={20} className="shrink-0" />;
+				return <Icon icon={IconType.Info} size={20} className="shrink-0" />;
 		}
 	};
 
@@ -82,7 +82,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 							onClick={() => removeToast(toast.id)}
 							className="btn btn-ghost btn-xs btn-circle"
 						>
-							<Icon icon={IconType.Cancel01Icon} size={16} />
+							<Icon icon={IconType.Close} size={16} />
 						</button>
 					</div>
 				))}

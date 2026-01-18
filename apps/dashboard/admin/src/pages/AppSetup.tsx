@@ -3,14 +3,6 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Icon, IconType } from "@proofa/components";
 import { IconPicker } from "../components/IconPicker";
-import {
-	ArrowRight01Icon,
-	Tick02Icon,
-	Cancel01Icon,
-	Add01Icon,
-	Key01Icon,
-	AlertCircleIcon,
-} from "@hugeicons/core-free-icons";
 import { useCreateApp, useProject } from "../hooks/api";
 
 const AVAILABLE_PROVIDERS = [
@@ -186,11 +178,11 @@ export function AppSetupPage() {
 				<Link to="/projects" className="text-text-secondary no-underline">
 					Projects
 				</Link>
-				<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
-				<Link to={`/projects/${projectId}`} className="text-text-secondary no-underline">
-					{project.name}
-				</Link>
-				<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
+			<Icon icon={IconType.ArrowRight} size={14} className="text-text-tertiary" />
+			<Link to={`/projects/${projectId}`} className="text-text-secondary no-underline">
+				{project.name}
+			</Link>
+			<Icon icon={IconType.ArrowRight} size={14} className="text-text-tertiary" />
 				<span className="text-text-primary font-medium">Create New App</span>
 			</nav>
 
@@ -379,7 +371,7 @@ export function AppSetupPage() {
 																		: "border-border-secondary bg-transparent"
 																}`}
 															>
-																{isEnabled && <Icon icon={Tick02Icon} size={14} className="text-white" />}
+																{isEnabled && <Icon icon={IconType.Check} size={14} className="text-white" />}
 															</div>
 														</div>
 													</button>
@@ -429,7 +421,7 @@ export function AppSetupPage() {
 															}
 															className="btn btn-ghost btn-sm text-danger"
 														>
-															<Icon icon={Cancel01Icon} size={16} className="text-danger" />
+															<Icon icon={IconType.Cancel} size={16} className="text-danger" />
 														</button>
 													)}
 												</div>
@@ -440,7 +432,7 @@ export function AppSetupPage() {
 											onClick={() => addArrayField("redirectUris")}
 											className="btn btn-secondary btn-sm mb-3"
 										>
-											<Icon icon={Add01Icon} size={16} />
+											<Icon icon={IconType.Add} size={16} />
 											Add Redirect URI
 										</button>
 										<p className="text-13px text-text-tertiary">
@@ -484,7 +476,7 @@ export function AppSetupPage() {
 															}
 															className="btn btn-ghost btn-sm text-danger"
 														>
-															<Icon icon={Cancel01Icon} size={16} className="text-danger" />
+															<Icon icon={IconType.Cancel} size={16} className="text-danger" />
 														</button>
 													)}
 												</div>
@@ -495,7 +487,7 @@ export function AppSetupPage() {
 											onClick={() => addArrayField("allowedHosts")}
 											className="btn btn-secondary btn-sm mb-3"
 										>
-											<Icon icon={Add01Icon} size={16} />
+											<Icon icon={IconType.Add} size={16} />
 											Add Allowed Host
 										</button>
 										<p className="text-13px text-text-tertiary">
@@ -869,7 +861,7 @@ export function AppSetupPage() {
 								<div
 									className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5 bg-surface-secondary"
 								>
-									<Icon icon={Key01Icon} size={28} className="text-primary" />
+									<Icon icon={IconType.Key} size={28} className="text-primary" />
 								</div>
 
 								{/* App Name & Description */}
@@ -934,7 +926,7 @@ export function AppSetupPage() {
 							<div
 								className="mt-5 p-3 bg-primary-light border border-primary rounded-lg flex gap-2 items-start"
 							>
-								<Icon icon={AlertCircleIcon} size={16} className="text-primary shrink-0 mt-0.5" />
+								<Icon icon={IconType.AlertCircle} size={16} className="text-primary shrink-0 mt-0.5" />
 								<p
 									className="text-12px text-text-secondary m-0 leading-relaxed"
 								>

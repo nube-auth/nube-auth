@@ -62,7 +62,7 @@ export const Select: React.FC<SelectProps> = ({
 			>
 				<span>{selectedOption ? selectedOption.label : placeholder}</span>
 				<Icon
-					icon={IconType.ArrowDown01Icon}
+					icon={IconType.ArrowDown}
 					size={16}
 					className={`transition-transform duration-200 ${isOpen ? "rotate-180" : "rotate-0"}`}
 				/>
