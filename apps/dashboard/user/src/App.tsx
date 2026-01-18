@@ -2,7 +2,7 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
 import { Icon } from "./components/Icon";
-import { Sun01Icon, Moon01Icon, CpuIcon } from "@hugeicons/core-free-icons";
+import { Sun03Icon, Moon02Icon, ComputerIcon } from "@hugeicons/core-free-icons";
 import { useAuth } from "./hooks/api";
 import { LoginPage } from "./pages/Login";
 import { ProfilePage } from "./pages/Profile";
@@ -68,12 +68,12 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
 	const getThemeIcon = () => {
 		if (theme === "light") {
-			return <Icon icon={Sun01Icon} size={16} />;
+			return <Icon icon={Sun03Icon} size={16} className="text-current" />;
 		}
 		if (theme === "dark") {
-			return <Icon icon={Moon01Icon} size={16} />;
+			return <Icon icon={Moon02Icon} size={16} className="text-current" />;
 		}
-		return <Icon icon={CpuIcon} size={16} />;
+		return <Icon icon={ComputerIcon} size={16} className="text-current" />;
 	};
 
 	return (
@@ -89,9 +89,9 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 				</div>
 
 				<div className="header-right">
-					<button type="button" onClick={cycleTheme} className="header-theme-btn" title={`Current: ${theme} mode`}>
-						{getThemeIcon()}
-						<span className="header-theme-label">{theme.charAt(0).toUpperCase() + theme.slice(1)}</span>
+<button type="button" onClick={cycleTheme} className="header-btn theme-toggle" title={`Current: ${theme} mode (click to change)`}>
+					{getThemeIcon()}
+					<span className="theme-label">{theme.charAt(0).toUpperCase() + theme.slice(1)}</span>
 					</button>
 
 					<div className="header-user">

@@ -5,6 +5,7 @@ CREATE TABLE "apps" (
 	"name" varchar(255) NOT NULL,
 	"slug" varchar(255) NOT NULL,
 	"description" text,
+	"icon" varchar(50) DEFAULT 'application' NOT NULL,
 	"enabled_providers" jsonb DEFAULT '["google"]' NOT NULL,
 	"app_tokens" jsonb NOT NULL,
 	"security_settings" jsonb NOT NULL,
@@ -266,6 +267,7 @@ CREATE TABLE "projects" (
 	"name" varchar(255) NOT NULL,
 	"slug" varchar(255) NOT NULL,
 	"description" text,
+	"icon" varchar(50) DEFAULT 'folder' NOT NULL,
 	"owner_user_id" integer NOT NULL,
 	"is_active" boolean DEFAULT true NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
@@ -360,6 +362,7 @@ CREATE TABLE "sessions" (
 	"revoked_at" timestamp,
 	"ip_address" varchar(50),
 	"user_agent" text,
+	"country" varchar(2),
 	CONSTRAINT "sessions_public_id_unique" UNIQUE("public_id")
 );
 --> statement-breakpoint

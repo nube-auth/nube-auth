@@ -31,6 +31,38 @@ body {
 }
 
 /* ==========================================================================
+   Header Theme Button - Consistent with User Dashboard
+   ========================================================================== */
+
+.header-theme-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all var(--transition);
+}
+
+.header-theme-btn:hover {
+  background: var(--border);
+}
+
+.header-theme-label {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .header-theme-label {
+    display: inline;
+  }
+}
+
+/* ==========================================================================
    RESPONSIVE - Essential Media Query Overrides
    ========================================================================== */
 

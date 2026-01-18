@@ -102,7 +102,7 @@ body {
   gap: 24px;
 }
 
-.header-theme-btn {
+.header-btn {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -116,16 +116,16 @@ body {
   transition: all var(--transition);
 }
 
-.header-theme-btn:hover {
+.header-btn:hover {
   background: var(--border);
 }
 
-.header-theme-label {
+.theme-label {
   display: none;
 }
 
 @media (min-width: 640px) {
-  .header-theme-label {
+  .theme-label {
     display: inline;
   }
 }
@@ -171,6 +171,45 @@ body {
   margin: 0 auto;
   padding-left: 8px;
   padding-right: 8px;
+}
+
+/* Add spacing between breadcrumbs and page content */
+.breadcrumbs {
+  margin-bottom: 24px;
+}
+
+.breadcrumb-divider {
+  margin: 0 6px;
+}
+
+/* Info Grid - 4 columns in single row */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 32px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.info-value {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 @media (min-width: 640px) {

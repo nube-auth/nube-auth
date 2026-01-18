@@ -1,5 +1,5 @@
 {
-  "id": "794de3ed-8a3b-4b7d-a270-07297ff86e34",
+  "id": "ff5297ed-ecbe-4ad6-85cd-e9c075cd65c9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -43,6 +43,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "icon": {
+          "name": "icon",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'application'"
         },
         "enabled_providers": {
           "name": "enabled_providers",
@@ -2949,6 +2956,13 @@
           "primaryKey": false,
           "notNull": false
         },
+        "icon": {
+          "name": "icon",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'folder'"
+        },
         "owner_user_id": {
           "name": "owner_user_id",
           "type": "integer",
@@ -4011,6 +4025,12 @@
         "user_agent": {
           "name": "user_agent",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "country": {
+          "name": "country",
+          "type": "varchar(2)",
           "primaryKey": false,
           "notNull": false
         }
