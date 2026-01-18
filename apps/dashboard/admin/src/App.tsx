@@ -57,6 +57,7 @@ import ProjectPaymentProvidersPage from "./pages/ProjectPaymentProviders";
 import { ProjectSettingsPage } from "./pages/ProjectSettings";
 import { ProjectStatsPage } from "./pages/ProjectStats";
 import { ProjectsPage } from "./pages/Projects";
+import { CreateProjectPage } from "./pages/CreateProject";
 import { ProjectTeamPage } from "./pages/ProjectTeam";
 import { pingpong } from "./lib/pingpong";
 
@@ -141,7 +142,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
 	// Detect current project from URL
 	const urlMatch = location.pathname.match(/\/projects\/([^/]+)/);
-	const selectedProject = urlMatch ? urlMatch[1] : null;
+	const selectedProject = (urlMatch && urlMatch[1] !== "new") ? urlMatch[1] : null;
 
 	if (isLoading) {
 		return (
@@ -298,8 +299,8 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 				)}
 
 				<nav className="sidebar-nav">
-					{/* Context 1: Global View (at /projects or /billing) */}
-					{(location.pathname === "/projects" || location.pathname === "/billing") && (
+					{/* Context 1: Global View (at /projects, /projects/new, or /billing) */}
+					{(location.pathname === "/projects" || location.pathname === "/projects/new" || location.pathname === "/billing") && (
 						<div className="sidebar-section">
 							<SidebarLink
 								to="/projects"
@@ -340,8 +341,8 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 						</div>
 					)}
 
-					{/* Context 2: Project View (at /projects/:projectId but not in app) */}
-					{selectedProject && !location.pathname.includes("/apps/") && location.pathname !== "/projects" && (
+					{/* Context 2: Project View (at /projects/:projectId but not in app or create page) */}
+					{selectedProject && !location.pathname.includes("/apps/") && location.pathname !== "/projects" && location.pathname !== "/projects/new" && (
 						<>
 							<div className="sidebar-section">
 								<div className="sidebar-section-title">Project</div>
@@ -570,6 +571,14 @@ function App() {
 							element={
 								<ProtectedLayout>
 									<ProjectsPage />
+								</ProtectedLayout>
+							}
+						/>
+						<Route
+							path="/projects/new"
+							element={
+								<ProtectedLayout>
+									<CreateProjectPage />
 								</ProtectedLayout>
 							}
 						/>

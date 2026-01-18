@@ -302,7 +302,7 @@ textarea:focus {
   outline: none;
   border-color: var(--primary);
   background: var(--bg-surface);
-  box-shadow: none;
+  box-shadow: none !important;
 }
 
 .form-control:disabled,

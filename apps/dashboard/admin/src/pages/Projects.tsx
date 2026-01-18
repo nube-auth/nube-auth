@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useCreateProject, useProjects } from "../hooks/api";
+import { Link, useNavigate } from "react-router-dom";
+import { useProjects } from "../hooks/api";
 import { Icon } from "../components/Icon";
-import { IconPicker, getIconById } from "../components/IconPicker";
+import { getIconById } from "../components/IconPicker";
 import {
 	AlertCircleIcon,
 	GridViewIcon,
 	Menu01Icon,
 	Add01Icon,
-	Cancel01Icon,
 	Layers01Icon,
 	FlashIcon,
 	LockIcon,
@@ -22,38 +21,8 @@ type ViewMode = "grid" | "table";
 
 export function ProjectsPage() {
 	const { data: projects, isLoading, error } = useProjects();
-	const createProjectMutation = useCreateProject();
-	const [showForm, setShowForm] = useState(false);
+	const navigate = useNavigate();
 	const [viewMode, setViewMode] = useState<ViewMode>("table");
-	const [formData, setFormData] = useState({ name: "", slug: "", description: "", icon: "folder" });
-
-	const generateSlug = (name: string) => {
-		return name
-			.toLowerCase()
-			.trim()
-			.replace(/[^\w\s-]/g, "")
-			.replace(/\s+/g, "-")
-			.replace(/-+/g, "-")
-			.substring(0, 50);
-	};
-
-	const handleNameChange = (name: string) => {
-		setFormData({
-			...formData,
-			name,
-			slug: generateSlug(name),
-		});
-	};
-
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
-		createProjectMutation.mutate(formData, {
-			onSuccess: () => {
-				setFormData({ name: "", slug: "", description: "", icon: "folder" });
-				setShowForm(false);
-			},
-		});
-	};
 
 	if (isLoading) {
 		return (
@@ -76,149 +45,75 @@ export function ProjectsPage() {
 	const hasProjects = projects && projects.length > 0;
 
 	return (
-		<>
-			{/* Create Project Modal/Form */}
-			{showForm && (
-		<div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowForm(false)}>
-			<div className="bg-card-bg border border-card-border rounded-xl w-full mx-4 max-w-md max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
-				<div className="flex items-center justify-between px-6 py-4 border-b border-card-border flex-shrink-0 bg-card-bg">
-						<h3 className="text-18px font-600 text-text-primary m-0">Create New Project</h3>
-						<button type="button" className="btn-ghost w-8 h-8 p-0 flex items-center justify-center" onClick={() => setShowForm(false)}>
-							<Icon icon={Cancel01Icon} size={20} />
-						</button>
-					</div>
-					<form onSubmit={handleSubmit} className="flex flex-col flex-1">
-						<div className="p-6 text-text-primary overflow-y-auto flex-1 bg-card-bg">
-							<div className="form-group">
-								<label htmlFor="projectName" className="form-label">Project Name *</label>
-								<input
-									type="text"
-									id="projectName"
-									className="form-control"
-									placeholder="My Awesome Project"
-									required
-									value={formData.name}
-									onChange={(e) => handleNameChange(e.target.value)}
-								/>
-							</div>
-							<div className="form-group">
-								<label htmlFor="projectSlug" className="form-label">Project Slug *</label>
-								<input
-									type="text"
-									id="projectSlug"
-									className="form-control"
-									placeholder="my-awesome-project"
-									required
-									value={formData.slug}
-									onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-								/>
-								<p className="text-12px text-text-tertiary mt-1.5">
-									Auto-generated from project name. Use only letters, numbers, and hyphens.
-								</p>
-							</div>
-							<IconPicker
-								selectedIconId={formData.icon}
-								onSelect={(icon) => setFormData({ ...formData, icon })}
-								label="Project Icon"
-							/>
-							<div className="form-group">
-								<label htmlFor="projectDescription" className="form-label">Description (optional)</label>
-								<textarea
-									id="projectDescription"
-									className="form-control resize-y"
-									placeholder="What is this project about?"
-									value={formData.description}
-									onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-									rows={3}
-								/>
-							</div>
-						</div>
-						<div className="flex items-center justify-end gap-3 p-6 border-t border-card-border flex-shrink-0 bg-card-bg">
-						<button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>
-							Cancel
-						</button>
-						<button
-							type="submit"
-							className="btn btn-primary"
-							disabled={createProjectMutation.isPending}
-						>
-							{createProjectMutation.isPending ? "Creating..." : "Create Project"}
-						</button>
-					</div>
-						</form>
-					</div>
+		<div className="space-y-6">
+			{/* Page Header */}
+			<div className="page-header">
+				<div>
+					<h1 className="page-title">Projects</h1>
+					<p className="page-description">Manage your authentication projects</p>
 				</div>
-			)}
-
-			<div className="space-y-6">
-				{/* Page Header */}
-				<div className="page-header">
-					<div>
-						<h1 className="page-title">Projects</h1>
-						<p className="page-description">Manage your authentication projects</p>
-					</div>
-					{hasProjects && (
-						<div className="flex gap-3 items-center">
-							<div
-								className="flex bg-card-bg border border-card-border rounded-lg p-1 gap-1"
+				{hasProjects && (
+					<div className="flex gap-3 items-center">
+						<div
+							className="flex bg-card-bg border border-card-border rounded-lg p-1 gap-1"
+						>
+							<button
+								type="button"
+								onClick={() => setViewMode("grid")}
+								className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
+									viewMode === "grid" ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:text-text-primary"
+								}`}
 							>
-								<button
-									type="button"
-									onClick={() => setViewMode("grid")}
-									className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
-										viewMode === "grid" ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:text-text-primary"
-									}`}
-								>
-									<Icon icon={GridViewIcon} size={14} bold={viewMode === "grid"} />
-									Grid
-								</button>
-								<button
-									type="button"
-									onClick={() => setViewMode("table")}
-									className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
-										viewMode === "table" ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:text-text-primary"
-									}`}
-								>
-									<Icon icon={Menu01Icon} size={14} bold={viewMode === "table"} />
-									Table
-								</button>
-							</div>
-							<button type="button" onClick={() => setShowForm(!showForm)} className="btn btn-primary">
-								<Icon icon={Add01Icon} size={16} bold />
-								New Project
+								<Icon icon={GridViewIcon} size={14} bold={viewMode === "grid"} />
+								Grid
+							</button>
+							<button
+								type="button"
+								onClick={() => setViewMode("table")}
+								className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
+									viewMode === "table" ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:text-text-primary"
+								}`}
+							>
+								<Icon icon={Menu01Icon} size={14} bold={viewMode === "table"} />
+								Table
 							</button>
 						</div>
-					)}
-				</div>
-
-			{/* Empty State */}
-			{!hasProjects && (
-				<div
-					className="flex flex-col items-center justify-center py-20 px-5 text-center"
-				>
-					<div className="relative mb-6">
-						<div
-							className="w-25 h-25 rounded-full flex items-center justify-center border border-primary/25"
-						>
-							<Icon icon={Layers01Icon} size={44} className="text-primary" />
-						</div>
-						<div className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary rounded-full flex items-center justify-center border-2 border-[var(--content-bg)]">
-							<Icon icon={Add01Icon} size={16} className="text-white" bold />
-						</div>
+						<button type="button" onClick={() => navigate("/projects/new")} className="btn btn-primary">
+							<Icon icon={Add01Icon} size={16} bold />
+							New Project
+						</button>
 					</div>
-					<h2
-						className="text-24px font-bold text-text-primary mb-3"
+				)}
+			</div>
+
+		{/* Empty State */}
+		{!hasProjects && (
+			<div
+				className="flex flex-col items-center justify-center py-20 px-5 text-center"
+			>
+				<div className="relative mb-6">
+					<div
+						className="w-25 h-25 rounded-full flex items-center justify-center border border-primary/25"
 					>
-						Create your first project
-					</h2>
-					<p
-						className="text-15px text-text-secondary max-w-100 mb-8 leading-relaxed"
-					>
-						Projects help you organize your applications and manage authentication across your services.
-					</p>
-					<button
-						type="button"
-						onClick={() => setShowForm(true)}
+						<Icon icon={Layers01Icon} size={44} className="text-primary" />
+					</div>
+					<div className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary rounded-full flex items-center justify-center border-2 border-[var(--content-bg)]">
+						<Icon icon={Add01Icon} size={16} className="text-white" bold />
+					</div>
+				</div>
+				<h2
+					className="text-24px font-bold text-text-primary mb-3"
+				>
+					Create your first project
+				</h2>
+				<p
+					className="text-15px text-text-secondary max-w-100 mb-8 leading-relaxed"
+				>
+					Projects help you organize your applications and manage authentication across your services.
+				</p>
+				<button
+					type="button"
+					onClick={() => navigate("/projects/new")}
 						className="btn btn-primary py-3 px-6 text-15px"
 					>
 						<Icon icon={Add01Icon} size={18} bold />
@@ -445,6 +340,6 @@ export function ProjectsPage() {
 					</table>
 				</div>
 			)}
-			</div>
-		</>	);
+		</div>
+	);
 }

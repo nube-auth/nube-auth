@@ -87,7 +87,7 @@ export function IconPicker({ selectedIconId = "application", onSelect, label = "
 
 						{/* Dropdown */}
 				<div className="absolute top-full left-0 right-0 mt-2 bg-content-bg border border-card-border rounded-lg shadow-xl z-50 max-h-[320px] overflow-y-auto">
-							<div className="grid grid-cols-3 gap-2 p-3">
+							<div className="grid grid-cols-4 gap-2 p-3">
 								{AVAILABLE_ICONS.map((iconOption) => (
 									<button
 										key={iconOption.id}
