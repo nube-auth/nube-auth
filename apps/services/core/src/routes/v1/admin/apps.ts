@@ -1,8 +1,8 @@
-import { appQueries, auditLogQueries, getDb, projectMemberQueries, projectQueries, userQueries, paymentProviderConfigQueries, licenseQueries } from "@proofa/db";
+import { appQueries, auditLogQueries, getDb, projectMemberQueries, projectQueries, userQueries, licenseQueries } from "@proofa/db";
 import { createId, createLogger, idPatterns, serializeError } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
-import { randomBytes } from "crypto";
+import { randomBytes } from "node:crypto";
 
 const log = createLogger("admin-apps-routes");
 

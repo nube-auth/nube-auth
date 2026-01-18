@@ -97,9 +97,9 @@ export function wipeString(str: string): void {
 	// Try to overwrite the string's internal buffer
 	// This is best-effort as JS strings are immutable
 	try {
-		// @ts-ignore - accessing internal buffer
+		// @ts-expect-error - accessing internal buffer
 		if (str.buffer) {
-			// @ts-ignore
+			// @ts-expect-error
 			crypto.randomFillSync(str.buffer);
 		}
 	} catch {

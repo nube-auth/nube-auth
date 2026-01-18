@@ -219,7 +219,7 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
 						? response.body
 						: JSON.stringify(response.body);
 					rawData = JSON.parse(bodyStr);
-				} catch (e) {
+				} catch (_e) {
 					throw new Error(`Failed to parse user profile response: ${response.body}`);
 				}
 			}

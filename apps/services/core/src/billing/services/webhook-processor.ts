@@ -4,7 +4,7 @@
  * Processes all webhook events and updates license states accordingly
  */
 
-import { getDb, licenses, eq } from "@proofa/db";
+import { getDb, } from "@proofa/db";
 import { createLogger, serializeError } from "@proofa/shared";
 import type { PaymentDetails } from "../adapters/types.js";
 import { licenseManager } from "./license-manager.js";
@@ -115,7 +115,7 @@ async function handleSuccessfulPayment(
  * Handle subscription cancellation
  */
 async function handleSubscriptionCancellation(paymentDetails: PaymentDetails, provider: string): Promise<void> {
-	const db = getDb();
+	const _db = getDb();
 
 	try {
 		// Find license by subscription ID

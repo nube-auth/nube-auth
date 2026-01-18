@@ -33,7 +33,7 @@ export function RefundProcessingPage() {
 		}
 
 		const amount = parseFloat(refundForm.amount);
-		if (isNaN(amount) || amount <= 0) {
+		if (Number.isNaN(amount) || amount <= 0) {
 			showToast("Refund amount must be greater than 0", "error");
 			return;
 		}
@@ -363,7 +363,7 @@ export function RefundProcessingPage() {
 			)}
 
 			{/* Pagination */}
-			{refundsQuery.data && refundsQuery.data.pagination && (
+			{refundsQuery.data?.pagination && (
 				<div className="mt-6 flex items-center justify-between">
 					<div className="text-sm text-text-secondary">
 						Showing {filters.offset + 1} to {Math.min(filters.offset + filters.limit, refundsQuery.data.pagination.total)} of{" "}

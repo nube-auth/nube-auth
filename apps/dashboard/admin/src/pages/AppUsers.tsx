@@ -10,9 +10,7 @@ import {
 	ArrowUp01Icon,
 	FilterIcon,
 	UserMultiple02Icon,
-	ViewIcon,
 	Edit02Icon,
-	Delete01Icon,
 	Tick02Icon,
 	Refresh01Icon,
 	Grid02Icon,
@@ -176,7 +174,7 @@ export function AppUsersPage() {
 	};
 
 	// Handler for opening Edit modal (initialize form values)
-	const handleOpenEditModal = (user: any) => {
+	const _handleOpenEditModal = (user: any) => {
 		setEditingUser(user);
 		setEditLicensePlan(user.plan_id || null);
 		setEditLicenseStatus(user.status || "active");

@@ -369,7 +369,7 @@ export function WebhookMonitoringPage() {
 			)}
 
 			{/* Pagination */}
-			{webhooksQuery.data && webhooksQuery.data.pagination && (
+			{webhooksQuery.data?.pagination && (
 				<div className="mt-6 flex items-center justify-between">
 					<div className="text-14px text-text-secondary">
 						Showing {filters.offset + 1} to {Math.min(filters.offset + filters.limit, webhooksQuery.data.pagination.total)} of{" "}

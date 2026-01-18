@@ -4,7 +4,6 @@
  */
 
 import { createLogger } from "@proofa/shared";
-import type { PaymentDetails } from "../adapters/types.js";
 
 const log = createLogger("webhook-simulator");
 

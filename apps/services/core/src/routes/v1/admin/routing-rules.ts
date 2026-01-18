@@ -59,7 +59,7 @@ const TestRoutingSchema = z.object({
  */
 app.get("/:appId", async (c) => {
 	try {
-		const appId = parseInt(c.req.param("appId"));
+		const appId = parseInt(c.req.param("appId"), 10);
 
 		if (Number.isNaN(appId)) {
 			return c.json({ error: "Invalid app ID" }, 400);
@@ -106,7 +106,7 @@ app.get("/:appId", async (c) => {
  */
 app.post("/:appId", async (c) => {
 	try {
-		const appId = parseInt(c.req.param("appId"));
+		const appId = parseInt(c.req.param("appId"), 10);
 
 		if (Number.isNaN(appId)) {
 			return c.json({ error: "Invalid app ID" }, 400);
@@ -173,7 +173,7 @@ app.post("/:appId", async (c) => {
  */
 app.put("/:appId/:ruleId", async (c) => {
 	try {
-		const appId = parseInt(c.req.param("appId"));
+		const appId = parseInt(c.req.param("appId"), 10);
 		const rulePublicId = c.req.param("ruleId");
 
 		if (Number.isNaN(appId)) {
@@ -245,7 +245,7 @@ app.put("/:appId/:ruleId", async (c) => {
  */
 app.delete("/:appId/:ruleId", async (c) => {
 	try {
-		const appId = parseInt(c.req.param("appId"));
+		const appId = parseInt(c.req.param("appId"), 10);
 		const rulePublicId = c.req.param("ruleId");
 
 		if (Number.isNaN(appId)) {
@@ -289,7 +289,7 @@ app.delete("/:appId/:ruleId", async (c) => {
  */
 app.post("/:appId/test", async (c) => {
 	try {
-		const appId = parseInt(c.req.param("appId"));
+		const appId = parseInt(c.req.param("appId"), 10);
 
 		if (Number.isNaN(appId)) {
 			return c.json({ error: "Invalid app ID" }, 400);

@@ -10,7 +10,7 @@ import type { Config } from 'tailwindcss';
  * This preset bridges CSS variables to Tailwind's config system.
  */
 
-const preset: Config = {
+const preset: Partial<Config> = {
   theme: {
     extend: {
       // Colors - mapped from CSS variables in theme.css

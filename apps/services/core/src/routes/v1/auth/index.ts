@@ -452,12 +452,12 @@ router.post("/exchange", async (c: Context) => {
 		const session = await sessionQueries.findByPublicId(db, sessionId);
 
 		if (!session) {
-			log.warn({ sessionId: sessionId.substring(0, 8) + "..." }, "Session not found");
+			log.warn({ sessionId: `${sessionId.substring(0, 8)}...` }, "Session not found");
 			return c.json({ error: "Session not found" }, 404);
 		}
 
 		if (session.expires_at < now) {
-			log.warn({ sessionId: sessionId.substring(0, 8) + "..." }, "Session expired");
+			log.warn({ sessionId: `${sessionId.substring(0, 8)}...` }, "Session expired");
 			return c.json({ error: "Session expired" }, 401);
 		}
 
@@ -495,7 +495,7 @@ router.post("/exchange", async (c: Context) => {
 			await sessionQueries.updateLastSeenAndExpiry(db, session.id, now, updatedExpiresAt);
 		}
 
-		log.info({ userId: user.public_id, sessionId: sessionId.substring(0, 8) + "..." }, "Session exchange successful");
+		log.info({ userId: user.public_id, sessionId: `${sessionId.substring(0, 8)}...` }, "Session exchange successful");
 		return c.json({
 			userId: user.public_id,
 			email: user.primary_email,

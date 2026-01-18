@@ -3,9 +3,7 @@ import {
 	getDb,
 	licenseQueries,
 	planQueries,
-	projectMemberQueries,
 	projectQueries,
-	userQueries,
 } from "@proofa/db";
 import { createLogger, idPatterns, serializeError } from "@proofa/shared";
 import type { Context } from "hono";
@@ -41,7 +39,7 @@ statsRouter.get("/:projectId/stats", async (c: Context) => {
 		const appIds = apps.map((a) => a.id);
 		let totalLicenses = 0;
 		let activeLicenses = 0;
-		let uniqueUsers = new Set<number>();
+		const uniqueUsers = new Set<number>();
 		const licenseCounts: Record<string, number> = {};
 
 		for (const appId of appIds) {

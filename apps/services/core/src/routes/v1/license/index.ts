@@ -1,4 +1,4 @@
-import { appQueries, apps, getDb, gte, licenses, licenseQueries, planQueries, userQueries } from "@proofa/db";
+import { appQueries, getDb, gte, licenses, licenseQueries, planQueries, userQueries } from "@proofa/db";
 import { createId, createLogger, serializeError } from "@proofa/shared";
 import { and, eq, or, isNull } from "@proofa/db";
 import type { Context } from "hono";

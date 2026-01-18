@@ -9,8 +9,8 @@
  * 5. Sends notifications on complete/failure
  */
 
-import { getDb, planQueries, appQueries, paymentProviderConfigQueries } from "@proofa/db";
-import { plans, plan_provider_prices, payment_provider_configs } from "@proofa/db/schema";
+import { getDb, planQueries, appQueries, } from "@proofa/db";
+import { plan_provider_prices, payment_provider_configs } from "@proofa/db/schema";
 import { eq } from "@proofa/db";
 import { createLogger, id, serializeError } from "@proofa/shared";
 import { createProviderAdapter } from "../../core/src/billing/adapters/index.js";

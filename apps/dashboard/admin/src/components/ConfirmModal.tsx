@@ -81,7 +81,7 @@ export function ConfirmModal({
             setIsLoading(true);
             await onConfirm();
             onClose();
-        } catch (err) {
+        } catch (_err) {
             setError("Something went wrong. Please try again.");
         } finally {
             setIsLoading(false);

@@ -45,7 +45,7 @@ async function loadUserData(forceRefresh = false) {
       forceRefresh,
     });
 
-    if (response && response.user) {
+    if (response?.user) {
       renderLoggedInState(response.user, response.license);
     } else {
       showState('loggedOut');
@@ -97,7 +97,7 @@ function renderLoggedInState(user, license) {
     // Expiry information
     if (license.valid_until) {
       const expiryDate = new Date(license.valid_until * 1000);
-      const daysUntilExpiry = Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24));
+      const daysUntilExpiry = Math.ceil((expiryDate - Date.now()) / (1000 * 60 * 60 * 24));
       
       if (daysUntilExpiry > 0) {
         expiresEl.textContent = `Expires in ${daysUntilExpiry} days`;

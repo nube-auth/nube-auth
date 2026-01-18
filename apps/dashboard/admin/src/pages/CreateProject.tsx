@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCreateProject } from "../hooks/api";
-import { Icon } from "../components/Icon";
-import { IconPicker, getIconById } from "../components/IconPicker";
+import { IconPicker, } from "../components/IconPicker";
 
 export function CreateProjectPage() {
 	const navigate = useNavigate();

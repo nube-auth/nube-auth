@@ -9,9 +9,9 @@
 export function getRedisConfig() {
 	return {
 		host: process.env['REDIS_HOST'] || "localhost",
-		port: parseInt(process.env['REDIS_PORT'] || "6379"),
+		port: parseInt(process.env['REDIS_PORT'] || "6379", 10),
 		password: process.env['REDIS_PASSWORD'],
-		db: parseInt(process.env['REDIS_DB'] || "0"),
+		db: parseInt(process.env['REDIS_DB'] || "0", 10),
 		username: process.env['REDIS_USERNAME'],
 		maxRetriesPerRequest: null,
 		enableReadyCheck: false,
@@ -24,7 +24,7 @@ export function getRedisConfig() {
  */
 export function getWorkerConfig() {
 	return {
-		concurrency: parseInt(process.env['WORKER_CONCURRENCY'] || "10"),
+		concurrency: parseInt(process.env['WORKER_CONCURRENCY'] || "10", 10),
 		autorun: true,
 		settings: {
 			lockDuration: 30000,
@@ -41,8 +41,8 @@ export function getWorkerConfig() {
  */
 export function getHealthCheckConfig() {
 	return {
-		interval: parseInt(process.env['HEALTH_CHECK_INTERVAL'] || "30000"), // 30 seconds
-		timeout: parseInt(process.env['HEALTH_CHECK_TIMEOUT'] || "5000"), // 5 seconds
+		interval: parseInt(process.env['HEALTH_CHECK_INTERVAL'] || "30000", 10), // 30 seconds
+		timeout: parseInt(process.env['HEALTH_CHECK_TIMEOUT'] || "5000", 10), // 5 seconds
 		redisCheckEnabled: true,
 		queueStatsEnabled: true,
 	};

@@ -13,7 +13,6 @@ import {
 	FileExportIcon,
 	TestTubeIcon,
 	BookOpen01Icon,
-	BarChartIcon,
 	ChartColumnIcon,
 	LayoutGridIcon,
 	UserGroupIcon,
@@ -138,7 +137,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 	// Close dropdown when location changes
 	useEffect(() => {
 		setShowProjectDropdown(false);
-	}, [location.pathname]);
+	}, []);
 
 	// Detect current project from URL
 	const urlMatch = location.pathname.match(/\/projects\/([^/]+)/);

@@ -13,7 +13,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { getDb, appQueries, planQueries, userQueries, auditLogQueries } from "@proofa/db";
 import { plans } from "@proofa/db/schema";
-import { eq, and } from "@proofa/db";
+import { eq, } from "@proofa/db";
 import type { Context } from "hono";
 import { createLogger, serializeError, id } from "@proofa/shared";
 
@@ -316,7 +316,7 @@ plansRouter.patch("/:appId/:planId", async (c: Context) => {
 			// Create new version
 			const versionMatch = existingPlan.slug.match(/^(.+?)(?:_v(\d+))?$/);
 			const baseSlug = versionMatch ? versionMatch[1] : existingPlan.slug;
-			const currentVersion = versionMatch?.[2] ? parseInt(versionMatch[2]) : 1;
+			const currentVersion = versionMatch?.[2] ? parseInt(versionMatch[2], 10) : 1;
 			const newSlug = `${baseSlug}_v${currentVersion + 1}`;
 
 			// Mark old plan as inactive

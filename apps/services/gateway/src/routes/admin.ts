@@ -53,11 +53,11 @@ adminRoutes.all("/*", async (c: Context) => {
 		log.debug({ method, path, userId: auth.userId }, "Proxying to Core service");
 		
 		// Get request body if present
-		let body: any = undefined;
+		let body: any ;
 		if (["POST", "PUT", "PATCH"].includes(method)) {
 			try {
 				body = await c.req.json();
-			} catch (e) {
+			} catch (_e) {
 				// No body or invalid JSON
 				log.debug("No body in request");
 			}

@@ -17,7 +17,6 @@ import {
 	DashboardSquare02Icon,
 	WorkflowSquare03Icon,
 } from "@hugeicons/core-free-icons";
-import type React from "react";
 
 export interface IconOption {
 	id: string;

@@ -1,6 +1,6 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
-import path from "path";
+import path from "node:path";
 import UnoCSS from "unocss/vite";
 
 export default defineConfig({

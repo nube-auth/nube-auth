@@ -5,7 +5,7 @@
  */
 
 import type { Database } from "@proofa/db";
-import { eq, sql, and } from "@proofa/db";
+import { eq, sql, } from "@proofa/db";
 import {
 	apps,
 	licenses,
@@ -15,7 +15,6 @@ import {
 	users,
 	plans,
 	payment_transactions,
-	plan_provider_prices,
 } from "@proofa/db/schema";
 import { createLogger, serializeError, id } from "@proofa/shared";
 import type { PaymentDetails } from "../adapters/types.js";

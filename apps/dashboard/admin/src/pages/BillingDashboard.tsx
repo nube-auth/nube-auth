@@ -149,7 +149,7 @@ export function BillingDashboardPage() {
 					</div>
 
 					{/* Provider Breakdown */}
-					{stats && stats.revenue.by_provider && Object.keys(stats.revenue.by_provider).length > 0 && (
+					{stats?.revenue.by_provider && Object.keys(stats.revenue.by_provider).length > 0 && (
 						<div className="card p-6 mb-8">
 							<h2 className="text-base font-semibold mb-5">Revenue by Provider</h2>
 							<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
@@ -175,7 +175,7 @@ export function BillingDashboardPage() {
 					)}
 
 					{/* Transaction Type Breakdown */}
-					{stats && stats.revenue.by_type && Object.keys(stats.revenue.by_type).length > 0 && (
+					{stats?.revenue.by_type && Object.keys(stats.revenue.by_type).length > 0 && (
 						<div className="card p-6 mb-8">
 							<h2 className="text-base font-semibold mb-5">Revenue by Type</h2>
 							<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">

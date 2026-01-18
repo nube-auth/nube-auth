@@ -4,10 +4,8 @@
  * Processes payment provider webhooks and creates database records
  */
 
-import type { Database } from "@proofa/db";
 import { getDb, paymentProviderConfigQueries } from "@proofa/db";
 import { createLogger, serializeError } from "@proofa/shared";
-import type { Context } from "hono";
 import { createProviderAdapter } from "../adapters/index.js";
 import { decryptString } from "../../utils/encryption.js";
 import { processWebhookEvent } from "./webhook-processor.js";

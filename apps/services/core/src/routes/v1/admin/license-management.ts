@@ -341,7 +341,7 @@ licenseManagementRouter.delete("/:projectId/licenses/:licenseId", async (c: Cont
 
 		// Revoke license (soft delete by setting status to revoked)
 		const revokeResults = await licenseQueries.update(db, targetLicense.id, { status: "revoked" });
-		const revoked = revokeResults[0];
+		const _revoked = revokeResults[0];
 
 		return c.json({
 			message: "License revoked successfully",

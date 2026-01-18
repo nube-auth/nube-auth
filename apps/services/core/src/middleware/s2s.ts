@@ -1,7 +1,7 @@
 import type { Context, Next } from "hono";
 import { createLogger, serializeError } from "@proofa/shared";
 import { env } from "../config/env";
-import { timingSafeEqual } from "crypto";
+import { timingSafeEqual } from "node:crypto";
 
 const log = createLogger("s2s-middleware");
 

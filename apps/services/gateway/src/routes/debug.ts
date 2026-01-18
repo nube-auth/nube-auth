@@ -7,7 +7,7 @@ import { createLogger } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { getCookie } from "hono/cookie";
-import { cache, sessionStore } from "@proofa/cache";
+import { sessionStore } from "@proofa/cache";
 import { parseSessionCookie } from "@proofa/auth";
 
 const log = createLogger("debug-routes");
@@ -203,7 +203,7 @@ debugRoutes.get("/test-getcookie", (c: Context) => {
 	});
 	
 	return c.json({
-		rawCookieHeader: rawCookieHeader.substring(0, 100) + "...",
+		rawCookieHeader: `${rawCookieHeader.substring(0, 100)}...`,
 		getCookieResults: {
 			adminSession: adminSessionFromGetCookie ? `${adminSessionFromGetCookie.substring(0, 20)}...` : null,
 			userSession: userSessionFromGetCookie ? `${userSessionFromGetCookie.substring(0, 20)}...` : null,

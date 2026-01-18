@@ -3,15 +3,15 @@
  * Type-safe job processing with common patterns
  */
 
-import { Job } from "bullmq";
+import type { Job } from "bullmq";
 import {
 	PaymentJobType,
 	WebhookJobType,
 	EmailJobType,
-	PaymentJobData,
-	WebhookJobData,
-	EmailJobData,
-	JobResult,
+	type PaymentJobData,
+	type WebhookJobData,
+	type EmailJobData,
+	type JobResult,
 } from "../types";
 
 /**

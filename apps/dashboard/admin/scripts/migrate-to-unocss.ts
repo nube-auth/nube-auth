@@ -8,13 +8,12 @@
  * Usage: pnpm tsx scripts/migrate-to-unocss.ts [--dry-run] [--file=path/to/file.tsx]
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { parse } from '@babel/parser';
 import babelTraverse from '@babel/traverse';
 import generate from '@babel/generator';
-import type * as t from '@babel/types';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -188,7 +187,7 @@ function transformFile(filePath: string, dryRun: boolean = false): TransformResu
         let styleAttr: any = null;
         let classNameAttr: any = null;
         let styleIndex = -1;
-        let classNameIndex = -1;
+        let _classNameIndex = -1;
 
         // Find style and className attributes
         attributes.forEach((attr, index) => {
@@ -199,7 +198,7 @@ function transformFile(filePath: string, dryRun: boolean = false): TransformResu
           }
           if (attr.type === 'JSXAttribute' && attr.name.name === 'className') {
             classNameAttr = attr;
-            classNameIndex = index;
+            _classNameIndex = index;
           }
         });
 

@@ -3,18 +3,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useApp, useAppStats, useProject } from "../hooks/api";
 import { Icon } from "../components/Icon";
 import {
-	ArrowRight01Icon,
 	Settings02Icon,
 	UserMultiple02Icon,
 	CheckmarkCircle02Icon,
 	FlashIcon,
 	DollarCircleIcon,
-	UserIcon,
 	LicenseIcon,
 	Key01Icon,
-	Share08Icon,
-	CreditCardIcon,
-	PlugIcon,
 } from "@hugeicons/core-free-icons";
 
 export function AppDetailPage() {

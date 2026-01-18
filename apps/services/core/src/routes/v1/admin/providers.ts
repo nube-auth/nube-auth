@@ -14,12 +14,11 @@
 
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, eq, getDb, paymentProviderConfigQueries, projectQueries, userQueries, routingRuleQueries } from "@proofa/db";
+import { and, eq, getDb, paymentProviderConfigQueries, projectQueries, userQueries, } from "@proofa/db";
 import { payment_provider_configs } from "@proofa/db";
 import type { Context } from "hono";
 import { createLogger, createId } from "@proofa/shared";
 import { encryptCredentials, decryptCredentials } from "../../../utils";
-import { createDefaultRoutingRule } from "../../../billing/services/provider-selector.js";
 
 const log = createLogger("admin-providers");
 const providersRouter = new Hono();
@@ -39,7 +38,7 @@ type PaymentEnvironment = (typeof PAYMENT_ENVIRONMENTS)[number];
 /**
  * Validate user is project owner for authorization
  */
-async function validateProjectAccess(c: Context, projectId: string, userPublicId: string) {
+async function validateProjectAccess(_c: Context, projectId: string, userPublicId: string) {
 	const db = getDb();
 
 	// Find user by public ID to get internal ID
@@ -220,7 +219,7 @@ providersRouter.get("/:projectId/configs/:providerId/credentials", async (c: Con
 			credentials,
 			webhookSecret: config.webhook_secret,
 		});
-	} catch (error) {
+	} catch (_error) {
 		// Never log error object that might contain credentials
 		log.error({ projectId, providerId }, "Failed to get provider credentials");
 		return c.json({ error: "Failed to get provider credentials" }, 500);
@@ -321,7 +320,7 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
 			},
 			201,
 		);
-	} catch (error) {
+	} catch (_error) {
 		// Never log request body or error details that might contain credentials
 		log.error({ projectId, provider }, "Failed to create payment provider");
 		return c.json({ error: "Failed to create payment provider" }, 500);
@@ -412,7 +411,7 @@ providersRouter.patch("/:projectId/configs/:providerId", async (c: Context) => {
 			metadata: updated.metadata,
 			updatedAt: updated.updated_at,
 		});
-	} catch (error) {
+	} catch (_error) {
 		// Never log request body or error details that might contain credentials
 		log.error({ projectId, providerId }, "Failed to update payment provider");
 		return c.json({ error: "Failed to update payment provider" }, 500);

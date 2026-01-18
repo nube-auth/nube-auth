@@ -159,7 +159,7 @@ async function logout() {
 // MESSAGE HANDLERS
 // ============================================
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request.action === 'getUserData') {
     fetchUserData(request.forceRefresh || false)
       .then(sendResponse)
@@ -207,7 +207,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 // TAB MONITORING (detect auth callback)
 // ============================================
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+chrome.tabs.onUpdated.addListener((_tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete' && tab.url) {
     // Detect auth callback completion
     if (tab.url.startsWith(`${CONFIG.HOMEPAGE_URL}/auth/callback`)) {

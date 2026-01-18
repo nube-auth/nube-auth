@@ -183,7 +183,7 @@ authRoutes.get("/callback", async (c: Context) => {
 			log.error({ 
 				status: response.status,
 				errorData, 
-				sessionId: code ? code.substring(0, 8) + "..." : undefined,
+				sessionId: code ? `${code.substring(0, 8)}...` : undefined,
 				audience,
 				err: serializeError(new Error(`Exchange failed: ${JSON.stringify(errorData)}`))
 			}, "Code exchange failed");

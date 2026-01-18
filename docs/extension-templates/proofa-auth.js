@@ -62,7 +62,7 @@ class ProofaAuth {
         user: data.user,
         license: data.license,
       };
-    } catch (error) {
+    } catch (_error) {
       return { loggedIn: false };
     }
   }

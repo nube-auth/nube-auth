@@ -102,7 +102,7 @@ export const licenseManager = {
 	/**
 	 * Renew an existing license
 	 */
-	async renewLicense(licenseId: number, validUntil: Date, metadata?: Record<string, unknown>) {
+	async renewLicense(licenseId: number, validUntil: Date, _metadata?: Record<string, unknown>) {
 		const db = getDb();
 
 		try {

@@ -4,9 +4,9 @@
  * Future-ready for RabbitMQ migration
  */
 
-import { Queue, Worker, Job } from "bullmq";
+import { Queue, Worker, type Job } from "bullmq";
 import Redis from "ioredis";
-import {
+import type {
 	QueueName,
 	AllJobData,
 	JobResult,

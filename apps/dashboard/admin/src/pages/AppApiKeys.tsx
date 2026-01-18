@@ -21,7 +21,7 @@ export function AppApiKeysPage() {
 	const [copying, setCopying] = useState<string | null>(null);
 	const [showRegenerateSecretModal, setShowRegenerateSecretModal] = useState(false);
 	const [showRegenerateTokenModal, setShowRegenerateTokenModal] = useState(false);
-	const [isRegenerating, setIsRegenerating] = useState(false);
+	const [_isRegenerating, setIsRegenerating] = useState(false);
 	const { showToast } = useToast();
 
 	const handleRevealKeys = async () => {

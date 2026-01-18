@@ -7,10 +7,8 @@ import { getDb, testSessionQueries, userQueries, appQueries, planQueries, projec
 import { createId, createLogger, serializeError, publicId } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
-import { createProviderAdapter } from "../../../billing/adapters/factory.js";
 import { env } from "../../../config/env.js";
 import { generateMockWebhook, normalizeEventType } from "../../../billing/services/webhook-simulator.js";
-import { processWebhookEvent } from "../../../billing/services/webhook-processor.js";
 import { rateLimitMiddleware } from "../../../middleware/rateLimit.js";
 
 const log = createLogger("admin-test-routes");
@@ -312,7 +310,7 @@ router.post("/simulate-webhook", testRateLimit, async (c: Context) => {
 		const normalizedEventType = normalizeEventType(provider, eventType);
 
 		// Generate mock webhook payload
-		const webhookPayload = generateMockWebhook({
+		const _webhookPayload = generateMockWebhook({
 			provider,
 			eventType: normalizedEventType,
 			amount: metadata?.amount || 2900,
@@ -558,7 +556,7 @@ router.get("/providers", async (c: Context) => {
 				testMode: true,
 				webhookUrl: `${env.API_BASE_URL || "https://api.proofa.com"}/v1/billing/webhooks/stripe`,
 				credentials: {
-					publicKey: env.STRIPE_PUBLISHABLE_KEY?.substring(0, 20) + "****",
+					publicKey: `${env.STRIPE_PUBLISHABLE_KEY?.substring(0, 20)}****`,
 					hasSecretKey: !!env.STRIPE_SECRET_KEY,
 				},
 			},

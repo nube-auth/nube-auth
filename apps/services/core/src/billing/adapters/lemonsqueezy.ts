@@ -91,8 +91,8 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 				data: {
 					type: "checkouts",
 					attributes: {
-						store_id: Number.parseInt(this.storeId),
-						variant_id: Number.parseInt(params.productId), // LemonSqueezy uses variant IDs
+						store_id: Number.parseInt(this.storeId, 10),
+						variant_id: Number.parseInt(params.productId, 10), // LemonSqueezy uses variant IDs
 						checkout_data: {
 							email: params.customerEmail,
 							custom: params.metadata || {},
@@ -396,7 +396,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 				data: {
 					type: "products",
 					attributes: {
-						store_id: Number.parseInt(this.storeId),
+						store_id: Number.parseInt(this.storeId, 10),
 						name: params.name,
 						description: params.description || "",
 					},
@@ -453,7 +453,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 				data: {
 					type: "variants",
 					attributes: {
-						product_id: Number.parseInt(params.productId),
+						product_id: Number.parseInt(params.productId, 10),
 						name: `${params.interval === "one_time" ? "One-time" : params.interval === "month" ? "Monthly" : "Yearly"}`,
 						price: params.amountCents,
 						interval: params.interval === "one_time" ? null : params.interval,
