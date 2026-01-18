@@ -88,55 +88,14 @@ button {
 	transition-duration: 0.2s;
 }
 
-/* Card base styles */
-.card {
-	background-color: var(--card-bg);
-	border: 1px solid var(--card-border);
-	border-radius: var(--radius-lg);
-	overflow: hidden;
-}
-
-/* Card with padding variant */
-.card-padded {
-	padding: 24px;
-}
-
-/* Table base styles */
+/* Table structure only - component styling is dashboard-specific */
 table {
 	width: 100%;
 	border-collapse: collapse;
 }
 
-th {
-	background-color: var(--bg-secondary);
-	color: var(--content-primary);
-	text-align: left;
-	padding: 12px;
-	font-weight: 600;
-}
-
-td {
-	padding: 12px;
-	border-bottom: 1px solid var(--border-secondary);
-}
-
-/* Code block styles */
+/* Code inline styles only */
 code {
-	background-color: var(--bg-secondary);
-	padding: 4px 8px;
-	border-radius: 4px;
-	font-size: 13px;
 	font-family: 'Fira Code', monospace;
-}
-
-pre {
-	background-color: var(--bg-secondary);
-	padding: 16px;
-	border-radius: 4px;
-	overflow-x: auto;
-}
-
-pre code {
-	background-color: transparent;
-	padding: 0;
+	font-size: 13px;
 }
