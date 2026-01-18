@@ -149,26 +149,7 @@ export function AppSettingsPage() {
 
 	return (
 		<div className="page">
-			{/* Breadcrumb */}
-			<div className="mb-6">
-				<div className="breadcrumb">
-					<Link to="/projects" className="breadcrumb-item">
-						Projects
-					</Link>
-					<span>›</span>
-					<Link to={`/projects/${projectId}`} className="breadcrumb-item">
-						{project.name}
-					</Link>
-					<span>›</span>
-					<Link to={`/projects/${projectId}/apps/${appId}`} className="breadcrumb-item">
-						{app.name}
-					</Link>
-					<span>›</span>
-					<span className="breadcrumb-current">Settings</span>
-				</div>
-			</div>
-
-			{/* Page Header */}
+			{/* Page Header *}
 			<div className="mb-8">
 				<h1 className="page-title">App Settings</h1>
 				<p className="page-description">Configure your application settings and preferences</p>

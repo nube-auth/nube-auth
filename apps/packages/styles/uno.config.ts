@@ -115,7 +115,7 @@ export default defineConfig({
 		"sidebar-section": "mb-5",
 		"sidebar-section-title": "px-3 py-2 text-11px font-semibold text-sidebar-section-text uppercase tracking-wider",
 		"sidebar-link": "flex items-center gap-2.5 px-3 py-2 text-13px font-medium text-white/70 no-underline rounded-md transition-all mb-0.5 relative hover:text-white/95 hover:bg-white/8",
-		"sidebar-link-active": "text-sidebar-active-text bg-sidebar-active-bg",
+		"sidebar-link-active": "text-white bg-white/10 before:content-[''] before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-1 before:h-6 before:bg-primary before:rounded-r",
 		"sidebar-link-badge": "ml-auto px-1.5 py-0.5 bg-primary rounded-full text-10px font-semibold text-white",
 		"sidebar-footer": "p-3 border-t border-sidebar-border",
 		"sidebar-user": "flex items-center gap-2.5 p-2.5 rounded-md cursor-pointer transition-all hover:bg-white/5",

@@ -118,7 +118,7 @@ function SidebarLink({ to, children, icon }: { to: string; children: React.React
 	const isActive = location.pathname === to || location.pathname.startsWith(`${to}/`);
 
 	return (
-		<Link to={to} className={`sidebar-link ${isActive ? "active" : ""}`}>
+		<Link to={to} className={`sidebar-link ${isActive ? "sidebar-link-active" : ""}`}>
 			{icon}
 			{children}
 		</Link>
@@ -200,10 +200,10 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 					<button
 						type="button"
 						onClick={() => setShowProjectDropdown(!showProjectDropdown)}
-						className={`project-selector w-full cursor-pointer outline-none transition-all duration-200 ${showProjectDropdown ? "border border-primary" : "border border-sidebar-border"}`}
+						className={`w-full flex items-center justify-between gap-2.5 px-3.5 py-2.5 bg-white/5 rounded-md cursor-pointer outline-none transition-all duration-200 ${showProjectDropdown ? "border border-primary" : "border border-sidebar-border"}`}
 					>
-						<div className="project-selector-info">
-							<div className="project-selector-icon">
+						<div className="flex items-center gap-2.5 min-w-0">
+							<div className="w-8 h-8 rounded-md bg-surface-secondary flex items-center justify-center flex-shrink-0">
 								{selectedProject ? (
 									<Icon 
 										icon={getIconById(
@@ -216,7 +216,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 									<Icon icon={Layers01Icon} size={18} className="text-primary" />
 								)}
 							</div>
-							<span className="project-selector-name">
+							<span className="text-13px font-medium text-white truncate">
 								{selectedProject
 									? projects.find((p) => p.id === selectedProject)?.name || "Unknown Project"
 									: "All Projects"}
@@ -469,46 +469,71 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 		</aside>
 
 		{/* Main Content */}
-		<main className="admin-main-content">
+		<main className="main-content">
 			{/* Top Header */}
 			<header className="top-header">
-					<div className="top-header-left">
-						<nav className="breadcrumb">
-							<Link to="/projects" className="breadcrumb-item">
-								Dashboard
+				<nav className="breadcrumb">
+					<Link to="/projects" className="breadcrumb-item">
+						Dashboard
+					</Link>
+					{selectedProject && (
+						<>
+							<span className="breadcrumb-divider">/</span>
+							<Link to={`/projects/${selectedProject}`} className="breadcrumb-item">
+								{projects.find((p) => p.id === selectedProject)?.name || "Project"}
 							</Link>
-							{selectedProject && (
-								<>
-									<span className="breadcrumb-divider">/</span>
-									<Link to={`/projects/${selectedProject}`} className="breadcrumb-item">
-										{projects.find((p) => p.id === selectedProject)?.name || "Project"}
-									</Link>
-								</>
-							)}
-							{location.pathname.includes("/apps/") && (
-								<>
-									<span className="breadcrumb-divider">/</span>
-									<span className="breadcrumb-item breadcrumb-current">App</span>
-								</>
-							)}
-						</nav>
-					</div>
-					<div className="top-header-right">
-						<button
-							type="button"
-							onClick={cycleTheme}
-							className="header-btn theme-toggle"
-							title={`Current: ${theme} mode (click to change)`}
-						>
-							{getThemeIcon()}
-							<span className="theme-label">{theme.charAt(0).toUpperCase() + theme.slice(1)}</span>
-						</button>
-						<a href={config.docsUrl} target="_blank" rel="noopener noreferrer" className="header-btn">
-							<Icon icon={BookOpen01Icon} size={16} />
-							Docs
-						</a>
-					</div>
-				</header>
+						</>
+					)}
+					{location.pathname.includes("/apps/") && (
+						<>
+							<span className="breadcrumb-divider">/</span>
+							<span className="breadcrumb-current">
+								{location.pathname.includes("/api-keys") ? "API Keys" :
+								 location.pathname.includes("/oauth") ? "OAuth" :
+								 location.pathname.includes("/payment") ? "Payment" :
+								 location.pathname.includes("/developers") ? "Integration" :
+								 location.pathname.includes("/settings") ? "Settings" :
+								 location.pathname.includes("/licenses") ? "Licenses" :
+								 location.pathname.includes("/users") ? "Users" :
+								 "App"}
+							</span>
+						</>
+					)}
+					{location.pathname.includes("/team") && (
+						<>
+							<span className="breadcrumb-divider">/</span>
+							<span className="breadcrumb-current">Team</span>
+						</>
+					)}
+					{location.pathname.includes("/payment-providers") && (
+						<>
+							<span className="breadcrumb-divider">/</span>
+							<span className="breadcrumb-current">Payment Providers</span>
+						</>
+					)}
+					{location.pathname === "/billing" && (
+						<>
+							<span className="breadcrumb-divider">/</span>
+							<span className="breadcrumb-current">Billing</span>
+						</>
+					)}
+				</nav>
+				<div className="flex items-center gap-3">
+					<button
+						type="button"
+						onClick={cycleTheme}
+						className="header-btn theme-toggle"
+						title={`Current: ${theme} mode (click to change)`}
+					>
+						{getThemeIcon()}
+						<span className="theme-label">{theme.charAt(0).toUpperCase() + theme.slice(1)}</span>
+					</button>
+					<a href={config.docsUrl} target="_blank" rel="noopener noreferrer" className="header-btn">
+						<Icon icon={BookOpen01Icon} size={16} />
+						Docs
+					</a>
+				</div>
+			</header>
 
 				{/* Page Content */}
 				<div className="page-content">{children}</div>

@@ -60,19 +60,6 @@ export function AppDetailPage() {
 
 	return (
 		<div className="space-y-6">
-			{/* Breadcrumb */}
-		<nav className="breadcrumb">
-			<button onClick={() => navigate(`/projects/${projectId}`)} className="bg-transparent border-none text-primary cursor-pointer underline p-0">
-				{project.name}
-			</button>
-			<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
-			<button onClick={() => navigate(`/projects/${projectId}`)} className="bg-transparent border-none text-text-secondary cursor-pointer underline p-0">
-				Apps
-			</button>
-			<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
-			<span className="breadcrumb-current">{app.name}</span>
-		</nav>
-
 			{/* App Header Card */}
 		<div className="card p-6">
 			<div className="flex justify-between items-start mb-5">

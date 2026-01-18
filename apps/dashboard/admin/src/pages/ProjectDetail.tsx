@@ -51,15 +51,6 @@ export function ProjectDetailPage() {
 
 	return (
 		<div className="space-y-6">
-			{/* Breadcrumb */}
-			<nav className="breadcrumb">
-				<Link to="/projects" className="breadcrumb-link">
-					Projects
-				</Link>
-				<Icon icon={ArrowRight01Icon} size={14} className="text-text-tertiary" />
-				<span className="text-text-primary font-medium">{project.name}</span>
-			</nav>
-
 			{/* Project Header Card */}
 			<div className="card p-6">
 				<div className="flex items-start gap-5">
@@ -269,13 +260,13 @@ export function ProjectDetailPage() {
 												<div className="avatar avatar-sm">
 													{member.name?.charAt(0).toUpperCase() || "?"}
 												</div>
-											<span className="font-medium text-text-primary">
+												<span className="font-medium text-text-primary">
 													{member.name}
 												</span>
 											</div>
 										</td>
 										<td>
-										<code className="code-block">
+											<code className="code-block">
 												{member.userId}
 											</code>
 										</td>
@@ -286,7 +277,7 @@ export function ProjectDetailPage() {
 												{member.role}
 											</span>
 										</td>
-									<td className="text-text-secondary">
+										<td className="text-text-secondary">
 											{new Date(member.createdAt).toLocaleDateString()}
 										</td>
 									</tr>
@@ -295,8 +286,8 @@ export function ProjectDetailPage() {
 						</table>
 					</div>
 				) : (
-				<div className="empty-state py-8 px-8">
-					<p className="text-text-secondary">No team members found</p>
+					<div className="empty-state py-8 px-8">
+						<p className="text-text-secondary">No team members found</p>
 					</div>
 				)}
 			</div>

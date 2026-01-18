@@ -41,7 +41,7 @@ body {
   }
   
   /* Remove sidebar margin on mobile */
-  .admin-main-content {
+  .main-content {
     margin-left: 0;
   }
 }

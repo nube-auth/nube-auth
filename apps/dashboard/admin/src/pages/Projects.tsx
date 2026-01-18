@@ -249,7 +249,7 @@ export function ProjectsPage() {
 						<Link
 							key={project.id}
 							to={`/projects/${project.id}`}
-							className="block bg-card-bg border border-border-secondary rounded-xl p-5 no-underline transition-all hover:border-primary hover:-translate-y-0.5 hover:shadow-lg"
+							className="block bg-card-bg border border-card-border rounded-xl p-5 no-underline transition-all hover:border-primary hover:-translate-y-0.5 hover:shadow-lg"
 						>
 							{/* Header */}
 							<div
@@ -272,14 +272,9 @@ export function ProjectsPage() {
 										)}
 									</div>
 								</div>
-								<span
-									className="inline-flex items-center gap-1 px-2 py-1 bg-success/10 text-success rounded text-11px font-medium"
-								>
-									<span
-										className="w-1.5 h-1.5 bg-current rounded-full"
-									/>
-									Active
-								</span>
+								<div className="flex items-center justify-center">
+									<Icon icon={Tick02Icon} size={18} className="text-success" bold />
+								</div>
 							</div>
 
 							{/* Stats Grid */}
@@ -378,7 +373,7 @@ export function ProjectsPage() {
 							{projects.map((project) => (
 								<tr
 									key={project.id}
-								className="transition-colors cursor-pointer hover:bg-surface-hover"
+							className="border-b border-white/5 transition-colors cursor-pointer hover:bg-surface-hover"
 									onClick={() => (window.location.href = `/projects/${project.id}`)}
 								>
 									<td className="p-4">
