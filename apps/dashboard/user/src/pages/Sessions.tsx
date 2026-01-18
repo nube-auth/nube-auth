@@ -320,7 +320,7 @@ export function SessionsPage() {
 											<td>
 												{isCurrent ? (
 													<span className="badge badge-success">
-													<span className="w-1.5 h-1.5 bg-current rounded-full animate-pulse" />
+													<span className="w-1-5 h-1-5 bg-current rounded-full animate-pulse" />
 														Current
 													</span>
 												) : isExpired ? (

@@ -92,7 +92,10 @@ button {
 .card {
 	background-color: var(--card-bg);
 	border: 1px solid var(--card-border);
-	border-radius: 4px;
+	border-radius: var(--radius-lg);
+}
+
+.card-padded {
 	padding: 24px;
 }
 
