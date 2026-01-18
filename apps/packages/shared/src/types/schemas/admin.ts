@@ -20,6 +20,7 @@ import { SecuritySettingsSchema, PlanSettingsSchema } from "./jsonb";
 export const CreateProjectRequestSchema = z.object({
 	name: NameSchema,
 	description: DescriptionSchema.optional(),
+	icon: z.string().optional(),
 });
 
 export const ProjectDTOSchema = z.object({
@@ -27,6 +28,7 @@ export const ProjectDTOSchema = z.object({
 	name: NameSchema,
 	slug: SlugSchema,
 	description: z.string().optional(),
+	icon: z.string().optional(),
 	createdAt: z.coerce.date().optional(),
 	updatedAt: z.coerce.date().optional(),
 	totalApps: z.number().optional(),
@@ -48,6 +50,7 @@ export const CreateAppRequestSchema = z.object({
 	name: NameSchema,
 	slug: SlugSchema.optional(),
 	description: DescriptionSchema,
+	icon: z.string().optional(),
 	redirectUris: RedirectUrisSchema,
 	allowedHosts: AllowedHostsSchema,
 	sessionTtlDays: AppSessionTtlDaysSchema.default(28),
@@ -188,6 +191,7 @@ export const AppDTOSchema = z.object({
 	name: NameSchema,
 	slug: SlugSchema,
 	description: DescriptionSchema,
+	icon: z.string().optional(),
 	redirectUris: z.array(z.string()),
 	allowedHosts: z.array(z.string()),
 	corsOrigins: z.array(z.string()),

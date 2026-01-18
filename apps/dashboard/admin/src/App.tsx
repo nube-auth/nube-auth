@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { ToastProvider } from "./components/Toast";
 import { Icon } from "./components/Icon";
+import { getIconById } from "./components/IconPicker";
 import {
 	Home01Icon,
 	CreditCardIcon,
@@ -203,12 +204,17 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 					>
 						<div className="project-selector-info">
 							<div className="project-selector-icon">
-								{selectedProject
-									? projects
-											.find((p) => p.id === selectedProject)
-											?.name?.charAt(0)
-											.toUpperCase() || "P"
-									: <Icon icon={Layers01Icon} size={18} className="text-white" />}
+								{selectedProject ? (
+									<Icon 
+										icon={getIconById(
+											projects.find((p) => p.id === selectedProject)?.icon || "folder"
+										)} 
+										size={18} 
+										className="text-primary" 
+									/>
+								) : (
+									<Icon icon={Layers01Icon} size={18} className="text-primary" />
+								)}
 							</div>
 							<span className="project-selector-name">
 								{selectedProject
@@ -256,9 +262,13 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 										>
 											<div className="flex items-center gap-2.5">
 												<div
-												className={`w-8 h-8 rounded-md flex items-center justify-center text-13px font-semibold shrink-0 ${selectedProject === project.id ? "bg-primary text-white" : "bg-white/5 text-text-secondary"}` }
+												className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${selectedProject === project.id ? "bg-surface-secondary" : "bg-white/5"}` }
 												>
-													{project.name.charAt(0).toUpperCase()}
+													<Icon 
+														icon={getIconById(project.icon || "folder")} 
+														size={18} 
+														className={selectedProject === project.id ? "text-primary" : "text-text-secondary"}
+													/>
 												</div>
 												<div className="flex-1 min-w-0">
 											<div className={`font-medium overflow-hidden text-ellipsis whitespace-nowrap ${project.slug ? "mb-0.5" : ""}`}>

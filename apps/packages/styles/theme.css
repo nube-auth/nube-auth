@@ -2,12 +2,22 @@
    Proofa Design System - Shared Theme
    Single source of truth for all dashboard theming
    
-   Color Philosophy: Neutral base + Purple accents
+   Color Philosophy: Theme-aware with neutral base + Purple accents
+   
+   Light Theme:
+   - Sidebar: Clean white frame with gray text (#ffffff)
+   - Main: Light neutral canvas (#f8fafc)
+   - Topbar: White bridge (#ffffff)
+   - Text: Dark gray hierarchy
+   
+   Dark Theme:
    - Sidebar: Slightly darker neutral frame (#0B0F16)
    - Main: Slightly lighter neutral canvas (#0F1624)
-   - Topbar: Bridge between them (#0C121D)
-   - Purple lives in buttons, badges, and accents only
-   - Dividers: subtle rgba(255,255,255,0.06)
+   - Topbar: Dark bridge (#0C121D)
+   - Text: Light gray hierarchy
+   
+   Purple lives in buttons, badges, and accents only
+   Dividers: subtle borders that adapt to theme
    
    Usage:
    Import in each dashboard's main.tsx:
@@ -21,17 +31,17 @@
   --primary-hover: #4f46e5;
   --primary-light: #eef2ff;
   
-  /* Sidebar (Frame) - Neutral, slightly darker */
-  --sidebar-bg: #0B0F16;
-  --sidebar-border: rgba(255, 255, 255, 0.06);
-  --sidebar-text: #8b92a8;
-  --sidebar-text-hover: #ffffff;
-  --sidebar-active-bg: rgba(255, 255, 255, 0.04);
-  --sidebar-active-text: #a5b4fc;
-  --sidebar-section-text: #5a6078;
+  /* Sidebar (Frame) - Light theme matches content bg */
+  --sidebar-bg: #f8fafc;
+  --sidebar-border: #e5e7eb;
+  --sidebar-text: #6b7280;
+  --sidebar-text-hover: #111827;
+  --sidebar-active-bg: rgba(99, 102, 241, 0.08);
+  --sidebar-active-text: #6366f1;
+  --sidebar-section-text: #9ca3af;
   
-  /* Topbar (Bridge) */
-  --top-header-bg: #0C121D;
+  /* Topbar (Bridge) - Light theme */
+  --top-header-bg: #f8fafc;
   
   /* Content Area - Light Theme */
   --content-bg: #f8fafc;
@@ -86,6 +96,18 @@
 
 /* Dark Theme - Manual Override */
 [data-theme="dark"] {
+  /* Sidebar (Frame) - Matches content bg */
+  --sidebar-bg: #0F1624;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-text: #8b92a8;
+  --sidebar-text-hover: #ffffff;
+  --sidebar-active-bg: rgba(99, 102, 241, 0.15);
+  --sidebar-active-text: #a5b4fc;
+  --sidebar-section-text: #6b7280;
+  
+  /* Topbar (Bridge) */
+  --top-header-bg: #0F1624;
+  
   /* Canvas - Lighter neutral background */
   --content-bg: #0F1624;
   --card-bg: rgba(255, 255, 255, 0.04);
@@ -120,6 +142,18 @@
 /* Auto Dark Theme Detection */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    /* Sidebar (Frame) - Matches content bg */
+    --sidebar-bg: #0F1624;
+    --sidebar-border: rgba(255, 255, 255, 0.06);
+    --sidebar-text: #8b92a8;
+    --sidebar-text-hover: #ffffff;
+    --sidebar-active-bg: rgba(99, 102, 241, 0.15);
+    --sidebar-active-text: #a5b4fc;
+    --sidebar-section-text: #6b7280;
+    
+    /* Topbar (Bridge) */
+    --top-header-bg: #0F1624;
+    
     /* Canvas - Lighter neutral background */
     --content-bg: #0F1624;
     --card-bg: rgba(255, 255, 255, 0.04);

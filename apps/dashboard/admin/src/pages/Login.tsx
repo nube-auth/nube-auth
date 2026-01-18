@@ -142,31 +142,31 @@ export function LoginPage() {
 
 	return (
 		<div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-surface-primary via-surface-secondary to-surface-primary">
-			<div className="w-full max-w-420px">
+			<div className="w-full max-w-460px">
 				{/* Logo & Branding */}
-				<div className="text-center mb-8">
+				<div className="text-center mb-10">
 					<img
 						src="/favicon.png"
 						alt="Proofa"
-						className="w-16 h-16 mx-auto mb-5 block"
+						className="w-20 h-20 mx-auto mb-6 block"
 					/>
-					<h1 className="text-28px font-bold text-white mb-2">
+					<h1 className="text-32px font-bold text-white mb-3">
 						Proofa Admin
 					</h1>
-					<p className="text-15px text-text-tertiary">Sign in to access the admin console</p>
+					<p className="text-16px text-text-secondary">Sign in to access the admin console</p>
 				</div>
 
 				{/* Login Card */}
-				<div className="card p-8 bg-card-bg border border-card-border">
+				<div className="card p-10 bg-card-bg border border-card-border rounded-xl">
 					{status === "error" ? (
 						<div className="text-center">
-							<div className="w-14 h-14 bg-danger-bg rounded-full flex items-center justify-center mx-auto mb-5">
-								<Icon icon={Cancel01Icon} size={28} bold className="text-danger" />
+							<div className="w-16 h-16 bg-danger-bg rounded-full flex items-center justify-center mx-auto mb-6">
+								<Icon icon={Cancel01Icon} size={32} bold className="text-danger" />
 							</div>
-							<h2 className="text-18px font-semibold text-text-primary mb-2">
+							<h2 className="text-20px font-semibold text-text-primary mb-3">
 								Login Failed
 							</h2>
-							<p className="text-14px text-text-secondary mb-6">
+							<p className="text-15px text-text-secondary mb-8">
 								{errorMessage}
 							</p>
 							<button
@@ -179,21 +179,21 @@ export function LoginPage() {
 							</button>
 						</div>
 					) : status === "checking" || status === "processing" || status === "redirecting" ? (
-						<div className="text-center">
-							<div className="spinner mx-auto mb-5 w-8 h-8" />
-							<h2 className="text-18px font-semibold text-text-primary mb-2">
+						<div className="text-center py-4">
+							<div className="spinner mx-auto mb-6" style={{ width: '40px', height: '40px' }} />
+							<h2 className="text-20px font-semibold text-text-primary mb-3">
 								{status === "checking" && "Checking authentication..."}
 								{status === "redirecting" && "Redirecting to Google..."}
 								{status === "processing" && "Completing sign in..."}
 							</h2>
-							<p className="text-14px text-text-secondary">Please wait a moment</p>
+							<p className="text-15px text-text-secondary">Please wait a moment</p>
 						</div>
 					) : (
 						<div className="text-center">
-							<h2 className="text-18px font-semibold text-text-primary mb-2">
+							<h2 className="text-20px font-semibold text-text-primary mb-3">
 								Sign in to continue
 							</h2>
-							<p className="text-14px text-text-secondary mb-6">
+							<p className="text-15px text-text-secondary mb-8">
 								Use your Google account to access the admin console
 							</p>
 							<button
@@ -204,13 +204,13 @@ export function LoginPage() {
 								<GoogleLogo className="w-5 h-5" />
 								Continue with Google
 							</button>
-							<p className="text-12px text-text-tertiary mt-4">
+							<p className="text-13px text-text-tertiary mt-6 leading-relaxed">
 								By continuing, you agree to our{" "}
 								<a
 									href={`${homeUrl}/terms`}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="text-primary underline"
+									className="text-primary hover:underline"
 								>
 									Terms of Service
 								</a>{" "}
@@ -219,7 +219,7 @@ export function LoginPage() {
 									href={`${homeUrl}/privacy`}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="text-primary underline"
+									className="text-primary hover:underline"
 								>
 									Privacy Policy
 								</a>
@@ -229,9 +229,9 @@ export function LoginPage() {
 				</div>
 
 				{/* Security Badge */}
-				<div className="flex items-center justify-center gap-2 mt-6">
-					<Icon icon={LockIcon} size={14} className="text-text-tertiary" />
-					<span className="text-13px text-text-tertiary">Secure authentication powered by Proofa</span>
+				<div className="flex items-center justify-center gap-2 mt-8">
+					<Icon icon={LockIcon} size={16} className="text-text-tertiary" />
+					<span className="text-14px text-text-tertiary">Secure authentication powered by Proofa</span>
 				</div>
 			</div>
 		</div>

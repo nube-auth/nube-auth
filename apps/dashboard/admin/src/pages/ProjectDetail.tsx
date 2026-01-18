@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Icon } from "../components/Icon";
+import { getIconById } from "../components/IconPicker";
 import {
 	AlertCircleIcon,
 	ArrowRight01Icon,
 	Folder01Icon,
 	Copy01Icon,
 	CheckmarkCircle02Icon,
-	Layers01Icon,
+	DashboardSquare02Icon,
 	UserMultiple02Icon,
 	Key01Icon,
 	DollarCircleIcon,
 	Add01Icon,
+	Layers01Icon,
 } from "@hugeicons/core-free-icons";
 import { useProject, useProjectApps, useProjectMembers, useProjectStats } from "../hooks/api";
 
@@ -187,8 +189,8 @@ export function ProjectDetailPage() {
 									>
 										<td>
 											<div className="flex items-center gap-3">
-												<div className="w-9 h-9 bg-purple-100 rounded-md flex items-center justify-center">
-													<Icon icon={Layers01Icon} size={18} className="text-purple-600" />
+												<div className="w-9 h-9 bg-surface-secondary rounded-md flex items-center justify-center">
+													<Icon icon={getIconById(app.icon || "application")} size={18} className="text-primary" />
 												</div>
 												<span className="font-medium text-text-primary">
 													{app.name}
@@ -219,7 +221,7 @@ export function ProjectDetailPage() {
 				) : (
 					<div className="empty-state py-12 px-6">
 						<div className="empty-state-icon">
-							<Icon icon={Layers01Icon} size={28} className="text-text-tertiary" />
+							<Icon icon={DashboardSquare02Icon} size={28} className="text-text-tertiary" />
 						</div>
 						<h3 className="empty-state-title">No applications yet</h3>
 						<p className="empty-state-desc">Create your first app to start managing authentication.</p>

@@ -169,7 +169,7 @@ export function AppDetailPage() {
 						onClick={() => navigate(`/projects/${projectId}/apps/${appId}/users`)}
 						className="bg-card-bg border border-border-secondary rounded-lg p-5 cursor-pointer transition-all flex flex-col items-center gap-3 text-center hover:border-primary hover:-translate-y-0.5 hover:shadow-md"
 					>
-					<div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+				<div className="w-12 h-12 rounded-lg bg-surface-secondary flex items-center justify-center">
 							<Icon icon={UserMultiple02Icon} size={24} className="text-primary" />
 						</div>
 						<div>
@@ -185,7 +185,7 @@ export function AppDetailPage() {
 						onClick={() => navigate(`/projects/${projectId}/apps/${appId}/licenses`)}
 						className="bg-card-bg border border-border-secondary rounded-lg p-5 cursor-pointer transition-all flex flex-col items-center gap-3 text-center hover:border-primary hover:-translate-y-0.5 hover:shadow-md"
 					>
-					<div className="w-12 h-12 rounded-lg bg-success/10 flex items-center justify-center">
+				<div className="w-12 h-12 rounded-lg bg-surface-secondary flex items-center justify-center">
 							<Icon icon={LicenseIcon} size={24} className="text-success" />
 						</div>
 						<div>
@@ -201,7 +201,7 @@ export function AppDetailPage() {
 						onClick={() => navigate(`/projects/${projectId}/apps/${appId}/settings`)}
 						className="bg-card-bg border border-border-secondary rounded-lg p-5 cursor-pointer transition-all flex flex-col items-center gap-3 text-center hover:border-primary hover:-translate-y-0.5 hover:shadow-md"
 					>
-					<div className="w-12 h-12 rounded-lg bg-info/10 flex items-center justify-center">
+				<div className="w-12 h-12 rounded-lg bg-surface-secondary flex items-center justify-center">
 						<Icon icon={Settings02Icon} size={24} className="text-info" />
 						</div>
 						<div>
@@ -217,7 +217,7 @@ export function AppDetailPage() {
 						onClick={() => navigate(`/projects/${projectId}/apps/${appId}/api-keys`)}
 						className="bg-card-bg border border-border-secondary rounded-lg p-5 cursor-pointer transition-all flex flex-col items-center gap-3 text-center hover:border-primary hover:-translate-y-0.5 hover:shadow-md"
 					>
-					<div className="w-12 h-12 rounded-lg bg-warning/10 flex items-center justify-center">
+					<div className="w-12 h-12 rounded-lg bg-surface-secondary flex items-center justify-center">
 						<Icon icon={Key01Icon} size={24} className="text-warning" />
 						</div>
 						<div>

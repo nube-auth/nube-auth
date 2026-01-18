@@ -120,15 +120,6 @@
   --code-text: #e2e8f0;
   --code-border: #334155;
 
-  /* Sidebar (admin-heavy) */
-  --sidebar-bg: #0f1117;
-  --sidebar-border: #1f2937;
-  --sidebar-text: #9ca3af;
-  --sidebar-text-hover: #ffffff;
-  --sidebar-active-bg: rgba(99, 102, 241, 0.1);
-  --sidebar-active-text: #818cf8;
-  --sidebar-section-text: #6b7280;
-
   /* Radii */
   --radius-sm: 4px;
   --radius: 6px;

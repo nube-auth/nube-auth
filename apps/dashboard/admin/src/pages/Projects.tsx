@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCreateProject, useProjects } from "../hooks/api";
 import { Icon } from "../components/Icon";
+import { IconPicker, getIconById } from "../components/IconPicker";
 import {
 	AlertCircleIcon,
 	GridViewIcon,
@@ -24,7 +25,7 @@ export function ProjectsPage() {
 	const createProjectMutation = useCreateProject();
 	const [showForm, setShowForm] = useState(false);
 	const [viewMode, setViewMode] = useState<ViewMode>("table");
-	const [formData, setFormData] = useState({ name: "", slug: "", description: "" });
+	const [formData, setFormData] = useState({ name: "", slug: "", description: "", icon: "folder" });
 
 	const generateSlug = (name: string) => {
 		return name
@@ -48,7 +49,7 @@ export function ProjectsPage() {
 		e.preventDefault();
 		createProjectMutation.mutate(formData, {
 			onSuccess: () => {
-				setFormData({ name: "", slug: "", description: "" });
+				setFormData({ name: "", slug: "", description: "", icon: "folder" });
 				setShowForm(false);
 			},
 		});
@@ -113,6 +114,11 @@ export function ProjectsPage() {
 										Auto-generated from project name. Use only letters, numbers, and hyphens.
 									</p>
 								</div>
+								<IconPicker
+									selectedIconId={formData.icon}
+									onSelect={(icon) => setFormData({ ...formData, icon })}
+									label="Project Icon"
+								/>
 								<div className="form-group">
 									<label htmlFor="projectDescription">Description (optional)</label>
 									<textarea
@@ -251,9 +257,9 @@ export function ProjectsPage() {
 							>
 								<div className="flex items-center gap-2.5">
 									<div
-										className="w-9 h-9 bg-gradient-to-br from-primary to-primary/70 rounded-lg flex items-center justify-center text-white text-14px font-semibold"
+										className="w-9 h-9 bg-surface-secondary rounded-lg flex items-center justify-center"
 									>
-										{project.name.charAt(0).toUpperCase()}
+										<Icon icon={getIconById(project.icon || "folder")} size={20} className="text-primary" />
 									</div>
 									<div>
 										<h3 className="project-name">
@@ -378,9 +384,9 @@ export function ProjectsPage() {
 									<td className="p-4">
 										<div className="flex items-center gap-3">
 											<div
-												className="w-8 h-8 bg-gradient-to-br from-primary to-primary/70 rounded-md flex items-center justify-center text-white text-13px font-semibold flex-shrink-0"
+												className="w-8 h-8 bg-surface-secondary rounded-md flex items-center justify-center flex-shrink-0"
 											>
-												{project.name.charAt(0).toUpperCase()}
+												<Icon icon={getIconById(project.icon || "folder")} size={18} className="text-primary" />
 											</div>
 											<div>
 												<div

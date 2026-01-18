@@ -381,7 +381,7 @@ export function AppLicensesPage() {
 				{/* Free Plan Users */}
 				<div className="stat-card">
 					<div className="flex items-center gap-3 mb-2">
-						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-success/10">
+						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-surface-secondary">
 							<Icon icon={UserMultiple02Icon} size={20} className="text-success" />
 						</div>
 						<div>
@@ -394,7 +394,7 @@ export function AppLicensesPage() {
 				{/* Paid Plan Users */}
 				<div className="stat-card">
 					<div className="flex items-center gap-3 mb-2">
-						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-warning/10">
+						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-surface-secondary">
 							<Icon icon={DollarCircleIcon} size={20} className="text-warning" />
 						</div>
 						<div>
@@ -407,7 +407,7 @@ export function AppLicensesPage() {
 				{/* Monthly Revenue */}
 				<div className="stat-card">
 					<div className="flex items-center gap-3 mb-2">
-						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-info/10">
+						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-surface-secondary">
 							<Icon icon={ArrowUp01Icon} size={20} className="text-info" />
 						</div>
 						<div>

@@ -91,6 +91,7 @@ export const projects = pgTable(
 		name: varchar("name", { length: 255 }).notNull(),
 		slug: varchar("slug", { length: 255 }).notNull(),
 		description: text("description"),
+		icon: varchar("icon", { length: 50 }).notNull().default("folder"),
 		owner_user_id: integer("owner_user_id")
 			.notNull()
 			.references(() => users.id),
@@ -213,6 +214,7 @@ export const apps = pgTable(
 		name: varchar("name", { length: 255 }).notNull(),
 		slug: varchar("slug", { length: 255 }).notNull(),
 		description: text("description"),
+		icon: varchar("icon", { length: 50 }).notNull().default("application"),
 		enabled_providers: jsonb("enabled_providers").notNull().default('["google"]'),
 		app_tokens: jsonb("app_tokens").notNull(),
 		security_settings: jsonb("security_settings").notNull(),

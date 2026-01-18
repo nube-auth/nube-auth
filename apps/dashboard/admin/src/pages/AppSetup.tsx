@@ -2,6 +2,7 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Icon } from "../components/Icon";
+import { IconPicker } from "../components/IconPicker";
 import {
 	ArrowRight01Icon,
 	Tick02Icon,
@@ -39,6 +40,7 @@ export function AppSetupPage() {
 		name: "",
 		slug: "",
 		description: "",
+		icon: "application",
 		redirectUris: [""],
 		allowedHosts: [""],
 		sessionTtlDays: 30,
@@ -277,6 +279,12 @@ export function AppSetupPage() {
 											URL-safe identifier. Auto-generated if left empty.
 										</p>
 									</div>
+
+									<IconPicker
+										selectedIconId={formData.icon}
+										onSelect={(icon) => setFormData((prev) => ({ ...prev, icon }))}
+										label="App Icon"
+									/>
 
 									<div>
 										<label
@@ -860,7 +868,7 @@ export function AppSetupPage() {
 							>
 								{/* App Icon */}
 								<div
-									className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5 bg-primary/10"
+									className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5 bg-surface-secondary"
 								>
 									<Icon icon={Key01Icon} size={28} className="text-primary" />
 								</div>
