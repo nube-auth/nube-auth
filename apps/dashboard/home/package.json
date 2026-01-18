@@ -14,11 +14,14 @@
 	"dependencies": {
 		"astro": "^4.0.0",
 		"@astrojs/vercel": "^7.0.0",
+		"@astrojs/tailwind": "^6.0.0",
 		"@proofa/styles": "workspace:*"
 	},
 	"devDependencies": {
 		"@types/node": "^20.0.0",
 		"typescript": "^5.3.3",
-		"unocss": "^66.5.12"
+		"tailwindcss": "^3.4.1",
+		"postcss": "^8.4.32",
+		"autoprefixer": "^10.4.17"
 	}
 }

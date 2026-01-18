@@ -8,7 +8,9 @@
     ".": "./uno.config.ts",
     "./uno.config": "./uno.config.ts",
     "./base.css": "./base.css",
-    "./theme.css": "./theme.css"
+    "./theme.css": "./theme.css",
+    "./tailwind.preset": "./tailwind.preset.ts",
+    "./tailwind.css": "./tailwind.css"
   },
   "dependencies": {
     "unocss": "^66.5.12"

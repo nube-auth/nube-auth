@@ -4,6 +4,9 @@ import path from "path";
 import UnoCSS from "unocss/vite";
 
 export default defineConfig({
+	css: {
+		postcss: path.resolve(__dirname, "postcss.config.cjs"),
+	},
 	plugins: [
 		react(),
 		UnoCSS({

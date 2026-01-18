@@ -1,15 +1,12 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import path from "path";
-import UnoCSS from "unocss/vite";
 
 export default defineConfig({
-	plugins: [
-		react(),
-		UnoCSS({
-			configFile: path.resolve(__dirname, "../../packages/styles/uno.config.ts"),
-		}),
-	],
+	css: {
+		postcss: path.resolve(__dirname, "../../postcss.config.cjs"),
+	},
+	plugins: [react()],
 	resolve: {
 		alias: {
 			"@proofa/react": path.resolve(__dirname, "../../packages/react/dist/index.js"),

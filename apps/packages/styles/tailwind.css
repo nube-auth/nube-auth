@@ -1,0 +1,137 @@
+/* Import theme variables */
+@import './theme.css';
+
+/* Tailwind directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Reset and base styles */
+* {
+	border-color: var(--border-primary);
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	background-color: var(--bg-primary);
+	color: var(--content-primary);
+}
+
+/* Typography base styles */
+h1, h2, h3, h4, h5, h6 {
+	font-weight: 600;
+	color: var(--content-primary);
+}
+
+h1 {
+	font-size: 28px;
+}
+
+h2 {
+	font-size: 24px;
+}
+
+h3 {
+	font-size: 20px;
+}
+
+h4 {
+	font-size: 18px;
+}
+
+h5 {
+	font-size: 16px;
+}
+
+h6 {
+	font-size: 14px;
+}
+
+p {
+	font-size: 14px;
+	line-height: 1.625;
+}
+
+a {
+	color: var(--primary);
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+/* Form base styles */
+input,
+textarea,
+select {
+	background-color: var(--input-bg);
+	border: 1px solid var(--input-border);
+	border-radius: 4px;
+	color: var(--content-primary);
+	transition: all 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+	border-color: var(--input-focus);
+	outline: none;
+	ring: 2px;
+	ring-color: rgba(99, 102, 241, 0.2);
+}
+
+button {
+	transition-property: all;
+	transition-duration: 0.2s;
+}
+
+/* Card base styles */
+.card {
+	background-color: var(--card-bg);
+	border: 1px solid var(--card-border);
+	border-radius: 4px;
+	padding: 24px;
+}
+
+/* Table base styles */
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+th {
+	background-color: var(--bg-secondary);
+	color: var(--content-primary);
+	text-align: left;
+	padding: 12px;
+	font-weight: 600;
+}
+
+td {
+	padding: 12px;
+	border-bottom: 1px solid var(--border-secondary);
+}
+
+/* Code block styles */
+code {
+	background-color: var(--bg-secondary);
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 13px;
+	font-family: 'Fira Code', monospace;
+}
+
+pre {
+	background-color: var(--bg-secondary);
+	padding: 16px;
+	border-radius: 4px;
+	overflow-x: auto;
+}
+
+pre code {
+	background-color: transparent;
+	padding: 0;
+}

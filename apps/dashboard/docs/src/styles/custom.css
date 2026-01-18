@@ -1,5 +1,8 @@
+/* Import Tailwind + theme variables */
+@import '@proofa/styles/tailwind.css';
+
 /* Proofa Docs - Custom Theme (matching Home Dashboard) */
-/* Note: Do NOT import base.css here - it conflicts with Starlight's theming */
+/* Note: Starlight theming extends Tailwind styling */
 
 /* Prevent flash of white background */
 html, body {
