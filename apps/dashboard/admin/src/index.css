@@ -1,7 +1,39 @@
 /* ==========================================================================
    Proofa Admin Dashboard - Dashboard Specific Styles
    Theme variables come from @proofa/styles/theme.css
+   Base form/table/animation styles from @proofa/styles/base.css
    ========================================================================== */
+
+/* ==========================================================================
+   Admin Dark Theme Overrides - Opaque Backgrounds for Modals/Cards
+   Apply to both explicit dark theme AND system dark preference
+   ========================================================================== */
+
+/* Explicit dark theme */
+[data-theme="dark"] {
+  --card-bg: #1a2235;
+  --bg-surface: #141b30;
+  --bg-muted: #0f1624;
+  --border: #2a3a52;
+  --card-border: #2a3a52;
+  --card-hover-border: #3a4a62;
+  --surface-secondary: #141b30;
+  --surface-hover: #1f2a3d;
+}
+
+/* System dark preference (when no explicit theme is set) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --card-bg: #1a2235;
+    --bg-surface: #141b30;
+    --bg-muted: #0f1624;
+    --border: #2a3a52;
+    --card-border: #2a3a52;
+    --card-hover-border: #3a4a62;
+    --surface-secondary: #141b30;
+    --surface-hover: #1f2a3d;
+  }
+}
 
 /* Reset */
 *, *::before, *::after {
@@ -31,10 +63,10 @@ body {
 }
 
 /* ==========================================================================
-   Header Theme Button - Consistent with User Dashboard
+   Header Theme Button
    ========================================================================== */
 
-.header-theme-btn {
+.header-btn {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -48,16 +80,16 @@ body {
   transition: all var(--transition);
 }
 
-.header-theme-btn:hover {
+.header-btn:hover {
   background: var(--border);
 }
 
-.header-theme-label {
+.theme-label {
   display: none;
 }
 
 @media (min-width: 640px) {
-  .header-theme-label {
+  .theme-label {
     display: inline;
   }
 }

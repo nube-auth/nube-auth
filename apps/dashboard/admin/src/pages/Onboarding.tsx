@@ -16,6 +16,24 @@ export function OnboardingPage() {
 	const [showForm, setShowForm] = useState(false);
 	const [formData, setFormData] = useState({ name: "", slug: "", description: "" });
 
+	const generateSlug = (name: string) => {
+		return name
+			.toLowerCase()
+			.trim()
+			.replace(/[^\w\s-]/g, "")
+			.replace(/\s+/g, "-")
+			.replace(/-+/g, "-")
+			.substring(0, 50);
+	};
+
+	const handleNameChange = (name: string) => {
+		setFormData({
+			...formData,
+			name,
+			slug: generateSlug(name),
+		});
+	};
+
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		createProjectMutation.mutate(formData, {
@@ -182,56 +200,73 @@ const user = await auth.getUser();`}
 				</div>
 			</div>
 
-			{/* Create Project Modal/Form */}
-			{showForm && (
-				<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[10001] p-8 pl-[292px]" onClick={() => setShowForm(false)}>
-					<div className="bg-card-bg border border-card-border rounded-xl w-full max-w-500px max-h-[calc(100vh-64px)] overflow-y-auto shadow-lg" onClick={(e) => e.stopPropagation()}>
-						<div className="flex items-center justify-between p-4 px-5 border-b border-card-border">
-							<h3 className="text-18px font-600 text-text-primary m-0">Create New Project</h3>
-							<button type="button" className="w-8 h-8 flex items-center justify-center border-none bg-transparent text-text-secondary cursor-pointer rounded-md transition-all hover:bg-surface-secondary hover:text-text-primary" onClick={() => setShowForm(false)}>
-								<Icon icon={Cancel01Icon} size={20} />
+		{/* Create Project Modal/Form */}
+		{showForm && (
+			<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[10001] p-8" onClick={() => setShowForm(false)}>
+				<div className="bg-card-bg border border-card-border rounded-xl w-full mx-4 max-w-md max-h-[90vh] overflow-y-auto shadow-lg flex flex-col" onClick={(e) => e.stopPropagation()}>
+					<div className="flex items-center justify-between p-6 border-b border-card-border flex-shrink-0">
+						<h3 className="text-18px font-600 text-text-primary m-0">Create New Project</h3>
+						<button type="button" className="w-8 h-8 flex items-center justify-center border-none bg-transparent text-text-secondary cursor-pointer rounded-md transition-all hover:bg-surface-secondary hover:text-text-primary" onClick={() => setShowForm(false)}>
+							<Icon icon={Cancel01Icon} size={20} />
+						</button>
+					</div>
+					<form onSubmit={handleSubmit} className="flex flex-col flex-1">
+						<div className="p-6 text-text-primary overflow-y-auto flex-1">
+							<div className="form-group">
+								<label htmlFor="projectName" className="form-label">Project Name *</label>
+								<input
+									type="text"
+									id="projectName"
+									className="form-control"
+									placeholder="My Awesome Project"
+									required
+									value={formData.name}
+									onChange={(e) => handleNameChange(e.target.value)}
+								/>
+							</div>
+							<div className="form-group">
+								<label htmlFor="projectSlug" className="form-label">Project Slug *</label>
+								<input
+									type="text"
+									id="projectSlug"
+									className="form-control"
+									placeholder="my-awesome-project"
+									required
+									value={formData.slug}
+									onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+								/>
+								<p className="text-12px text-text-tertiary mt-1.5">
+									Auto-generated from project name. Use only letters, numbers, and hyphens.
+								</p>
+							</div>
+							<div className="form-group">
+								<label htmlFor="projectDescription" className="form-label">Description (optional)</label>
+								<textarea
+									id="projectDescription"
+									className="form-control resize-y"
+									placeholder="What is this project about?"
+									value={formData.description}
+									onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+									rows={3}
+								/>
+							</div>
+						</div>
+						<div className="flex items-center justify-end gap-3 p-6 border-t border-card-border flex-shrink-0">
+							<button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>
+								Cancel
+							</button>
+							<button
+								type="submit"
+								className="btn btn-primary"
+								disabled={createProjectMutation.isPending}
+							>
+								{createProjectMutation.isPending ? "Creating..." : "Create Project"}
 							</button>
 						</div>
-						<form onSubmit={handleSubmit}>
-							<div className="p-5 text-text-primary">
-								<div className="form-group">
-									<label htmlFor="projectName">Project Name</label>
-									<input
-										type="text"
-										id="projectName"
-										placeholder="My Awesome Project"
-										required
-										value={formData.name}
-										onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-									/>
-								</div>
-								<div className="form-group">
-									<label htmlFor="projectDescription">Description (optional)</label>
-									<textarea
-										id="projectDescription"
-										placeholder="What is this project about?"
-										value={formData.description}
-										onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-										rows={3}
-									/>
-								</div>
-							</div>
-							<div className="flex items-center justify-end gap-3 p-4 px-5 border-t border-card-border">
-								<button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>
-									Cancel
-								</button>
-								<button
-									type="submit"
-									className="btn btn-primary"
-									disabled={createProjectMutation.isPending}
-								>
-									{createProjectMutation.isPending ? "Creating..." : "Create Project"}
-								</button>
-							</div>
-						</form>
-					</div>
+					</form>
 				</div>
-			)}
+			</div>
+		)}
 		</div>
 	);
 }

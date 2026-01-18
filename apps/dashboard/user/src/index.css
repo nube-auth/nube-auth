@@ -1,6 +1,7 @@
 /* ==========================================================================
    Proofa User Dashboard - Dashboard Specific Styles
    Theme variables come from @proofa/styles/theme.css
+   Base form/table/animation styles from @proofa/styles/base.css
    Component styles are in UnoCSS shortcuts (uno.config.ts)
    ========================================================================== */
 
@@ -227,78 +228,6 @@ body {
 }
 
 /* ==========================================================================
-   Form Elements (need base styling for proper resets)
-   ========================================================================== */
-
-input[type="text"],
-input[type="email"],
-input[type="password"],
-textarea {
-  width: 100%;
-  padding: 10px 14px;
-  font-size: 14px;
-  font-family: inherit;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  transition: border-color var(--transition);
-}
-
-input:focus,
-textarea:focus {
-  outline: none;
-  border-color: var(--primary);
-}
-
-input:disabled,
-textarea:disabled {
-  background: var(--bg-muted);
-  color: var(--text-secondary);
-  cursor: not-allowed;
-}
-
-/* ==========================================================================
-   Table Styles (complex selectors not possible with utilities)
-   ========================================================================== */
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-thead {
-  background: var(--bg-muted);
-}
-
-th {
-  padding: 12px 20px;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  border-bottom: 1px solid var(--border);
-}
-
-td {
-  padding: 16px 20px;
-  font-size: 14px;
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-}
-
-tbody tr:last-child td {
-  border-bottom: none;
-}
-
-tbody tr:hover {
-  background: var(--bg-muted);
-}
-
-/* ==========================================================================
    Info List (Profile page - complex child selectors)
    ========================================================================== */
 
@@ -330,19 +259,6 @@ tbody tr:hover {
   background: linear-gradient(135deg, var(--primary), #8b5cf6);
   color: white;
   border: none;
-}
-
-/* ==========================================================================
-   Animations
-   ========================================================================== */
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
 }
 
 /* ==========================================================================
