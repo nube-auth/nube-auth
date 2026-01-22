@@ -1,5 +1,5 @@
 // PostCSS config for Tailwind projects
-// Admin dashboard uses UnoCSS and has its own postcss.config.cjs
+// Root postcss config used by dashboards and shared packages for Tailwind CSS
 module.exports = {
 	plugins: {
 		tailwindcss: {},

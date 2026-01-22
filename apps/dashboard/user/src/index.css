@@ -2,7 +2,7 @@
    Proofa User Dashboard - Dashboard Specific Styles
    Theme variables come from @proofa/styles/theme.css
    Base form/table/animation styles from @proofa/styles/base.css
-   Component styles are in UnoCSS shortcuts (uno.config.ts)
+   Component styles are in Tailwind utility classes
    ========================================================================== */
 
 /* ==========================================================================
@@ -163,7 +163,7 @@ body {
   background: var(--content-bg);
   overflow-y: auto;
   overflow-x: hidden;
-  margin-left: 0; /* Override UnoCSS shortcut ml-260px */
+  margin-left: 0; /* Override sidebar margin */
 }
 
 /* Center all direct page containers and add side padding */

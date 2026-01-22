@@ -18,7 +18,6 @@
 		"@proofa/components": "workspace:*",
 		"@proofa/shared": "workspace:*",
 		"@tanstack/react-query": "^5.90.12",
-		"daisyui": "^5.5.14",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"react-router-dom": "^6.30.2"
@@ -30,11 +29,9 @@
 		"@babel/types": "^7.28.5",
 		"@types/react": "^18.2.43",
 		"@types/react-dom": "^18.2.17",
-		"@unocss/reset": "^66.5.12",
 		"@vitejs/plugin-react": "^4.7.0",
 		"tsx": "^4.7.0",
 		"typescript": "^5.3.3",
-		"unocss": "^66.5.12",
 		"vite": "^5.0.8"
 	}
 }

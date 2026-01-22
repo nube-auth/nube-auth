@@ -241,22 +241,20 @@ pnpm typecheck            # Type check all packages
 ## 📚 Documentation
 
 ### Getting Started
-- **[Quick Start Guide](./QUICKSTART.md)** - Get up and running in 5 minutes
-- **[Development Guide](./DEVELOPMENT.md)** - Complete local setup and workflows
-- **[Documentation Index](./docs/README.md)** - All documentation files
+- **[Setup Guide](./SETUP.md)** - Complete installation and development setup
 
 ### Core Documentation
 - **[Architecture](./docs/ARCHITECTURE.md)** - System design, ID management, security patterns
-- **[Product Spec](./docs/PRODUCT_SPEC.md)** - Complete product specification and features
-- **[Payment System](./docs/PAYMENT_SYSTEM_DESIGN.md)** - Billing and payment architecture
-- **[JSONB Patterns](./docs/JSONB_RFC.md)** - Atomic database update patterns
-- **[Phase 2 Roadmap](./docs/PHASE_2_ROADMAP.md)** - Planned features and enhancements
+- **[Product Spec](./docs/PRODUCT_SPEC.md)** - Complete product specification
+- **[Payments](./docs/PAYMENTS.md)** - Payment integration and subscription management
+- **[Tailwind CSS Guide](./docs/CSS_STYLING_STANDARDS.md)** - Styling patterns and Tailwind architecture
+- **[JSONB Patterns](./docs/JSONB.md)** - Atomic database update patterns
+- **[Security](./docs/ADMIN_SESSION_SECURITY.md)** - Admin session security
+- **[Phase 2 Roadmap](./docs/PHASE_2_ROADMAP.md)** - Planned features
 
 ### API References
 - **[Admin API](./docs/ADMIN_API_QUICK_REFERENCE.md)** - Admin endpoints reference
-- **[Gateway API](./apps/gateway/README.md)** - REST API documentation
-- **[TypeScript Client](./packages/client/README.md)** - SDK reference
-- **[React Integration](./packages/react/README.md)** - Hooks and components
+- **[Payment System Design](./docs/PAYMENT_SYSTEM_DESIGN.md)** - Complete payment architecture
 
 ## 🔒 Security
 
@@ -350,7 +348,7 @@ Built with:
 
 **Made with ❤️ by the Proofa team**
 
-**Last Updated**: January 11, 2026  
+**Last Updated**: January 22, 2026  
 **Version**: 1.1.0  
 **Security Rating**: A+ (94/100)  
 **Session Duration**: 365 days users, 2 hours + 15-min inactivity admins (per-app: 1-365 days configurable)

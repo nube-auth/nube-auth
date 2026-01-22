@@ -536,8 +536,8 @@ See [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) for detailed guidelines on:
 8. **Array element mutations**: Replace entire arrays, never update by index
 9. **Native select elements**: Use custom dropdown components
 10. **Native fetch**: Use pingpong-fetch library instead
-11. **Component CSS classes**: Use UnoCSS utilities, not .card/.button in index.css
-12. **Mixed styling**: Never use both CSS classes and UnoCSS for same purpose
+11. **Component CSS classes**: Use Tailwind utilities (or @apply in index.css), not .card/.button defined ad-hoc in index.css
+12. **Mixed styling**: Never use both custom CSS classes and Tailwind utilities for the same purpose
 
 ## Quick Reference
 

@@ -1,7 +1,6 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import path from "node:path";
-import UnoCSS from "unocss/vite";
 
 export default defineConfig({
 	css: {
@@ -9,9 +8,6 @@ export default defineConfig({
 	},
 	plugins: [
 		react(),
-		UnoCSS({
-			configFile: path.resolve(__dirname, "../../packages/styles/uno.config.ts"),
-		}),
 	],
 	resolve: {
 		alias: {

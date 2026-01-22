@@ -3,20 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "main": "uno.config.ts",
   "exports": {
-    ".": "./uno.config.ts",
-    "./uno.config": "./uno.config.ts",
-    "./base.css": "./base.css",
     "./theme.css": "./theme.css",
     "./tailwind.preset": "./tailwind.preset.ts",
     "./tailwind.css": "./tailwind.css"
-  },
-  "dependencies": {
-    "unocss": "^66.5.12"
-  },
-  "devDependencies": {
-    "@ameinhardt/unocss-preset-daisy": "^1.1.8",
-    "daisyui": "^5.5.14"
   }
 }

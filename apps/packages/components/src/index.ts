@@ -4,7 +4,7 @@
  * This package contains:
  * - Unified icon system (single IconType registry for all icons)
  * - Reusable React components used across Proofa dashboards
- * - Style configuration (UnoCSS, Tailwind, CSS files)
+ * - Style configuration (Tailwind, CSS files)
  * - Design tokens and theming
  */
 
