@@ -7,7 +7,7 @@ The `@proofa/components` package is a centralized, reusable component library fo
 - **Icon System**: 57+ icons from HugeIcons + brand logos (Google, GitHub, Stripe, NextJS, React, etc.)
 - **12 Custom UI Components** across 3 phases for rapid dashboard development
 - **Type-Safe**: Full TypeScript support with proper interfaces
-- **Theme-Aware**: Supports light/dark modes using CSS variables from `@proofa/styles`
+- **Theme-Aware**: Supports light/dark modes using CSS variables from `@proofa/components`
 - **Compound Components**: Support for complex component hierarchies (Card, LoginCard, FormGroup)
 
 ---
@@ -558,7 +558,7 @@ export function ProfilePage() {
 
 ## Styling & Theming
 
-All components use CSS variables from `@proofa/styles/theme.css`:
+All components use CSS variables from `@proofa/components/styles/theme.css`:
 
 ### Light Theme (Default)
 ```css

@@ -11,6 +11,11 @@ export default defineConfig({
 	],
 	resolve: {
 		alias: {
+			// Utilities
+			"@/lib": path.resolve(__dirname, "./src/lib"),
+			// Selia components (never imported directly in pages)
+			"@/components/selia": path.resolve(__dirname, "./src/components/selia"),
+			// Proofa packages
 			"@proofa/react": path.resolve(__dirname, "../../packages/react/dist/index.js"),
 			"@proofa/client": path.resolve(__dirname, "../../packages/client/dist/index.js"),
 			"@proofa/shared": path.resolve(__dirname, "../../packages/shared/dist/index.js"),

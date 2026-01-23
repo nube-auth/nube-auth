@@ -21,7 +21,7 @@
    
    Usage:
    Import in each dashboard's main.tsx:
-   import '@proofa/styles/theme.css';
+   import '@proofa/components/styles/theme.css';
    ========================================================================== */
 
 /* CSS Variables - Light Theme (Default) */

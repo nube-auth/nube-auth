@@ -13,6 +13,13 @@
 		"types": ["vite/client"],
 		"baseUrl": ".",
 		"paths": {
+			// Utilities
+			"@/lib": ["./src/lib"],
+			"@/lib/*": ["./src/lib/*"],
+			// Selia components (only imported in @proofa/components wrappers)
+			"@/components/selia": ["./src/components/selia"],
+			"@/components/selia/*": ["./src/components/selia/*"],
+			// Proofa packages
 			"@proofa/auth": ["../../packages/auth/src"],
 			"@proofa/auth/*": ["../../packages/auth/src/*"],
 			"@proofa/cache": ["../../packages/cache/src"],
@@ -37,7 +44,8 @@
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedIndexedAccess": true,
 		"noImplicitOverride": true,
-		"exactOptionalPropertyTypes": true,
+	// Disabled for compatibility with Selia components
+	// "exactOptionalPropertyTypes": true,
 		"forceConsistentCasingInFileNames": true
 	},
 	"include": ["src"],

@@ -193,6 +193,123 @@ if (env.IS_DEVELOPMENT) {
 }
 ```
 
+## UI Component Architecture
+
+### Component Wrapper Pattern (CRITICAL)
+
+**NEVER import Selia components directly in admin or other code.**
+
+- ✅ Create wrappers in `@proofa/components/src/components/ui/`
+- ✅ Import from `@proofa/components` in all application code
+- ✅ Wrappers are thin re-exports with optional customization
+- ✅ Single point of customization for all dashboards
+- ✅ Easy to swap UI libraries in future (update wrappers only)
+- ❌ Never `import { Button } from '@/components/selia/ui/button'`
+- ❌ Never import Selia directly in admin, user, home dashboards
+- ❌ Never bypass wrapper layer
+
+**Wrapper Implementation Pattern:**
+
+```typescript
+// apps/packages/components/src/components/ui/Button/Button.tsx
+import React from 'react';
+import {
+  Button as SeliaButton,
+  type ButtonProps as SeliaButtonProps,
+} from '@/components/selia/ui/button';
+
+export type ButtonProps = SeliaButtonProps;
+
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (props, ref) => <SeliaButton ref={ref} {...props} />
+);
+
+Button.displayName = 'Button';
+```
+
+**Wrapper with Customization:**
+
+```typescript
+// apps/packages/components/src/components/ui/Button/Button.tsx
+import React from 'react';
+import {
+  Button as SeliaButton,
+  type ButtonProps as SeliaButtonProps,
+} from '@/components/selia/ui/button';
+
+export type ButtonProps = SeliaButtonProps & {
+  /** Proofa-specific: compact size for dense UIs */
+  compact?: boolean;
+};
+
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ compact = false, className = '', ...props }, ref) => {
+    const compactClass = compact ? 'h-8 px-2 text-xs' : '';
+    return (
+      <SeliaButton
+        ref={ref}
+        className={`${compactClass} ${className}`}
+        {...props}
+      />
+    );
+  }
+);
+
+Button.displayName = 'Button';
+```
+
+**Usage in Admin/Dashboard Code:**
+
+```typescript
+// ✅ CORRECT - Import from @proofa/components
+import { Button, Card, Dialog, Input } from '@proofa/components';
+
+export function MyPage() {
+  return (
+    <Card>
+      <Dialog>
+        <Input />
+        <Button>Submit</Button>
+      </Dialog>
+    </Card>
+  );
+}
+
+// ❌ WRONG - Never import from selia directly
+import { Button } from '@/components/selia/ui/button'; // NO!
+```
+
+**Wrapper Components to Create:**
+
+All common Selia components need wrappers:
+- Button, Badge, Card, Input, Label, Select, Dialog, Alert, Avatar, Toast, Checkbox, Spinner, Separator, Tabs, etc.
+
+**Specialized Components** (no wrappers needed - already wrapped):
+- Icon (HugeIcons wrapper - maintained by @proofa)
+- LoginCard, SessionCard, EmptyState, ProfileHeader, InfoGrid, InfoList, StatusDot (built from Selia)
+
+### Updated @proofa/components Exports
+
+All exports must come from wrappers:
+```typescript
+// apps/packages/components/src/index.ts
+
+// Selia Wrappers
+export { Button } from './components/ui/Button';
+export { Card, CardHeader, CardContent, CardFooter } from './components/ui/Card';
+export { Input } from './components/ui/Input';
+export { Dialog, DialogContent, DialogHeader, DialogFooter } from './components/ui/Dialog';
+// ... all other wrapped components
+
+// Specialized Components (no wrappers)
+export { Icon, IconType } from './icons';
+export { LoginCard, LoginCardLogo, LoginCardTitle, ... } from './components/ui/LoginCard';
+export { SessionCard } from './components/ui/SessionCard';
+// ... etc
+```
+
+---
+
 ## UI/Dashboard Standards
 
 ### CSS and Styling Architecture

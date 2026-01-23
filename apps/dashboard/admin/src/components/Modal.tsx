@@ -1,4 +1,11 @@
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode } from "react";
+import {
+	Dialog,
+	DialogPopup,
+	DialogHeader,
+	DialogTitle,
+	DialogFooter,
+} from "@/components/selia/ui";
 import { Icon, IconType } from "@proofa/components";
 
 interface ModalProps {
@@ -9,44 +16,20 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, children, size = "md" }: ModalProps) {
-	const dialogRef = useRef<HTMLDialogElement>(null);
-
-	useEffect(() => {
-		const dialog = dialogRef.current;
-		if (!dialog) return;
-
-		if (isOpen) {
-			dialog.showModal();
-		} else {
-			dialog.close();
-		}
-	}, [isOpen]);
-
-	useEffect(() => {
-		const handleEscape = (e: KeyboardEvent) => {
-			if (e.key === "Escape" && isOpen) {
-				onClose();
-			}
-		};
-		document.addEventListener("keydown", handleEscape);
-		return () => document.removeEventListener("keydown", handleEscape);
-	}, [isOpen, onClose]);
-
-	const sizeClass = size === "sm" ? "max-w-600px" : size === "lg" ? "max-w-1200px" : "max-w-900px";
+	// Size mapping for responsive breakpoints
+	const sizeClass =
+		size === "sm"
+			? "w-96"
+			: size === "lg"
+				? "w-2xl"
+				: "w-xl";
 
 	return (
-		<dialog
-			ref={dialogRef}
-			className="modal modal-middle"
-			onClose={onClose}
-		>
-			<div className={`modal-box ${sizeClass} w-full max-h-[calc(100vh-64px)] p-0`}>
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogPopup className={sizeClass}>
 				{children}
-			</div>
-			<form method="dialog" className="modal-backdrop">
-				<button type="button" onClick={onClose}>close</button>
-			</form>
-		</dialog>
+			</DialogPopup>
+		</Dialog>
 	);
 }
 
@@ -57,18 +40,19 @@ interface ModalHeaderProps {
 
 export function ModalHeader({ children, onClose }: ModalHeaderProps) {
 	return (
-		<div className="p-6 pb-4 border-b border-base-300 flex items-center justify-between">
-			<h2 className="text-xl font-bold text-base-content m-0">{children}</h2>
+		<DialogHeader className="flex items-center justify-between pr-8">
+			<DialogTitle>{children}</DialogTitle>
 			{onClose && (
 				<button
 					type="button"
 					onClick={onClose}
-					className="btn btn-ghost btn-sm btn-circle"
+					className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
 				>
 					<Icon icon={IconType.Close} size={20} />
+					<span className="sr-only">Close</span>
 				</button>
 			)}
-		</div>
+		</DialogHeader>
 	);
 }
 
@@ -85,9 +69,5 @@ interface ModalFooterProps {
 }
 
 export function ModalFooter({ children }: ModalFooterProps) {
-	return (
-		<div className="modal-action p-4 px-6 border-t border-base-300">
-			{children}
-		</div>
-	);
+	return <DialogFooter className="border-t pt-4">{children}</DialogFooter>;
 }

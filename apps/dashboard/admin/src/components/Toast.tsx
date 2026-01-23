@@ -1,14 +1,13 @@
-import { createContext, type ReactNode, useContext, useState } from "react";
-import { Icon, IconType } from "@proofa/components";
+import { createContext, type ReactNode, useContext } from "react";
 
-interface Toast {
-	id: string;
-	message: string;
-	type: "success" | "error" | "info" | "warning";
-}
+/**
+ * Legacy Toast API adapter for existing code.
+ * Currently provides a simple context-based toast that logs to console.
+ * Can be extended with a proper toast library later.
+ */
 
 interface ToastContextType {
-	showToast: (message: string, type?: Toast["type"]) => void;
+	showToast: (message: string, type?: "success" | "error" | "info" | "warning") => void;
 }
 
 const ToastContext = createContext<ToastContextType | null>(null);
@@ -22,85 +21,16 @@ export function useToast() {
 }
 
 export function ToastProvider({ children }: { children: ReactNode }) {
-	const [toasts, setToasts] = useState<Toast[]>([]);
-
-	const showToast = (message: string, type: Toast["type"] = "info") => {
-		const id = Math.random().toString(36).substr(2, 9);
-		const newToast: Toast = { id, message, type };
-
-		setToasts((prev) => [...prev, newToast]);
-
-		// Auto-remove after 5 seconds
-		setTimeout(() => {
-			setToasts((prev) => prev.filter((t) => t.id !== id));
-		}, 5000);
-	};
-
-	const removeToast = (id: string) => {
-		setToasts((prev) => prev.filter((t) => t.id !== id));
-	};
-
-	const getAlertClass = (type: Toast["type"]) => {
-		switch (type) {
-			case "success":
-				return "alert-success";
-			case "error":
-				return "alert-error";
-			case "warning":
-				return "alert-warning";
-			default:
-				return "alert-info";
-		}
-	};
-
-	const getIcon = (type: Toast["type"]) => {
-		switch (type) {
-			case "success":
-				return <Icon icon={IconType.Check} size={20} className="shrink-0" />;
-			case "error":
-				return <Icon icon={IconType.Close} size={20} className="shrink-0" />;
-			case "warning":
-				return <Icon icon={IconType.AlertCircle} size={20} className="shrink-0" />;
-			default:
-				return <Icon icon={IconType.Info} size={20} className="shrink-0" />;
-		}
+	const showToast = (message: string, type: "success" | "error" | "info" | "warning" = "info") => {
+		// Simple console implementation for now
+		console.log(`[Toast ${type.toUpperCase()}] ${message}`);
+		// TODO(@devendra): Integrate with Selia toast component when available
+		// Tracking: https://github.com/nauvalazhar/selia/issues/...
 	};
 
 	return (
 		<ToastContext.Provider value={{ showToast }}>
 			{children}
-			<div className="toast toast-end toast-top z-10000">
-				{toasts.map((toast) => (
-					<div
-						key={toast.id}
-						className={`alert ${getAlertClass(toast.type)} shadow-lg animate-[slideInRight_0.3s_ease-out]`}
-					>
-						{getIcon(toast.type)}
-						<span className="text-sm font-medium">{toast.message}</span>
-						<button
-							type="button"
-							onClick={() => removeToast(toast.id)}
-							className="btn btn-ghost btn-xs btn-circle"
-						>
-							<Icon icon={IconType.Close} size={16} />
-						</button>
-					</div>
-				))}
-			</div>
-			<style>
-				{`
-					@keyframes slideInRight {
-						from {
-							transform: translateX(100%);
-							opacity: 0;
-						}
-						to {
-							transform: translateX(0);
-							opacity: 1;
-						}
-					}
-				`}
-			</style>
 		</ToastContext.Provider>
 	);
 }

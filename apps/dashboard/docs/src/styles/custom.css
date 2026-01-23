@@ -1,5 +1,5 @@
 /* Import theme variables */
-@import '@proofa/styles/theme.css';
+@import '@proofa/components/styles/theme.css';
 
 /* Proofa Docs - Custom Theme for VitePress */
 /* Note: VitePress uses its own theming system */
