@@ -5,7 +5,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 	DialogFooter,
-} from "@/components/selia/ui";
+} from "@proofa/components";
 import { Icon, IconType } from "@proofa/components";
 
 interface ModalProps {

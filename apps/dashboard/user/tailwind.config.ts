@@ -1,12 +1,20 @@
 import type { Config } from 'tailwindcss';
-import preset from '@proofa/components/styles/tailwind.preset';
 
 const config: Config = {
 	content: ['./src/**/*.{ts,tsx}'],
-	presets: [preset],
 	theme: {
-		extend: {},
+		extend: {
+			colors: {
+				primary: 'var(--primary)',
+				secondary: 'var(--secondary)',
+				danger: 'var(--danger)',
+				success: 'var(--success)',
+				warning: 'var(--warning)',
+				border: 'var(--border)',
+			},
+		},
 	},
+	plugins: [],
 };
 
 export default config;

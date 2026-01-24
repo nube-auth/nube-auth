@@ -3,9 +3,6 @@ import { defineConfig } from "vite";
 import path from "node:path";
 
 export default defineConfig({
-	css: {
-		postcss: path.resolve(__dirname, "../../postcss.config.cjs"),
-	},
 	plugins: [react()],
 	resolve: {
 		alias: {

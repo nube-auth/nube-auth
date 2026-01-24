@@ -24,6 +24,9 @@
    import '@proofa/components/styles/theme.css';
    ========================================================================== */
 
+/* Import Selia custom utilities for Tailwind v4 */
+@import './src/styles/selia.css';
+
 /* CSS Variables - Light Theme (Default) */
 :root {
   /* Primary Colors */
@@ -55,6 +58,7 @@
   /* Text Colors - Light Theme */
   --text-primary: #111827;
   --text-secondary: #6b7280;
+  --text-muted: #6b7280;
   --text-tertiary: #9ca3af;
   --text-link: #6366f1;
   
@@ -71,6 +75,30 @@
   --info: #3b82f6;
   --info-bg: #dbeafe;
   --info-text: #1e40af;
+  
+  /* Selia Component Colors (mapped to our system) */
+  --foreground: #111827;
+  --background: #ffffff;
+  --muted: #6b7280;
+  --dimmed: #9ca3af;
+  --primary-foreground: #ffffff;
+  --primary-border: #c7d2fe;
+  --secondary: #8b5cf6;
+  --secondary-foreground: #ffffff;
+  --secondary-border: #ddd6fe;
+  --tertiary: #64748b;
+  --tertiary-foreground: #ffffff;
+  --tertiary-border: #cbd5e1;
+  --danger-foreground: #ffffff;
+  --danger-border: #fecaca;
+  --accent: #e0e7ff;
+  --input-bg: #ffffff;
+  --input-border: #e5e7eb;
+  --input-accent-border: #d1d5db;
+  --chip: #f3f4f6;
+  --chip-border: #e5e7eb;
+  --spinner: #6366f1;
+  --shadow-input: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   
   /* Code Block (Always Dark) */
   --code-bg: #1e1e2e;
@@ -120,11 +148,34 @@
   /* Text - brighter for contrast on darker bg */
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
+  --text-muted: #cbd5e1;
   --text-tertiary: #94a3b8;
   --text-link: #818cf8;
   
   /* Adjusted for dark theme */
   --primary-light: rgba(99, 102, 241, 0.12);
+  --foreground: #e2e8f0;
+  --background: #1e293b;
+  --muted: #94a3b8;
+  --dimmed: #64748b;
+  --primary-foreground: #ffffff;
+  --primary-border: #4f46e5;
+  --secondary: #a78bfa;
+  --secondary-foreground: #ffffff;
+  --secondary-border: #6d28d9;
+  --tertiary: #94a3b8;
+  --tertiary-foreground: #ffffff;
+  --tertiary-border: #475569;
+  --danger-foreground: #ffffff;
+  --danger-border: #dc2626;
+  --accent: #312e81;
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --input-accent-border: rgba(255, 255, 255, 0.15);
+  --chip: rgba(255, 255, 255, 0.05);
+  --chip-border: rgba(255, 255, 255, 0.1);
+  --spinner: #818cf8;
+  --shadow-input: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --success-bg: rgba(16, 185, 129, 0.12);
   --success-text: #6ee7b7;
   --warning-bg: rgba(245, 158, 11, 0.12);
@@ -166,11 +217,34 @@
     /* Text - brighter for contrast on darker bg */
     --text-primary: #f8fafc;
     --text-secondary: #cbd5e1;
+    --text-muted: #cbd5e1;
     --text-tertiary: #94a3b8;
     --text-link: #818cf8;
     
     /* Adjusted for dark theme */
     --primary-light: rgba(99, 102, 241, 0.12);
+    --foreground: #e2e8f0;
+    --background: #1e293b;
+    --muted: #94a3b8;
+    --dimmed: #64748b;
+    --primary-foreground: #ffffff;
+    --primary-border: #4f46e5;
+    --secondary: #a78bfa;
+    --secondary-foreground: #ffffff;
+    --secondary-border: #6d28d9;
+    --tertiary: #94a3b8;
+    --tertiary-foreground: #ffffff;
+    --tertiary-border: #475569;
+    --danger-foreground: #ffffff;
+    --danger-border: #dc2626;
+    --accent: #312e81;
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --input-border: rgba(255, 255, 255, 0.1);
+    --input-accent-border: rgba(255, 255, 255, 0.15);
+    --chip: rgba(255, 255, 255, 0.05);
+    --chip-border: rgba(255, 255, 255, 0.1);
+    --spinner: #818cf8;
+    --shadow-input: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
     --success-bg: rgba(16, 185, 129, 0.12);
     --success-text: #6ee7b7;
     --warning-bg: rgba(245, 158, 11, 0.12);

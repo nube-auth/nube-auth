@@ -1,14 +1,12 @@
-/* Import theme variables */
-@import './theme.css';
+/* Tailwind v4 - Import Tailwind itself */
+@import "tailwindcss";
 
-/* Tailwind directives */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Import theme variables (includes Selia utilities) */
+@import './theme.css';
 
 /* Reset and base styles */
 * {
-	border-color: var(--border-primary);
+	border-color: var(--border);
 }
 
 html {
@@ -16,14 +14,14 @@ html {
 }
 
 body {
-	background-color: var(--bg-primary);
-	color: var(--content-primary);
+	background-color: var(--bg-surface);
+	color: var(--text-primary);
 }
 
 /* Typography base styles */
 h1, h2, h3, h4, h5, h6 {
 	font-weight: 600;
-	color: var(--content-primary);
+	color: var(--text-primary);
 }
 
 h1 {
@@ -68,19 +66,18 @@ input,
 textarea,
 select {
 	background-color: var(--input-bg);
-	border: 1px solid var(--input-border);
-	border-radius: 4px;
-	color: var(--content-primary);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	color: var(--text-primary);
 	transition: all 0.2s ease;
 }
 
 input:focus,
 textarea:focus,
 select:focus {
-	border-color: var(--input-focus);
+	border-color: var(--primary);
 	outline: none;
-	ring: 2px;
-	ring-color: rgba(99, 102, 241, 0.2);
+	box-shadow: 0 0 0 3px var(--primary-light);
 }
 
 button {

@@ -1,12 +1,12 @@
 import react from "@vitejs/plugin-react";
-import tailwind from "@tailwindcss/vite";
+import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import path from "node:path";
 
 export default defineConfig({
 	plugins: [
 		react(),
-		tailwind({
+		tailwindcss({
 			content: [
 				'./src/**/*.{js,ts,jsx,tsx}',
 				'../../packages/components/src/**/*.{js,ts,jsx,tsx}',
@@ -17,6 +17,10 @@ export default defineConfig({
 		alias: {
 			// Utilities
 			"@/lib": path.resolve(__dirname, "./src/lib"),
+			"@/components": path.resolve(__dirname, "./src/components"),
+			"@/layouts": path.resolve(__dirname, "./src/layouts"),
+			"@/hooks": path.resolve(__dirname, "./src/hooks"),
+			"@/pages": path.resolve(__dirname, "./src/pages"),
 			// Proofa packages
 			"@proofa/react": path.resolve(__dirname, "../../packages/react/dist/index.js"),
 			"@proofa/client": path.resolve(__dirname, "../../packages/client/dist/index.js"),
@@ -28,19 +32,18 @@ export default defineConfig({
 		},
 	},
 	server: {
-		port: 5175,
+		port: 5174,
 		host: true,
 		allowedHosts: ["localhost"],
 		proxy: {
 			"/api": {
-				target: "http://localhost:3004",
+				target: "http://localhost:3001",
 				changeOrigin: true,
-				rewrite: (path) => path.replace(/^\/api/, "/v1"),
 			},
 		},
 	},
 	define: {
-		"import.meta.env.VITE_GATEWAY_URL": JSON.stringify(process.env.VITE_GATEWAY_URL || "http://localhost:3004"),
+		"import.meta.env.VITE_GATEWAY_URL": JSON.stringify(process.env.VITE_GATEWAY_URL || "http://localhost:3001"),
 		"import.meta.env.VITE_CORE_URL": JSON.stringify(process.env.VITE_CORE_URL || "http://localhost:3003"),
 		"import.meta.env.VITE_HOME_URL": JSON.stringify(process.env.VITE_HOME_URL || "http://localhost:4321"),
 		"import.meta.env.VITE_DOCS_URL": JSON.stringify(process.env.VITE_DOCS_URL || "http://localhost:4322"),

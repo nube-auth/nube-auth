@@ -135,98 +135,63 @@ export function LoginPage() {
 	};
 
 	return (
-		<div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-surface-primary via-surface-secondary to-surface-primary">
-			<div className="w-full max-w-460px">
-				{/* Logo & Branding */}
-				<div className="text-center mb-10">
-					<img
-						src="/favicon.png"
-						alt="Proofa"
-						className="w-20 h-20 mx-auto mb-6 block"
-					/>
-					<h1 className="text-32px font-bold text-white mb-3">
-						Proofa Admin
-					</h1>
-					<p className="text-16px text-text-secondary">Sign in to access the admin console</p>
+		<div className="login-page">
+			{/* Login Card */}
+			<div className="login-card">
+				{/* Header with branding */}
+				<div className="login-header">
+					<img src="/favicon.png" alt="Proofa" className="login-logo" />
+					<h1 className="login-brand-title">Proofa Admin</h1>
+					<p className="login-brand-subtitle">Sign in to access the admin console</p>
 				</div>
 
-				{/* Login Card */}
-				<div className="card p-10 bg-card-bg border border-card-border rounded-xl">
-					{status === "error" ? (
-						<div className="text-center">
-							<div className="w-16 h-16 bg-danger-bg rounded-full flex items-center justify-center mx-auto mb-6">
-								<Icon icon={IconType.Cancel} size={32} bold className="text-danger" />
-							</div>
-							<h2 className="text-20px font-semibold text-text-primary mb-3">
-								Login Failed
-							</h2>
-							<p className="text-15px text-text-secondary mb-8">
-								{errorMessage}
-							</p>
-							<button
-								type="button"
-								onClick={handleGoogleLogin}
-								className="btn btn-primary w-full"
-							>
-								<Icon icon={IconType.RotateClockwise} size={16} />
-								Try Again
-							</button>
-						</div>
-					) : status === "checking" || status === "processing" || status === "redirecting" ? (
-						<div className="text-center py-4">
-							<div className="spinner mx-auto mb-6" style={{ width: '40px', height: '40px' }} />
-							<h2 className="text-20px font-semibold text-text-primary mb-3">
-								{status === "checking" && "Checking authentication..."}
-								{status === "redirecting" && "Redirecting to Google..."}
-								{status === "processing" && "Completing sign in..."}
-							</h2>
-							<p className="text-15px text-text-secondary">Please wait a moment</p>
+				{/* Body */}
+				<div className="login-body">
+					<h2 className="login-title">
+						{status === "error" ? "Login Failed" : "Sign in to continue"}
+					</h2>
+					<p className="login-description">
+						{status === "error"
+							? errorMessage
+							: status === "checking"
+								? "Verifying your authentication..."
+								: status === "redirecting"
+									? "Redirecting to Google..."
+									: status === "processing"
+										? "Completing sign in..."
+										: "Use your Google account to access the admin console"}
+					</p>
+
+					{status === "checking" || status === "processing" || status === "redirecting" ? (
+						<div className="login-loading">
+							<div className="login-spinner" />
 						</div>
 					) : (
-						<div className="text-center">
-							<h2 className="text-20px font-semibold text-text-primary mb-3">
-								Sign in to continue
-							</h2>
-							<p className="text-15px text-text-secondary mb-8">
-								Use your Google account to access the admin console
-							</p>
+						<>
 							<button
 								type="button"
 								onClick={handleGoogleLogin}
-								className="btn-google"
+								className="login-btn-google"
 							>
-								<Icon icon={IconType.Google} size={20} />
+								<Icon icon={IconType.Google} size={18} />
 								Continue with Google
 							</button>
-							<p className="text-13px text-text-tertiary mt-6 leading-relaxed">
+
+							<p className="login-footer">
 								By continuing, you agree to our{" "}
-								<a
-									href={`${homeUrl}/terms`}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="text-primary hover:underline"
-								>
-									Terms of Service
-								</a>{" "}
-								and{" "}
-								<a
-									href={`${homeUrl}/privacy`}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="text-primary hover:underline"
-								>
-									Privacy Policy
-								</a>
+								<a href={`${homeUrl}/terms`} target="_blank" rel="noopener noreferrer">Terms of Service</a>
+								{" "}and{" "}
+								<a href={`${homeUrl}/privacy`} target="_blank" rel="noopener noreferrer">Privacy Policy</a>
 							</p>
-						</div>
+						</>
 					)}
 				</div>
+			</div>
 
-				{/* Security Badge */}
-				<div className="flex items-center justify-center gap-2 mt-8">
-					<Icon icon={IconType.Lock} size={16} className="text-text-tertiary" />
-					<span className="text-14px text-text-tertiary">Secure authentication powered by Proofa</span>
-				</div>
+			{/* Security Badge */}
+			<div className="login-security">
+				<Icon icon={IconType.Lock} size={14} />
+				<span>Secure authentication powered by Proofa</span>
 			</div>
 		</div>
 	);

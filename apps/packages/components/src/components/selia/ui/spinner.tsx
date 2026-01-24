@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn } from '../../../utils/cn';
 
 export function Spinner({ ...props }: React.ComponentProps<'svg'>) {
   return (

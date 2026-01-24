@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Select as BaseSelect } from '@base-ui/react/select';
-import { cn } from '@/lib/utils';
+import { cn } from '../../../utils/cn';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Chip } from './chip';
 

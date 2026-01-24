@@ -154,21 +154,76 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^4.7.0
         version: 4.7.0(vite@5.4.21(@types/node@25.0.3)(lightningcss@1.30.2))
-      autoprefixer:
-        specifier: ^10.4.17
-        version: 10.4.23(postcss@8.5.6)
-      postcss:
-        specifier: ^8.4.32
-        version: 8.5.6
       selia:
         specifier: ^0.2.3
         version: 0.2.3
       tailwindcss:
-        specifier: ^3.4.1
-        version: 3.4.19(tsx@4.21.0)(yaml@2.8.2)
+        specifier: ^4.1.18
+        version: 4.1.18
       tsx:
         specifier: ^4.7.0
         version: 4.21.0
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vite:
+        specifier: ^5.0.8
+        version: 5.4.21(@types/node@25.0.3)(lightningcss@1.30.2)
+
+  apps/dashboard/admin-v2:
+    dependencies:
+      '@base-ui/react':
+        specifier: ^1.1.0
+        version: 1.1.0(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@proofa/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@proofa/client':
+        specifier: workspace:*
+        version: link:../../packages/client
+      '@proofa/components':
+        specifier: workspace:*
+        version: link:../../packages/components
+      '@proofa/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@tanstack/react-query':
+        specifier: ^5.90.12
+        version: 5.90.16(react@18.3.1)
+      class-variance-authority:
+        specifier: ^0.7.1
+        version: 0.7.1
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.3.1(react@18.3.1)
+      react-router-dom:
+        specifier: ^6.30.2
+        version: 6.30.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      tailwind-merge:
+        specifier: ^3.4.0
+        version: 3.4.0
+    devDependencies:
+      '@tailwindcss/vite':
+        specifier: ^4.1.18
+        version: 4.1.18(vite@5.4.21(@types/node@25.0.3)(lightningcss@1.30.2))
+      '@types/react':
+        specifier: ^18.2.43
+        version: 18.3.27
+      '@types/react-dom':
+        specifier: ^18.2.17
+        version: 18.3.7(@types/react@18.3.27)
+      '@vitejs/plugin-react':
+        specifier: ^4.7.0
+        version: 4.7.0(vite@5.4.21(@types/node@25.0.3)(lightningcss@1.30.2))
+      tailwindcss:
+        specifier: ^4.1.18
+        version: 4.1.18
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
@@ -323,6 +378,9 @@ importers:
 
   apps/packages/components:
     dependencies:
+      '@base-ui/react':
+        specifier: ^1.0.0-alpha.8
+        version: 1.1.0(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@hugeicons/react':
         specifier: ^1.1.4
         version: 1.1.4(react@18.3.1)
@@ -332,6 +390,9 @@ importers:
       '@types/react-dom':
         specifier: ^18.0.0
         version: 18.3.7(@types/react@18.3.27)
+      class-variance-authority:
+        specifier: ^0.7.1
+        version: 0.7.1
       clsx:
         specifier: ^2.0.0
         version: 2.1.1
@@ -347,6 +408,10 @@ importers:
       typescript:
         specifier: ^5.0.0
         version: 5.9.3
+    devDependencies:
+      selia:
+        specifier: ^0.2.3
+        version: 0.2.3
 
   apps/packages/db:
     dependencies:

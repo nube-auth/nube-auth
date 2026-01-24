@@ -232,6 +232,13 @@ pnpm typecheck            # Type check all packages
 - Zod for validation
 - Pino for structured logging
 
+**Build & Tooling**
+- Turborepo for monorepo management
+- pnpm workspaces
+- TypeScript 5.9
+- Biome for linting/formatting
+- Vite for frontend builds
+
 **Infrastructure**
 - Docker & Docker Compose
 - PostgreSQL 16 (primary database)
@@ -242,6 +249,7 @@ pnpm typecheck            # Type check all packages
 
 ### Getting Started
 - **[Setup Guide](./SETUP.md)** - Complete installation and development setup
+- **[Turbo Guide](./TURBO_GUIDE.md)** - Monorepo build system and commands
 
 ### Core Documentation
 - **[Architecture](./docs/ARCHITECTURE.md)** - System design, ID management, security patterns

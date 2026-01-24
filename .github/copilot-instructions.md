@@ -195,118 +195,125 @@ if (env.IS_DEVELOPMENT) {
 
 ## UI Component Architecture
 
+### Selia Design System (Base Layer)
+
+**@proofa/components includes Selia UI components** - a complete design system with 50+ components.
+
+**ALWAYS use Selia components from `@proofa/components for new UI:**
+
+```typescript
+// ✅ CORRECT - Use Selia components from @proofa/components
+import { 
+  Button, 
+  Dialog, 
+  DialogTrigger, 
+  DialogPopup,
+  Input, 
+  Label, 
+  Select,
+  Checkbox,
+  Alert,
+  Spinner
+} from '@proofa/components';
+```
+
+**Available Selia Components:**
+- **Button**: Primary, secondary, tertiary, danger, outline, plain variants
+- **Dialog**: Full modal system with backdrop, header, body, footer
+- **Input**: Text inputs with variants (default, subtle)
+- **Label**: Form labels with proper accessibility
+- **Select**: Dropdown/combobox with searchable options
+- **Checkbox**: Checkboxes with group support
+- **Alert**: Success, danger, info, warning alerts with icons
+- **Chip**: Badges/tags with variants and sizes
+- **Spinner**: Loading indicators
+
+**For complex UI patterns, check Selia blocks:**
+- Visit: https://github.com/nauvalazhar/selia
+- Browse blocks folder for pre-built patterns (forms, cards, layouts)
+- Use `npx selia@latest add [component]` to add more components
+
 ### Component Wrapper Pattern (CRITICAL)
 
-**NEVER import Selia components directly in admin or other code.**
+**NEVER import components from dashboard-specific folders like `admin/src/components/selia`.**
 
-- ✅ Create wrappers in `@proofa/components/src/components/ui/`
-- ✅ Import from `@proofa/components` in all application code
-- ✅ Wrappers are thin re-exports with optional customization
-- ✅ Single point of customization for all dashboards
-- ✅ Easy to swap UI libraries in future (update wrappers only)
-- ❌ Never `import { Button } from '@/components/selia/ui/button'`
-- ❌ Never import Selia directly in admin, user, home dashboards
-- ❌ Never bypass wrapper layer
+- ✅ Always import from `@proofa/components`
+- ✅ Selia components are vendored inside `@proofa/components/src/components/selia/`
+- ✅ All dashboards (admin, user, home) import from same source
+- ❌ Never create local component copies in dashboard folders
+- ❌ Never bypass the `@proofa/components` package
 
-**Wrapper Implementation Pattern:**
+**Old Custom Components (Deprecated):**
+The following legacy components exist but should be migrated to Selia:
+- `Badge` → Use `Chip` from Selia instead
+- `LegacyButton` → Use `Button` from Selia instead  
+- `Card` → Build with Selia primitives instead
 
-```typescript
-// apps/packages/components/src/components/ui/Button/Button.tsx
-import React from 'react';
-import {
-  Button as SeliaButton,
-  type ButtonProps as SeliaButtonProps,
-} from '@/components/selia/ui/button';
+### Selia Component Usage
 
-export type ButtonProps = SeliaButtonProps;
+**Direct re-exports from `@proofa/components`:**
 
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  (props, ref) => <SeliaButton ref={ref} {...props} />
-);
-
-Button.displayName = 'Button';
-```
-
-**Wrapper with Customization:**
+Selia components are now directly exported from `@proofa/components`. No wrapper layer needed - import and use them as-is:
 
 ```typescript
-// apps/packages/components/src/components/ui/Button/Button.tsx
-import React from 'react';
-import {
-  Button as SeliaButton,
-  type ButtonProps as SeliaButtonProps,
-} from '@/components/selia/ui/button';
-
-export type ButtonProps = SeliaButtonProps & {
-  /** Proofa-specific: compact size for dense UIs */
-  compact?: boolean;
-};
-
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ compact = false, className = '', ...props }, ref) => {
-    const compactClass = compact ? 'h-8 px-2 text-xs' : '';
-    return (
-      <SeliaButton
-        ref={ref}
-        className={`${compactClass} ${className}`}
-        {...props}
-      />
-    );
-  }
-);
-
-Button.displayName = 'Button';
-```
-
-**Usage in Admin/Dashboard Code:**
-
-```typescript
-// ✅ CORRECT - Import from @proofa/components
-import { Button, Card, Dialog, Input } from '@proofa/components';
+// ✅ CORRECT - Import Selia components from @proofa/components
+import { 
+  Button, 
+  Dialog, 
+  DialogTrigger, 
+  DialogPopup,
+  Input,
+  Label,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  Checkbox,
+  Alert,
+  Chip
+} from '@proofa/components';
 
 export function MyPage() {
   return (
-    <Card>
-      <Dialog>
-        <Input />
-        <Button>Submit</Button>
-      </Dialog>
-    </Card>
+    <Dialog>
+      <DialogTrigger>
+        <Button variant="primary">Open Modal</Button>
+      </DialogTrigger>
+      <DialogPopup>
+        <DialogHeader>
+          <DialogTitle>Title</DialogTitle>
+        </DialogHeader>
+        <DialogBody>
+          <Label>
+            <Input placeholder="Enter value" />
+          </Label>
+        </DialogBody>
+        <DialogFooter>
+          <Button>Save</Button>
+        </DialogFooter>
+      </DialogPopup>
+    </Dialog>
   );
 }
 
-// ❌ WRONG - Never import from selia directly
+// ❌ WRONG - Never import from admin/src/components/selia
 import { Button } from '@/components/selia/ui/button'; // NO!
 ```
 
-**Wrapper Components to Create:**
+**Adding new Selia components:**
 
-All common Selia components need wrappers:
-- Button, Badge, Card, Input, Label, Select, Dialog, Alert, Avatar, Toast, Checkbox, Spinner, Separator, Tabs, etc.
+If you need a component not yet in `@proofa/components`:
 
-**Specialized Components** (no wrappers needed - already wrapped):
-- Icon (HugeIcons wrapper - maintained by @proofa)
-- LoginCard, SessionCard, EmptyState, ProfileHeader, InfoGrid, InfoList, StatusDot (built from Selia)
+1. **Check Selia documentation**: https://github.com/nauvalazhar/selia
+2. **Add to @proofa/components**: `cd apps/packages/components && npx selia@latest add [component-name]`
+3. **Export from index.ts**: Add exports in `@proofa/components/src/index.ts`
+4. **Use in dashboards**: Import from `@proofa/components`
 
-### Updated @proofa/components Exports
+**Specialized Proofa Components:**
 
-All exports must come from wrappers:
-```typescript
-// apps/packages/components/src/index.ts
+For Proofa-specific composite components (built using Selia primitives):
+- LoginCard, SessionCard, EmptyState, ProfileHeader, InfoGrid, InfoList, StatusDot
 
-// Selia Wrappers
-export { Button } from './components/ui/Button';
-export { Card, CardHeader, CardContent, CardFooter } from './components/ui/Card';
-export { Input } from './components/ui/Input';
-export { Dialog, DialogContent, DialogHeader, DialogFooter } from './components/ui/Dialog';
-// ... all other wrapped components
-
-// Specialized Components (no wrappers)
-export { Icon, IconType } from './icons';
-export { LoginCard, LoginCardLogo, LoginCardTitle, ... } from './components/ui/LoginCard';
-export { SessionCard } from './components/ui/SessionCard';
-// ... etc
-```
+These remain in `@proofa/components/src/components/ui/` and are exported alongside Selia components.
 
 ---
 

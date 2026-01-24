@@ -6,7 +6,7 @@ import {
 	SelectPopup,
 	SelectList,
 	SelectItem,
-} from "@/components/selia/ui";
+} from "@proofa/components";
 
 interface SelectOption {
 	value: string;

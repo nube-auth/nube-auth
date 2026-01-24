@@ -13,9 +13,17 @@
 		"types": ["vite/client"],
 		"baseUrl": ".",
 		"paths": {
-			// Utilities
+			// App aliases
 			"@/lib": ["./src/lib"],
 			"@/lib/*": ["./src/lib/*"],
+			"@/components": ["./src/components"],
+			"@/components/*": ["./src/components/*"],
+			"@/layouts": ["./src/layouts"],
+			"@/layouts/*": ["./src/layouts/*"],
+			"@/hooks": ["./src/hooks"],
+			"@/hooks/*": ["./src/hooks/*"],
+			"@/pages": ["./src/pages"],
+			"@/pages/*": ["./src/pages/*"],
 			// Proofa packages
 			"@proofa/auth": ["../../packages/auth/src"],
 			"@proofa/auth/*": ["../../packages/auth/src/*"],
