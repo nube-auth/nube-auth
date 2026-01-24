@@ -122,8 +122,8 @@
   --transition: 150ms ease;
 }
 
-/* Dark Theme - Manual Override */
-[data-theme="dark"] {
+/* Dark Theme - Manual Override (Selia uses .dark class) */
+.dark {
   /* Sidebar (Frame) - Matches content bg */
   --sidebar-bg: #0F1624;
   --sidebar-border: rgba(255, 255, 255, 0.06);
@@ -192,7 +192,7 @@
 
 /* Auto Dark Theme Detection */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root:not(.light) {
     /* Sidebar (Frame) - Matches content bg */
     --sidebar-bg: #0F1624;
     --sidebar-border: rgba(255, 255, 255, 0.06);

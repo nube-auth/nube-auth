@@ -1,3 +1,7 @@
+import { Button } from "@proofa/components";
+import { Chip } from "@proofa/components";
+import { Alert, AlertTitle, AlertDescription } from "@proofa/components";
+
 export default function Settings() {
 	return (
 		<div className="p-6">
@@ -6,6 +10,80 @@ export default function Settings() {
 				<p className="text-text-muted mt-1">Manage your account settings and preferences</p>
 			</div>
 
+			{/* Selia Theme Test Section */}
+			<div className="mb-6 bg-card-bg border border-card-border rounded-lg p-6">
+				<h2 className="text-lg font-semibold text-text-primary mb-4">
+					🎨 Selia Theme Test
+				</h2>
+				<p className="text-text-muted text-sm mb-6">
+					These Selia components should now use your Proofa theme colors (purple primary, etc.)
+				</p>
+
+				{/* Button Variants */}
+				<div className="mb-6">
+					<h3 className="text-sm font-medium text-text-primary mb-3">Button Variants</h3>
+					<div className="flex flex-wrap gap-3">
+						<Button variant="primary" size="md">Primary Button</Button>
+						<Button variant="secondary" size="md">Secondary Button</Button>
+						<Button variant="tertiary" size="md">Tertiary Button</Button>
+						<Button variant="danger" size="md">Danger Button</Button>
+						<Button variant="outline" size="md">Outline Button</Button>
+						<Button variant="plain" size="md">Plain Button</Button>
+					</div>
+				</div>
+
+				{/* Button Sizes */}
+				<div className="mb-6">
+					<h3 className="text-sm font-medium text-text-primary mb-3">Button Sizes</h3>
+					<div className="flex flex-wrap items-center gap-3">
+						<Button variant="primary" size="xs">Extra Small</Button>
+						<Button variant="primary" size="sm">Small</Button>
+						<Button variant="primary" size="md">Medium</Button>
+						<Button variant="primary" size="lg">Large</Button>
+					</div>
+				</div>
+
+				{/* Chips */}
+				<div className="mb-6">
+					<h3 className="text-sm font-medium text-text-primary mb-3">Chips (Badges)</h3>
+					<div className="flex flex-wrap gap-2">
+						<Chip>Default Chip</Chip>
+						<Chip>Active Status</Chip>
+						<Chip>Tag Example</Chip>
+					</div>
+				</div>
+
+				{/* Alerts */}
+				<div className="mb-6">
+					<h3 className="text-sm font-medium text-text-primary mb-3">Alerts</h3>
+					<div className="space-y-3">
+						<Alert>
+							<AlertTitle>Information</AlertTitle>
+							<AlertDescription>
+								This is an informational alert using Selia components.
+							</AlertDescription>
+						</Alert>
+					</div>
+				</div>
+
+				{/* Progress Button */}
+				<div className="mb-6">
+					<h3 className="text-sm font-medium text-text-primary mb-3">Loading State</h3>
+					<Button variant="primary" size="md" progress>
+						Loading...
+					</Button>
+				</div>
+
+				{/* Theme Check */}
+				<div className="p-4 bg-bg-muted rounded border border-border">
+					<p className="text-sm text-text-secondary">
+						<strong>✅ Theme Check:</strong> If the buttons above are purple/indigo (not generic gray/black),
+						your Selia theme is working correctly!
+					</p>
+				</div>
+			</div>
+
+			{/* Original Coming Soon Section */}
 			<div className="bg-card-bg border border-card-border rounded-lg p-8 text-center">
 				<div className="inline-flex items-center justify-center w-16 h-16 bg-bg-muted rounded-full mb-4">
 					<svg

@@ -18,7 +18,7 @@ import ProfilePage from "@/pages/Profile";
 
 const AppDetailPage = () => <div className="p-6">App Detail Page (Placeholder)</div>;
 
-// Theme management hook
+// Theme management hook (Selia uses .dark class)
 function useTheme() {
 	const [theme, setTheme] = useState<"light" | "dark">("dark");
 
@@ -26,16 +26,27 @@ function useTheme() {
 		const stored = localStorage.getItem("theme");
 		const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 		const initialTheme = (stored as "light" | "dark") || (prefersDark ? "dark" : "light");
-		
+
 		setTheme(initialTheme);
-		document.documentElement.setAttribute("data-theme", initialTheme);
+		// Selia uses .dark class, not data-theme attribute
+		if (initialTheme === "dark") {
+			document.documentElement.classList.add("dark");
+		} else {
+			document.documentElement.classList.remove("dark");
+		}
 	}, []);
 
 	const toggleTheme = () => {
 		const newTheme = theme === "light" ? "dark" : "light";
 		setTheme(newTheme);
 		localStorage.setItem("theme", newTheme);
-		document.documentElement.setAttribute("data-theme", newTheme);
+
+		// Selia uses .dark class, not data-theme attribute
+		if (newTheme === "dark") {
+			document.documentElement.classList.add("dark");
+		} else {
+			document.documentElement.classList.remove("dark");
+		}
 	};
 
 	return { theme, toggleTheme };

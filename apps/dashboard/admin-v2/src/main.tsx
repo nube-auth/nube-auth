@@ -3,10 +3,10 @@ import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App";
 
-// Import shared Proofa theme first (CSS variables)
+// Import shared Proofa theme first (CSS variables + Selia utilities)
 import "@proofa/components/styles/theme.css";
 
-// Import minimal admin-v2 specific styles (includes Tailwind directives)
+// Import admin-v2 styles (includes Tailwind v4 @theme config + layout styles)
 import "./index.css";
 
 // Create React Query client

@@ -6,12 +6,7 @@ import path from "node:path";
 export default defineConfig({
 	plugins: [
 		react(),
-		tailwindcss({
-			content: [
-				'./src/**/*.{js,ts,jsx,tsx}',
-				'../../packages/components/src/**/*.{js,ts,jsx,tsx}',
-			],
-		}),
+		tailwindcss(),
 	],
 	resolve: {
 		alias: {
