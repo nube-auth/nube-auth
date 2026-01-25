@@ -2,102 +2,105 @@
    Proofa Design System - Shared Theme
    Single source of truth for all dashboard theming
    
-   Color Philosophy: Theme-aware with neutral base + Purple accents
+   Color Philosophy: Tech Minimal - Refined monochrome with single blue accent
    
    Light Theme:
-   - Sidebar: Clean white frame with gray text (#ffffff)
-   - Main: Light neutral canvas (#f8fafc)
-   - Topbar: White bridge (#ffffff)
-   - Text: Dark gray hierarchy
+   - Sidebar: Clean neutral frame (#FAFAFA)
+   - Main: Light neutral canvas (#FAFAFA)
+   - Topbar: Neutral bridge (#FAFAFA)
+   - Text: Black monochrome hierarchy (#18181B → #A1A1AA)
+   - Accent: Blue for interactive elements (#3B82F6)
    
    Dark Theme:
-   - Sidebar: Slightly darker neutral frame (#0B0F16)
-   - Main: Slightly lighter neutral canvas (#0F1624)
-   - Topbar: Dark bridge (#0C121D)
-   - Text: Light gray hierarchy
+   - Sidebar: Deep black frame (#09090B)
+   - Main: Near-black canvas (#09090B)
+   - Topbar: Dark bridge (#09090B)
+   - Text: White monochrome hierarchy (#FAFAFA → #A1A1AA)
+   - Accent: Light blue for interactive elements (#60A5FA)
    
-   Purple lives in buttons, badges, and accents only
+   Monochrome lives everywhere, blue accent for maximum focus
    Dividers: subtle borders that adapt to theme
    
    Usage:
    Import in each dashboard's main.tsx:
    import '@proofa/components/styles/theme.css';
+   
+   NOTE: Custom utilities imported in tailwind.css to avoid duplicates
    ========================================================================== */
-
-/* Import Selia custom utilities for Tailwind v4 */
-@import './src/styles/selia.css';
 
 /* CSS Variables - Light Theme (Default) */
 :root {
-  /* Primary Colors */
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --primary-light: #eef2ff;
+  /* Primary Colors - Tech Minimal (Monochrome with blue accent) */
+  --primary: #18181B;
+  --primary-hover: #09090B;
+  --primary-light: #F4F4F5;
   
   /* Sidebar (Frame) - Light theme matches content bg */
-  --sidebar-bg: #f8fafc;
-  --sidebar-border: #e5e7eb;
-  --sidebar-text: #6b7280;
-  --sidebar-text-hover: #111827;
-  --sidebar-active-bg: rgba(99, 102, 241, 0.08);
-  --sidebar-active-text: #6366f1;
-  --sidebar-section-text: #9ca3af;
+  --sidebar-bg: #FAFAFA;
+  --sidebar-border: #E4E4E7;
+  --sidebar-text: #52525B;
+  --sidebar-text-hover: #18181B;
+  --sidebar-active-bg: rgba(59, 130, 246, 0.08);
+  --sidebar-active-text: #3B82F6;
+  --sidebar-section-text: #A1A1AA;
   
   /* Topbar (Bridge) - Light theme */
-  --top-header-bg: #f8fafc;
+  --top-header-bg: #FAFAFA;
   
   /* Content Area - Light Theme */
-  --content-bg: #f8fafc;
-  --card-bg: #ffffff;
-  --card-border: #e5e7eb;
-  --card-hover-border: #d1d5db;
-  --bg-surface: #ffffff;
-  --bg-muted: #f3f4f6;
-  --border: #e5e7eb;
+  --content-bg: #FAFAFA;
+  --card-bg: #FEFEFE;
+  --card-border: #E4E4E7;
+  --card-hover-border: #D4D4D8;
+  --bg-surface: #FEFEFE;
+  --bg-muted: #E4E4E7;
+  --border: #E4E4E7;
   
   /* Text Colors - Light Theme */
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --text-muted: #6b7280;
-  --text-tertiary: #9ca3af;
-  --text-link: #6366f1;
+  --text-primary: #18181B;
+  --text-secondary: #52525B;
+  --text-muted: #52525B;
+  --text-tertiary: #A1A1AA;
+  --text-link: #3B82F6;
   
   /* Status Colors */
-  --success: #10b981;
-  --success-bg: #d1fae5;
-  --success-text: #065f46;
-  --warning: #f59e0b;
-  --warning-bg: #fef3c7;
-  --warning-text: #92400e;
-  --danger: #ef4444;
-  --danger-bg: #fee2e2;
-  --danger-text: #991b1b;
-  --info: #3b82f6;
-  --info-bg: #dbeafe;
-  --info-text: #1e40af;
+  --success: #18181B;
+  --success-bg: #F4F4F5;
+  --success-text: #18181B;
+  --warning: #18181B;
+  --warning-bg: #F4F4F5;
+  --warning-text: #18181B;
+  --danger: #DC2626;
+  --danger-bg: #FEE2E2;
+  --danger-text: #991B1B;
+  --info: #3B82F6;
+  --info-bg: #DBEAFE;
+  --info-text: #1E40AF;
   
   /* Selia Component Colors (mapped to our system) */
-  --foreground: #111827;
-  --background: #ffffff;
-  --muted: #6b7280;
-  --dimmed: #9ca3af;
-  --primary-foreground: #ffffff;
-  --primary-border: #c7d2fe;
-  --secondary: #8b5cf6;
-  --secondary-foreground: #ffffff;
-  --secondary-border: #ddd6fe;
-  --tertiary: #64748b;
-  --tertiary-foreground: #ffffff;
-  --tertiary-border: #cbd5e1;
-  --danger-foreground: #ffffff;
-  --danger-border: #fecaca;
-  --accent: #e0e7ff;
-  --input-bg: #ffffff;
-  --input-border: #e5e7eb;
-  --input-accent-border: #d1d5db;
-  --chip: #f3f4f6;
-  --chip-border: #e5e7eb;
-  --spinner: #6366f1;
+  --foreground: #18181B;
+  --background: #FEFEFE;
+  --card: #FFFFFF;
+  --card-border: #E4E4E7;
+  --muted: #52525B;
+  --dimmed: #A1A1AA;
+  --primary-foreground: #FEFEFE;
+  --primary-border: #71717A;
+  --secondary: #3B82F6;
+  --secondary-foreground: #FEFEFE;
+  --secondary-border: #93C5FD;
+  --tertiary: #52525B;
+  --tertiary-foreground: #FEFEFE;
+  --tertiary-border: #D4D4D8;
+  --danger-foreground: #FEFEFE;
+  --danger-border: #FECACA;
+  --accent: #F4F4F5;
+  --input-bg: #FEFEFE;
+  --input-border: #E4E4E7;
+  --input-accent-border: #D4D4D8;
+  --chip: #E4E4E7;
+  --chip-border: #D4D4D8;
+  --spinner: #18181B;
   --shadow-input: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   
   /* Code Block (Always Dark) */
@@ -124,138 +127,150 @@
 
 /* Dark Theme - Manual Override (Selia uses .dark class) */
 .dark {
+  /* Primary Colors - Tech Minimal Dark (Inverted monochrome) */
+  --primary: #FAFAFA;
+  --primary-hover: #E4E4E7;
+  --primary-light: #27272A;
+  
   /* Sidebar (Frame) - Matches content bg */
-  --sidebar-bg: #0F1624;
-  --sidebar-border: rgba(255, 255, 255, 0.06);
-  --sidebar-text: #8b92a8;
-  --sidebar-text-hover: #ffffff;
-  --sidebar-active-bg: rgba(99, 102, 241, 0.15);
-  --sidebar-active-text: #a5b4fc;
-  --sidebar-section-text: #6b7280;
+  --sidebar-bg: #09090B;
+  --sidebar-border: rgba(212, 212, 216, 0.15);
+  --sidebar-text: #A1A1AA;
+  --sidebar-text-hover: #FAFAFA;
+  --sidebar-active-bg: rgba(59, 130, 246, 0.15);
+  --sidebar-active-text: #60A5FA;
+  --sidebar-section-text: #71717A;
   
   /* Topbar (Bridge) */
-  --top-header-bg: #0F1624;
+  --top-header-bg: #09090B;
   
-  /* Canvas - Lighter neutral background */
-  --content-bg: #0F1624;
-  --card-bg: rgba(255, 255, 255, 0.04);
-  --card-border: rgba(255, 255, 255, 0.06);
-  --card-hover-border: rgba(255, 255, 255, 0.08);
-  --bg-surface: rgba(20, 27, 48, 0.8);
-  --bg-muted: rgba(255, 255, 255, 0.02);
-  --border: rgba(255, 255, 255, 0.06);
+  /* Canvas - Dark neutral background */
+  --content-bg: #09090B;
+  --card-bg: #18181B;
+  --card-border: rgba(212, 212, 216, 0.15);
+  --card-hover-border: rgba(212, 212, 216, 0.25);
+  --bg-surface: #18181B;
+  --bg-muted: #27272A;
+  --border: rgba(212, 212, 216, 0.15);
   
-  /* Text - brighter for contrast on darker bg */
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #cbd5e1;
-  --text-tertiary: #94a3b8;
-  --text-link: #818cf8;
+  /* Text - Light for contrast on dark bg */
+  --text-primary: #FAFAFA;
+  --text-secondary: #D4D4D8;
+  --text-muted: #D4D4D8;
+  --text-tertiary: #A1A1AA;
+  --text-link: #60A5FA;
   
-  /* Adjusted for dark theme */
-  --primary-light: rgba(99, 102, 241, 0.12);
-  --foreground: #e2e8f0;
-  --background: #1e293b;
-  --muted: #94a3b8;
-  --dimmed: #64748b;
-  --primary-foreground: #ffffff;
-  --primary-border: #4f46e5;
-  --secondary: #a78bfa;
-  --secondary-foreground: #ffffff;
-  --secondary-border: #6d28d9;
-  --tertiary: #94a3b8;
-  --tertiary-foreground: #ffffff;
-  --tertiary-border: #475569;
-  --danger-foreground: #ffffff;
-  --danger-border: #dc2626;
-  --accent: #312e81;
-  --input-bg: rgba(255, 255, 255, 0.05);
-  --input-border: rgba(255, 255, 255, 0.1);
-  --input-accent-border: rgba(255, 255, 255, 0.15);
-  --chip: rgba(255, 255, 255, 0.05);
-  --chip-border: rgba(255, 255, 255, 0.1);
-  --spinner: #818cf8;
-  --shadow-input: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --success-bg: rgba(16, 185, 129, 0.12);
-  --success-text: #6ee7b7;
-  --warning-bg: rgba(245, 158, 11, 0.12);
-  --warning-text: #fcd34d;
-  --danger-bg: rgba(239, 68, 68, 0.12);
-  --danger-text: #fca5a5;
+  /* Selia Component Colors (mapped to dark system) */
+  --foreground: #FAFAFA;
+  --background: #18181B;
+  --card: #27272A;
+  --card-border: rgba(212, 212, 216, 0.15);
+  --muted: #A1A1AA;
+  --dimmed: #71717A;
+  --primary-foreground: #18181B;
+  --primary-border: #A1A1AA;
+  --secondary: #60A5FA;
+  --secondary-foreground: #18181B;
+  --secondary-border: #3B82F6;
+  --tertiary: #A1A1AA;
+  --tertiary-foreground: #18181B;
+  --tertiary-border: #71717A;
+  --danger-foreground: #18181B;
+  --danger-border: #F87171;
+  --accent: #27272A;
+  --input-bg: #18181B;
+  --input-border: rgba(212, 212, 216, 0.15);
+  --input-accent-border: rgba(212, 212, 216, 0.25);
+  --chip: #27272A;
+  --chip-border: rgba(212, 212, 216, 0.15);
+  --spinner: #FAFAFA;
+  --shadow-input: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --success-bg: #27272A;
+  --success-text: #D4D4D8;
+  --warning-bg: #27272A;
+  --warning-text: #D4D4D8;
+  --danger-bg: rgba(220, 38, 38, 0.12);
+  --danger-text: #FCA5A5;
   --info-bg: rgba(59, 130, 246, 0.12);
-  --info-text: #93c5fd;
+  --info-text: #93C5FD;
   
   /* Surface colors for elevation */
-  --surface-secondary: rgba(255, 255, 255, 0.04);
-  --surface-hover: rgba(255, 255, 255, 0.06);
+  --surface-secondary: #27272A;
+  --surface-hover: rgba(212, 212, 216, 0.1);
 }
 
 /* Auto Dark Theme Detection */
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
+    /* Primary Colors - Tech Minimal Dark (Inverted monochrome) */
+    --primary: #FAFAFA;
+    --primary-hover: #E4E4E7;
+    --primary-light: #27272A;
+    
     /* Sidebar (Frame) - Matches content bg */
-    --sidebar-bg: #0F1624;
-    --sidebar-border: rgba(255, 255, 255, 0.06);
-    --sidebar-text: #8b92a8;
-    --sidebar-text-hover: #ffffff;
-    --sidebar-active-bg: rgba(99, 102, 241, 0.15);
-    --sidebar-active-text: #a5b4fc;
-    --sidebar-section-text: #6b7280;
+    --sidebar-bg: #09090B;
+    --sidebar-border: rgba(212, 212, 216, 0.15);
+    --sidebar-text: #A1A1AA;
+    --sidebar-text-hover: #FAFAFA;
+    --sidebar-active-bg: rgba(59, 130, 246, 0.15);
+    --sidebar-active-text: #60A5FA;
+    --sidebar-section-text: #71717A;
     
     /* Topbar (Bridge) */
-    --top-header-bg: #0F1624;
+    --top-header-bg: #09090B;
     
-    /* Canvas - Lighter neutral background */
-    --content-bg: #0F1624;
-    --card-bg: rgba(255, 255, 255, 0.04);
-    --card-border: rgba(255, 255, 255, 0.06);
-    --card-hover-border: rgba(255, 255, 255, 0.08);
-    --bg-surface: rgba(20, 27, 48, 0.8);
-    --bg-muted: rgba(255, 255, 255, 0.02);
-    --border: rgba(255, 255, 255, 0.06);
+    /* Canvas - Dark neutral background */
+    --content-bg: #09090B;
+    --card-bg: #18181B;
+    --card-border: rgba(212, 212, 216, 0.15);
+    --card-hover-border: rgba(212, 212, 216, 0.25);
+    --bg-surface: #18181B;
+    --bg-muted: #27272A;
+    --border: rgba(212, 212, 216, 0.15);
     
-    /* Text - brighter for contrast on darker bg */
-    --text-primary: #f8fafc;
-    --text-secondary: #cbd5e1;
-    --text-muted: #cbd5e1;
-    --text-tertiary: #94a3b8;
-    --text-link: #818cf8;
+    /* Text - Light for contrast on dark bg */
+    --text-primary: #FAFAFA;
+    --text-secondary: #D4D4D8;
+    --text-muted: #D4D4D8;
+    --text-tertiary: #A1A1AA;
+    --text-link: #60A5FA;
     
-    /* Adjusted for dark theme */
-    --primary-light: rgba(99, 102, 241, 0.12);
-    --foreground: #e2e8f0;
-    --background: #1e293b;
-    --muted: #94a3b8;
-    --dimmed: #64748b;
-    --primary-foreground: #ffffff;
-    --primary-border: #4f46e5;
-    --secondary: #a78bfa;
-    --secondary-foreground: #ffffff;
-    --secondary-border: #6d28d9;
-    --tertiary: #94a3b8;
-    --tertiary-foreground: #ffffff;
-    --tertiary-border: #475569;
-    --danger-foreground: #ffffff;
-    --danger-border: #dc2626;
-    --accent: #312e81;
-    --input-bg: rgba(255, 255, 255, 0.05);
-    --input-border: rgba(255, 255, 255, 0.1);
-    --input-accent-border: rgba(255, 255, 255, 0.15);
-    --chip: rgba(255, 255, 255, 0.05);
-    --chip-border: rgba(255, 255, 255, 0.1);
-    --spinner: #818cf8;
-    --shadow-input: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-    --success-bg: rgba(16, 185, 129, 0.12);
-    --success-text: #6ee7b7;
-    --warning-bg: rgba(245, 158, 11, 0.12);
-    --warning-text: #fcd34d;
-    --danger-bg: rgba(239, 68, 68, 0.12);
-    --danger-text: #fca5a5;
+    /* Selia Component Colors (mapped to dark system) */
+    --foreground: #FAFAFA;
+    --background: #18181B;
+    --card: #27272A;
+    --card-border: rgba(212, 212, 216, 0.15);
+    --muted: #A1A1AA;
+    --dimmed: #71717A;
+    --primary-foreground: #18181B;
+    --primary-border: #A1A1AA;
+    --secondary: #60A5FA;
+    --secondary-foreground: #18181B;
+    --secondary-border: #3B82F6;
+    --tertiary: #A1A1AA;
+    --tertiary-foreground: #18181B;
+    --tertiary-border: #71717A;
+    --danger-foreground: #18181B;
+    --danger-border: #F87171;
+    --accent: #27272A;
+    --input-bg: #18181B;
+    --input-border: rgba(212, 212, 216, 0.15);
+    --input-accent-border: rgba(212, 212, 216, 0.25);
+    --chip: #27272A;
+    --chip-border: rgba(212, 212, 216, 0.15);
+    --spinner: #FAFAFA;
+    --shadow-input: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+    --success-bg: #27272A;
+    --success-text: #D4D4D8;
+    --warning-bg: #27272A;
+    --warning-text: #D4D4D8;
+    --danger-bg: rgba(220, 38, 38, 0.12);
+    --danger-text: #FCA5A5;
     --info-bg: rgba(59, 130, 246, 0.12);
-    --info-text: #93c5fd;
+    --info-text: #93C5FD;
     
     /* Surface colors for elevation */
-    --surface-secondary: rgba(255, 255, 255, 0.04);
-    --surface-hover: rgba(255, 255, 255, 0.06);
+    --surface-secondary: #27272A;
+    --surface-hover: rgba(212, 212, 216, 0.1);
   }
 }

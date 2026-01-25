@@ -1,5 +1,36 @@
 @import "tailwindcss";
 
+/* Selia theme compatibility mapping (no custom colors) */
+:root {
+  --content-bg: var(--background);
+  --sidebar-bg: var(--background);
+  --sidebar-border: var(--border);
+  --sidebar-text: var(--muted);
+  --sidebar-text-hover: var(--foreground);
+  --sidebar-active-bg: var(--accent);
+  --sidebar-active-text: var(--foreground);
+  --sidebar-section-text: var(--dimmed);
+  --top-header-bg: var(--background);
+  --card-bg: var(--card);
+  --card-border: var(--card-border);
+  --card-hover-border: var(--border);
+  --bg-surface: var(--background);
+  --bg-muted: var(--accent);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--muted);
+  --text-tertiary: var(--dimmed);
+  --text-link: var(--primary);
+  --primary-hover: var(--primary);
+  --primary-light: var(--accent);
+  --code-bg: var(--code);
+  --code-text: var(--foreground);
+  --code-border: var(--border);
+  --input-bg: var(--input);
+  --surface-secondary: var(--card);
+  --surface-hover: var(--accent);
+  --transition: 150ms ease;
+}
+
 /* Base font */
 html, body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -50,7 +81,7 @@ html, body {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: #0c0e12;
+  background: var(--background);
   gap: 24px;
 }
 
@@ -58,8 +89,8 @@ html, body {
 .login-card {
   width: 100%;
   max-width: 420px;
-  background: #16181d;
-  border: 1px solid #2a2d35;
+  background: var(--card);
+  border: 1px solid var(--card-border);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -67,7 +98,7 @@ html, body {
 .login-header {
   padding: 32px 32px 24px;
   text-align: center;
-  border-bottom: 1px solid #2a2d35;
+  border-bottom: 1px solid var(--card-separator);
 }
 
 .login-logo {
@@ -79,27 +110,27 @@ html, body {
 .login-brand-title {
   font-size: 24px;
   font-weight: 700;
-  color: #f4f4f5;
+  color: var(--foreground);
   margin: 0 0 8px 0;
   letter-spacing: -0.5px;
 }
 
 .login-brand-subtitle {
   font-size: 14px;
-  color: #71717a;
+  color: var(--muted);
   margin: 0;
 }
 
 .login-title {
   font-size: 20px;
   font-weight: 600;
-  color: #f4f4f5;
+  color: var(--foreground);
   margin: 0 0 8px 0;
 }
 
 .login-description {
   font-size: 14px;
-  color: #71717a;
+  color: var(--muted);
   margin: 0;
   line-height: 1.5;
 }
@@ -118,9 +149,9 @@ html, body {
   justify-content: center;
   gap: 10px;
   padding: 12px 20px;
-  background: #26282f;
-  color: #f4f4f5;
-  border: 1px solid #3f3f46;
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border: 1px solid var(--secondary-border);
   border-radius: 8px;
   font-size: 15px;
   font-weight: 500;
@@ -129,12 +160,12 @@ html, body {
 }
 
 .login-btn-google:hover {
-  background: #2e3039;
-  border-color: #52525b;
+  background: var(--accent);
+  border-color: var(--border);
 }
 
 .login-btn-google:active {
-  background: #1f2127;
+  background: var(--accent);
 }
 
 .login-btn-google svg {
@@ -145,14 +176,14 @@ html, body {
 
 .login-footer {
   font-size: 13px;
-  color: #71717a;
+  color: var(--muted);
   text-align: center;
   margin: 0;
   line-height: 1.5;
 }
 
 .login-footer a {
-  color: #3b82f6;
+  color: var(--primary);
   text-decoration: none;
 }
 
@@ -169,8 +200,8 @@ html, body {
 .login-spinner {
   width: 32px;
   height: 32px;
-  border: 2px solid #3f3f46;
-  border-top-color: #3b82f6;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -181,7 +212,7 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  color: #52525b;
+  color: var(--dimmed);
   font-size: 13px;
 }
 
@@ -289,17 +320,14 @@ html, body {
 
 .card.card-hover:hover {
   border-color: var(--primary);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.12);
+  box-shadow: 0 4px 12px color-mix(in oklch, var(--primary) 20%, transparent);
   transform: translateY(-2px);
 }
 
 /* Login card styling */
 .card.card-login {
-  box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 20px 40px -8px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--card-border);
 }
 
 .card-header {
@@ -331,23 +359,23 @@ html, body {
 
 /* Card Variants */
 .card.card-info {
-  background: rgba(99, 102, 241, 0.05);
-  border-color: rgba(99, 102, 241, 0.2);
+  background: color-mix(in oklch, var(--primary) 8%, transparent);
+  border-color: color-mix(in oklch, var(--primary) 25%, transparent);
 }
 
 .card.card-warning {
-  background: rgba(245, 158, 11, 0.05);
-  border-color: rgba(245, 158, 11, 0.2);
+  background: color-mix(in oklch, var(--warning) 8%, transparent);
+  border-color: color-mix(in oklch, var(--warning) 25%, transparent);
 }
 
 .card.card-danger {
-  background: rgba(239, 68, 68, 0.05);
-  border-color: rgba(239, 68, 68, 0.2);
+  background: color-mix(in oklch, var(--danger) 8%, transparent);
+  border-color: color-mix(in oklch, var(--danger) 25%, transparent);
 }
 
 .card.card-success {
-  background: rgba(16, 185, 129, 0.05);
-  border-color: rgba(16, 185, 129, 0.2);
+  background: color-mix(in oklch, var(--success) 8%, transparent);
+  border-color: color-mix(in oklch, var(--success) 25%, transparent);
 }
 
 /* ==========================================================================
@@ -408,28 +436,28 @@ html, body {
 }
 
 .stat-icon.blue {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  background: color-mix(in oklch, var(--info) 12%, transparent);
+  color: var(--info);
 }
 
 .stat-icon.green {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  background: color-mix(in oklch, var(--success) 12%, transparent);
+  color: var(--success);
 }
 
 .stat-icon.purple {
-  background: rgba(168, 85, 247, 0.1);
-  color: #a855f7;
+  background: color-mix(in oklch, var(--primary) 12%, transparent);
+  color: var(--primary);
 }
 
 .stat-icon.orange {
-  background: rgba(249, 115, 22, 0.1);
-  color: #f97316;
+  background: color-mix(in oklch, var(--warning) 12%, transparent);
+  color: var(--warning);
 }
 
 .stat-icon.red {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background: color-mix(in oklch, var(--danger) 12%, transparent);
+  color: var(--danger);
 }
 
 .stat-value {
@@ -486,7 +514,7 @@ html, body {
 .btn-primary:hover:not(:disabled),
 .btn.btn-primary:hover:not(:disabled) {
   background: var(--primary-hover);
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 2px 8px color-mix(in oklch, var(--primary) 35%, transparent);
 }
 
 /* Secondary Button */
@@ -513,8 +541,8 @@ html, body {
 
 .btn-danger:hover:not(:disabled),
 .btn.btn-danger:hover:not(:disabled) {
-  background: #dc2626;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+  background: var(--danger-border);
+  box-shadow: 0 2px 8px color-mix(in oklch, var(--danger) 35%, transparent);
 }
 
 /* Ghost Button */
@@ -603,15 +631,15 @@ html, body {
 
 .btn-danger-outline:hover:not(:disabled),
 .btn.btn-danger-outline:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.1);
+  background: color-mix(in oklch, var(--danger) 12%, transparent);
   border-color: var(--danger);
 }
 
 /* Google Button - Primary CTA */
 .btn-google-cta {
-  background: #ffffff;
-  color: #111827;
-  border: 1px solid #e5e7eb;
+  background: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--border);
   border-radius: 12px;
   font-weight: 600;
   padding: 12px 18px;
@@ -625,8 +653,8 @@ html, body {
 }
 
 .btn-google-cta:hover:not(:disabled) {
-  background: #fafbfc;
-  border-color: #d1d5db;
+  background: var(--accent);
+  border-color: var(--border);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
   transform: translateY(-1px);
 }
@@ -645,12 +673,12 @@ html, body {
   font-size: 15px;
   font-weight: 600;
   gap: 8px;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 2px 8px color-mix(in oklch, var(--primary) 20%, transparent);
   transition: all 0.2s ease;
 }
 
 .btn-primary-retry:hover:not(:disabled) {
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 4px 16px color-mix(in oklch, var(--primary) 30%, transparent);
   transform: translateY(-1px);
 }
 
@@ -660,9 +688,9 @@ html, body {
 
 /* Original Google button (kept for backwards compat) */
 .btn-google {
-  background: #ffffff;
-  color: #111827;
-  border: 1px solid #e5e7eb;
+  background: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--border);
   border-radius: 10px;
   font-weight: 600;
 }
@@ -670,8 +698,8 @@ html, body {
 .btn-google svg { width: 20px; height: 20px; }
 
 .btn-google:hover:not(:disabled) {
-  background: #f9fafb;
-  border-color: #d1d5db;
+  background: var(--accent);
+  border-color: var(--border);
 }
 
 /* ==========================================================================
@@ -691,33 +719,33 @@ html, body {
 }
 
 .badge-primary {
-  background: rgba(99, 102, 241, 0.15);
-  color: #6366f1;
+  background: color-mix(in oklch, var(--primary) 18%, transparent);
+  color: var(--primary);
 }
 
 .badge-secondary {
-  background: rgba(168, 85, 247, 0.15);
-  color: #a855f7;
+  background: color-mix(in oklch, var(--secondary) 18%, transparent);
+  color: var(--secondary-foreground);
 }
 
 .badge-success {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  background: color-mix(in oklch, var(--success) 18%, transparent);
+  color: var(--success);
 }
 
 .badge-warning {
-  background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
+  background: color-mix(in oklch, var(--warning) 18%, transparent);
+  color: var(--warning);
 }
 
 .badge-danger {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  background: color-mix(in oklch, var(--danger) 18%, transparent);
+  color: var(--danger);
 }
 
 .badge-info {
-  background: rgba(59, 130, 246, 0.15);
-  color: #3b82f6;
+  background: color-mix(in oklch, var(--info) 18%, transparent);
+  color: var(--info);
 }
 
 /* ==========================================================================
@@ -745,30 +773,30 @@ html, body {
 /* Alert Variants */
 .alert-success,
 .alert.alert-success {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.3);
-  color: #10b981;
+  background: color-mix(in oklch, var(--success) 12%, transparent);
+  border-color: color-mix(in oklch, var(--success) 30%, transparent);
+  color: var(--success);
 }
 
 .alert-warning,
 .alert.alert-warning {
-  background: rgba(245, 158, 11, 0.1);
-  border-color: rgba(245, 158, 11, 0.3);
-  color: #f59e0b;
+  background: color-mix(in oklch, var(--warning) 12%, transparent);
+  border-color: color-mix(in oklch, var(--warning) 30%, transparent);
+  color: var(--warning);
 }
 
 .alert-danger,
 .alert.alert-danger {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: #ef4444;
+  background: color-mix(in oklch, var(--danger) 12%, transparent);
+  border-color: color-mix(in oklch, var(--danger) 30%, transparent);
+  color: var(--danger);
 }
 
 .alert-info,
 .alert.alert-info {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.3);
-  color: #3b82f6;
+  background: color-mix(in oklch, var(--info) 12%, transparent);
+  border-color: color-mix(in oklch, var(--info) 30%, transparent);
+  color: var(--info);
 }
 
 .alert-bar {
@@ -777,10 +805,10 @@ html, body {
   gap: 12px;
   padding: 12px 16px;
   margin-bottom: 16px;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: color-mix(in oklch, var(--primary) 12%, transparent);
+  border: 1px solid color-mix(in oklch, var(--primary) 25%, transparent);
   border-radius: var(--radius-md);
-  color: #6366f1;
+  color: var(--primary);
   font-size: 14px;
 }
 
@@ -795,7 +823,7 @@ html, body {
 
 /* Error state styling for login */
 .bg-danger-light {
-  background: rgba(239, 68, 68, 0.08);
+  background: color-mix(in oklch, var(--danger) 10%, transparent);
 }
 
 /* ==========================================================================

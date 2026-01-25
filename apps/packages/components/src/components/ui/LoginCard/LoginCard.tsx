@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '../../../utils/cn';
 
 export interface LoginCardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
@@ -7,7 +8,9 @@ export interface LoginCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export interface LoginCardLogoProps extends React.HTMLAttributes<HTMLDivElement> {
-  children: React.ReactNode;
+  src?: string;
+  alt?: string;
+  children?: React.ReactNode;
 }
 
 export interface LoginCardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
@@ -31,25 +34,30 @@ export interface LoginCardErrorProps extends React.HTMLAttributes<HTMLDivElement
 }
 
 export const LoginCard = React.forwardRef<HTMLDivElement, LoginCardProps>(
-  ({ className = '', children, error, loading, ...props }, ref) => {
+  ({ className, children, error, loading, ...props }, ref) => {
     return (
-      <div
-        ref={ref}
-        className={`w-full max-w-md mx-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden ${className}`}
-        {...props}
-      >
-        {error && <LoginCardError message={error} />}
-        {loading && (
-          <div className="absolute inset-0 bg-white dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-50 flex items-center justify-center z-50">
-            <div className="animate-spin">
-              <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
+      <div className="flex items-center justify-center min-h-screen w-full px-6 bg-background">
+        <div
+          ref={ref}
+          className={cn(
+            'relative flex flex-col w-full max-w-md bg-card border border-card-border rounded-xl shadow overflow-hidden',
+            className
+          )}
+          {...props}
+        >
+          {error && <LoginCardError message={error} />}
+          {loading && (
+            <div className="absolute inset-0 bg-card/50 backdrop-blur-sm flex items-center justify-center z-50">
+              <div className="animate-spin">
+                <svg className="h-6 w-6 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              </div>
             </div>
-          </div>
-        )}
-        <div className={loading ? 'opacity-50 pointer-events-none' : ''}>{children}</div>
+          )}
+          <div className={loading ? 'opacity-50 pointer-events-none' : ''}>{children}</div>
+        </div>
       </div>
     );
   }
@@ -58,14 +66,18 @@ export const LoginCard = React.forwardRef<HTMLDivElement, LoginCardProps>(
 LoginCard.displayName = 'LoginCard';
 
 export const LoginCardLogo = React.forwardRef<HTMLDivElement, LoginCardLogoProps>(
-  ({ className = '', children, ...props }, ref) => {
+  ({ className, children, src, alt, ...props }, ref) => {
     return (
       <div
         ref={ref}
-        className={`flex items-center justify-center pt-8 pb-4 ${className}`}
+        className={cn('flex items-center justify-center pt-8 pb-4', className)}
         {...props}
       >
-        {children}
+        {src ? (
+          <img src={src} alt={alt || 'Logo'} className="w-12 h-12" />
+        ) : (
+          children
+        )}
       </div>
     );
   }
@@ -74,11 +86,11 @@ export const LoginCardLogo = React.forwardRef<HTMLDivElement, LoginCardLogoProps
 LoginCardLogo.displayName = 'LoginCardLogo';
 
 export const LoginCardTitle = React.forwardRef<HTMLHeadingElement, LoginCardTitleProps>(
-  ({ className = '', children, ...props }, ref) => {
+  ({ className, children, ...props }, ref) => {
     return (
       <h1
         ref={ref}
-        className={`text-2xl font-bold text-center text-gray-900 dark:text-white px-6 m-0 ${className}`}
+        className={cn('text-2xl font-bold text-center text-foreground px-6 m-0', className)}
         {...props}
       >
         {children}
@@ -90,11 +102,11 @@ export const LoginCardTitle = React.forwardRef<HTMLHeadingElement, LoginCardTitl
 LoginCardTitle.displayName = 'LoginCardTitle';
 
 export const LoginCardSubtitle = React.forwardRef<HTMLParagraphElement, LoginCardSubtitleProps>(
-  ({ className = '', children, ...props }, ref) => {
+  ({ className, children, ...props }, ref) => {
     return (
       <p
         ref={ref}
-        className={`text-center text-gray-600 dark:text-gray-400 px-6 pt-2 pb-6 m-0 ${className}`}
+        className={cn('text-center text-muted px-6 pt-2 pb-6 m-0', className)}
         {...props}
       >
         {children}
@@ -106,11 +118,11 @@ export const LoginCardSubtitle = React.forwardRef<HTMLParagraphElement, LoginCar
 LoginCardSubtitle.displayName = 'LoginCardSubtitle';
 
 export const LoginCardBody = React.forwardRef<HTMLDivElement, LoginCardBodyProps>(
-  ({ className = '', children, ...props }, ref) => {
+  ({ className, children, ...props }, ref) => {
     return (
       <div
         ref={ref}
-        className={`px-6 pb-6 space-y-4 ${className}`}
+        className={cn('px-6 pb-6 space-y-4', className)}
         {...props}
       >
         {children}
@@ -122,11 +134,11 @@ export const LoginCardBody = React.forwardRef<HTMLDivElement, LoginCardBodyProps
 LoginCardBody.displayName = 'LoginCardBody';
 
 export const LoginCardTerms = React.forwardRef<HTMLParagraphElement, LoginCardTermsProps>(
-  ({ className = '', children, ...props }, ref) => {
+  ({ className, children, ...props }, ref) => {
     return (
       <p
         ref={ref}
-        className={`text-center text-xs text-gray-600 dark:text-gray-400 px-6 pb-6 m-0 ${className}`}
+        className={cn('text-center text-xs text-dimmed px-6 pb-6 m-0', className)}
         {...props}
       >
         {children}
@@ -138,13 +150,13 @@ export const LoginCardTerms = React.forwardRef<HTMLParagraphElement, LoginCardTe
 LoginCardTerms.displayName = 'LoginCardTerms';
 
 export const LoginCardError = React.forwardRef<HTMLDivElement, LoginCardErrorProps>(
-  ({ message, className = '' }, ref) => {
+  ({ message, className }, ref) => {
     return (
       <div
         ref={ref}
-        className={`bg-red-50 dark:bg-red-900 border-b border-red-200 dark:border-red-800 px-6 py-3 ${className}`}
+        className={cn('bg-danger/10 border-b border-danger/20 px-6 py-3', className)}
       >
-        <p className="text-sm text-red-800 dark:text-red-200 m-0">{message}</p>
+        <p className="text-sm text-danger m-0">{message}</p>
       </div>
     );
   }

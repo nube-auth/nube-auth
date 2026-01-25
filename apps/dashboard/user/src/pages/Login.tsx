@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Icon, IconType } from "@proofa/components";
+import { 
+	Icon, 
+	IconType,
+	Button,
+	LoginCard,
+	LoginCardLogo,
+	LoginCardTitle,
+	LoginCardSubtitle,
+	LoginCardBody,
+	LoginCardTerms
+} from "@proofa/components";
 import { pingpong } from "../lib/pingpong";
 
 export function LoginPage() {
@@ -45,110 +55,94 @@ export function LoginPage() {
 	};
 
 	const error = searchParams.get("error");
+	
+	// Get friendly error message
+	const getErrorMessage = (errorCode: string) => {
+		switch (errorCode) {
+			case "missing_code":
+				return "Authentication code was missing from the response.";
+			case "exchange_failed":
+				return "Failed to complete the authentication process.";
+			case "internal_error":
+				return "An internal server error occurred.";
+			default:
+				return `Error: ${errorCode}`;
+		}
+	};
 
 	if (status === "error" && error) {
 		return (
-			<div className="login-container">
-				<div className="login-card">
-					<div className="w-14 h-14 bg-danger-bg text-danger rounded-lg flex items-center justify-center mx-auto mb-5">
-						<Icon icon={IconType.AlertCircle} size={32} className="text-danger" />
-					</div>
-					<h1 className="login-title">Login Failed</h1>
-					<p className="login-subtitle">
-						{error === "missing_code" && "Authentication code was missing from the response."}
-						{error === "exchange_failed" && "Failed to complete the authentication process."}
-						{error === "internal_error" && "An internal server error occurred."}
-						{!["missing_code", "exchange_failed", "internal_error"].includes(error) && `Error: ${error}`}
-					</p>
+			<LoginCard error={getErrorMessage(error)}>
+				<LoginCardLogo src="/favicon.png" alt="Proofa" />
+				<LoginCardTitle>Login Failed</LoginCardTitle>
+				<LoginCardSubtitle>
+					Please try again or contact support if the issue persists.
+				</LoginCardSubtitle>
 
-					<div className="alert-danger mb-6">
-						<Icon icon={IconType.AlertCircle} size={20} className="shrink-0" />
-						<span>Please try again or contact support if the issue persists.</span>
-					</div>
-
-					<button
-						type="button"
+				<LoginCardBody>
+					<Button
+						variant="secondary"
+						size="md"
 						onClick={handleGoogleLogin}
-						className="btn-google"
+						className="w-full"
 					>
-						<Icon icon={IconType.Google} size={20} />
+						<Icon icon={IconType.Google} />
 						Continue with Google
-					</button>
-				</div>
-			</div>
+					</Button>
+				</LoginCardBody>
+			</LoginCard>
 		);
 	}
 
 	if (status === "checking") {
 		return (
-			<div className="login-container">
-				<div className="login-card">
-					<img
-						src="/favicon.png"
-						alt="Proofa"
-						className="w-12 h-12 mx-auto mb-4"
-					/>
-					<h1 className="login-title">Welcome to Proofa</h1>
-					<div className="login-loading">
-						<div className="spinner" />
-					</div>
-				</div>
-			</div>
+			<LoginCard loading>
+				<LoginCardLogo src="/favicon.png" alt="Proofa" />
+				<LoginCardTitle>Welcome to Proofa</LoginCardTitle>
+				<LoginCardSubtitle>Checking authentication...</LoginCardSubtitle>
+			</LoginCard>
 		);
 	}
 
 	if (status === "redirecting") {
 		return (
-			<div className="login-container">
-				<div className="login-card">
-					<img
-						src="/favicon.png"
-						alt="Proofa"
-						className="w-12 h-12 mx-auto mb-4"
-					/>
-					<h1 className="login-title">Welcome to Proofa</h1>
-					<p className="login-subtitle">Redirecting to Google sign-in...</p>
-					<div className="login-loading">
-						<div className="spinner" />
-						<div className="login-loading-text">
-							<Icon icon={IconType.Google} size={16} />
-							<span>Connecting to Google...</span>
-						</div>
-					</div>
-				</div>
-			</div>
+			<LoginCard loading>
+				<LoginCardLogo src="/favicon.png" alt="Proofa" />
+				<LoginCardTitle>Welcome to Proofa</LoginCardTitle>
+				<LoginCardSubtitle>Redirecting to Google sign-in...</LoginCardSubtitle>
+			</LoginCard>
 		);
 	}
 
 	// Default: Show login page with Sign in button
 	return (
-		<div className="login-container">
-			<div className="login-card">
-				<img src="/favicon.png" alt="Proofa" className="w-12 h-12 mx-auto mb-4" />
+		<LoginCard>
+			<LoginCardLogo src="/favicon.png" alt="Proofa" />
+			<LoginCardTitle>Welcome to Proofa</LoginCardTitle>
+			<LoginCardSubtitle>Sign in to manage your account and sessions</LoginCardSubtitle>
 
-				<h1 className="login-title">Welcome to Proofa</h1>
-				<p className="login-subtitle">Sign in to manage your account and sessions</p>
-
-				<button
-					type="button"
+			<LoginCardBody>
+				<Button
+					variant="secondary"
+					size="md"
 					onClick={handleGoogleLogin}
-					className="btn-google"
+					className="w-full"
 				>
-					<Icon icon={IconType.Google} size={20} />
+					<Icon icon={IconType.Google} />
 					Continue with Google
-				</button>
+				</Button>
+			</LoginCardBody>
 
-				<p className="login-terms">
-					By continuing, you agree to our{" "}
-					<a href={`${homeUrl}/terms`} target="_blank" rel="noopener noreferrer" className="text-primary underline">
-						Terms of Service
-					</a>{" "}
-					and{" "}
-					<a href={`${homeUrl}/privacy`} target="_blank" rel="noopener noreferrer" className="text-primary underline">
-						Privacy Policy
-					</a>
-				</p>
-			</div>
-		</div>
+			<LoginCardTerms>
+				By continuing, you agree to our{" "}
+				<a href={`${homeUrl}/terms`} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+					Terms of Service
+				</a>{" "}
+				and{" "}
+				<a href={`${homeUrl}/privacy`} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+					Privacy Policy
+				</a>
+			</LoginCardTerms>
+		</LoginCard>
 	);
 }

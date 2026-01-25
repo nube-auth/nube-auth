@@ -1,9 +1,13 @@
 import react from "@vitejs/plugin-react";
+import tailwind from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import path from "node:path";
 
 export default defineConfig({
-	plugins: [react()],
+	plugins: [
+		react(),
+		tailwind(), // Tailwind v4 auto-scans the project, no content option needed
+	],
 	resolve: {
 		alias: {
 			"@proofa/react": path.resolve(__dirname, "../../packages/react/dist/index.js"),

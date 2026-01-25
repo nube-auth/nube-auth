@@ -1,0 +1,13 @@
+{
+  "framework": "vite",
+  "paths": {
+    "workdir": "./src/",
+    "components": "./src/components/selia",
+    "css": "./tailwind.css",
+    "utils": "./src/utils/cn.ts"
+  },
+  "imports": {
+    "utils": "@proofa/components/utils/cn",
+    "components": "@proofa/components/selia"
+  }
+}

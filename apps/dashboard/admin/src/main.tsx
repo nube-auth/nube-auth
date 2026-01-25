@@ -5,7 +5,7 @@ import App from "./App";
 // import "@unocss/reset/tailwind.css";
 // import "daisyui/daisyui.css";
 // import "@proofa/components/styles/base.css";
-import "@proofa/components/styles/theme.css";
+import "@proofa/components/styles/selia-theme.css";
 // Removed UnoCSS virtual CSS
 // import "virtual:uno.css";
 import "./index.css";

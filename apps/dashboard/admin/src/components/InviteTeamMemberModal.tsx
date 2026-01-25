@@ -2,6 +2,17 @@ import { useState } from "react";
 import { useInviteTeamMember } from "../hooks/api";
 import { Select } from "./Select";
 import { useToast } from "./Toast";
+import {
+	Button,
+	Dialog,
+	DialogBody,
+	DialogFooter,
+	DialogHeader,
+	DialogPopup,
+	DialogTitle,
+	Input,
+	Label,
+} from "@proofa/components";
 
 interface InviteTeamMemberModalProps {
 	projectId: string;
@@ -40,67 +51,59 @@ export function InviteTeamMemberModal({ projectId, onClose }: InviteTeamMemberMo
 	};
 
 	return (
-		<div
-			className="fixed top-0 left-0 right-0 bottom-0 bg-black/50 flex items-center justify-center z-1000"
-			onClick={onClose}
-		>
-			<div className="bg-card-bg rounded-xl p-7 w-[90%] max-w-[500px] shadow-xl" onClick={(e) => e.stopPropagation()}>
-				<h2 className="text-20px font-bold mb-2">Invite Team Member</h2>
-				<p className="text-14px text-text-tertiary mb-6">
-					Add a team member to this project. They must have a Proofa account.
-				</p>
+		<Dialog open onOpenChange={(open) => !open && onClose()}>
+			<DialogPopup className="w-[90%] max-w-[500px]">
+				<DialogHeader>
+					<DialogTitle>Invite Team Member</DialogTitle>
+				</DialogHeader>
+				<DialogBody>
+					<p className="text-sm mb-6" style={{ color: "var(--muted)" }}>
+						Add a team member to this project. They must have a Proofa account.
+					</p>
 
-				<form onSubmit={handleSubmit}>
-					{/* Email */}
-					<div className="mb-5">
-						<label htmlFor="email" className="block text-13px font-semibold mb-2 text-text-secondary">
-							Email Address *
-						</label>
-						<input
-							id="email"
-							type="email"
-							className="form-control w-full px-3.5 py-2.5 bg-content-bg border border-card-border rounded-[var(--radius)] text-14px text-text-primary"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							placeholder="user@example.com"
-							required
-						/>
-					</div>
+					<form id="invite-team-member" onSubmit={handleSubmit}>
+						<div className="mb-5">
+							<Label htmlFor="email" className="font-semibold">Email Address *</Label>
+							<Input
+								id="email"
+								type="email"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								placeholder="user@example.com"
+								required
+							/>
+						</div>
 
-					{/* Role */}
-					<div className="mb-7">
-						<label htmlFor="role" className="block text-13px font-semibold mb-2 text-text-secondary">
-							Role *
-						</label>
-						<Select
-							value={role}
-							onChange={(value) => setRole(value)}
-							options={[
-								{ value: "admin", label: "Admin" },
-								{ value: "member", label: "Member" },
-							]}
-						/>
-						<p className="text-12px text-text-tertiary mt-1.5">
-							<strong>Admin:</strong> Can manage apps, users, and invite members. <strong>Member:</strong> Read-only access.
-						</p>
-					</div>
-
-					{/* Actions */}
-					<div className="flex gap-3 justify-end">
-						<button
-							type="button"
-							className="btn btn-secondary-outline"
-							onClick={onClose}
-							disabled={inviteMutation.isPending}
-						>
-							Cancel
-						</button>
-						<button type="submit" className="btn btn-primary" disabled={inviteMutation.isPending}>
-							{inviteMutation.isPending ? "Inviting..." : "Invite Member"}
-						</button>
-					</div>
-				</form>
-			</div>
-		</div>
+						<div className="mb-7">
+							<Label htmlFor="role" className="font-semibold">Role *</Label>
+							<Select
+								value={role}
+								onChange={(value) => setRole(value)}
+								options={[
+									{ value: "admin", label: "Admin" },
+									{ value: "member", label: "Member" },
+								]}
+							/>
+							<p className="text-xs mt-1.5" style={{ color: "var(--dimmed)" }}>
+								<strong>Admin:</strong> Can manage apps, users, and invite members. <strong>Member:</strong> Read-only access.
+							</p>
+						</div>
+					</form>
+				</DialogBody>
+				<DialogFooter>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={onClose}
+						disabled={inviteMutation.isPending}
+					>
+						Cancel
+					</Button>
+					<Button type="submit" form="invite-team-member" disabled={inviteMutation.isPending}>
+						{inviteMutation.isPending ? "Inviting..." : "Invite Member"}
+					</Button>
+				</DialogFooter>
+			</DialogPopup>
+		</Dialog>
 	);
 }
