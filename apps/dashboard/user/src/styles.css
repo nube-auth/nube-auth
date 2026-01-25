@@ -2,8 +2,7 @@
 @import "tailwindcss";
 
 /* Tailwind v4: Specify additional source paths to scan for class names */
-@source "../../../packages/components/src/components/selia";
-@source "../../../packages/components/src/icons";
+@source "../../../packages/components/src";
 
 /* Import Selia utilities */
 @import "@proofa/components/styles/selia.css";

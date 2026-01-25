@@ -1,11 +1,12 @@
 import type React from "react";
 import { useEffect, useState } from "react";
-import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
-import { Icon, IconType } from "@proofa/components";
+import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Icon, IconType, Spinner, Tabs, TabsList, TabsItem, TabsPanel } from "@proofa/components";
 import { useAuth } from "./hooks/api";
 import { LoginPage } from "./pages/Login";
 import { ProfilePage } from "./pages/Profile";
 import { SessionsPage } from "./pages/Sessions";
+import { SecurityPage } from "./pages/Security";
 
 // Theme hook
 function useTheme() {
@@ -57,12 +58,13 @@ function ProtectedLayout({
 	setTheme: (theme: "light" | "dark" | "system") => void;
 }) {
 	const { isAuthenticated, user, isLoading } = useAuth();
+	const location = useLocation();
 
 	if (isLoading) {
 		return (
 			<div className="app-layout">
 				<div className="loading min-h-screen">
-					<div className="spinner" />
+					<Spinner />
 					<span className="loading-text">Loading...</span>
 				</div>
 			</div>
@@ -98,6 +100,13 @@ function ProtectedLayout({
 		return <Icon icon={IconType.Computer} size={16} className="text-current" />;
 	};
 
+	// Determine active tab based on current route
+	const getActiveTab = () => {
+		if (location.pathname === "/sessions") return "sessions";
+		if (location.pathname === "/security") return "security";
+		return "profile";
+	};
+
 	return (
 		<div className="app-layout">
 			{/* Top Header */}
@@ -123,8 +132,35 @@ function ProtectedLayout({
 				</div>
 			</header>
 
-			{/* Main Content */}
-			<main className="main-content">{children}</main>
+			{/* Main Content with Tabs */}
+			<main className="main-content">
+				<Tabs value={getActiveTab()}>
+					<TabsList>
+						<Link to="/profile" className="no-underline">
+							<TabsItem value="profile" className="flex items-center gap-2">
+								<Icon icon={IconType.User} size={16} />
+								Profile
+							</TabsItem>
+						</Link>
+						<Link to="/sessions" className="no-underline">
+							<TabsItem value="sessions" className="flex items-center gap-2">
+							<Icon icon={IconType.Layers} size={16} />
+								Sessions
+							</TabsItem>
+						</Link>
+						<Link to="/security" className="no-underline">
+							<TabsItem value="security" className="flex items-center gap-2">
+								<Icon icon={IconType.Shield} size={16} />
+								Security
+							</TabsItem>
+						</Link>
+					</TabsList>
+				</Tabs>
+
+				<div className="mt-6">
+					{children}
+				</div>
+			</main>
 		</div>
 	);
 }
@@ -150,6 +186,14 @@ function App() {
 					element={
 						<ProtectedLayout theme={theme} setTheme={setTheme}>
 							<SessionsPage />
+						</ProtectedLayout>
+					}
+				/>
+				<Route
+					path="/security"
+					element={
+						<ProtectedLayout theme={theme} setTheme={setTheme}>
+							<SecurityPage />
 						</ProtectedLayout>
 					}
 				/>

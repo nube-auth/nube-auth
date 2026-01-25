@@ -17,6 +17,9 @@
 // Re-export all Selia UI components
 export * from './components/selia/ui';
 
+// Explicitly export Tabs components
+export { Tabs, TabsList, TabsItem, TabsPanel } from './components/selia/ui/tabs';
+
 // Legacy specific exports for backward compatibility
 export type { SelectItem as SelectItemType } from './components/selia/ui/select';
 

@@ -1,8 +1,29 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth, useMe, useSessions } from "../hooks/api";
-import { Icon, IconType } from "@proofa/components";
+import {
+	Icon,
+	IconType,
+	Breadcrumb,
+	BreadcrumbList,
+	BreadcrumbItem,
+	BreadcrumbSeparator,
+	Card,
+	CardHeader,
+	CardTitle,
+	CardBody,
+	Button,
+	Alert,
+  Spinner,
+	Table,
+	TableContainer,
+	TableHeader,
+	TableHead,
+	TableBody,
+	TableRow,
+	TableCell,
+} from "@proofa/components";
+import { ProfileHeader, InfoGrid, SessionCard } from "@proofa/components";
 
-// Common country codes to names mapping
 const COUNTRY_NAMES: Record<string, string> = {
 	US: "United States", GB: "United Kingdom", CA: "Canada", AU: "Australia",
 	DE: "Germany", FR: "France", JP: "Japan", CN: "China", IN: "India",
@@ -70,16 +91,15 @@ function getDeviceIcon(os: string) {
 }
 
 export function SessionsPage() {
-	const location = useLocation();
 	const { user } = useMe();
 	const { sessions, isLoading } = useSessions();
 	const { logout, isLoggingOut } = useAuth();
 
 	if (isLoading) {
 		return (
-			<div className="loading">
-				<div className="spinner" />
-				<span className="loading-text">Loading sessions...</span>
+			<div className="flex flex-col items-center justify-center min-h-[300px] gap-3">
+				<Spinner />
+				<span className="text-sm text-muted">Loading sessions...</span>
 			</div>
 		);
 	}
@@ -106,245 +126,177 @@ export function SessionsPage() {
 	};
 
 	return (
-		<div>
-			{/* Breadcrumbs */}
-			<nav className="breadcrumbs">
-				<Link to="/profile" className="breadcrumb-item">
-					Account
-				</Link>
-				<span className="breadcrumb-divider">/</span>
-				<span className="breadcrumb-current">Sessions</span>
-			</nav>
+		<div className="space-y-6">
+			{/* Breadcrumbs (Selia) */}
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<Link to="/profile" className="text-primary">Account</Link>
+					</BreadcrumbItem>
+					<BreadcrumbSeparator />
+					<BreadcrumbItem>
+						<span aria-current="page" className="text-muted">Sessions</span>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
 
-			{/* Profile Header */}
-			<div className="profile-header">
-				<div className="profile-avatar has-icon">{initials}</div>
-				<div className="profile-info">
-					<h1>{user?.name || "User"}</h1>
-					<p className="profile-meta">Active sessions across your devices</p>
-				</div>
-			</div>
+			{/* Header */}
+			<ProfileHeader
+				name={user?.name || "User"}
+				email={user?.email || ""}
+				meta="Active sessions across your devices"
+				avatar={<div className="size-16 rounded-full bg-primary text-white grid place-items-center font-semibold">{initials}</div>}
+			/>
 
-			{/* Info Grid */}
-			<div className="info-grid">
-				<div className="info-item">
-					<div className="info-label">Total Sessions</div>
-					<div className="info-value">{sessions?.length || 0}</div>
-				</div>
-				<div className="info-item">
-					<div className="info-label">Active</div>
-					<div className="info-value">
-						<span className="status-dot" />
-						{activeSessions.length}
-					</div>
-				</div>
-				<div className="info-item">
-					<div className="info-label">Current Expires</div>
-					<div className="info-value">{currentSession ? formatDate(currentSession.expiresAt) : "N/A"}</div>
-				</div>
-				<div className="info-item">
-					<div className="info-label">Last Activity</div>
-					<div className="info-value">Just now</div>
-				</div>
-			</div>
+			{/* Stats */}
+			<Card>
+				<CardBody>
+					<InfoGrid
+						items={[
+							{ label: "Total Sessions", value: sessions?.length || 0 },
+							{ label: "Active", value: (<span className="inline-flex items-center gap-2"><span className="size-2 rounded-full bg-emerald-500" /> {activeSessions.length}</span>) },
+							{ label: "Current Expires", value: currentSession ? formatDate(currentSession.expiresAt) : "N/A" },
+							{ label: "Last Activity", value: "Just now" },
+						]}
+						columns={4}
+					/>
+				</CardBody>
+			</Card>
 
-			{/* Tabs */}
-			<div className="tabs">
-				<Link to="/profile" className={location.pathname === "/profile" ? "tab tab-active" : "tab"}>
-					<Icon icon={IconType.User} size={18} bold={location.pathname === "/profile"} />
-					Profile
-				</Link>
-				<Link to="/sessions" className={location.pathname === "/sessions" ? "tab tab-active" : "tab"}>
-					<Icon icon={IconType.Computer} size={18} bold={location.pathname === "/sessions"} />
-					Sessions
-					<span className="tab-badge">{sessions?.length || 0}</span>
-				</Link>
-				<button type="button" className="tab" disabled>
-					<Icon icon={IconType.SecurityCheck} size={18} />
-					Security
-				</button>
-			</div>
-
-			{/* Alert Bar */}
+			{/* Alert */}
 			{activeSessions.length > 1 && (
-				<div className="alert-bar">
-					<Icon icon={IconType.Info} size={18} className="shrink-0" />
-					You have {activeSessions.length} active sessions across your devices.
-					<button
-						type="button"
-						onClick={() => logout()}
-						className="bg-transparent border-none text-primary cursor-pointer underline p-0 font-inherit"
-					>
-						Logout all
-					</button>
-				</div>
-			)}
-
-			{/* Current Session Card */}
-			{currentSession && (() => {
-				const currentDeviceInfo = parseUserAgent(currentSession.userAgent);
-				return (
-					<div className="current-session-card">
-						<div className="current-session-header">
-							<div className="current-session-icon">
-								{getDeviceIcon(currentDeviceInfo.os)}
-							</div>
-							<div className="current-session-info">
-								<h3>Current Session</h3>
-								<p>{currentDeviceInfo.device}</p>
-							</div>
-							<span className="badge badge-success ml-auto">Active</span>
-						</div>
-						<div className="current-session-meta">
-							<div className="current-session-meta-item">
-								<label>Browser</label>
-								<span>{currentDeviceInfo.browser}</span>
-							</div>
-							<div className="current-session-meta-item">
-								<label>Operating System</label>
-								<span>{currentDeviceInfo.os}</span>
-							</div>
-							<div className="current-session-meta-item">
-								<label>Location</label>
-								<span>
-									{(() => {
-										const countryInfo = getCountryDisplay(currentSession.country);
-										if (countryInfo) {
-											return `${countryInfo.flag} ${countryInfo.name}`;
-										}
-										return currentSession.ipAddress || "Unknown";
-									})()}
-								</span>
-							</div>
-							<div className="current-session-meta-item">
-								<label>IP Address</label>
-								<span>{currentSession.ipAddress || "Unknown"}</span>
-							</div>
-							<div className="current-session-meta-item">
-								<label>Started</label>
-								<span>{new Date(currentSession.createdAt).toLocaleString()}</span>
-							</div>
-						</div>
+				<Alert variant="info" className="items-center justify-between">
+					<div className="inline-flex items-center gap-2">
+						<Icon icon={IconType.Info} size={18} />
+						<span>You have {activeSessions.length} active sessions across your devices.</span>
 					</div>
+					<Button variant="danger" size="sm" onClick={() => logout()} disabled={isLoggingOut}>
+						{isLoggingOut ? (
+							<>
+							<Spinner className="size-3.5" />
+							<span>Logging out...</span>
+						</>
+					) : (
+						"Log Out All Other Devices"
+					)}
+				</Button>
+			</Alert>		)}
+
+		{/* Current Session */}
+		{currentSession && (() => {
+			const currentDeviceInfo = parseUserAgent(currentSession.userAgent);
+			const countryInfo = getCountryDisplay(currentSession.country);
+			return (
+				<SessionCard
+					title="Current Session (This Device)"
+					isCurrent={true}
+					metadata={[
+							{ label: "Browser", value: currentDeviceInfo.browser },
+							{ label: "Operating System", value: currentDeviceInfo.os },
+							{ label: "Location", value: countryInfo ? `${countryInfo.flag} ${countryInfo.name}` : (currentSession.ipAddress || "Unknown") },
+							{ label: "IP Address", value: currentSession.ipAddress || "Unknown" },
+							{ label: "Started", value: new Date(currentSession.createdAt).toLocaleString() },
+						]}
+						className="border border-card-border"
+					/>
 				);
 			})()}
 
-			{/* Sessions Table */}
-			<div className="card">
-				<div className="card-header">
-					<h3 className="card-title">All Sessions</h3>
-					<button
-						type="button"
-						onClick={() => logout()}
-						disabled={isLoggingOut}
-						className="btn-danger btn-sm"
-					>
+			{/* Sessions Table (Selia) */}
+			<Card>
+				<CardHeader className="flex items-center justify-between">
+					<CardTitle>All Sessions</CardTitle>
+					<Button variant="danger" size="sm" onClick={() => logout()} disabled={isLoggingOut}>
 						{isLoggingOut ? (
 							<>
-								<div className="spinner w-3.5 h-3.5 border-2" />
+								<Spinner className="size-3.5" />
 								Logging out...
 							</>
 						) : (
 							<>
-								<Icon icon={IconType.Logout} size={18} bold />
+								<Icon icon={IconType.Logout} size={16} bold />
 								Logout All
 							</>
 						)}
-					</button>
-				</div>
-
-				{sessions && sessions.length > 0 ? (
-					<div className="table-container border-none rounded-none">
-						<table>
-							<thead>
-								<tr>
-									<th>Device</th>
-									<th>Location</th>
-									<th>Created</th>
-									<th>Status</th>
-								</tr>
-							</thead>
-							<tbody>
-								{sessions.map((session) => {
-									const isExpired = new Date(session.expiresAt) < new Date();
-									const isCurrent = session.isCurrent === true;
-									const deviceInfo = parseUserAgent(session.userAgent);
-									return (
-										<tr key={session.id}>
-											<td>
-												<div className="table-account">
-													<div className="table-account-icon">
-														{getDeviceIcon(deviceInfo.os)}
+					</Button>
+				</CardHeader>
+				<CardBody>
+					{sessions && sessions.length > 0 ? (
+						<TableContainer className="border border-table-separator rounded">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>Device</TableHead>
+										<TableHead>Location</TableHead>
+										<TableHead>Created</TableHead>
+										<TableHead>Status</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{sessions.map((session) => {
+										const isExpired = new Date(session.expiresAt) < new Date();
+										const isCurrent = session.isCurrent === true;
+										const deviceInfo = parseUserAgent(session.userAgent);
+										const countryInfo = getCountryDisplay(session.country);
+										return (
+											<TableRow key={session.id}>
+												<TableCell>
+													<div className="flex items-center gap-3">
+														<div className="size-9 grid place-items-center rounded bg-accent">
+															{getDeviceIcon(deviceInfo.os)}
+														</div>
+														<div className="flex flex-col">
+															<span className="text-sm font-medium">
+																{deviceInfo.device}
+																{isCurrent && <span className="text-primary ml-1">(This device)</span>}
+															</span>
+															<span className="text-xs text-muted">
+																{deviceInfo.browser} • {deviceInfo.os}
+															</span>
+														</div>
 													</div>
-													<div className="table-account-info">
-														<span className="table-account-name">
-															{deviceInfo.device}
-															{isCurrent && <span className="text-primary ml-1">(This device)</span>}
+												</TableCell>
+												<TableCell>
+													<div className="flex flex-col">
+														<span className="text-sm font-medium">
+															{countryInfo ? `${countryInfo.flag} ${countryInfo.name}` : (session.ipAddress || "Unknown")}
 														</span>
-														<span className="table-account-email">
-															{deviceInfo.browser} • {deviceInfo.os}
+														<span className="text-xs text-muted">
+															{countryInfo ? (session.ipAddress || "Unknown IP") : "IP Address"}
 														</span>
 													</div>
-												</div>
-											</td>
-											<td>
-												<div className="table-account-info">
-													{(() => {
-														const countryInfo = getCountryDisplay(session.country);
-														if (countryInfo) {
-															return (
-																<>
-																	<span className="table-account-name">
-																		{countryInfo.flag} {countryInfo.name}
-																	</span>
-																	<span className="table-account-email">
-																		{session.ipAddress || "Unknown IP"}
-																	</span>
-																</>
-															);
-														}
-														return (
-															<>
-																<span className="table-account-name">
-																	{session.ipAddress || "Unknown"}
-																</span>
-																<span className="table-account-email">
-																	IP Address
-																</span>
-															</>
-														);
-													})()}
-												</div>
-											</td>
-											<td className="table-date">{formatDate(session.createdAt)}</td>
-											<td>
-												{isCurrent ? (
-													<span className="badge badge-success">
-													<span className="w-1-5 h-1-5 bg-current rounded-full animate-pulse" />
-														Current
-													</span>
-												) : isExpired ? (
-													<span className="badge badge-danger">Expired</span>
-												) : (
-													<span className="badge badge-info">Active</span>
-												)}
-											</td>
-										</tr>
-									);
-								})}
-							</tbody>
-						</table>
-					</div>
-				) : (
-					<div className="empty-state">
-						<div className="empty-state-icon">
-							<Icon icon={IconType.Computer} size={28} bold className="text-text-tertiary" />
+												</TableCell>
+												<TableCell>
+													<span className="text-sm text-muted">{formatDate(session.createdAt)}</span>
+												</TableCell>
+												<TableCell>
+													{isCurrent ? (
+														<span className="inline-flex items-center gap-2 px-2 py-1 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
+															<span className="size-1.5 bg-current rounded-full animate-pulse" /> Current
+														</span>
+													) : isExpired ? (
+														<span className="inline-flex items-center gap-2 px-2 py-1 rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Expired</span>
+													) : (
+														<span className="inline-flex items-center gap-2 px-2 py-1 rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">Active</span>
+													)}
+												</TableCell>
+											</TableRow>
+										);
+									})}
+								</TableBody>
+							</Table>
+						</TableContainer>
+					) : (
+						<div className="flex flex-col items-center justify-center py-14 text-center">
+							<div className="size-16 grid place-items-center rounded bg-accent mb-3">
+								<Icon icon={IconType.Computer} size={28} bold className="text-muted" />
+							</div>
+							<h3 className="text-base font-semibold mb-1">No active sessions</h3>
+							<p className="text-sm text-muted">You don't have any active sessions at the moment.</p>
 						</div>
-						<h3 className="empty-state-title">No active sessions</h3>
-						<p className="empty-state-desc">You don't have any active sessions at the moment.</p>
-					</div>
-				)}
-			</div>
+					)}
+				</CardBody>
+			</Card>
 		</div>
 	);
 }
