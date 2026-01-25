@@ -1,14 +1,8 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import { useMe } from "../hooks/api";
 import {
 	Icon,
 	IconType,
-	// Selia primitives
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbSeparator,
 	Card,
 	CardHeader,
 	CardTitle,
@@ -23,6 +17,7 @@ import {
 } from "@proofa/components";
 // Proofa composites
 import { ProfileHeader, InfoGrid } from "@proofa/components";
+import { TabNavigation } from "../components/TabNavigation";
 
 export function ProfilePage() {
 	const { user, isLoading, update, isUpdating, updateError } = useMe();
@@ -93,19 +88,6 @@ export function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumbs (Selia) */}
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <Link to="/profile" className="text-primary">Account</Link>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <span aria-current="page" className="text-muted">Profile</span>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
       {/* Profile Header (composite) */}
       <ProfileHeader
         name={user.name || "User"}
@@ -129,6 +111,9 @@ export function ProfilePage() {
         </CardBody>
       </Card>
 
+      {/* Tab Navigation */}
+      <TabNavigation />
+
       {/* Success Alert */}
       {showSuccess && (
         <Alert variant="success" className="items-center gap-2">
@@ -148,7 +133,7 @@ export function ProfilePage() {
               <Label>Email Address</Label>
               <div className="flex items-center gap-2">
                 <Input type="email" value={user.email} disabled className="flex-1" />
-                <Chip variant="primary" size="sm">Verified</Chip>
+                <Chip variant="success" size="sm" pill>Verified</Chip>
               </div>
               <p className="text-sm text-muted mt-1">Email cannot be changed</p>
             </Field>

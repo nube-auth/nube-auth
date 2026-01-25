@@ -6,7 +6,7 @@ import path from "node:path";
 export default defineConfig({
 	plugins: [
 		react(),
-		tailwind(), // Tailwind v4 auto-scans the project, no content option needed
+		tailwind(),
 	],
 	resolve: {
 		alias: {

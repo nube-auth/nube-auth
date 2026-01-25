@@ -9,6 +9,10 @@ export const chipVariants = cva('inline-flex items-center ring font-medium', {
     variant: {
       default: 'bg-chip ring-chip-border text-foreground',
       primary: 'bg-primary ring-primary text-primary-foreground',
+      success: 'bg-success/15 ring-success/40 text-success',
+      warning: 'bg-warning/15 ring-warning/40 text-warning',
+      info: 'bg-info/15 ring-info/40 text-info',
+      danger: 'bg-danger/15 ring-danger/40 text-danger',
       outline: 'ring-chip-border text-foreground',
       plain: 'bg-transparent ring-transparent text-foreground',
     },

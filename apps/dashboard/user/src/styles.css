@@ -8,10 +8,10 @@
 @import "@proofa/components/styles/selia.css";
 
 /* Import Selia theme defaults */
-@import "@proofa/components/selia-theme.css";
+/* @import "@proofa/components/selia-theme.css"; */
 
 /* Import Tech Minimal theme overrides */
-@import "@proofa/components/theme.css";
+/* @import "@proofa/components/theme.css"; */
 
 /* Tailwind v4 - Map CSS variables to utility classes using @theme */
 @theme {

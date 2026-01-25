@@ -1,12 +1,13 @@
 import type React from "react";
 import { useEffect, useState } from "react";
-import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { Icon, IconType, Spinner, Tabs, TabsList, TabsItem, TabsPanel } from "@proofa/components";
+import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
+import { Spinner } from "@proofa/components";
 import { useAuth } from "./hooks/api";
 import { LoginPage } from "./pages/Login";
 import { ProfilePage } from "./pages/Profile";
 import { SessionsPage } from "./pages/Sessions";
 import { SecurityPage } from "./pages/Security";
+import { ThemeToggle } from "./components/ThemeToggle";
 
 // Theme hook
 function useTheme() {
@@ -58,7 +59,6 @@ function ProtectedLayout({
 	setTheme: (theme: "light" | "dark" | "system") => void;
 }) {
 	const { isAuthenticated, user, isLoading } = useAuth();
-	const location = useLocation();
 
 	if (isLoading) {
 		return (
@@ -75,36 +75,10 @@ function ProtectedLayout({
 		return <Navigate to="/login" replace />;
 	}
 
-	const initials = user?.name
-		? user.name
-				.split(" ")
-				.map((n: string) => n[0])
-				.join("")
-				.toUpperCase()
-				.slice(0, 2)
-		: user?.email?.charAt(0).toUpperCase() || "U";
-
 	const cycleTheme = () => {
 		if (theme === "system") setTheme("light");
 		else if (theme === "light") setTheme("dark");
 		else setTheme("system");
-	};
-
-	const getThemeIcon = () => {
-		if (theme === "light") {
-			return <Icon icon={IconType.Sun} size={16} className="text-current" />;
-		}
-		if (theme === "dark") {
-			return <Icon icon={IconType.Moon} size={16} className="text-current" />;
-		}
-		return <Icon icon={IconType.Computer} size={16} className="text-current" />;
-	};
-
-	// Determine active tab based on current route
-	const getActiveTab = () => {
-		if (location.pathname === "/sessions") return "sessions";
-		if (location.pathname === "/security") return "security";
-		return "profile";
 	};
 
 	return (
@@ -120,47 +94,12 @@ function ProtectedLayout({
 				</div>
 
 				<div className="header-right">
-<button type="button" onClick={cycleTheme} className="header-btn theme-toggle" title={`Current: ${theme} mode (click to change)`}>
-					{getThemeIcon()}
-					<span className="theme-label">{theme.charAt(0).toUpperCase() + theme.slice(1)}</span>
-					</button>
-
-					<div className="header-user">
-						<div className="header-avatar">{initials}</div>
-						<span className="header-user-name">{user?.name || user?.email?.split("@")[0]}</span>
-					</div>
+					<ThemeToggle theme={theme} onToggle={cycleTheme} />
 				</div>
 			</header>
 
-			{/* Main Content with Tabs */}
-			<main className="main-content">
-				<Tabs value={getActiveTab()}>
-					<TabsList>
-						<Link to="/profile" className="no-underline">
-							<TabsItem value="profile" className="flex items-center gap-2">
-								<Icon icon={IconType.User} size={16} />
-								Profile
-							</TabsItem>
-						</Link>
-						<Link to="/sessions" className="no-underline">
-							<TabsItem value="sessions" className="flex items-center gap-2">
-							<Icon icon={IconType.Layers} size={16} />
-								Sessions
-							</TabsItem>
-						</Link>
-						<Link to="/security" className="no-underline">
-							<TabsItem value="security" className="flex items-center gap-2">
-								<Icon icon={IconType.Shield} size={16} />
-								Security
-							</TabsItem>
-						</Link>
-					</TabsList>
-				</Tabs>
-
-				<div className="mt-6">
-					{children}
-				</div>
-			</main>
+			{/* Main Content */}
+			<main className="main-content">{children}</main>
 		</div>
 	);
 }

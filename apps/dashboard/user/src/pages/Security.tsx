@@ -1,20 +1,17 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import {
 	Icon,
 	IconType,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbSeparator,
 	Card,
 	CardHeader,
 	CardTitle,
 	CardBody,
 	Button,
 	Alert,
+	Chip,
 } from "@proofa/components";
-import { ProfileHeader } from "@proofa/components";
+import { ProfileHeader, InfoGrid } from "@proofa/components";
+import { TabNavigation } from "../components/TabNavigation";
 import { useMe } from "../hooks/api";
 
 export function SecurityPage() {
@@ -43,30 +40,42 @@ export function SecurityPage() {
 		);
 	}
 
+	const initials = user.name
+		? user.name
+				.split(" ")
+				.map((n) => n.charAt(0))
+				.join("")
+				.toUpperCase()
+				.slice(0, 2)
+		: user.email?.charAt(0).toUpperCase() || "U";
+
 	return (
 		<div className="space-y-6">
-			{/* Breadcrumb */}
-			<Breadcrumb>
-				<BreadcrumbList>
-					<BreadcrumbItem>
-						<Link to="/profile" className="flex items-center gap-1 text-sm text-muted hover:text-foreground">
-							<Icon icon={IconType.Home} size={14} />
-							Home
-						</Link>
-					</BreadcrumbItem>
-					<BreadcrumbSeparator />
-					<BreadcrumbItem>
-						<span className="text-sm font-medium">Security</span>
-					</BreadcrumbItem>
-				</BreadcrumbList>
-			</Breadcrumb>
-
 			{/* Header */}
 			<ProfileHeader
 				name={user.name || user.email || "User"}
 				email={user.email || ""}
 				meta={`Member since ${new Date(user.createdAt).toLocaleDateString()}`}
+				avatar={<div className="size-16 rounded-full bg-primary text-white grid place-items-center font-semibold">{initials}</div>}
 			/>
+
+			{/* Security Stats */}
+			<Card>
+				<CardBody className="py-6">
+					<InfoGrid
+						items={[
+							{ label: "Security Level", value: (<span className="inline-flex items-center gap-2"><Icon icon={IconType.Shield} size={16} /><Chip variant="info" size="sm">Standard</Chip></span>) },
+							{ label: "Two-Factor Auth", value: (<span className="inline-flex items-center gap-2"><Chip variant="warning" size="sm">Not Enabled</Chip></span>) },
+							{ label: "Password", value: (<Chip variant="success" size="sm">Secure</Chip>) },
+							{ label: "Connected Apps", value: "0 apps" },
+						]}
+						columns={4}
+					/>
+				</CardBody>
+			</Card>
+
+			{/* Tab Navigation */}
+			<TabNavigation />
 
 			{/* Two-Factor Authentication */}
 			<Card>

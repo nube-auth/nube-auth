@@ -1,12 +1,7 @@
-import { Link } from "react-router-dom";
 import { useAuth, useMe, useSessions } from "../hooks/api";
 import {
 	Icon,
 	IconType,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbSeparator,
 	Card,
 	CardHeader,
 	CardTitle,
@@ -21,8 +16,10 @@ import {
 	TableBody,
 	TableRow,
 	TableCell,
+	Chip,
 } from "@proofa/components";
 import { ProfileHeader, InfoGrid, SessionCard } from "@proofa/components";
+import { TabNavigation } from "../components/TabNavigation";
 
 const COUNTRY_NAMES: Record<string, string> = {
 	US: "United States", GB: "United Kingdom", CA: "Canada", AU: "Australia",
@@ -127,19 +124,6 @@ export function SessionsPage() {
 
 	return (
 		<div className="space-y-6">
-			{/* Breadcrumbs (Selia) */}
-			<Breadcrumb>
-				<BreadcrumbList>
-					<BreadcrumbItem>
-						<Link to="/profile" className="text-primary">Account</Link>
-					</BreadcrumbItem>
-					<BreadcrumbSeparator />
-					<BreadcrumbItem>
-						<span aria-current="page" className="text-muted">Sessions</span>
-					</BreadcrumbItem>
-				</BreadcrumbList>
-			</Breadcrumb>
-
 			{/* Header */}
 			<ProfileHeader
 				name={user?.name || "User"}
@@ -150,7 +134,7 @@ export function SessionsPage() {
 
 			{/* Stats */}
 			<Card>
-				<CardBody>
+				<CardBody className="py-6">
 					<InfoGrid
 						items={[
 							{ label: "Total Sessions", value: sessions?.length || 0 },
@@ -162,6 +146,9 @@ export function SessionsPage() {
 					/>
 				</CardBody>
 			</Card>
+
+			{/* Tab Navigation */}
+			<TabNavigation />
 
 			{/* Alert */}
 			{activeSessions.length > 1 && (
@@ -271,13 +258,13 @@ export function SessionsPage() {
 												</TableCell>
 												<TableCell>
 													{isCurrent ? (
-														<span className="inline-flex items-center gap-2 px-2 py-1 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
+														<Chip variant="success" size="sm" pill>
 															<span className="size-1.5 bg-current rounded-full animate-pulse" /> Current
-														</span>
+														</Chip>
 													) : isExpired ? (
-														<span className="inline-flex items-center gap-2 px-2 py-1 rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Expired</span>
+														<Chip variant="danger" size="sm" pill>Expired</Chip>
 													) : (
-														<span className="inline-flex items-center gap-2 px-2 py-1 rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">Active</span>
+														<Chip variant="info" size="sm" pill>Active</Chip>
 													)}
 												</TableCell>
 											</TableRow>
