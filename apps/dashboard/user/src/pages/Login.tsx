@@ -4,12 +4,12 @@ import {
 	Icon, 
 	IconType,
 	Button,
-	LoginCard,
-	LoginCardLogo,
-	LoginCardTitle,
-	LoginCardSubtitle,
-	LoginCardBody,
-	LoginCardTerms
+	Card,
+	CardHeader,
+	CardTitle,
+	CardDescription,
+	CardBody,
+	Alert
 } from "@proofa/components";
 import { pingpong } from "../lib/pingpong";
 
@@ -72,77 +72,98 @@ export function LoginPage() {
 
 	if (status === "error" && error) {
 		return (
-			<LoginCard error={getErrorMessage(error)}>
-				<LoginCardLogo src="/favicon.png" alt="Proofa" />
-				<LoginCardTitle>Login Failed</LoginCardTitle>
-				<LoginCardSubtitle>
-					Please try again or contact support if the issue persists.
-				</LoginCardSubtitle>
-
-				<LoginCardBody>
-					<Button
-						variant="secondary"
-						size="md"
-						onClick={handleGoogleLogin}
-						className="w-full"
-					>
-						<Icon icon={IconType.Google} />
-						Continue with Google
-					</Button>
-				</LoginCardBody>
-			</LoginCard>
+			<div className="w-full min-h-screen flex items-center justify-center p-4">
+				<Card className="w-full max-w-md">
+					<CardHeader align="center" className="flex flex-col gap-3">
+						<img src="/favicon.png" alt="Proofa" className="w-12 h-12" />
+						<CardTitle>Login Failed</CardTitle>
+						<CardDescription>
+							Please try again or contact support if the issue persists.
+						</CardDescription>
+					</CardHeader>
+					<CardBody className="flex flex-col gap-4">
+						<Alert variant="danger">
+							{getErrorMessage(error)}
+						</Alert>
+						<Button
+							variant="secondary"
+							size="lg"
+							onClick={handleGoogleLogin}
+							block
+							className="text-black"
+						>
+							<Icon icon={IconType.Google} size={18} />
+							Continue with Google
+						</Button>
+					</CardBody>
+				</Card>
+			</div>
 		);
 	}
 
 	if (status === "checking") {
 		return (
-			<LoginCard loading>
-				<LoginCardLogo src="/favicon.png" alt="Proofa" />
-				<LoginCardTitle>Welcome to Proofa</LoginCardTitle>
-				<LoginCardSubtitle>Checking authentication...</LoginCardSubtitle>
-			</LoginCard>
+			<div className="w-full min-h-screen flex items-center justify-center p-4">
+				<Card className="w-full max-w-md">
+					<CardHeader align="center" className="flex flex-col gap-3">
+						<img src="/favicon.png" alt="Proofa" className="w-12 h-12" />
+						<CardTitle>Welcome to Proofa</CardTitle>
+						<CardDescription>Checking authentication...</CardDescription>
+					</CardHeader>
+				</Card>
+			</div>
 		);
 	}
 
 	if (status === "redirecting") {
 		return (
-			<LoginCard loading>
-				<LoginCardLogo src="/favicon.png" alt="Proofa" />
-				<LoginCardTitle>Welcome to Proofa</LoginCardTitle>
-				<LoginCardSubtitle>Redirecting to Google sign-in...</LoginCardSubtitle>
-			</LoginCard>
+			<div className="w-full min-h-screen flex items-center justify-center p-4">
+				<Card className="w-full max-w-md">
+					<CardHeader align="center" className="flex flex-col gap-3">
+						<img src="/favicon.png" alt="Proofa" className="w-12 h-12" />
+						<CardTitle>Welcome to Proofa</CardTitle>
+						<CardDescription>Redirecting to Google sign-in...</CardDescription>
+					</CardHeader>
+				</Card>
+			</div>
 		);
 	}
 
 	// Default: Show login page with Sign in button
 	return (
-		<LoginCard>
-			<LoginCardLogo src="/favicon.png" alt="Proofa" />
-			<LoginCardTitle>Welcome to Proofa</LoginCardTitle>
-			<LoginCardSubtitle>Sign in to manage your account and sessions</LoginCardSubtitle>
+		<div className="w-full min-h-screen flex items-center justify-center p-4">
+			<Card className="w-full max-w-md">
+				<CardHeader align="center" className="flex flex-col gap-3">
+					<img src="/favicon.png" alt="Proofa" className="w-12 h-12" />
+					<CardTitle>Welcome to Proofa</CardTitle>
+					<CardDescription>
+						Sign in to manage your account and sessions
+					</CardDescription>
+				</CardHeader>
+				<CardBody className="flex flex-col gap-4">
+					<Button
+						variant="secondary"
+						size="lg"
+						onClick={handleGoogleLogin}
+						// className="text-black"
+						block
+					>
+						<Icon icon={IconType.Google} size={18} />
+						Continue with Google
+					</Button>
 
-			<LoginCardBody>
-				<Button
-					variant="secondary"
-					size="md"
-					onClick={handleGoogleLogin}
-					className="w-full"
-				>
-					<Icon icon={IconType.Google} />
-					Continue with Google
-				</Button>
-			</LoginCardBody>
-
-			<LoginCardTerms>
-				By continuing, you agree to our{" "}
-				<a href={`${homeUrl}/terms`} target="_blank" rel="noopener noreferrer" className="text-primary underline">
-					Terms of Service
-				</a>{" "}
-				and{" "}
-				<a href={`${homeUrl}/privacy`} target="_blank" rel="noopener noreferrer" className="text-primary underline">
-					Privacy Policy
-				</a>
-			</LoginCardTerms>
-		</LoginCard>
+					<p className="text-center text-sm text-muted">
+						By continuing, you agree to our{" "}
+						<a href={`${homeUrl}/terms`} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+							Terms of Service
+						</a>{" "}
+						and{" "}
+						<a href={`${homeUrl}/privacy`} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+							Privacy Policy
+						</a>
+					</p>
+				</CardBody>
+			</Card>
+		</div>
 	);
 }

@@ -1,7 +1,23 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useMe } from "../hooks/api";
-import { Icon, IconType } from "@proofa/components";
+import { 
+	Icon, 
+	IconType,
+	Card,
+	CardHeader,
+	CardTitle,
+	CardBody,
+	Button,
+	Field,
+	Label,
+	Input,
+	Alert,
+	Chip,
+	Tabs,
+	TabsList,
+	TabsTrigger
+} from "@proofa/components";
 
 export function ProfilePage() {
 	const location = useLocation();
@@ -36,15 +52,13 @@ export function ProfilePage() {
 
 	if (!user) {
 		return (
-			<div className="card">
-				<div className="empty-state">
-					<div className="empty-state-icon">
-						<Icon icon={IconType.Alert} size={28} bold className="text-amber-500" />
-					</div>
-					<h3 className="empty-state-title">User not found</h3>
-					<p className="empty-state-desc">Unable to load your profile information.</p>
-				</div>
-			</div>
+			<Card>
+				<CardBody className="flex flex-col items-center justify-center py-12 text-center">
+					<Icon icon={IconType.Alert} size={28} bold className="text-amber-500 mb-4" />
+					<h3 className="text-lg font-semibold mb-2">User not found</h3>
+					<p className="text-sm text-muted">Unable to load your profile information.</p>
+				</CardBody>
+			</Card>
 		);
 	}
 
@@ -134,49 +148,45 @@ export function ProfilePage() {
 
 			{/* Success Alert */}
 			{showSuccess && (
-				<div className="alert alert-success">
-					<Icon icon={IconType.CheckCircle} size={20} bold className="flex-shrink-0 text-emerald-600" />
+				<Alert variant="success" className="mb-4">
+					<Icon icon={IconType.CheckCircle} size={20} bold className="flex-shrink-0" />
 					<span>Profile updated successfully!</span>
-				</div>
+				</Alert>
 			)}
 
 			{/* Profile Form Card */}
-			<div className="card mb-6">
-				<div className="card-header">
-					<h3 className="card-title">Personal Information</h3>
-				</div>
-				<div className="card-body">
-					<form onSubmit={handleSubmit}>
-						<div className="form-group">
-							<label className="form-label">Email Address</label>
-							<div className="input-group">
-								<input type="email" value={user.email} disabled />
-								<span className="badge badge-success">Verified</span>
+			<Card className="mb-6">
+				<CardHeader>
+					<CardTitle>Personal Information</CardTitle>
+				</CardHeader>
+				<CardBody>
+					<form onSubmit={handleSubmit} className="flex flex-col gap-6">
+						<Field>
+							<Label>Email Address</Label>
+							<div className="flex items-center gap-2">
+								<Input type="email" value={user.email} disabled className="flex-1" />
+								<Chip variant="primary" size="sm">Verified</Chip>
 							</div>
-							<p className="form-hint">Email cannot be changed</p>
-						</div>
+							<p className="text-sm text-muted mt-1">Email cannot be changed</p>
+						</Field>
 
-						<div className="form-group">
-							<label htmlFor="name" className="form-label">
-								Display Name
-							</label>
-							<input
+						<Field>
+							<Label htmlFor="name">Display Name</Label>
+							<Input
 								type="text"
 								id="name"
 								value={name}
 								onChange={(e) => setName(e.target.value)}
 								placeholder="Enter your name"
 							/>
-							<p className="form-hint">This name will be displayed across all apps</p>
-						</div>
+							<p className="text-sm text-muted mt-1">This name will be displayed across all apps</p>
+						</Field>
 
-						<div className="flex justify-between items-center mt-6">
-							<button type="submit" disabled={isUpdating} className="btn-primary">
+						<div className="flex justify-between items-center">
+							<Button type="submit" disabled={isUpdating} variant="primary">
 								{isUpdating ? (
 									<>
-										<div
-											className="spinner w-4 h-4 border-2"
-										/>
+										<div className="spinner w-4 h-4 border-2" />
 										Saving...
 									</>
 								) : (
@@ -185,50 +195,46 @@ export function ProfilePage() {
 										Save Changes
 									</>
 								)}
-							</button>
+							</Button>
 						</div>
 					</form>
-				</div>
-			</div>
+				</CardBody>
+			</Card>
 
 			{/* Account Information Card */}
-			<div className="card">
-				<div className="card-header">
-					<h3 className="card-title">Account Information</h3>
-				</div>
-				<div className="card-body">
-					<div className="info-list">
-						<div className="info-list-item">
-							<div className="info-list-label">
-								<span>Account ID</span>
-								<span>Your unique identifier</span>
+			<Card>
+				<CardHeader>
+					<CardTitle>Account Information</CardTitle>
+				</CardHeader>
+				<CardBody>
+					<div className="flex flex-col divide-y divide-border">
+						<div className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
+							<div className="flex flex-col gap-1">
+								<span className="text-sm font-medium">Account ID</span>
+								<span className="text-sm text-muted">Your unique identifier</span>
 							</div>
-							<div className="info-list-value">
-								<code>{user.id}</code>
-							</div>
+							<code className="text-sm bg-accent px-2 py-1 rounded">{user.id}</code>
 						</div>
-						<div className="info-list-item">
-							<div className="info-list-label">
-								<span>Account Created</span>
-								<span>When you first signed up</span>
+						<div className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
+							<div className="flex flex-col gap-1">
+								<span className="text-sm font-medium">Account Created</span>
+								<span className="text-sm text-muted">When you first signed up</span>
 							</div>
-							<div className="info-list-value">{formatDate(user.createdAt)}</div>
+							<span className="text-sm">{formatDate(user.createdAt)}</span>
 						</div>
-						<div className="info-list-item">
-							<div className="info-list-label">
-								<span>Authentication</span>
-								<span>Sign-in method</span>
+						<div className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
+							<div className="flex flex-col gap-1">
+								<span className="text-sm font-medium">Authentication</span>
+								<span className="text-sm text-muted">Sign-in method</span>
 							</div>
-							<div className="info-list-value">
-								<span className="badge badge-info">
-									<Icon icon={IconType.Google} size={12} />
-									Google
-								</span>
-							</div>
+							<Chip variant="default" size="sm">
+								<Icon icon={IconType.Google} size={12} />
+								Google
+							</Chip>
 						</div>
 					</div>
-				</div>
-			</div>
+				</CardBody>
+			</Card>
 		</div>
 	);
 }

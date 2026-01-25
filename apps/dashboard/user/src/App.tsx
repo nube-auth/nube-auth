@@ -18,7 +18,23 @@ function useTheme() {
 
 	useEffect(() => {
 		const root = document.documentElement;
+		
+		// Determine effective theme
+		let effectiveTheme: "light" | "dark" = "light";
+		if (theme === "system") {
+			effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+		} else {
+			effectiveTheme = theme;
+		}
 
+		// Apply dark class for Selia components
+		if (effectiveTheme === "dark") {
+			root.classList.add("dark");
+		} else {
+			root.classList.remove("dark");
+		}
+
+		// Also set data-theme for custom components
 		if (theme === "system") {
 			root.removeAttribute("data-theme");
 			localStorage.removeItem("theme");
@@ -31,9 +47,16 @@ function useTheme() {
 	return { theme, setTheme };
 }
 
-function ProtectedLayout({ children }: { children: React.ReactNode }) {
+function ProtectedLayout({ 
+	children, 
+	theme, 
+	setTheme 
+}: { 
+	children: React.ReactNode;
+	theme: "light" | "dark" | "system";
+	setTheme: (theme: "light" | "dark" | "system") => void;
+}) {
 	const { isAuthenticated, user, isLoading } = useAuth();
-	const { theme, setTheme } = useTheme();
 
 	if (isLoading) {
 		return (
@@ -107,6 +130,9 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+	// Initialize theme for all pages (including login)
+	const { theme, setTheme } = useTheme();
+	
 	return (
 		<BrowserRouter>
 			<Routes>
@@ -114,7 +140,7 @@ function App() {
 				<Route
 					path="/profile"
 					element={
-						<ProtectedLayout>
+						<ProtectedLayout theme={theme} setTheme={setTheme}>
 							<ProfilePage />
 						</ProtectedLayout>
 					}
@@ -122,7 +148,7 @@ function App() {
 				<Route
 					path="/sessions"
 					element={
-						<ProtectedLayout>
+						<ProtectedLayout theme={theme} setTheme={setTheme}>
 							<SessionsPage />
 						</ProtectedLayout>
 					}

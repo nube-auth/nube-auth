@@ -138,7 +138,7 @@ export const LoginCardTerms = React.forwardRef<HTMLParagraphElement, LoginCardTe
     return (
       <p
         ref={ref}
-        className={cn('text-center text-xs text-dimmed px-6 pb-6 m-0', className)}
+        className={cn('text-center text-xs text-dimmed px-6 pt-4 pb-6 m-0', className)}
         {...props}
       >
         {children}

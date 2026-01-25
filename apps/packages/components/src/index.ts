@@ -14,74 +14,11 @@
 // ============================================================================
 // These are the core UI primitives from Selia. Use these directly in your code.
 
-// Alert Components
-export { 
-  Alert, 
-  AlertTitle, 
-  AlertDescription, 
-  AlertAction,
-  alertVariants 
-} from './components/selia/ui/alert';
+// Re-export all Selia UI components
+export * from './components/selia/ui';
 
-// Button Component
-export { 
-  Button,
-  buttonVariants 
-} from './components/selia/ui/button';
-
-// Checkbox Components
-export { 
-  Checkbox, 
-  CheckboxGroup, 
-  CheckboxGroupLabel 
-} from './components/selia/ui/checkbox';
-
-// Chip Components (Badge alternative)
-export { 
-  Chip, 
-  ChipButton,
-  chipVariants 
-} from './components/selia/ui/chip';
-
-// Dialog Components
-export { 
-  Dialog, 
-  DialogTrigger, 
-  DialogPopup, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogBody, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogClose 
-} from './components/selia/ui/dialog';
-
-// Input Component
-export { 
-  Input,
-  inputVariants 
-} from './components/selia/ui/input';
-
-// Label Component
-export { Label } from './components/selia/ui/label';
-
-// Select Components
-export { 
-  Select, 
-  SelectTrigger, 
-  SelectValue, 
-  SelectPopup, 
-  SelectList, 
-  SelectItem, 
-  SelectGroup, 
-  SelectGroupLabel, 
-  SelectSeparator,
-  selectTriggerVariants 
-} from './components/selia/ui/select';
+// Legacy specific exports for backward compatibility
 export type { SelectItem as SelectItemType } from './components/selia/ui/select';
-
-// Spinner Component
-export { Spinner } from './components/selia/ui/spinner';
 
 // ============================================================================
 // ICONS (Unified Icon System)
@@ -94,16 +31,16 @@ export type { IconProps, IconTypeName } from './icons';
 export { cn } from './utils/cn';
 
 // ============================================================================
-// PROOFA CUSTOM COMPONENTS (Legacy - Consider migrating to Selia)
+// PROOFA CUSTOM COMPONENTS (Legacy - Deprecated)
 // ============================================================================
-// These are custom implementations. Prefer Selia components above when possible.
+// These are legacy custom implementations. Use Selia components instead.
 
 /**
- * @deprecated Use Selia Badge (exported as Chip) instead
- * Legacy custom badge implementation - consider migrating to Chip from Selia
+ * @deprecated Use Selia Badge component instead
+ * Legacy custom badge implementation - migrate to Selia Badge or Chip
  */
-export { Badge } from './components/ui/Badge';
-export type { BadgeProps, BadgeVariant } from './components/ui/Badge';
+export { Badge as LegacyBadge } from './components/ui/Badge';
+export type { BadgeProps as LegacyBadgeProps, BadgeVariant as LegacyBadgeVariant } from './components/ui/Badge';
 
 /**
  * @deprecated Use Selia Button instead  
@@ -113,11 +50,11 @@ export { Button as LegacyButton } from './components/ui/Button';
 export type { ButtonProps as LegacyButtonProps } from './components/ui/Button';
 
 /**
- * @deprecated Use Selia components to build cards
- * Legacy custom card implementation
+ * @deprecated Use Selia Card component instead
+ * Legacy custom card implementation - migrate to Selia Card
  */
-export { Card, CardHeader, CardTitle, CardBody } from './components/ui/Card';
-export type { CardProps } from './components/ui/Card';
+export { Card as LegacyCard, CardHeader as LegacyCardHeader, CardTitle as LegacyCardTitle, CardBody as LegacyCardBody } from './components/ui/Card';
+export type { CardProps as LegacyCardProps } from './components/ui/Card';
 
 // ============================================================================
 // PROOFA COMPOSITE COMPONENTS (Built on Selia)

@@ -2,12 +2,12 @@
   "framework": "vite",
   "paths": {
     "workdir": "./src/",
-    "components": "./src/components/selia",
+    "components": "./src/components/selia/ui",
     "css": "./tailwind.css",
     "utils": "./src/utils/cn.ts"
   },
   "imports": {
-    "utils": "@proofa/components/utils/cn",
+    "utils": "../../../utils/cn",
     "components": "@proofa/components/selia"
   }
 }
