@@ -1,6 +1,47 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { cn } from '@proofa/components';
-import { Button, Icon, IconType } from '@proofa/components';
+import { Button } from '@proofa/components';
+
+// Panel icons for sidebar toggle
+function PanelLeftClose() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M9 3v18" />
+      <path d="m16 15-3-3 3-3" />
+    </svg>
+  );
+}
+
+function PanelLeftOpen() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M9 3v18" />
+      <path d="m15 9 3 3-3 3" />
+    </svg>
+  );
+}
 
 export interface DashboardLayoutProps {
   children: ReactNode;
@@ -44,7 +85,7 @@ export function DashboardLayout({ children, sidebar, topBar }: DashboardLayoutPr
       {/* Sidebar */}
       <div
         className={cn(
-          'fixed top-0 z-50 w-full max-w-72 md:w-72 h-dvh *:h-full transition-all',
+          'fixed top-0 z-50 w-full max-w-72 md:w-72 h-dvh *:h-full transition-all border-r border-border',
           sidebarOpen ? 'left-0' : '-left-full',
         )}
       >
@@ -58,8 +99,7 @@ export function DashboardLayout({ children, sidebar, topBar }: DashboardLayoutPr
         {/* Top navigation bar */}
         <nav
           className={cn(
-            'h-16 flex items-center gap-2.5 max-lg:px-4 border-b border-border',
-            sidebarOpen ? 'xl:pr-4' : 'xl:px-4',
+            'h-16 flex items-center gap-2.5 px-4 xl:px-6 border-b border-border',
           )}
         >
           <Button
@@ -67,7 +107,7 @@ export function DashboardLayout({ children, sidebar, topBar }: DashboardLayoutPr
             size="sm-icon"
             onClick={handleSidebarToggle}
           >
-            <Icon icon={sidebarOpen ? IconType.ArrowLeft : IconType.ArrowRight} />
+            {sidebarOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
           </Button>
           {topBar}
         </nav>
@@ -75,8 +115,7 @@ export function DashboardLayout({ children, sidebar, topBar }: DashboardLayoutPr
         {/* Page content */}
         <div
           className={cn(
-            'min-h-[calc(100vh-4rem)] flex flex-col gap-6 max-lg:px-4 pb-6 pt-6',
-            sidebarOpen ? 'xl:pr-4' : 'xl:px-4',
+            'min-h-[calc(100vh-4rem)] flex flex-col gap-6 px-4 xl:px-6 py-6',
           )}
         >
           {children}

@@ -112,15 +112,15 @@ export default function Projects() {
 					</Button>
 					<div className="mt-10 flex gap-8 text-muted text-sm">
 						<div className="flex items-center gap-2">
-							<Icon icon={IconType.Flash} size={16} />
+							<Icon icon={IconType.Flash} size={16} className="text-blue-400" />
 							<span>Quick Setup</span>
 						</div>
 						<div className="flex items-center gap-2">
-							<Icon icon={IconType.Lock} size={16} />
+							<Icon icon={IconType.Lock} size={16} className="text-green-400" />
 							<span>Secure by Default</span>
 						</div>
 						<div className="flex items-center gap-2">
-							<Icon icon={IconType.SecurityCheck} size={16} />
+							<Icon icon={IconType.SecurityCheck} size={16} className="text-purple-400" />
 							<span>Production Ready</span>
 						</div>
 					</div>
@@ -199,7 +199,7 @@ export default function Projects() {
 
 			{/* Table View */}
 			{hasProjects && viewMode === "table" && (
-				<Card>
+				<Card className="overflow-hidden">
 					<TableContainer>
 						<Table>
 							<TableHeader>
@@ -217,7 +217,7 @@ export default function Projects() {
 								{projects.map((project: Project) => (
 									<TableRow
 										key={project.id}
-										className="cursor-pointer"
+										className="cursor-pointer hover:bg-accent transition-colors"
 										onClick={() => navigate(`/projects/${project.id}`)}
 									>
 										<TableCell>

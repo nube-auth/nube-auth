@@ -66,7 +66,7 @@ export function ProjectDetailPage() {
 				<CardBody>
 					<div className="flex items-start gap-5">
 						<IconBox size="lg" variant="primary-subtle">
-							<Icon icon={IconType.Folder} size={28} />
+							<Icon icon={getIconById(project.icon || "folder")} size={28} />
 						</IconBox>
 						<div className="flex-1">
 							<div className="flex items-center gap-3 mb-1">
@@ -109,25 +109,25 @@ export function ProjectDetailPage() {
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
 				<Card>
 					<CardBody>
-						<IconBox size="md" variant="info-subtle" className="mb-3">
-							<Icon icon={IconType.Layers} size={20} />
+						<IconBox size="md" variant="danger-subtle" className="mb-3">
+							<Icon icon={IconType.Dashboard} size={20} />
 						</IconBox>
-						<Heading size="xl" className="mb-1">
+						<Heading className="mb-1">
 							{statsLoading ? "—" : stats?.totalApps || 0}
 						</Heading>
-						<Text size="sm" className="text-text-muted">Applications</Text>
+						<Text className="text-text-muted">Applications</Text>
 					</CardBody>
 				</Card>
 
 				<Card>
 					<CardBody>
-						<IconBox size="md" variant="secondary-subtle" className="mb-3">
+						<IconBox size="md" variant="warning-subtle" className="mb-3">
 							<Icon icon={IconType.UserMultiple} size={20} />
 						</IconBox>
-						<Heading size="xl" className="mb-1">
+						<Heading className="mb-1">
 							{statsLoading ? "—" : stats?.totalUsers || 0}
 						</Heading>
-						<Text size="sm" className="text-text-muted">Total Users</Text>
+						<Text className="text-text-muted">Total Users</Text>
 					</CardBody>
 				</Card>
 
@@ -136,12 +136,12 @@ export function ProjectDetailPage() {
 						<IconBox size="md" variant="success-subtle" className="mb-3">
 							<Icon icon={IconType.Key} size={20} />
 						</IconBox>
-						<Heading size="xl" className="mb-1">
+						<Heading className="mb-1">
 							{statsLoading ? "—" : stats?.activeLicenses || 0}
 						</Heading>
-						<Text size="sm" className="text-text-muted">Active Licenses</Text>
+						<Text className="text-text-muted">Active Licenses</Text>
 						{!statsLoading && stats && (
-							<Text size="sm" className="text-text-muted mt-1">
+							<Text className="text-text-muted mt-1">
 								{stats.totalLicenses} total
 							</Text>
 						)}
@@ -151,38 +151,31 @@ export function ProjectDetailPage() {
 				<Card>
 					<CardBody>
 						<IconBox size="md" variant="warning-subtle" className="mb-3">
-				Card>
+							<Icon icon={IconType.DollarCircle} size={20} />
+						</IconBox>
+						<Heading className="mb-1">
+							${statsLoading ? "—" : (stats?.totalRevenue || 0).toFixed(2)}
+						</Heading>
+						<Text className="text-text-muted">Revenue</Text>
+					</CardBody>
+				</Card>
+			</div>
+
+			{/* Applications Section */}
+			<Card className="overflow-hidden">
 				<CardHeader>
 					<div className="flex-1">
 						<CardTitle>Applications</CardTitle>
-						<Text size="sm" className="text-text-muted">Apps registered under this project</Text>
+						<Text className="text-text-muted">Apps registered under this project</Text>
 					</div>
-					<Button
-						variant="primary"
-						onClick={() => navigate(`/projects/${projectId}/apps/new`)}
-					>
-						<Icon icon={IconType.Add} size={16} />
-						New App
-					</Button>
-				</CardHeader className="card-title">Applications</h2>
-						<p className="card-desc">Apps registered under this project</p>
-					</div>
+				</CardHeader>
+
+				{appsLoading ? (
 					<CardBody>
 						<div className="flex items-center justify-center py-8">
 							<Spinner />
 						</div>
-					</CardBodyick={() => navigate(`/projects/${projectId}/apps/new`)}
-						className="btn btn-primary"
-					>
-						<Icon icon={IconType.Add} size={16} />
-						New App
-					</button>
-				</div>
-
-				{appsLoading ? (
-					<div className="loading">
-						<div className="spinner" />
-					</div>
+					</CardBody>
 				) : apps && apps.length > 0 ? (
 					<CardBody className="p-0">
 						<TableContainer>
@@ -200,12 +193,12 @@ export function ProjectDetailPage() {
 									{apps.map((app) => (
 										<TableRow
 											key={app.id}
-											className="cursor-pointer hover:bg-surface-secondary"
+											className="cursor-pointer hover:bg-surface-hover transition-colors"
 											onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
 										>
 											<TableCell>
 												<div className="flex items-center gap-3">
-													<IconBox size="sm" variant="secondary-subtle">
+													<IconBox variant="secondary-subtle">
 														<Icon icon={getIconById(app.icon || "application")} size={18} />
 													</IconBox>
 													<Text className="font-medium">
@@ -260,7 +253,7 @@ export function ProjectDetailPage() {
 				<CardHeader>
 					<div>
 						<CardTitle>Team Members</CardTitle>
-						<Text size="sm" className="text-text-muted">People with access to this project</Text>
+						<Text className="text-text-muted">People with access to this project</Text>
 					</div>
 				</CardHeader>
 
@@ -271,7 +264,7 @@ export function ProjectDetailPage() {
 						</div>
 					</CardBody>
 				) : members && members.length > 0 ? (
-					<CardBody className="p-0">
+					<CardBody>
 						<TableContainer>
 							<Table>
 								<TableHeader>
@@ -284,7 +277,7 @@ export function ProjectDetailPage() {
 								</TableHeader>
 								<TableBody>
 									{members.map((member) => (
-										<TableRow key={member.id}>
+										<TableRow key={member.id} className="hover:bg-surface-hover transition-colors">
 											<TableCell>
 												<div className="flex items-center gap-3">
 													<Avatar size="sm">
@@ -301,7 +294,7 @@ export function ProjectDetailPage() {
 												</code>
 											</TableCell>
 											<TableCell>
-												<Badge variant={member.role === "owner" ? "info" : "success"}>
+												<Badge variant={member.role === "owner" ? "info" : "secondary"}>
 													{member.role}
 												</Badge>
 											</TableCell>

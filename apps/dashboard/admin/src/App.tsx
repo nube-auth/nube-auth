@@ -64,6 +64,12 @@ function useMe() {
 	});
 }
 
+// Theme wrapper to apply theme globally to all routes
+function ThemeWrapper({ children }: { children: React.ReactNode }) {
+	useTheme(); // Initialize theme on document root
+	return <>{children}</>;
+}
+
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
 	const { data: user, isLoading } = useMe();
 	const { theme, setTheme } = useTheme();
@@ -129,6 +135,7 @@ function App() {
 		<QueryClientProvider client={queryClient}>
 			<ToastProvider>
 				<BrowserRouter>
+					<ThemeWrapper>
 						<Routes>
 							<Route path="/login" element={<LoginPage />} />
 							<Route
@@ -332,10 +339,11 @@ function App() {
 								}
 							/>
 							<Route path="/" element={<Navigate to="/projects" replace />} />
-				</Routes>
-			</BrowserRouter>
-		</ToastProvider>
-	</QueryClientProvider>
+						</Routes>
+					</ThemeWrapper>
+				</BrowserRouter>
+			</ToastProvider>
+		</QueryClientProvider>
 	);
 }
 

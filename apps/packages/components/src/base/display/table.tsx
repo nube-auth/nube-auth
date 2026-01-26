@@ -38,7 +38,7 @@ export function TableHead({ ...props }: React.ComponentProps<'th'>) {
       data-slot="table-head"
       {...props}
       className={cn(
-        'px-6 py-2 text-muted font-medium bg-table-head border-y border-table-separator',
+        'px-6 py-2 text-muted font-medium bg-table-head border-b border-table-separator',
         props.className,
       )}
     />

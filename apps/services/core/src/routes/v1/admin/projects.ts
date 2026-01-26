@@ -48,7 +48,8 @@ projectsRouter.get("/", async (c: Context) => {
 				id: p.public_id,
 				name: p.name,
 				slug: p.slug,
-				description: p.description,
+				description: p.description || undefined,
+				icon: p.icon,
 				createdAt: new Date(p.created_at).toISOString(),
 				updatedAt: new Date(p.updated_at).toISOString(),
 			})),
@@ -102,7 +103,8 @@ projectsRouter.get("/users/:userId/projects", async (c: Context) => {
 				id: p.public_id,
 				name: p.name,
 				slug: p.slug,
-				description: p.description,
+				description: p.description || undefined,
+				icon: p.icon,
 				createdAt: new Date(p.created_at).toISOString(),
 				updatedAt: new Date(p.updated_at).toISOString(),
 			})),
@@ -120,10 +122,11 @@ projectsRouter.get("/users/:userId/projects", async (c: Context) => {
  */
 projectsRouter.post("/", async (c: Context) => {
 	try {
-		const { name, slug, description } = (await c.req.json()) as {
+		const { name, slug, description, icon } = (await c.req.json()) as {
 			name?: string;
 			slug?: string;
 			description?: string;
+			icon?: string;
 		};
 
 		// Validate required fields
@@ -153,6 +156,7 @@ projectsRouter.post("/", async (c: Context) => {
 				name,
 				slug,
 				description: description || null,
+				icon: icon || "folder",
 				owner_user_id: user.id,
 				is_active: true,
 			});
@@ -189,7 +193,8 @@ projectsRouter.post("/", async (c: Context) => {
 				id: project.public_id,
 				name: project.name,
 				slug: project.slug,
-				description: project.description,
+				description: project.description || undefined,
+				icon: project.icon,
 				createdAt: new Date(project.created_at).toISOString(),
 				updatedAt: new Date(project.updated_at).toISOString(),
 			},
@@ -224,7 +229,8 @@ projectsRouter.get("/:projectId", async (c: Context) => {
 			id: project.public_id,
 			name: project.name,
 			slug: project.slug,
-			description: project.description,
+			description: project.description || undefined,
+			icon: project.icon,
 			createdAt: new Date(project.created_at).toISOString(),
 			updatedAt: new Date(project.updated_at).toISOString(),
 		});
@@ -241,10 +247,11 @@ projectsRouter.get("/:projectId", async (c: Context) => {
 projectsRouter.patch("/:projectId", async (c: Context) => {
 	try {
 		const projectId = c.req.param("projectId");
-		const { name, slug, description } = (await c.req.json()) as {
+		const { name, slug, description, icon } = (await c.req.json()) as {
 			name?: string;
 			slug?: string;
 			description?: string;
+			icon?: string;
 		};
 
 		if (!projectId || !idPatterns.project.test(projectId)) {
@@ -282,6 +289,7 @@ projectsRouter.patch("/:projectId", async (c: Context) => {
 		if (name !== undefined) updateData["name"] = name;
 		if (slug !== undefined) updateData["slug"] = slug;
 		if (description !== undefined) updateData["description"] = description;
+		if (icon !== undefined) updateData["icon"] = icon;
 
 		const results = await projectQueries.update(db, project.id, updateData);
 		const updated = results[0];
@@ -294,7 +302,8 @@ projectsRouter.patch("/:projectId", async (c: Context) => {
 			id: updated.public_id,
 			name: updated.name,
 			slug: updated.slug,
-			description: updated.description,
+			description: updated.description || undefined,
+			icon: updated.icon,
 			createdAt: new Date(updated.created_at).toISOString(),
 			updatedAt: new Date(updated.updated_at).toISOString(),
 		});

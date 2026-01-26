@@ -21,6 +21,14 @@
   --color-secondary: var(--secondary);
   --color-danger: var(--danger);
   --color-accent: var(--accent);
+  
+  /* Surface colors for hover states and secondary backgrounds */
+  --color-surface-secondary: var(--surface-secondary);
+  --color-surface-hover: var(--surface-hover);
+  
+  /* Additional theme colors */
+  --color-card-bg: var(--card-bg);
+  --color-border: var(--border);
 }
 
 /* Reset and base styles */
