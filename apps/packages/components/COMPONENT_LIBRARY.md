@@ -4,11 +4,35 @@
 
 The `@proofa/components` package is a centralized, reusable component library for Proofa dashboards. It exports:
 
+- **Selia Design System**: 52 production-ready UI primitives (Button, Card, Badge, Input, Table, Dialog, etc.)
 - **Icon System**: 57+ icons from HugeIcons + brand logos (Google, GitHub, Stripe, NextJS, React, etc.)
-- **12 Custom UI Components** across 3 phases for rapid dashboard development
+- **11 Proofa Composite Components**: Built on Selia for Proofa-specific use cases
 - **Type-Safe**: Full TypeScript support with proper interfaces
-- **Theme-Aware**: Supports light/dark modes using CSS variables from `@proofa/components`
-- **Compound Components**: Support for complex component hierarchies (Card, LoginCard, FormGroup)
+- **Theme-Aware**: Supports light/dark modes using CSS variables
+- **Compound Components**: Support for complex component hierarchies (LoginCard, FormGroup)
+- **Well-Organized**: Categorized structure for easy navigation and scalability
+
+> **Note:** This package uses Selia as the base design system. All Selia components are re-exported from `@proofa/components` for convenience.
+
+## Package Structure
+
+```
+src/
+├── base/                   # Selia primitives (52 components)
+│   ├── forms/             # Input, Select, Checkbox, etc. (15)
+│   ├── layout/            # Card, Dialog, Sidebar, etc. (9)
+│   ├── display/           # Table, Tabs, Menu, etc. (11)
+│   ├── feedback/          # Button, Badge, Alert, etc. (13)
+│   └── typography/        # Heading, Text, Kbd (4)
+├── components/             # Proofa composites (11)
+│   ├── auth/              # Authentication components
+│   ├── display/           # Display components
+│   ├── forms/             # Form components
+│   └── feedback/          # Feedback components
+├── icons/                  # Icon system
+├── lib/                    # Utilities (cn)
+└── styles/                 # CSS files
+```
 
 ---
 
@@ -22,82 +46,52 @@ pnpm add @proofa/components
 
 ## Component Inventory
 
-### Phase 1: Essential Components (Foundation)
+### Selia UI Components (52 Components)
 
-These are the core building blocks used in most dashboards.
-
-#### 1. **Badge**
-Status indicator component with variants.
+For basic UI components, use Selia components directly. They're automatically available from `@proofa/components`:
 
 ```tsx
-import { Badge } from '@proofa/components';
+import {
+  Button, Card, Badge, Input, Label, Textarea, Select,
+  Table, Dialog, Alert, Spinner, Tabs, Menu, Avatar,
+  // ... and 38 more components
+} from '@proofa/components';
 
-// Basic usage
-<Badge variant="success">Active</Badge>
-<Badge variant="danger">Inactive</Badge>
-<Badge variant="info">Pending</Badge>
-```
+// Button - Multiple variants
+<Button variant="primary">Save</Button>
+<Button variant="danger" size="sm">Delete</Button>
+<Button variant="outline" pill>Outline</Button>
 
-**Props**:
-- `variant?: 'success' | 'danger' | 'info'` - Color variant
-- `className?: string` - Additional CSS classes
-- `children: ReactNode` - Badge content
-
----
-
-#### 2. **Button**
-Versatile button with loading state and multiple variants.
-
-```tsx
-import { Button } from '@proofa/components';
-
-// Variants
-<Button variant="primary">Click Me</Button>
-<Button variant="danger">Delete</Button>
-<Button variant="secondary">Cancel</Button>
-
-// Sizes
-<Button size="sm">Small</Button>
-<Button size="md">Medium</Button>
-<Button size="lg">Large</Button>
-
-// States
-<Button loading>Processing...</Button>
-<Button disabled>Disabled</Button>
-```
-
-**Props**:
-- `variant?: 'primary' | 'danger' | 'secondary'` - Button style
-- `size?: 'sm' | 'md' | 'lg'` - Button size
-- `loading?: boolean` - Show spinner
-- `disabled?: boolean` - Disabled state
-
----
-
-#### 3. **Card** (Compound)
-Flexible card layout with optional header.
-
-```tsx
-import { Card, CardHeader, CardTitle, CardBody } from '@proofa/components';
-
-// Simple card
-<Card>
-  <CardBody>Content here</CardBody>
-</Card>
-
-// Card with header
+// Card - Compound component
 <Card>
   <CardHeader>
-    <CardTitle>Settings</CardTitle>
-    <button>Edit</button>
+    <CardTitle>Title</CardTitle>
+    <CardDescription>Description</CardDescription>
   </CardHeader>
-  <CardBody>
-    Form content...
-  </CardBody>
+  <CardBody>Content</CardBody>
+  <CardFooter>Footer actions</CardFooter>
 </Card>
+
+// Badge - Status indicators
+<Badge variant="success">Active</Badge>
+<Badge variant="danger" size="lg">Error</Badge>
+<Chip variant="primary">Tag</Chip>
 ```
 
-**Subcomponents**:
+**See Selia documentation for all 52 components:**
+- Forms: Input, Textarea, Select, Checkbox, Radio, Switch, Field, Label
+- Layout: Card, Stack, Sidebar, Dialog, Popover, Tooltip, Divider
+- Display: Table, Tabs, Accordion, Breadcrumb, Menu, Pagination
+- Feedback: Alert, Spinner, Progress, Toast
+- And more...
+
+---
+
+### Proofa Composite Components (11 Components)
+
+These are Proofa-specific components built on top of Selia primitives:
+
+#### 1. **LoginCard** (Compound)
 - `Card` - Container
 - `CardHeader` - Header with border
 - `CardTitle` - Title text
@@ -105,7 +99,7 @@ import { Card, CardHeader, CardTitle, CardBody } from '@proofa/components';
 
 ---
 
-#### 4. **LoginCard** (Compound)
+#### 2. **LoginCard** (Compound)
 Specialized login form container with loading/error states.
 
 ```tsx
@@ -145,7 +139,7 @@ import {
 
 ---
 
-#### 5. **FormGroup** (Compound)
+#### 3. **FormGroup** (Compound)
 Form field wrapper with label, input, and hint text.
 
 ```tsx
@@ -172,7 +166,7 @@ import { FormGroup, FormLabel, FormInput, FormHint } from '@proofa/components';
 
 ---
 
-#### 6. **Loading**
+#### 4. **Loading**
 Loading spinner with optional text.
 
 ```tsx
@@ -197,11 +191,43 @@ import { Loading } from '@proofa/components';
 
 ---
 
-### Phase 2: Intermediate Components (Data Display)
+---
+
+#### 5. **AuthLoginCard**
+Modern authentication card with OAuth support (built on LoginCard).
+
+```tsx
+import { AuthLoginCard } from '@proofa/components';
+
+<AuthLoginCard
+  logoSrc="/logo.png"
+  title="Welcome to Proofa"
+  subtitle="Sign in to continue"
+  errorMessage={error}
+  buttonLabel="Sign in with Google"
+  buttonVariant="primary"
+  buttonIcon="google"
+  onAuthClick={() => window.location.href = '/auth/google'}
+/>
+```
+
+**Props**:
+- `logoSrc?: string` - Logo image URL
+- `title?: string` - Card title
+- `subtitle?: string` - Subtitle text
+- `errorMessage?: string` - Error message to display
+- `buttonLabel?: string` - Auth button text
+- `buttonVariant?: string` - Button variant
+- `buttonIcon?: IconType` - Icon for button
+- `onAuthClick?: () => void` - Auth button click handler
+
+---
+
+### Data Display Components
 
 These components handle common data display patterns.
 
-#### 7. **EmptyState**
+#### 6. **EmptyState**
 Empty state display with icon, title, description, and optional action.
 
 ```tsx
@@ -224,7 +250,7 @@ import { Button } from '@proofa/components';
 
 ---
 
-#### 8. **InfoGrid**
+#### 7. **InfoGrid**
 4-column key-value grid for displaying metadata.
 
 ```tsx
@@ -247,7 +273,7 @@ import { InfoGrid } from '@proofa/components';
 
 ---
 
-#### 9. **ProfileHeader**
+#### 8. **ProfileHeader**
 User profile header with name, email, and optional meta.
 
 ```tsx
@@ -269,7 +295,7 @@ import { ProfileHeader } from '@proofa/components';
 
 ---
 
-#### 10. **InfoList**
+#### 9. **InfoList**
 Detailed information list with labels, descriptions, and values.
 
 ```tsx
@@ -296,11 +322,11 @@ import { InfoList } from '@proofa/components';
 
 ---
 
-### Phase 3: Specialized Components (Complex UI)
+### Specialized Components
 
 These are purpose-built for specific dashboard features.
 
-#### 11. **SessionCard**
+#### 10. **SessionCard**
 Current session display with metadata and action buttons.
 
 ```tsx
@@ -328,7 +354,7 @@ import { Button } from '@proofa/components';
 
 ---
 
-#### 12. **StatusDot**
+#### 11. **StatusDot**
 Small visual status indicator (colored dot + label).
 
 ```tsx
