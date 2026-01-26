@@ -1,0 +1,51 @@
+/* User Dashboard Tailwind Entry Point */
+@import "tailwindcss";
+
+/* Tailwind v4: Specify additional source paths to scan for class names */
+@source "../../../packages/components/src";
+
+/* Import Selia utilities */
+@import "@proofa/components/styles/selia.css";
+
+/* Import Selia theme defaults */
+/* @import "@proofa/components/selia-theme.css"; */
+
+/* Import Tech Minimal theme overrides */
+/* @import "@proofa/components/theme.css"; */
+
+/* Tailwind v4 - Map CSS variables to utility classes using @theme */
+@theme {
+  /* Colors - This generates bg-*, text-*, border-*, outline-* utilities */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-bg: var(--card-bg, var(--card));
+  --color-card-border: var(--card-border);
+  --color-muted: var(--muted);
+  --color-dimmed: var(--dimmed);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover, var(--primary));
+  --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover, var(--secondary));
+  --color-tertiary: var(--tertiary, var(--secondary));
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover, var(--danger));
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-accent: var(--accent);
+  
+  /* Background colors */
+  --color-bg-primary: var(--bg-primary, var(--background));
+  --color-bg-secondary: var(--bg-secondary, var(--background));
+  --color-bg-muted: var(--bg-muted, var(--muted));
+  
+  /* Text colors */
+  --color-text-primary: var(--text-primary, var(--foreground));
+  --color-text-secondary: var(--text-secondary, var(--foreground));
+  --color-text-muted: var(--text-muted, var(--muted));
+  --color-text-dimmed: var(--text-dimmed, var(--dimmed));
+}

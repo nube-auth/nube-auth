@@ -1,6 +1,3 @@
-@import "tailwindcss";
-
-/* Selia theme compatibility mapping (no custom colors) */
 :root {
   --content-bg: var(--background);
   --sidebar-bg: var(--background);

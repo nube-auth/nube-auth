@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
-import type React from "react";
-import { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { ToastProvider } from "./components/Toast";
 import { Icon, IconType } from "@proofa/components";
@@ -37,28 +36,58 @@ import { pingpong } from "./lib/pingpong";
 
 const queryClient = new QueryClient();
 
-// Theme hook
-function useTheme() {
-	const [theme, setTheme] = useState<"light" | "dark" | "system">(() => {
+type ThemeMode = "light" | "dark" | "system";
+
+const ThemeContext = React.createContext<{
+	theme: ThemeMode;
+	setTheme: React.Dispatch<React.SetStateAction<ThemeMode>>;
+} | undefined>(undefined);
+
+function ThemeProvider({ children }: { children: React.ReactNode }) {
+	const [theme, setTheme] = useState<ThemeMode>(() => {
 		if (typeof window !== "undefined") {
-			return (localStorage.getItem("theme") as "light" | "dark" | "system") || "system";
+			return (localStorage.getItem("theme") as ThemeMode) || "system";
 		}
 		return "system";
 	});
 
 	useEffect(() => {
+		if (typeof window === "undefined") return;
 		const root = document.documentElement;
+
+		// Determine effective theme for Selia (uses .dark class)
+		let effectiveTheme: "light" | "dark" = "light";
+		if (theme === "system") {
+			effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+		} else {
+			effectiveTheme = theme;
+		}
+
+		if (effectiveTheme === "dark") {
+			root.classList.add("dark");
+		} else {
+			root.classList.remove("dark");
+		}
 
 		if (theme === "system") {
 			root.removeAttribute("data-theme");
 			localStorage.removeItem("theme");
-		} else {
-			root.setAttribute("data-theme", theme);
-			localStorage.setItem("theme", theme);
+			return;
 		}
+
+		root.setAttribute("data-theme", theme);
+		localStorage.setItem("theme", theme);
 	}, [theme]);
 
-	return { theme, setTheme };
+	return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
+}
+
+function useTheme() {
+	const context = useContext(ThemeContext);
+	if (!context) {
+		throw new Error("useTheme must be used within ThemeProvider");
+	}
+	return context;
 }
 
 // User auth hook using Proofa client
@@ -519,216 +548,218 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
 function App() {
 	return (
-		<QueryClientProvider client={queryClient}>
-			<ToastProvider>
-				<BrowserRouter>
-					<Routes>
-						<Route path="/login" element={<LoginPage />} />
-						<Route
-							path="/onboarding"
-							element={
-								<ProtectedLayout>
-									<OnboardingPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/profile"
-							element={
-								<ProtectedLayout>
-									<ProfilePage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects"
-							element={
-								<ProtectedLayout>
-									<ProjectsPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects/new"
-							element={
-								<ProtectedLayout>
-									<CreateProjectPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects/:projectId"
-							element={
-								<ProtectedLayout>
-									<ProjectDetailPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects/:projectId/apps"
-							element={
-								<ProtectedLayout>
-									<ProjectAppsPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects/:projectId/stats"
-							element={
-								<ProtectedLayout>
-									<ProjectStatsPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects/:projectId/team"
-							element={
-								<ProtectedLayout>
-									<ProjectTeamPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects/:projectId/settings"
-							element={
-								<ProtectedLayout>
-									<ProjectSettingsPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects/:projectId/payment-providers"
-							element={
-								<ProtectedLayout>
-									<ProjectPaymentProvidersPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects/:projectId/apps/new"
-							element={
-								<ProtectedLayout>
-									<AppSetupPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects/:projectId/apps/:appId/users"
-							element={
-								<ProtectedLayout>
-									<AppUsersPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects/:projectId/apps/:appId/settings"
-							element={
-								<ProtectedLayout>
-									<AppSettingsPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects/:projectId/apps/:appId/oauth"
-							element={
-								<ProtectedLayout>
-									<AppOAuthPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects/:projectId/apps/:appId/payment"
-							element={
-								<ProtectedLayout>
-									<AppPaymentSettingsPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects/:projectId/apps/:appId/licenses"
-							element={
-								<ProtectedLayout>
-									<AppLicensesPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects/:projectId/apps/:appId/api-keys"
-							element={
-								<ProtectedLayout>
-									<AppApiKeysPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects/:projectId/apps/:appId/developers"
-							element={
-								<ProtectedLayout>
-									<AppDevelopersPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/projects/:projectId/apps/:appId"
-							element={
-								<ProtectedLayout>
-									<AppDetailPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/licenses"
-							element={
-								<ProtectedLayout>
-									<LicensesPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/billing"
-							element={
-								<ProtectedLayout>
-									<BillingDashboardPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/webhooks"
-							element={
-								<ProtectedLayout>
-									<WebhookMonitoringPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/refunds"
-							element={
-								<ProtectedLayout>
-									<RefundProcessingPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/export"
-							element={
-								<ProtectedLayout>
-									<TransactionExportPage />
-								</ProtectedLayout>
-							}
-						/>
-						<Route
-							path="/playground/payments"
-							element={
-								<ProtectedLayout>
-									<PaymentTestingPlayground />
-								</ProtectedLayout>
-							}
-						/>
-						<Route path="/" element={<Navigate to="/projects" replace />} />
-					</Routes>
-				</BrowserRouter>
-			</ToastProvider>
-		</QueryClientProvider>
+		<ThemeProvider>
+			<QueryClientProvider client={queryClient}>
+				<ToastProvider>
+					<BrowserRouter>
+						<Routes>
+							<Route path="/login" element={<LoginPage />} />
+							<Route
+								path="/onboarding"
+								element={
+									<ProtectedLayout>
+										<OnboardingPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/profile"
+								element={
+									<ProtectedLayout>
+										<ProfilePage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects"
+								element={
+									<ProtectedLayout>
+										<ProjectsPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/new"
+								element={
+									<ProtectedLayout>
+										<CreateProjectPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId"
+								element={
+									<ProtectedLayout>
+										<ProjectDetailPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId/apps"
+								element={
+									<ProtectedLayout>
+										<ProjectAppsPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId/stats"
+								element={
+									<ProtectedLayout>
+										<ProjectStatsPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId/team"
+								element={
+									<ProtectedLayout>
+										<ProjectTeamPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId/settings"
+								element={
+									<ProtectedLayout>
+										<ProjectSettingsPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId/payment-providers"
+								element={
+									<ProtectedLayout>
+										<ProjectPaymentProvidersPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId/apps/new"
+								element={
+									<ProtectedLayout>
+										<AppSetupPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId/apps/:appId/users"
+								element={
+									<ProtectedLayout>
+										<AppUsersPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId/apps/:appId/settings"
+								element={
+									<ProtectedLayout>
+										<AppSettingsPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId/apps/:appId/oauth"
+								element={
+									<ProtectedLayout>
+										<AppOAuthPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId/apps/:appId/payment"
+								element={
+									<ProtectedLayout>
+										<AppPaymentSettingsPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId/apps/:appId/licenses"
+								element={
+									<ProtectedLayout>
+										<AppLicensesPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId/apps/:appId/api-keys"
+								element={
+									<ProtectedLayout>
+										<AppApiKeysPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId/apps/:appId/developers"
+								element={
+									<ProtectedLayout>
+										<AppDevelopersPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId/apps/:appId"
+								element={
+									<ProtectedLayout>
+										<AppDetailPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/licenses"
+								element={
+									<ProtectedLayout>
+										<LicensesPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/billing"
+								element={
+									<ProtectedLayout>
+										<BillingDashboardPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/webhooks"
+								element={
+									<ProtectedLayout>
+										<WebhookMonitoringPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/refunds"
+								element={
+									<ProtectedLayout>
+										<RefundProcessingPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/export"
+								element={
+									<ProtectedLayout>
+										<TransactionExportPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/playground/payments"
+								element={
+									<ProtectedLayout>
+										<PaymentTestingPlayground />
+									</ProtectedLayout>
+								}
+							/>
+							<Route path="/" element={<Navigate to="/projects" replace />} />
+						</Routes>
+					</BrowserRouter>
+				</ToastProvider>
+			</QueryClientProvider>
+		</ThemeProvider>
 	);
 }
 

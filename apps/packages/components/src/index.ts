@@ -82,8 +82,8 @@ export type { ProfileHeaderProps } from './components/ui/ProfileHeader';
 export { InfoList } from './components/ui/InfoList';
 export type { InfoListProps, InfoListItemProps } from './components/ui/InfoList';
 
-export { LoginCard, LoginCardLogo, LoginCardTitle, LoginCardSubtitle, LoginCardBody, LoginCardTerms, LoginCardError } from './components/ui/LoginCard';
-export type { LoginCardProps, LoginCardLogoProps, LoginCardTitleProps, LoginCardSubtitleProps, LoginCardBodyProps, LoginCardTermsProps, LoginCardErrorProps } from './components/ui/LoginCard';
+export { LoginCard, LoginCardLogo, LoginCardTitle, LoginCardSubtitle, LoginCardBody, LoginCardTerms, LoginCardError, AuthLoginCard } from './components/ui/LoginCard';
+export type { LoginCardProps, LoginCardLogoProps, LoginCardTitleProps, LoginCardSubtitleProps, LoginCardBodyProps, LoginCardTermsProps, LoginCardErrorProps, AuthLoginCardProps } from './components/ui/LoginCard';
 
 export { SessionCard } from './components/ui/SessionCard';
 export type { SessionCardProps } from './components/ui/SessionCard';

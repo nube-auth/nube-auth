@@ -14,3 +14,6 @@ export {
   type LoginCardTermsProps,
   type LoginCardErrorProps,
 } from './LoginCard';
+
+export { AuthLoginCard } from './AuthLoginCard';
+export type { AuthLoginCardProps } from './AuthLoginCard';
