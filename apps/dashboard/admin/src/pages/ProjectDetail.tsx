@@ -34,13 +34,6 @@ export function ProjectDetailPage() {
 	const { data: apps, isLoading: appsLoading } = useProjectApps(projectId || "");
 	const { data: members, isLoading: membersLoading } = useProjectMembers(projectId || "");
 	const { data: stats, isLoading: statsLoading } = useProjectStats(projectId || "");
-	const [copied, setCopied] = useState(false);
-
-	const copyToClipboard = (text: string) => {
-		navigator.clipboard.writeText(text);
-		setCopied(true);
-		setTimeout(() => setCopied(false), 2000);
-	};
 
 	if (projectLoading) {
 		return (
@@ -64,41 +57,38 @@ export function ProjectDetailPage() {
 			{/* Project Header Card */}
 			<Card>
 				<CardBody>
-					<div className="flex items-start gap-5">
-						<IconBox size="lg" variant="primary-subtle">
-							<Icon icon={getIconById(project.icon || "folder")} size={28} />
-						</IconBox>
-						<div className="flex-1">
-							<div className="flex items-center gap-3 mb-1">
-								<Heading size="lg" className="mb-0">
-									{project.name}
-								</Heading>
-								<Badge variant="success">Active</Badge>
-							</div>
-							{project.slug && (
-								<Text className="text-text-secondary mb-3">{project.slug}</Text>
-							)}
-							<div className="flex items-center gap-3">
-								<code className="px-2 py-1 bg-surface-secondary rounded text-xs font-mono">
-									{project.id}
-								</code>
-								<Button
-									variant="plain"
-									size="sm"
-									onClick={() => copyToClipboard(project.id)}
-								>
-									{copied ? (
-										<>
-											<Icon icon={IconType.CheckCircle} size={14} />
-											Copied!
-										</>
-									) : (
-										<>
-											<Icon icon={IconType.Copy} size={14} />
-											Copy ID
-										</>
-									)}
-								</Button>
+					<div className="flex items-start justify-between gap-8">
+						{/* Left: Main Info */}
+						<div className="flex items-start gap-5 flex-1">
+							<IconBox size="lg" variant="primary-subtle">
+								<Icon icon={getIconById(project.icon || "folder")} size={28} />
+							</IconBox>
+							<div className="flex-1">
+								<div className="flex items-center gap-3 mb-2">
+									<Heading size="lg" className="mb-0">
+										{project.name}
+									</Heading>
+									<Badge variant="success">Active</Badge>
+								</div>
+								{project.description && (
+									<Text className="text-text-secondary mb-4 max-w-2xl">
+										{project.description}
+									</Text>
+								)}
+								<div className="flex items-start gap-6">
+									<div>
+										<Text className="text-text-muted mb-1 uppercase font-medium text-xs">
+											Slug
+										</Text>
+										<Badge variant="info"> {project.slug} </Badge>
+									</div>
+									<div>
+										<Text className="text-text-muted mb-1 uppercase font-medium text-xs">
+											Project ID
+										</Text>
+										<Badge variant="info"> {project.id} </Badge>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -177,7 +167,7 @@ export function ProjectDetailPage() {
 						</div>
 					</CardBody>
 				) : apps && apps.length > 0 ? (
-					<CardBody className="p-0">
+					<CardBody>
 						<TableContainer>
 							<Table>
 								<TableHeader>
@@ -198,7 +188,7 @@ export function ProjectDetailPage() {
 										>
 											<TableCell>
 												<div className="flex items-center gap-3">
-													<IconBox variant="secondary-subtle">
+												<IconBox size="sm" variant="secondary-subtle">
 														<Icon icon={getIconById(app.icon || "application")} size={18} />
 													</IconBox>
 													<Text className="font-medium">

@@ -82,7 +82,7 @@ export function AppSidebar({ user, onLogout, isLoggingOut }: AppSidebarProps) {
                   data-slot="sidebar-item-button"
                   render={
                     <SidebarItemButton className="border border-border">
-                      <Avatar>
+                      <Avatar className="bg-primary text-white">
                         <AvatarFallback>{initials}</AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col items-start">
