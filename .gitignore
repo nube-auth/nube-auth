@@ -319,3 +319,6 @@ http-client.private.env.json
 .astro/
 # Vercel
 .vercel/
+
+# Claude AI
+.claude/

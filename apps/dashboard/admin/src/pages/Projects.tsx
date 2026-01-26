@@ -1,124 +1,126 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useProjects } from "../hooks/api";
-import { Icon, IconType } from "@proofa/components";
+import { 
+	Icon, 
+	IconType,
+	Button,
+	Spinner,
+	Alert,
+	Card,
+	CardBody,
+	Table,
+	TableContainer,
+	TableHeader,
+	TableHead,
+	TableBody,
+	TableRow,
+	TableCell,
+	Heading,
+	Text,
+} from "@proofa/components";
 import { getIconById } from "../components/IconPicker";
+import type { Project } from "../types/admin";
 
 type ViewMode = "grid" | "table";
 
-export function ProjectsPage() {
+export default function Projects() {
 	const { data: projects, isLoading, error } = useProjects();
 	const navigate = useNavigate();
 	const [viewMode, setViewMode] = useState<ViewMode>("table");
 
+	const hasProjects = projects && projects.length > 0;
+
 	if (isLoading) {
 		return (
-			<div className="loading">
-				<div className="spinner" />
-				<span className="loading-text">Loading projects...</span>
+			<div className="flex flex-col items-center justify-center py-20">
+				<Spinner className="w-12 h-12 mb-4" />
+				<Text className="text-muted">Loading projects...</Text>
 			</div>
 		);
 	}
 
 	if (error) {
 		return (
-			<div className="alert-danger">
-				<Icon icon={IconType.AlertCircle} size={20} bold className="alert-icon" />
+			<Alert variant="danger">
+				<Icon icon={IconType.AlertCircle} size={20} />
 				<span>Error loading projects. Please try again.</span>
-			</div>
+			</Alert>
 		);
 	}
 
-	const hasProjects = projects && projects.length > 0;
-
 	return (
-		<div className="space-y-6">
+		<div className="flex flex-col gap-6">
 			{/* Page Header */}
-			<div className="page-header">
+			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="page-title">Projects</h1>
-					<p className="page-description">Manage your authentication projects</p>
+					<Heading level={1} size="lg">Projects</Heading>
+					<Text className="text-muted mt-1">Manage your authentication projects</Text>
 				</div>
 				{hasProjects && (
 					<div className="flex gap-3 items-center">
-						<div
-							className="flex bg-card-bg border border-card-border rounded-lg p-1 gap-1"
-						>
-							<button
-								type="button"
+						<div className="flex bg-surface-secondary/50 border border-border rounded-lg p-1 gap-1">
+							<Button
+								variant={viewMode === "grid" ? "primary" : "plain"}
+								size="sm"
 								onClick={() => setViewMode("grid")}
-								className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
-									viewMode === "grid" ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:text-text-primary"
-								}`}
 							>
 								<Icon icon={IconType.Grid} size={14} bold={viewMode === "grid"} />
 								Grid
-							</button>
-							<button
-								type="button"
+							</Button>
+							<Button
+								variant={viewMode === "table" ? "primary" : "plain"}
+								size="sm"
 								onClick={() => setViewMode("table")}
-								className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
-									viewMode === "table" ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:text-text-primary"
-								}`}
 							>
 								<Icon icon={IconType.Menu} size={14} bold={viewMode === "table"} />
 								Table
-							</button>
+							</Button>
 						</div>
-						<button type="button" onClick={() => navigate("/projects/new")} className="btn btn-primary">
-						<Icon icon={IconType.Add} size={16} bold />
+						<Button variant="primary" onClick={() => navigate("/projects/new")}>
+							<Icon icon={IconType.Add} size={16} bold />
 							New Project
-						</button>
+						</Button>
 					</div>
 				)}
 			</div>
 
-		{/* Empty State */}
-		{!hasProjects && (
-			<div
-				className="flex flex-col items-center justify-center py-20 px-5 text-center"
-			>
-				<div className="relative mb-6">
-					<div
-						className="w-25 h-25 rounded-full flex items-center justify-center border border-primary/25"
-					>
-						<Icon icon={IconType.Layers} size={44} className="text-primary" />
+			{/* Empty State */}
+			{!hasProjects && (
+				<div className="flex flex-col items-center justify-center py-20 px-5 text-center">
+					<div className="relative mb-6">
+						<div className="w-25 h-25 rounded-full flex items-center justify-center border border-primary/25">
+							<Icon icon={IconType.Layers} size={44} className="text-primary" />
+						</div>
+						<div className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary rounded-full flex items-center justify-center border-2 border-background">
+							<Icon icon={IconType.Add} size={16} className="text-white" bold />
+						</div>
 					</div>
-					<div className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary rounded-full flex items-center justify-center border-2 border-[var(--content-bg)]">
-						<Icon icon={IconType.Add} size={16} className="text-white" bold />
-					</div>
-				</div>
-				<h2
-					className="text-24px font-bold text-text-primary mb-3"
-				>
-					Create your first project
-				</h2>
-				<p
-					className="text-15px text-text-secondary max-w-100 mb-8 leading-relaxed"
-				>
-					Projects help you organize your applications and manage authentication across your services.
-				</p>
-				<button
-					type="button"
-					onClick={() => navigate("/projects/new")}
-						className="btn btn-primary py-3 px-6 text-15px"
+					<Heading level={2} size="md" className="mb-3">
+						Create your first project
+					</Heading>
+					<Text className="text-muted max-w-100 mb-8 leading-relaxed">
+						Projects help you organize your applications and manage authentication across your services.
+					</Text>
+					<Button
+						variant="primary"
+						size="lg"
+						onClick={() => navigate("/projects/new")}
 					>
-					<Icon icon={IconType.Add} size={18} bold />
+						<Icon icon={IconType.Add} size={18} bold />
 						New Project
-					</button>
-					<div
-						className="mt-10 flex gap-8 text-text-tertiary text-13px"
-					>
+					</Button>
+					<div className="mt-10 flex gap-8 text-muted text-sm">
 						<div className="flex items-center gap-2">
-						<Icon icon={IconType.Flash} size={16} />
-						<span>Quick Setup</span>
-					</div>
-					<div className="flex items-center gap-2">
-						<Icon icon={IconType.Lock} size={16} />
+							<Icon icon={IconType.Flash} size={16} />
+							<span>Quick Setup</span>
+						</div>
+						<div className="flex items-center gap-2">
+							<Icon icon={IconType.Lock} size={16} />
 							<span>Secure by Default</span>
 						</div>
 						<div className="flex items-center gap-2">
-						<Icon icon={IconType.SecurityCheck} size={16} />
+							<Icon icon={IconType.SecurityCheck} size={16} />
 							<span>Production Ready</span>
 						</div>
 					</div>
@@ -127,87 +129,69 @@ export function ProjectsPage() {
 
 			{/* Grid View */}
 			{hasProjects && viewMode === "grid" && (
-				<div
-					className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-5"
-				>
-					{projects.map((project) => (
-						<Link
-							key={project.id}
-							to={`/projects/${project.id}`}
-							className="block bg-card-bg border border-card-border rounded-xl p-5 no-underline transition-all hover:border-primary hover:-translate-y-0.5 hover:shadow-lg"
-						>
-							{/* Header */}
-							<div
-								className="flex items-center justify-between mb-3"
-							>
-								<div className="flex items-center gap-2.5">
-									<div
-										className="w-9 h-9 bg-surface-secondary rounded-lg flex items-center justify-center"
-									>
-										<Icon icon={getIconById(project.icon || "folder")} size={20} className="text-primary" />
+				<div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-5">
+					{projects.map((project: Project) => (
+						<Link key={project.id} to={`/projects/${project.id}`} className="no-underline">
+							<Card className="transition-all hover:border-primary hover:-translate-y-0.5 hover:shadow-lg cursor-pointer">
+								<CardBody>
+								{/* Header */}
+								<div className="flex items-center justify-between mb-3">
+									<div className="flex items-center gap-2.5">
+										<div className="w-9 h-9 bg-surface-secondary rounded-lg flex items-center justify-center">
+											<Icon icon={getIconById(project.icon || "folder")} size={20} className="text-primary" />
+										</div>
+										<div>
+											<Heading level={3} size="sm" className="font-semibold">
+												{project.name}
+											</Heading>
+											{project.slug && (
+												<Text className="text-xs text-muted">
+													{project.slug}
+												</Text>
+											)}
+										</div>
 									</div>
-									<div>
-										<h3 className="project-name">
-											{project.name}
-										</h3>
-										{project.slug && (
-												<p className="project-slug">
-												{project.slug}
-											</p>
-										)}
+									<div className="flex items-center justify-center">
+										<Icon icon={IconType.Check} size={18} className="text-success" bold />
 									</div>
-							</div>
-							<div className="flex items-center justify-center">
-							<Icon icon={IconType.Check} size={18} className="text-success" bold />
-							</div>
-							</div>
+								</div>
 
-							{/* Stats Grid */}
-							<div
-								className="grid grid-cols-3 gap-3 mt-4 p-3 bg-surface-secondary rounded-lg"
-							>
-								<div className="text-center">
-									<div
-										className="text-20px font-bold text-text-primary mb-0.5"
-									>
-										{project.totalApps || 0}
+								{/* Stats Grid */}
+								<div className="grid grid-cols-3 gap-3 mt-4 p-3 bg-surface-secondary rounded-lg">
+									<div className="text-center">
+										<div className="text-xl font-bold text-foreground mb-0.5">
+											{project.totalApps || 0}
+										</div>
+										<Text className="text-xs text-muted">Apps</Text>
 									</div>
-									<div className="text-11px text-text-tertiary">Apps</div>
-								</div>
-								<div className="text-center">
-									<div
-										className="text-20px font-bold text-text-primary mb-0.5"
-									>
-										{project.totalUsers || 0}
+									<div className="text-center">
+										<div className="text-xl font-bold text-foreground mb-0.5">
+											{project.totalUsers || 0}
+										</div>
+										<Text className="text-xs text-muted">Users</Text>
 									</div>
-									<div className="text-11px text-text-tertiary">Users</div>
-								</div>
-								<div className="text-center">
-									<div
-										className="text-20px font-bold text-text-primary mb-0.5"
-									>
-										{project.activeLicenses || 0}
+									<div className="text-center">
+										<div className="text-xl font-bold text-foreground mb-0.5">
+											{project.activeLicenses || 0}
+										</div>
+										<Text className="text-xs text-muted">Licenses</Text>
 									</div>
-									<div className="text-11px text-text-tertiary">Licenses</div>
 								</div>
-							</div>
 
-							{/* Footer */}
-							<div
-								className="flex items-center justify-between mt-3 pt-3 border-t border-border-secondary"
-							>
-								<div className="flex items-center gap-1.5">
-									<Icon icon={IconType.DollarCircle} size={14} className="text-success" />
-									<span className="text-14px font-semibold text-success">
-										${(project.totalRevenue || 0).toFixed(2)}
-									</span>
+								{/* Footer */}
+								<div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+									<div className="flex items-center gap-1.5">
+										<Icon icon={IconType.DollarCircle} size={14} className="text-success" />
+										<span className="text-sm font-semibold text-success">
+											${(project.totalRevenue || 0).toFixed(2)}
+										</span>
+									</div>
+									<Text className="text-xs text-muted font-mono">
+										{project.id.substring(0, 8)}
+									</Text>
 								</div>
-								<span
-									className="text-11px text-text-tertiary font-mono"
-								>
-									{project.id.substring(0, 8)}
-								</span>
-							</div>
+							</CardBody>
+						</Card>
 						</Link>
 					))}
 				</div>
@@ -215,117 +199,81 @@ export function ProjectsPage() {
 
 			{/* Table View */}
 			{hasProjects && viewMode === "table" && (
-				<div className="card-hover p-0">
-					<table className="w-full border-collapse">
-						<thead>
-							<tr
-								className="bg-surface-secondary border-b border-border-secondary"
-							>
-								<th
-									className="px-4 py-3 text-left text-12px font-semibold text-text-secondary uppercase"
-								>
-									Name
-								</th>
-								<th
-									className="px-4 py-3 text-center text-12px font-semibold text-text-secondary uppercase"
-								>
-									Apps
-								</th>
-								<th
-									className="px-4 py-3 text-center text-12px font-semibold text-text-secondary uppercase"
-								>
-									Users
-								</th>
-								<th
-									className="px-4 py-3 text-center text-12px font-semibold text-text-secondary uppercase"
-								>
-									Licenses
-								</th>
-								<th
-									className="px-4 py-3 text-right text-12px font-semibold text-text-secondary uppercase"
-								>
-									Revenue
-								</th>
-								<th
-									className="px-4 py-3 text-center text-12px font-semibold text-text-secondary uppercase"
-								>
-									Status
-								</th>
-								<th className="px-4 py-3 w-12"></th>
-							</tr>
-						</thead>
-						<tbody>
-							{projects.map((project) => (
-								<tr
-									key={project.id}
-							className="border-b border-white/5 transition-colors cursor-pointer hover:bg-surface-hover"
-									onClick={() => (window.location.href = `/projects/${project.id}`)}
-								>
-									<td className="p-4">
-										<div className="flex items-center gap-3">
-											<div
-												className="w-8 h-8 bg-surface-secondary rounded-md flex items-center justify-center flex-shrink-0"
-											>
-												<Icon icon={getIconById(project.icon || "folder")} size={18} className="text-primary" />
-											</div>
-											<div>
-												<div
-													className="text-14px font-medium text-text-primary mb-0.5"
-												>
-													{project.name}
+				<Card>
+					<TableContainer>
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>Name</TableHead>
+									<TableHead className="text-center">Apps</TableHead>
+									<TableHead className="text-center">Users</TableHead>
+									<TableHead className="text-center">Licenses</TableHead>
+									<TableHead className="text-right">Revenue</TableHead>
+									<TableHead className="text-center">Status</TableHead>
+									<TableHead className="w-12"></TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{projects.map((project: Project) => (
+									<TableRow
+										key={project.id}
+										className="cursor-pointer"
+										onClick={() => navigate(`/projects/${project.id}`)}
+									>
+										<TableCell>
+											<div className="flex items-center gap-3">
+												<div className="w-8 h-8 bg-surface-secondary rounded-md flex items-center justify-center flex-shrink-0">
+													<Icon icon={getIconById(project.icon || "folder")} size={18} className="text-primary" />
 												</div>
-												{project.slug && (
-													<div className="text-12px text-text-tertiary">
-														{project.slug}
-													</div>
-												)}
+												<div>
+													<Text className="font-medium mb-0.5">
+														{project.name}
+													</Text>
+													{project.slug && (
+														<Text className="text-xs text-muted">
+															{project.slug}
+														</Text>
+													)}
+												</div>
 											</div>
-										</div>
-									</td>
-									<td className="p-4 text-center">
-										<span
-											className="text-15px font-semibold text-text-primary"
-										>
-											{project.totalApps || 0}
-										</span>
-									</td>
-									<td className="p-4 text-center">
-										<span
-											className="text-15px font-semibold text-text-primary"
-										>
-											{project.totalUsers || 0}
-										</span>
-									</td>
-									<td className="p-4 text-center">
-										<span
-											className="text-15px font-semibold text-text-primary"
-										>
-											{project.activeLicenses || 0}
-											<span
-												className="text-13px text-text-tertiary font-normal ml-0.5"
-											>
-												/ {project.totalLicenses || 0}
-											</span>
-										</span>
-									</td>
-									<td className="p-4 text-right">
-										<span className="text-15px font-semibold text-success">
-											${(project.totalRevenue || 0).toFixed(2)}
-										</span>
-									</td>
-									<td className="p-4">
-										<div className="flex items-center justify-center">
-											<Icon icon={IconType.Check} size={18} className="text-success" bold />
-										</div>
-									</td>
-									<td className="p-4 text-center">
-										<Icon icon={IconType.ArrowRight} size={16} className="text-text-tertiary" />
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
+										</TableCell>
+										<TableCell className="text-center">
+											<Text className="font-semibold">
+												{project.totalApps || 0}
+											</Text>
+										</TableCell>
+										<TableCell className="text-center">
+											<Text className="font-semibold">
+												{project.totalUsers || 0}
+											</Text>
+										</TableCell>
+										<TableCell className="text-center">
+											<Text className="font-semibold">
+												{project.activeLicenses || 0}
+												<span className="text-sm text-muted font-normal ml-0.5">
+													/ {project.totalLicenses || 0}
+												</span>
+											</Text>
+										</TableCell>
+										<TableCell className="text-right">
+											<Text className="font-semibold text-success">
+												${(project.totalRevenue || 0).toFixed(2)}
+											</Text>
+										</TableCell>
+										<TableCell>
+											<div className="flex items-center justify-center">
+												<Icon icon={IconType.Check} size={18} className="text-success" bold />
+											</div>
+										</TableCell>
+										<TableCell className="text-center">
+											<Icon icon={IconType.ArrowRight} size={16} className="text-muted" />
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</TableContainer>
+				</Card>
 			)}
 		</div>
 	);

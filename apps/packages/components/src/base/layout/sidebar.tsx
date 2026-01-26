@@ -4,7 +4,7 @@ import { useRender } from '@base-ui/react/use-render';
 import { cn } from '../../lib/cn';
 import { Collapsible as BaseCollapsible } from '@base-ui/react/collapsible';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { createContext, useContext } from 'react';
+import { createContext, useContext, forwardRef } from 'react';
 
 const SidebarContext = createContext<{
   size: 'default' | 'compact' | 'loose';
@@ -243,22 +243,29 @@ export function SidebarItemAction({
   );
 }
 
-export function SidebarItemButton({
-  className,
-  render,
-  active,
-  expandableIndicator = true,
-  ...props
-}: useRender.ComponentProps<'button'> & {
-  active?: boolean;
-  expandableIndicator?: boolean;
-}) {
+export const SidebarItemButton = forwardRef<
+  HTMLButtonElement,
+  useRender.ComponentProps<'button'> & {
+    active?: boolean;
+    expandableIndicator?: boolean;
+  }
+>(function SidebarItemButton(
+  {
+    className,
+    render,
+    active,
+    expandableIndicator = true,
+    ...props
+  },
+  ref,
+) {
   return useRender({
     defaultTagName: 'button',
     render,
     props: {
       'data-slot': 'sidebar-item-button',
       'data-active': active ? true : undefined,
+      ref,
       className: cn(
         'flex items-center gap-2.5 w-full relative z-10',
         'text-foreground cursor-pointer text-left',
@@ -278,7 +285,7 @@ export function SidebarItemButton({
       ...props,
     },
   });
-}
+});
 
 export function SidebarGroup({
   className,

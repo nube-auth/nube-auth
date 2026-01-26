@@ -31,6 +31,13 @@ export { Icon, IconType, } from './icons';
 export type { IconProps, IconTypeName } from './icons';
 
 // ============================================================================
+// HOOKS
+// ============================================================================
+
+export { useTheme } from './hooks/useTheme';
+export type { Theme } from './hooks/useTheme';
+
+// ============================================================================
 // UTILITIES
 // ============================================================================
 
@@ -67,6 +74,9 @@ export type { InfoListProps, InfoListItemProps } from './components/display/info
 
 export { SessionCard } from './components/display/session-card';
 export type { SessionCardProps } from './components/display/session-card';
+
+export { ThemeToggle } from './components/display/ThemeToggle';
+export type { ThemeToggleProps } from './components/display/ThemeToggle';
 
 // Auth
 export { LoginCard, LoginCardLogo, LoginCardTitle, LoginCardSubtitle, LoginCardBody, LoginCardTerms, LoginCardError, AuthLoginCard } from './components/auth/login-card';

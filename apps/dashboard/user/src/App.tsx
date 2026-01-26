@@ -1,53 +1,12 @@
 import type React from "react";
-import { useEffect, useState } from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
-import { Spinner } from "@proofa/components";
+import { Spinner, useTheme, ThemeToggle, Button, Icon, IconType } from "@proofa/components";
+import { config } from "./config";
 import { useAuth } from "./hooks/api";
 import { LoginPage } from "./pages/Login";
 import { ProfilePage } from "./pages/Profile";
 import { SessionsPage } from "./pages/Sessions";
 import { SecurityPage } from "./pages/Security";
-import { ThemeToggle } from "./components/ThemeToggle";
-
-// Theme hook
-function useTheme() {
-	const [theme, setTheme] = useState<"light" | "dark" | "system">(() => {
-		if (typeof window !== "undefined") {
-			return (localStorage.getItem("theme") as "light" | "dark" | "system") || "system";
-		}
-		return "system";
-	});
-
-	useEffect(() => {
-		const root = document.documentElement;
-		
-		// Determine effective theme
-		let effectiveTheme: "light" | "dark" = "light";
-		if (theme === "system") {
-			effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-		} else {
-			effectiveTheme = theme;
-		}
-
-		// Apply dark class for Selia components
-		if (effectiveTheme === "dark") {
-			root.classList.add("dark");
-		} else {
-			root.classList.remove("dark");
-		}
-
-		// Also set data-theme for custom components
-		if (theme === "system") {
-			root.removeAttribute("data-theme");
-			localStorage.removeItem("theme");
-		} else {
-			root.setAttribute("data-theme", theme);
-			localStorage.setItem("theme", theme);
-		}
-	}, [theme]);
-
-	return { theme, setTheme };
-}
 
 function ProtectedLayout({ 
 	children, 
@@ -95,6 +54,14 @@ function ProtectedLayout({
 
 				<div className="header-right">
 					<ThemeToggle theme={theme} onToggle={cycleTheme} />
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => window.open(config.homeUrl, '_blank', 'noopener,noreferrer')}
+					>
+						<Icon icon={IconType.Home} size={16} />
+						Home
+					</Button>
 				</div>
 			</header>
 

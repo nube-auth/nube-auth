@@ -1,11 +1,12 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
-import React, { useContext, useEffect, useState } from "react";
+import React from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { ToastProvider } from "./components/Toast";
-import { Icon, IconType } from "@proofa/components";
-import { getIconById } from "./components/IconPicker";
+import { Icon, IconType, Button, Heading, useTheme, ThemeToggle } from "@proofa/components";
 import config from "./config";
-import { useLogout, useProjects } from "./hooks/api";
+import { useLogout } from "./hooks/api";
+import { DashboardLayout } from "./layouts/DashboardLayout";
+import { AppSidebar } from "./layouts/AppSidebar";
 import { AppApiKeysPage } from "./pages/AppApiKeys";
 import { AppDetailPage } from "./pages/AppDetail";
 import { AppDevelopersPage } from "./pages/AppDevelopers";
@@ -29,66 +30,12 @@ import { ProjectDetailPage } from "./pages/ProjectDetail";
 import ProjectPaymentProvidersPage from "./pages/ProjectPaymentProviders";
 import { ProjectSettingsPage } from "./pages/ProjectSettings";
 import { ProjectStatsPage } from "./pages/ProjectStats";
-import { ProjectsPage } from "./pages/Projects";
+import ProjectsPage from "./pages/Projects";
 import { CreateProjectPage } from "./pages/CreateProject";
 import { ProjectTeamPage } from "./pages/ProjectTeam";
 import { pingpong } from "./lib/pingpong";
 
 const queryClient = new QueryClient();
-
-type ThemeMode = "light" | "dark" | "system";
-
-const ThemeContext = React.createContext<{
-	theme: ThemeMode;
-	setTheme: React.Dispatch<React.SetStateAction<ThemeMode>>;
-} | undefined>(undefined);
-
-function ThemeProvider({ children }: { children: React.ReactNode }) {
-	const [theme, setTheme] = useState<ThemeMode>(() => {
-		if (typeof window !== "undefined") {
-			return (localStorage.getItem("theme") as ThemeMode) || "system";
-		}
-		return "system";
-	});
-
-	useEffect(() => {
-		if (typeof window === "undefined") return;
-		const root = document.documentElement;
-
-		// Determine effective theme for Selia (uses .dark class)
-		let effectiveTheme: "light" | "dark" = "light";
-		if (theme === "system") {
-			effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-		} else {
-			effectiveTheme = theme;
-		}
-
-		if (effectiveTheme === "dark") {
-			root.classList.add("dark");
-		} else {
-			root.classList.remove("dark");
-		}
-
-		if (theme === "system") {
-			root.removeAttribute("data-theme");
-			localStorage.removeItem("theme");
-			return;
-		}
-
-		root.setAttribute("data-theme", theme);
-		localStorage.setItem("theme", theme);
-	}, [theme]);
-
-	return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
-}
-
-function useTheme() {
-	const context = useContext(ThemeContext);
-	if (!context) {
-		throw new Error("useTheme must be used within ThemeProvider");
-	}
-	return context;
-}
 
 // User auth hook using Proofa client
 function useMe() {
@@ -117,35 +64,11 @@ function useMe() {
 	});
 }
 
-function SidebarLink({ to, children, icon }: { to: string; children: React.ReactNode; icon: React.ReactNode }) {
-	const location = useLocation();
-	const isActive = location.pathname === to || location.pathname.startsWith(`${to}/`);
-
-	return (
-		<Link to={to} className={`sidebar-link ${isActive ? "sidebar-link-active" : ""}`}>
-			{icon}
-			{children}
-		</Link>
-	);
-}
-
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
-	const { data, isLoading } = useMe();
-	const { data: projects = [] } = useProjects();
+	const { data: user, isLoading } = useMe();
 	const { theme, setTheme } = useTheme();
 	const { mutate: logout, isPending: isLoggingOut } = useLogout();
-	const [showProjectDropdown, setShowProjectDropdown] = useState(false);
-	const navigate = useNavigate();
 	const location = useLocation();
-
-	// Close dropdown when location changes
-	useEffect(() => {
-		setShowProjectDropdown(false);
-	}, []);
-
-	// Detect current project from URL
-	const urlMatch = location.pathname.match(/\/projects\/([^/]+)/);
-	const selectedProject = (urlMatch && urlMatch[1] !== "new") ? urlMatch[1] : null;
 
 	if (isLoading) {
 		return (
@@ -158,18 +81,9 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 		);
 	}
 
-	if (!data) {
+	if (!user) {
 		return <Navigate to="/login" replace />;
 	}
-
-	const initials = data.name
-		? data.name
-				.split(" ")
-				.map((n: string) => n[0])
-				.join("")
-				.toUpperCase()
-				.slice(0, 2)
-		: (data.email || data.primary_email)?.charAt(0).toUpperCase() || "U";
 
 	const cycleTheme = () => {
 		if (theme === "system") setTheme("light");
@@ -177,381 +91,44 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 		else setTheme("system");
 	};
 
-	const getThemeIcon = () => {
-		if (theme === "light") {
-				return <Icon icon={IconType.Sun} size={16} className="text-current" />;
-		}
-		if (theme === "dark") {
-				return <Icon icon={IconType.Moon} size={16} className="text-current" />;
-		}
-		return <Icon icon={IconType.Computer} size={16} className="text-current" />;
-	};
+	const topBar = (
+		<>
+			<Heading size="sm">Dashboard</Heading>
+			<div className="ml-auto flex items-center gap-3">
+				<ThemeToggle theme={theme} onToggle={cycleTheme} />
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={() => window.open(config.docsUrl, '_blank', 'noopener,noreferrer')}
+				>
+					<Icon icon={IconType.BookOpen} size={16} />
+					Docs
+				</Button>
+			</div>
+		</>
+	);
 
 	return (
-		<div className="app-layout">
-			{/* Sidebar */}
-			<aside className="sidebar">
-				<div className="sidebar-header">
-					<Link to="/projects" className="sidebar-logo">
-						<img src="/favicon.png" alt="Proofa" className="sidebar-logo-img" />
-						<span className="sidebar-logo-name">Proofa</span>
-						<span className="sidebar-logo-badge">Beta</span>
-					</Link>
-				</div>
-
-				{/* Project Selector Dropdown */}
-				<div className="relative mx-3 my-4 z-10000">
-					<button
-						type="button"
-						onClick={() => setShowProjectDropdown(!showProjectDropdown)}
-						className={`w-full flex items-center justify-between gap-2.5 px-3.5 py-2.5 bg-white/5 rounded-md cursor-pointer outline-none transition-all duration-200 ${showProjectDropdown ? "border border-primary" : "border border-sidebar-border"}`}
-					>
-						<div className="flex items-center gap-2.5 min-w-0">
-							<div className="w-8 h-8 rounded-md bg-surface-secondary flex items-center justify-center flex-shrink-0">
-								{selectedProject ? (
-									<Icon 
-										icon={getIconById(
-											projects.find((p) => p.id === selectedProject)?.icon || "folder"
-										)} 
-										size={18} 
-										className="text-primary" 
-									/>
-								) : (
-									<Icon icon={IconType.Layers} size={18} className="text-primary" />
-								)}
-							</div>
-							<span className="text-13px font-medium text-white truncate">
-								{selectedProject
-									? projects.find((p) => p.id === selectedProject)?.name || "Unknown Project"
-									: "All Projects"}
-							</span>
-						</div>
-						<Icon
-						icon={IconType.ArrowDown}
-							size={16}
-							className={`text-text-tertiary transition-transform duration-200 ${showProjectDropdown ? "rotate-180" : "rotate-0"}`}
-						/>
-					</button>
-
-					{/* Dropdown Menu */}
-					{showProjectDropdown && (
-						<div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-content-bg border border-sidebar-border rounded-lg shadow-2xl z-10000 max-h-[180px] overflow-y-auto overflow-x-hidden">
-							{projects.length === 0 ? (
-								<div className="p-5 text-text-secondary text-13px text-center">
-									No projects available
-								</div>
-							) : (
-								<>
-									{/* All Projects Option */}
-									<button
-										type="button"
-										onClick={() => {
-											navigate("/projects");
-											setShowProjectDropdown(false);
-										}}
-									className={`w-full p-3 text-left border-none border-b border-sidebar-border cursor-pointer text-13px font-medium transition-all duration-150 flex items-center gap-2.5 outline-none hover:bg-white/5 ${!selectedProject ? "bg-white/5 text-primary" : "bg-transparent text-text-secondary"}` }
-									>
-										<Icon icon={IconType.Layers} size={16} className="shrink-0 opacity-70" />
-										<span>All Projects</span>
-									</button>
-									{projects.map((project) => (
-										<button
-											key={project.id}
-											type="button"
-											onClick={() => {
-												navigate(`/projects/${project.id}`);
-												setShowProjectDropdown(false);
-											}}
-										className={`w-full py-2.5 px-3 text-left border-none border-b border-white/5 cursor-pointer text-13px transition-all duration-150 block outline-none hover:bg-white/5 ${selectedProject === project.id ? "bg-white/5 text-primary" : "bg-transparent text-text-secondary"}` }
-										>
-											<div className="flex items-center gap-2.5">
-												<div
-												className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${selectedProject === project.id ? "bg-surface-secondary" : "bg-white/5"}` }
-												>
-													<Icon 
-														icon={getIconById(project.icon || "folder")} 
-														size={18} 
-														className={selectedProject === project.id ? "text-primary" : "text-text-secondary"}
-													/>
-												</div>
-												<div className="flex-1 min-w-0">
-											<div className={`font-medium overflow-hidden text-ellipsis whitespace-nowrap ${project.slug ? "mb-0.5" : ""}`}>
-														{project.name}
-													</div>
-													{project.slug && (
-														<div className="text-11px opacity-50 overflow-hidden text-ellipsis whitespace-nowrap">
-															{project.slug}
-														</div>
-													)}
-												</div>
-											</div>
-										</button>
-									))}
-								</>
-							)}
-						</div>
-					)}
-				</div>
-
-				{/* Close dropdown when clicking outside */}
-				{showProjectDropdown && (
-					<div
-						onClick={() => setShowProjectDropdown(false)}
-						className="fixed inset-0 z-9999 bg-transparent"
-					/>
-				)}
-
-				<nav className="sidebar-nav">
-					{/* Context 1: Global View (at /projects, /projects/new, or /billing) */}
-					{(location.pathname === "/projects" || location.pathname === "/projects/new" || location.pathname === "/billing") && (
-						<div className="sidebar-section">
-							<SidebarLink
-								to="/projects"
-							icon={<Icon icon={IconType.Home} size={18} />}
-							>
-								Projects
-							</SidebarLink>
-							<SidebarLink
-								to="/billing"
-							icon={<Icon icon={IconType.CreditCard} size={18} />}
-							>
-								Billing
-							</SidebarLink>
-							<SidebarLink
-								to="/webhooks"
-							icon={<Icon icon={IconType.CloudUpload} size={18} />}
-							>
-								Webhooks
-							</SidebarLink>
-							<SidebarLink
-								to="/refunds"
-							icon={<Icon icon={IconType.ReturnRequest} size={18} />}
-							>
-								Refunds
-							</SidebarLink>
-							<SidebarLink
-								to="/export"
-							icon={<Icon icon={IconType.FileExport} size={18} />}
-							>
-								Export
-							</SidebarLink>
-							<SidebarLink
-								to="/playground/payments"
-							icon={<Icon icon={IconType.TestTube} size={18} />}
-							>
-								Test Playground
-							</SidebarLink>
-						</div>
-					)}
-
-					{/* Context 2: Project View (at /projects/:projectId but not in app or create page) */}
-					{selectedProject && !location.pathname.includes("/apps/") && location.pathname !== "/projects" && location.pathname !== "/projects/new" && (
-						<>
-							<div className="sidebar-section">
-								<div className="sidebar-section-title">Project</div>
-								<SidebarLink
-									to={`/projects/${selectedProject}`}
-								icon={<Icon icon={IconType.Dashboard} size={18} />}
-								>
-									Overview
-								</SidebarLink>
-								<SidebarLink
-									to={`/projects/${selectedProject}/stats`}
-								icon={<Icon icon={IconType.ChartColumn} size={18} />}
-								>
-									Statistics
-								</SidebarLink>
-							</div>
-							<div className="sidebar-section">
-								<div className="sidebar-section-title">Management</div>
-								<SidebarLink
-									to={`/projects/${selectedProject}/apps`}
-								icon={<Icon icon={IconType.LayoutGrid} size={18} />}
-								>
-									Apps
-								</SidebarLink>
-								<SidebarLink
-									to={`/projects/${selectedProject}/team`}
-								icon={<Icon icon={IconType.UserGroup} size={18} />}
-								>
-									Team
-								</SidebarLink>
-								<SidebarLink
-									to={`/projects/${selectedProject}/payment-providers`}
-								icon={<Icon icon={IconType.CreditCard} size={18} />}
-								>
-									Payment Providers
-								</SidebarLink>
-								<SidebarLink
-									to={`/projects/${selectedProject}/settings`}
-							icon={<Icon icon={IconType.Settings} size={18} />}
-								>
-									Settings
-								</SidebarLink>
-							</div>
-						</>
-					)}
-
-					{/* Context 3: App View (at /projects/:projectId/apps/:appId) */}
-					{selectedProject && location.pathname.includes("/apps/") && (
-						<div className="sidebar-section">
-							<SidebarLink
-								to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}`}
-							icon={<Icon icon={IconType.Dashboard} size={18} />}
-						>
-							Dashboard
-						</SidebarLink>
-						<SidebarLink
-							to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}/users`}
-							icon={<Icon icon={IconType.User} size={18} />}
-							>
-								Users
-							</SidebarLink>
-							<SidebarLink
-								to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}/licenses`}
-							icon={<Icon icon={IconType.License} size={18} />}
-						>
-							Licenses & Plans
-						</SidebarLink>
-						<SidebarLink
-							to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}/api-keys`}
-							icon={<Icon icon={IconType.Key} size={18} />}
-							>
-								API Keys
-							</SidebarLink>
-							<SidebarLink
-								to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}/oauth`}
-							icon={<Icon icon={IconType.ShieldKey} size={18} />}
-						>
-							OAuth Config
-						</SidebarLink>
-						<SidebarLink
-							to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}/payment`}
-							icon={<Icon icon={IconType.CreditCard} size={18} />}
-							>
-								Payment Config
-							</SidebarLink>
-							<SidebarLink
-								to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}/developers`}
-							icon={<Icon icon={IconType.Code} size={18} />}
-						>
-							Integration Guide
-						</SidebarLink>
-						<SidebarLink
-							to={`/projects/${selectedProject}/apps/${location.pathname.match(/apps\/([^/]+)/)?.[1]}/settings`}
-							icon={<Icon icon={IconType.Settings} size={18} />}
-							>
-								App Settings
-							</SidebarLink>
-						</div>
-					)}
-				</nav>
-
-				{/* Sidebar Footer - User */}
-				<div className="sidebar-footer">
-					<Link to="/profile" className="sidebar-user no-underline cursor-pointer">
-						<div className="sidebar-avatar">{initials}</div>
-						<div className="sidebar-user-info">
-							<div className="sidebar-user-name">{data.name || "Admin"}</div>
-							<div className="sidebar-user-email">{data.email || data.primary_email}</div>
-						</div>
-						<button
-							type="button"
-							onClick={(e) => {
-								e.preventDefault();
-								e.stopPropagation();
-								logout();
-							}}
-							disabled={isLoggingOut}
-							title="Logout"
-							className={`text-sidebar-text p-1 bg-none border-none ${isLoggingOut ? "cursor-wait opacity-50" : "cursor-pointer opacity-100"}`}
-						>
-							<Icon icon={IconType.Logout} size={18} className="text-current" />
-						</button>
-				</Link>
-			</div>
-		</aside>
-
-		{/* Main Content */}
-		<main className="main-content">
-			{/* Top Header */}
-			<header className="top-header">
-				<nav className="breadcrumb">
-					<Link to="/projects" className="breadcrumb-item">
-						Dashboard
-					</Link>
-					{selectedProject && (
-						<>
-							<span className="breadcrumb-divider">/</span>
-							<Link to={`/projects/${selectedProject}`} className="breadcrumb-item">
-								{projects.find((p) => p.id === selectedProject)?.name || "Project"}
-							</Link>
-						</>
-					)}
-					{location.pathname.includes("/apps/") && (
-						<>
-							<span className="breadcrumb-divider">/</span>
-							<span className="breadcrumb-current">
-								{location.pathname.includes("/api-keys") ? "API Keys" :
-								 location.pathname.includes("/oauth") ? "OAuth" :
-								 location.pathname.includes("/payment") ? "Payment" :
-								 location.pathname.includes("/developers") ? "Integration" :
-								 location.pathname.includes("/settings") ? "Settings" :
-								 location.pathname.includes("/licenses") ? "Licenses" :
-								 location.pathname.includes("/users") ? "Users" :
-								 "App"}
-							</span>
-						</>
-					)}
-					{location.pathname.includes("/team") && (
-						<>
-							<span className="breadcrumb-divider">/</span>
-							<span className="breadcrumb-current">Team</span>
-						</>
-					)}
-					{location.pathname.includes("/payment-providers") && (
-						<>
-							<span className="breadcrumb-divider">/</span>
-							<span className="breadcrumb-current">Payment Providers</span>
-						</>
-					)}
-					{location.pathname === "/billing" && (
-						<>
-							<span className="breadcrumb-divider">/</span>
-							<span className="breadcrumb-current">Billing</span>
-						</>
-					)}
-				</nav>
-				<div className="flex items-center gap-3">
-					<button
-						type="button"
-						onClick={cycleTheme}
-						className="header-btn theme-toggle"
-						title={`Current: ${theme} mode (click to change)`}
-					>
-						{getThemeIcon()}
-						<span className="theme-label">{theme.charAt(0).toUpperCase() + theme.slice(1)}</span>
-					</button>
-					<a href={config.docsUrl} target="_blank" rel="noopener noreferrer" className="header-btn">
-					<Icon icon={IconType.BookOpen} size={16} />
-						Docs
-					</a>
-				</div>
-			</header>
-
-				{/* Page Content */}
-				<div className="page-content">{children}</div>
-			</main>
-		</div>
+		<DashboardLayout
+			sidebar={
+				<AppSidebar
+					user={user}
+					onLogout={logout}
+					isLoggingOut={isLoggingOut}
+				/>
+			}
+			topBar={topBar}
+		>
+			{children}
+		</DashboardLayout>
 	);
 }
 
 function App() {
 	return (
-		<ThemeProvider>
-			<QueryClientProvider client={queryClient}>
-				<ToastProvider>
-					<BrowserRouter>
+		<QueryClientProvider client={queryClient}>
+			<ToastProvider>
+				<BrowserRouter>
 						<Routes>
 							<Route path="/login" element={<LoginPage />} />
 							<Route
@@ -755,11 +332,10 @@ function App() {
 								}
 							/>
 							<Route path="/" element={<Navigate to="/projects" replace />} />
-						</Routes>
-					</BrowserRouter>
-				</ToastProvider>
-			</QueryClientProvider>
-		</ThemeProvider>
+				</Routes>
+			</BrowserRouter>
+		</ToastProvider>
+	</QueryClientProvider>
 	);
 }
 
