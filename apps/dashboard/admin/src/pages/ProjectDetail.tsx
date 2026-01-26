@@ -152,7 +152,7 @@ export function ProjectDetailPage() {
 			</div>
 
 			{/* Applications Section */}
-			<Card className="overflow-hidden">
+			<Card>
 				<CardHeader>
 					<div className="flex-1">
 						<CardTitle>Applications</CardTitle>
