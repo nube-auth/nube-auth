@@ -1,6 +1,37 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import {
+	Icon,
+	IconType,
+	Spinner,
+	Alert,
+	Heading,
+	Text,
+	Button,
+	Badge,
+	EmptyState,
+	Dialog,
+	DialogPopup,
+	DialogHeader,
+	DialogTitle,
+	DialogBody,
+	DialogFooter,
+	Breadcrumb,
+	BreadcrumbList,
+	BreadcrumbItem,
+	BreadcrumbButton,
+	BreadcrumbSeparator,
+	Card,
+	CardBody,
+	TableContainer,
+	Table,
+	TableHeader,
+	TableHead,
+	TableBody,
+	TableRow,
+	TableCell
+} from "@proofa/components";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { InviteTeamMemberModal } from "../components/InviteTeamMemberModal";
 import { Select } from "../components/Select";
@@ -50,75 +81,74 @@ export function ProjectTeamPage() {
 
 	if (projectLoading || membersLoading || invitationsLoading) {
 		return (
-			<div className="loading">
-				<div className="spinner" />
+			<div className="flex items-center justify-center min-h-[50vh]">
+				<Spinner size="lg" />
 			</div>
 		);
 	}
 
 	if (!project) {
-		return <div className="error-state">Project not found</div>;
+		return (
+			<Alert variant="danger">
+				<Icon icon={IconType.AlertCircle} size={20} />
+				<span>Project not found</span>
+			</Alert>
+		);
 	}
 
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
-			<div className="mb-6">
-				<div className="flex gap-2 items-center text-xs text-text-tertiary">
-					<Link to="/projects" className="text-text-tertiary no-underline">
-						Projects
-					</Link>
-					<span>›</span>
-					<Link
-						to={`/projects/${projectId}`}
-						className="text-text-tertiary no-underline"
-					>
-						{project.name}
-					</Link>
-					<span>›</span>
-					<span className="text-text-primary">Team</span>
-				</div>
-			</div>
+			<Breadcrumb className="mb-6">
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbSeparator />
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbSeparator />
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Team</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
 
 			{/* Page Header */}
 			<div className="flex justify-between items-center mb-8">
 				<div>
-					<h1 className="text-2xl font-bold mb-2">Team Members</h1>
-					<p className="text-sm text-text-tertiary">
+					<Heading level={1} size="2xl">Team Members</Heading>
+					<Text className="text-text-muted mt-2">
 						Manage team members and their roles for {project.name}
-					</p>
+					</Text>
 				</div>
 				{canManageMembers && (
-					<button type="button" className="btn btn-primary" onClick={() => setShowInviteModal(true)}>
-						+ Invite Member
-					</button>
+					<Button onClick={() => setShowInviteModal(true)}>
+						<Icon icon={IconType.UserMultiple} size={16} />
+						Invite Member
+					</Button>
 				)}
 			</div>
 
 			{/* Team Members Table */}
-			<div className="card p-0 overflow-hidden">
-				<table className="w-full border-collapse">
-					<thead>
-						<tr className="border-b border-border-primary bg-surface-secondary">
-							<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
-								Member
-							</th>
-							<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
-								Role
-							</th>
-							<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
-								Joined
-							</th>
-							<th className="px-4 py-3.5 text-right text-xs font-semibold text-text-tertiary uppercase tracking-wider">
-								Actions
-							</th>
-						</tr>
-					</thead>
-					<tbody>
-						{members && members.length > 0 ? (
-							members.map((member) => (
-							<tr key={member.id} className="border-b border-border-primary">
-								<td className="px-4 py-3.5">
+			<Card className="overflow-hidden">
+				<CardBody>
+					<TableContainer>
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>Member</TableHead>
+									<TableHead>Role</TableHead>
+									<TableHead>Joined</TableHead>
+									<TableHead align="right">Actions</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{members && members.length > 0 ? (
+									members.map((member) => (
+								<TableRow key={member.id} className="hover:bg-accent transition-colors">
+										<TableCell>
 										<div className="flex items-center gap-3">
 											<div className="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center text-sm font-semibold text-primary uppercase">
 												{member.name?.charAt(0) || "U"}
@@ -130,18 +160,18 @@ export function ProjectTeamPage() {
 											<div className="text-xs text-text-secondary">
 													{member.email}
 												</div>
-											</div>
-										</div>
-									</td>
-								<td className="px-4 py-3.5">
-									<span className="badge badge-info capitalize">
-											{member.role}
-										</span>
-									</td>
-									<td className="px-4 py-3.5 text-sm text-text-secondary">
-										{new Date(member.createdAt).toLocaleDateString()}
-									</td>
-								<td className="px-4 py-3.5 text-right">
+														</div>
+													</div>
+												</TableCell>
+										<TableCell>
+											<Badge variant={member.role === "owner" ? "primary" : "info"} className="capitalize">
+												{member.role}
+											</Badge>
+										</TableCell>
+										<TableCell>
+											{new Date(member.createdAt).toLocaleDateString()}
+										</TableCell>
+										<TableCell align="right">
 									<div className="flex gap-2 justify-end">
 											{member.role === "owner" && (
 												<span className="text-xs text-text-tertiary italic">
@@ -150,9 +180,9 @@ export function ProjectTeamPage() {
 											)}
 											{member.role !== "owner" && canManageMembers && (
 												<>
-													<button
-														type="button"
-														className="btn btn-secondary-outline btn-sm"
+													<Button
+														size="sm"
+														variant="secondary"
 														onClick={() =>
 															setEditingMember({
 																id: member.id,
@@ -165,10 +195,10 @@ export function ProjectTeamPage() {
 														}
 													>
 														Edit Role
-													</button>
-													<button
-														type="button"
-														className="btn btn-danger-outline btn-sm"
+													</Button>
+													<Button
+														size="sm"
+														variant="danger"
 														onClick={() =>
 															setMemberToRemove({
 																id: member.id,
@@ -182,73 +212,62 @@ export function ProjectTeamPage() {
 														}
 													>
 														Remove
-													</button>
+													</Button>
 												</>
 											)}
 											{member.role !== "owner" && !canManageMembers && (
 												<span className="text-xs text-text-tertiary italic">
 													{member.userId === currentUser?.id ? "You" : "Team Member"}
 												</span>
-											)}
-										</div>
-									</td>
-								</tr>
-							))
-						) : (
-							<tr>
-								<td colSpan={4} className="p-12 text-center">
-									<div className="text-5xl mb-4">👥</div>
-									<h3 className="text-base font-semibold mb-2 text-text-primary">
-										No team members yet
-									</h3>
-									<p className="text-sm text-text-tertiary mb-5">
-										Invite team members to collaborate on this project
-									</p>
-									<button
-										type="button"
-										className="btn btn-primary"
-										onClick={() => setShowInviteModal(true)}
+														)}
+													</div>
+												</TableCell>
+											</TableRow>
+									))
+								) : (
+									<TableRow>
+										<TableCell colSpan={4} className="p-12">
+									<EmptyState
+										icon={IconType.UserMultiple}
+										title="No team members yet"
+										description="Invite team members to collaborate on this project"
 									>
-										+ Invite First Member
-									</button>
-								</td>
-							</tr>
-						)}
-					</tbody>
-				</table>
-			</div>
-
+										<Button onClick={() => setShowInviteModal(true)} className="mt-4">
+											<Icon icon={IconType.UserMultiple} size={16} />
+											Invite First Member
+										</Button>
+											</EmptyState>
+										</TableCell>
+									</TableRow>
+								)}
+							</TableBody>
+						</Table>
+					</TableContainer>
+				</CardBody>
+			</Card>
 			{/* Pending Invitations */}
 			{invitations.length > 0 && (
 				<div className="mt-8">
-					<h2 className="text-lg font-bold mb-4">
+					<Heading level={2} size="lg" className="mb-4">
 						Pending Invitations ({invitations.length})
-					</h2>
-					<div className="card p-0 overflow-hidden">
-						<table className="w-full border-collapse">
-							<thead>
-								<tr className="border-b border-border-primary bg-surface-secondary">
-									<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
-										Email
-									</th>
-									<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
-										Role
-									</th>
-								<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
-										Invited
-									</th>
-								<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
-										Expires
-									</th>
-								<th className="px-4 py-3.5 text-right text-xs font-semibold text-text-tertiary uppercase tracking-wider">
-										Actions
-									</th>
-								</tr>
-							</thead>
-							<tbody>
-								{invitations.map((invitation) => (
-								<tr key={invitation.id} className="border-b border-border-primary">
-										<td className="px-4 py-3.5">
+					</Heading>
+					<Card className="overflow-hidden">
+						<CardBody>
+							<TableContainer>
+								<Table>
+									<TableHeader>
+										<TableRow>
+											<TableHead>Email</TableHead>
+											<TableHead>Role</TableHead>
+											<TableHead>Invited</TableHead>
+											<TableHead>Expires</TableHead>
+											<TableHead align="right">Actions</TableHead>
+										</TableRow>
+									</TableHeader>
+									<TableBody>
+									{invitations.map((invitation) => (
+									<TableRow key={invitation.id} className="hover:bg-accent transition-colors">
+										<TableCell>
 											<div className="flex items-center gap-3">
 												<div className="w-10 h-10 rounded-full bg-primary-light border-2 border-dashed border-primary/30 flex items-center justify-center text-lg">
 													📧
@@ -260,43 +279,44 @@ export function ProjectTeamPage() {
 												<div className="text-xs text-text-tertiary">
 														Pending signup
 													</div>
+													</div>
 												</div>
-											</div>
-										</td>
-									<td className="px-4 py-3.5">
-										<span className="badge badge-warning capitalize">
+											</TableCell>
+										<TableCell>
+										<Badge variant="warning" className="capitalize">
 												{invitation.role}
-											</span>
-										</td>
-										<td className="px-4 py-3.5 text-sm text-text-secondary">
+											</Badge>
+										</TableCell>
+										<TableCell>
 											{new Date(invitation.createdAt).toLocaleDateString()}
-										</td>
-										<td className="px-4 py-3.5 text-sm text-text-secondary">
+										</TableCell>
+										<TableCell>
 											{new Date(invitation.expiresAt).toLocaleDateString()}
-										</td>
-									<td className="px-4 py-3.5 text-right">
-											<button
-												type="button"
-												className="btn btn-danger-outline btn-sm"
-												onClick={() =>
-													setInvitationToCancel({
-														id: invitation.id,
-														email: invitation.email,
-													})
-												}
-												disabled={cancelInvitationMutation.isPending}
-											>
-												Cancel
-											</button>
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
+										</TableCell>
+										<TableCell align="right">
+										<Button
+											size="sm"
+											variant="danger"
+											onClick={() =>
+												setInvitationToCancel({
+													id: invitation.id,
+													email: invitation.email,
+												})
+											}
+											disabled={cancelInvitationMutation.isPending}
+												>
+													Cancel
+												</Button>
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						</TableContainer>
+					</CardBody>
+				</Card>
 				</div>
 			)}
-
 			{/* Invite Modal */}
 			{showInviteModal && (
 				<InviteTeamMemberModal projectId={projectId || ""} onClose={() => setShowInviteModal(false)} />
@@ -304,24 +324,17 @@ export function ProjectTeamPage() {
 
 			{/* Edit Role Modal */}
 			{editingMember && (
-				<div
-					className="fixed inset-0 bg-black/50 flex items-center justify-center z-1000"
-					onClick={() => setEditingMember(null)}
-				>
-					<div
-						className="card w-[90%] max-w-sm p-7"
-						onClick={(e) => e.stopPropagation()}
-					>
-						<h2 className="text-xl font-bold mb-2">Edit Member Role</h2>
-						<p className="text-sm text-text-tertiary mb-6">
-							Change the role for this team member.
-						</p>
+				<Dialog open={!!editingMember} onOpenChange={(open: boolean) => !open && setEditingMember(null)}>
+					<DialogPopup>
+						<DialogHeader>
+							<DialogTitle>Edit Member Role</DialogTitle>
+							<Text className="text-text-muted mt-2">
+								Change the role for this team member.
+							</Text>
+						</DialogHeader>
 
-						<div className="mb-6">
-							<label
-								htmlFor="edit-role"
-								className="block text-xs font-semibold mb-2 text-text-secondary"
-							>
+						<DialogBody>
+							<label htmlFor="edit-role" className="block text-sm font-semibold mb-2 text-text-secondary">
 								Role
 							</label>
 							<Select
@@ -355,19 +368,15 @@ export function ProjectTeamPage() {
 								}}
 								className="w-full"
 							/>
-						</div>
+						</DialogBody>
 
-						<div className="flex gap-3 justify-end">
-							<button
-								type="button"
-								className="btn btn-secondary-outline"
-								onClick={() => setEditingMember(null)}
-							>
+						<DialogFooter>
+							<Button variant="secondary" onClick={() => setEditingMember(null)}>
 								Cancel
-							</button>
-						</div>
-					</div>
-				</div>
+							</Button>
+						</DialogFooter>
+					</DialogPopup>
+				</Dialog>
 			)}
 
 			{/* Remove Member Confirmation Modal with Captcha */}

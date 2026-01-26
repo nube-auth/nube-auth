@@ -1,7 +1,26 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import {Icon, IconType} from "@proofa/components";;
+import {
+	Icon,
+	IconType,
+	Spinner,
+	Alert,
+	Heading,
+	Text,
+	Button,
+	Card,
+	CardBody,
+	EmptyState,
+	Dialog,
+	DialogPopup,
+	DialogHeader,
+	DialogTitle,
+	DialogBody,
+	DialogFooter,
+	Input,
+	Badge
+} from "@proofa/components";
 
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
@@ -309,17 +328,18 @@ export function AppLicensesPage() {
 
 	if (projectLoading || appLoading) {
 		return (
-			<div className="loading">
-				<div className="spinner" />
+			<div className="flex items-center justify-center min-h-[50vh]">
+				<Spinner size="lg" />
 			</div>
 		);
 	}
 
 	if (!project || !app) {
 		return (
-			<div className="alert alert-danger">
+			<Alert variant="danger">
+				<Icon icon={IconType.AlertCircle} size={20} />
 				<span>Project or App not found</span>
-			</div>
+			</Alert>
 		);
 	}
 
@@ -346,10 +366,10 @@ export function AppLicensesPage() {
 			</nav>
 
 			{/* Page Header */}
-			<div className="page-header">
+			<div className="flex items-start justify-between">
 				<div>
-					<h1 className="page-title">Licenses</h1>
-					<p className="page-description">Manage user licenses and pricing plans for {app.name}</p>
+					<Heading level={1} size="2xl">Licenses</Heading>
+					<Text className="text-text-muted mt-2">Manage user licenses and pricing plans for {app.name}</Text>
 				</div>
 			</div>
 
@@ -437,29 +457,23 @@ export function AppLicensesPage() {
 					<div className="p-5 border-t border-card-border">
 						{/* Create Plan Button */}
 						<div className="flex justify-end mb-4">
-							<button
-								type="button"
-								onClick={handleCreatePlan}
-								className="btn btn-primary btn-sm flex items-center gap-1.5"
-							>
+							<Button size="sm" onClick={handleCreatePlan}>
 								<Icon icon={IconType.Add} size={16} />
 								Create Plan
-							</button>
+							</Button>
 						</div>
 
 						{/* Plans List */}
 						{plansLoading ? (
-							<div className="text-center py-10 px-5">
-								<div className="spinner mx-auto" />
+							<div className="flex items-center justify-center py-10">
+								<Spinner />
 							</div>
 						) : plans.length === 0 ? (
-							<div className="text-center py-15 px-5 text-text-secondary">
-								<Icon icon={IconType.AlertCircle} size={48} className="mx-auto mb-4 opacity-30 text-text-tertiary" />
-								<p className="text-14px font-medium">No plans yet</p>
-								<p className="text-13px mt-2 text-text-tertiary">
-									Create your first pricing plan to get started
-								</p>
-							</div>
+							<EmptyState
+								icon={IconType.AlertCircle}
+								title="No plans yet"
+								description="Create your first pricing plan to get started"
+							/>
 						) : (
 							<div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 items-stretch">
 								{plans.map((plan) => (
@@ -689,39 +703,31 @@ export function AppLicensesPage() {
 						</table>
 					</div>
 				) : (
-					<div className="text-center py-20 px-5 text-text-secondary">
-						<Icon icon={IconType.AlertCircle} size={48} className="mx-auto mb-4 opacity-30" />
-						<h3 className="text-16px font-semibold text-text-primary mb-2">
-							No licenses found
-						</h3>
-						<p className="text-14px text-text-secondary">
-							{searchQuery || filterStatus !== "all"
+					<EmptyState
+						icon={IconType.AlertCircle}
+						title="No licenses found"
+						description={
+							searchQuery || filterStatus !== "all"
 								? "Try adjusting your filters"
-								: "Licenses will appear here when users sign up"}
-						</p>
-					</div>
+								: "Licenses will appear here when users sign up"
+						}
+					/>
 				)}
 			</div>
 
 			{/* Change Plan Modal */}
 			{changingLicense && (
-				<div
-					className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-1000 p-5"
-					onClick={() => setChangingLicense(null)}
-				>
-					<div
-						className="bg-card-bg rounded-2xl p-8 max-w-[500px] w-full shadow-2xl"
-						onClick={(e) => e.stopPropagation()}
-					>
-						<h2 className="text-20px font-bold mb-2 text-text-primary">
-							Change License Plan
-						</h2>
-						<p className="text-14px text-text-secondary mb-6">
-							Update license plan for {changingLicense.name || changingLicense.email}
-						</p>
+				<Dialog open={!!changingLicense} onOpenChange={(open: boolean) => !open && setChangingLicense(null)}>
+					<DialogPopup>
+						<DialogHeader>
+							<DialogTitle>Change License Plan</DialogTitle>
+							<Text className="text-text-muted mt-2">
+								Update license plan for {changingLicense.name || changingLicense.email}
+							</Text>
+						</DialogHeader>
 
-						<div className="mb-6">
-							<label className="block text-13px font-semibold text-text-secondary mb-2">
+						<DialogBody>
+							<label className="block text-sm font-semibold text-text-secondary mb-2">
 								New Plan
 							</label>
 							<Select
@@ -734,55 +740,46 @@ export function AppLicensesPage() {
 									{ value: "enterprise", label: "Enterprise" },
 								]}
 								disabled={isUpdating}
-								className={`w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px ${isUpdating ? "opacity-60" : ""}`}
+								className={`w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px ${
+									isUpdating ? "opacity-60" : ""
+								}`}
 							/>
-						</div>
+						</DialogBody>
 
-						<div className="flex gap-3 justify-end">
-							<button
-								type="button"
-								onClick={() => setChangingLicense(null)}
-								disabled={isUpdating}
-								className={`btn btn-secondary ${isUpdating ? "opacity-60 cursor-not-allowed" : ""}`}
-							>
+						<DialogFooter>
+							<Button variant="secondary" onClick={() => setChangingLicense(null)} disabled={isUpdating}>
 								Cancel
-							</button>
-							<button
-								type="button"
+							</Button>
+							<Button
+								variant="primary"
 								onClick={handleChangePlan}
 								disabled={isUpdating || newPlan === changingLicense.plan}
-								className={`btn btn-primary ${isUpdating || newPlan === changingLicense.plan ? "opacity-60 cursor-not-allowed" : ""}`}
 							>
 								{isUpdating ? "Saving..." : "Save Changes"}
-							</button>
-						</div>
-					</div>
-				</div>
+							</Button>
+						</DialogFooter>
+					</DialogPopup>
+				</Dialog>
 			)}
 
 			{/* Plan Create/Edit Modal */}
 			{showPlanModal && (
-				<div
-					className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-1000 p-5"
-					onClick={() => !isUpdating && setShowPlanModal(false)}
-				>
-					<div
-						className="bg-card-bg rounded-2xl p-8 max-w-[600px] w-full max-h-[90vh] overflow-y-auto shadow-2xl"
-						onClick={(e) => e.stopPropagation()}
-					>
-						<h2 className="text-20px font-bold mb-2 text-text-primary">
-							{editingPlan ? "Edit Plan" : "Create Plan"}
-						</h2>
-						<p className="text-14px text-text-secondary mb-6">
-							{editingPlan ? "Update plan details and pricing" : "Create a new pricing plan for your app"}
-						</p>
+				<Dialog open={showPlanModal} onOpenChange={(open: boolean) => !open && !isUpdating && setShowPlanModal(false)}>
+					<DialogPopup className="max-w-[600px] max-h-[90vh] overflow-y-auto">
+						<DialogHeader>
+							<DialogTitle>{editingPlan ? "Edit Plan" : "Create Plan"}</DialogTitle>
+							<Text className="text-text-muted mt-2">
+								{editingPlan ? "Update plan details and pricing" : "Create a new pricing plan for your app"}
+							</Text>
+						</DialogHeader>
 
-						{planError && (
-							<div className="bg-danger/10 border border-danger rounded-lg py-3 px-4 mb-5 flex items-center gap-3">
-								<Icon icon={IconType.AlertCircle} size={20} className="text-danger flex-shrink-0" />
-								<p className="text-14px text-danger m-0">{planError}</p>
-							</div>
-						)}
+						<DialogBody>
+							{planError && (
+								<Alert variant="danger" className="mb-4">
+									<Icon icon={IconType.AlertCircle} size={20} />
+									<span>{planError}</span>
+								</Alert>
+							)}
 
 						<form
 							onSubmit={(e) => {
@@ -1002,76 +999,52 @@ export function AppLicensesPage() {
 									</div>
 								)}
 							</div>
-
-							{/* Actions */}
-							<div className="flex gap-3 justify-end">
-								<button
-									type="button"
-									onClick={() => setShowPlanModal(false)}
-									disabled={isUpdating}
-									className={`btn btn-secondary ${isUpdating ? "opacity-60 cursor-not-allowed" : ""}`}
-								>
-									Cancel
-								</button>
-								<button
-									type="submit"
-									disabled={isUpdating}
-									className={`btn btn-primary ${isUpdating ? "opacity-60 cursor-not-allowed" : ""}`}
-								>
-									{isUpdating ? "Saving..." : editingPlan ? "Update Plan" : "Create Plan"}
-								</button>
-							</div>
 						</form>
-					</div>
-				</div>
+						</DialogBody>
+
+						<DialogFooter>
+							<Button variant="secondary" onClick={() => setShowPlanModal(false)} disabled={isUpdating}>
+								Cancel
+							</Button>
+							<Button type="submit" variant="primary" disabled={isUpdating} onClick={(e) => {
+								e.preventDefault();
+								handleSavePlan();
+							}}>
+								{isUpdating ? "Saving..." : editingPlan ? "Update Plan" : "Create Plan"}
+							</Button>
+						</DialogFooter>
+					</DialogPopup>
+				</Dialog>
 			)}
 
 			{/* Delete Plan Confirmation Dialog */}
 			{deletingPlan && (
-				<div
-					className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-1000 p-5"
-					onClick={() => !isUpdating && setDeletingPlan(null)}
-				>
-					<div
-						className="bg-card-bg rounded-2xl p-8 max-w-[500px] w-full shadow-2xl"
-						onClick={(e) => e.stopPropagation()}
-					>
-						<div className="mb-6">
+				<Dialog open={!!deletingPlan} onOpenChange={(open: boolean) => !open && !isUpdating && setDeletingPlan(null)}>
+					<DialogPopup>
+						<DialogHeader>
 							<div className="w-12 h-12 rounded-xl bg-danger/10 flex items-center justify-center mb-4">
-													<Icon icon={IconType.AlertCircle} size={24} className="text-danger" />
+								<Icon icon={IconType.AlertCircle} size={24} className="text-danger" />
 							</div>
-							<h2 className="text-20px font-bold mb-2 text-text-primary">
-								Delete Plan?
-							</h2>
-							<p className="text-14px text-text-secondary mb-3">
+							<DialogTitle>Delete Plan?</DialogTitle>
+							<Text className="text-text-muted mt-2 mb-3">
 								Are you sure you want to delete the <strong>{deletingPlan.name}</strong> plan? This
 								action cannot be undone.
-							</p>
-							<p className="text-13px text-text-tertiary">
+							</Text>
+							<Text className="text-text-tertiary text-sm">
 								Note: Plans with active licenses cannot be deleted.
-							</p>
-						</div>
+							</Text>
+						</DialogHeader>
 
-						<div className="flex gap-3 justify-end">
-							<button
-								type="button"
-								onClick={() => setDeletingPlan(null)}
-								disabled={isUpdating}
-								className={`btn btn-secondary ${isUpdating ? "opacity-60 cursor-not-allowed" : ""}`}
-							>
+						<DialogFooter>
+							<Button variant="secondary" onClick={() => setDeletingPlan(null)} disabled={isUpdating}>
 								Cancel
-							</button>
-							<button
-								type="button"
-								onClick={handleDeletePlan}
-								disabled={isUpdating}
-								className={`btn btn-danger ${isUpdating ? "opacity-60 cursor-not-allowed" : ""}`}
-							>
+							</Button>
+							<Button variant="danger" onClick={handleDeletePlan} disabled={isUpdating}>
 								{isUpdating ? "Deleting..." : "Delete Plan"}
-							</button>
-						</div>
-					</div>
-				</div>
+							</Button>
+						</DialogFooter>
+					</DialogPopup>
+				</Dialog>
 			)}
 		</div>
 	);

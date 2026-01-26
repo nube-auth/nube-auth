@@ -1,7 +1,34 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import {Icon, IconType } from "@proofa/components";;
+import {
+	Icon,
+	IconType,
+	Button,
+	Spinner,
+	Alert,
+	Heading,
+	Text,
+	Input,
+	Badge,
+	Avatar,
+	Card,
+	CardBody,
+	Table,
+	TableContainer,
+	TableHeader,
+	TableHead,
+	TableBody,
+	TableRow,
+	TableCell,
+	Dialog,
+	DialogPopup,
+	DialogHeader,
+	DialogTitle,
+	DialogBody,
+	DialogFooter,
+	EmptyState,
+} from "@proofa/components";
 
 import { ConfirmModal } from "../components/ConfirmModal";
 import { InviteUserModal } from "../components/InviteUserModal";
@@ -184,17 +211,19 @@ export function AppUsersPage() {
 
 	if (projectLoading || appLoading) {
 		return (
-			<div className="loading">
-				<div className="spinner" />
+			<div className="flex flex-col items-center justify-center py-20">
+				<Spinner className="mb-4" />
+				<Text className="text-muted">Loading...</Text>
 			</div>
 		);
 	}
 
 	if (!project || !app) {
 		return (
-			<div className="alert alert-danger">
+			<Alert variant="danger">
+				<Icon icon={IconType.AlertCircle} size={20} />
 				<span>Project or App not found</span>
-			</div>
+			</Alert>
 		);
 	}
 
@@ -218,30 +247,27 @@ export function AppUsersPage() {
 		</nav>
 
 		{/* Page Header */}
-			<div className="page-header">
+			<div className="flex items-start justify-between gap-4">
 				<div>
-					<h1 className="page-title">Users</h1>
-					<p className="page-description">Manage users and their licenses for {app.name}</p>
+					<Heading size="lg" className="mb-2">Users</Heading>
+					<Text className="text-text-muted">Manage users and their licenses for {app.name}</Text>
 				</div>
-				<button type="button" className="btn btn-primary" onClick={() => setShowInviteModal(true)}>
+				<Button variant="primary" onClick={() => setShowInviteModal(true)}>
 					<Icon icon={IconType.UserAdd} size={16} />
 					Invite User
-				</button>
+				</Button>
 			</div>
 
 			{/* Filters */}
 			<div className="mb-5 flex items-center gap-3">
 				<div className="w-full max-w-[400px]">
-					<div className="relative">
-					<Icon icon={IconType.Search} size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
-						<input
-							type="text"
-							placeholder="Search by name or email..."
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-							className="w-full rounded-[10px] border border-border bg-bg-surface px-3.5 py-2.5 pl-10 text-14px text-text-primary transition-all focus:border-primary focus:outline-none focus:ring-3 ring-primary/10"
-						/>
-					</div>
+					<Input
+						type="text"
+						placeholder="Search by name or email..."
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+						prefix={<Icon icon={IconType.Search} size={16} />}
+					/>
 				</div>
 
 				{/* Custom Status Dropdown */}
@@ -300,33 +326,26 @@ export function AppUsersPage() {
 
 			{/* Empty State */}
 			{!usersLoading && filteredUsers.length === 0 && users.length === 0 && (
-				<div className="flex flex-col items-center justify-center py-20 px-5 text-center">
-					<div className="w-25 h-25 bg-gradient-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center mb-6">
-						<Icon icon={IconType.UserMultiple} size={48} className="text-primary" />
-					</div>
-					<h2 className="text-20px font-bold text-text-primary mb-2">
-						No users yet
-					</h2>
-					<p className="text-14px text-text-secondary max-w-100 mb-6">
-						Users will appear here after they sign up for your app. You can also invite users to get
-						started.
-					</p>
-					<button
-						type="button"
-						onClick={() => alert("Invite user functionality coming soon!")}
-						className="btn btn-primary"
-					>
-						<Icon icon={IconType.UserAdd} size={16} />
-						Invite Your First User
-					</button>
-				</div>
+				<EmptyState
+					icon={IconType.UserMultiple}
+					title="No users yet"
+					description="Users will appear here after they sign up for your app. You can also invite users to get started."
+					action={
+						<Button variant="primary" onClick={() => setShowInviteModal(true)}>
+							<Icon icon={IconType.UserAdd} size={16} />
+							Invite Your First User
+						</Button>
+					}
+				/>
 			)}
 
 			{/* No Search Results */}
 			{!usersLoading && filteredUsers.length === 0 && users.length > 0 && (
-				<div className="text-center py-10 px-10 text-text-secondary">
-					<p>No users found matching your search criteria.</p>
-				</div>
+				<Card>
+					<CardBody className="text-center py-10">
+						<Text className="text-text-muted">No users found matching your search criteria.</Text>
+					</CardBody>
+				</Card>
 			)}
 
 			{/* Users Table */}
@@ -526,109 +545,97 @@ export function AppUsersPage() {
 
 			{/* Edit User Modal */}
 			{editingUser && (
-				<div
-					className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-1000 p-5"
-					onClick={() => setEditingUser(null)}
-				>
-					<div
-						className="bg-card-bg rounded-16px p-8 max-w-500px w-full shadow-2xl"
-						onClick={(e) => e.stopPropagation()}
-					>
-						<h2 className="text-20px font-bold mb-2 text-text-primary">
-							Edit User License
-						</h2>
-						<p className="text-14px text-text-secondary mb-6">
-							Update license plan and status for {editingUser.name || editingUser.email}
-						</p>
+				<Dialog open={!!editingUser} onOpenChange={(open: boolean) => !open && setEditingUser(null)}>
+					<DialogPopup>
+						<DialogHeader>
+							<DialogTitle>Edit User License</DialogTitle>
+							<Text className="text-text-muted mt-2">
+								Update license plan and status for {editingUser.name || editingUser.email}
+							</Text>
+						</DialogHeader>
 
-						{/* Error Message */}
-						{updateError && (
-							<div className="flex items-center gap-3 p-4 mb-5 bg-danger/10 border border-danger rounded-lg">
-								<Icon icon={IconType.AlertCircle} size={20} className="text-danger flex-shrink-0" />
-								<p className="text-14px text-danger m-0">{updateError}</p>
+						<DialogBody>
+							{updateError && (
+								<Alert variant="danger" className="mb-4">
+									<Icon icon={IconType.AlertCircle} size={20} />
+									<span>{updateError}</span>
+								</Alert>
+							)}
+
+							<div className="space-y-4">
+								<div>
+									<label className="block text-sm font-semibold text-text-secondary mb-2">
+										License Plan
+									</label>
+									<Select
+										value={editLicensePlan?.toString() || ""}
+										onChange={(value) => setEditLicensePlan(Number(value))}
+										options={
+											plansLoading
+												? [{ value: "", label: "Loading plans..." }]
+												: plans.length === 0
+													? [{ value: "", label: "No plans available" }]
+													: plans.map((plan) => ({
+															value: plan.id.toString(),
+															label: `${plan.name}${
+																plan.monthlyPrice !== null && plan.monthlyPrice > 0
+																	? ` ($${(plan.monthlyPrice / 100).toFixed(2)}/mo)`
+																	: plan.yearlyPrice !== null && plan.yearlyPrice > 0
+																		? ` ($${(plan.yearlyPrice / 100).toFixed(2)}/yr)`
+																		: " (Free)"
+															}`,
+														}))
+										}
+										disabled={isUpdating || plansLoading}
+										className={`w-full px-3 py-2.5 border border-border rounded-lg bg-bg-content text-text-primary text-14px ${
+											isUpdating || plansLoading ? "opacity-60" : "opacity-100"
+										}`}
+									/>
+								</div>
+
+								<div>
+									<label className="block text-sm font-semibold text-text-secondary mb-2">
+										Status
+									</label>
+									<Select
+										value={editLicenseStatus}
+										onChange={(value) => setEditLicenseStatus(value)}
+										options={[
+											{ value: "active", label: "Active" },
+											{ value: "suspended", label: "Suspended" },
+											{ value: "trial", label: "Trial" },
+										]}
+										disabled={isUpdating}
+										className={`w-full px-3 py-2.5 border border-border rounded-lg bg-bg-content text-text-primary text-14px ${
+											isUpdating ? "opacity-60" : "opacity-100"
+										}`}
+									/>
+								</div>
 							</div>
-						)}
+						</DialogBody>
 
-						{/* Edit form content */}
-						<div className="mb-6">
-							<label className="block text-13px font-semibold text-text-secondary mb-2">
-								License Plan
-							</label>
-							<Select
-								value={editLicensePlan?.toString() || ""}
-								onChange={(value) => setEditLicensePlan(Number(value))}
-								options={
-									plansLoading
-										? [{ value: "", label: "Loading plans..." }]
-										: plans.length === 0
-											? [{ value: "", label: "No plans available" }]
-											: plans.map((plan) => ({
-													value: plan.id.toString(),
-													label: `${plan.name}${
-														plan.monthlyPrice !== null && plan.monthlyPrice > 0
-															? ` ($${(plan.monthlyPrice / 100).toFixed(2)}/mo)`
-															: plan.yearlyPrice !== null && plan.yearlyPrice > 0
-																? ` ($${(plan.yearlyPrice / 100).toFixed(2)}/yr)`
-																: " (Free)"
-													}`,
-												}))
-								}
-								disabled={isUpdating || plansLoading}
-								className={`w-full px-3 py-2.5 border border-border rounded-lg bg-bg-content text-text-primary text-14px ${
-									isUpdating || plansLoading ? "opacity-60" : "opacity-100"
-								}`}
-							/>
-						</div>
-
-						<div className="mb-6">
-							<label className="block text-13px font-semibold text-text-secondary mb-2">
-								Status
-							</label>
-							<Select
-								value={editLicenseStatus}
-								onChange={(value) => setEditLicenseStatus(value)}
-								options={[
-									{ value: "active", label: "Active" },
-									{ value: "suspended", label: "Suspended" },
-									{ value: "trial", label: "Trial" },
-								]}
-								disabled={isUpdating}
-									className={`w-full px-3 py-2.5 border border-border rounded-lg bg-bg-content text-text-primary text-14px ${
-										isUpdating ? "opacity-60" : "opacity-100"
-									}`}
-							/>
-						</div>
-
-						<div className="flex gap-3 justify-end">
-							<button
-								type="button"
+						<DialogFooter>
+							<Button
+								variant="secondary"
 								onClick={() => {
 									setEditingUser(null);
 									setUpdateError(null);
 								}}
 								disabled={isUpdating}
-								className={`btn btn-secondary ${
-									isUpdating ? "opacity-60 cursor-not-allowed" : "opacity-100 cursor-pointer"
-								}`}
 							>
 								Cancel
-							</button>
-							<button
-								type="button"
+							</Button>
+							<Button
+								variant="primary"
 								onClick={handleEditSave}
 								disabled={isUpdating}
-								className={`btn btn-primary flex items-center gap-2 ${
-									isUpdating ? "opacity-60 cursor-not-allowed" : "opacity-100 cursor-pointer"
-								}`}
 							>
-								{isUpdating && (
-									<Icon icon={IconType.Refresh} size={16} className="animate-spin" />
-								)}
+								{isUpdating && <Icon icon={IconType.Refresh} size={16} className="animate-spin" />}
 								{isUpdating ? "Saving..." : "Save Changes"}
-							</button>
-						</div>
-					</div>
-				</div>
+							</Button>
+						</DialogFooter>
+					</DialogPopup>
+				</Dialog>
 			)}
 
 			{/* Renew License Confirmation Modal */}
