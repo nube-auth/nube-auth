@@ -1,6 +1,29 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {Icon, IconType} from "@proofa/components";;
+import {
+	Alert,
+	Avatar,
+	Badge,
+	Button,
+	Card,
+	CardBody,
+	CardHeader,
+	CardTitle,
+	EmptyState,
+	Heading,
+	Icon,
+	IconBox,
+	IconType,
+	Spinner,
+	Table,
+	TableBody,
+	TableCell,
+	TableContainer,
+	TableHead,
+	TableHeader,
+	TableRow,
+	Text,
+} from "@proofa/components";
 import { getIconById } from "../components/IconPicker";
 import { useProject, useProjectApps, useProjectMembers, useProjectStats } from "../hooks/api";
 
@@ -21,120 +44,134 @@ export function ProjectDetailPage() {
 
 	if (projectLoading) {
 		return (
-			<div className="loading">
-				<div className="spinner" />
+			<div className="flex items-center justify-center py-12">
+				<Spinner />
 			</div>
 		);
 	}
 
 	if (!project) {
 		return (
-			<div className="alert alert-danger">
-				<Icon icon={IconType.AlertCircle} size={20} className="text-danger" />
-				<span>Project not found</span>
-			</div>
+			<Alert variant="danger">
+				<Icon icon={IconType.AlertCircle} size={20} />
+				Project not found
+			</Alert>
 		);
 	}
 
 	return (
 		<div className="space-y-6">
 			{/* Project Header Card */}
-			<div className="card p-6">
-				<div className="flex items-start gap-5">
-					<div className="w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary-light to-purple-200">
-						<Icon icon={IconType.Folder} size={28} className="text-primary" />
-					</div>
-					<div className="flex-1">
-						<div className="flex items-center gap-3 mb-1">
-							<h1 className="text-24px font-bold text-text-primary">
-								{project.name}
-							</h1>
-							<span className="badge badge-success">Active</span>
+			<Card>
+				<CardBody>
+					<div className="flex items-start gap-5">
+						<IconBox size="lg" variant="primary-subtle">
+							<Icon icon={IconType.Folder} size={28} />
+						</IconBox>
+						<div className="flex-1">
+							<div className="flex items-center gap-3 mb-1">
+								<Heading size="lg" className="mb-0">
+									{project.name}
+								</Heading>
+								<Badge variant="success">Active</Badge>
+							</div>
+							{project.slug && (
+								<Text className="text-text-secondary mb-3">{project.slug}</Text>
+							)}
+							<div className="flex items-center gap-3">
+								<code className="px-2 py-1 bg-surface-secondary rounded text-xs font-mono">
+									{project.id}
+								</code>
+								<Button
+									variant="plain"
+									size="sm"
+									onClick={() => copyToClipboard(project.id)}
+								>
+									{copied ? (
+										<>
+											<Icon icon={IconType.CheckCircle} size={14} />
+											Copied!
+										</>
+									) : (
+										<>
+											<Icon icon={IconType.Copy} size={14} />
+											Copy ID
+										</>
+									)}
+								</Button>
+							</div>
 						</div>
-						{project.slug && (
-							<p className="text-text-secondary mb-3">{project.slug}</p>
-						)}
-						<div className="flex items-center gap-3">
-							<code className="code-block">
-								{project.id}
-							</code>
-							<button
-								type="button"
-								onClick={() => copyToClipboard(project.id)}
-								className="btn btn-ghost btn-sm"
-							>
-								{copied ? (
-									<>
-										<Icon icon={IconType.CheckCircle} size={14} className="text-success" />
-										Copied!
-									</>
-								) : (
-									<>
-										<Icon icon={IconType.Copy} size={14} className="text-text-primary" />
-										Copy ID
-									</>
-								)}
-							</button>
-						</div>
 					</div>
-				</div>
-			</div>
+				</CardBody>
+			</Card>
 
 			{/* Stats Grid */}
-			<div className="stats-grid grid-cols-4">
-				<div className="stat-card">
-					<div className="stat-card-header">
-						<div className="stat-icon blue">
-							<Icon icon={IconType.Layers} size={20} className="text-current" />
-						</div>
-					</div>
-					<div className="stat-value">{statsLoading ? "—" : stats?.totalApps || 0}</div>
-					<div className="stat-label">Applications</div>
-				</div>
-				<div className="stat-card">
-					<div className="stat-card-header">
-						<div className="stat-icon purple">
-							<Icon icon={IconType.UserMultiple} size={20} className="text-current" />
-						</div>
-					</div>
-					<div className="stat-value">{statsLoading ? "—" : stats?.totalUsers || 0}</div>
-					<div className="stat-label">Total Users</div>
-				</div>
-				<div className="stat-card">
-					<div className="stat-card-header">
-						<div className="stat-icon green">
-							<Icon icon={IconType.Key} size={20} className="text-current" />
-						</div>
-					</div>
-					<div className="stat-value">{statsLoading ? "—" : stats?.activeLicenses || 0}</div>
-					<div className="stat-label">Active Licenses</div>
-					{!statsLoading && stats && (
-						<div className="text-11px text-text-tertiary mt-1">
-							{stats.totalLicenses} total
-						</div>
-					)}
-				</div>
-				<div className="stat-card">
-					<div className="stat-card-header">
-						<div className="stat-icon orange">
-							<Icon icon={IconType.DollarCircle} size={20} className="text-current" />
-						</div>
-					</div>
-					<div className="stat-value">${statsLoading ? "—" : (stats?.totalRevenue || 0).toFixed(2)}</div>
-					<div className="stat-label">Revenue</div>
-				</div>
-			</div>
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+				<Card>
+					<CardBody>
+						<IconBox size="md" variant="info-subtle" className="mb-3">
+							<Icon icon={IconType.Layers} size={20} />
+						</IconBox>
+						<Heading size="xl" className="mb-1">
+							{statsLoading ? "—" : stats?.totalApps || 0}
+						</Heading>
+						<Text size="sm" className="text-text-muted">Applications</Text>
+					</CardBody>
+				</Card>
 
-			{/* Applications Section */}
-			<div className="card">
-				<div className="card-header">
-					<div>
-						<h2 className="card-title">Applications</h2>
+				<Card>
+					<CardBody>
+						<IconBox size="md" variant="secondary-subtle" className="mb-3">
+							<Icon icon={IconType.UserMultiple} size={20} />
+						</IconBox>
+						<Heading size="xl" className="mb-1">
+							{statsLoading ? "—" : stats?.totalUsers || 0}
+						</Heading>
+						<Text size="sm" className="text-text-muted">Total Users</Text>
+					</CardBody>
+				</Card>
+
+				<Card>
+					<CardBody>
+						<IconBox size="md" variant="success-subtle" className="mb-3">
+							<Icon icon={IconType.Key} size={20} />
+						</IconBox>
+						<Heading size="xl" className="mb-1">
+							{statsLoading ? "—" : stats?.activeLicenses || 0}
+						</Heading>
+						<Text size="sm" className="text-text-muted">Active Licenses</Text>
+						{!statsLoading && stats && (
+							<Text size="sm" className="text-text-muted mt-1">
+								{stats.totalLicenses} total
+							</Text>
+						)}
+					</CardBody>
+				</Card>
+
+				<Card>
+					<CardBody>
+						<IconBox size="md" variant="warning-subtle" className="mb-3">
+				Card>
+				<CardHeader>
+					<div className="flex-1">
+						<CardTitle>Applications</CardTitle>
+						<Text size="sm" className="text-text-muted">Apps registered under this project</Text>
+					</div>
+					<Button
+						variant="primary"
+						onClick={() => navigate(`/projects/${projectId}/apps/new`)}
+					>
+						<Icon icon={IconType.Add} size={16} />
+						New App
+					</Button>
+				</CardHeader className="card-title">Applications</h2>
 						<p className="card-desc">Apps registered under this project</p>
 					</div>
-					<button
-						type="button"
-						onClick={() => navigate(`/projects/${projectId}/apps/new`)}
+					<CardBody>
+						<div className="flex items-center justify-center py-8">
+							<Spinner />
+						</div>
+					</CardBodyick={() => navigate(`/projects/${projectId}/apps/new`)}
 						className="btn btn-primary"
 					>
 						<Icon icon={IconType.Add} size={16} />
@@ -147,137 +184,144 @@ export function ProjectDetailPage() {
 						<div className="spinner" />
 					</div>
 				) : apps && apps.length > 0 ? (
-					<div className="table-container">
-						<table>
-							<thead>
-								<tr>
-									<th>Name</th>
-									<th>App ID</th>
-									<th>Session TTL</th>
-									<th>Status</th>
-									<th className="w-8"></th>
-								</tr>
-							</thead>
-							<tbody>
-								{apps.map((app) => (
-									<tr
-										key={app.id}
-										className="cursor-pointer"
-										onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
-									>
-										<td>
-											<div className="flex items-center gap-3">
-												<div className="w-9 h-9 bg-surface-secondary rounded-md flex items-center justify-center">
-													<Icon icon={getIconById(app.icon || "application")} size={18} className="text-primary" />
+					<CardBody className="p-0">
+						<TableContainer>
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>Name</TableHead>
+										<TableHead>App ID</TableHead>
+										<TableHead>Session TTL</TableHead>
+										<TableHead>Status</TableHead>
+										<TableHead className="w-8"></TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{apps.map((app) => (
+										<TableRow
+											key={app.id}
+											className="cursor-pointer hover:bg-surface-secondary"
+											onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
+										>
+											<TableCell>
+												<div className="flex items-center gap-3">
+													<IconBox size="sm" variant="secondary-subtle">
+														<Icon icon={getIconById(app.icon || "application")} size={18} />
+													</IconBox>
+													<Text className="font-medium">
+														{app.name}
+													</Text>
 												</div>
-												<span className="font-medium text-text-primary">
-													{app.name}
-												</span>
-											</div>
-										</td>
-										<td>
-											<code className="px-2 py-1 bg-content-bg rounded-sm font-mono text-11px">
-												{app.id}
-											</code>
-										</td>
-										<td>
-											<span className="text-text-secondary">
-												{app.sessionTtlDays || 30} days
-											</span>
-										</td>
-										<td>
-											<span className="badge badge-success">Active</span>
-										</td>
-										<td className="text-right pr-4">
-												<Icon icon={IconType.ArrowRight} size={18} className="text-purple-600" />
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
+											</TableCell>
+											<TableCell>
+												<code className="px-2 py-1 bg-surface-secondary rounded text-xs font-mono">
+													{app.id}
+												</code>
+											</TableCell>
+											<TableCell>
+												<Text className="text-text-secondary">
+													{app.sessionTtlDays || 30} days
+												</Text>
+											</TableCell>
+											<TableCell>
+												<Badge variant="success">Active</Badge>
+											</TableCell>
+											<TableCell className="text-right pr-4">
+												<Icon icon={IconType.ArrowRight} size={18} className="text-primary" />
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						</TableContainer>
+					</CardBody>
 				) : (
-					<div className="empty-state py-12 px-6">
-						<div className="empty-state-icon">
-							<Icon icon={IconType.Dashboard} size={28} className="text-text-tertiary" />
-						</div>
-						<h3 className="empty-state-title">No applications yet</h3>
-						<p className="empty-state-desc">Create your first app to start managing authentication.</p>
-						<button
-							type="button"
-							onClick={() => navigate(`/projects/${projectId}/apps/new`)}
-							className="btn btn-primary"
-						>
-							<Icon icon={IconType.Add} size={16} />
-							Create App
-						</button>
-					</div>
+					<CardBody>
+						<EmptyState
+							icon={IconType.Dashboard}
+							title="No applications yet"
+							description="Create your first app to start managing authentication."
+							action={
+								<Button
+									variant="primary"
+									onClick={() => navigate(`/projects/${projectId}/apps/new`)}
+								>
+									<Icon icon={IconType.Add} size={16} />
+									Create App
+								</Button>
+							}
+						/>
+					</CardBody>
 				)}
-			</div>
+			</Card>
 
 			{/* Members Section */}
-			<div className="card">
-				<div className="card-header">
+			<Card>
+				<CardHeader>
 					<div>
-						<h2 className="card-title">Team Members</h2>
-						<p className="card-desc">People with access to this project</p>
+						<CardTitle>Team Members</CardTitle>
+						<Text size="sm" className="text-text-muted">People with access to this project</Text>
 					</div>
-				</div>
+				</CardHeader>
 
 				{membersLoading ? (
-					<div className="loading">
-						<div className="spinner" />
-					</div>
+					<CardBody>
+						<div className="flex items-center justify-center py-8">
+							<Spinner />
+						</div>
+					</CardBody>
 				) : members && members.length > 0 ? (
-					<div className="table-container">
-						<table>
-							<thead>
-								<tr>
-									<th>User</th>
-									<th>User Id</th>
-									<th>Role</th>
-									<th>Joined</th>
-								</tr>
-							</thead>
-							<tbody>
-								{members.map((member) => (
-									<tr key={member.id}>
-										<td>
-											<div className="flex items-center gap-3">
-												<div className="avatar avatar-sm">
-													{member.name?.charAt(0).toUpperCase() || "?"}
+					<CardBody className="p-0">
+						<TableContainer>
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>User</TableHead>
+										<TableHead>User Id</TableHead>
+										<TableHead>Role</TableHead>
+										<TableHead>Joined</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{members.map((member) => (
+										<TableRow key={member.id}>
+											<TableCell>
+												<div className="flex items-center gap-3">
+													<Avatar size="sm">
+														{member.name?.charAt(0).toUpperCase() || "?"}
+													</Avatar>
+													<Text className="font-medium">
+														{member.name}
+													</Text>
 												</div>
-												<span className="font-medium text-text-primary">
-													{member.name}
-												</span>
-											</div>
-										</td>
-										<td>
-											<code className="code-block">
-												{member.userId}
-											</code>
-										</td>
-										<td>
-											<span
-												className={`badge ${member.role === "owner" ? "badge-info" : "badge-success"}`}
-											>
-												{member.role}
-											</span>
-										</td>
-										<td className="text-text-secondary">
-											{new Date(member.createdAt).toLocaleDateString()}
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
+											</TableCell>
+											<TableCell>
+												<code className="px-2 py-1 bg-surface-secondary rounded text-xs font-mono">
+													{member.userId}
+												</code>
+											</TableCell>
+											<TableCell>
+												<Badge variant={member.role === "owner" ? "info" : "success"}>
+													{member.role}
+												</Badge>
+											</TableCell>
+											<TableCell>
+												<Text className="text-text-secondary">
+													{new Date(member.createdAt).toLocaleDateString()}
+												</Text>
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						</TableContainer>
+					</CardBody>
 				) : (
-					<div className="empty-state py-8 px-8">
-						<p className="text-text-secondary">No team members found</p>
-					</div>
+					<CardBody>
+						<Text className="text-center py-8 text-text-muted">No team members found</Text>
+					</CardBody>
 				)}
-			</div>
+			</Card>
 		</div>
 	);
 }

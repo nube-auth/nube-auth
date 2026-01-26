@@ -1,5 +1,26 @@
 import { useState } from "react";
 import { useBillingPurchases, useBillingStats, useBillingTransactions } from "../hooks/api";
+import {
+	Badge,
+	Button,
+	Card,
+	CardBody,
+	Heading,
+	Input,
+	Spinner,
+	Table,
+	TableBody,
+	TableCell,
+	TableContainer,
+	TableHead,
+	TableHeader,
+	TableRow,
+	Tabs,
+	TabsItem,
+	TabsList,
+	TabsPanel,
+	Text,
+} from "@proofa/components";
 
 export function BillingDashboardPage() {
 	const [dateRange, setDateRange] = useState<{ start?: string; end?: string }>({});
@@ -60,313 +81,306 @@ export function BillingDashboardPage() {
 			{/* Page Header */}
 			<div className="mb-8 flex justify-between items-center">
 				<div>
-					<h1 className="text-2xl font-bold mb-2">Billing Dashboard</h1>
-					<p className="text-sm text-text-tertiary">Monitor payments, subscriptions, and financial metrics</p>
+					<Heading size="lg" className="mb-2">Billing Dashboard</Heading>
+					<Text className="text-text-muted">Monitor payments, subscriptions, and financial metrics</Text>
 				</div>
 
 				{/* Date Range Filters */}
 				<div className="flex gap-3 items-center">
-					<input
+					<Input
 						type="date"
 						value={dateRange.start || ""}
 						onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-						className="px-3 py-2 rounded-md border border-border-color bg-bg-secondary text-text-primary text-[13px]"
 					/>
-					<span className="text-text-tertiary">to</span>
-					<input
+					<Text className="text-text-muted">to</Text>
+					<Input
 						type="date"
 						value={dateRange.end || ""}
 						onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-						className="px-3 py-2 rounded-md border border-border-color bg-bg-secondary text-text-primary text-[13px]"
 					/>
 					{(dateRange.start || dateRange.end) && (
-						<button
+						<Button
+							variant="secondary"
+							size="sm"
 							onClick={() => setDateRange({})}
-							className="px-3 py-2 rounded-md border border-border-color bg-bg-secondary text-text-primary cursor-pointer text-[13px] font-medium"
 						>
 							Clear
-						</button>
+						</Button>
 					)}
 				</div>
 			</div>
 
 			{isLoading ? (
-				<div className="loading">
-					<div className="spinner" />
+				<div className="flex items-center justify-center py-12">
+					<Spinner />
 				</div>
 			) : (
 				<>
 					{/* Key Metrics Cards */}
 					<div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-5 mb-8">
-						<div className="card p-5">
-							<div className="text-xs text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
-								Total Revenue
-							</div>
-							<div className="text-[32px] font-bold text-text-primary">
-								{formatCurrency(stats?.revenue.total || 0)}
-							</div>
-							{stats?.transactions.total && (
-								<div className="text-xs text-text-tertiary mt-2">
-									{stats.transactions.total} transactions
-								</div>
-							)}
-						</div>
+						<Card>
+							<CardBody>
+								<Text size="sm" className="text-text-muted mb-2 font-semibold uppercase tracking-wider">
+									Total Revenue
+								</Text>
+								<Heading size="xl" className="mb-0">
+									{formatCurrency(stats?.revenue.total || 0)}
+								</Heading>
+								{stats?.transactions.total && (
+									<Text size="sm" className="text-text-muted mt-2">
+										{stats.transactions.total} transactions
+									</Text>
+								)}
+							</CardBody>
+						</Card>
 
-						<div className="card p-5">
-							<div className="text-[13px] text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
-								Refunds
-							</div>
-							<div className="text-[32px] font-bold text-danger">
-								{formatCurrency(stats?.refunds.total || 0)}
-							</div>
-							{stats?.refunds.percentage && (
-								<div className="text-xs text-text-tertiary mt-2">
-									{stats.refunds.percentage.toFixed(2)}% of revenue
-								</div>
-							)}
-						</div>
+						<Card>
+							<CardBody>
+								<Text size="sm" className="text-text-muted mb-2 font-semibold uppercase tracking-wider">
+									Refunds
+								</Text>
+								<Heading size="xl" className="mb-0 text-danger">
+									{formatCurrency(stats?.refunds.total || 0)}
+								</Heading>
+								{stats?.refunds.percentage && (
+									<Text size="sm" className="text-text-muted mt-2">
+										{stats.refunds.percentage.toFixed(2)}% of revenue
+									</Text>
+								)}
+							</CardBody>
+						</Card>
 
-						<div className="card p-5">
-							<div className="text-[13px] text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
-								Active Subscriptions
-							</div>
-							<div className="text-[32px] font-bold text-text-primary">
-								{stats?.subscriptions.active || 0}
-							</div>
-						</div>
+						<Card>
+							<CardBody>
+								<Text size="sm" className="text-text-muted mb-2 font-semibold uppercase tracking-wider">
+									Active Subscriptions
+								</Text>
+								<Heading size="xl" className="mb-0">
+									{stats?.subscriptions.active || 0}
+								</Heading>
+							</CardBody>
+						</Card>
 
-						<div className="card p-5">
-							<div className="text-xs text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
-								Webhook Health
-							</div>
-							<div className="text-[32px] font-bold text-text-primary">
-								{stats?.webhooks?.success ?? 0}
-							</div>
-							{(stats?.webhooks?.failed ?? 0) > 0 && (
-								<div className="text-xs text-danger mt-2">{stats?.webhooks?.failed} failed</div>
-							)}
-						</div>
+						<Card>
+							<CardBody>
+								<Text size="sm" className="text-text-muted mb-2 font-semibold uppercase tracking-wider">
+									Webhook Health
+								</Text>
+								<Heading size="xl" className="mb-0">
+									{stats?.webhooks?.success ?? 0}
+								</Heading>
+								{(stats?.webhooks?.failed ?? 0) > 0 && (
+									<Text size="sm" className="text-danger mt-2">
+										{stats?.webhooks?.failed} failed
+									</Text>
+								)}
+							</CardBody>
+						</Card>
 					</div>
 
 					{/* Provider Breakdown */}
 					{stats?.revenue.by_provider && Object.keys(stats.revenue.by_provider).length > 0 && (
-						<div className="card p-6 mb-8">
-							<h2 className="text-base font-semibold mb-5">Revenue by Provider</h2>
-							<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
-								{Object.entries(stats.revenue.by_provider).map(([provider, amount]) => (
-									<div
-										key={provider}
-										className="p-4 rounded-lg bg-bg-secondary border border-border-color"
-									>
-										<div className="text-[13px] text-text-tertiary mb-2 font-medium capitalize">
-											{provider === "lemon_squeezy"
-												? "LemonSqueezy"
-												: provider === "paddle"
-													? "Paddle"
-													: provider}
-										</div>
-										<div className="text-[24px] font-bold text-text-primary">
-											{formatCurrency(amount as number)}
-										</div>
-									</div>
-								))}
-							</div>
-						</div>
+						<Card className="mb-8">
+							<CardBody>
+								<Heading size="sm" className="mb-5">Revenue by Provider</Heading>
+								<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
+									{Object.entries(stats.revenue.by_provider).map(([provider, amount]) => (
+										<Card key={provider} variant="subtle">
+											<CardBody>
+												<Text size="sm" className="text-text-muted mb-2 font-medium capitalize">
+													{provider === "lemon_squeezy"
+														? "LemonSqueezy"
+														: provider === "paddle"
+															? "Paddle"
+															: provider}
+												</Text>
+												<Heading size="md" className="mb-0">
+													{formatCurrency(amount as number)}
+												</Heading>
+											</CardBody>
+										</Card>
+									))}
+								</div>
+							</CardBody>
+						</Card>
 					)}
 
 					{/* Transaction Type Breakdown */}
 					{stats?.revenue.by_type && Object.keys(stats.revenue.by_type).length > 0 && (
-						<div className="card p-6 mb-8">
-							<h2 className="text-base font-semibold mb-5">Revenue by Type</h2>
-							<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
-								{Object.entries(stats.revenue.by_type).map(([type, amount]) => (
-									<div
-										key={type}
-										className="p-4 rounded-lg bg-bg-secondary border border-border-color"
-									>
-										<div className="text-[13px] text-text-tertiary mb-2 font-medium capitalize">
-											{type}
-										</div>
-										<div className="text-[24px] font-bold text-text-primary">
-											{formatCurrency(amount as number)}
-										</div>
-									</div>
-								))}
-							</div>
-						</div>
+						<Card className="mb-8">
+							<CardBody>
+								<Heading size="sm" className="mb-5">Revenue by Type</Heading>
+								<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
+									{Object.entries(stats.revenue.by_type).map(([type, amount]) => (
+										<Card key={type} variant="subtle">
+											<CardBody>
+												<Text size="sm" className="text-text-muted mb-2 font-medium capitalize">
+													{type}
+												</Text>
+												<Heading size="md" className="mb-0">
+													{formatCurrency(amount as number)}
+												</Heading>
+											</CardBody>
+										</Card>
+									))}
+								</div>
+							</CardBody>
+						</Card>
 					)}
 
 					{/* Tabs */}
-					<div className="mb-6 border-b border-border-color">
-						<div className="flex gap-6">
-							<button
-								onClick={() => setActiveTab("overview")}
-								className={`py-3 text-sm font-medium bg-none border-none cursor-pointer transition-colors duration-200 ${
-									activeTab === "overview"
-										? "text-primary border-b-2 border-primary"
-										: "text-text-tertiary"
-								}`}
-							>
-								Overview
-							</button>
-							<button
-								onClick={() => setActiveTab("purchases")}
-								className={`py-3 text-sm font-medium bg-none border-none cursor-pointer transition-colors duration-200 ${
-									activeTab === "purchases"
-										? "text-primary border-b-2 border-primary"
-										: "text-text-tertiary"
-								}`}
-							>
-								Purchases
-							</button>
-							<button
-								onClick={() => setActiveTab("transactions")}
-								className={`py-3 text-sm font-medium bg-none border-none cursor-pointer transition-colors duration-200 ${
-									activeTab === "transactions"
-										? "text-primary border-b-2 border-primary"
-										: "text-text-tertiary"
-								}`}
-							>
-								Transactions
-							</button>
-						</div>
-					</div>
+					<Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "overview" | "purchases" | "transactions")}>
+						<TabsList className="mb-6">
+							<TabsItem value="overview">Overview</TabsItem>
+							<TabsItem value="purchases">Purchases</TabsItem>
+							<TabsItem value="transactions">Transactions</TabsItem>
+						</TabsList>
 
-					{/* Purchases Table */}
-					{activeTab === "purchases" && purchasesData && (
-						<div className="card p-6">
-							<h2 className="text-base font-semibold mb-5">Recent Purchases</h2>
-							{purchasesData.data.length === 0 ? (
-								<div className="text-center py-10 px-5 text-text-tertiary">No purchases found</div>
-							) : (
-								<div className="overflow-x-auto">
-									<table className="w-full border-collapse text-[13px]">
-										<thead>
-											<tr className="border-b border-border-color">
-												<th className="text-left p-3 font-semibold">Date</th>
-												<th className="text-left p-3 font-semibold">Provider</th>
-												<th className="text-left p-3 font-semibold">Amount</th>
-												<th className="text-left p-3 font-semibold">Status</th>
-												<th className="text-left p-3 font-semibold">App</th>
-											</tr>
-										</thead>
-										<tbody>
-											{purchasesData.data.map((purchase) => (
-												<tr
-													key={purchase.id}
-													className="border-b border-border-color bg-bg-secondary"
-												>
-													<td className="p-3">{formatDate(purchase.created_at)}</td>
-													<td className="p-3 capitalize">
-														{purchase.provider === "lemon_squeezy"
-															? "LemonSqueezy"
-															: "Paddle"}
-													</td>
-													<td className="p-3 font-medium">
-														{formatCurrency(purchase.amount, purchase.currency)}
-													</td>
-													<td className="p-3">
-														<span
-															className={`inline-block px-2 py-1 rounded text-xs font-medium capitalize ${
-																purchase.status === "completed"
-																	? "bg-success/10 text-success"
-																	: purchase.status === "pending"
-																		? "bg-info/10 text-info"
-																		: "bg-danger/10 text-danger"
-															}`}
-														>
-															{purchase.status}
-														</span>
-													</td>
-													<td className="p-3">{purchase.app?.name || "—"}</td>
-												</tr>
-											))}
-										</tbody>
-									</table>
-								</div>
+						{/* Purchases Table */}
+						<TabsPanel value="purchases">
+							{purchasesData && (
+								<Card>
+									<CardBody>
+										<Heading size="sm" className="mb-5">Recent Purchases</Heading>
+										{purchasesData.data.length === 0 ? (
+											<Text className="text-center py-10 text-text-muted">No purchases found</Text>
+										) : (
+											<>
+												<TableContainer>
+													<Table>
+														<TableHeader>
+															<TableRow>
+																<TableHead>Date</TableHead>
+																<TableHead>Provider</TableHead>
+																<TableHead>Amount</TableHead>
+																<TableHead>Status</TableHead>
+																<TableHead>App</TableHead>
+															</TableRow>
+														</TableHeader>
+														<TableBody>
+															{purchasesData.data.map((purchase) => (
+																<TableRow key={purchase.id}>
+																	<TableCell>{formatDate(purchase.created_at)}</TableCell>
+																	<TableCell className="capitalize">
+																		{purchase.provider === "lemon_squeezy"
+																			? "LemonSqueezy"
+																			: "Paddle"}
+																	</TableCell>
+																	<TableCell className="font-medium">
+																		{formatCurrency(purchase.amount, purchase.currency)}
+																	</TableCell>
+																	<TableCell>
+																		<Badge
+																			variant={
+																				purchase.status === "completed"
+																					? "success"
+																					: purchase.status === "pending"
+																						? "info"
+																						: "danger"
+																			}
+																			size="sm"
+																		>
+																			{purchase.status}
+																		</Badge>
+																	</TableCell>
+																	<TableCell>{purchase.app?.name || "—"}</TableCell>
+																</TableRow>
+															))}
+														</TableBody>
+													</Table>
+												</TableContainer>
+												{purchasesData.pagination && (
+													<Text size="sm" className="mt-4 text-text-muted">
+														Showing {purchasesData.data.length} of {purchasesData.pagination.total} purchases
+														{purchasesData.pagination.hasMore && " (more available)"}
+													</Text>
+												)}
+											</>
+										)}
+									</CardBody>
+								</Card>
 							)}
-							{purchasesData.pagination && (
-								<div className="mt-4 text-sm text-text-tertiary">
-									Showing {purchasesData.data.length} of {purchasesData.pagination.total} purchases
-									{purchasesData.pagination.hasMore && " (more available)"}
-								</div>
-							)}
-						</div>
-					)}
+						</TabsPanel>
 
-					{/* Transactions Table */}
-					{activeTab === "transactions" && transactionsData && (
-						<div className="card p-6">
-							<h2 className="text-base font-semibold mb-5">Recent Transactions</h2>
-							{transactionsData.data.length === 0 ? (
-								<div className="text-center py-10 px-5 text-text-tertiary">No transactions found</div>
-							) : (
-								<div className="overflow-x-auto">
-									<table className="w-full border-collapse text-[13px]">
-										<thead>
-											<tr className="border-b border-border-color">
-												<th className="text-left p-3 font-semibold">Date</th>
-												<th className="text-left p-3 font-semibold">Type</th>
-												<th className="text-left p-3 font-semibold">Provider</th>
-												<th className="text-left p-3 font-semibold">Amount</th>
-												<th className="text-left p-3 font-semibold">Status</th>
-											</tr>
-										</thead>
-										<tbody>
-											{transactionsData.data.map((txn) => (
-												<tr
-													key={txn.id}
-													className="border-b border-border-color bg-bg-secondary"
-												>
-													<td className="p-3">{formatDate(txn.created_at)}</td>
-													<td className="p-3 capitalize">{txn.type}</td>
-													<td className="p-3 capitalize">
-														{txn.provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
-													</td>
-													<td className="p-3 font-medium">
-														{txn.type === "refund" ? "-" : ""}
-														{formatCurrency(txn.amount, txn.currency)}
-													</td>
-													<td className="p-3">
-														<span
-															className={`inline-block px-2 py-1 rounded text-xs font-medium capitalize ${
-																txn.status === "completed"
-																	? "bg-success/10 text-success"
-																	: txn.status === "pending"
-																		? "bg-info/10 text-info"
-																		: "bg-danger/10 text-danger"
-															}`}
-														>
-															{txn.status}
-														</span>
-													</td>
-												</tr>
-											))}
-										</tbody>
-									</table>
-								</div>
+						{/* Transactions Table */}
+						<TabsPanel value="transactions">
+							{transactionsData && (
+								<Card>
+									<CardBody>
+										<Heading size="sm" className="mb-5">Recent Transactions</Heading>
+										{transactionsData.data.length === 0 ? (
+											<Text className="text-center py-10 text-text-muted">No transactions found</Text>
+										) : (
+											<>
+												<TableContainer>
+													<Table>
+														<TableHeader>
+															<TableRow>
+																<TableHead>Date</TableHead>
+																<TableHead>Type</TableHead>
+																<TableHead>Provider</TableHead>
+																<TableHead>Amount</TableHead>
+																<TableHead>Status</TableHead>
+															</TableRow>
+														</TableHeader>
+														<TableBody>
+															{transactionsData.data.map((txn) => (
+																<TableRow key={txn.id}>
+																	<TableCell>{formatDate(txn.created_at)}</TableCell>
+																	<TableCell className="capitalize">{txn.type}</TableCell>
+																	<TableCell className="capitalize">
+																		{txn.provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
+																	</TableCell>
+																	<TableCell className="font-medium">
+																		{txn.type === "refund" ? "-" : ""}
+																		{formatCurrency(txn.amount, txn.currency)}
+																	</TableCell>
+																	<TableCell>
+																		<Badge
+																			variant={
+																				txn.status === "completed"
+																					? "success"
+																					: txn.status === "pending"
+																						? "info"
+																						: "danger"
+																			}
+																			size="sm"
+																		>
+																			{txn.status}
+																		</Badge>
+																	</TableCell>
+																</TableRow>
+															))}
+														</TableBody>
+													</Table>
+												</TableContainer>
+												{transactionsData.pagination && (
+													<Text size="sm" className="mt-4 text-text-muted">
+														Showing {transactionsData.data.length} of {transactionsData.pagination.total} transactions
+														{transactionsData.pagination.hasMore && " (more available)"}
+													</Text>
+												)}
+											</>
+										)}
+									</CardBody>
+								</Card>
 							)}
-							{transactionsData.pagination && (
-								<div className="mt-4 text-xs text-text-tertiary">
-									Showing {transactionsData.data.length} of {transactionsData.pagination.total}{" "}
-									transactions
-									{transactionsData.pagination.hasMore && " (more available)"}
-								</div>
-							)}
-						</div>
-					)}
+						</TabsPanel>
 
-					{/* Overview Tab */}
-					{activeTab === "overview" && (
-						<div className="card p-12 text-center">
-							<div className="text-[48px] mb-4">💰</div>
-							<h2 className="text-xl font-semibold mb-2 text-text-primary">Billing Overview</h2>
-							<p className="text-sm text-text-tertiary max-w-[480px] mx-auto">
-								Monitor your payment metrics and transaction history. Use the tabs above to view
-								detailed purchases and transactions from LemonSqueezy and Paddle.
-							</p>
-						</div>
-					)}
+						{/* Overview Tab */}
+						<TabsPanel value="overview">
+							<Card>
+								<CardBody className="text-center py-12">
+									<div className="text-5xl mb-4">💰</div>
+									<Heading size="md" className="mb-2">Billing Overview</Heading>
+									<Text className="text-text-muted max-w-md mx-auto">
+										Monitor your payment metrics and transaction history. Use the tabs above to view
+										detailed purchases and transactions from LemonSqueezy and Paddle.
+									</Text>
+								</CardBody>
+							</Card>
+						</TabsPanel>
+					</Tabs>
 				</>
 			)}
 		</div>
