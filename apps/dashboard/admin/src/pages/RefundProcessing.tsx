@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useBillingPurchases, useBillingRefunds, useCreateRefund } from "../hooks/api";
 import { useToast } from "../components/Toast";
+import { Heading, Text, Card, CardBody, Button, Alert, Badge, Label, Input, Select as SeliaSelect, EmptyState, Table, TableContainer, TableHeader, TableHead, TableBody, TableRow, TableCell } from "@proofa/components";
 
 export function RefundProcessingPage() {
 	const [activeTab, setActiveTab] = useState<"refunds" | "create">("refunds");
@@ -53,11 +54,11 @@ export function RefundProcessingPage() {
 	};
 
 	const handleStatusBadge = (status: string) => {
-		const badgeClass: Record<string, string> = {
-			completed: "badge-success",
-			pending: "badge-warning",
-			processing: "badge-info",
-			failed: "badge-danger",
+		const badgeVariants: Record<string, "success" | "warning" | "info" | "danger"> = {
+			completed: "success",
+			pending: "warning",
+			processing: "info",
+			failed: "danger",
 		};
 		const icons: Record<string, string> = {
 			completed: "✓",
@@ -66,19 +67,18 @@ export function RefundProcessingPage() {
 			failed: "✗",
 		};
 		return (
-			<span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-12px font-medium ${badgeClass[status] || "badge-warning"}`}>
-				<span>{icons[status] || "⏱"}</span>
-				<span className="capitalize">{status}</span>
-			</span>
+			<Badge variant={badgeVariants[status] || "warning"}>
+				{icons[status] || "⏱"} {status.charAt(0).toUpperCase() + status.slice(1)}
+			</Badge>
 		);
 	};
 
 	const handleProviderBadge = (provider: string) => {
-		const badgeClass = provider === "lemon_squeezy" ? "badge-success" : "badge-info";
+		const variant = provider === "lemon_squeezy" ? "success" : "info";
 		return (
-			<span className={`inline-block px-2.5 py-1 rounded-xl text-12px font-medium capitalize ${badgeClass}`}>
+			<Badge variant={variant}>
 				{provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
-			</span>
+			</Badge>
 		);
 	};
 
@@ -90,14 +90,14 @@ export function RefundProcessingPage() {
 		return (
 			<div>
 				<div className="mb-6">
-					<button onClick={() => setActiveTab("refunds")} className="text-primary cursor-pointer bg-transparent border-none text-sm font-medium">
+					<Button onClick={() => setActiveTab("refunds")} className="text-primary cursor-pointer bg-transparent border-none text-sm font-medium">
 						← Back to Refunds
-					</button>
+					</Button>
 				</div>
 
-				<div className="card max-w-[600px]">
+				<Card><CardBody className="max-w-[600px]">
 					<div className="p-6">
-					<h2 className="mt-0 mb-6">Create Refund</h2>
+					<Heading level={2} size="lg" className="mb-6">Create Refund</Heading>
 
 						<form onSubmit={handleCreateRefund}>
 							<div className="form-group mb-5">
@@ -122,7 +122,7 @@ export function RefundProcessingPage() {
 
 							{refundForm.purchase_id && purchasesQuery.data?.data && (
 								<div className="p-4 bg-surface-secondary rounded-lg mb-5">
-									<h4 className="mt-0 mb-3 text-sm">Purchase Details</h4>
+									<Heading level={4} size="sm" className="mb-3">Purchase Details</Heading>
 									{(() => {
 										const purchase = purchasesQuery.data.data.find((p) => p.id === refundForm.purchase_id);
 										if (!purchase) return null;
@@ -184,24 +184,25 @@ export function RefundProcessingPage() {
 								</select>
 							</div>
 
-							<div className="p-3 alert-info mb-6">
+							<Alert variant="info" className="mb-6">
 								<div className="text-info leading-relaxed">
 									<strong>ℹ️ Note:</strong> Refund processing may take 24-48 hours depending on the payment provider.
 								</div>
-							</div>
+							</Alert>
 
 							<div className="flex gap-2 justify-end">
-								<button type="button" onClick={() => setActiveTab("refunds")} className="btn btn-secondary">
+								<Button type="button" onClick={() => setActiveTab("refunds")} variant="secondary">
 									Cancel
-								</button>
-								<button type="submit" className="btn btn-primary" disabled={createRefundMutation.isPending}>
+								</Button>
+								<Button type="submit" variant="primary" disabled={createRefundMutation.isPending}>
 									{createRefundMutation.isPending ? "Processing..." : "Create Refund"}
-								</button>
+								</Button>
 							</div>
 						</form>
 					</div>
-				</div>
-			</div>
+				</CardBody>
+			</Card>
+</div>
 		);
 	}
 
@@ -209,17 +210,17 @@ export function RefundProcessingPage() {
 		<div>
 			<div className="mb-6 flex justify-between items-center">
 				<div>
-					<h1 className="m-0 mb-2">Refund Processing</h1>
-					<p className="m-0 text-text-secondary">Create and manage customer refunds</p>
+					<Heading level={1} size="lg">Refund Processing</Heading>
+					<Text className="m-0 text-text-secondary">Create and manage customer refunds</Text>
 				</div>
-				<button onClick={() => setActiveTab("create")} className="btn btn-primary">
+				<Button onClick={() => setActiveTab("create")} variant="primary">
 					+ Create Refund
-				</button>
+				</Button>
 			</div>
 
 			{/* Filters */}
-			<div className="card mb-6 p-6">
-				<h3 className="mt-0 mb-4 text-base">Filters</h3>
+			<Card><CardBody className="mb-6 p-6">
+				<Heading level={3} size="md" className="mb-4">Filters</Heading>
 				<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-4">
 					<div className="form-group m-0">
 						<label htmlFor="provider" className="text-xs mb-1.5">
@@ -282,7 +283,7 @@ export function RefundProcessingPage() {
 					</div>
 				</div>
 
-				<button
+				<Button
 					onClick={() =>
 						setFilters({
 							status: "",
@@ -296,25 +297,25 @@ export function RefundProcessingPage() {
 					className="btn btn-secondary-outline btn-sm"
 				>
 					Clear Filters
-				</button>
-			</div>
+				</Button>
+			</CardBody></Card>
 
 			{/* Refunds Table */}
 			{!refundsQuery.data || refundsQuery.data.refunds.length === 0 ? (
-				<div className="card py-16 px-6 text-center">
+				<Card><CardBody className="py-16 px-6 text-center">
 					<div className="text-6xl mb-4">💰</div>
-					<h2 className="text-xl font-semibold mb-3 text-text-primary">
+					<Heading level={2} size="lg" className="mb-3">
 						No refunds yet
-					</h2>
-					<p className="text-sm text-text-tertiary mb-6 max-w-[400px] mx-auto">
+					</Heading>
+					<Text className="text-sm text-text-tertiary mb-6 max-w-[400px] mx-auto">
 						Start by creating a refund for a customer purchase
-					</p>
-					<button onClick={() => setActiveTab("create")} className="btn btn-primary">
+					</Text>
+					<Button onClick={() => setActiveTab("create")} variant="primary">
 						+ Create Refund
-					</button>
-				</div>
+					</Button>
+				</CardBody></Card>
 			) : (
-				<div className="card p-0 overflow-hidden">
+				<Card><CardBody className="p-0 overflow-hidden">
 					<table className="w-full border-collapse">
 						<thead>
 							<tr className="border-b border-border-primary bg-surface-secondary">
@@ -359,7 +360,7 @@ export function RefundProcessingPage() {
 							))}
 						</tbody>
 					</table>
-				</div>
+				</CardBody></Card>
 			)}
 
 			{/* Pagination */}
@@ -370,7 +371,7 @@ export function RefundProcessingPage() {
 						{refundsQuery.data.pagination.total}
 					</div>
 					<div className="flex gap-2">
-						<button
+						<Button
 							onClick={() =>
 								setFilters({
 									...filters,
@@ -381,8 +382,8 @@ export function RefundProcessingPage() {
 							className="btn btn-secondary-outline btn-sm"
 						>
 							Previous
-						</button>
-						<button
+						</Button>
+						<Button
 							onClick={() =>
 								setFilters({
 									...filters,
@@ -393,7 +394,7 @@ export function RefundProcessingPage() {
 							className="btn btn-secondary-outline btn-sm"
 						>
 							Next
-						</button>
+						</Button>
 					</div>
 				</div>
 			)}

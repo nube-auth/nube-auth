@@ -1,6 +1,18 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Icon, IconType } from "@proofa/components";
+import {
+	Icon,
+	IconType,
+	Spinner,
+	Alert,
+	Text,
+	Heading,
+	Card,
+	CardBody,
+	Button,
+	Breadcrumb,
+	BreadcrumbSeparator,
+} from "@proofa/components";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { useToast } from "../components/Toast";
 import { useApp, useProject } from "../hooks/api";
@@ -32,8 +44,8 @@ export function AppApiKeysPage() {
 				},
 			);
 
-			if (response.ok) {
-				const keys = await response.json();
+			if (response.ok()) {
+				const keys = response.data;
 				setRevealedKeys(keys);
 				setShowSecret(true);
 				setShowToken(true);
@@ -72,8 +84,8 @@ export function AppApiKeysPage() {
 				},
 			);
 
-			if (response.ok) {
-				const data = await response.json();
+			if (response.ok()) {
+				const data = response.data;
 				setRevealedKeys((prev) => ({ ...prev, clientSecret: data.clientSecret }));
 				setShowSecret(true);
 				showToast("Client Secret regenerated successfully", "success");
@@ -102,8 +114,8 @@ export function AppApiKeysPage() {
 				},
 			);
 
-			if (response.ok) {
-				const data = await response.json();
+			if (response.ok()) {
+				const data = response.data;
 				setRevealedKeys((prev) => ({ ...prev, serviceToken: data.serviceToken }));
 				setShowToken(true);
 				showToast("Service Token regenerated successfully", "success");
@@ -123,194 +135,195 @@ export function AppApiKeysPage() {
 
 	if (projectLoading || appLoading) {
 		return (
-			<div className="loading">
-				<div className="spinner" />
+			<div className="flex justify-center items-center py-12">
+				<Spinner />
 			</div>
 		);
 	}
 
 	if (!project || !app) {
-		return <div className="error-state">Project or App not found</div>;
+		return <Alert variant="danger">Project or App not found</Alert>;
 	}
 
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
 			<div className="mb-6">
-				<div className="breadcrumb">
-					<Link to="/projects" className="breadcrumb-link">
+				<Breadcrumb>
+					<Link to="/projects">
 						Projects
 					</Link>
-					<span>›</span>
-					<Link
-						to={`/projects/${projectId}`}
-						className="breadcrumb-link"
-					>
+					/
+					<Link to={`/projects/${projectId}`}>
 						{project.name}
 					</Link>
-					<span>›</span>
-					<Link
-						to={`/projects/${projectId}/apps/${appId}`}
-						className="breadcrumb-link"
-					>
+					/
+					<Link to={`/projects/${projectId}/apps/${appId}`}>
 						{app.name}
 					</Link>
-					<span>›</span>
-					<span className="text-text-primary">API Keys</span>
-				</div>
+					/
+					<Text>API Keys</Text>
+				</Breadcrumb>
 			</div>
 
 			{/* Page Header */}
-			<div className="page-header mb-8">
-				<div>
-					<h1 className="page-title">API Keys</h1>
-					<p className="text-14px text-text-tertiary">
-						Manage your app's API credentials for integration
-					</p>
-				</div>
+			<div className="mb-8">
+				<Heading level={1} size="lg">API Keys</Heading>
+				<Text className="text-text-secondary">
+					Manage your app's API credentials for integration
+				</Text>
 			</div>
 
 			{/* Warning Banner */}
-			<div className="card-warning mb-6">
+			<Alert variant="warning" className="mb-6">
 				<div className="flex gap-4">
 					<Icon icon={IconType.AlertCircle} size={20} className="text-yellow-500 flex-shrink-0" />
 					<div>
-						<div className="font-semibold text-text-primary">
+						<Text className="font-semibold text-text-primary mb-1">
 							Keep these keys secure!
-						</div>
-						<div className="text-13px text-text-secondary">
+						</Text>
+						<Text className="text-text-secondary">
 							Never expose these keys in client-side code or public repositories. Store them securely as
 							environment variables.
-						</div>
+						</Text>
 					</div>
 				</div>
-			</div>
+			</Alert>
 
 			{/* App ID Card */}
-			<div className="card p-6 mb-4">
-				<div className="flex items-start justify-between">
-					<div className="flex-1">
-						<div className="form-label">
-							App ID (Public)
+			<Card className="mb-4">
+				<CardBody className="p-6">
+					<div className="flex items-start justify-between">
+						<div className="flex-1">
+							<Text className="form-label">
+								App ID (Public)
+							</Text>
+							<code className="code-block">
+								{app.id}
+							</code>
+							<Text className="text-12px text-text-tertiary mt-2">
+								This is your public app identifier. Safe to use in client-side code.
+							</Text>
 						</div>
-						<code className="code-block">
-							{app.id}
-						</code>
-						<p className="text-12px text-text-tertiary mt-2">
-							This is your public app identifier. Safe to use in client-side code.
-						</p>
+						<Button
+							variant="secondary"
+							size="sm"
+							onClick={() => handleCopy(app.id, "appId")}
+							className="ml-4"
+						>
+							{copying === "appId" ? "✓ Copied" : "Copy"}
+						</Button>
 					</div>
-					<button
-						type="button"
-						onClick={() => handleCopy(app.id, "appId")}
-						className="btn btn-secondary-outline btn-sm ml-4"
-					>
-						{copying === "appId" ? "✓ Copied" : "Copy"}
-					</button>
-				</div>
-			</div>
+				</CardBody>
+			</Card>
 
 			{/* Client Secret Card */}
-			<div className="card p-6 mb-4">
-				<div className="flex items-start justify-between mb-4">
-					<div className="flex-1">
-						<div className="form-label">
-							Client Secret
+			<Card className="mb-4">
+				<CardBody className="p-6">
+					<div className="flex items-start justify-between mb-4">
+						<div className="flex-1">
+							<Text className="form-label">
+								Client Secret
+							</Text>
+							<code className="code-block">
+								{showSecret && revealedKeys.clientSecret ? revealedKeys.clientSecret : app.clientSecret}
+							</code>
+							<Text className="text-12px text-text-tertiary mt-2">
+								Used for server-to-server authentication. Keep this secret!
+							</Text>
 						</div>
-						<code className="code-block">
-							{showSecret && revealedKeys.clientSecret ? revealedKeys.clientSecret : app.clientSecret}
-						</code>
-						<p className="text-12px text-text-tertiary mt-2">
-							Used for server-to-server authentication. Keep this secret!
-						</p>
-					</div>
-					<div className="flex gap-2 ml-4">
-						{showSecret && revealedKeys.clientSecret && (
-							<button
-								type="button"
-								onClick={() => handleCopy(revealedKeys.clientSecret!, "secret")}
-								className="btn btn-secondary-outline btn-sm"
+						<div className="flex gap-2 ml-4">
+							{showSecret && revealedKeys.clientSecret && (
+								<Button
+									variant="secondary"
+									size="sm"
+									onClick={() => handleCopy(revealedKeys.clientSecret!, "secret")}
+								>
+									{copying === "secret" ? "✓ Copied" : "Copy"}
+								</Button>
+							)}
+							<Button
+								variant="secondary"
+								size="sm"
+								onClick={showSecret ? () => setShowSecret(false) : handleRevealKeys}
 							>
-								{copying === "secret" ? "✓ Copied" : "Copy"}
-							</button>
-						)}
-						<button
-							type="button"
-							onClick={showSecret ? () => setShowSecret(false) : handleRevealKeys}
-							className="btn btn-secondary-outline btn-sm"
-						>
-							{showSecret ? "Hide" : "Reveal"}
-						</button>
+								{showSecret ? "Hide" : "Reveal"}
+							</Button>
+						</div>
 					</div>
-				</div>
-				<button
-					type="button"
-					onClick={() => setShowRegenerateSecretModal(true)}
-					className="btn btn-danger-outline btn-sm"
-				>
-					Regenerate Secret
-				</button>
-			</div>
+					<Button
+						variant="danger"
+						size="sm"
+						onClick={() => setShowRegenerateSecretModal(true)}
+					>
+						Regenerate Secret
+					</Button>
+				</CardBody>
+			</Card>
 
 			{/* Service Token Card */}
-			<div className="card p-6 mb-6">
-				<div className="flex items-start justify-between mb-4">
-					<div className="flex-1">
-						<div className="form-label">
-							Service Token
+			<Card className="mb-6">
+				<CardBody className="p-6">
+					<div className="flex items-start justify-between mb-4">
+						<div className="flex-1">
+							<Text className="form-label">
+								Service Token
+							</Text>
+							<code className="code-block">
+								{showToken && revealedKeys.serviceToken ? revealedKeys.serviceToken : app.serviceToken}
+							</code>
+							<Text className="text-12px text-text-tertiary mt-2">
+								Used for API calls from your backend. Keep this secret!
+							</Text>
 						</div>
-						<code className="code-block">
-							{showToken && revealedKeys.serviceToken ? revealedKeys.serviceToken : app.serviceToken}
-						</code>
-						<p className="text-12px text-text-tertiary mt-2">
-							Used for API calls from your backend. Keep this secret!
-						</p>
-					</div>
-					<div className="flex gap-2 ml-4">
-						{showToken && revealedKeys.serviceToken && (
-							<button
-								type="button"
-								onClick={() => handleCopy(revealedKeys.serviceToken!, "token")}
-								className="btn btn-secondary-outline btn-sm"
+						<div className="flex gap-2 ml-4">
+							{showToken && revealedKeys.serviceToken && (
+								<Button
+									variant="secondary"
+									size="sm"
+									onClick={() => handleCopy(revealedKeys.serviceToken!, "token")}
+								>
+									{copying === "token" ? "✓ Copied" : "Copy"}
+								</Button>
+							)}
+							<Button
+								variant="secondary"
+								size="sm"
+								onClick={showToken ? () => setShowToken(false) : handleRevealKeys}
 							>
-								{copying === "token" ? "✓ Copied" : "Copy"}
-							</button>
-						)}
-						<button
-							type="button"
-							onClick={showToken ? () => setShowToken(false) : handleRevealKeys}
-							className="btn btn-secondary-outline btn-sm"
-						>
-							{showToken ? "Hide" : "Reveal"}
-						</button>
+								{showToken ? "Hide" : "Reveal"}
+							</Button>
+						</div>
 					</div>
-				</div>
-				<button
-					type="button"
-					onClick={() => setShowRegenerateTokenModal(true)}
-					className="btn btn-danger-outline btn-sm"
-				>
-					Regenerate Token
-				</button>
-			</div>
+					<Button
+						variant="danger"
+						size="sm"
+						onClick={() => setShowRegenerateTokenModal(true)}
+					>
+						Regenerate Token
+					</Button>
+				</CardBody>
+			</Card>
 
 			{/* Integration Guide Link */}
-			<div className="card p-6 bg-surface-secondary">
-				<div className="flex items-center gap-4 mb-4">
-					<Icon icon={IconType.Bookmark} size={24} className="text-primary" />
-					<div>
-						<div className="font-semibold text-text-primary">
-							Integration Guide
-						</div>
-						<div className="text-13px text-text-tertiary">
-							Learn how to integrate Proofa into your application with code examples
+			<Card className="bg-surface-secondary">
+				<CardBody className="p-6">
+					<div className="flex items-center gap-4 mb-4">
+						<Icon icon={IconType.Bookmark} size={24} className="text-primary" />
+						<div>
+							<Text className="font-semibold text-text-primary mb-1">
+								Integration Guide
+							</Text>
+							<Text className="text-text-tertiary">
+								Learn how to integrate Proofa into your application with code examples
+							</Text>
 						</div>
 					</div>
-				</div>
-				<Link to={`/projects/${projectId}/apps/${appId}/developers`} className="btn btn-primary btn-sm">
-					View Guide
-				</Link>
-			</div>
+					<Button variant="primary" size="sm" onClick={() => window.location.href = `/projects/${projectId}/apps/${appId}/developers`}>
+						View Guide
+					</Button>
+				</CardBody>
+			</Card>
 
 			{/* Regenerate Secret Confirmation Modal with Captcha */}
 			<ConfirmModal

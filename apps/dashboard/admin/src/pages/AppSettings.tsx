@@ -5,6 +5,22 @@ import { useToast } from "../components/Toast";
 import { useApp, useProject, useUpdateApp } from "../hooks/api";
 import { pingpong } from "../lib/pingpong";
 import type { App } from "../types/admin";
+import {
+	Spinner,
+	Alert,
+	Heading,
+	Text,
+	Tabs,
+	TabsList,
+	TabsItem,
+	TabsPanel,
+	Card,
+	CardBody,
+	Label,
+	Input,
+	Textarea,
+	Button
+} from "@proofa/components";
 
 type SettingsTab = "general" | "authentication" | "security" | "danger";
 
@@ -130,14 +146,14 @@ export function AppSettingsPage() {
 
 	if (projectLoading || appLoading) {
 		return (
-			<div className="loading">
-				<div className="spinner" />
+			<div className="flex items-center justify-center min-h-screen">
+				<Spinner />
 			</div>
 		);
 	}
 
 	if (!project || !app || !formData) {
-		return <div className="error-state">App not found</div>;
+		return <Alert variant="danger">App not found</Alert>;
 	}
 
 	const tabs: { id: SettingsTab; label: string }[] = [
@@ -151,8 +167,8 @@ export function AppSettingsPage() {
 		<div className="page">
 			{/* Page Header *}
 			<div className="mb-8">
-				<h1 className="page-title">App Settings</h1>
-				<p className="page-description">Configure your application settings and preferences</p>
+				<Heading level={1} size="lg">App Settings</Heading>
+				<Text className="text-text-muted mt-2">Configure your application settings and preferences</Text>
 			</div>
 
 			{/* Tabs */}

@@ -266,7 +266,6 @@ export function AppUsersPage() {
 						placeholder="Search by name or email..."
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
-						prefix={<Icon icon={IconType.Search} size={16} />}
 					/>
 				</div>
 

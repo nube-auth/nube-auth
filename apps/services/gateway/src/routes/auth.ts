@@ -238,9 +238,9 @@ authRoutes.get("/callback", async (c: Context) => {
 		const secureCookies =
 			env.NODE_ENV === "production" || (env.GATEWAY_PUBLIC_URL ? env.GATEWAY_PUBLIC_URL.startsWith("https://") : false);
 		
-		// For localhost development, don't set domain (browser will use current domain)
-		// For production *.proofa.sh, include domain for cross-subdomain access
-		const cookieOptions = cookieDomain && cookieDomain !== "localhost" 
+		// For localhost: DON'T set domain (host-only cookie works across ports)
+		// For production: set domain=.proofa.sh for subdomain sharing
+		const cookieOptions = cookieDomain && cookieDomain !== "localhost"
 			? { domain: cookieDomain, secure: secureCookies }
 			: { secure: secureCookies };
 		
@@ -600,53 +600,72 @@ authRoutes.post("/logout", async (c: Context) => {
 /**
  * GET /v1/auth/status
  * Check if user is logged in
+ * 
+ * SECURITY: Only validates the cookie matching the requested audience.
+ * - audience=admin: Only checks admin cookie, returns 401 if missing/invalid
+ * - audience=user: Only checks user cookie, returns 401 if missing/invalid
  */
 authRoutes.get("/status", async (c: Context) => {
 	try {
 		const audience = inferAudience(c);
-		const adminCookie = getCookie(c, ADMIN_SESSION_COOKIE);
-		const userCookie = getCookie(c, USER_SESSION_COOKIE);
+		
+		// CRITICAL: Only check the cookie for the requested audience
+		const cookieName = audience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
+		const cookie = getCookie(c, cookieName);
 
-		const cookiesToTry: Array<string> = [];
-		if (audience === "admin") {
-			if (adminCookie) cookiesToTry.push(adminCookie);
-			if (userCookie) cookiesToTry.push(userCookie);
-		} else {
-			if (userCookie) cookiesToTry.push(userCookie);
-			if (adminCookie) cookiesToTry.push(adminCookie);
+		// Return 401 if the appropriate cookie doesn't exist
+		if (!cookie) {
+			log.debug({ audience, cookieName }, "No session cookie for audience");
+			return c.json({ error: "Unauthorized", loggedIn: false }, 401);
 		}
 
-		if (cookiesToTry.length === 0) {
-			return c.json({ loggedIn: false });
+		// Validate the session
+		const sessionId = parseSessionCookie(cookie);
+		if (!sessionId) {
+			log.warn({ audience, cookieName }, "Invalid session cookie format");
+			return c.json({ error: "Unauthorized", loggedIn: false }, 401);
 		}
 
-		for (const cookie of cookiesToTry) {
-			const sessionId = parseSessionCookie(cookie);
-			if (!sessionId) continue;
-
-			const appSession = await sessionStore.getAppSession(sessionId);
-			if (!appSession) continue;
-
-			const coreSessionId = appSession.metadata?.["coreSessionId"] as string | undefined;
-			if (!coreSessionId) continue;
-
-			const user = await coreClient.exchangeSession(coreSessionId);
-			if (!user) continue;
-
-			return c.json({
-				loggedIn: true,
-				user: {
-					id: user.userId,
-					email: user.email,
-					name: user.name,
-				},
-			});
+		const appSession = await sessionStore.getAppSession(sessionId);
+		if (!appSession) {
+			log.warn({ audience, sessionId: `${sessionId.substring(0, 8)}...` }, "Session not found in store");
+			return c.json({ error: "Unauthorized", loggedIn: false }, 401);
 		}
 
-		return c.json({ loggedIn: false });
+		const coreSessionId = appSession.metadata?.["coreSessionId"] as string | undefined;
+		if (!coreSessionId) {
+			log.warn({ audience, sessionId: `${sessionId.substring(0, 8)}...` }, "Core session ID missing");
+			return c.json({ error: "Unauthorized", loggedIn: false }, 401);
+		}
+
+		// Verify session type matches audience
+		const sessionType = appSession.metadata?.["sessionType"] as string | undefined;
+		if (sessionType && sessionType !== audience) {
+			log.warn({ 
+				audience, 
+				sessionType,
+				sessionId: `${sessionId.substring(0, 8)}...` 
+			}, "Session type mismatch with audience");
+			return c.json({ error: "Unauthorized", loggedIn: false }, 401);
+		}
+
+		const user = await coreClient.exchangeSession(coreSessionId);
+		if (!user) {
+			log.warn({ audience, coreSessionId: `${coreSessionId.substring(0, 8)}...` }, "Core session invalid");
+			return c.json({ error: "Unauthorized", loggedIn: false }, 401);
+		}
+
+		return c.json({
+			loggedIn: true,
+			user: {
+				id: user.userId,
+				email: user.email,
+				name: user.name,
+			},
+		});
 	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "Status check error:");
-		return c.json({ loggedIn: false });
+		log.error({ err: serializeError(error as Error) }, "Status check error");
+		return c.json({ error: "Unauthorized", loggedIn: false }, 401);
 	}
 });
 

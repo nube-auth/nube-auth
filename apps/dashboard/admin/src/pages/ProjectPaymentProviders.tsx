@@ -1,6 +1,36 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import {Icon, IconType} from "@proofa/components";;
+import {
+	Icon,
+	IconType,
+	Spinner,
+	Text,
+	Heading,
+	Card,
+	 CardBody,
+	Button,
+	Label,
+	Input,
+	Textarea,
+	Badge,
+	Alert,
+	EmptyState,
+	Dialog,
+	DialogPopup,
+	DialogHeader,
+	DialogTitle,
+	DialogBody,
+	DialogFooter,
+	Table,
+	TableContainer,
+	TableHeader,
+	TableHead,
+	TableBody,
+	TableRow,
+	TableCell,
+	Breadcrumb,
+	BreadcrumbSeparator,
+} from "@proofa/components";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
 import {
@@ -320,8 +350,8 @@ export default function ProjectPaymentProvidersPage() {
 
 	if (isLoading) {
 		return (
-			<div className="loading">
-				<div className="spinner" />
+			<div className="flex justify-center items-center py-12">
+				<Spinner />
 			</div>
 		);
 	}
@@ -330,33 +360,30 @@ export default function ProjectPaymentProvidersPage() {
 		<div className="page">
 			{/* Breadcrumb */}
 			<div className="mb-6">
-				<div className="flex gap-2 items-center text-13px text-text-tertiary">
-					<Link to="/projects" className="text-text-tertiary no-underline">
+				<Breadcrumb>
+					<Link to="/projects">
 						Projects
 					</Link>
-					<span>›</span>
-					<Link
-						to={`/projects/${projectId}`}
-						className="text-text-tertiary no-underline"
-					>
+					/
+					<Link to={`/projects/${projectId}`}>
 						{project?.name}
 					</Link>
-					<span>›</span>
-					<span className="text-text-primary">Payment Providers</span>
-				</div>
+					/
+					<Text>Payment Providers</Text>
+				</Breadcrumb>
 			</div>
 
 			{/* Page Header */}
 			<div className="flex justify-between items-center mb-8">
 				<div>
-					<h1 className="text-24px font-700 mb-2">Payment Providers</h1>
-					<p className="text-14px text-text-tertiary">
+					<Heading level={1} size="lg">Payment Providers</Heading>
+					<Text className="text-text-secondary">
 						{providers?.length || 0} {providers?.length === 1 ? "provider" : "providers"} configured
-					</p>
+					</Text>
 				</div>
-				<button type="button" onClick={handleCreate} className="btn btn-primary">
+				<Button variant="primary" onClick={handleCreate}>
 					+ Add Provider
-				</button>
+				</Button>
 			</div>
 
 			{/* Modal Form */}

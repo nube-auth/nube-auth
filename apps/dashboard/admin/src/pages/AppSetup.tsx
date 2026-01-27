@@ -1,7 +1,34 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Icon, IconType } from "@proofa/components";
+import {
+	Icon,
+	IconType,
+	Spinner,
+	Alert,
+	Heading,
+	Text,
+	Card,
+	CardBody,
+	Label,
+	Field,
+	FieldLabel,
+	FieldDescription,
+	Input,
+	Textarea,
+	Button,
+	Checkbox,
+	Breadcrumb,
+	BreadcrumbList,
+	BreadcrumbItem,
+	BreadcrumbButton,
+	BreadcrumbSeparator,
+	Select,
+	SelectTrigger,
+	SelectValue,
+	SelectPopup,
+	SelectItem
+} from "@proofa/components";
 import { IconPicker } from "../components/IconPicker";
 import { useCreateApp, useProject } from "../hooks/api";
 
@@ -155,36 +182,36 @@ export function AppSetupPage() {
 
 	if (projectLoading) {
 		return (
-			<div className="loading">
-				<div className="spinner" />
+			<div className="flex items-center justify-center min-h-screen">
+				<Spinner />
 			</div>
 		);
 	}
 
 	if (!project) {
 		return (
-			<div className="alert alert-danger">
-				<span>Project not found</span>
-			</div>
+			<Alert variant="danger">Project not found</Alert>
 		);
 	}
 
 	return (
 		<div className="page bg-content-bg min-h-screen">
 			{/* Breadcrumb */}
-			<nav
-				className="flex items-center gap-2 text-13px mb-6 pt-5 px-10"
-			>
-				<Link to="/projects" className="text-text-secondary no-underline">
-					Projects
-				</Link>
-			<Icon icon={IconType.ArrowRight} size={14} className="text-text-tertiary" />
-			<Link to={`/projects/${projectId}`} className="text-text-secondary no-underline">
-				{project.name}
-			</Link>
-			<Icon icon={IconType.ArrowRight} size={14} className="text-text-tertiary" />
-				<span className="text-text-primary font-medium">Create New App</span>
-			</nav>
+			<Breadcrumb className="mb-6 pt-5 px-10">
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
+					</BreadcrumbItem>
+					/
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+					/
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Create New App</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
 
 			{/* 2 Column Layout */}
 			<div
@@ -193,14 +220,12 @@ export function AppSetupPage() {
 				{/* Left Column - Form */}
 				<div>
 					<div className="mb-8">
-						<h1
-							className="text-32px font-bold mb-2 text-text-primary"
-						>
+						<Heading level={1} size="lg" className="mb-2">
 							Create New Application
-						</h1>
-						<p className="text-text-secondary text-14px">
+						</Heading>
+						<Text className="text-text-secondary">
 							Configure your application's authentication settings and OAuth providers.
-						</p>
+						</Text>
 
 						{/* Step Indicator */}
 						<div className="flex gap-2 items-center mt-6">
@@ -229,16 +254,17 @@ export function AppSetupPage() {
 						</div>
 					</div>
 
-					<div className="card p-8">
-						<form onSubmit={handleSubmit} className="flex flex-col gap-8">
+					<Card>
+						<CardBody className="p-8">
+							<form onSubmit={handleSubmit} className="flex flex-col gap-8">
 							{/* Step 1: Basic Information */}
 							{step === 1 && (
 								<div className="space-y-6">
-									<div>
-										<label htmlFor="name" className="form-label mb-2">
+									<Field>
+										<FieldLabel htmlFor="name">
 											App Name <span className="text-danger">*</span>
-										</label>
-										<input
+										</FieldLabel>
+										<Input
 											type="text"
 											id="name"
 											name="name"
@@ -246,76 +272,73 @@ export function AppSetupPage() {
 											required
 											value={formData.name}
 											onChange={handleInputChange}
-											className="form-control mb-2"
 										/>
-										<p className="text-13px text-text-tertiary">
+										<FieldDescription>
 											A friendly name to identify your application
-										</p>
-									</div>
+										</FieldDescription>
+									</Field>
 
-									<div>
-										<label htmlFor="slug" className="form-label mb-2">
+									<Field>
+										<FieldLabel htmlFor="slug">
 											App Slug
-										</label>
-										<input
+										</FieldLabel>
+										<Input
 											type="text"
 											id="slug"
 											name="slug"
 											placeholder="auto-generated from name if empty"
 											value={formData.slug}
 											onChange={handleInputChange}
-											className="form-control mb-2"
 										/>
-										<p className="text-13px text-text-tertiary">
+										<FieldDescription>
 											URL-safe identifier. Auto-generated if left empty.
-										</p>
-									</div>
+										</FieldDescription>
+									</Field>
 
-									<IconPicker
-										selectedIconId={formData.icon}
-										onSelect={(icon) => setFormData((prev) => ({ ...prev, icon }))}
-										label="App Icon"
-									/>
+									<Field>
+															<Label>Project Icon</Label>
+															<IconPicker
+																selectedIconId={formData.icon}
+																onSelect={(icon) => setFormData({ ...formData, icon })}
+																label=""
+															/>
+														</Field>
 
-									<div>
-										<label
-											htmlFor="description"
-											className="form-label mb-2"
-										>
+									<Field>
+										<FieldLabel htmlFor="description">
 											Description
-										</label>
-										<textarea
+										</FieldLabel>
+										<Textarea
 											id="description"
 											name="description"
 											placeholder="What is this app for?"
 											value={formData.description}
 											onChange={handleInputChange}
 											rows={4}
-											className="form-control mb-2 resize-y"
 										/>
-										<p className="text-13px text-text-tertiary">
+										<FieldDescription>
 											Optional description of your application
-										</p>
-									</div>
+										</FieldDescription>
+									</Field>
 
 									<div
 										className="flex gap-3 justify-end mt-8"
 									>
-										<button
-											type="button"
-											onClick={() => navigate(`/projects/${projectId}`)}
-											className="btn btn-secondary"
-										>
-											Cancel
-										</button>
-										<button
-											type="button"
-											onClick={() => setStep(2)}
-											className="btn btn-primary"
-											disabled={!formData.name.trim()}
-										>
-											Next
-										</button>
+									<Button
+										type="button"
+										onClick={() => navigate(`/projects/${projectId}`)}
+										variant="secondary"
+									>
+										Cancel
+									</Button>
+									<Button
+										type="button"
+										onClick={() => setStep(2)}
+										variant="primary"
+										disabled={!formData.name.trim()}
+									>
+										Next
+									</Button>
 									</div>
 								</div>
 							)}
@@ -324,17 +347,13 @@ export function AppSetupPage() {
 							{step === 2 && (
 								<div className="space-y-6">
 									{/* OAuth Providers Section */}
-									<div>
-										<label
-											className="form-label block mb-3"
-										>
+									<Field>
+										<FieldLabel>
 											OAuth Providers <span className="text-danger">*</span>
-										</label>
-										<p
-											className="text-13px text-text-tertiary mb-4"
-										>
+										</FieldLabel>
+										<FieldDescription>
 											Select which OAuth providers users can use to authenticate
-										</p>
+										</FieldDescription>
 
 										<div
 											className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3"
@@ -379,16 +398,16 @@ export function AppSetupPage() {
 											})}
 										</div>
 										{formData.enabledProviders.length === 0 && (
-											<p className="text-13px text-danger mt-2">
+											<Text className="text-13px text-danger mt-2">
 												⚠️ Select at least one OAuth provider
-											</p>
+											</Text>
 										)}
-									</div>
+										</Field>
 
-									<div>
-										<label className="form-label mb-2">
+									<Field>
+										<FieldLabel>
 											Redirect URIs <span className="text-danger">*</span>
-										</label>
+										</FieldLabel>
 										<div
 											className="flex flex-col gap-2 mb-3"
 										>
@@ -397,7 +416,7 @@ export function AppSetupPage() {
 													key={`redirectUri-${index}`}
 													className="flex gap-2"
 												>
-													<input
+													<Input
 														type="url"
 														placeholder="e.g., http://localhost:3000/callback"
 														value={uri}
@@ -408,42 +427,44 @@ export function AppSetupPage() {
 																e.target.value,
 															)
 														}
-														className="form-control"
 													/>
 													{formData.redirectUris.length > 1 && (
-														<button
-															type="button"
-															onClick={() =>
-																removeArrayField(
-																	"redirectUris",
-																	formData.redirectUris.indexOf(uri),
-																)
-															}
-															className="btn btn-ghost btn-sm text-danger"
+													<Button
+														type="button"
+														onClick={() =>
+															removeArrayField(
+																"redirectUris",
+																formData.redirectUris.indexOf(uri),
+															)
+														}
+														variant="plain"
+														size="sm"
 														>
 															<Icon icon={IconType.Cancel} size={16} className="text-danger" />
-														</button>
+													</Button>
 													)}
 												</div>
 											))}
 										</div>
-										<button
-											type="button"
-											onClick={() => addArrayField("redirectUris")}
-											className="btn btn-secondary btn-sm mb-3"
-										>
-											<Icon icon={IconType.Add} size={16} />
-											Add Redirect URI
-										</button>
-										<p className="text-13px text-text-tertiary">
+									<Button
+										type="button"
+										onClick={() => addArrayField("redirectUris")}
+										variant="secondary"
+										size="sm"
+										className="mb-3"
+									>
+										<Icon icon={IconType.Add} size={16} />
+										Add Redirect URI
+									</Button>
+										<FieldDescription>
 											URLs where users will be redirected after authentication
-										</p>
-									</div>
+										</FieldDescription>
+									</Field>
 
-									<div>
-										<label className="form-label mb-2">
+									<Field>
+										<FieldLabel>
 											Allowed Hosts
-										</label>
+										</FieldLabel>
 										<div
 											className="flex flex-col gap-2 mb-3"
 										>
@@ -452,7 +473,7 @@ export function AppSetupPage() {
 													key={`allowedHost-${index}`}
 													className="flex gap-2"
 												>
-													<input
+													<Input
 														type="text"
 														placeholder="e.g., localhost:3000, example.com"
 														value={host}
@@ -463,55 +484,55 @@ export function AppSetupPage() {
 																e.target.value,
 															)
 														}
-														className="form-control"
 													/>
 													{formData.allowedHosts.length > 1 && (
-														<button
-															type="button"
-															onClick={() =>
-																removeArrayField(
-																	"allowedHosts",
-																	formData.allowedHosts.indexOf(host),
-																)
-															}
-															className="btn btn-ghost btn-sm text-danger"
+													<Button
+														type="button"
+														onClick={() =>
+															removeArrayField(
+																"allowedHosts",
+																formData.allowedHosts.indexOf(host),
+															)
+														}
+														variant="plain"
+														size="sm"
 														>
 															<Icon icon={IconType.Cancel} size={16} className="text-danger" />
-														</button>
+														</Button>
 													)}
 												</div>
 											))}
 										</div>
-										<button
-											type="button"
-											onClick={() => addArrayField("allowedHosts")}
-											className="btn btn-secondary btn-sm mb-3"
-										>
-											<Icon icon={IconType.Add} size={16} />
-											Add Allowed Host
-										</button>
-										<p className="text-13px text-text-tertiary">
-											Domains from which requests to your app will be accepted
-										</p>
-									</div>
-
-									<div
-										className="flex gap-3 justify-between mt-8"
+									<Button
+										type="button"
+										onClick={() => addArrayField("allowedHosts")}
+										variant="secondary"
+										size="sm"
+										className="mb-3"
 									>
-										<button type="button" onClick={() => setStep(1)} className="btn btn-secondary">
-											Back
-										</button>
-										<button
+										<Icon icon={IconType.Add} size={16} />
+										Add Allowed Host
+									</Button>
+										<FieldDescription>
+											Domains from which requests to your app will be accepted
+										</FieldDescription>
+									</Field>
+								<div
+									className="flex gap-3 justify-between mt-8"									>
+									<Button type="button" onClick={() => setStep(1)} variant="secondary">
+										Back
+									</Button>
+									<Button
 											type="button"
 											onClick={() => setStep(3)}
-											className="btn btn-primary"
-											disabled={
-												formData.redirectUris.filter((uri) => uri.trim()).length === 0 ||
-												formData.enabledProviders.length === 0
-											}
-										>
-											Next
-										</button>
+										variant="primary"
+										disabled={
+											formData.redirectUris.filter((uri) => uri.trim()).length === 0 ||
+											formData.enabledProviders.length === 0
+										}
+									>
+										Next
+									</Button>
 									</div>
 								</div>
 							)}
@@ -519,14 +540,11 @@ export function AppSetupPage() {
 							{/* Step 3: Advanced Settings */}
 							{step === 3 && (
 								<div className="space-y-6">
-									<div>
-										<label
-											htmlFor="sessionTtlDays"
-											className="form-label mb-2"
-										>
+									<Field>
+										<FieldLabel htmlFor="sessionTtlDays">
 											Session TTL (days)
-										</label>
-										<input
+										</FieldLabel>
+										<Input
 											type="number"
 											id="sessionTtlDays"
 											name="sessionTtlDays"
@@ -534,12 +552,11 @@ export function AppSetupPage() {
 											max="365"
 											value={formData.sessionTtlDays}
 											onChange={handleInputChange}
-											className="form-control mb-2"
 										/>
-										<p className="text-13px text-text-tertiary">
+										<FieldDescription>
 											How long user sessions remain active (1-365 days). Default: 30 days.
-										</p>
-									</div>
+										</FieldDescription>
+									</Field>
 
 									{/* Summary Section */}
 									<div
@@ -591,12 +608,12 @@ export function AppSetupPage() {
 									<div
 										className="flex gap-3 justify-end mt-8"
 									>
-										<button type="button" onClick={() => setStep(2)} className="btn btn-secondary">
-											Back
-										</button>
-										<button type="button" onClick={() => setStep(4)} className="btn btn-primary">
-											Next
-										</button>
+									<Button type="button" onClick={() => setStep(2)} variant="secondary">
+										Back
+									</Button>
+									<Button type="button" onClick={() => setStep(4)} variant="primary">
+										Next
+									</Button>
 									</div>
 
 									{createAppMutation.isError && (
@@ -610,29 +627,23 @@ export function AppSetupPage() {
 							{/* Step 4: Licensing & Payments */}
 							{step === 4 && (
 								<div className="space-y-6">
-									<div>
-										<label
-											className="form-label flex items-center gap-3 cursor-pointer mb-3"
-										>
-											<input
-												type="checkbox"
+									<Field>
+										<FieldLabel className="flex items-center gap-3 cursor-pointer">
+											<Checkbox
 												checked={formData.requiresLicensing}
-												onChange={(e) =>
-													setFormData({ ...formData, requiresLicensing: e.target.checked })
+												onCheckedChange={(checked) =>
+													setFormData({ ...formData, requiresLicensing: checked === true })
 												}
-												className="w-4.5 h-4.5 cursor-pointer"
 											/>
 											<span className="font-semibold text-15px">
 												Enable Licensing & Payments
 											</span>
-										</label>
-										<p
-											className="text-13px text-text-tertiary ml-7.5"
-										>
+										</FieldLabel>
+										<FieldDescription className="ml-7.5">
 											Add subscription plans and payment processing. Disable if your app only
 											needs user management.
-										</p>
-									</div>
+										</FieldDescription>
+									</Field>
 
 									{formData.requiresLicensing && (
 										<div
@@ -643,178 +654,173 @@ export function AppSetupPage() {
 											>
 												Default License Plan
 											</h3>
-											<p
+											<Text
 												className="text-13px text-text-tertiary mb-5"
 											>
 												This plan will be automatically assigned to new users upon signup.
-											</p>
+											</Text>
 
 											<div className="space-y-4">
-												<div>
-													<label htmlFor="planName" className="form-label">
-														Plan Name <span className="text-danger">*</span>
-													</label>
-													<input
-														type="text"
-														id="planName"
-														value={formData.defaultLicensePlan.name}
-														onChange={(e) =>
-															setFormData({
-																...formData,
-																defaultLicensePlan: {
-																	...formData.defaultLicensePlan,
-																	name: e.target.value,
-																},
-															})
-														}
-														className="form-control"
-														placeholder="e.g., Free Plan, Starter, Basic"
-														required={formData.requiresLicensing}
-													/>
-												</div>
-
-												<div>
-													<label htmlFor="planDescription" className="form-label">
-														Description
-													</label>
-													<textarea
-														id="planDescription"
-														value={formData.defaultLicensePlan.description || ""}
-														onChange={(e) =>
-															setFormData({
-																...formData,
-																defaultLicensePlan: {
-																	...formData.defaultLicensePlan,
-																	description: e.target.value,
-																},
-															})
-														}
-														className="form-control"
-														rows={3}
-														placeholder="Brief description of what's included in this plan"
-													/>
-												</div>
-
-												<div
-													className="grid grid-cols-2 gap-4"
-												>
-													<div>
-														<label htmlFor="planPrice" className="form-label">
-															Price <span className="text-danger">*</span>
-														</label>
-														<input
-															type="number"
-															id="planPrice"
-															min="0"
-															step="0.01"
-															value={formData.defaultLicensePlan.price}
-															onChange={(e) =>
-																setFormData({
-																	...formData,
-																	defaultLicensePlan: {
-																		...formData.defaultLicensePlan,
-																		price: parseFloat(e.target.value) || 0,
-																	},
-																})
-															}
-															className="form-control"
-															required={formData.requiresLicensing}
-														/>
-													</div>
-
-													<div>
-														<label htmlFor="planCurrency" className="form-label">
-															Currency <span className="text-danger">*</span>
-														</label>
-														<input
+													<Field>
+														<FieldLabel htmlFor="planName">
+															Plan Name <span className="text-danger">*</span>
+														</FieldLabel>
+														<Input
 															type="text"
-															id="planCurrency"
-															value={formData.defaultLicensePlan.currency}
+															id="planName"
+															value={formData.defaultLicensePlan.name}
 															onChange={(e) =>
 																setFormData({
 																	...formData,
 																	defaultLicensePlan: {
 																		...formData.defaultLicensePlan,
-																		currency: e.target.value.toUpperCase(),
+																		name: e.target.value,
 																	},
 																})
 															}
-															className="form-control"
-															placeholder="USD"
-															maxLength={3}
+															placeholder="e.g., Free Plan, Starter, Basic"
 															required={formData.requiresLicensing}
 														/>
-													</div>
+													</Field>
+<Field>
+														<FieldLabel htmlFor="planDescription">
+															Description
+														</FieldLabel>
+														<Textarea
+															id="planDescription"
+															value={formData.defaultLicensePlan.description || ""}
+															onChange={(e) =>
+																setFormData({
+																	...formData,
+																	defaultLicensePlan: {
+																		...formData.defaultLicensePlan,
+																		description: e.target.value,
+																	},
+																})
+															}
+															rows={3}
+															placeholder="Brief description of what's included in this plan"
+														/>
+													</Field>
+
+												<div
+													className="grid grid-cols-2 gap-4"
+												>
+														<Field>
+															<FieldLabel htmlFor="planPrice">
+																Price <span className="text-danger">*</span>
+															</FieldLabel>
+															<Input
+																type="number"
+																id="planPrice"
+																min="0"
+																step="0.01"
+																value={formData.defaultLicensePlan.price}
+																onChange={(e) =>
+																	setFormData({
+																		...formData,
+																		defaultLicensePlan: {
+																			...formData.defaultLicensePlan,
+																			price: parseFloat(e.target.value) || 0,
+																		},
+																	})
+																}
+																required={formData.requiresLicensing}
+															/>
+														</Field>
+
+														<Field>
+															<FieldLabel htmlFor="planCurrency">
+																Currency <span className="text-danger">*</span>
+															</FieldLabel>
+															<Input
+																type="text"
+																id="planCurrency"
+																value={formData.defaultLicensePlan.currency}
+																onChange={(e) =>
+																	setFormData({
+																		...formData,
+																		defaultLicensePlan: {
+																			...formData.defaultLicensePlan,
+																			currency: e.target.value.toUpperCase(),
+																		},
+																	})
+																}
+																placeholder="USD"
+																maxLength={3}
+																required={formData.requiresLicensing}
+															/>
+														</Field>
 												</div>
 
 												<div
 													className="grid grid-cols-2 gap-4"
 												>
-													<div>
-														<label htmlFor="billingPeriod" className="form-label">
-															Billing Period{" "}
-															<span className="text-danger">*</span>
-														</label>
-														<select
-															id="billingPeriod"
+													<Field>
+														<FieldLabel htmlFor="billingPeriod">
+															Billing Period <span className="text-danger">*</span>
+														</FieldLabel>
+														<Select
 															value={formData.defaultLicensePlan.billing_period}
-															onChange={(e) =>
+															onValueChange={(value) =>
 																setFormData({
 																	...formData,
 																	defaultLicensePlan: {
 																		...formData.defaultLicensePlan,
-																		billing_period: e.target.value as any,
+																		billing_period: value as any,
 																	},
 																})
 															}
-															className="form-control"
-															required={formData.requiresLicensing}
 														>
-															<option value="none">No Billing Required</option>
-															<option value="lifetime">
-																Lifetime (One-time Payment)
-															</option>
-															<option value="monthly">Monthly Subscription</option>
-															<option value="yearly">Yearly Subscription</option>
-														</select>
-													</div>
+															<SelectTrigger>
+																<SelectValue placeholder="Select billing period" />
+															</SelectTrigger>
+															<SelectPopup>
+																<SelectItem value="none">No Billing Required</SelectItem>
+																<SelectItem value="lifetime">
+																	Lifetime (One-time Payment)
+																</SelectItem>
+																<SelectItem value="monthly">Monthly Subscription</SelectItem>
+																<SelectItem value="yearly">Yearly Subscription</SelectItem>
+															</SelectPopup>
+														</Select>
+														</Field>
 
-													<div>
-														<label htmlFor="trialDays" className="form-label">
-															Trial Days
-														</label>
-														<input
-															type="number"
-															id="trialDays"
-															min="0"
-															value={formData.defaultLicensePlan.trial_days}
-															onChange={(e) =>
-																setFormData({
-																	...formData,
-																	defaultLicensePlan: {
-																		...formData.defaultLicensePlan,
-																		trial_days: parseInt(e.target.value, 10) || 0,
-																	},
-																})
-															}
-															className="form-control"
-														/>
-													</div>
-												</div>
+														<Field>
+															<FieldLabel htmlFor="trialDays">
+																Trial Days
+															</FieldLabel>
+															<Input
+														type="number"
+														id="trialDays"
+														min="0"
+														value={formData.defaultLicensePlan.trial_days}
+														onChange={(e) =>
+															setFormData({
+																...formData,
+																defaultLicensePlan: {
+																	...formData.defaultLicensePlan,
+																	trial_days: parseInt(e.target.value, 10) || 0,
+																},
+															})
+														}
+													/>
+												</Field>
 											</div>
+										</div>
 										</div>
 									)}
 
 									<div
 										className="flex gap-3 justify-between mt-8"
 									>
-										<button type="button" onClick={() => setStep(3)} className="btn btn-secondary">
-											Back
-										</button>
-										<button
-											type="submit"
-											disabled={createAppMutation.isPending}
-											className="btn btn-primary"
+									<Button type="button" onClick={() => setStep(3)} variant="secondary">
+										Back
+									</Button>
+									<Button
+										type="submit"
+										disabled={createAppMutation.isPending}
+										variant="primary"
 										>
 											{createAppMutation.isPending ? (
 												<span className="flex items-center gap-2">
@@ -826,7 +832,7 @@ export function AppSetupPage() {
 											) : (
 												"Create App"
 											)}
-										</button>
+										</Button>
 									</div>
 
 									{createAppMutation.isError && (
@@ -837,22 +843,21 @@ export function AppSetupPage() {
 								</div>
 							)}
 						</form>
-					</div>
+						</CardBody>
+					</Card>
 				</div>
 
 				{/* Right Column - Preview */}
 				<div>
 					<div className="sticky top-5">
-						<div className="card p-6 bg-surface-secondary">
-							<h2
-								className="text-16px font-semibold mb-5 text-text-primary"
-							>
-								Login Preview
-							</h2>
-							<p className="text-13px text-text-tertiary mb-6">
-								This is what users will see when they login to your app
-							</p>
-
+							<Card className="bg-surface-secondary">
+								<CardBody>
+									<Heading level={2} size="lg" className="mb-5">
+										Login Preview
+									</Heading>
+									<Text className="text-text-tertiary mb-6">
+										This is what users will see when they login to your app
+									</Text>
 							{/* Mock Login Card */}
 							<div
 								className="bg-content-bg rounded-2xl py-10 px-8 border border-border-primary text-center"
@@ -871,11 +876,11 @@ export function AppSetupPage() {
 									{formData.name || "My Application"}
 								</h3>
 								{formData.description && (
-									<p
+									<Text
 										className="text-13px text-text-secondary mb-6 leading-relaxed"
 									>
 										{formData.description}
-									</p>
+									</Text>
 								)}
 
 								{/* OAuth Provider Buttons */}
@@ -908,18 +913,18 @@ export function AppSetupPage() {
 									<div
 										className="p-6 bg-surface-secondary rounded-lg border border-dashed border-border-primary mt-6"
 									>
-										<p className="text-13px text-text-tertiary m-0">
+										<Text className="text-13px text-text-tertiary m-0">
 											No OAuth providers enabled
-										</p>
+										</Text>
 									</div>
 								)}
 
 								{/* Footer Text */}
-								<p
+								<Text
 									className="text-11px text-text-tertiary mt-6 leading-relaxed"
 								>
 									By continuing, you agree to the Terms of Service and Privacy Policy
-								</p>
+								</Text>
 							</div>
 
 							{/* Info Note */}
@@ -927,14 +932,15 @@ export function AppSetupPage() {
 								className="mt-5 p-3 bg-primary-light border border-primary rounded-lg flex gap-2 items-start"
 							>
 								<Icon icon={IconType.AlertCircle} size={16} className="text-primary shrink-0 mt-0.5" />
-								<p
+								<Text
 									className="text-12px text-text-secondary m-0 leading-relaxed"
 								>
 									This preview shows the login screen with your app's branding and selected OAuth
 									providers
-								</p>
+								</Text>
 							</div>
-						</div>
+							</CardBody>
+						</Card>
 					</div>
 				</div>
 			</div>

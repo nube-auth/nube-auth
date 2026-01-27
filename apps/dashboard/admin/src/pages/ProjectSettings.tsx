@@ -4,6 +4,20 @@ import { ConfirmModal } from "../components/ConfirmModal";
 import { useToast } from "../components/Toast";
 import { useProject, useUpdateProject } from "../hooks/api";
 import { pingpong } from "../lib/pingpong";
+import {
+	Spinner,
+	Alert,
+	Text,
+	Heading,
+	Card,
+	CardBody,
+	Button,
+	Label,
+	Input,
+	Textarea,
+	Breadcrumb,
+	BreadcrumbSeparator,
+} from "@proofa/components";
 
 export function ProjectSettingsPage() {
 	const { projectId } = useParams<{ projectId: string }>();
@@ -44,207 +58,221 @@ export function ProjectSettingsPage() {
 
 	if (projectLoading) {
 		return (
-			<div className="loading">
-				<div className="spinner" />
+			<div className="flex justify-center items-center py-12">
+				<Spinner />
 			</div>
 		);
 	}
 
 	if (!project || !formData) {
-		return <div className="error-state">Project not found</div>;
+		return <Alert variant="danger">Project not found</Alert>;
 	}
 
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
 			<div className="mb-6">
-				<div className="breadcrumb">
-					<Link to="/projects" className="breadcrumb-item">
+				<Breadcrumb>
+					<Link to="/projects">
 						Projects
 					</Link>
-					<span>›</span>
-					<Link to={`/projects/${projectId}`} className="breadcrumb-item">
+					/
+					<Link to={`/projects/${projectId}`}>
 						{project.name}
 					</Link>
-					<span>›</span>
-					<span className="breadcrumb-current">Settings</span>
-				</div>
+					/
+					<Text>Settings</Text>
+				</Breadcrumb>
 			</div>
 
 			{/* Page Header */}
 			<div className="mb-8">
-				<h1 className="page-title">Project Settings</h1>
-				<p className="page-description">Manage your project configuration and preferences</p>
+				<Heading level={1} size="lg">Project Settings</Heading>
+				<Text className="text-text-secondary">Manage your project configuration and preferences</Text>
 			</div>
 
 			{/* Settings Content */}
 			{!isEditing ? (
 				<>
 					{/* View Mode */}
-					<div className="card p-6 mb-4">
-						<div className="flex justify-between items-center mb-6">
-							<h2 className="text-18px font-semibold text-text-primary">Project Information</h2>
-							<button type="button" onClick={() => setIsEditing(true)} className="btn-secondary">
-								Edit
-							</button>
-						</div>
-
-						<div className="grid gap-6">
-							<div>
-							<p className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
-								Project Name
-							</p>
-							<p className="text-15px text-text-primary font-semibold m-0">
-								</p>
+					<Card className="mb-4">
+						<CardBody className="p-6">
+							<div className="flex justify-between items-center mb-6">
+								<Heading level={2} size="md">Project Information</Heading>
+								<Button variant="secondary" onClick={() => setIsEditing(true)}>
+									Edit
+								</Button>
 							</div>
 
-							<div>
-							<p className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
-								Project Slug
-							</p>
-							<p className="text-15px text-text-primary font-semibold font-mono m-0">
-								</p>
-							</div>
-
-							{project.description && (
+							<div className="grid gap-6">
 								<div>
-							<p className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
-								Description
-							</p>
-							<p className="text-15px text-text-secondary m-0 leading-relaxed">
-								{project.description}
-							</p>
-						</div>
-					)}
+									<Text className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
+										Project Name
+									</Text>
+									<Text className="text-15px text-text-primary font-semibold">
+										{project.name}
+									</Text>
+								</div>
 
-					<div>
-						<p className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
-							Project ID
-						</p>
-						<code className="inline-block py-2.5 px-3.5 rounded-lg text-13px font-mono text-primary font-semibold tracking-wider bg-primary bg-opacity-10 border border-primary border-opacity-30">
-							{project.id}
-						</code>
-					</div>
+								<div>
+									<Text className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
+										Project Slug
+									</Text>
+									<Text className="text-15px text-text-primary font-semibold font-mono">
+										{project.slug}
+									</Text>
+								</div>
 
-					<div>
-						<p className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
-							Created
-						</p>
-						<p className="text-15px text-text-primary m-0">
-							{project.createdAt
-								? new Date(project.createdAt).toLocaleDateString("en-US", {
-										year: "numeric",
-										month: "long",
-										day: "numeric",
-									})
-								: "—"}
-						</p>
-					</div>
-						</div>
-					</div>
+								{project.description && (
+									<div>
+										<Text className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
+											Description
+										</Text>
+										<Text className="text-15px text-text-secondary leading-relaxed">
+											{project.description}
+										</Text>
+									</div>
+								)}
+
+								<div>
+									<Text className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
+										Project ID
+									</Text>
+									<code className="inline-block py-2.5 px-3.5 rounded-lg text-13px font-mono text-primary font-semibold tracking-wider bg-primary bg-opacity-10 border border-primary border-opacity-30">
+										{project.id}
+									</code>
+								</div>
+
+								<div>
+									<Text className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
+										Created
+									</Text>
+									<Text className="text-15px text-text-primary">
+										{project.createdAt
+											? new Date(project.createdAt).toLocaleDateString("en-US", {
+													year: "numeric",
+													month: "long",
+													day: "numeric",
+											  })
+											: "—"}
+									</Text>
+								</div>
+							</div>
+						</CardBody>
+					</Card>
 
 					{/* Danger Zone */}
-					<div className="card p-6 border-2 border-danger">
-						<h3 className="text-16px font-semibold mb-3 text-danger">⚠️ Danger Zone</h3>
-						<p className="text-14px text-text-secondary mb-5">
-							These actions are permanent and cannot be undone.
-						</p>
+					<Card className="border-2 border-danger">
+						<CardBody className="p-6">
+							<Heading level={3} size="sm" className="mb-3 text-danger">⚠️ Danger Zone</Heading>
+							<Text className="text-text-secondary mb-5">
+								These actions are permanent and cannot be undone.
+							</Text>
 
-						<div className="p-5 bg-danger-bg bg-opacity-5 rounded-lg border border-danger border-opacity-20">
-							<h4 className="text-14px font-semibold mb-2 text-danger">Delete This Project</h4>
-							<p className="text-13px text-text-secondary mb-4">
-								Once you delete a project, there is no going back. This will:
-							</p>
-							<ul className="text-13px text-text-secondary mb-4 pl-5">
-								<li>Delete all apps in this project</li>
-								<li>Remove all user data and sessions</li>
-								<li>Revoke all active licenses</li>
-								<li>Remove all team members</li>
-							</ul>
-							<button type="button" onClick={() => setShowDeleteModal(true)} className="btn-danger">
-								Delete Project
-							</button>
-						</div>
-					</div>
+							<div className="p-5 bg-danger-bg bg-opacity-5 rounded-lg border border-danger border-opacity-20">
+								<Heading level={4} size="sm" className="mb-2 text-danger">Delete This Project</Heading>
+								<Text className="text-13px text-text-secondary mb-4">
+									Once you delete a project, there is no going back. This will:
+								</Text>
+								<ul className="text-13px text-text-secondary mb-4 pl-5">
+									<li>Delete all apps in this project</li>
+									<li>Remove all user data and sessions</li>
+									<li>Revoke all active licenses</li>
+									<li>Remove all team members</li>
+								</ul>
+								<Button variant="danger" onClick={() => setShowDeleteModal(true)}>
+									Delete Project
+								</Button>
+							</div>
+						</CardBody>
+					</Card>
 				</>
 			) : (
 				<>
 					{/* Edit Mode */}
-					<form onSubmit={handleSave} className="card p-8">
-						<h2 className="text-18px font-bold mb-7 text-text-primary">Edit Project Information</h2>
+					<Card>
+						<CardBody className="p-8">
+							<form onSubmit={handleSave}>
+								<Heading level={2} size="md" className="mb-7">Edit Project Information</Heading>
 
-						<div className="grid gap-5 mb-8">
-							<div>
-								<label className="form-label">Project Name *</label>
-								<input
-									type="text"
-									name="name"
-									className="form-control"
-									value={formData.name}
-									onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-									required
-									placeholder="My Project"
-								/>
-								<p className="text-12px text-text-tertiary mt-1.5">The display name for your project</p>
-							</div>
+								<div className="grid gap-5 mb-8">
+									<div>
+										<Label>
+											Project Name *
+											<Input
+												type="text"
+												name="name"
+												value={formData.name}
+												onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+												required
+												placeholder="My Project"
+											/>
+										</Label>
+										<Text className="text-12px text-text-tertiary mt-1.5">The display name for your project</Text>
+									</div>
 
-							<div>
-								<label className="form-label">Project Slug *</label>
-								<input
-									type="text"
-									name="slug"
-									className="form-control"
-									value={formData.slug}
-									onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-									required
-									pattern="[a-z0-9-]+"
-									placeholder="my-project"
-								/>
-								<p className="text-12px text-text-tertiary mt-1.5">
-									URL-friendly identifier (lowercase, hyphens only)
-								</p>
-							</div>
+									<div>
+										<Label>
+											Project Slug *
+											<Input
+												type="text"
+												name="slug"
+												value={formData.slug}
+												onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+												required
+												pattern="[a-z0-9-]+"
+												placeholder="my-project"
+											/>
+										</Label>
+										<Text className="text-12px text-text-tertiary mt-1.5">
+											URL-friendly identifier (lowercase, hyphens only)
+										</Text>
+									</div>
 
-							<div>
-								<label className="form-label">Description</label>
-								<textarea
-									name="description"
-									className="form-control resize-y"
-									value={formData.description || ""}
-									onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-									rows={3}
-									placeholder="A brief description of your project..."
-								/>
-								<p className="text-12px text-text-tertiary mt-1.5">
-									Optional description for internal reference
-								</p>
-							</div>
-						</div>
+									<div>
+										<Label>
+											Description
+											<Textarea
+												name="description"
+												className="resize-y"
+												value={formData.description || ""}
+												onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+												rows={3}
+												placeholder="A brief description of your project..."
+											/>
+										</Label>
+										<Text className="text-12px text-text-tertiary mt-1.5">
+											Optional description for internal reference
+										</Text>
+									</div>
+								</div>
 
-						<div className="flex gap-3">
-							<button
-								type="submit"
-								disabled={updateProjectMutation.isPending}
-								className={`btn-primary ${updateProjectMutation.isPending ? "opacity-60 cursor-not-allowed" : ""}`}
-							>
-								{updateProjectMutation.isPending ? "Saving..." : "Save Changes"}
-							</button>
-							<button
-								type="button"
-								onClick={() => {
-									setIsEditing(false);
-									setFormData({
-										name: project.name,
-										slug: project.slug || "",
-										description: project.description || "",
-									});
-								}}
-								className="btn-secondary"
-							>
-								Cancel
-							</button>
-						</div>
-					</form>
+								<div className="flex gap-3">
+									<Button
+										type="submit"
+										disabled={updateProjectMutation.isPending}
+										variant="primary"
+									>
+										{updateProjectMutation.isPending ? "Saving..." : "Save Changes"}
+									</Button>
+									<Button
+										type="button"
+										onClick={() => {
+											setIsEditing(false);
+											setFormData({
+												name: project.name,
+												slug: project.slug || "",
+												description: project.description || "",
+											});
+										}}
+										variant="secondary"
+									>
+										Cancel
+									</Button>
+								</div>
+							</form>
+						</CardBody>
+					</Card>
 				</>
 			)}
 

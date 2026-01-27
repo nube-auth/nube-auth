@@ -1,6 +1,19 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Icon, IconType } from "@proofa/components";
+import {
+	Icon,
+	IconType,
+	Spinner,
+	Alert,
+	Text,
+	Heading,
+	Card,
+	CardBody,
+	Button,
+	Badge,
+	Breadcrumb,
+	BreadcrumbSeparator,
+} from "@proofa/components";
 import { useToast } from "../components/Toast";
 import { useApp, useProject, useUpdateApp } from "../hooks/api";
 
@@ -61,92 +74,84 @@ export default function AppOAuthPage() {
 
 	if (appLoading || projectLoading) {
 		return (
-			<div className="loading">
-				<div className="spinner" />
+			<div className="flex justify-center items-center py-12">
+				<Spinner />
 			</div>
 		);
 	}
 
 	if (appError || !app) {
-		return <div className="error-state">App not found</div>;
+		return <Alert variant="danger">App not found</Alert>;
 	}
 
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
 			<div className="mb-6">
-				<div className="breadcrumb">
-					<Link to="/projects" className="breadcrumb-link">
+				<Breadcrumb>
+					<Link to="/projects">
 						Projects
 					</Link>
-					<span>›</span>
-					<Link
-						to={`/projects/${projectId}`}
-						className="breadcrumb-link"
-					>
+					/
+					<Link to={`/projects/${projectId}`}>
 						{project?.name}
 					</Link>
-					<span>›</span>
-					<Link
-						to={`/projects/${projectId}/apps`}
-						className="breadcrumb-link"
-					>
+					/
+					<Link to={`/projects/${projectId}/apps`}>
 						Apps
 					</Link>
-					<span>›</span>
-					<Link
-						to={`/projects/${projectId}/apps/${appId}`}
-						className="breadcrumb-link"
-					>
+					/
+					<Link to={`/projects/${projectId}/apps/${appId}`}>
 						{app.name}
 					</Link>
-					<span>›</span>
-					<span className="text-text-primary">OAuth</span>
-				</div>
+					/
+					<Text>OAuth</Text>
+				</Breadcrumb>
 			</div>
 
 			{/* Page Header */}
-			<div className="page-header mb-8">
+			<div className="flex justify-between items-center mb-8">
 				<div>
-					<h1 className="page-title">OAuth Providers</h1>
-					<p className="text-14px text-text-tertiary">
+					<Heading level={1} size="lg">OAuth Providers</Heading>
+					<Text className="text-text-secondary">
 						Select which OAuth providers to enable for <strong>{app.name}</strong>
-					</p>
+					</Text>
 				</div>
 				{!isEditing ? (
-					<button type="button" onClick={() => setIsEditing(true)} className="btn btn-primary">
+					<Button variant="primary" onClick={() => setIsEditing(true)}>
 						Edit
-					</button>
+					</Button>
 				) : (
 					<div className="flex gap-3">
-						<button type="button" onClick={handleCancel} className="btn btn-secondary">
+						<Button variant="secondary" onClick={handleCancel}>
 							Cancel
-						</button>
-						<button
-							type="button"
+						</Button>
+						<Button
+							variant="primary"
 							onClick={handleSave}
 							disabled={updateAppMutation.isPending}
-							className="btn btn-primary"
 						>
 							{updateAppMutation.isPending ? "Saving..." : "Save"}
-						</button>
+						</Button>
 					</div>
 				)}
 			</div>
 
 			{/* Info Banner */}
-			<div className="card-info mb-6">
-				<Icon icon={IconType.AlertCircle} size={20} className="text-primary shrink-0" />
-				<div>
-					<p className="text-14px font-semibold text-primary mb-1">
-						Platform-Level Configuration
-					</p>
-					<p className="text-13px text-text-secondary m-0">
-						OAuth credentials are managed at the platform level. Simply select which providers to enable for
-						your app.
-					</p>
+			<Alert variant="info" className="mb-6">
+				<div className="flex gap-3">
+					<Icon icon={IconType.AlertCircle} size={20} className="text-primary shrink-0" />
+					<div>
+						<Text className="font-semibold text-primary mb-1">
+							Platform-Level Configuration
+						</Text>
+						<Text className="text-text-secondary">
+							OAuth credentials are managed at the platform level. Simply select which providers to enable for
+							your app.
+						</Text>
+					</div>
 				</div>
-			</div>
+			</Alert>
 
 			{/* Providers Grid */}
 			<div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-5">
@@ -170,9 +175,9 @@ export default function AppOAuthPage() {
 										<h3 className="text-16px font-semibold text-text-primary m-0">
 											{provider.name}
 										</h3>
-										<span className="badge badge-primary">
+										<Badge variant="info">
 											Platform
-										</span>
+										</Badge>
 									</div>
 									<p className="text-13px text-text-secondary m-0">
 										Managed by Proofa

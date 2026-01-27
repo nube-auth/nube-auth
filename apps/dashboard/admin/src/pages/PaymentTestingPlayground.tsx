@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { pingpong } from "@proofa/auth/pingpong";
 import config from "../config";
 import { Select } from "../components/Select";
+import { Heading, Text, Card, CardBody, Button, Alert } from "@proofa/components";
 
 interface TestSession {
 	sessionId: string;
@@ -149,21 +150,17 @@ export default function PaymentTestingPlayground() {
 		<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 			{/* Header */}
 			<div className="mb-8">
-				<h1 className="text-3xl font-bold text-text-primary">Payment Testing Playground</h1>
-				<p className="mt-2 text-text-secondary">
+				<Heading level={1} size="lg">Payment Testing Playground</Heading>
+				<Text className="mt-2 text-text-secondary">
 					Test payment flows for all providers without manual setup
-				</p>
-			</div>
-
-			{/* Warning Banner */}
-			<div className="mb-6 bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
+				</Text>
 				<div className="flex items-center">
-					<span className="text-2xl mr-3">⚠️</span>
+					<Text className="text-2xl mr-3">⚠️</Text>
 					<div>
-						<p className="font-semibold text-orange-900">TEST MODE ONLY</p>
-						<p className="text-sm text-orange-700">
+						<Text className="font-semibold text-orange-900">TEST MODE ONLY</Text>
+						<Text className="text-sm text-orange-700">
 							Using sandbox credentials. No real charges will be made.
-						</p>
+						</Text>
 					</div>
 				</div>
 			</div>
@@ -172,10 +169,11 @@ export default function PaymentTestingPlayground() {
 				{/* Left Column - Configuration */}
 				<div className="space-y-6">
 					{/* Provider Configuration */}
-					<div className="card p-6">
-						<h2 className="text-lg font-semibold mb-4">🔧 Provider Configuration</h2>
-						
-						<div className="space-y-4">
+					<Card>
+						<CardBody className="p-6">
+							<Heading level={2} size="lg" className="mb-4">🔧 Provider Configuration</Heading>
+							
+							<div className="space-y-4">
 							<div>
 								<label className="block text-sm font-medium text-text-primary mb-2">
 									Provider
@@ -205,163 +203,176 @@ export default function PaymentTestingPlayground() {
 									]}
 									disabled={!!session}
 								/>
-								<p className="mt-1 text-xs text-text-tertiary">
-									{mode === "simulate" 
-										? "Instantly simulate webhook events without real payment provider" 
-										: "Create real checkout session with provider sandbox"}
-								</p>
+<Text className="mt-1 text-xs text-text-tertiary">
+										{mode === "simulate" 
+											? "Instantly simulate webhook events without real payment provider" 
+											: "Create real checkout session with provider sandbox"}
+									</Text>
+								</div>
 							</div>
-						</div>
-					</div>
+						</CardBody>
+					</Card>
 
 					{/* Quick Test Setup */}
-					<div className="card p-6">
-						<h2 className="text-lg font-semibold mb-4">⚡ Quick Test Setup</h2>
-						
-						<p className="text-sm text-text-secondary mb-4">
-							Auto-creates test app, user, and session in one click
-						</p>
+					<Card>
+						<CardBody className="p-6">
+							<Heading level={2} size="lg" className="mb-4">⚡ Quick Test Setup</Heading>
+							
+							<Text className="text-sm text-text-secondary mb-4">
+								Auto-creates test app, user, and session in one click
+							</Text>
 
-						<button
-							onClick={handleInitialize}
-							disabled={loading || !!session}
-							className="w-full btn-primary px-4 py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition"
-						>
-							{loading ? "Creating..." : session ? "✓ Test Session Active" : "🚀 Start Test Flow"}
-						</button>
-
-						{session && (
-							<button
-								onClick={handleCleanup}
-								className="w-full mt-2 bg-bg-muted text-text-secondary px-4 py-2 rounded-lg text-sm hover:bg-bg-hover transition"
+							<Button
+								variant="primary"
+								onClick={handleInitialize}
+								disabled={loading || !!session}
+								className="w-full"
 							>
-								Clear Test Data
-							</button>
-						)}
-					</div>
+								{loading ? "Creating..." : session ? "✓ Test Session Active" : "🚀 Start Test Flow"}
+							</Button>
+
+							{session && (
+								<Button
+									variant="secondary"
+									onClick={handleCleanup}
+									className="w-full mt-2"
+								>
+									Clear Test Data
+								</Button>
+							)}
+						</CardBody>
+					</Card>
 
 					{/* Webhook Simulator */}
 					{session && (
-						<div className="card p-6">
-							<h2 className="text-lg font-semibold mb-4">🎭 Simulate Events</h2>
-							
-							<div className="grid grid-cols-2 gap-2">
-								<button
-									onClick={() => handleSimulateEvent("payment.succeeded")}
-									disabled={loading}
-									className="bg-success-bg text-success px-3 py-2 rounded text-sm font-medium hover:opacity-80 disabled:opacity-50 transition"
-								>
-									✓ Success
-								</button>
-								<button
-									onClick={() => handleSimulateEvent("payment.failed")}
-									disabled={loading}
-									className="bg-warning-bg text-warning px-3 py-2 rounded text-sm font-medium hover:opacity-80 disabled:opacity-50 transition"
-								>
-									⚠️ Failed
-								</button>
-								<button
-									onClick={() => handleSimulateEvent("subscription.canceled")}
-									disabled={loading}
-									className="bg-danger-bg text-danger px-3 py-2 rounded text-sm font-medium hover:opacity-80 disabled:opacity-50 transition"
-								>
-									❌ Cancel
-								</button>
-								<button
-									onClick={() => handleSimulateEvent("charge.refunded")}
-									disabled={loading}
-									className="bg-purple-100 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400 px-3 py-2 rounded text-sm font-medium hover:opacity-80 disabled:opacity-50 transition"
-								>
-									💰 Refund
-								</button>
-							</div>
-						</div>
+						<Card>
+							<CardBody className="p-6">
+								<Heading level={2} size="lg" className="mb-4">🎭 Simulate Events</Heading>
+								
+								<div className="grid grid-cols-2 gap-2">
+									<Button
+										onClick={() => handleSimulateEvent("payment.succeeded")}
+										disabled={loading}
+										className="bg-success-bg text-success hover:opacity-80 disabled:opacity-50"
+									>
+										✓ Success
+									</Button>
+									<Button
+										onClick={() => handleSimulateEvent("payment.failed")}
+										disabled={loading}
+										className="bg-warning-bg text-warning hover:opacity-80 disabled:opacity-50"
+									>
+										⚠️ Failed
+									</Button>
+									<Button
+										onClick={() => handleSimulateEvent("subscription.canceled")}
+										disabled={loading}
+										className="bg-danger-bg text-danger hover:opacity-80 disabled:opacity-50"
+									>
+										❌ Cancel
+									</Button>
+									<Button
+										onClick={() => handleSimulateEvent("charge.refunded")}
+										disabled={loading}
+										className="bg-purple-100 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400 hover:opacity-80 disabled:opacity-50"
+									>
+										💰 Refund
+									</Button>
+								</div>
+							</CardBody>
+						</Card>
 					)}
 				</div>
 
 				{/* Right Column - Results */}
 				<div className="space-y-6">
 					{error && (
-						<div className="alert-danger">
-							<p className="text-danger">{error}</p>
-						</div>
+						<Alert variant="danger">
+							<Text>{error}</Text>
+						</Alert>
 					)}
 
 					{session && (
 						<>
 							{/* Checkout URL */}
 							{session.checkoutUrl && (
-								<div className="card p-6">
-									<h3 className="text-lg font-semibold mb-3">💳 Checkout Session</h3>
+							<Card>
+								<CardBody className="p-6">
+									<Heading level={3} size="md" className="mb-3">💳 Checkout Session</Heading>
 									<div className="bg-bg-muted p-3 rounded border border-border">
-										<p className="text-xs text-text-tertiary mb-1">Checkout URL</p>
-										<p className="text-sm font-mono break-all">{session.checkoutUrl}</p>
+										<Text className="text-xs text-text-tertiary mb-1">Checkout URL</Text>
+										<Text className="text-sm font-mono break-all">{session.checkoutUrl}</Text>
 									</div>
 									<div className="mt-3 flex gap-2">
-										<button
+										<Button
+											variant="secondary"
 											onClick={() => navigator.clipboard.writeText(session.checkoutUrl!)}
-											className="flex-1 bg-bg-muted text-text-secondary px-3 py-2 rounded text-sm hover:bg-bg-hover transition"
+											className="flex-1"
 										>
 											📋 Copy
-										</button>
+										</Button>
 										<a
 											href={session.checkoutUrl}
 											target="_blank"
 											rel="noopener noreferrer"
-											className="flex-1 btn-primary px-3 py-2 rounded text-sm text-center transition"
+											className="flex-1"
 										>
-											🔗 Open
+											<Button variant="primary" className="w-full">
+												🔗 Open
+											</Button>
 										</a>
 									</div>
-								</div>
-							)}
-
+								</CardBody>
+							</Card>
+                                                        )}
 							{/* Test Data */}
-							<div className="card p-6">
-								<h3 className="text-lg font-semibold mb-3">📊 Test Data</h3>
+						<Card>
+							<CardBody className="p-6">
+								<Heading level={3} size="md" className="mb-3">📊 Test Data</Heading>
 								<div className="space-y-3 text-sm">
 									<div>
-										<p className="text-text-secondary">App</p>
-										<p className="font-mono">{session.testData.app.name}</p>
-										<p className="text-xs text-text-tertiary">{session.testData.app.id}</p>
+										<Text className="text-text-secondary">App</Text>
+										<Text className="font-mono">{session.testData.app.name}</Text>
+										<Text className="text-xs text-text-tertiary">{session.testData.app.id}</Text>
 									</div>
 									<div>
-										<p className="text-text-secondary">User</p>
-										<p className="font-mono">{session.testData.user.email}</p>
-										<p className="text-xs text-text-tertiary">{session.testData.user.id}</p>
+										<Text className="text-text-secondary">User</Text>
+										<Text className="font-mono">{session.testData.user.email}</Text>
+										<Text className="text-xs text-text-tertiary">{session.testData.user.id}</Text>
 									</div>
 									<div>
-										<p className="text-text-secondary">Plan</p>
-										<p className="font-mono">{session.testData.plan.name} - ${session.testData.plan.amount / 100}/{session.testData.plan.interval}</p>
+										<Text className="text-text-secondary">Plan</Text>
+										<Text className="font-mono">{session.testData.plan.name} - ${session.testData.plan.amount / 100}/{session.testData.plan.interval}</Text>
 									</div>
 								</div>
-							</div>
-
+							</CardBody>
+						</Card>
 							{/* License Status */}
 							{sessionStatus?.license && (
-								<div className="card p-6">
-									<h3 className="text-lg font-semibold mb-3">📜 License Status</h3>
+							<Card>
+								<CardBody className="p-6">
+									<Heading level={3} size="md" className="mb-3">📜 License Status</Heading>
 									<div className="space-y-2 text-sm">
 										<div className="flex justify-between">
-											<span className="text-text-secondary">Status</span>
-											<span className={`font-semibold ${
+											<Text className="text-text-secondary">Status</Text>
+											<Text className={`font-semibold ${
 												sessionStatus.license.status === "active" ? "text-success" : "text-text-secondary"
 											}`}>
 												{sessionStatus.license.status === "active" ? "✓ Active" : sessionStatus.license.status}
-											</span>
+											</Text>
 										</div>
 										{sessionStatus.license.validUntil && (
 											<div className="flex justify-between">
-												<span className="text-text-secondary">Expires</span>
-												<span className="font-mono text-xs">
+												<Text className="text-text-secondary">Expires</Text>
+												<Text className="font-mono text-xs">
 													{new Date(sessionStatus.license.validUntil).toLocaleDateString()}
-												</span>
+												</Text>
 											</div>
 										)}
 									</div>
-								</div>
-							)}
-
+								</CardBody>
+							</Card>
+                                                        )}
 							{/* Auto-refresh indicator */}
 							<div className="text-center text-xs text-text-tertiary">
 								⏱️ Auto-refreshing every 2 seconds
@@ -371,9 +382,9 @@ export default function PaymentTestingPlayground() {
 
 					{!session && (
 						<div className="bg-bg-muted rounded-lg border-2 border-dashed border-border p-12 text-center">
-							<p className="text-text-secondary">
+							<Text className="text-text-secondary">
 								Click "Start Test Flow" to begin testing
-							</p>
+							</Text>
 						</div>
 					)}
 				</div>

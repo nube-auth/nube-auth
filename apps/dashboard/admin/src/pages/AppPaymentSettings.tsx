@@ -1,5 +1,19 @@
 import { Link, useParams } from "react-router-dom";
-import { Icon, IconType } from "@proofa/components";
+import {
+	Icon,
+	IconType,
+	Spinner,
+	Alert,
+	Text,
+	Heading,
+	Card,
+	CardBody,
+	Button,
+	Badge,
+	EmptyState,
+	Breadcrumb,
+	BreadcrumbSeparator,
+} from "@proofa/components";
 import { useToast } from "../components/Toast";
 import { useApp, useProject, useProjectPaymentProviders, useSelectPaymentProvider, useSelectedPaymentProvider } from "../hooks/api";
 
@@ -39,89 +53,86 @@ export default function AppPaymentSettingsPage() {
 	const getEnvironmentBadge = (environment: string) => {
 		const isProduction = environment === "production";
 		return (
-			<span
-				className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold uppercase ${isProduction ? "bg-success-bg text-success-text" : "bg-warning-bg text-warning-text"}`}
-			>
+			<Badge variant={isProduction ? "success" : "warning"}>
 				{environment}
-			</span>
+			</Badge>
 		);
 	};
 
 	if (appLoading || projectLoading || loadingProviders || loadingSelected) {
 		return (
-			<div className="loading">
-				<div className="spinner" />
+			<div className="flex justify-center items-center py-12">
+				<Spinner />
 			</div>
 		);
 	}
 
 	if (appError || !app) {
-		return <div className="error-state">App not found</div>;
+		return <Alert variant="danger">App not found</Alert>;
 	}
 
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
 			<div className="mb-6">
-				<div className="flex items-center gap-2 text-xs text-text-tertiary">
-					<Link to="/projects" className="text-text-tertiary no-underline hover:text-primary">
+				<Breadcrumb>
+					<Link to="/projects">
 						Projects
 					</Link>
-					<span>›</span>
-					<Link to={`/projects/${projectId}`} className="text-text-tertiary no-underline hover:text-primary">
+					/
+					<Link to={`/projects/${projectId}`}>
 						{project?.name}
 					</Link>
-					<span>›</span>
-					<Link to={`/projects/${projectId}/apps`} className="text-text-tertiary no-underline hover:text-primary">
+					/
+					<Link to={`/projects/${projectId}/apps`}>
 						Apps
 					</Link>
-					<span>›</span>
-					<Link to={`/projects/${projectId}/apps/${appId}`} className="text-text-tertiary no-underline hover:text-primary">
+					/
+					<Link to={`/projects/${projectId}/apps/${appId}`}>
 						{app?.name || "App"}
 					</Link>
-					<span>›</span>
-					<span className="text-text-primary">Payment</span>
-				</div>
+					/
+					<Text>Payment</Text>
+				</Breadcrumb>
 			</div>
 
 			{/* Page Header */}
 			<div className="mb-8">
-				<h1 className="mb-2 text-2xl font-bold">Payment Provider</h1>
-				<p className="text-sm text-text-tertiary">
+				<Heading level={1} size="lg">Payment Provider</Heading>
+				<Text className="text-text-secondary">
 					Select one payment provider for {app.name}. Providers are configured at the project level.
-				</p>
+				</Text>
 			</div>
 
 			{/* Info Banner */}
-			<div className="mb-6 flex gap-3 rounded-xl border border-primary bg-primary-light p-4">
-				<Icon icon={IconType.AlertCircle} size={20} className="text-primary flex-shrink-0" />
-				<div>
-					<p className="mb-1 text-sm font-semibold text-primary">Project-Level Configuration</p>
-					<p className="m-0 text-xs text-text-secondary">
-						Payment providers are configured at the project level. To add or modify providers, visit{" "}
-						<Link to={`/projects/${projectId}/payment-providers`} className="font-semibold text-primary hover:text-primary-dark">
-							Project Payment Providers
-						</Link>
-						.
-					</p>
+			<Alert variant="info" className="mb-6">
+				<div className="flex gap-3">
+					<Icon icon={IconType.AlertCircle} size={20} className="text-primary flex-shrink-0" />
+					<div>
+						<Text className="mb-1 font-semibold text-primary">Project-Level Configuration</Text>
+						<Text className="text-text-secondary">
+							Payment providers are configured at the project level. To add or modify providers, visit{" "}
+							<Link to={`/projects/${projectId}/payment-providers`} className="font-semibold text-primary hover:text-primary-dark">
+								Project Payment Providers
+							</Link>
+							.
+						</Text>
+					</div>
 				</div>
-			</div>
+			</Alert>
 
 			{/* Providers List */}
 			{!availableProviders || availableProviders.length === 0 ? (
-				<div className="card text-center px-6 py-16">
-					<div className="mb-4 text-6xl">💳</div>
-					<h2 className="mb-3 text-xl font-semibold text-text-primary">
-						No payment providers configured
-					</h2>
-					<p className="mb-6 text-sm text-text-tertiary">
-						Configure payment providers at the project level to enable payments for this app.
-					</p>
-					<Link to={`/projects/${projectId}/payment-providers`} className="btn btn-primary inline-flex items-center gap-2">
-								<Icon icon={IconType.Add} size={16} />
+				<EmptyState
+					
+					title="No payment providers configured"
+					description="Configure payment providers at the project level to enable payments for this app."
+				>
+					<Button variant="primary" onClick={() => window.location.href = `/projects/${projectId}/payment-providers`}>
+						<Icon icon={IconType.Add} size={16} />
 						Configure Payment Providers
-					</Link>
-				</div>
+					</Button>
+				</EmptyState>
 			) : (
 				<div className="flex flex-col gap-4">
 					{availableProviders.map((provider) => {
@@ -155,9 +166,9 @@ export default function AppPaymentSettingsPage() {
 											</h3>
 											{getEnvironmentBadge(provider.environment)}
 											{isSelected && (
-												<span className="inline-flex items-center rounded-[6px] bg-[var(--primary)] px-[10px] py-1 text-[11px] font-semibold uppercase text-white">
-													Active
-												</span>
+													<Badge variant="success">
+														Active
+													</Badge>
 											)}
 										</div>
 										<div className="flex items-center gap-4 text-[13px] [color:var(--text-secondary)]">
@@ -175,18 +186,20 @@ export default function AppPaymentSettingsPage() {
 
 			{/* Help Section */}
 			{availableProviders && availableProviders.length > 0 && (
-				<div className="mt-8 rounded-xl border border-[color:var(--border-primary)] bg-[var(--content-bg)] p-5">
-					<h3 className="mb-3 text-sm font-semibold [color:var(--text-primary)]">
-						Need to add or modify payment providers?
-					</h3>
-					<p className="mb-4 text-[13px] [color:var(--text-secondary)]">
-						Payment providers are managed at the project level. Visit the Payment Providers page to add new providers or update existing ones.
-					</p>
-					<Link to={`/projects/${projectId}/payment-providers`} className="btn btn-secondary inline-flex items-center gap-2">
-						<Icon icon={IconType.Settings01} size={16} />
-						Manage Payment Providers
-					</Link>
-				</div>
+				<Card className="mt-8">
+					<CardBody className="p-5">
+						<Heading level={3} size="sm" className="mb-3">
+							Need to add or modify payment providers?
+						</Heading>
+						<Text className="mb-4 text-text-secondary">
+							Payment providers are managed at the project level. Visit the Payment Providers page to add new providers or update existing ones.
+						</Text>
+						<Button variant="secondary" onClick={() => window.location.href = `/projects/${projectId}/payment-providers`}>
+							<Icon icon={IconType.Settings01} size={16} />
+							Manage Payment Providers
+						</Button>
+					</CardBody>
+				</Card>
 			)}
 		</div>
 	);

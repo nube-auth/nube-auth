@@ -81,6 +81,33 @@ async function fetchAPI<T>(path: string, options?: RequestInit, schema?: any): P
 }
 
 /**
+ * Hook to get current admin user profile
+ * Centralized hook to prevent duplicate API calls and cache conflicts
+ */
+export interface AdminUser {
+	id: string;
+	email?: string;
+	name?: string;
+	primary_email?: string;
+}
+
+export function useMe() {
+	return useQuery<AdminUser>({
+		queryKey: ["admin", "me"],
+		queryFn: async () => {
+			// /v1/admin/me is protected by authMiddleware - no separate status check needed
+			const res = await pingpong(`${GATEWAY_URL}/v1/admin/me`, { credentials: "include" });
+			if (!res.ok()) throw new Error("Unauthorized");
+			return res.data as AdminUser;
+		},
+		retry: false,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
+		staleTime: Number.POSITIVE_INFINITY,
+	});
+}
+
+/**
  * Hook to logout
  */
 export function useLogout() {

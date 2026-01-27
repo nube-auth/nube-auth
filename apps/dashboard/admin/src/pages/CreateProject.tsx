@@ -76,7 +76,7 @@ export function CreateProjectPage() {
 							value={formData.name}
 							onChange={(e) => handleNameChange(e.target.value)}
 						/>
-						<Text size="sm" className="text-text-muted mt-2">
+						<Text className="text-text-muted mt-2">
 							Choose a memorable name for your project.
 						</Text>
 					</Field>
@@ -91,7 +91,7 @@ export function CreateProjectPage() {
 							value={formData.slug}
 							onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
 						/>
-						<Text size="sm" className="text-text-muted mt-2">
+						<Text className="text-text-muted mt-2">
 							Auto-generated from project name. Use only letters, numbers, and hyphens.
 						</Text>
 					</Field>
@@ -114,7 +114,7 @@ export function CreateProjectPage() {
 							onChange={(e) => setFormData({ ...formData, description: e.target.value })}
 							rows={4}
 						/>
-						<Text size="sm" className="text-text-muted mt-2">
+						<Text className="text-text-muted mt-2">
 							You can change this anytime in project settings.
 						</Text>
 					</Field>
@@ -145,7 +145,7 @@ export function CreateProjectPage() {
 					<Card>
 						<CardBody>
 							<Heading size="sm" className="mb-3">What happens next?</Heading>
-							<Text size="sm" className="text-text-secondary leading-relaxed">
+							<Text className="text-text-secondary leading-relaxed">
 								Your project is created and ready to use immediately. You'll be redirected to the project dashboard.
 							</Text>
 						</CardBody>
@@ -158,22 +158,22 @@ export function CreateProjectPage() {
 								<li className="flex items-start gap-3">
 									<span className="text-primary text-sm font-bold mt-0.5">•</span>
 									<div>
-										<Text size="sm" className="font-medium">Applications</Text>
-										<Text size="sm" className="text-text-muted">Create and configure apps</Text>
+										<Text className="font-medium">Applications</Text>
+										<Text className="text-text-muted">Create and configure apps</Text>
 									</div>
 								</li>
 								<li className="flex items-start gap-3">
 									<span className="text-primary text-sm font-bold mt-0.5">•</span>
 									<div>
-										<Text size="sm" className="font-medium">Users</Text>
-										<Text size="sm" className="text-text-muted">Track and manage users</Text>
+										<Text className="font-medium">Users</Text>
+										<Text className="text-text-muted">Track and manage users</Text>
 									</div>
 								</li>
 								<li className="flex items-start gap-3">
 									<span className="text-primary text-sm font-bold mt-0.5">•</span>
 									<div>
-										<Text size="sm" className="font-medium">Billing</Text>
-										<Text size="sm" className="text-text-muted">Configure payment settings</Text>
+										<Text className="font-medium">Billing</Text>
+										<Text className="text-text-muted">Configure payment settings</Text>
 									</div>
 								</li>
 							</ul>
@@ -183,7 +183,7 @@ export function CreateProjectPage() {
 					<Card>
 						<CardBody>
 							<Heading size="sm" className="mb-3">Collaboration</Heading>
-							<Text size="sm" className="text-text-secondary leading-relaxed">
+							<Text className="text-text-secondary leading-relaxed">
 								Invite team members to collaborate on your project from the project settings.
 							</Text>
 						</CardBody>

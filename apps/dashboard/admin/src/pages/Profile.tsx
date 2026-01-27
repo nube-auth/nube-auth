@@ -1,24 +1,43 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { pingpong } from "../lib/pingpong";
-import {Icon, IconType} from "@proofa/components";;
-
-interface AdminProfile {
-	id: string;
-	email?: string;
-	name?: string;
-	primary_email?: string;
-}
+import { useMe } from "../hooks/api";
+import {
+	Icon,
+	IconType,
+	Spinner,
+	Alert,
+	Heading,
+	Text,
+	Card,
+	CardBody,
+	Label,
+	Input,
+	Button
+} from "@proofa/components";
 
 const GATEWAY_URL = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
 
+// Helper to normalize headers to Record<string, string>
+function normalizeHeaders(headers?: HeadersInit): Record<string, string> {
+	if (!headers) return {};
+	if (headers instanceof Headers) {
+		return Object.fromEntries(headers.entries());
+	}
+	if (Array.isArray(headers)) {
+		return Object.fromEntries(headers);
+	}
+	return headers;
+}
+
 async function fetchAPI<T>(path: string, options?: RequestInit): Promise<T> {
 	const response = await pingpong(`${GATEWAY_URL}${path}`, {
-		...options,
+		method: options?.method,
 		credentials: "include",
+		body: options?.body,
 		headers: {
 			"Content-Type": "application/json",
-			...options?.headers,
+			...normalizeHeaders(options?.headers),
 		},
 	});
 
@@ -36,14 +55,8 @@ export function ProfilePage() {
 	const [name, setName] = useState("");
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-	// Fetch profile
-	const { data: profile, isLoading } = useQuery<AdminProfile>({
-		queryKey: ["admin", "me"],
-		queryFn: () => fetchAPI<AdminProfile>("/v1/admin/me"),
-		staleTime: 5 * 60 * 1000,
-		refetchOnWindowFocus: false,
-		refetchOnMount: false,
-	});
+	// Fetch profile using shared hook
+	const { data: profile, isLoading } = useMe();
 
 	// Update profile mutation
 	const updateProfile = useMutation({
@@ -82,10 +95,10 @@ export function ProfilePage() {
 
 	if (isLoading) {
 		return (
-			<div className="page-header">
-				<h1 className="page-title">Profile</h1>
-				<div className="mt-6">
-					<div className="spinner" />
+			<div>
+				<Heading level={1} size="lg">Profile</Heading>
+				<div className="mt-6 flex justify-center">
+					<Spinner />
 				</div>
 			</div>
 		);
@@ -93,9 +106,9 @@ export function ProfilePage() {
 
 	if (!profile) {
 		return (
-			<div className="page-header">
-				<h1 className="page-title">Profile</h1>
-				<p className="text-text-secondary mt-4">Failed to load profile</p>
+			<div>
+				<Heading level={1} size="lg">Profile</Heading>
+				<Alert variant="danger" className="mt-4">Failed to load profile</Alert>
 			</div>
 		);
 	}
@@ -111,189 +124,177 @@ export function ProfilePage() {
 
 	return (
 		<div>
-			<div className="page-header">
-				<h1 className="page-title">Profile</h1>
-				<p className="page-description">Manage your personal information and preferences</p>
+			<div className="mb-8">
+				<Heading level={1} size="lg">Profile</Heading>
+				<Text className="text-text-muted mt-2">Manage your personal information and preferences</Text>
 			</div>
 
 			{/* Success Message */}
 			{successMessage && (
-				<div className="alert-success mb-6 flex items-center gap-2">
-					<Icon icon={IconType.CheckCircle} size={20} bold className="flex-shrink-0 text-success" />
+				<Alert variant="success" className="mb-6">
 					{successMessage}
-				</div>
+				</Alert>
 			)}
 
-			<div className="card p-6">
-				{/* Profile Header */}
-				<div className="flex items-center gap-5 pb-6 border-b border-border-color mb-6">
-					<div className="w-20 h-20 rounded-full flex items-center justify-center text-32px font-semibold text-white flex-shrink-0 shadow-lg bg-gradient-to-br from-primary to-purple-600">
-						{initials}
-					</div>
-					<div className="flex-1">
-						<h2 className="text-24px font-semibold mb-1 text-text-primary">
-							{profile.name || "Admin User"}
-						</h2>
-						<p className="text-text-secondary text-14px">
-							{profile.email || profile.primary_email}
-						</p>
-					</div>
-					{!isEditing && (
-						<button
-							type="button"
-							onClick={handleEdit}
-							className="btn-secondary flex items-center gap-2 px-4 py-2.5 text-14px font-medium rounded-[var(--radius)]"
-						>
-							<Icon icon={IconType.Edit} size={16} />
-							Edit Profile
-						</button>
-					)}
-				</div>
-
-				{/* Profile Information */}
-				<div>
-					<h3 className="text-16px font-semibold mb-5 text-text-primary">
-						Personal Information
-					</h3>
-
-					<div className="flex flex-col gap-5">
-						{/* Name Field */}
-						<div>
-							<label
-								htmlFor="name"
-								className="form-label"
-							>
-								Full Name
-							</label>
-							{isEditing ? (
-								<input
-									id="name"
-									type="text"
-									value={name}
-									onChange={(e) => setName(e.target.value)}
-									placeholder="Enter your full name"
-									className="input max-w-500px text-14px"
-								/>
-							) : (
-								<div 
-									className={`px-3.5 py-2.5 bg-input-bg border border-input-border rounded-6px max-w-500px text-14px ${
-										profile.name ? "text-text-primary" : "text-text-tertiary"
-									}`}
-								>
-									{profile.name || "Not set"}
-								</div>
-							)}
+			<Card>
+				<CardBody>
+					{/* Profile Header */}
+					<div className="flex items-center gap-5 pb-6 border-b border-border-color mb-6">
+						<div className="w-20 h-20 rounded-full flex items-center justify-center text-32px font-semibold text-white flex-shrink-0 shadow-lg bg-gradient-to-br from-primary to-purple-600">
+							{initials}
 						</div>
-
-						{/* Email Field (Read-only) */}
-						<div>
-							<label
-								htmlFor="email"
-								className="form-label"
-							>
-								Email Address
-							</label>
-							<div className="px-3.5 py-2.5 bg-input-bg border border-input-border rounded-6px max-w-500px text-text-secondary flex items-center gap-2.5 text-14px">
-								<span className="flex-1">{profile.email || profile.primary_email}</span>
-								<Icon icon={IconType.Lock} size={16} className="opacity-40 flex-shrink-0" />
-							</div>
-							<p className="text-12px text-text-tertiary mt-1.5">
-								Email address is managed by your authentication provider and cannot be changed here.
-							</p>
+						<div className="flex-1">
+							<Heading level={2} size="lg" className="mb-1">
+								{profile.name || "Admin User"}
+							</Heading>
+							<Text className="text-text-secondary">
+								{profile.email || profile.primary_email}
+							</Text>
 						</div>
-
-						{/* User ID (Read-only) */}
-						<div>
-							<label
-								htmlFor="userId"
-								className="form-label"
+						{!isEditing && (
+							<Button
+								variant="secondary"
+								onClick={handleEdit}
 							>
-								User ID
-							</label>
-							<div className="px-3.5 py-2.5 bg-input-bg border border-input-border rounded-6px max-w-500px font-mono text-13px text-text-secondary">
-								{profile.id}
-							</div>
-						</div>
+								<Icon icon={IconType.Edit} size={16} />
+								Edit Profile
+							</Button>
+						)}
 					</div>
 
-					{/* Action Buttons */}
-					{isEditing && (
-						<div className="flex gap-2.5 mt-6 pt-6 border-t border-border-color">
-							<button
-								type="button"
-								onClick={handleSave}
-								disabled={updateProfile.isPending || !name.trim()}
-								className="btn-primary min-w-110px flex items-center justify-center gap-2 px-4 py-2.5 text-14px font-medium rounded-[var(--radius)]"
-							>
-								{updateProfile.isPending ? (
-									<>
-										<div className="spinner w-3.5 h-3.5" />
-										Saving...
-									</>
+					{/* Profile Information */}
+					<div>
+						<Heading level={3} size="lg" className="mb-5">
+							Personal Information
+						</Heading>
+
+						<div className="flex flex-col gap-5">
+							{/* Name Field */}
+							<div>
+								<Label htmlFor="name">Full Name</Label>
+								{isEditing ? (
+									<Input
+										id="name"
+										type="text"
+										value={name}
+										onChange={(e) => setName(e.target.value)}
+										placeholder="Enter your full name"
+										className="max-w-500px"
+									/>
 								) : (
-									<>
-										<Icon icon={IconType.Check} size={18} bold />
-										Save Changes
-									</>
+									<div 
+										className={`px-3.5 py-2.5 bg-input-bg border border-input-border rounded-6px max-w-500px ${
+											profile.name ? "text-text-primary" : "text-text-tertiary"
+										}`}
+									>
+										{profile.name || "Not set"}
+									</div>
 								)}
-							</button>
-							<button
-								type="button"
-								onClick={handleCancel}
-								disabled={updateProfile.isPending}
-								className="btn-secondary px-4 py-2.5 text-14px font-medium rounded-[var(--radius)]"
-							>
-								Cancel
-							</button>
-						</div>
-					)}
+							</div>
 
-					{/* Error Message */}
-					{updateProfile.isError && (
-						<div className="alert-danger mt-4">
-							{updateProfile.error instanceof Error
-								? updateProfile.error.message
-								: "Failed to update profile"}
+							{/* Email Field (Read-only) */}
+							<div>
+								<Label htmlFor="email">Email Address</Label>
+								<div className="px-3.5 py-2.5 bg-input-bg border border-input-border rounded-6px max-w-500px text-text-secondary flex items-center gap-2.5">
+									<span className="flex-1">{profile.email || profile.primary_email}</span>
+									<Icon icon={IconType.Lock} size={16} className="opacity-40 flex-shrink-0" />
+								</div>
+								<Text className="text-text-tertiary mt-1.5">
+									Email address is managed by your authentication provider and cannot be changed here.
+								</Text>
+							</div>
+
+							{/* User ID (Read-only) */}
+							<div>
+								<Label htmlFor="userId">User ID</Label>
+								<div className="px-3.5 py-2.5 bg-input-bg border border-input-border rounded-6px max-w-500px font-mono text-13px text-text-secondary">
+									{profile.id}
+								</div>
+							</div>
 						</div>
-					)}
-				</div>
-			</div>
+
+						{/* Action Buttons */}
+						{isEditing && (
+							<div className="flex gap-2.5 mt-6 pt-6 border-t border-border-color">
+								<Button
+									variant="primary"
+									onClick={handleSave}
+									disabled={updateProfile.isPending || !name.trim()}
+									className="min-w-110px"
+								>
+									{updateProfile.isPending ? (
+										<>
+											<Spinner />
+											Saving...
+										</>
+									) : (
+										<>
+											<Icon icon={IconType.Check} size={18} bold />
+											Save Changes
+										</>
+									)}
+								</Button>
+								<Button
+									variant="secondary"
+									onClick={handleCancel}
+									disabled={updateProfile.isPending}
+								>
+									Cancel
+								</Button>
+							</div>
+						)}
+
+						{/* Error Message */}
+						{updateProfile.isError && (
+							<Alert variant="danger" className="mt-4">
+								{updateProfile.error instanceof Error
+									? updateProfile.error.message
+									: "Failed to update profile"}
+							</Alert>
+						)}
+					</div>
+				</CardBody>
+			</Card>
 
 			{/* Additional Settings Section */}
-			<div className="card mt-5 p-6">
-				<h3 className="text-16px font-semibold mb-2 text-text-primary">
-					Account Settings
-				</h3>
-				<p className="text-text-secondary text-13px mb-5">Additional account preferences and security settings</p>
+			<Card className="mt-5">
+				<CardBody>
+					<Heading level={3} size="lg" className="mb-2">
+						Account Settings
+					</Heading>
+					<Text className="text-text-secondary mb-5">
+						Additional account preferences and security settings
+					</Text>
 
-				<div className="flex flex-col gap-2.5">
-					{/* Theme Preference */}
-					<div className="p-4 bg-input-bg border border-input-border rounded-6px flex items-center justify-between">
-						<div>
-							<div className="font-medium mb-1 text-14px">
-								Theme Preference
+					<div className="flex flex-col gap-2.5">
+						{/* Theme Preference */}
+						<div className="p-4 bg-input-bg border border-input-border rounded-6px flex items-center justify-between">
+							<div>
+								<Text className="font-medium mb-1">
+									Theme Preference
+								</Text>
+								<Text className="text-text-secondary">
+									Your theme preference is managed in the header
+								</Text>
 							</div>
-							<div className="text-12px text-text-secondary">
-								Your theme preference is managed in the header
-							</div>
+							<Icon icon={IconType.Moon} size={20} className="text-text-tertiary flex-shrink-0" />
 						</div>
-						<Icon icon={IconType.Moon} size={20} className="text-text-tertiary flex-shrink-0" />
-					</div>
 
-					{/* Sessions */}
-					<div className="p-4 bg-input-bg border border-input-border rounded-6px flex items-center justify-between">
-						<div>
-							<div className="font-medium mb-1 text-14px">
-								Active Sessions
+						{/* Sessions */}
+						<div className="p-4 bg-input-bg border border-input-border rounded-6px flex items-center justify-between">
+							<div>
+								<Text className="font-medium mb-1">
+									Active Sessions
+								</Text>
+								<Text className="text-text-secondary">
+									You are currently signed in
+								</Text>
 							</div>
-							<div className="text-12px text-text-secondary">
-								You are currently signed in
-							</div>
+							<Icon icon={IconType.CheckBadge} size={20} bold className="text-success flex-shrink-0" />
 						</div>
-						<Icon icon={IconType.CheckBadge} size={20} bold className="text-success flex-shrink-0" />
 					</div>
-				</div>
-			</div>
+				</CardBody>
+			</Card>
 		</div>
 	);
 }

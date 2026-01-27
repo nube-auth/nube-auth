@@ -329,7 +329,7 @@ export function AppLicensesPage() {
 	if (projectLoading || appLoading) {
 		return (
 			<div className="flex items-center justify-center min-h-[50vh]">
-				<Spinner size="lg" />
+				<Spinner />
 			</div>
 		);
 	}
@@ -368,7 +368,7 @@ export function AppLicensesPage() {
 			{/* Page Header */}
 			<div className="flex items-start justify-between">
 				<div>
-					<Heading level={1} size="2xl">Licenses</Heading>
+					<Heading level={1} size="lg">Licenses</Heading>
 					<Text className="text-text-muted mt-2">Manage user licenses and pricing plans for {app.name}</Text>
 				</div>
 			</div>

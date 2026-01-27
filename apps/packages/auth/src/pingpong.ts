@@ -4,16 +4,20 @@ type PingpongRequestOptions = {
 	method?: string;
 	headers?: Record<string, string>;
 	body?: unknown;
+	credentials?: "include" | "omit" | "same-origin"; // For compatibility with fetch API (ignored - pingpong handles automatically)
 };
 
 /**
  * Wrapper for @pingpong-js/fetch with simplified API
  * Uses v1.4.0+ features:
  * - response.data (auto-parsed JSON, no need for .json())
+ * - response.ok() method (check if 2xx status)
  * - Convenience methods (.get(), .post(), etc.)
  * - Type-safe responses
  * 
- * @version 1.0.2+ - Headers now properly forwarded in GET/DELETE methods
+ * Note: Explicitly configures credentials: 'include' to send cookies in browser environment
+ * 
+ * @version 1.0.4 - Fixed credentials handling for browser cookie support
  */
 export async function pingpongFetch(url: string, options: PingpongRequestOptions = {}) {
 	const method = (options.method ?? "GET").toUpperCase();
@@ -24,7 +28,11 @@ export async function pingpongFetch(url: string, options: PingpongRequestOptions
 		body = body.toString();
 	}
 
-	const requestOptions = options.headers ? { headers: options.headers } : {};
+	// Always include credentials for cookie support
+	const requestOptions = { 
+		headers: options.headers || {}, 
+		credentials: 'include' as const 
+	};
 
 	// Use convenience methods for better performance and cleaner code
 	switch (method) {
@@ -49,6 +57,7 @@ export async function pingpongFetch(url: string, options: PingpongRequestOptions
 				url,
 				headers: options.headers || {},
 				body: body as any,
+				credentials: 'include',
 			});
 	}
 }

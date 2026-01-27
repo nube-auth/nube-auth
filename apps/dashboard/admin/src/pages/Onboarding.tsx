@@ -1,6 +1,23 @@
 import { useState } from "react";
 import {
-	Icon, IconType
+	Icon,
+	IconType,
+	Heading,
+	Text,
+	Button,
+	Badge,
+	Card,
+	CardBody,
+	Dialog,
+	DialogTrigger,
+	DialogPopup,
+	DialogHeader,
+	DialogTitle,
+	DialogBody,
+	DialogFooter,
+	Label,
+	Input,
+	Textarea,
 } from "@proofa/components";
 import { useCreateProject } from "../hooks/api";
 
@@ -42,30 +59,31 @@ export function OnboardingPage() {
 			{/* Welcome Header */}
 			<div className="page-header">
 				<div>
-					<h1 className="page-title">Welcome to Proofa</h1>
-					<p className="page-description">Get started by creating your first project</p>
+					<Heading level={1} size="lg">Welcome to Proofa</Heading>
+					<Text className="text-text-secondary mt-2">Get started by creating your first project</Text>
 				</div>
 			</div>
 
 			{/* Get Started Section */}
-			<div className="card get-started-card">
-				<div className="get-started-content">
-					<div className="get-started-text">
-						<span className="badge badge-success mb-3">
-							Getting Started
-						</span>
-						<h2 className="text-24px font-bold mb-3 text-text-primary">
-							Create your first project
-						</h2>
-						<p className="text-text-secondary mb-6 leading-relaxed">
-							Set up authentication for your application in minutes. Proofa handles user management, OAuth
-							providers, sessions, and more so you can focus on building your product.
-						</p>
-						<button type="button" onClick={() => setShowForm(true)} className="btn btn-primary">
-							<Icon icon={IconType.Add} size={16} />
-							Create Project
-						</button>
-					</div>
+			<Card>
+				<CardBody>
+					<div className="get-started-content">
+						<div className="get-started-text">
+							<Badge variant="success" className="mb-3">
+								Getting Started
+							</Badge>
+							<Heading level={2} size="lg" className="mb-3">
+								Create your first project
+							</Heading>
+							<Text className="text-text-secondary mb-6 leading-relaxed">
+								Set up authentication for your application in minutes. Proofa handles user management, OAuth
+								providers, sessions, and more so you can focus on building your product.
+							</Text>
+							<Button variant="primary" onClick={() => setShowForm(true)}>
+								<Icon icon={IconType.Add} size={16} />
+								Create Project
+							</Button>
+						</div>
 					<div className="get-started-preview">
 						<div className="code-preview">
 							<div className="code-preview-header">
@@ -86,17 +104,18 @@ await auth.signIn('google');
 
 // Get current user
 const user = await auth.getUser();`}
-							</pre>
+								</pre>
+							</div>
 						</div>
 					</div>
-				</div>
-			</div>
+				</CardBody>
+			</Card>
 
 			{/* Integrations Section */}
 			<div>
-				<h3 className="text-16px font-semibold text-text-primary mb-4">
+				<Heading level={3} size="md" className="mb-4">
 					Supported Integrations
-				</h3>
+				</Heading>
 				<div className="integrations-grid">
 					<div className="integration-card">
 						<div className="integration-icon bg-black">
@@ -158,108 +177,100 @@ const user = await auth.getUser();`}
 
 			{/* Quick Start Steps */}
 			<div>
-				<h3 className="text-16px font-semibold text-text-primary mb-4">
-					Quick Start Guide
-				</h3>
-				<div className="quickstart-steps">
-					<div className="quickstart-step">
-						<div className="quickstart-step-number">1</div>
-						<div className="quickstart-step-content">
-							<h4 className="quickstart-step-title">Create a project</h4>
-							<p className="quickstart-step-desc">Set up a new project for your application</p>
+					<Heading level={3} size="md" className="mb-4">
+						Quick Start Guide
+					</Heading>
+					<div className="quickstart-steps">
+						<div className="quickstart-step">
+							<div className="quickstart-step-number">1</div>
+							<div className="quickstart-step-content">
+								<Heading level={4} size="sm" className="quickstart-step-title">Create a project</Heading>
+								<Text className="quickstart-step-desc">Set up a new project for your application</Text>
+							</div>
 						</div>
-					</div>
-					<div className="quickstart-step">
-						<div className="quickstart-step-number">2</div>
-						<div className="quickstart-step-content">
-							<h4 className="quickstart-step-title">Configure OAuth providers</h4>
-							<p className="quickstart-step-desc">Enable Google, GitHub, or other providers</p>
+						<div className="quickstart-step">
+							<div className="quickstart-step-number">2</div>
+							<div className="quickstart-step-content">
+								<Heading level={4} size="sm" className="quickstart-step-title">Configure OAuth providers</Heading>
+								<Text className="quickstart-step-desc">Enable Google, GitHub, or other providers</Text>
+							</div>
 						</div>
-					</div>
-					<div className="quickstart-step">
-						<div className="quickstart-step-number">3</div>
-						<div className="quickstart-step-content">
-							<h4 className="quickstart-step-title">Install the SDK</h4>
-							<p className="quickstart-step-desc">Add Proofa to your application</p>
+						<div className="quickstart-step">
+							<div className="quickstart-step-number">3</div>
+							<div className="quickstart-step-content">
+								<Heading level={4} size="sm" className="quickstart-step-title">Install the SDK</Heading>
+								<Text className="quickstart-step-desc">Add Proofa to your application</Text>
+							</div>
 						</div>
-					</div>
-					<div className="quickstart-step">
-						<div className="quickstart-step-number">4</div>
-						<div className="quickstart-step-content">
-							<h4 className="quickstart-step-title">Go live</h4>
-							<p className="quickstart-step-desc">Deploy and start authenticating users</p>
-						</div>
-					</div>
-				</div>
+						<div className="quickstart-step">
+							<div className="quickstart-step-number">4</div>
+							<div className="quickstart-step-content">
+								<Heading level={4} size="sm" className="quickstart-step-title">Go live</Heading>
+								<Text className="quickstart-step-desc">Deploy and start authenticating users</Text>					</div>
+				</div>				</div>
 			</div>
 
 		{/* Create Project Modal/Form */}
-		{showForm && (
-			<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[10001] p-8" onClick={() => setShowForm(false)}>
-				<div className="bg-card-bg border border-card-border rounded-xl w-full mx-4 max-w-md max-h-[90vh] overflow-y-auto shadow-lg flex flex-col" onClick={(e) => e.stopPropagation()}>
-					<div className="flex items-center justify-between p-6 border-b border-card-border flex-shrink-0">
-						<h3 className="text-18px font-600 text-text-primary m-0">Create New Project</h3>
-						<button type="button" className="w-8 h-8 flex items-center justify-center border-none bg-transparent text-text-secondary cursor-pointer rounded-md transition-all hover:bg-surface-secondary hover:text-text-primary" onClick={() => setShowForm(false)}>
-							<Icon icon={IconType.Close} size={20} />
-						</button>
-					</div>
-					<form onSubmit={handleSubmit} className="flex flex-col flex-1">
-						<div className="p-6 text-text-primary overflow-y-auto flex-1">
-							<div className="form-group">
-								<label htmlFor="projectName" className="form-label">Project Name *</label>
-								<input
+		<Dialog open={showForm} onOpenChange={setShowForm}>
+			<DialogPopup>
+				<DialogHeader>
+					<DialogTitle>Create New Project</DialogTitle>
+				</DialogHeader>
+				<form onSubmit={handleSubmit}>
+					<DialogBody>
+						<div className="space-y-4">
+							<Label>
+								Project Name *
+								<Input
 									type="text"
 									id="projectName"
-									className="form-control"
 									placeholder="My Awesome Project"
 									required
 									value={formData.name}
 									onChange={(e) => handleNameChange(e.target.value)}
 								/>
-							</div>
-							<div className="form-group">
-								<label htmlFor="projectSlug" className="form-label">Project Slug *</label>
-								<input
+							</Label>
+							<Label>
+								Project Slug *
+								<Input
 									type="text"
 									id="projectSlug"
-									className="form-control"
 									placeholder="my-awesome-project"
 									required
 									value={formData.slug}
 									onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
 								/>
-								<p className="text-12px text-text-tertiary mt-1.5">
+								<Text className="text-text-tertiary mt-1.5">
 									Auto-generated from project name. Use only letters, numbers, and hyphens.
-								</p>
-							</div>
-							<div className="form-group">
-								<label htmlFor="projectDescription" className="form-label">Description (optional)</label>
-								<textarea
+								</Text>
+							</Label>
+							<Label>
+								Description (optional)
+								<Textarea
 									id="projectDescription"
-									className="form-control resize-y"
 									placeholder="What is this project about?"
 									value={formData.description}
 									onChange={(e) => setFormData({ ...formData, description: e.target.value })}
 									rows={3}
 								/>
-							</div>
+							</Label>
 						</div>
-						<div className="flex items-center justify-end gap-3 p-6 border-t border-card-border flex-shrink-0">
-							<button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>
-								Cancel
-							</button>
-							<button
-								type="submit"
-								className="btn btn-primary"
-								disabled={createProjectMutation.isPending}
-							>
-								{createProjectMutation.isPending ? "Creating..." : "Create Project"}
-							</button>
-						</div>
-					</form>
-				</div>
-			</div>
-		)}
+					</DialogBody>
+					<DialogFooter>
+						<Button variant="secondary" onClick={() => setShowForm(false)}>
+							Cancel
+						</Button>
+						<Button
+							type="submit"
+							variant="primary"
+							disabled={createProjectMutation.isPending}
+						>
+							{createProjectMutation.isPending ? "Creating..." : "Create Project"}
+						</Button>
+					</DialogFooter>
+				</form>
+			</DialogPopup>
+		</Dialog>
 		</div>
 	);
 }

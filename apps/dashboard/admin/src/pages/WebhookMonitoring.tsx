@@ -1,5 +1,23 @@
 import { useState } from "react";
 import { useWebhookLogs, useWebhookDetail } from "../hooks/api";
+import {
+	Heading,
+	Text,
+	Button,
+	Card,
+	CardBody,
+	Label,
+	Input,
+	Select,
+	EmptyState,
+	Table,
+	TableContainer,
+	TableHeader,
+	TableHead,
+	TableBody,
+	TableRow,
+	TableCell,
+} from "@proofa/components";
 
 export function WebhookMonitoringPage() {
 	const [activeTab, setActiveTab] = useState<"logs" | "detail">("logs");
@@ -51,14 +69,14 @@ export function WebhookMonitoringPage() {
 		return (
 			<div>
 				<div className="mb-6">
-					<button onClick={() => setActiveTab("logs")} className="text-primary cursor-pointer bg-transparent border-none text-14px font-medium">
+					<Button variant="plain" onClick={() => setActiveTab("logs")} className="text-primary">
 						← Back to Logs
-					</button>
+					</Button>
 				</div>
 
-				<div className="card">
-					<div className="p-6">
-						<h2 className="mt-0 mb-6">Webhook Details</h2>
+				<Card>
+					<CardBody>
+						<Heading level={2} size="lg" className="mb-6">Webhook Details</Heading>
 
 						{/* Header Info */}
 						<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-8">
@@ -78,7 +96,7 @@ export function WebhookMonitoringPage() {
 
 						{/* Event Info */}
 						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
-							<h4 className="mt-0 mb-3 text-14px">Event Information</h4>
+							<Heading level={4} size="sm" className="mb-3">Event Information</Heading>
 							<div className="grid grid-cols-2 gap-4">
 								<div>
 									<div className="text-12px text-text-tertiary mb-1">Event Type</div>
@@ -93,7 +111,7 @@ export function WebhookMonitoringPage() {
 
 						{/* Timing Info */}
 						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
-							<h4 className="mt-0 mb-3 text-14px">Processing Timeline</h4>
+							<Heading level={4} size="sm" className="mb-3">Processing Timeline</Heading>
 							<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
 								<div>
 									<div className="text-12px text-text-tertiary mb-1">Received At</div>
@@ -122,7 +140,7 @@ export function WebhookMonitoringPage() {
 
 						{/* Retry Info */}
 						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
-							<h4 className="mt-0 mb-3 text-14px">Retry Information</h4>
+							<Heading level={4} size="sm" className="mb-3">Retry Information</Heading>
 							<div className="grid grid-cols-2 gap-4">
 								<div>
 									<div className="text-12px text-text-tertiary mb-1">Retry Count</div>
@@ -139,7 +157,7 @@ export function WebhookMonitoringPage() {
 
 						{/* Network Info */}
 						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
-							<h4 className="mt-0 mb-3 text-14px">Network Information</h4>
+							<Heading level={4} size="sm" className="mb-3">Network Information</Heading>
 							<div>
 								<div className="text-12px text-text-tertiary mb-1">IP Address</div>
 								<code className="text-13px text-text-primary font-mono">{webhook.ip_address}</code>
@@ -148,7 +166,7 @@ export function WebhookMonitoringPage() {
 
 						{/* Request Headers */}
 						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
-							<h4 className="mt-0 mb-3 text-14px">Request Headers</h4>
+							<Heading level={4} size="sm" className="mb-3">Request Headers</Heading>
 							<div className="max-h-75 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-12px text-text-secondary">
 								{Object.entries(webhook.request_headers || {}).map(([key, value]) => (
 									<div key={key} className="mb-1">
@@ -160,7 +178,7 @@ export function WebhookMonitoringPage() {
 
 						{/* Request Body */}
 						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
-							<h4 className="mt-0 mb-3 text-14px">Request Body</h4>
+							<Heading level={4} size="sm" className="mb-3">Request Body</Heading>
 							<div className="max-h-100 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-12px text-text-secondary">
 								<pre className="m-0 whitespace-pre-wrap break-words">
 									{JSON.stringify(webhook.request_body, null, 2)}
@@ -170,7 +188,7 @@ export function WebhookMonitoringPage() {
 
 						{/* Signature */}
 						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
-							<h4 className="mt-0 mb-3 text-14px">Signature</h4>
+							<Heading level={4} size="sm" className="mb-3">Signature</Heading>
 							<div className="max-h-50 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-12px text-text-secondary break-all">
 								{webhook.signature}
 							</div>
@@ -179,7 +197,7 @@ export function WebhookMonitoringPage() {
 						{/* Error Section (if failed) */}
 						{webhook.status === "failed" && webhook.error_message && (
 							<div className="p-4 bg-danger/10 border-l-3 border-danger rounded-lg mb-6">
-								<h4 className="mt-0 mb-3 text-14px text-danger">Error Information</h4>
+								<Heading level={4} size="sm" className="mb-3 text-danger">Error Information</Heading>
 								<div className="mb-3">
 									<div className="text-12px text-danger mb-1 font-semibold">Error Message</div>
 									<code className="text-13px text-danger block bg-danger/5 p-2 rounded">
@@ -194,10 +212,10 @@ export function WebhookMonitoringPage() {
 										</div>
 									</div>
 								)}
-							</div>
-						)}
-					</div>
-				</div>
+								</div>
+							)}
+					</CardBody>
+				</Card>
 			</div>
 		);
 	}
@@ -205,78 +223,67 @@ export function WebhookMonitoringPage() {
 	return (
 		<div>
 			<div className="mb-6">
-				<h1 className="m-0 mb-2">Webhook Monitoring</h1>
-				<p className="m-0 text-text-secondary">Monitor webhook deliveries and troubleshoot integration issues</p>
+				<Heading level={1} size="lg" className="mb-2">Webhook Monitoring</Heading>
+				<Text className="text-text-secondary">Monitor webhook deliveries and troubleshoot integration issues</Text>
 			</div>
 
 			{/* Filters */}
-			<div className="card mb-6 p-6">
-				<h3 className="mt-0 mb-4 text-16px">Filters</h3>
+			<Card className="mb-6">
+				<CardBody>
+					<Heading level={3} size="md" className="mb-4">Filters</Heading>
 				<div
 					className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-4"
 				>
-					<div className="form-group m-0">
-						<label htmlFor="provider" className="text-12px mb-1.5">
+						<Label>
 							Provider
-						</label>
-						<select
-							id="provider"
-							value={filters.provider}
-							onChange={(e) => setFilters({ ...filters, provider: e.target.value, offset: 0 })}
-							className="w-full p-2 rounded-md border border-border-color text-14px"
-						>
-							<option value="">All Providers</option>
-							<option value="lemon_squeezy">LemonSqueezy</option>
-							<option value="paddle">Paddle</option>
-						</select>
-					</div>
+							<Select
+								id="provider"
+								value={filters.provider}
+							>
+								<option value="">All Providers</option>
+								<option value="lemon_squeezy">LemonSqueezy</option>
+								<option value="paddle">Paddle</option>
+							</Select>
+						</Label>
 
-					<div className="form-group m-0">
-						<label htmlFor="status" className="text-12px mb-1.5">
+						<Label>
 							Status
-						</label>
-						<select
-							id="status"
-							value={filters.status}
-							onChange={(e) => setFilters({ ...filters, status: e.target.value, offset: 0 })}
-							className="w-full p-2 rounded-md border border-border-color text-14px"
-						>
-							<option value="">All Statuses</option>
-							<option value="success">Success</option>
-							<option value="failed">Failed</option>
-							<option value="processing">Processing</option>
-							<option value="not_started">Not Started</option>
-						</select>
-					</div>
+							<Select
+								id="status"
+								value={filters.status}
+							>
+								<option value="">All Statuses</option>
+								<option value="success">Success</option>
+								<option value="failed">Failed</option>
+								<option value="processing">Processing</option>
+								<option value="not_started">Not Started</option>
+							</Select>
+						</Label>
 
-					<div className="form-group m-0">
-						<label htmlFor="startDate" className="text-12px mb-1.5">
+						<Label>
 							Start Date
-						</label>
-						<input
-							type="date"
-							id="startDate"
-							value={filters.start_date}
-							onChange={(e) => setFilters({ ...filters, start_date: e.target.value, offset: 0 })}
-							className="w-full p-2 rounded-md border border-border-color text-14px"
-						/>
-					</div>
+							<Input
+								type="date"
+								id="startDate"
+								value={filters.start_date}
+								onChange={(e) => setFilters({ ...filters, start_date: e.target.value, offset: 0 })}
+							/>
+						</Label>
 
-					<div className="form-group m-0">
-						<label htmlFor="endDate" className="text-12px mb-1.5">
+						<Label>
 							End Date
-						</label>
-						<input
-							type="date"
-							id="endDate"
-							value={filters.end_date}
-							onChange={(e) => setFilters({ ...filters, end_date: e.target.value, offset: 0 })}
-							className="w-full p-2 rounded-md border border-border-color text-14px"
-						/>
-					</div>
+							<Input
+								type="date"
+								id="endDate"
+								value={filters.end_date}
+								onChange={(e) => setFilters({ ...filters, end_date: e.target.value, offset: 0 })}
+							/>
+						</Label>
 				</div>
 
-				<button
+				<Button
+					variant="secondary"
+					size="sm"
 					onClick={() =>
 						setFilters({
 							provider: "",
@@ -288,95 +295,104 @@ export function WebhookMonitoringPage() {
 							end_date: "",
 						})
 					}
-					className="btn btn-secondary-outline btn-sm"
 				>
 					Clear Filters
-				</button>
-			</div>
-
+				</Button>
+			</CardBody>
+		</Card>
 			{/* Webhooks Table */}
 			{!webhooksQuery.data || webhooksQuery.data.webhooks.length === 0 ? (
-				<div className="card py-16 px-6 text-center">
-					<div className="text-64px mb-4">🪝</div>
-					<h2 className="text-20px font-semibold mb-3 text-text-primary">
-						No webhooks found
-					</h2>
-					<p className="text-14px text-text-tertiary mb-6 max-w-100 mx-auto">
-						Webhooks will appear here as payment providers send events to your webhook endpoints
-					</p>
-				</div>
+				<EmptyState
+					
+					title="No webhooks found"
+					description="Webhooks will appear here as payment providers send events to your webhook endpoints"
+				/>
 			) : (
-				<div className="card p-0 overflow-hidden">
-					<table className="w-full border-collapse">
-						<thead>
-							<tr className="border-b border-border-primary bg-surface-secondary">
-								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wide">
+				<Card className="overflow-hidden">
+					<CardBody className="p-0">
+						<TableContainer>
+							<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>
 									Status
-								</th>
-								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wide">
+								</TableHead>
+								<TableHead>
 									Event Type
-								</th>
-								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wide">
+								</TableHead>
+								<TableHead>
 									Provider
-								</th>
-								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wide">
+								</TableHead>
+								<TableHead>
 									Received
-								</th>
-								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wide">
+								</TableHead>
+								<TableHead>
 									Duration
-								</th>
-								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wide">
+								</TableHead>
+								<TableHead>
 									Retries
-								</th>
-								<th className="px-4 py-3.5 text-right text-12px font-semibold text-text-tertiary uppercase tracking-wide">
+								</TableHead>
+								<TableHead align="right">
 									Actions
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{webhooksQuery.data.webhooks.map((webhook) => (
-								<tr key={webhook.id} className="border-b border-border-primary">
-									<td className="px-4 py-3.5">{handleStatusBadge(webhook.status)}</td>
-									<td className="px-4 py-3.5 text-13px font-mono text-text-secondary">
-										{webhook.event_type}
-									</td>
-									<td className="px-4 py-3.5">{handleProviderBadge(webhook.provider)}</td>
-									<td className="px-4 py-3.5 text-13px text-text-secondary">
-										{new Date(webhook.received_at).toLocaleString()}
-									</td>
-									<td className="px-4 py-3.5 text-13px text-text-secondary font-medium">
-										{webhook.processing_duration_ms ? `${webhook.processing_duration_ms}ms` : "—"}
-									</td>
-									<td className="px-4 py-3.5 text-13px text-text-secondary font-medium">
-										{webhook.retry_count}
-									</td>
-									<td className="px-4 py-3.5 text-right">
-										<button
-											onClick={() => {
-												setSelectedWebhook(webhook.id);
-												setActiveTab("detail");
-											}}
-											className="btn btn-secondary-outline btn-sm"
-										>
-											View
-										</button>
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
+								</TableHead>
+							
+						</TableRow>
+							</TableHeader>
+							<TableBody>
+								{webhooksQuery.data.webhooks.map((webhook) => (
+									<TableRow key={webhook.id} className="hover:bg-accent transition-colors">
+										<TableCell>{handleStatusBadge(webhook.status)}</TableCell>
+										<TableCell>
+											<Text className="font-mono text-sm text-text-secondary">
+												{webhook.event_type}
+											</Text>
+										</TableCell>
+										<TableCell>{handleProviderBadge(webhook.provider)}</TableCell>
+										<TableCell>
+											<Text className="text-text-secondary">
+												{new Date(webhook.received_at).toLocaleString()}
+											</Text>
+										</TableCell>
+										<TableCell>
+											<Text className="text-text-secondary font-medium">
+												{webhook.processing_duration_ms ? `${webhook.processing_duration_ms}ms` : "—"}
+											</Text>
+										</TableCell>
+										<TableCell>
+											<Text className="text-text-secondary font-medium">
+												{webhook.retry_count}
+											</Text>
+										</TableCell>
+										<TableCell align="right">
+											<Button
+												variant="secondary"
+												size="sm"
+												onClick={() => {
+													setSelectedWebhook(webhook.id);
+													setActiveTab("detail");
+												}}
+											>
+												View
+											</Button>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</TableContainer>
+				</CardBody>
+			</Card>
 			)}
 
 			{/* Pagination */}
 			{webhooksQuery.data?.pagination && (
 				<div className="mt-6 flex items-center justify-between">
-					<div className="text-14px text-text-secondary">
+					<Text className="text-text-secondary">
 						Showing {filters.offset + 1} to {Math.min(filters.offset + filters.limit, webhooksQuery.data.pagination.total)} of{" "}
 						{webhooksQuery.data.pagination.total}
-					</div>
+					</Text>
 					<div className="flex gap-2">
-						<button
+						<Button
 							onClick={() =>
 								setFilters({
 									...filters,
@@ -384,11 +400,12 @@ export function WebhookMonitoringPage() {
 								})
 							}
 							disabled={filters.offset === 0}
-							className="btn btn-secondary-outline btn-sm"
+							variant="secondary"
+							size="sm"
 						>
 							Previous
-						</button>
-						<button
+						</Button>
+						<Button
 							onClick={() =>
 								setFilters({
 									...filters,
@@ -396,10 +413,11 @@ export function WebhookMonitoringPage() {
 								})
 							}
 							disabled={!webhooksQuery.data.pagination.hasMore}
-							className="btn btn-secondary-outline btn-sm"
+							variant="secondary"
+							size="sm"
 						>
 							Next
-						</button>
+						</Button>
 					</div>
 				</div>
 			)}

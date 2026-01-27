@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import {
 	Icon,
 	IconType,
@@ -36,8 +35,8 @@ import { ConfirmModal } from "../components/ConfirmModal";
 import { InviteTeamMemberModal } from "../components/InviteTeamMemberModal";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
-import { pingpong } from "../lib/pingpong";
 import {
+	useMe,
 	useCancelInvitation,
 	useProject,
 	useProjectInvitations,
@@ -55,16 +54,8 @@ export function ProjectTeamPage() {
 	const removeMemberMutation = useRemoveTeamMember(projectId || "");
 	const cancelInvitationMutation = useCancelInvitation(projectId || "");
 
-	// Get current user info
-	const { data: currentUser } = useQuery({
-		queryKey: ["admin", "me"],
-		queryFn: async () => {
-			const gatewayUrl = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
-			const res = await pingpong(`${gatewayUrl}/v1/admin/me`, { credentials: "include" });
-			if (!res.ok) throw new Error("Unauthorized");
-			return res.json() as Promise<{ id: string; email?: string; name?: string }>;
-		},
-	});
+	// Get current user info using shared hook
+	const { data: currentUser } = useMe();
 
 	// Find current user's role in this project
 	const currentUserMember = members?.find((m) => m.userId === currentUser?.id);
@@ -82,7 +73,7 @@ export function ProjectTeamPage() {
 	if (projectLoading || membersLoading || invitationsLoading) {
 		return (
 			<div className="flex items-center justify-center min-h-[50vh]">
-				<Spinner size="lg" />
+				<Spinner />
 			</div>
 		);
 	}
@@ -104,11 +95,11 @@ export function ProjectTeamPage() {
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
 					</BreadcrumbItem>
-					<BreadcrumbSeparator />
+					/
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
 					</BreadcrumbItem>
-					<BreadcrumbSeparator />
+					/
 					<BreadcrumbItem>
 						<BreadcrumbButton active>Team</BreadcrumbButton>
 					</BreadcrumbItem>
@@ -118,7 +109,7 @@ export function ProjectTeamPage() {
 			{/* Page Header */}
 			<div className="flex justify-between items-center mb-8">
 				<div>
-					<Heading level={1} size="2xl">Team Members</Heading>
+					<Heading level={1} size="lg">Team Members</Heading>
 					<Text className="text-text-muted mt-2">
 						Manage team members and their roles for {project.name}
 					</Text>

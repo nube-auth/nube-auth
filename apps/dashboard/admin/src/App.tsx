@@ -1,10 +1,10 @@
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { ToastProvider } from "./components/Toast";
 import { Icon, IconType, Button, Heading, useTheme, ThemeToggle } from "@proofa/components";
 import config from "./config";
-import { useLogout } from "./hooks/api";
+import { useLogout, useMe } from "./hooks/api";
 import { DashboardLayout } from "./layouts/DashboardLayout";
 import { AppSidebar } from "./layouts/AppSidebar";
 import { AppApiKeysPage } from "./pages/AppApiKeys";
@@ -36,33 +36,6 @@ import { ProjectTeamPage } from "./pages/ProjectTeam";
 import { pingpong } from "./lib/pingpong";
 
 const queryClient = new QueryClient();
-
-// User auth hook using Proofa client
-function useMe() {
-	return useQuery({
-		queryKey: ["admin", "me"],
-		queryFn: async () => {
-			const gatewayUrl = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
-
-			// 1) Check session status first (mirrors user dashboard flow)
-			const statusRes = await pingpong(`${gatewayUrl}/v1/auth/status?audience=admin`, {
-				credentials: "include",
-			});
-			if (!statusRes.ok) throw new Error("Unauthorized");
-			const status = (await statusRes.json()) as { loggedIn?: boolean };
-			if (!status.loggedIn) throw new Error("Unauthorized");
-
-			// 2) Then fetch admin profile
-			const res = await pingpong(`${gatewayUrl}/v1/admin/me`, { credentials: "include" });
-			if (!res.ok) throw new Error("Unauthorized");
-			return res.json() as Promise<{ id: string; email?: string; name?: string; primary_email?: string }>;
-		},
-		retry: false,
-		refetchOnWindowFocus: false,
-		refetchOnMount: false,
-		staleTime: Number.POSITIVE_INFINITY,
-	});
-}
 
 // Theme wrapper to apply theme globally to all routes
 function ThemeWrapper({ children }: { children: React.ReactNode }) {

@@ -1,23 +1,41 @@
 import { useLicenses } from "../hooks/api";
-import {Icon, IconType} from "@proofa/components";;
+import {
+	Icon,
+	IconType,
+	Spinner,
+	Alert,
+	Heading,
+	Text,
+	Card,
+	CardBody,
+	Badge,
+	Table,
+	TableContainer,
+	TableHeader,
+	TableHead,
+	TableBody,
+	TableRow,
+	TableCell,
+	EmptyState,
+} from "@proofa/components";
 
 export function LicensesPage() {
 	const { data: licenses, isLoading, error } = useLicenses();
 
 	if (isLoading) {
 		return (
-			<div className="loading">
-				<div className="spinner" />
+			<div className="flex items-center justify-center min-h-screen">
+				<Spinner />
 			</div>
 		);
 	}
 
 	if (error) {
 		return (
-			<div className="alert alert-danger">
+			<Alert variant="danger">
 				<Icon icon={IconType.AlertCircle} size={20} bold className="text-danger" />
-				<span>Error loading licenses. Please try again.</span>
-			</div>
+				Error loading licenses. Please try again.
+			</Alert>
 		);
 	}
 
@@ -26,8 +44,8 @@ export function LicensesPage() {
 			{/* Page Header */}
 			<div className="page-header">
 				<div>
-					<h1 className="page-title">Licenses</h1>
-					<p className="page-description">View and manage your license keys</p>
+					<Heading level={1} size="lg">Licenses</Heading>
+					<Text className="text-text-secondary mt-2">View and manage your license keys</Text>
 				</div>
 			</div>
 
@@ -52,58 +70,60 @@ export function LicensesPage() {
 			</div>
 
 			{/* Licenses Table */}
-			<div className="card">
-				<div className="card-header">
-					<h2 className="font-semibold text-text-primary">All Licenses</h2>
-					<p className="text-sm text-text-secondary mt-0.5">Your registered license keys and their status</p>
-				</div>
+			<Card>
+					<CardBody>
+						<div className="mb-6">
+							<Heading level={2} size="md" className="mb-1">All Licenses</Heading>
+							<Text className="text-text-secondary">Your registered license keys and their status</Text>
+						</div>
 
-				{licenses && licenses.length > 0 ? (
-					<div className="table-container border-0">
-						<table>
-							<thead>
-								<tr>
-									<th>License ID</th>
-									<th>App</th>
-									<th>Plan</th>
-									<th>Status</th>
-									<th>Valid Until</th>
-								</tr>
-							</thead>
-							<tbody>
+						{licenses && licenses.length > 0 ? (
+							<TableContainer>
+								<Table>
+									<TableHeader>
+										<TableRow>
+											<TableHead>License ID</TableHead>
+											<TableHead>App</TableHead>
+											<TableHead>Plan</TableHead>
+											<TableHead>Status</TableHead>
+											<TableHead>Valid Until</TableHead>
+										</TableRow>
+									</TableHeader>
+									<TableBody>
 								{licenses.map((license) => {
 									const isActive = license.status === "active" || license.status !== "expired";
 									const expiryDate = license.validUntil;
 									const isExpired = expiryDate && new Date(expiryDate) < new Date();
 
 									return (
-										<tr key={license.id}>
-											<td>
+										<TableRow key={license.id} className="hover:bg-accent transition-colors">
+											<TableCell>
 												<div className="flex items-center gap-3">
 													<div className="w-8 h-8 bg-warning-bg rounded-lg flex items-center justify-center">
 														<Icon icon={IconType.Ticket} size={16} className="text-warning" />
-													</div>
-													<span className="code-inline">{license.id}</span>
 												</div>
-											</td>
-											<td>
-												<span className="text-text-secondary">{license.appId || "—"}</span>
-											</td>
-											<td>
-												<span className="badge badge-info capitalize">
-													{license.plan || "Standard"}
-												</span>
-											</td>
-											<td>
+												<Text className="font-mono text-sm">{license.id}</Text>
+											</div>
+											</TableCell>
+											<TableCell>
+												<Text className="text-text-secondary">{license.appId || "—"}</Text>
+											</TableCell>
+											<TableCell>
+											<Badge variant="info" className="capitalize">
+												{license.plan || "Standard"}
+											</Badge>
+											</TableCell>
+											<TableCell>
 												{isExpired ? (
-													<span className="badge badge-danger">Expired</span>
+													<Badge variant="danger">Expired</Badge>
 												) : isActive ? (
-													<span className="badge badge-success">Active</span>
+													<Badge variant="success">Active</Badge>
 												) : (
-													<span className="badge badge-warning">Inactive</span>
+													<Badge variant="warning">Inactive</Badge>
 												)}
-											</td>
-											<td className="text-text-secondary">
+											</TableCell>
+											<TableCell>
+											<Text className="text-text-secondary">
 												{expiryDate
 													? new Date(expiryDate).toLocaleDateString("en-US", {
 															year: "numeric",
@@ -111,25 +131,22 @@ export function LicensesPage() {
 															day: "numeric",
 														})
 													: "—"}
-											</td>
-										</tr>
+											</Text>
+											</TableCell>
+										</TableRow>
 									);
 								})}
-							</tbody>
-						</table>
-					</div>
+							</TableBody>
+						</Table>
+					</TableContainer>
 				) : (
-					<div className="empty-state">
-						<div className="empty-state-icon">
-							<Icon icon={IconType.License} size={40} className="text-text-tertiary" />
-						</div>
-						<h3 className="empty-state-title">No licenses found</h3>
-						<p className="empty-state-description">
-							You don't have any licenses yet. Licenses are created when you set up billing for your apps.
-						</p>
-					</div>
+					<EmptyState
+						title="No licenses found"
+						description="You don't have any licenses yet. Licenses are created when you set up billing for your apps."
+					/>
 				)}
-			</div>
-		</div>
-	);
+			</CardBody>
+		</Card>
+	</div>
+);
 }

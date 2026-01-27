@@ -1,6 +1,17 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useApp, useProject } from "../hooks/api";
+import {
+Spinner,
+Alert,
+Heading,
+Text,
+Button,
+Card,
+CardBody,
+Label,
+Input
+} from "@proofa/components";
 
 type Tab = "quickstart" | "react" | "nextjs" | "javascript" | "backend";
 
@@ -23,14 +34,14 @@ export function AppDevelopersPage() {
 
 	if (projectLoading || appLoading) {
 		return (
-			<div className="loading">
-				<div className="spinner" />
+			<div className="flex items-center justify-center min-h-[400px]">
+				<Spinner />
 			</div>
 		);
 	}
 
 	if (!project || !app) {
-		return <div className="error-state">Project or App not found</div>;
+		return <Alert variant="danger">Project or App not found</Alert>;
 	}
 
 	const tabs: { id: Tab; label: string }[] = [
@@ -72,24 +83,24 @@ export function AppDevelopersPage() {
 
 			{/* Page Header */}
 			<div className="mb-8">
-				<h1 className="text-24px font-bold mb-2">Integration Guide</h1>
-				<p className="text-14px text-text-tertiary">
+				<Heading level={1} size="lg" className="text-24px font-bold mb-2">Integration Guide</Heading>
+				<Text className="text-14px text-text-tertiary">
 					Learn how to integrate Proofa authentication into your application
-				</p>
+				</Text>
 			</div>
 
 			{/* Tabs */}
 			<div className="border-b border-border-primary mb-8">
 				<div className="flex gap-8">
 					{tabs.map((tab) => (
-						<button
+						<Button
 							key={tab.id}
 							type="button"
 							onClick={() => setActiveTab(tab.id)}
 							className={`py-3 text-14px font-semibold bg-transparent border-none border-b-2 cursor-pointer transition-all duration-200 ${activeTab === tab.id ? "text-primary border-b-primary" : "text-text-tertiary border-b-transparent"}`}
 						>
 							{tab.label}
-						</button>
+						</Button>
 					))}
 				</div>
 			</div>
@@ -99,12 +110,10 @@ export function AppDevelopersPage() {
 				{/* Quick Start */}
 				{activeTab === "quickstart" && (
 					<div>
-						<h2 className="text-20px font-bold mb-4">Quick Start</h2>
-						<p
-							className="text-14px text-text-secondary mb-6 leading-relaxed"
-						>
+						<Heading level={2} size="lg" className="text-20px font-bold mb-4">Quick Start</Heading>
+<Text className="text-14px text-text-secondary mb-6 leading-relaxed">
 							Get started with Proofa in 5 minutes. This guide will walk you through the basic setup.
-						</p>
+						</Text>
 
 						{/* Step 1 */}
 						<div className="card p-6 mb-4">
@@ -114,7 +123,7 @@ export function AppDevelopersPage() {
 								>
 									1
 								</div>
-								<h3 className="text-16px font-semibold">Install the Proofa SDK</h3>
+								<Heading level={3} size="md" className="text-16px font-semibold">Install the Proofa SDK</Heading>
 							</div>
 							<div className="relative">
 								<pre
@@ -122,13 +131,13 @@ export function AppDevelopersPage() {
 								>
 									<code className="text-code-text">npm install @proofa/react</code>
 								</pre>
-								<button
+								<Button
 									type="button"
 									onClick={() => handleCopy("npm install @proofa/react")}
 									className="absolute top-3 right-3 py-1.5 px-3 text-12px bg-white/10 text-white border border-white/20 rounded-md cursor-pointer"
 								>
 									{copied ? "✓ Copied" : "Copy"}
-								</button>
+								</Button>
 							</div>
 						</div>
 
@@ -140,11 +149,11 @@ export function AppDevelopersPage() {
 								>
 									2
 								</div>
-								<h3 className="text-16px font-semibold">Get your App ID</h3>
+								<Heading level={3} size="md" className="text-16px font-semibold">Get your App ID</Heading>
 							</div>
-							<p className="text-14px text-text-secondary mb-3">
+							<Text className="text-14px text-text-secondary mb-3">
 								Your App ID is:
-							</p>
+							</Text>
 							<code
 								className="block py-3 px-4 bg-surface-secondary rounded-lg text-14px font-mono text-text-primary"
 							>
@@ -160,9 +169,9 @@ export function AppDevelopersPage() {
 								>
 									3
 								</div>
-								<h3 className="text-16px font-semibold">
+								<Heading level={3} size="md" className="text-16px font-semibold">
 									Wrap your app with ProofaProvider
-								</h3>
+								</Heading>
 							</div>
 							<div className="relative">
 								<pre
@@ -189,7 +198,7 @@ function App() {
 								>
 									4
 								</div>
-								<h3 className="text-16px font-semibold">Use the auth hook</h3>
+								<Heading level={3} size="md" className="text-16px font-semibold">Use the auth hook</Heading>
 							</div>
 							<div className="relative">
 								<pre
@@ -201,13 +210,13 @@ function YourComponent() {
   const { user, isAuthenticated, login, logout } = useAuth();
 
   if (!isAuthenticated) {
-    return <button onClick={() => login('google')}>Sign in</button>;
+    return <Button onClick={() => login('google')}>Sign in</Button>;
   }
 
   return (
     <div>
-      <p>Welcome, {user.name}!</p>
-      <button onClick={logout}>Sign out</button>
+      <Text>Welcome, {user.name}!</Text>
+      <Button onClick={logout}>Sign out</Button>
     </div>
   );
 }`}</code>
@@ -219,7 +228,7 @@ function YourComponent() {
 						<div
 							className="mt-8 p-5 bg-surface-secondary rounded-lg border border-border-primary"
 						>
-							<h3 className="text-16px font-semibold mb-3">Next Steps</h3>
+							<Heading level={3} size="md" className="text-16px font-semibold mb-3">Next Steps</Heading>
 							<ul
 								className="m-0 pl-5 text-14px text-text-secondary leading-loose"
 							>
@@ -243,15 +252,15 @@ function YourComponent() {
 				{/* React Tab */}
 				{activeTab === "react" && (
 					<div>
-						<h2 className="text-20px font-bold mb-4">React Integration</h2>
-						<p
+						<Heading level={2} size="lg" className="text-20px font-bold mb-4">React Integration</Heading>
+						<Text
 							className="text-14px text-text-secondary mb-6 leading-relaxed"
 						>
 							Complete guide for integrating Proofa into your React application.
-						</p>
+						</Text>
 
 						<div className="card p-6 mb-4">
-							<h3 className="text-16px font-semibold mb-3">Installation</h3>
+							<Heading level={3} size="md" className="text-16px font-semibold mb-3">Installation</Heading>
 							<pre
 								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0"
 							>
@@ -260,12 +269,12 @@ function YourComponent() {
 						</div>
 
 						<div className="card p-6 mb-4">
-							<h3 className="text-16px font-semibold mb-3">
+							<Heading level={3} size="md" className="text-16px font-semibold mb-3">
 								Setup Provider
-							</h3>
-							<p className="text-14px text-text-secondary mb-3">
+							</Heading>
+							<Text className="text-14px text-text-secondary mb-3">
 								Wrap your root component with the ProofaProvider:
-							</p>
+							</Text>
 							<pre
 								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
@@ -290,10 +299,10 @@ export default App;`}</code>
 						</div>
 
 						<div className="card p-6 mb-4">
-							<h3 className="text-16px font-semibold mb-3">useAuth Hook</h3>
-							<p className="text-14px text-text-secondary mb-3">
+							<Heading level={3} size="md" className="text-16px font-semibold mb-3">useAuth Hook</Heading>
+							<Text className="text-14px text-text-secondary mb-3">
 								Access authentication state and methods:
-							</p>
+							</Text>
 							<pre
 								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
@@ -315,22 +324,22 @@ function Dashboard() {
   if (!isAuthenticated) {
     return (
       <div>
-        <button onClick={() => login('google')}>
+        <Button onClick={() => login('google')}>
           Sign in with Google
-        </button>
-        <button onClick={() => login('github')}>
+        </Button>
+        <Button onClick={() => login('github')}>
           Sign in with GitHub
-        </button>
+        </Button>
       </div>
     );
   }
 
   return (
     <div>
-      <h1>Welcome, {user.name}!</h1>
+      <Heading level={1} size="lg">Welcome, {user.name}!</Heading>
       <img src={user.avatar} alt={user.name} />
-      <p>{user.email}</p>
-      <button onClick={logout}>Sign out</button>
+      <Text>{user.email}</Text>
+      <Button onClick={logout}>Sign out</Button>
     </div>
   );
 }`}</code>
@@ -338,12 +347,12 @@ function Dashboard() {
 						</div>
 
 						<div className="card p-6">
-							<h3 className="text-16px font-semibold mb-3">
+							<Heading level={3} size="md" className="text-16px font-semibold mb-3">
 								Protected Routes
-							</h3>
-							<p className="text-14px text-text-secondary mb-3">
+							</Heading>
+							<Text className="text-14px text-text-secondary mb-3">
 								Create a component to protect routes:
-							</p>
+							</Text>
 							<pre
 								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
@@ -378,17 +387,17 @@ function ProtectedRoute({ children }) {
 				{/* Next.js Tab */}
 				{activeTab === "nextjs" && (
 					<div>
-						<h2 className="text-20px font-bold mb-4">
+						<Heading level={2} size="lg" className="text-20px font-bold mb-4">
 							Next.js Integration
-						</h2>
-						<p
+						</Heading>
+						<Text
 							className="text-14px text-text-secondary mb-6 leading-relaxed"
 						>
 							Complete guide for integrating Proofa into your Next.js application (App Router).
-						</p>
+						</Text>
 
 						<div className="card p-6 mb-4">
-							<h3 className="text-16px font-semibold mb-3">Installation</h3>
+							<Heading level={3} size="md" className="text-16px font-semibold mb-3">Installation</Heading>
 							<pre
 								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0"
 							>
@@ -397,9 +406,9 @@ function ProtectedRoute({ children }) {
 						</div>
 
 						<div className="card p-6 mb-4">
-							<h3 className="text-16px font-semibold mb-3">
+							<Heading level={3} size="md" className="text-16px font-semibold mb-3">
 								Setup Provider (app/layout.tsx)
-							</h3>
+							</Heading>
 							<pre
 								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
@@ -425,9 +434,9 @@ export default function RootLayout({ children }) {
 						</div>
 
 						<div className="card p-6 mb-4">
-							<h3 className="text-16px font-semibold mb-3">
+							<Heading level={3} size="md" className="text-16px font-semibold mb-3">
 								Client Component
-							</h3>
+							</Heading>
 							<pre
 								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
@@ -439,13 +448,13 @@ export default function Dashboard() {
   const { user, isAuthenticated, login, logout } = useAuth();
 
   if (!isAuthenticated) {
-    return <button onClick={() => login('google')}>Sign in</button>;
+    return <Button onClick={() => login('google')}>Sign in</Button>;
   }
 
   return (
     <div>
-      <h1>Welcome, {user.name}!</h1>
-      <button onClick={logout}>Sign out</button>
+      <Heading level={1} size="lg">Welcome, {user.name}!</Heading>
+      <Button onClick={logout}>Sign out</Button>
     </div>
   );
 }`}</code>
@@ -453,12 +462,12 @@ export default function Dashboard() {
 						</div>
 
 						<div className="card p-6">
-							<h3 className="text-16px font-semibold mb-3">
+							<Heading level={3} size="md" className="text-16px font-semibold mb-3">
 								Server-Side Verification
-							</h3>
-							<p className="text-14px text-text-secondary mb-3">
+							</Heading>
+							<Text className="text-14px text-text-secondary mb-3">
 								Verify sessions in Server Components or API Routes:
-							</p>
+							</Text>
 							<pre
 								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
@@ -485,17 +494,17 @@ export async function GET(request: Request) {
 				{/* JavaScript Tab */}
 				{activeTab === "javascript" && (
 					<div>
-						<h2 className="text-20px font-bold mb-4">
+						<Heading level={2} size="lg" className="text-20px font-bold mb-4">
 							Vanilla JavaScript
-						</h2>
-						<p
+						</Heading>
+						<Text
 							className="text-14px text-text-secondary mb-6 leading-relaxed"
 						>
 							Use Proofa without any framework.
-						</p>
+						</Text>
 
 						<div className="card p-6 mb-4">
-							<h3 className="text-16px font-semibold mb-3">Installation</h3>
+							<Heading level={3} size="md" className="text-16px font-semibold mb-3">Installation</Heading>
 							<pre
 								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0"
 							>
@@ -504,9 +513,9 @@ export async function GET(request: Request) {
 						</div>
 
 						<div className="card p-6 mb-4">
-							<h3 className="text-16px font-semibold mb-3">
+							<Heading level={3} size="md" className="text-16px font-semibold mb-3">
 								Initialize Client
-							</h3>
+							</Heading>
 							<pre
 								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
@@ -545,7 +554,7 @@ checkAuth();`}</code>
 						</div>
 
 						<div className="card p-6">
-							<h3 className="text-16px font-semibold mb-3">HTML Example</h3>
+							<Heading level={3} size="md" className="text-16px font-semibold mb-3">HTML Example</Heading>
 							<pre
 								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
@@ -556,10 +565,10 @@ checkAuth();`}</code>
 </head>
 <body>
   <div id="app">
-    <button id="google-login">Sign in with Google</button>
+    <Button id="google-login">Sign in with Google</Button>
     <div id="user-profile" style="display: none;">
-      <h2>Welcome, <span id="user-name"></span>!</h2>
-      <button id="logout">Sign out</button>
+      <Heading level={2} size="lg">Welcome, <span id="user-name"></span>!</Heading>
+      <Button id="logout">Sign out</Button>
     </div>
   </div>
 
@@ -574,19 +583,19 @@ checkAuth();`}</code>
 				{/* Backend Tab */}
 				{activeTab === "backend" && (
 					<div>
-						<h2 className="text-20px font-bold mb-4">
+						<Heading level={2} size="lg" className="text-20px font-bold mb-4">
 							Backend Verification
-						</h2>
-						<p
+						</Heading>
+						<Text
 							className="text-14px text-text-secondary mb-6 leading-relaxed"
 						>
 							Verify user sessions and protect your API endpoints.
-						</p>
+						</Text>
 
 						<div className="card p-6 mb-4">
-							<h3 className="text-16px font-semibold mb-3">
+							<Heading level={3} size="md" className="text-16px font-semibold mb-3">
 								Node.js/Express
-							</h3>
+							</Heading>
 							<pre
 								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
@@ -619,7 +628,7 @@ app.get('/api/protected', requireAuth, (req, res) => {
 						</div>
 
 						<div className="card p-6 mb-4">
-							<h3 className="text-16px font-semibold mb-3">Python/Flask</h3>
+							<Heading level={3} size="md" className="text-16px font-semibold mb-3">Python/Flask</Heading>
 							<pre
 								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>
@@ -662,10 +671,10 @@ def protected_route():
 						</div>
 
 						<div className="card p-6">
-							<h3 className="text-16px font-semibold mb-3">API Keys</h3>
-							<p className="text-14px text-text-secondary mb-3">
+							<Heading level={3} size="md" className="text-16px font-semibold mb-3">API Keys</Heading>
+							<Text className="text-14px text-text-secondary mb-3">
 								For server-to-server communication, use your Service Token:
-							</p>
+							</Text>
 							<pre
 								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
 							>

@@ -1,3 +1,4 @@
+import { Heading, Text, Card, CardBody, Button, Alert, Badge, Label } from "@proofa/components";
 import { useState } from "react";
 import { useBillingTransactions } from "../hooks/api";
 import { useToast } from "../components/Toast";
@@ -136,13 +137,13 @@ export function TransactionExportPage() {
 	return (
 		<div>
 			<div className="mb-6">
-				<h1 className="m-0 mb-2">Transaction Export</h1>
-				<p className="m-0 text-text-secondary">Export and analyze transaction history in CSV or JSON format</p>
+				<Heading level={1} size="lg">Transaction Export</Heading>
+				<Text className="m-0 text-text-secondary">Export and analyze transaction history in CSV or JSON format</Text>
 			</div>
 
 			{/* Export Controls */}
-			<div className="card mb-6 p-6">
-				<h3 className="mt-0 mb-5 text-base">Export Settings</h3>
+			<Card><CardBody className="mb-6 p-6">
+				<Heading level={3} size="md" className="mb-5">Export Settings</Heading>
 
 				{/* Format Selection */}
 				<div className="mb-6">
@@ -258,7 +259,7 @@ export function TransactionExportPage() {
 				</div>
 
 				<div className="flex gap-2 mb-5">
-					<button
+					<Button
 						onClick={() =>
 							setFilters({
 								type: "",
@@ -273,7 +274,7 @@ export function TransactionExportPage() {
 						className="btn btn-secondary-outline btn-sm"
 					>
 						Clear Filters
-					</button>
+					</Button>
 				</div>
 
 				<div className="h-px bg-border-primary mb-5" />
@@ -305,14 +306,14 @@ export function TransactionExportPage() {
 				)}
 
 				{/* Export Button */}
-				<button
+				<Button
 					onClick={handleExport}
 					disabled={isExporting || !transactionsQuery.data || transactionsQuery.data.data.length === 0}
 					className="btn btn-primary w-full"
 				>
 					{isExporting ? "Exporting..." : `↓ Export ${transactionsQuery.data?.data?.length || 0} Transactions as ${exportFormat.toUpperCase()}`}
-				</button>
-			</div>
+				</Button>
+			</CardBody></Card>
 
 			{/* Preview Table */}
 			<div className="card">
@@ -326,9 +327,9 @@ export function TransactionExportPage() {
 						<h2 className="text-lg font-semibold mb-2 text-text-primary">
 							No transactions found
 						</h2>
-						<p className="text-sm text-text-tertiary">
+						<Text className="text-sm text-text-tertiary">
 							Adjust your filters to find transactions to export
-						</p>
+						</Text>
 					</div>
 				) : (
 					<div className="overflow-x-auto">

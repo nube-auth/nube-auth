@@ -1,6 +1,29 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import {Icon, IconType} from "@proofa/components";;
+import {
+	Icon,
+	IconType,
+	Spinner,
+	Alert,
+	Heading,
+	Text,
+	Button,
+	Card,
+	CardBody,
+	EmptyState,
+	Breadcrumb,
+	BreadcrumbList,
+	BreadcrumbItem,
+	BreadcrumbButton,
+	BreadcrumbSeparator,
+	Table,
+	TableContainer,
+	TableHeader,
+	TableHead,
+	TableBody,
+	TableRow,
+	TableCell
+} from "@proofa/components";
 import { useProject, useProjectApps } from "../hooks/api";
 
 type ViewMode = "grid" | "table";
@@ -14,43 +37,42 @@ export function ProjectAppsPage() {
 
 	if (projectLoading || appsLoading) {
 		return (
-			<div className="loading">
-				<div className="spinner" />
+			<div className="flex items-center justify-center min-h-screen">
+				<Spinner />
 			</div>
 		);
 	}
 
 	if (!project) {
-		return <div className="error-state">Project not found</div>;
+		return <Alert variant="danger">Project not found</Alert>;
 	}
 
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
-			<div className="mb-6">
-				<div className="breadcrumbs">
-					<Link to="/projects" className="breadcrumb-item">
-						Projects
-					</Link>
-					<span>›</span>
-					<Link
-						to={`/projects/${projectId}`}
-						className="breadcrumb-item"
-					>
-						{project.name}
-					</Link>
-					<span>›</span>
-					<span className="breadcrumb-current">Apps</span>
-				</div>
-			</div>
+			<Breadcrumb className="mb-6">
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
+					</BreadcrumbItem>
+					/
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+					/
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Apps</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
 
 			{/* Page Header */}
 			<div className="flex justify-between items-center mb-8">
 				<div>
-					<h1 className="text-24px font-bold mb-2">Applications</h1>
-					<p className="text-14px text-text-tertiary">
+					<Heading level={1} size="lg" className="mb-2">Applications</Heading>
+					<Text className="text-text-tertiary">
 						{apps?.length || 0} {apps?.length === 1 ? "app" : "apps"} in {project.name}
-					</p>
+					</Text>
 				</div>
 				<div className="flex gap-3 items-center">
 					{/* View Mode Toggle */}
@@ -77,159 +99,138 @@ export function ProjectAppsPage() {
 						</button>
 					</div>
 
-					<button
-						type="button"
+					<Button
+						variant="primary"
 						onClick={() => navigate(`/projects/${projectId}/apps/new`)}
-						className="btn btn-primary"
 					>
 						+ New App
-					</button>
+					</Button>
 				</div>
 			</div>
 
 			{/* Apps Content */}
 			{!apps || apps.length === 0 ? (
-				<div className="card py-16 px-6 text-center">
-					<div className="text-6xl mb-4">📱</div>
-					<h2 className="text-20px font-semibold mb-3 text-text-primary">
-						No apps yet
-					</h2>
-					<p className="text-14px text-text-tertiary mb-6 max-w-sm mx-auto">
-						Get started by creating your first application in this project
-					</p>
-					<button
-						type="button"
+				<EmptyState
+					
+					title="No apps yet"
+					description="Get started by creating your first application in this project"
+				>
+					<Button
+						variant="primary"
 						onClick={() => navigate(`/projects/${projectId}/apps/new`)}
-						className="btn btn-primary"
 					>
 						Create First App
-					</button>
-				</div>
+					</Button>
+				</EmptyState>
 			) : viewMode === "grid" ? (
 				<div className="grid gap-5 grid-cols-auto-fill-320">
 					{apps.map((app) => (
-						<div
+						<Card
 							key={app.id}
-							className="card p-6 cursor-pointer transition-all border border-border"
+							className="cursor-pointer transition-all border border-border hover:border-primary hover:-translate-y-0.5"
 							onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.borderColor = "var(--primary)";
-								e.currentTarget.style.transform = "translateY(-2px)";
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.borderColor = "var(--card-border)";
-								e.currentTarget.style.transform = "translateY(0)";
-							}}
 						>
-							<div className="flex items-start gap-4 mb-4">
-								<div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary-light to-purple-200">
-									<Icon icon={IconType.Key} size={24} className="text-primary" />
+							<CardBody>
+								<div className="flex items-start gap-4 mb-4">
+									<div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary-light to-purple-200">
+										<Icon icon={IconType.Key} size={24} className="text-primary" />
+									</div>
+									<div className="flex-1 min-w-0">
+										<Heading level={3} size="md" className="mb-1 overflow-hidden text-ellipsis whitespace-nowrap">
+											{app.name}
+										</Heading>
+										<Text className="text-text-tertiary overflow-hidden text-ellipsis whitespace-nowrap">
+											{app.slug}
+										</Text>
+									</div>
 								</div>
-							<div className="flex-1 min-w-0">
-								<h3 className="text-16px font-semibold mb-1 text-text-primary overflow-hidden text-ellipsis whitespace-nowrap">
-										{app.name}
-									</h3>
-									<p className="text-13px text-text-tertiary overflow-hidden text-ellipsis whitespace-nowrap">
-										{app.slug}
-									</p>
-								</div>
-							</div>
 
-							{app.description && (
-								<p className="text-14px text-text-secondary mb-4 leading-1.5 line-clamp-2">
-									{app.description}
-								</p>
-							)}
+								{app.description && (
+									<Text className="text-text-secondary mb-4 leading-1.5 line-clamp-2">
+										{app.description}
+									</Text>
+								)}
 
-							<div className="flex gap-4 pt-4 border-t border-border text-13px">
-								<div>
-									<span className="text-text-tertiary">Users: </span>
-									<span className="text-text-primary font-semibold">0</span>
+								<div className="flex gap-4 pt-4 border-t border-border">
+									<Text>
+										<span className="text-text-tertiary">Users: </span>
+										<span className="text-text-primary font-semibold">0</span>
+									</Text>
+									<Text>
+										<span className="text-text-tertiary">Licenses: </span>
+										<span className="text-text-primary font-semibold">0</span>
+									</Text>
 								</div>
-								<div>
-									<span className="text-text-tertiary">Licenses: </span>
-									<span className="text-text-primary font-semibold">0</span>
-								</div>
-							</div>
-						</div>
+							</CardBody>
+						</Card>
 					))}
 				</div>
 			) : (
-				<div className="card p-0 overflow-hidden">
-					<table className="w-full border-collapse">
-						<thead>
-							<tr className="border-b border-border bg-bg-muted">
-								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wider">
-									Application
-								</th>
-								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wider">
-									Users
-								</th>
-								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wide">
-									Licenses
-								</th>
-								<th className="px-4 py-3.5 text-left text-12px font-semibold text-text-tertiary uppercase tracking-wide">
-									Created
-								</th>
-								<th className="px-4 py-3.5 text-right text-12px font-semibold text-text-tertiary uppercase tracking-wide">
-									Actions
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{apps.map((app) => (
-								<tr
-									key={app.id}
-									className="border-b border-border cursor-pointer hover:bg-bg-hover"
-									onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
-									onMouseEnter={(e) => {
-										e.currentTarget.style.background = "var(--surface-secondary)";
-									}}
-									onMouseLeave={(e) => {
-										e.currentTarget.style.background = "transparent";
-									}}
-								>
-								<td className="px-4 py-3.5">
-									<div className="flex items-center gap-3">
-										<div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary-light to-purple-200">
-											<Icon icon={IconType.Key} size={20} className="text-primary" />
-											</div>
-											<div>
-												<div className="text-14px font-medium text-text-primary">
-													{app.name}
-												</div>
-											<div className="text-13px text-text-secondary">
-													{app.slug}
-												</div>
-											</div>
-										</div>
-									</td>
-									<td className="px-4 py-3.5 text-14px text-text-secondary">
-										0
-									</td>
-									<td className="px-4 py-3.5 text-14px text-text-secondary">
-										0
-									</td>
-									<td className="px-4 py-3.5 text-14px text-text-secondary">
-										{new Date(app.createdAt).toLocaleDateString()}
-									</td>
-									<td className="px-4 py-3.5 text-right">
-										<button
-											type="button"
-											onClick={(e) => {
-												e.stopPropagation();
-												navigate(`/projects/${projectId}/apps/${app.id}/settings`);
-											}}
-											className="btn btn-secondary-outline btn-sm"
+				<Card className="overflow-hidden">
+					<CardBody className="p-0">
+						<TableContainer>
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>Application</TableHead>
+										<TableHead>Users</TableHead>
+										<TableHead>Licenses</TableHead>
+										<TableHead>Created</TableHead>
+										<TableHead align="right">Actions</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{apps.map((app) => (
+										<TableRow
+											key={app.id}
+											className="cursor-pointer hover:bg-accent transition-colors"
+											onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
 										>
-											Settings
-										</button>
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
+											<TableCell>
+												<div className="flex items-center gap-3">
+													<div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary-light to-purple-200">
+														<Icon icon={IconType.Key} size={20} className="text-primary" />
+													</div>
+													<div>
+														<Text className="font-medium text-text-primary">
+															{app.name}
+														</Text>
+														<Text className="text-text-secondary">
+															{app.slug}
+														</Text>
+													</div>
+												</div>
+											</TableCell>
+											<TableCell>
+												<Text className="text-text-secondary">0</Text>
+											</TableCell>
+											<TableCell>
+												<Text className="text-text-secondary">0</Text>
+											</TableCell>
+											<TableCell>
+												<Text className="text-text-secondary">
+													{new Date(app.createdAt).toLocaleDateString()}
+												</Text>
+											</TableCell>
+											<TableCell align="right">
+												<Button
+													size="sm"
+													variant="secondary"
+													onClick={(e) => {
+														e.stopPropagation();
+														navigate(`/projects/${projectId}/apps/${app.id}/settings`);
+													}}
+												>
+													Settings
+												</Button>
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						</TableContainer>
+					</CardBody>
+				</Card>
 			)}
 		</div>
 	);

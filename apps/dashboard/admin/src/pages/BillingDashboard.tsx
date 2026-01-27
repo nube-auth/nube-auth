@@ -120,14 +120,14 @@ export function BillingDashboardPage() {
 					<div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-5 mb-8">
 						<Card>
 							<CardBody>
-								<Text size="sm" className="text-text-muted mb-2 font-semibold uppercase tracking-wider">
+								<Text className="text-text-muted mb-2 font-semibold uppercase tracking-wider">
 									Total Revenue
 								</Text>
-								<Heading size="xl" className="mb-0">
+								<Heading size="lg" className="mb-0">
 									{formatCurrency(stats?.revenue.total || 0)}
 								</Heading>
 								{stats?.transactions.total && (
-									<Text size="sm" className="text-text-muted mt-2">
+									<Text className="text-text-muted mt-2">
 										{stats.transactions.total} transactions
 									</Text>
 								)}
@@ -136,14 +136,14 @@ export function BillingDashboardPage() {
 
 						<Card>
 							<CardBody>
-								<Text size="sm" className="text-text-muted mb-2 font-semibold uppercase tracking-wider">
+								<Text className="text-text-muted mb-2 font-semibold uppercase tracking-wider">
 									Refunds
 								</Text>
-								<Heading size="xl" className="mb-0 text-danger">
+								<Heading size="lg" className="mb-0 text-danger">
 									{formatCurrency(stats?.refunds.total || 0)}
 								</Heading>
 								{stats?.refunds.percentage && (
-									<Text size="sm" className="text-text-muted mt-2">
+									<Text className="text-text-muted mt-2">
 										{stats.refunds.percentage.toFixed(2)}% of revenue
 									</Text>
 								)}
@@ -152,10 +152,10 @@ export function BillingDashboardPage() {
 
 						<Card>
 							<CardBody>
-								<Text size="sm" className="text-text-muted mb-2 font-semibold uppercase tracking-wider">
+								<Text className="text-text-muted mb-2 font-semibold uppercase tracking-wider">
 									Active Subscriptions
 								</Text>
-								<Heading size="xl" className="mb-0">
+								<Heading size="lg" className="mb-0">
 									{stats?.subscriptions.active || 0}
 								</Heading>
 							</CardBody>
@@ -163,14 +163,14 @@ export function BillingDashboardPage() {
 
 						<Card>
 							<CardBody>
-								<Text size="sm" className="text-text-muted mb-2 font-semibold uppercase tracking-wider">
+								<Text className="text-text-muted mb-2 font-semibold uppercase tracking-wider">
 									Webhook Health
 								</Text>
-								<Heading size="xl" className="mb-0">
+								<Heading size="lg" className="mb-0">
 									{stats?.webhooks?.success ?? 0}
 								</Heading>
 								{(stats?.webhooks?.failed ?? 0) > 0 && (
-									<Text size="sm" className="text-danger mt-2">
+									<Text className="text-danger mt-2">
 										{stats?.webhooks?.failed} failed
 									</Text>
 								)}
@@ -185,9 +185,9 @@ export function BillingDashboardPage() {
 								<Heading size="sm" className="mb-5">Revenue by Provider</Heading>
 								<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
 									{Object.entries(stats.revenue.by_provider).map(([provider, amount]) => (
-										<Card key={provider} variant="subtle">
+										<Card key={provider}>
 											<CardBody>
-												<Text size="sm" className="text-text-muted mb-2 font-medium capitalize">
+												<Text className="text-text-muted mb-2 font-medium capitalize">
 													{provider === "lemon_squeezy"
 														? "LemonSqueezy"
 														: provider === "paddle"
@@ -212,9 +212,9 @@ export function BillingDashboardPage() {
 								<Heading size="sm" className="mb-5">Revenue by Type</Heading>
 								<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
 									{Object.entries(stats.revenue.by_type).map(([type, amount]) => (
-										<Card key={type} variant="subtle">
+										<Card key={type}>
 											<CardBody>
-												<Text size="sm" className="text-text-muted mb-2 font-medium capitalize">
+												<Text className="text-text-muted mb-2 font-medium capitalize">
 													{type}
 												</Text>
 												<Heading size="md" className="mb-0">
@@ -290,7 +290,7 @@ export function BillingDashboardPage() {
 													</Table>
 												</TableContainer>
 												{purchasesData.pagination && (
-													<Text size="sm" className="mt-4 text-text-muted">
+													<Text className="mt-4 text-text-muted">
 														Showing {purchasesData.data.length} of {purchasesData.pagination.total} purchases
 														{purchasesData.pagination.hasMore && " (more available)"}
 													</Text>
@@ -355,7 +355,7 @@ export function BillingDashboardPage() {
 													</Table>
 												</TableContainer>
 												{transactionsData.pagination && (
-													<Text size="sm" className="mt-4 text-text-muted">
+													<Text className="mt-4 text-text-muted">
 														Showing {transactionsData.data.length} of {transactionsData.pagination.total} transactions
 														{transactionsData.pagination.hasMore && " (more available)"}
 													</Text>
