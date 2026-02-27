@@ -34,30 +34,6 @@ services:
       retries: 5
     restart: unless-stopped
 
-  # CloudBeaver - Database Web UI
-  cloudbeaver:
-    image: dbeaver/cloudbeaver:latest
-    container_name: proofa-cloudbeaver
-    ports:
-      - "8978:8978"
-    volumes:
-      - cloudbeaver_data:/opt/cloudbeaver/workspace
-    restart: unless-stopped
-    depends_on:
-      - postgres
-
-  # RedisInsight - Redis Web UI
-  redisinsight:
-    image: redis/redisinsight:latest
-    container_name: proofa-redisinsight
-    ports:
-      - "5540:5540"
-    volumes:
-      - redisinsight_data:/data
-    restart: unless-stopped
-    depends_on:
-      - redis
-
   # Mailpit - Email Testing
   mailpit:
     image: axllent/mailpit:latest
@@ -71,10 +47,6 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
-    driver: local
-  cloudbeaver_data:
-    driver: local
-  redisinsight_data:
     driver: local
 
 networks:

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
 	Icon,
 	IconType,
@@ -10,9 +10,10 @@ import {
 	Card,
 	CardBody,
 	Button,
-	Badge,
-	Breadcrumb,
-	BreadcrumbSeparator,
+	Chip,
+	BreadcrumbList,
+	BreadcrumbItem,
+	BreadcrumbButton,
 } from "@proofa/components";
 import { useToast } from "../components/Toast";
 import { useApp, useProject, useUpdateApp } from "../hooks/api";
@@ -24,6 +25,7 @@ const AVAILABLE_PROVIDERS = [
 
 export default function AppOAuthPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
+	const navigate = useNavigate();
 	const { showToast } = useToast();
 
 	const { data: app, isLoading: appLoading, error: appError } = useApp(projectId!, appId!);
@@ -85,35 +87,39 @@ export default function AppOAuthPage() {
 	}
 
 	return (
-		<div className="page">
+		<div className="space-y-6">
 			{/* Breadcrumb */}
-			<div className="mb-6">
-				<Breadcrumb>
-					<Link to="/projects">
+			<BreadcrumbList>
+				<BreadcrumbItem>
+					<BreadcrumbButton onClick={() => navigate("/projects")}>
 						Projects
-					</Link>
-					/
-					<Link to={`/projects/${projectId}`}>
+					</BreadcrumbButton>
+				</BreadcrumbItem>
+				<BreadcrumbItem>
+					<BreadcrumbButton onClick={() => navigate(`/projects/${projectId}`)}>
 						{project?.name}
-					</Link>
-					/
-					<Link to={`/projects/${projectId}/apps`}>
+					</BreadcrumbButton>
+				</BreadcrumbItem>
+				<BreadcrumbItem>
+					<BreadcrumbButton onClick={() => navigate(`/projects/${projectId}/apps`)}>
 						Apps
-					</Link>
-					/
-					<Link to={`/projects/${projectId}/apps/${appId}`}>
+					</BreadcrumbButton>
+				</BreadcrumbItem>
+				<BreadcrumbItem>
+					<BreadcrumbButton onClick={() => navigate(`/projects/${projectId}/apps/${appId}`)}>
 						{app.name}
-					</Link>
-					/
-					<Text>OAuth</Text>
-				</Breadcrumb>
-			</div>
+					</BreadcrumbButton>
+				</BreadcrumbItem>
+				<BreadcrumbItem active>
+					OAuth
+				</BreadcrumbItem>
+			</BreadcrumbList>
 
 			{/* Page Header */}
-			<div className="flex justify-between items-center mb-8">
+			<div className="flex justify-between items-center">
 				<div>
 					<Heading level={1} size="lg">OAuth Providers</Heading>
-					<Text className="text-text-secondary">
+					<Text className="text-muted-foreground">
 						Select which OAuth providers to enable for <strong>{app.name}</strong>
 					</Text>
 				</div>
@@ -138,14 +144,14 @@ export default function AppOAuthPage() {
 			</div>
 
 			{/* Info Banner */}
-			<Alert variant="info" className="mb-6">
+			<Alert variant="info">
 				<div className="flex gap-3">
 					<Icon icon={IconType.AlertCircle} size={20} className="text-primary shrink-0" />
 					<div>
 						<Text className="font-semibold text-primary mb-1">
 							Platform-Level Configuration
 						</Text>
-						<Text className="text-text-secondary">
+						<Text className="text-muted-foreground">
 							OAuth credentials are managed at the platform level. Simply select which providers to enable for
 							your app.
 						</Text>
@@ -159,43 +165,45 @@ export default function AppOAuthPage() {
 					const isSelected = selectedProviders.includes(provider.id);
 
 					return (
-						<div
+						<Card
 							key={provider.id}
-							className={`card p-6 transition-all duration-200 border-2 ${
-								isSelected ? "border-primary bg-primary-light" : "border-card-border bg-card-bg"
-							} ${isEditing ? "cursor-pointer opacity-100" : "cursor-default opacity-80"}`}
+							className={`transition-all duration-200 border-2 ${
+								isSelected ? "border-primary bg-primary/5" : ""
+							} ${isEditing ? "cursor-pointer" : "cursor-default opacity-80"}`}
 							onClick={() => isEditing && handleToggleProvider(provider.id)}
 						>
-							<div className="flex items-start gap-4 mb-4">
-								<div className="w-12 h-12 rounded-12px bg-content-bg flex items-center justify-center shrink-0">
-									{getProviderIcon(provider.id)}
-								</div>
-								<div className="flex-1">
-									<div className="flex items-center gap-2 mb-1">
-										<h3 className="text-16px font-semibold text-text-primary m-0">
-											{provider.name}
-										</h3>
-										<Badge variant="info">
-											Platform
-										</Badge>
+							<CardBody>
+								<div className="flex items-start gap-4 mb-4">
+									<div className="w-12 h-12 rounded-xl bg-muted/30 flex items-center justify-center shrink-0">
+										{getProviderIcon(provider.id)}
 									</div>
-									<p className="text-13px text-text-secondary m-0">
-										Managed by Proofa
-									</p>
+									<div className="flex-1">
+										<div className="flex items-center gap-2 mb-1">
+											<h3 className="text-base font-semibold text-foreground m-0">
+												{provider.name}
+											</h3>
+											<Chip size="sm">
+												Platform
+											</Chip>
+										</div>
+										<p className="text-sm text-muted-foreground m-0">
+											Managed by Proofa
+										</p>
+									</div>
 								</div>
-							</div>
 
-							<div className="flex items-center justify-between pt-4 border-t border-border-primary">
-								<span className={`text-sm font-medium ${isSelected ? "text-primary" : "text-text-secondary"}`}>
-									{isSelected ? "Enabled" : "Disabled"}
-								</span>
-								{isEditing && (
-									<div className={`toggle-switch ${isSelected ? "bg-primary" : "bg-border-primary"}`}>
-								<div className={`toggle-button ${isSelected ? "left-[26px]" : "left-[2px]"}`} />
-									</div>
-								)}
-							</div>
-						</div>
+								<div className="flex items-center justify-between pt-4 border-t border-border">
+									<span className={`text-sm font-medium ${isSelected ? "text-primary" : "text-muted-foreground"}`}>
+										{isSelected ? "Enabled" : "Disabled"}
+									</span>
+									{isEditing && (
+										<div className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ${isSelected ? "bg-primary" : "bg-muted"}`}>
+											<span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 mt-0.5 ${isSelected ? "translate-x-5" : "translate-x-0.5"}`} />
+										</div>
+									)}
+								</div>
+							</CardBody>
+						</Card>
 					);
 				})}
 			</div>

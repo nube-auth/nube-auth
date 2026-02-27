@@ -1,25 +1,28 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useApp, useProject } from "../hooks/api";
 import {
-Spinner,
-Alert,
-Heading,
-Text,
-Button,
-Card,
-CardBody,
-Label,
-Input
+	Spinner,
+	Alert,
+	Heading,
+	Text,
+	Button,
+	Card,
+	CardBody,
+	Tabs,
+	TabsList,
+	TabsItem,
+	TabsPanel,
+	BreadcrumbList,
+	BreadcrumbItem,
+	BreadcrumbButton,
 } from "@proofa/components";
-
-type Tab = "quickstart" | "react" | "nextjs" | "javascript" | "backend";
 
 export function AppDevelopersPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
+	const navigate = useNavigate();
 	const { data: project, isLoading: projectLoading } = useProject(projectId || "");
 	const { data: app, isLoading: appLoading } = useApp(projectId || "", appId || "");
-	const [activeTab, setActiveTab] = useState<Tab>("quickstart");
 	const [copied, setCopied] = useState(false);
 
 	const handleCopy = async (text: string) => {
@@ -44,140 +47,124 @@ export function AppDevelopersPage() {
 		return <Alert variant="danger">Project or App not found</Alert>;
 	}
 
-	const tabs: { id: Tab; label: string }[] = [
-		{ id: "quickstart", label: "Quick Start" },
-		{ id: "react", label: "React" },
-		{ id: "nextjs", label: "Next.js" },
-		{ id: "javascript", label: "JavaScript" },
-		{ id: "backend", label: "Backend" },
-	];
-
 	return (
-		<div className="page">
+		<div className="space-y-6">
 			{/* Breadcrumb */}
-			<div className="mb-6">
-				<div
-					className="flex gap-2 items-center text-13px text-text-tertiary"
-				>
-					<Link to="/projects" className="text-text-tertiary no-underline">
+			<BreadcrumbList>
+				<BreadcrumbItem>
+					<BreadcrumbButton onClick={() => navigate("/projects")}>
 						Projects
-					</Link>
-					<span>›</span>
-					<Link
-						to={`/projects/${projectId}`}
-						className="text-text-tertiary no-underline"
-					>
+					</BreadcrumbButton>
+				</BreadcrumbItem>
+				<BreadcrumbItem>
+					<BreadcrumbButton onClick={() => navigate(`/projects/${projectId}`)}>
 						{project.name}
-					</Link>
-					<span>›</span>
-					<Link
-						to={`/projects/${projectId}/apps/${appId}`}
-						className="text-text-tertiary no-underline"
-					>
+					</BreadcrumbButton>
+				</BreadcrumbItem>
+				<BreadcrumbItem>
+					<BreadcrumbButton onClick={() => navigate(`/projects/${projectId}/apps/${appId}`)}>
 						{app.name}
-					</Link>
-					<span>›</span>
-					<span className="text-text-primary">Integration Guide</span>
-				</div>
-			</div>
+					</BreadcrumbButton>
+				</BreadcrumbItem>
+				<BreadcrumbItem active>
+					Integration Guide
+				</BreadcrumbItem>
+			</BreadcrumbList>
 
 			{/* Page Header */}
-			<div className="mb-8">
-				<Heading level={1} size="lg" className="text-24px font-bold mb-2">Integration Guide</Heading>
-				<Text className="text-14px text-text-tertiary">
+			<div>
+				<Heading level={1} size="lg">Integration Guide</Heading>
+				<Text className="text-muted-foreground">
 					Learn how to integrate Proofa authentication into your application
 				</Text>
 			</div>
 
 			{/* Tabs */}
-			<div className="border-b border-border-primary mb-8">
-				<div className="flex gap-8">
-					{tabs.map((tab) => (
-						<Button
-							key={tab.id}
-							type="button"
-							onClick={() => setActiveTab(tab.id)}
-							className={`py-3 text-14px font-semibold bg-transparent border-none border-b-2 cursor-pointer transition-all duration-200 ${activeTab === tab.id ? "text-primary border-b-primary" : "text-text-tertiary border-b-transparent"}`}
-						>
-							{tab.label}
-						</Button>
-					))}
-				</div>
-			</div>
+			<Tabs defaultValue="quickstart">
+				<TabsList>
+					<TabsItem value="quickstart">Quick Start</TabsItem>
+					<TabsItem value="react">React</TabsItem>
+					<TabsItem value="nextjs">Next.js</TabsItem>
+					<TabsItem value="javascript">JavaScript</TabsItem>
+					<TabsItem value="backend">Backend</TabsItem>
+				</TabsList>
 
-			{/* Tab Content */}
-			<div>
-				{/* Quick Start */}
-				{activeTab === "quickstart" && (
-					<div>
-						<Heading level={2} size="lg" className="text-20px font-bold mb-4">Quick Start</Heading>
-<Text className="text-14px text-text-secondary mb-6 leading-relaxed">
+				<TabsPanel value="quickstart">
+						<Heading level={2} size="lg" className="text-xl font-bold mb-4">Quick Start</Heading>
+						<Text className="text-sm text-muted-foreground mb-6 leading-relaxed">
 							Get started with Proofa in 5 minutes. This guide will walk you through the basic setup.
 						</Text>
 
 						{/* Step 1 */}
-						<div className="card p-6 mb-4">
+						<Card className="mb-4">
+							<CardBody>
 							<div className="flex items-center gap-3 mb-4">
 								<div
-									className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-14px font-bold"
+									className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold"
 								>
 									1
 								</div>
-								<Heading level={3} size="md" className="text-16px font-semibold">Install the Proofa SDK</Heading>
+								<Heading level={3} size="md" className="text-base font-semibold">Install the Proofa SDK</Heading>
 							</div>
 							<div className="relative">
 								<pre
-									className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0"
+									className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0"
 								>
-									<code className="text-code-text">npm install @proofa/react</code>
+									<code className="text-foreground">npm install @proofa/react</code>
 								</pre>
 								<Button
 									type="button"
+									variant="secondary"
+									size="sm"
 									onClick={() => handleCopy("npm install @proofa/react")}
-									className="absolute top-3 right-3 py-1.5 px-3 text-12px bg-white/10 text-white border border-white/20 rounded-md cursor-pointer"
+									className="absolute top-3 right-3"
 								>
 									{copied ? "✓ Copied" : "Copy"}
 								</Button>
 							</div>
-						</div>
+							</CardBody>
+						</Card>
 
 						{/* Step 2 */}
-						<div className="card p-6 mb-4">
+						<Card className="mb-4">
+							<CardBody>
 							<div className="flex items-center gap-3 mb-4">
 								<div
-									className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-14px font-bold"
+									className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold"
 								>
 									2
 								</div>
-								<Heading level={3} size="md" className="text-16px font-semibold">Get your App ID</Heading>
+								<Heading level={3} size="md" className="text-base font-semibold">Get your App ID</Heading>
 							</div>
-							<Text className="text-14px text-text-secondary mb-3">
+							<Text className="text-sm text-muted-foreground mb-3">
 								Your App ID is:
 							</Text>
 							<code
-								className="block py-3 px-4 bg-surface-secondary rounded-lg text-14px font-mono text-text-primary"
+								className="block py-3 px-4 bg-muted/30 rounded-lg text-sm font-mono text-foreground"
 							>
 								{app.id}
 							</code>
-						</div>
+							</CardBody>
+						</Card>
 
 						{/* Step 3 */}
-						<div className="card p-6 mb-4">
+						<Card className="mb-4">
+							<CardBody>
 							<div className="flex items-center gap-3 mb-4">
 								<div
-									className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-14px font-bold"
+									className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold"
 								>
 									3
 								</div>
-								<Heading level={3} size="md" className="text-16px font-semibold">
+								<Heading level={3} size="md" className="text-base font-semibold">
 									Wrap your app with ProofaProvider
 								</Heading>
 							</div>
 							<div className="relative">
 								<pre
-									className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+									className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 								>
-									<code className="text-code-text">{`import { ProofaProvider } from '@proofa/react';
+									<code className="text-foreground">{`import { ProofaProvider } from '@proofa/react';
 
 function App() {
   return (
@@ -188,23 +175,25 @@ function App() {
 }`}</code>
 								</pre>
 							</div>
-						</div>
+							</CardBody>
+						</Card>
 
 						{/* Step 4 */}
-						<div className="card p-6">
+						<Card>
+							<CardBody>
 							<div className="flex items-center gap-3 mb-4">
 								<div
-									className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-14px font-bold"
+									className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold"
 								>
 									4
 								</div>
-								<Heading level={3} size="md" className="text-16px font-semibold">Use the auth hook</Heading>
+								<Heading level={3} size="md" className="text-base font-semibold">Use the auth hook</Heading>
 							</div>
 							<div className="relative">
 								<pre
-									className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+									className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 								>
-									<code className="text-code-text">{`import { useAuth } from '@proofa/react';
+									<code className="text-foreground">{`import { useAuth } from '@proofa/react';
 
 function YourComponent() {
   const { user, isAuthenticated, login, logout } = useAuth();
@@ -222,15 +211,16 @@ function YourComponent() {
 }`}</code>
 								</pre>
 							</div>
-						</div>
+							</CardBody>
+						</Card>
 
 						{/* Next Steps */}
 						<div
-							className="mt-8 p-5 bg-surface-secondary rounded-lg border border-border-primary"
+							className="mt-8 p-5 bg-muted/30 rounded-lg border border-border"
 						>
-							<Heading level={3} size="md" className="text-16px font-semibold mb-3">Next Steps</Heading>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">Next Steps</Heading>
 							<ul
-								className="m-0 pl-5 text-14px text-text-secondary leading-loose"
+								className="m-0 pl-5 text-sm text-muted-foreground leading-loose"
 							>
 								<li>Check out framework-specific guides in the tabs above</li>
 								<li>Configure OAuth providers in your app settings</li>
@@ -246,39 +236,39 @@ function YourComponent() {
 								</li>
 							</ul>
 						</div>
-					</div>
-				)}
+				</TabsPanel>
 
-				{/* React Tab */}
-				{activeTab === "react" && (
-					<div>
-						<Heading level={2} size="lg" className="text-20px font-bold mb-4">React Integration</Heading>
+				<TabsPanel value="react">
+						<Heading level={2} size="lg" className="text-xl font-bold mb-4">React Integration</Heading>
 						<Text
-							className="text-14px text-text-secondary mb-6 leading-relaxed"
+							className="text-sm text-muted-foreground mb-6 leading-relaxed"
 						>
 							Complete guide for integrating Proofa into your React application.
 						</Text>
 
-						<div className="card p-6 mb-4">
-							<Heading level={3} size="md" className="text-16px font-semibold mb-3">Installation</Heading>
+						<Card className="mb-4">
+							<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">Installation</Heading>
 							<pre
-								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0"
+								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0"
 							>
-								<code className="text-code-text">npm install @proofa/react</code>
+								<code className="text-foreground">npm install @proofa/react</code>
 							</pre>
-						</div>
+							</CardBody>
+						</Card>
 
-						<div className="card p-6 mb-4">
-							<Heading level={3} size="md" className="text-16px font-semibold mb-3">
+						<Card className="mb-4">
+							<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Setup Provider
 							</Heading>
-							<Text className="text-14px text-text-secondary mb-3">
+							<Text className="text-sm text-muted-foreground mb-3">
 								Wrap your root component with the ProofaProvider:
 							</Text>
 							<pre
-								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
-								<code className="text-code-text">{`import { ProofaProvider } from '@proofa/react';
+								<code className="text-foreground">{`import { ProofaProvider } from '@proofa/react';
 import { BrowserRouter } from 'react-router-dom';
 
 function App() {
@@ -296,17 +286,19 @@ function App() {
 
 export default App;`}</code>
 							</pre>
-						</div>
+							</CardBody>
+						</Card>
 
-						<div className="card p-6 mb-4">
-							<Heading level={3} size="md" className="text-16px font-semibold mb-3">useAuth Hook</Heading>
-							<Text className="text-14px text-text-secondary mb-3">
+						<Card className="mb-4">
+							<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">useAuth Hook</Heading>
+							<Text className="text-sm text-muted-foreground mb-3">
 								Access authentication state and methods:
 							</Text>
 							<pre
-								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
-								<code className="text-code-text">{`import { useAuth } from '@proofa/react';
+								<code className="text-foreground">{`import { useAuth } from '@proofa/react';
 
 function Dashboard() {
   const { 
@@ -344,19 +336,21 @@ function Dashboard() {
   );
 }`}</code>
 							</pre>
-						</div>
+							</CardBody>
+						</Card>
 
-						<div className="card p-6">
-							<Heading level={3} size="md" className="text-16px font-semibold mb-3">
+						<Card>
+							<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Protected Routes
 							</Heading>
-							<Text className="text-14px text-text-secondary mb-3">
+							<Text className="text-sm text-muted-foreground mb-3">
 								Create a component to protect routes:
 							</Text>
 							<pre
-								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
-								<code className="text-code-text">{`import { useAuth } from '@proofa/react';
+								<code className="text-foreground">{`import { useAuth } from '@proofa/react';
 import { Navigate } from 'react-router-dom';
 
 function ProtectedRoute({ children }) {
@@ -380,39 +374,40 @@ function ProtectedRoute({ children }) {
   </ProtectedRoute>
 } />`}</code>
 							</pre>
-						</div>
-					</div>
-				)}
+							</CardBody>
+						</Card>
+				</TabsPanel>
 
-				{/* Next.js Tab */}
-				{activeTab === "nextjs" && (
-					<div>
-						<Heading level={2} size="lg" className="text-20px font-bold mb-4">
+				<TabsPanel value="nextjs">
+						<Heading level={2} size="lg" className="text-xl font-bold mb-4">
 							Next.js Integration
 						</Heading>
 						<Text
-							className="text-14px text-text-secondary mb-6 leading-relaxed"
+							className="text-sm text-muted-foreground mb-6 leading-relaxed"
 						>
 							Complete guide for integrating Proofa into your Next.js application (App Router).
 						</Text>
 
-						<div className="card p-6 mb-4">
-							<Heading level={3} size="md" className="text-16px font-semibold mb-3">Installation</Heading>
+						<Card className="mb-4">
+							<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">Installation</Heading>
 							<pre
-								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0"
+								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0"
 							>
-								<code className="text-code-text">npm install @proofa/react</code>
+								<code className="text-foreground">npm install @proofa/react</code>
 							</pre>
-						</div>
+							</CardBody>
+						</Card>
 
-						<div className="card p-6 mb-4">
-							<Heading level={3} size="md" className="text-16px font-semibold mb-3">
+						<Card className="mb-4">
+							<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Setup Provider (app/layout.tsx)
 							</Heading>
 							<pre
-								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
-								<code className="text-code-text">{`'use client';
+								<code className="text-foreground">{`'use client';
 
 import { ProofaProvider } from '@proofa/react';
 
@@ -431,16 +426,18 @@ export default function RootLayout({ children }) {
   );
 }`}</code>
 							</pre>
-						</div>
+							</CardBody>
+						</Card>
 
-						<div className="card p-6 mb-4">
-							<Heading level={3} size="md" className="text-16px font-semibold mb-3">
+						<Card className="mb-4">
+							<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Client Component
 							</Heading>
 							<pre
-								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
-								<code className="text-code-text">{`'use client';
+								<code className="text-foreground">{`'use client';
 
 import { useAuth } from '@proofa/react';
 
@@ -459,19 +456,21 @@ export default function Dashboard() {
   );
 }`}</code>
 							</pre>
-						</div>
+							</CardBody>
+						</Card>
 
-						<div className="card p-6">
-							<Heading level={3} size="md" className="text-16px font-semibold mb-3">
+						<Card>
+							<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Server-Side Verification
 							</Heading>
-							<Text className="text-14px text-text-secondary mb-3">
+							<Text className="text-sm text-muted-foreground mb-3">
 								Verify sessions in Server Components or API Routes:
 							</Text>
 							<pre
-								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
-								<code className="text-code-text">{`// app/api/protected/route.ts
+								<code className="text-foreground">{`// app/api/protected/route.ts
 import { verifySession } from '@proofa/next';
 
 export async function GET(request: Request) {
@@ -487,39 +486,40 @@ export async function GET(request: Request) {
   });
 }`}</code>
 							</pre>
-						</div>
-					</div>
-				)}
+							</CardBody>
+						</Card>
+				</TabsPanel>
 
-				{/* JavaScript Tab */}
-				{activeTab === "javascript" && (
-					<div>
-						<Heading level={2} size="lg" className="text-20px font-bold mb-4">
+				<TabsPanel value="javascript">
+						<Heading level={2} size="lg" className="text-xl font-bold mb-4">
 							Vanilla JavaScript
 						</Heading>
 						<Text
-							className="text-14px text-text-secondary mb-6 leading-relaxed"
+							className="text-sm text-muted-foreground mb-6 leading-relaxed"
 						>
 							Use Proofa without any framework.
 						</Text>
 
-						<div className="card p-6 mb-4">
-							<Heading level={3} size="md" className="text-16px font-semibold mb-3">Installation</Heading>
+						<Card className="mb-4">
+							<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">Installation</Heading>
 							<pre
-								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0"
+								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0"
 							>
-								<code className="text-code-text">npm install @proofa/client</code>
+								<code className="text-foreground">npm install @proofa/client</code>
 							</pre>
-						</div>
+							</CardBody>
+						</Card>
 
-						<div className="card p-6 mb-4">
-							<Heading level={3} size="md" className="text-16px font-semibold mb-3">
+						<Card className="mb-4">
+							<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Initialize Client
 							</Heading>
 							<pre
-								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
-								<code className="text-code-text">{`import { ProofaClient } from '@proofa/client';
+								<code className="text-foreground">{`import { ProofaClient } from '@proofa/client';
 
 const client = new ProofaClient({
   appId: '${app.id}',
@@ -551,14 +551,16 @@ document.querySelector('#logout').addEventListener('click', async () => {
 
 checkAuth();`}</code>
 							</pre>
-						</div>
+							</CardBody>
+						</Card>
 
-						<div className="card p-6">
-							<Heading level={3} size="md" className="text-16px font-semibold mb-3">HTML Example</Heading>
+						<Card>
+							<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">HTML Example</Heading>
 							<pre
-								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
-								<code className="text-code-text">{`<!DOCTYPE html>
+								<code className="text-foreground">{`<!DOCTYPE html>
 <html>
 <head>
   <title>My App</title>
@@ -576,30 +578,29 @@ checkAuth();`}</code>
 </body>
 </html>`}</code>
 							</pre>
-						</div>
-					</div>
-				)}
+							</CardBody>
+						</Card>
+				</TabsPanel>
 
-				{/* Backend Tab */}
-				{activeTab === "backend" && (
-					<div>
-						<Heading level={2} size="lg" className="text-20px font-bold mb-4">
+				<TabsPanel value="backend">
+						<Heading level={2} size="lg" className="text-xl font-bold mb-4">
 							Backend Verification
 						</Heading>
 						<Text
-							className="text-14px text-text-secondary mb-6 leading-relaxed"
+							className="text-sm text-muted-foreground mb-6 leading-relaxed"
 						>
 							Verify user sessions and protect your API endpoints.
 						</Text>
 
-						<div className="card p-6 mb-4">
-							<Heading level={3} size="md" className="text-16px font-semibold mb-3">
+						<Card className="mb-4">
+							<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Node.js/Express
 							</Heading>
 							<pre
-								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
-								<code className="text-code-text">{`import { verifySession } from '@proofa/node';
+								<code className="text-foreground">{`import { verifySession } from '@proofa/node';
 
 // Middleware
 async function requireAuth(req, res, next) {
@@ -625,14 +626,16 @@ app.get('/api/protected', requireAuth, (req, res) => {
   });
 });`}</code>
 							</pre>
-						</div>
+							</CardBody>
+						</Card>
 
-						<div className="card p-6 mb-4">
-							<Heading level={3} size="md" className="text-16px font-semibold mb-3">Python/Flask</Heading>
+						<Card className="mb-4">
+							<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">Python/Flask</Heading>
 							<pre
-								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
-								<code className="text-code-text">{`from functools import wraps
+								<code className="text-foreground">{`from functools import wraps
 import requests
 
 PROOFA_API = "https://api.proofa.com"
@@ -668,17 +671,19 @@ def protected_route():
         'user_id': request.user['id']
     }`}</code>
 							</pre>
-						</div>
+							</CardBody>
+						</Card>
 
-						<div className="card p-6">
-							<Heading level={3} size="md" className="text-16px font-semibold mb-3">API Keys</Heading>
-							<Text className="text-14px text-text-secondary mb-3">
+						<Card>
+							<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">API Keys</Heading>
+							<Text className="text-sm text-muted-foreground mb-3">
 								For server-to-server communication, use your Service Token:
 							</Text>
 							<pre
-								className="bg-code-bg p-4 rounded-lg overflow-auto text-13px font-mono m-0 leading-relaxed"
+								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
-								<code className="text-code-text">{`// Get user by email (admin operation)
+								<code className="text-foreground">{`// Get user by email (admin operation)
 const response = await fetch('https://api.proofa.com/v1/users/by-email', {
   method: 'POST',
   headers: {
@@ -691,9 +696,9 @@ const response = await fetch('https://api.proofa.com/v1/users/by-email', {
 const user = await response.json();`}</code>
 							</pre>
 							<div
-								className="mt-4 p-3 bg-warning/10 border border-warning/30 rounded-md text-13px text-text-secondary"
+								className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-md text-sm text-muted-foreground"
 							>
-								<strong className="text-warning">Important:</strong> Never expose your Service Token
+								<strong className="text-amber-500">Important:</strong> Never expose your Service Token
 								in client-side code!{" "}
 								<Link
 									to={`/projects/${projectId}/apps/${appId}/api-keys`}
@@ -702,10 +707,10 @@ const user = await response.json();`}</code>
 									Get your API keys →
 								</Link>
 							</div>
-						</div>
-					</div>
-				)}
-			</div>
+							</CardBody>
+						</Card>
+				</TabsPanel>
+			</Tabs>
 		</div>
 	);
 }

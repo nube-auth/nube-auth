@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { useToast } from "../components/Toast";
 import { useApp, useProject, useUpdateApp } from "../hooks/api";
 import { pingpong } from "../lib/pingpong";
 import type { App } from "../types/admin";
 import {
+	Icon,
+	IconType,
 	Spinner,
 	Alert,
 	Heading,
@@ -19,10 +21,12 @@ import {
 	Label,
 	Input,
 	Textarea,
-	Button
+	Button,
+	Breadcrumb,
+	BreadcrumbList,
+	BreadcrumbItem,
+	BreadcrumbButton,
 } from "@proofa/components";
-
-type SettingsTab = "general" | "authentication" | "security" | "danger";
 
 export function AppSettingsPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -31,7 +35,6 @@ export function AppSettingsPage() {
 	const { data: app, isLoading: appLoading } = useApp(projectId || "", appId || "");
 	const updateAppMutation = useUpdateApp(projectId || "", appId || "");
 
-	const [activeTab, setActiveTab] = useState<SettingsTab>("general");
 	const [formData, setFormData] = useState<Partial<App> | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -112,8 +115,6 @@ export function AppSettingsPage() {
 		});
 	};
 
-	// OAuth providers are now managed via oauth_providers table, not inline
-
 	const handleSave = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!formData) return;
@@ -135,10 +136,9 @@ export function AppSettingsPage() {
 
 		try {
 			await updateAppMutation.mutateAsync(dataToSend);
-			// Success feedback (you can add a toast notification here)
+			showToast("Settings saved successfully", "success");
 		} catch (error) {
-			console.error("Failed to update app:", error);
-			// Error feedback (you can add a toast notification here)
+			showToast(error instanceof Error ? error.message : "Failed to save settings", "error");
 		} finally {
 			setIsSaving(false);
 		}
@@ -156,301 +156,310 @@ export function AppSettingsPage() {
 		return <Alert variant="danger">App not found</Alert>;
 	}
 
-	const tabs: { id: SettingsTab; label: string }[] = [
-		{ id: "general", label: "General" },
-		{ id: "authentication", label: "Authentication" },
-		{ id: "security", label: "Security" },
-		{ id: "danger", label: "Danger Zone" },
-	];
-
 	return (
-		<div className="page">
-			{/* Page Header *}
-			<div className="mb-8">
+		<div className="space-y-6">
+			{/* Breadcrumb */}
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
+					</BreadcrumbItem>
+					/
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+					/
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps`} />}>Apps</BreadcrumbButton>
+					</BreadcrumbItem>
+					/
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>{app.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+					/
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Settings</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
+
+			{/* Page Header */}
+			<div>
 				<Heading level={1} size="lg">App Settings</Heading>
-				<Text className="text-text-muted mt-2">Configure your application settings and preferences</Text>
+				<Text className="text-muted-foreground mt-1">Configure your application settings and preferences</Text>
 			</div>
 
 			{/* Tabs */}
-			<div className="border-b border-card-border mb-8">
-				<div className="flex gap-8">
-					{tabs.map((tab) => (
-						<button
-							key={tab.id}
-							type="button"
-							onClick={() => setActiveTab(tab.id)}
-							className={`py-3 text-14px font-semibold bg-transparent border-none cursor-pointer transition-all ${
-								activeTab === tab.id
-									? "text-primary border-b-2 border-primary"
-									: "text-text-tertiary border-b-2 border-transparent"
-							}`}
-						>
-							{tab.label}
-						</button>
-					))}
-				</div>
-			</div>
+			<Tabs defaultValue="general">
+				<TabsList>
+					<TabsItem value="general">General</TabsItem>
+					<TabsItem value="authentication">Authentication</TabsItem>
+					<TabsItem value="security">Security</TabsItem>
+					<TabsItem value="danger">Danger Zone</TabsItem>
+				</TabsList>
 
-			{/* Tab Content */}
-			<form onSubmit={handleSave}>
 				{/* General Tab */}
-				{activeTab === "general" && (
-					<div>
-						<div className="card p-6 mb-4">
-							<h3 className="text-16px font-semibold mb-5">Basic Information</h3>
+				<TabsPanel value="general">
+					<form onSubmit={handleSave} className="space-y-6">
+						<Card>
+							<CardBody className="space-y-5">
+								<Heading level={3} size="sm">Basic Information</Heading>
 
-							<div className="grid gap-5">
-								<div>
-									<label className="form-label">App Name *</label>
-									<input
-										type="text"
+								<div className="space-y-1.5">
+									<Label htmlFor="name">App Name *</Label>
+									<Input
+										id="name"
 										name="name"
-										className="form-control"
 										value={formData.name || ""}
 										onChange={handleInputChange}
 										required
 										placeholder="My Awesome App"
 									/>
-									<p className="text-12px text-text-tertiary mt-1.5">
-										The public name of your application
-									</p>
+									<Text className="text-muted-foreground text-xs">The public name of your application</Text>
 								</div>
 
-								<div>
-									<label className="form-label">App Slug *</label>
-									<input
-										type="text"
+								<div className="space-y-1.5">
+									<Label htmlFor="slug">App Slug *</Label>
+									<Input
+										id="slug"
 										name="slug"
-										className="form-control"
 										value={formData.slug || ""}
 										onChange={handleInputChange}
 										required
 										pattern="[a-z0-9-]+"
 										placeholder="my-awesome-app"
 									/>
-									<p className="text-12px text-text-tertiary mt-1.5">
-										URL-friendly identifier (lowercase, hyphens only)
-									</p>
+									<Text className="text-muted-foreground text-xs">URL-friendly identifier (lowercase, hyphens only)</Text>
 								</div>
 
-								<div>
-									<label className="form-label">Description</label>
-									<textarea
+								<div className="space-y-1.5">
+									<Label htmlFor="description">Description</Label>
+									<Textarea
+										id="description"
 										name="description"
-										className="form-control resize-y"
 										value={formData.description || ""}
 										onChange={handleInputChange}
 										rows={3}
 										placeholder="A brief description of your application..."
 									/>
-									<p className="text-12px text-text-tertiary mt-1.5">
-										Optional description for internal reference
-									</p>
+									<Text className="text-muted-foreground text-xs">Optional description for internal reference</Text>
 								</div>
-							</div>
+							</CardBody>
+						</Card>
+
+						<div className="flex gap-3">
+							<Button type="submit" disabled={isSaving || updateAppMutation.isPending}>
+								{isSaving || updateAppMutation.isPending ? "Saving..." : "Save Changes"}
+							</Button>
+							<Button
+								type="button"
+								variant="secondary"
+								onClick={() => navigate(`/projects/${projectId}/apps/${appId}`)}
+							>
+								Cancel
+							</Button>
 						</div>
-					</div>
-				)}
+					</form>
+				</TabsPanel>
 
 				{/* Authentication Tab */}
-				{activeTab === "authentication" && (
-					<div>
-						<div className="card p-6 mb-4">
-							<h3 className="text-16px font-semibold mb-5">OAuth Providers</h3>
-							<p className="text-14px text-text-tertiary mb-5">
-								OAuth providers are now managed at the project level. Go to Project Settings to
-								configure authentication providers.
-							</p>
-							<p className="text-14px text-text-tertiary mb-4">
-								Allowed callback URLs after successful authentication
-							</p>
-
-							{(formData.redirectUris || []).map((uri: string, index: number) => (
-								<div key={`redirectUri-${index}`} className="flex gap-2 mb-3">
-									<input
-										type="url"
-										className="form-control flex-1"
-										value={uri}
-										onChange={(e) => handleArrayFieldChange("redirectUris", index, e.target.value)}
-										placeholder="https://myapp.com/callback"
-									/>
-									<button
-										type="button"
-										onClick={() =>
-											removeArrayField("redirectUris", (formData.redirectUris || []).indexOf(uri))
-										}
-										className="btn-danger btn-sm"
-									>
-										Remove
-									</button>
+				<TabsPanel value="authentication">
+					<form onSubmit={handleSave} className="space-y-6">
+						<Card>
+							<CardBody className="space-y-5">
+								<div>
+									<Heading level={3} size="sm">Redirect URIs</Heading>
+									<Text className="text-muted-foreground text-sm mt-1">
+										Allowed callback URLs after successful authentication
+									</Text>
 								</div>
-							))}
 
-							<button
-								type="button"
-								onClick={() => addArrayField("redirectUris")}
-								className="btn-secondary btn-sm mt-2"
-							>
-								+ Add Redirect URI
-							</button>
-						</div>
-
-						<div className="card p-6">
-							<h3 className="text-16px font-semibold mb-5">Allowed Hosts</h3>
-							<p className="text-14px text-text-tertiary mb-4">
-								Domains allowed to make requests to your app
-							</p>
-
-							{(formData.allowedHosts || []).map((host: string, index: number) => (
-								<div key={`allowedHost-${index}`} className="flex gap-2 mb-3">
-									<input
-										type="text"
-										className="form-control flex-1"
-										value={host}
-										onChange={(e) => handleArrayFieldChange("allowedHosts", index, e.target.value)}
-										placeholder="myapp.com or localhost:3000"
-									/>
-									<button
-										type="button"
-										onClick={() =>
-											removeArrayField(
-												"allowedHosts",
-												(formData.allowedHosts || []).indexOf(host),
-											)
-										}
-										className="btn-danger btn-sm"
-									>
-										Remove
-									</button>
+								<div className="space-y-3">
+									{(formData.redirectUris || []).map((uri: string, index: number) => (
+										<div key={`redirectUri-${index}`} className="flex gap-2">
+											<Input
+												className="flex-1"
+												type="url"
+												value={uri}
+												onChange={(e) => handleArrayFieldChange("redirectUris", index, e.target.value)}
+												placeholder="https://myapp.com/callback"
+											/>
+											<Button
+												type="button"
+												variant="danger"
+												size="sm"
+												onClick={() => removeArrayField("redirectUris", index)}
+											>
+												Remove
+											</Button>
+										</div>
+									))}
 								</div>
-							))}
 
-							<button
+								<Button type="button" variant="secondary" size="sm" onClick={() => addArrayField("redirectUris")}>
+									<Icon icon={IconType.Add} size={14} />
+									Add Redirect URI
+								</Button>
+							</CardBody>
+						</Card>
+
+						<Card>
+							<CardBody className="space-y-5">
+								<div>
+									<Heading level={3} size="sm">Allowed Hosts</Heading>
+									<Text className="text-muted-foreground text-sm mt-1">
+										Domains allowed to make requests to your app
+									</Text>
+								</div>
+
+								<div className="space-y-3">
+									{(formData.allowedHosts || []).map((host: string, index: number) => (
+										<div key={`allowedHost-${index}`} className="flex gap-2">
+											<Input
+												className="flex-1"
+												value={host}
+												onChange={(e) => handleArrayFieldChange("allowedHosts", index, e.target.value)}
+												placeholder="myapp.com or localhost:3000"
+											/>
+											<Button
+												type="button"
+												variant="danger"
+												size="sm"
+												onClick={() => removeArrayField("allowedHosts", index)}
+											>
+												Remove
+											</Button>
+										</div>
+									))}
+								</div>
+
+								<Button type="button" variant="secondary" size="sm" onClick={() => addArrayField("allowedHosts")}>
+									<Icon icon={IconType.Add} size={14} />
+									Add Allowed Host
+								</Button>
+							</CardBody>
+						</Card>
+
+						<div className="flex gap-3">
+							<Button type="submit" disabled={isSaving || updateAppMutation.isPending}>
+								{isSaving || updateAppMutation.isPending ? "Saving..." : "Save Changes"}
+							</Button>
+							<Button
 								type="button"
-								onClick={() => addArrayField("allowedHosts")}
-								className="btn-secondary btn-sm mt-2"
+								variant="secondary"
+								onClick={() => navigate(`/projects/${projectId}/apps/${appId}`)}
 							>
-								+ Add Allowed Host
-							</button>
+								Cancel
+							</Button>
 						</div>
-					</div>
-				)}
+					</form>
+				</TabsPanel>
 
 				{/* Security Tab */}
-				{activeTab === "security" && (
-					<div>
-						<div className="card p-6 mb-4">
-							<h3 className="text-16px font-semibold mb-5">Security Settings</h3>
+				<TabsPanel value="security">
+					<form onSubmit={handleSave} className="space-y-6">
+						<Card>
+							<CardBody className="space-y-5">
+								<Heading level={3} size="sm">Security Settings</Heading>
 
-							<div className="grid gap-5">
-								<div>
-									<label className="form-label">Account Lockout Duration (Minutes)</label>
-									<input
+								<div className="space-y-1.5">
+									<Label htmlFor="accountLockoutMinutes">Account Lockout Duration (Minutes)</Label>
+									<Input
+										id="accountLockoutMinutes"
 										type="number"
 										name="accountLockoutMinutes"
-										className="form-control"
 										value={formData.accountLockoutMinutes || 15}
 										onChange={handleInputChange}
 										min={5}
 										max={120}
 										required
 									/>
-									<p className="text-12px text-text-tertiary mt-1.5">
-										Duration to lock accounts after failed login attempts (5-120 minutes)
-									</p>
+									<Text className="text-muted-foreground text-xs">Duration to lock accounts after failed login attempts (5-120 minutes)</Text>
 								</div>
 
-								<div>
-									<label className="form-label">Cache TTL (Minutes)</label>
-									<input
+								<div className="space-y-1.5">
+									<Label htmlFor="cacheTtlMinutes">Cache TTL (Minutes)</Label>
+									<Input
+										id="cacheTtlMinutes"
 										type="number"
 										name="cacheTtlMinutes"
-										className="form-control"
 										value={formData.cacheTtlMinutes || 10}
 										onChange={handleInputChange}
 										min={1}
 										max={60}
 										required
 									/>
-									<p className="text-12px text-text-tertiary mt-1.5">
-										How long to cache user session data (1-60 minutes)
-									</p>
+									<Text className="text-muted-foreground text-xs">How long to cache user session data (1-60 minutes)</Text>
 								</div>
 
-								<div>
-									<label className="form-label">Rate Limit (Requests Per Minute)</label>
-									<input
+								<div className="space-y-1.5">
+									<Label htmlFor="rateLimit">Rate Limit (Requests Per Minute)</Label>
+									<Input
+										id="rateLimit"
 										type="number"
 										name="rateLimit"
-										className="form-control"
 										value={formData.rateLimit || 100}
 										onChange={handleInputChange}
 										min={10}
 										max={1000}
 										required
 									/>
-									<p className="text-12px text-text-tertiary mt-1.5">
-										Maximum API requests per minute per user (10-1000)
-									</p>
+									<Text className="text-muted-foreground text-xs">Maximum API requests per minute per user (10-1000)</Text>
 								</div>
-							</div>
-						</div>
+							</CardBody>
+						</Card>
 
-						<div className="p-4 bg-info-bg border border-info-border rounded-lg text-14px text-info-text">
-							<strong>💡 Pro Tip:</strong> Adjust these settings based on your app's needs. Higher values
-							provide better UX but may increase security risks.
+						<Alert variant="info">
+							Adjust these settings based on your app's needs. Higher values provide better UX but may increase security risks.
+						</Alert>
+
+						<div className="flex gap-3">
+							<Button type="submit" disabled={isSaving || updateAppMutation.isPending}>
+								{isSaving || updateAppMutation.isPending ? "Saving..." : "Save Changes"}
+							</Button>
+							<Button
+								type="button"
+								variant="secondary"
+								onClick={() => navigate(`/projects/${projectId}/apps/${appId}`)}
+							>
+								Cancel
+							</Button>
 						</div>
-					</div>
-				)}
+					</form>
+				</TabsPanel>
 
 				{/* Danger Zone Tab */}
-				{activeTab === "danger" && (
-					<div>
-						<div className="card p-6 border-2 border-danger">
-							<h3 className="text-16px font-semibold mb-3 text-danger">⚠️ Danger Zone</h3>
-							<p className="text-14px text-text-secondary mb-5">
-								These actions are permanent and cannot be undone.
-							</p>
+				<TabsPanel value="danger">
+					<Card className="ring-danger/30">
+						<CardBody className="space-y-5">
+							<div>
+								<Heading level={3} size="sm" className="text-danger">Danger Zone</Heading>
+								<Text className="text-muted-foreground text-sm mt-1">
+									These actions are permanent and cannot be undone.
+								</Text>
+							</div>
 
-							<div className="p-5 bg-danger-bg bg-opacity-5 rounded-lg border border-danger border-opacity-20">
-								<h4 className="text-14px font-semibold mb-2 text-danger">Delete This App</h4>
-								<p className="text-13px text-text-secondary mb-4">
-									Once you delete an app, there is no going back. This will:
-								</p>
-								<ul className="text-13px text-text-secondary mb-4 pl-5">
+							<div className="rounded-lg border border-danger/20 bg-danger/5 p-5 space-y-4">
+								<div>
+									<Text className="font-semibold text-danger text-sm">Delete This App</Text>
+									<Text className="text-muted-foreground text-sm mt-1">
+										Once you delete an app, there is no going back. This will:
+									</Text>
+								</div>
+								<ul className="text-muted-foreground text-sm list-disc pl-5 space-y-1">
 									<li>Delete all user data and sessions</li>
 									<li>Revoke all active licenses</li>
 									<li>Remove all API keys and integrations</li>
 									<li>Cancel all active subscriptions</li>
 								</ul>
-								<button type="button" onClick={() => setShowDeleteModal(true)} className="btn-danger">
+								<Button variant="danger" onClick={() => setShowDeleteModal(true)}>
 									Delete App
-								</button>
+								</Button>
 							</div>
-						</div>
-					</div>
-				)}
-
-				{/* Save Button (shown for all tabs except danger zone) */}
-				{activeTab !== "danger" && (
-					<div className="mt-6 flex gap-3">
-						<button
-							type="submit"
-							disabled={isSaving || updateAppMutation.isPending}
-							className={`btn-primary ${isSaving || updateAppMutation.isPending ? "opacity-60 cursor-not-allowed" : ""}`}
-						>
-							{isSaving || updateAppMutation.isPending ? "Saving..." : "Save Changes"}
-						</button>
-						<button
-							type="button"
-							onClick={() => navigate(`/projects/${projectId}/apps/${appId}`)}
-							className="btn-secondary"
-						>
-							Cancel
-						</button>
-					</div>
-				)}
-			</form>
+						</CardBody>
+					</Card>
+				</TabsPanel>
+			</Tabs>
 
 			{/* Delete Confirmation Modal with Captcha */}
 			<ConfirmModal
@@ -473,9 +482,7 @@ export function AppSettingsPage() {
 
 						showToast("App deleted successfully", "success");
 						setShowDeleteModal(false);
-
-						// Redirect to project apps page
-						window.location.href = `/projects/${projectId}/apps`;
+						navigate(`/projects/${projectId}/apps`);
 					} catch (error) {
 						showToast(error instanceof Error ? error.message : "Failed to delete app", "error");
 					}

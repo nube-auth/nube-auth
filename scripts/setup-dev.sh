@@ -83,13 +83,9 @@ fi
 
 # Check Docker Compose
 if docker compose version >/dev/null 2>&1; then
-    print_success "Docker Compose (plugin) available"
-    DOCKER_COMPOSE="docker compose"
-elif command_exists docker-compose; then
-    print_success "Docker Compose (standalone) available"
-    DOCKER_COMPOSE="docker-compose"
+    print_success "Docker Compose available"
 else
-    print_error "Docker Compose not found"
+    print_error "Docker Compose not found (docker compose plugin)"
     exit 1
 fi
 
@@ -100,8 +96,8 @@ print_header "Setting Up Environment Files"
 
 # Create .env.local if it doesn't exist
 if [ ! -f .env.local ]; then
-    print_info "Creating .env.local from template..."
-    cp .env.local.example .env.local
+    print_info "Creating .env.local from .env.example..."
+    cp .env.example .env.local
     print_success ".env.local created"
 else
     print_warning ".env.local already exists, skipping..."
@@ -112,29 +108,33 @@ print_info "Generating secure secrets..."
 
 ENCRYPTION_KEY=$(generate_secret 32)
 SESSION_SECRET=$(generate_secret 64)
-GATEWAY_S2S_TOKEN=$(generate_secret 32)
-CORE_S2S_TOKEN=$(generate_secret 32)
+JWT_SECRET=$(generate_secret 32)
+PAYMENT_CONFIGS_KEY=$(generate_secret 32)
+S2S_SECRET=$(generate_secret 32)
+X_PROOFA_SERVICE_TOKEN=$(generate_secret 32)
 
 # Update .env.local with generated secrets
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
     sed -i '' "s/ENCRYPTION_KEY=.*/ENCRYPTION_KEY=$ENCRYPTION_KEY/" .env.local
     sed -i '' "s/SESSION_SECRET=.*/SESSION_SECRET=$SESSION_SECRET/" .env.local
-    sed -i '' "s/GATEWAY_S2S_TOKEN=.*/GATEWAY_S2S_TOKEN=$GATEWAY_S2S_TOKEN/" .env.local
-    sed -i '' "s/CORE_S2S_TOKEN=.*/CORE_S2S_TOKEN=$CORE_S2S_TOKEN/" .env.local
+    sed -i '' "s/JWT_SECRET=.*/JWT_SECRET=$JWT_SECRET/" .env.local
+    sed -i '' "s/PAYMENT_CONFIGS_KEY=.*/PAYMENT_CONFIGS_KEY=$PAYMENT_CONFIGS_KEY/" .env.local
+    sed -i '' "s/S2S_SECRET=.*/S2S_SECRET=$S2S_SECRET/" .env.local
+    sed -i '' "s/X_PROOFA_SERVICE_TOKEN=.*/X_PROOFA_SERVICE_TOKEN=$X_PROOFA_SERVICE_TOKEN/" .env.local
 else
     # Linux
     sed -i "s/ENCRYPTION_KEY=.*/ENCRYPTION_KEY=$ENCRYPTION_KEY/" .env.local
     sed -i "s/SESSION_SECRET=.*/SESSION_SECRET=$SESSION_SECRET/" .env.local
-    sed -i "s/GATEWAY_S2S_TOKEN=.*/GATEWAY_S2S_TOKEN=$GATEWAY_S2S_TOKEN/" .env.local
-    sed -i "s/CORE_S2S_TOKEN=.*/CORE_S2S_TOKEN=$CORE_S2S_TOKEN/" .env.local
+    sed -i "s/JWT_SECRET=.*/JWT_SECRET=$JWT_SECRET/" .env.local
+    sed -i "s/PAYMENT_CONFIGS_KEY=.*/PAYMENT_CONFIGS_KEY=$PAYMENT_CONFIGS_KEY/" .env.local
+    sed -i "s/S2S_SECRET=.*/S2S_SECRET=$S2S_SECRET/" .env.local
+    sed -i "s/X_PROOFA_SERVICE_TOKEN=.*/X_PROOFA_SERVICE_TOKEN=$X_PROOFA_SERVICE_TOKEN/" .env.local
 fi
 
 print_success "Secrets generated and saved to .env.local"
 
-# Export POSTGRES_PASSWORD for docker-compose
-export POSTGRES_PASSWORD="proofa_dev_password"
-print_info "Exported POSTGRES_PASSWORD for Docker Compose"
+
 
 # ============================================================================
 # 3. Install Dependencies
@@ -152,12 +152,12 @@ print_success "Dependencies installed"
 print_header "Starting Docker Services"
 
 print_info "Starting PostgreSQL and Redis..."
-$DOCKER_COMPOSE up -d postgres redis
+./scripts/docker-local.sh up
 
 # Wait for PostgreSQL to be ready
 print_info "Waiting for PostgreSQL to be ready..."
 for i in {1..30}; do
-    if $DOCKER_COMPOSE exec -T postgres pg_isready -U proofa >/dev/null 2>&1; then
+    if docker compose exec -T postgres pg_isready -U proofa >/dev/null 2>&1; then
         print_success "PostgreSQL is ready"
         break
     fi
@@ -171,7 +171,7 @@ done
 # Wait for Redis to be ready
 print_info "Waiting for Redis to be ready..."
 for i in {1..30}; do
-    if $DOCKER_COMPOSE exec -T redis redis-cli ping >/dev/null 2>&1; then
+    if docker compose exec -T redis redis-cli ping >/dev/null 2>&1; then
         print_success "Redis is ready"
         break
     fi
@@ -188,9 +188,7 @@ done
 print_header "Setting Up Database"
 
 print_info "Running database migrations..."
-cd packages/db
-pnpm run db:push
-cd ../..
+pnpm db:push
 
 print_success "Database migrations complete"
 
@@ -232,12 +230,15 @@ echo -e "  - Drizzle Studio:         ${YELLOW}pnpm db:studio${NC}"
 echo -e "  - PostgreSQL (psql):      ${YELLOW}docker compose exec postgres psql -U proofa -d proofa${NC}"
 echo -e "  - Redis CLI:              ${YELLOW}docker compose exec redis redis-cli${NC}\n"
 
-echo -e "${BLUE}Optional Debug Tools:${NC}"
-echo -e "  - Start debug tools:      ${YELLOW}docker compose --profile debug up -d${NC}"
-echo -e "  - CloudBeaver (DB UI):    ${GREEN}http://localhost:8978${NC}"
-echo -e "  - RedisInsight (Redis UI):${GREEN}http://localhost:5540${NC}"
-echo -e "  - Mailpit (Email Testing):${GREEN}http://localhost:8025${NC}"
-echo -e "  - Mailpit SMTP Server:    ${GREEN}localhost:1025${NC}\n"
+echo -e "${BLUE}Docker Commands:${NC}"
+echo -e "  - Start core (pg+redis):  ${YELLOW}pnpm docker:up${NC}"
+echo -e "  - Start all (+mailpit):   ${YELLOW}pnpm docker:up:all${NC}"
+echo -e "  - Stop services:          ${YELLOW}pnpm docker:down${NC}"
+echo -e "  - View status:            ${YELLOW}pnpm docker:status${NC}\n"
+
+echo -e "${BLUE}Email Testing (Mailpit):${NC}"
+echo -e "  - Web UI:                 ${GREEN}http://localhost:8025${NC}"
+echo -e "  - SMTP:                   ${GREEN}localhost:1025${NC}\n"
 
 echo -e "${YELLOW}Note:${NC} Don't forget to configure OAuth providers in the admin dashboard or .env.local\n"
 

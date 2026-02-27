@@ -19,7 +19,21 @@ import {
 	DialogBody,
 	DialogFooter,
 	Input,
-	Badge
+	Textarea,
+	Label,
+	Chip,
+	IconBox,
+	Breadcrumb,
+	BreadcrumbList,
+	BreadcrumbItem,
+	BreadcrumbButton,
+	Table,
+	TableHeader,
+	TableBody,
+	TableRow,
+	TableHead,
+	TableCell,
+	Checkbox,
 } from "@proofa/components";
 
 import { Select } from "../components/Select";
@@ -53,10 +67,18 @@ export function AppLicensesPage() {
 	const [showPlansSection, setShowPlansSection] = useState(false);
 	const [filterStatus, setFilterStatus] = useState<string>("all");
 	const [searchQuery, setSearchQuery] = useState("");
+	const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 	const [changingLicense, setChangingLicense] = useState<any>(null);
 	const [newPlan, setNewPlan] = useState("");
 	const [isUpdating, setIsUpdating] = useState(false);
 	const { showToast } = useToast();
+
+	const statusIcons = {
+		all: IconType.Grid,
+		active: IconType.Check,
+		suspended: IconType.Shield,
+		trial: IconType.Clock,
+	} as const;
 
 	// Plans state
 	const [plans, setPlans] = useState<Plan[]>([]);
@@ -346,115 +368,79 @@ export function AppLicensesPage() {
 	return (
 		<div className="space-y-6">
 			{/* Breadcrumb */}
-			<nav className="flex items-center gap-2 text-13px">
-				<Link to="/projects" className="text-text-secondary no-underline">
-					Projects
-				</Link>
-				<Icon icon={IconType.ArrowRight} size={14} className="text-text-tertiary" />
-				<Link to={`/projects/${projectId}`} className="text-text-secondary no-underline">
-					{project.name}
-				</Link>
-				<Icon icon={IconType.ArrowRight} size={14} className="text-text-tertiary" />
-				<Link
-					to={`/projects/${projectId}/apps/${appId}`}
-					className="text-text-secondary no-underline"
-				>
-					{app.name}
-				</Link>
-				<Icon icon={IconType.ArrowRight} size={14} className="text-text-tertiary" />
-				<span className="text-text-primary font-medium">Licenses</span>
-			</nav>
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
+					</BreadcrumbItem>
+					/
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+					/
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>{app.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+					/
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Licenses</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
 
 			{/* Page Header */}
-			<div className="flex items-start justify-between">
-				<div>
-					<Heading level={1} size="lg">Licenses</Heading>
-					<Text className="text-text-muted mt-2">Manage user licenses and pricing plans for {app.name}</Text>
-				</div>
+			<div>
+				<Heading level={1} size="lg">Licenses</Heading>
+				<Text className="text-muted-foreground mt-1">Manage user licenses and pricing plans for {app.name}</Text>
 			</div>
 
 			{/* Stats Cards */}
-			<div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-5">
-				{/* Active Licenses */}
-				<div className="stat-card">
-					<div className="flex items-center gap-3 mb-2">
-						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10">
-							<Icon icon={IconType.Key} size={20} className="text-primary" />
-						</div>
-						<div>
-							<p className="stat-label">Active Licenses</p>
-							<p className="stat-value">{activeLicenses}</p>
-						</div>
-					</div>
-				</div>
-
-				{/* Free Plan Users */}
-				<div className="stat-card">
-					<div className="flex items-center gap-3 mb-2">
-						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-surface-secondary">
-							<Icon icon={IconType.UserMultiple} size={20} className="text-success" />
-						</div>
-						<div>
-							<p className="stat-label">Free Plan</p>
-							<p className="stat-value">{freeUsers}</p>
-						</div>
-					</div>
-				</div>
-
-				{/* Paid Plan Users */}
-				<div className="stat-card">
-					<div className="flex items-center gap-3 mb-2">
-						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-surface-secondary">
-							<Icon icon={IconType.DollarCircle} size={20} className="text-warning" />
-						</div>
-						<div>
-							<p className="stat-label">Paid Plans</p>
-							<p className="stat-value">{paidUsers}</p>
-						</div>
-					</div>
-				</div>
-
-				{/* Monthly Revenue */}
-				<div className="stat-card">
-					<div className="flex items-center gap-3 mb-2">
-						<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-surface-secondary">
-							<Icon icon={IconType.ArrowDown} size={20} className="text-info" />
-						</div>
-						<div>
-							<p className="stat-label">Monthly Revenue</p>
-							<p className="stat-value">$0</p>
-						</div>
-					</div>
-				</div>
+			<div className="grid grid-cols-4 gap-4">
+				{[
+					{ label: "Active Licenses", value: activeLicenses, icon: IconType.Key, variant: "primary-subtle" as const },
+					{ label: "Free Plan", value: freeUsers, icon: IconType.UserMultiple, variant: "success-subtle" as const },
+					{ label: "Paid Plans", value: paidUsers, icon: IconType.DollarCircle, variant: "warning-subtle" as const },
+					{ label: "Monthly Revenue", value: "$0", icon: IconType.ArrowDown, variant: "info-subtle" as const },
+				].map((stat) => (
+					<Card key={stat.label}>
+						<CardBody className="flex items-center gap-4">
+							<IconBox variant={stat.variant} size="lg">
+								<Icon icon={stat.icon} size={22} />
+							</IconBox>
+							<div>
+								<Text className="text-muted-foreground text-sm">{stat.label}</Text>
+								<Heading level={3} size="lg">{stat.value}</Heading>
+							</div>
+						</CardBody>
+					</Card>
+				))}
 			</div>
 
-			{/* Plans Section Toggle */}
-			<div className="card">
+			{/* Plans Section */}
+			<Card>
 				<button
 					type="button"
 					onClick={() => setShowPlansSection(!showPlansSection)}
-					className="w-full p-4 flex items-center justify-between bg-transparent border-none cursor-pointer transition-colors duration-200 hover:bg-surface-hover"
+					className="w-full px-6 py-4 flex items-center justify-between bg-transparent border-none cursor-pointer transition-colors duration-200 hover:bg-muted/30 rounded-t-xl"
 				>
 					<div className="flex items-center gap-3">
-						<Icon icon={IconType.Key} size={20} className="text-primary" />
+						<IconBox variant="primary-subtle" size="md">
+							<Icon icon={IconType.Key} size={18} />
+						</IconBox>
 						<div className="text-left">
-							<h3 className="text-16px font-semibold text-text-primary m-0">
-								Pricing Plans
-							</h3>
-							<p className="text-13px text-text-secondary m-0">
-								Configure plans and pricing for your app
-							</p>
+							<Heading level={3} size="sm">Pricing Plans</Heading>
+							<Text className="text-muted-foreground text-sm">Configure plans and pricing for your app</Text>
 						</div>
 					</div>
 					<Icon
-						icon={showPlansSection ? IconType.ArrowDown : IconType.ArrowDown}
+						icon={IconType.ArrowDown}
 						size={20}
-						className="text-text-tertiary transition-transform duration-200"
+						className={`text-muted-foreground transition-transform duration-200 ${showPlansSection ? "rotate-180" : ""}`}
 					/>
 				</button>
 
 				{showPlansSection && (
-					<div className="p-5 border-t border-card-border">
+					<CardBody className="border-t border-card-border">
 						{/* Create Plan Button */}
 						<div className="flex justify-end mb-4">
 							<Button size="sm" onClick={handleCreatePlan}>
@@ -477,230 +463,246 @@ export function AppLicensesPage() {
 						) : (
 							<div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 items-stretch">
 								{plans.map((plan) => (
-									<div
-										key={plan.id}
-										className="flex flex-col bg-content-bg border border-card-border rounded-xl p-5 h-full transition-all duration-200"
-									>
-										<div className="flex justify-between items-start mb-3">
-											<div>
-												<h4 className="text-16px font-semibold text-text-primary m-0">
-													{plan.name}
-												</h4>
-												<p className="text-12px text-text-tertiary mt-0.5">
-													{plan.slug}
-												</p>
+									<Card key={plan.id} className="flex flex-col h-full">
+										<CardBody className="flex flex-col flex-1">
+											<div className="flex justify-between items-start mb-3">
+												<div>
+													<Heading level={4} size="sm">{plan.name}</Heading>
+													<Text className="text-muted-foreground text-xs mt-0.5">{plan.slug}</Text>
+												</div>
+												<Chip
+													variant={plan.status === "active" ? "success" : "default"}
+													size="sm"
+												>
+													{plan.status}
+												</Chip>
 											</div>
-											<span
-												className={`inline-block px-2 py-1 rounded-md text-11px font-semibold capitalize ${plan.status === "active" ? "bg-success/10 text-success" : "bg-content-bg text-text-tertiary"}`}
-											>
-												{plan.status}
-											</span>
-										</div>
 
-										{plan.description && (
-											<p className="text-13px text-text-secondary mb-3 leading-relaxed">
-												{plan.description}
-											</p>
-										)}
+											{plan.description && (
+												<Text className="text-muted-foreground text-sm mb-3 leading-relaxed">
+													{plan.description}
+												</Text>
+											)}
 
-										<div className="mb-3">
-											{plan.monthlyPrice && (
-												<div className="text-14px text-text-primary mb-1">
-													<span className="font-semibold">
-														${(plan.monthlyPrice / 100).toFixed(2)}
-													</span>
-													<span className="text-12px text-text-tertiary">
-														/month
-													</span>
-												</div>
-											)}
-											{plan.yearlyPrice && (
-												<div className="text-14px text-text-primary mb-1">
-													<span className="font-semibold">
-														${(plan.yearlyPrice / 100).toFixed(2)}
-													</span>
-													<span className="text-12px text-text-tertiary">
-														/year
-													</span>
-												</div>
-											)}
-											{plan.oneTimePrice && (
-												<div className="text-14px text-text-primary mb-1">
-													<span className="font-semibold">
-														${(plan.oneTimePrice / 100).toFixed(2)}
-													</span>
-													<span className="text-12px text-text-tertiary">
-														{" "}
-														one-time
-													</span>
-												</div>
-											)}
-											{!plan.monthlyPrice && !plan.yearlyPrice && !plan.oneTimePrice && (
-												<div className="text-14px text-text-primary mb-1">
-													<span className="font-semibold">00</span>
-												</div>
-											)}
-											{plan.trialEnabled && plan.trialDays && (
-												<div className="text-12px text-primary mt-1">
-													{plan.trialDays} day free trial
-												</div>
-											)}
-										</div>
-
-										{plan.features.length > 0 && (
-											<div className="mb-4">
-												<p className="text-12px font-semibold text-text-secondary mb-2">
-													Features:
-												</p>
-												<ul className="m-0 pl-5 text-12px text-text-secondary">
-													{plan.features.slice(0, 3).map((feature) => (
-														<li key={feature} className="mb-1">
-															{feature}
-														</li>
-													))}
-													{plan.features.length > 3 && (
-														<li className="text-text-tertiary">
-															+{plan.features.length - 3} more
-														</li>
-													)}
-												</ul>
+											<div className="mb-3">
+												{plan.monthlyPrice && (
+													<div className="text-sm text-foreground mb-1">
+														<span className="font-semibold">
+															${(plan.monthlyPrice / 100).toFixed(2)}
+														</span>
+														<span className="text-xs text-muted-foreground">/month</span>
+													</div>
+												)}
+												{plan.yearlyPrice && (
+													<div className="text-sm text-foreground mb-1">
+														<span className="font-semibold">
+															${(plan.yearlyPrice / 100).toFixed(2)}
+														</span>
+														<span className="text-xs text-muted-foreground">/year</span>
+													</div>
+												)}
+												{plan.oneTimePrice && (
+													<div className="text-sm text-foreground mb-1">
+														<span className="font-semibold">
+															${(plan.oneTimePrice / 100).toFixed(2)}
+														</span>
+														<span className="text-xs text-muted-foreground"> one-time</span>
+													</div>
+												)}
+												{!plan.monthlyPrice && !plan.yearlyPrice && !plan.oneTimePrice && (
+													<Text className="text-sm font-semibold">Free</Text>
+												)}
+												{plan.trialEnabled && plan.trialDays && (
+													<Text className="text-xs text-primary mt-1">
+														{plan.trialDays} day free trial
+													</Text>
+												)}
 											</div>
-										)}
 
-										<div className="flex gap-2 pt-3 border-t border-card-border mt-auto">
-											<button
-												type="button"
-												onClick={() => handleEditPlan(plan)}
-												className="btn btn-secondary-outline btn-sm flex-1"
-											>
-												Edit
-											</button>
-											<button
-												type="button"
-												onClick={() => setDeletingPlan(plan)}
-												className="btn btn-danger-outline btn-sm flex-1"
-											>
-												Delete
-											</button>
-										</div>
-									</div>
+											{plan.features.length > 0 && (
+												<div className="mb-4">
+													<Text className="text-xs font-semibold text-muted-foreground mb-2">
+														Features:
+													</Text>
+													<ul className="m-0 pl-5 text-xs text-muted-foreground">
+														{plan.features.slice(0, 3).map((feature) => (
+															<li key={feature} className="mb-1">{feature}</li>
+														))}
+														{plan.features.length > 3 && (
+															<li className="text-muted-foreground/60">
+																+{plan.features.length - 3} more
+															</li>
+														)}
+													</ul>
+												</div>
+											)}
+
+											<div className="flex gap-2 pt-3 border-t border-card-border mt-auto">
+												<Button
+													variant="secondary"
+													size="sm"
+													className="flex-1"
+													onClick={() => handleEditPlan(plan)}
+												>
+													Edit
+												</Button>
+												<Button
+													variant="danger"
+													size="sm"
+													className="flex-1"
+													onClick={() => setDeletingPlan(plan)}
+												>
+													Delete
+												</Button>
+											</div>
+										</CardBody>
+									</Card>
 								))}
 							</div>
 						)}
-					</div>
+					</CardBody>
 				)}
-			</div>
+			</Card>
 
 			{/* Licenses Table */}
-			<div className="card">
-				<div className="p-5 border-b border-card-border">
-					<h2 className="text-16px font-semibold text-text-primary mb-1">
-						Active Licenses
-					</h2>
-					<p className="text-13px text-text-secondary">View and manage user licenses</p>
-				</div>
+			<Card>
+				<CardBody className="border-b border-card-border">
+					<Heading level={2} size="sm">Active Licenses</Heading>
+					<Text className="text-muted-foreground text-sm mt-1">View and manage user licenses</Text>
+				</CardBody>
 
 				{/* Filters */}
-				<div className="p-4 border-b border-card-border flex gap-3 flex-wrap">
-					<input
-						type="text"
-						placeholder="Search by name or email..."
-						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
-						className="flex-1 min-w-60 py-2 px-3 border border-border-primary rounded-lg text-14px bg-content-bg text-text-primary"
-					/>
-					<Select
-						value={filterStatus}
-						onChange={(value) => setFilterStatus(value)}
-						options={[
-							{ value: "all", label: "All Status" },
-							{ value: "active", label: "Active" },
-							{ value: "suspended", label: "Suspended" },
-							{ value: "trial", label: "Trial" },
-						]}
-						className="py-2 px-3 border border-border-primary rounded-lg text-14px bg-content-bg text-text-primary"
-					/>
+				<div className="px-6 py-4 border-b border-card-border flex items-center gap-3">
+					<div className="w-full max-w-[400px]">
+						<Input
+							type="text"
+							placeholder="Search by name or email..."
+							value={searchQuery}
+							onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+						/>
+					</div>
+
+					{/* Custom Status Dropdown */}
+					<div className="relative min-w-[160px]">
+						<button
+							type="button"
+							onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+							className={`flex w-full items-center justify-between gap-2 rounded-[10px] border bg-bg-surface px-3 py-2.5 text-14px text-text-primary transition-all focus:outline-none ${showStatusDropdown ? "border-primary" : "border-border hover:border-primary/70"}`}
+						>
+							<span className="flex items-center gap-2">
+								<Icon icon={IconType.Filter} size={16} className="text-text-tertiary" />
+								{filterStatus === "all" ? "All Status" : filterStatus.charAt(0).toUpperCase() + filterStatus.slice(1)}
+							</span>
+							<Icon
+								icon={showStatusDropdown ? IconType.ArrowUp : IconType.ArrowDown}
+								size={14}
+								className="text-text-tertiary"
+							/>
+						</button>
+
+						{showStatusDropdown && (
+							<>
+								<div className="fixed inset-0 z-[999]" onClick={() => setShowStatusDropdown(false)} />
+								<div className="absolute top-[calc(100%+6px)] left-0 right-0 z-[1000] overflow-hidden rounded-[10px] border border-border bg-bg-surface shadow-xl">
+									{[
+										{ value: "all", label: "All Status" },
+										{ value: "active", label: "Active" },
+										{ value: "suspended", label: "Suspended" },
+										{ value: "trial", label: "Trial" },
+									].map((option) => (
+										<button
+											key={option.value}
+											type="button"
+											onClick={() => {
+												setFilterStatus(option.value);
+												setShowStatusDropdown(false);
+											}}
+											className={`flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-14px transition-all ${filterStatus === option.value ? "bg-primary/10 text-primary" : "text-text-primary hover:bg-surface/50"} ${option.value !== "trial" ? "border-b border-border/60" : ""}`}
+										>
+											<Icon icon={statusIcons[option.value as keyof typeof statusIcons]} size={16} className="flex-shrink-0" />
+											<span className={filterStatus === option.value ? "font-semibold" : "font-normal"}>{option.label}</span>
+											{filterStatus === option.value && (
+												<Icon icon={IconType.Check} size={16} className="ml-auto text-primary" />
+											)}
+										</button>
+									))}
+								</div>
+							</>
+						)}
+					</div>
 				</div>
 
 				{/* Table */}
 				{!usersLoading && filteredLicenses.length > 0 ? (
 					<div className="overflow-x-auto">
-						<table className="w-full border-collapse">
-							<thead className="bg-surface-secondary border-b border-card-border">
-								<tr>
-									<th className="py-3 px-4 text-left text-12px font-semibold text-text-secondary uppercase tracking-wide">
-										User
-									</th>
-									<th className="py-3 px-4 text-left text-12px font-semibold text-text-secondary uppercase tracking-wide">
-										Email
-									</th>
-									<th className="py-3 px-4 text-center text-12px font-semibold text-text-secondary uppercase tracking-wide">
-										Plan
-									</th>
-									<th className="py-3 px-4 text-center text-12px font-semibold text-text-secondary uppercase tracking-wide">
-										Status
-									</th>
-									<th className="py-3 px-4 text-center text-12px font-semibold text-text-secondary uppercase tracking-wide">
-										Valid Until
-									</th>
-									<th className="py-3 px-4 text-right text-12px font-semibold text-text-secondary uppercase tracking-wide">
-										Actions
-									</th>
-								</tr>
-							</thead>
-							<tbody>
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>User</TableHead>
+									<TableHead>Email</TableHead>
+									<TableHead className="text-center">Plan</TableHead>
+									<TableHead className="text-center">Status</TableHead>
+									<TableHead className="text-center">Valid Until</TableHead>
+									<TableHead className="text-right">Actions</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
 								{filteredLicenses.map((user) => (
-									<tr key={user.id} className="border-b border-card-border">
-										<td className="py-3.5 px-4">
+									<TableRow key={user.id}>
+										<TableCell>
 											<div className="flex items-center gap-2.5">
-												<div className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center text-13px font-semibold text-primary flex-shrink-0">
+												<div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary flex-shrink-0">
 													{user.name
 														? user.name.charAt(0).toUpperCase()
 														: user.email.charAt(0).toUpperCase()}
 												</div>
-												<span className="text-14px font-medium text-text-primary">
+												<Text className="font-medium">
 													{user.name || "—"}
-												</span>
+												</Text>
 											</div>
-										</td>
-										<td className="py-3.5 px-4 text-13px text-text-secondary">
-											{user.email}
-										</td>
-										<td className="py-3.5 px-4 text-center">
-											<span
-												className={`inline-block px-2.5 py-1 rounded-md text-12px font-semibold capitalize ${user.plan === "free" ? "bg-content-bg text-text-tertiary" : "bg-primary/10 text-primary"}`}
+										</TableCell>
+										<TableCell>
+											<Text className="text-muted-foreground text-sm">{user.email}</Text>
+										</TableCell>
+										<TableCell className="text-center">
+											<Chip
+												variant={user.plan === "free" ? "default" : "primary"}
+												size="sm"
 											>
 												{user.plan || "free"}
-											</span>
-										</td>
-										<td className="py-3.5 px-4 text-center">
-											<span
-												className={`inline-block px-2.5 py-1 rounded-md text-12px font-semibold capitalize ${user.status === "active" ? "bg-success/10 text-success" : "bg-danger/10 text-danger"}`}
+											</Chip>
+										</TableCell>
+										<TableCell className="text-center">
+											<Chip
+												variant={user.status === "active" ? "success" : "danger"}
+												size="sm"
 											>
 												{user.status}
-											</span>
-										</td>
-										<td className="py-3.5 px-4 text-center text-13px text-text-secondary">
-											{user.licenseValidUntil
-												? new Date(user.licenseValidUntil).toLocaleDateString()
-												: "—"}
-										</td>
-										<td className="py-3.5 px-4 text-right">
-											<button
-												type="button"
+											</Chip>
+										</TableCell>
+										<TableCell className="text-center">
+											<Text className="text-muted-foreground text-sm">
+												{user.licenseValidUntil
+													? new Date(user.licenseValidUntil).toLocaleDateString()
+													: "—"}
+											</Text>
+										</TableCell>
+										<TableCell className="text-right">
+											<Button
+												variant="secondary"
+												size="sm"
 												onClick={() => {
 													setChangingLicense(user);
 													setNewPlan(user.plan || "free");
 												}}
-												className="btn btn-secondary-outline btn-sm"
 											>
 												Change Plan
-											</button>
-										</td>
-									</tr>
+											</Button>
+										</TableCell>
+									</TableRow>
 								))}
-							</tbody>
-						</table>
+							</TableBody>
+						</Table>
 					</div>
 				) : (
 					<EmptyState
@@ -713,7 +715,7 @@ export function AppLicensesPage() {
 						}
 					/>
 				)}
-			</div>
+			</Card>
 
 			{/* Change Plan Modal */}
 			{changingLicense && (
@@ -721,15 +723,13 @@ export function AppLicensesPage() {
 					<DialogPopup>
 						<DialogHeader>
 							<DialogTitle>Change License Plan</DialogTitle>
-							<Text className="text-text-muted mt-2">
+							<Text className="text-muted-foreground mt-2">
 								Update license plan for {changingLicense.name || changingLicense.email}
 							</Text>
 						</DialogHeader>
 
 						<DialogBody>
-							<label className="block text-sm font-semibold text-text-secondary mb-2">
-								New Plan
-							</label>
+							<Label className="font-semibold">New Plan</Label>
 							<Select
 								value={newPlan}
 								onChange={(value) => setNewPlan(value)}
@@ -740,9 +740,6 @@ export function AppLicensesPage() {
 									{ value: "enterprise", label: "Enterprise" },
 								]}
 								disabled={isUpdating}
-								className={`w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px ${
-									isUpdating ? "opacity-60" : ""
-								}`}
 							/>
 						</DialogBody>
 
@@ -768,7 +765,7 @@ export function AppLicensesPage() {
 					<DialogPopup className="max-w-[600px] max-h-[90vh] overflow-y-auto">
 						<DialogHeader>
 							<DialogTitle>{editingPlan ? "Edit Plan" : "Create Plan"}</DialogTitle>
-							<Text className="text-text-muted mt-2">
+							<Text className="text-muted-foreground mt-2">
 								{editingPlan ? "Update plan details and pricing" : "Create a new pricing plan for your app"}
 							</Text>
 						</DialogHeader>
@@ -789,29 +786,28 @@ export function AppLicensesPage() {
 						>
 							{/* Plan Name */}
 							<div className="mb-5">
-								<label className="block text-13px font-semibold text-text-secondary mb-2">
+								<Label className="font-semibold mb-2">
 									Plan Name <span className="text-danger">*</span>
-								</label>
-								<input
+								</Label>
+								<Input
 									type="text"
 									value={planForm.name}
-									onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
+									onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlanForm({ ...planForm, name: e.target.value })}
 									disabled={isUpdating}
 									placeholder="e.g., Pro Plan"
 									required
-									className="w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px"
 								/>
 							</div>
 
 							{/* Plan Slug */}
 							<div className="mb-5">
-								<label className="block text-13px font-semibold text-text-secondary mb-2">
+								<Label className="font-semibold mb-2">
 									Plan Slug <span className="text-danger">*</span>
-								</label>
-								<input
+								</Label>
+								<Input
 									type="text"
 									value={planForm.slug}
-									onChange={(e) =>
+									onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
 										setPlanForm({
 											...planForm,
 											slug: e.target.value.toLowerCase().replace(/\s+/g, "-"),
@@ -820,89 +816,75 @@ export function AppLicensesPage() {
 									disabled={isUpdating || !!editingPlan}
 									placeholder="e.g., pro"
 									required
-									className={`w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px ${editingPlan ? "opacity-60" : ""}`}
+									className={editingPlan ? "opacity-60" : ""}
 								/>
 								{editingPlan && (
-									<p className="text-12px text-text-tertiary mt-1.5">
+									<Text className="text-xs text-muted-foreground mt-1.5">
 										Slug cannot be changed after creation
-									</p>
+									</Text>
 								)}
 							</div>
 
 							{/* Description */}
 							<div className="mb-5">
-								<label className="block text-13px font-semibold text-text-secondary mb-2">
-									Description
-								</label>
-								<textarea
+								<Label className="font-semibold mb-2">Description</Label>
+								<Textarea
 									value={planForm.description}
-									onChange={(e) => setPlanForm({ ...planForm, description: e.target.value })}
+									onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setPlanForm({ ...planForm, description: e.target.value })}
 									disabled={isUpdating}
 									placeholder="Brief description of this plan..."
 									rows={3}
-									className="w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px resize-y font-inherit"
 								/>
 							</div>
 
 							{/* Pricing */}
 							<div className="grid grid-cols-3 gap-3 mb-5">
 								<div>
-									<label className="block text-13px font-semibold text-text-secondary mb-2">
-										Monthly Price ($)
-									</label>
-									<input
+									<Label className="font-semibold mb-2">Monthly Price ($)</Label>
+									<Input
 										type="number"
 										step="0.01"
 										min="0"
 										value={planForm.monthlyPrice}
-										onChange={(e) => setPlanForm({ ...planForm, monthlyPrice: e.target.value })}
+										onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlanForm({ ...planForm, monthlyPrice: e.target.value })}
 										disabled={isUpdating}
 										placeholder="9.99"
-										className="w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px"
 									/>
 								</div>
 								<div>
-									<label className="block text-13px font-semibold text-text-secondary mb-2">
-										Yearly Price ($)
-									</label>
-									<input
+									<Label className="font-semibold mb-2">Yearly Price ($)</Label>
+									<Input
 										type="number"
 										step="0.01"
 										min="0"
 										value={planForm.yearlyPrice}
-										onChange={(e) => setPlanForm({ ...planForm, yearlyPrice: e.target.value })}
+										onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlanForm({ ...planForm, yearlyPrice: e.target.value })}
 										disabled={isUpdating}
 										placeholder="99.99"
-										className="w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px"
 									/>
 								</div>
 								<div>
-									<label className="block text-13px font-semibold text-text-secondary mb-2">
-										One-Time Price ($)
-									</label>
-									<input
+									<Label className="font-semibold mb-2">One-Time Price ($)</Label>
+									<Input
 										type="number"
 										step="0.01"
 										min="0"
 										value={planForm.oneTimePrice}
-										onChange={(e) => setPlanForm({ ...planForm, oneTimePrice: e.target.value })}
+										onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlanForm({ ...planForm, oneTimePrice: e.target.value })}
 										disabled={isUpdating}
 										placeholder="499.99"
-										className="w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px"
 									/>
 								</div>
 							</div>
 
 							{/* Duration */}
 							<div className="mb-5">
-								<label className="block text-13px font-semibold text-text-secondary mb-2">
-									License Duration (Days)
-								</label>
-								<input
+								<Label className="font-semibold mb-2">License Duration (Days)</Label>
+								<Input
 									type="number"
 									min="1"
 									value={planForm.durationDays || ""}
-									onChange={(e) =>
+									onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
 										setPlanForm({
 											...planForm,
 											durationDays: e.target.value ? parseInt(e.target.value, 10) : null,
@@ -910,40 +892,31 @@ export function AppLicensesPage() {
 									}
 									disabled={isUpdating}
 									placeholder="e.g., 30, 365 (leave empty for lifetime)"
-									className="w-full py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px"
 								/>
-								<p className="text-12px text-text-tertiary mt-1.5">
+								<Text className="text-xs text-muted-foreground mt-1.5">
 									How long the license is valid after activation. Leave empty for lifetime access.
-								</p>
+								</Text>
 							</div>
 
 							{/* Trial */}
 							<div className="mb-5">
-								<label className="flex items-center gap-2.5 cursor-pointer">
-									<input
-										type="checkbox"
-										checked={planForm.trialEnabled}
-										onChange={(e) => setPlanForm({ ...planForm, trialEnabled: e.target.checked })}
-										disabled={isUpdating}
-										className="w-4.5 h-4.5 cursor-pointer"
-									/>
-									<span className="text-14px font-semibold text-text-primary">
-										Enable Free Trial
-									</span>
-								</label>
+								<Checkbox
+									checked={planForm.trialEnabled}
+									onCheckedChange={(checked: boolean) => setPlanForm({ ...planForm, trialEnabled: checked })}
+									disabled={isUpdating}
+									label="Enable Free Trial"
+								/>
 								{planForm.trialEnabled && (
 									<div className="mt-3 ml-7">
-										<label className="block text-13px font-semibold text-text-secondary mb-2">
-											Trial Duration (days)
-										</label>
-										<input
+										<Label className="font-semibold mb-2">Trial Duration (days)</Label>
+										<Input
 											type="number"
 											min="1"
 											value={planForm.trialDays}
-											onChange={(e) => setPlanForm({ ...planForm, trialDays: e.target.value })}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlanForm({ ...planForm, trialDays: e.target.value })}
 											disabled={isUpdating}
 											placeholder="14"
-											className="w-[120px] py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px"
+											className="w-[120px]"
 										/>
 									</div>
 								)}
@@ -951,15 +924,13 @@ export function AppLicensesPage() {
 
 							{/* Features */}
 							<div className="mb-6">
-								<label className="block text-13px font-semibold text-text-secondary mb-2">
-									Features
-								</label>
+								<Label className="font-semibold mb-2">Features</Label>
 								<div className="flex gap-2 mb-3">
-									<input
+									<Input
 										type="text"
 										value={featureInput}
-										onChange={(e) => setFeatureInput(e.target.value)}
-										onKeyPress={(e) => {
+										onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFeatureInput(e.target.value)}
+										onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
 											if (e.key === "Enter") {
 												e.preventDefault();
 												handleAddFeature();
@@ -967,23 +938,23 @@ export function AppLicensesPage() {
 										}}
 										disabled={isUpdating}
 										placeholder="Add a feature..."
-										className="flex-1 py-2.5 px-3 border border-border-primary rounded-lg bg-content-bg text-text-primary text-14px"
+										className="flex-1"
 									/>
-									<button
+									<Button
 										type="button"
+										variant="secondary"
 										onClick={handleAddFeature}
 										disabled={isUpdating || !featureInput.trim()}
-										className="btn btn-secondary"
 									>
 										Add
-									</button>
+									</Button>
 								</div>
 								{planForm.features.length > 0 && (
 									<div className="flex flex-col gap-2">
 										{planForm.features.map((feature, index) => (
 											<div
 												key={`feature-${index}`}
-												className="flex items-center justify-between py-2 px-3 bg-content-bg border border-border-primary rounded-md text-14px text-text-primary"
+												className="flex items-center justify-between py-2 px-3 bg-muted/30 border border-card-border rounded-md text-sm text-foreground"
 											>
 												<span>{feature}</span>
 												<button
@@ -1006,7 +977,7 @@ export function AppLicensesPage() {
 							<Button variant="secondary" onClick={() => setShowPlanModal(false)} disabled={isUpdating}>
 								Cancel
 							</Button>
-							<Button type="submit" variant="primary" disabled={isUpdating} onClick={(e) => {
+							<Button variant="primary" disabled={isUpdating} onClick={(e) => {
 								e.preventDefault();
 								handleSavePlan();
 							}}>
@@ -1022,15 +993,15 @@ export function AppLicensesPage() {
 				<Dialog open={!!deletingPlan} onOpenChange={(open: boolean) => !open && !isUpdating && setDeletingPlan(null)}>
 					<DialogPopup>
 						<DialogHeader>
-							<div className="w-12 h-12 rounded-xl bg-danger/10 flex items-center justify-center mb-4">
-								<Icon icon={IconType.AlertCircle} size={24} className="text-danger" />
-							</div>
+							<IconBox variant="danger-subtle" size="lg" className="mb-4">
+								<Icon icon={IconType.AlertCircle} size={24} />
+							</IconBox>
 							<DialogTitle>Delete Plan?</DialogTitle>
-							<Text className="text-text-muted mt-2 mb-3">
+							<Text className="text-muted-foreground mt-2 mb-3">
 								Are you sure you want to delete the <strong>{deletingPlan.name}</strong> plan? This
 								action cannot be undone.
 							</Text>
-							<Text className="text-text-tertiary text-sm">
+							<Text className="text-muted-foreground text-sm">
 								Note: Plans with active licenses cannot be deleted.
 							</Text>
 						</DialogHeader>

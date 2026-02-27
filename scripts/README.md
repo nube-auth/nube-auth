@@ -1,136 +1,132 @@
 # Scripts
 
-This directory contains utility scripts for the Proofa project.
+Utility scripts for development, Docker management, and deployment.
 
-## Development
+## Scripts Overview
 
-### Start Complete Development Environment
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `setup-dev.sh` | One-time local dev setup | `pnpm setup` |
+| `docker-local.sh` | Docker service management | `pnpm docker:up` |
+| `deploy-fly.sh` | Fly.io production deployment | `./scripts/deploy-fly.sh deploy` |
+
+---
+
+## setup-dev.sh
+
+One-time setup for new developers. Run once after cloning the repo.
+
 ```bash
-pnpm dev
+pnpm setup
 ```
 
-This command automatically:
-- Starts Docker services (PostgreSQL, Redis, CloudBeaver, RedisInsight, Mailpit)
-- Starts all dev servers (Core, Gateway, Dashboards)
-- Launches Drizzle Studio for database management
+**What it does:**
+1. Checks prerequisites (Node.js 22+, pnpm, Docker)
+2. Creates `.env.local` from `.env.example` with generated secrets
+3. Installs dependencies (`pnpm install`)
+4. Starts PostgreSQL and Redis via Docker
+5. Runs database migrations (`pnpm db:push`)
+6. Builds shared packages
 
-**Services Available:**
-- **Core Service**: http://localhost:3003
-- **Gateway Service**: http://localhost:3004
-- **Admin Dashboard**: http://localhost:5174
-- **User Dashboard**: http://localhost:5173
-- **Home Site**: http://localhost:4321
-- **Docs Site**: http://localhost:4322
-- **Drizzle Studio**: https://local.drizzle.studio
-- **CloudBeaver (DB UI)**: http://localhost:8978
-- **RedisInsight (Redis UI)**: http://localhost:5540
-- **Mailpit (Email Testing)**: http://localhost:8025
+---
 
-## Available Scripts
+## docker-local.sh
 
-### setup-dev.sh
-Complete local development environment setup script (one-time). Handles:
-- Prerequisites checking (Node.js, pnpm, Docker)
-- Environment file generation with secure secrets
-- Docker services startup (PostgreSQL, Redis)
-- Database migrations
-- Package building
-
-**Usage:**
-```bash
-./scripts/setup-dev.sh
-```
-
-## Docker Commands
-
-Manually manage Docker services:
+Manages local Docker services (PostgreSQL, Redis, Mailpit).
 
 ```bash
-# Start all services
-docker compose --env-file .env.local up
+# Start core services (PostgreSQL + Redis)
+pnpm docker:up
 
-# Start services in background
-docker compose --env-file .env.local up -d
+# Start all services (+ Mailpit for email testing)
+pnpm docker:up:all
 
-# Stop services
-docker compose down
+# Stop all services
+pnpm docker:down
 
 # View logs
-docker compose logs -f
+pnpm docker:logs
 
-# Check status
-docker compose ps
+# Show container status
+pnpm docker:status
 
-# Clean volumes (deletes all data)
-docker compose down -v
-
-# Connect to Redis CLI
-docker compose exec redis redis-cli
-
-# Connect to PostgreSQL
-docker compose exec postgres psql -U proofa -d proofa
+# Stop and remove all volumes (deletes data)
+pnpm docker:clean
 ```
+
+### Docker Services
+
+| Service | Image | Ports | Purpose |
+|---------|-------|-------|---------|
+| PostgreSQL | `postgres:17-alpine` | 5432 | Primary database |
+| Redis | `redis:7-alpine` | 6379 | Sessions, cache, rate limiting, queue |
+| Mailpit | `axllent/mailpit:latest` | 1025 (SMTP), 8025 (Web UI) | Dev email testing |
+
+### Direct Database Access
+
+```bash
+# PostgreSQL shell
+docker compose exec postgres psql -U proofa -d proofa
+
+# Redis CLI
+docker compose exec redis redis-cli
+```
+
+---
+
+## deploy-fly.sh
+
+Production deployment to Fly.io.
+
+```bash
+./scripts/deploy-fly.sh [command]
+```
+
+| Command | Description |
+|---------|-------------|
+| `setup` | Full first-time setup (create apps, secrets, deploy, domains) |
+| `secrets` | Set/update secrets for both apps |
+| `secrets-core` | Set/update secrets for Core only |
+| `secrets-gw` | Set/update secrets for Gateway only |
+| `deploy` | Deploy both apps |
+| `deploy-core` | Deploy Core only |
+| `deploy-gw` | Deploy Gateway only |
+| `domains` | Add custom domains |
+| `status` | Show app status |
+| `logs` / `logs-core` / `logs-gw` | Show logs |
+
+**Requires:** `fly` CLI installed (`brew install flyctl`) and `.env` with production secrets.
+
+---
 
 ## Development Tools
 
-### Drizzle Studio
-Visual database explorer for PostgreSQL.
-- **Starts automatically** with `pnpm dev`
-- **Manual start**: `pnpm db:studio`
-- **Access**: https://local.drizzle.studio
-
-### CloudBeaver
-Database web UI for managing PostgreSQL.
-- **Web UI**: http://localhost:8978
-- **Auto-starts** with Docker services
-- Connect to your database:
-  - **Host**: postgres
-  - **Port**: 5432
-  - **Username**: proofa
-  - **Password**: Check `.env.local`
-
-### RedisInsight
-Redis web UI for cache management.
-- **Web UI**: http://localhost:5540
-- **Auto-starts** with Docker services
-- Auto-discovers Redis at `localhost:6379`
-
-### Mailpit
-Email testing tool that captures all SMTP emails.
-- **Web UI**: http://localhost:8025
-- **SMTP**: localhost:1025
-- Automatically enabled when `NODE_ENV=development`
-
-### deploy-fly.sh
-Production deployment script for Fly.io.
-
-**Usage:**
+### Drizzle Studio (Database GUI)
 ```bash
-./scripts/deploy-fly.sh [command]
-
-Commands:
-  setup         - Full first-time setup
-  secrets       - Update secrets for both apps
-  deploy        - Deploy both apps
-  deploy-core   - Deploy Core only
-  deploy-gw     - Deploy Gateway only
-  status        - Show app status
-  logs          - Show logs
+pnpm db:studio
+# Opens at https://local.drizzle.studio
 ```
+
+### Mailpit (Email Testing)
+Start with `pnpm docker:up:all`, then open http://localhost:8025.
+All emails sent in development mode are captured here instead of being delivered.
+
+---
 
 ## Database Scripts
 
-Database-related scripts are located in `packages/db/scripts/`.
+Located in `apps/packages/db/scripts/`. See [the DB scripts README](../apps/packages/db/scripts/README.md) for details.
 
-### seed-project-app.ts
-
-Creates a complete project setup with:
-- A demo user (if no users exist)
-- A new project for the user
-- An app within that project
-- A payment provider configuration (Stripe test mode)
-
-**Usage:**
 ```bash
+# Create demo project with user, app, and OAuth config
 pnpm seed:project
+
+# Push schema changes to database
+pnpm db:push
+
+# Generate a new migration
+pnpm db:generate
+
+# Open Drizzle Studio
+pnpm db:studio
 ```

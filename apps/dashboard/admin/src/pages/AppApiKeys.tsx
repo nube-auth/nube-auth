@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
 	Icon,
 	IconType,
@@ -10,8 +10,11 @@ import {
 	Card,
 	CardBody,
 	Button,
+	IconBox,
 	Breadcrumb,
-	BreadcrumbSeparator,
+	BreadcrumbList,
+	BreadcrumbItem,
+	BreadcrumbButton,
 } from "@proofa/components";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { useToast } from "../components/Toast";
@@ -20,6 +23,7 @@ import { pingpong } from "../lib/pingpong";
 
 export function AppApiKeysPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
+	const navigate = useNavigate();
 	const { data: project, isLoading: projectLoading } = useProject(projectId || "");
 	const { data: app, isLoading: appLoading } = useApp(projectId || "", appId || "");
 
@@ -146,70 +150,67 @@ export function AppApiKeysPage() {
 	}
 
 	return (
-		<div className="page">
+		<div className="space-y-6">
 			{/* Breadcrumb */}
-			<div className="mb-6">
-				<Breadcrumb>
-					<Link to="/projects">
-						Projects
-					</Link>
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
+					</BreadcrumbItem>
 					/
-					<Link to={`/projects/${projectId}`}>
-						{project.name}
-					</Link>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+					</BreadcrumbItem>
 					/
-					<Link to={`/projects/${projectId}/apps/${appId}`}>
-						{app.name}
-					</Link>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>{app.name}</BreadcrumbButton>
+					</BreadcrumbItem>
 					/
-					<Text>API Keys</Text>
-				</Breadcrumb>
-			</div>
+					<BreadcrumbItem>
+						<BreadcrumbButton active>API Keys</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
 
 			{/* Page Header */}
-			<div className="mb-8">
+			<div>
 				<Heading level={1} size="lg">API Keys</Heading>
-				<Text className="text-text-secondary">
+				<Text className="text-muted-foreground mt-1">
 					Manage your app's API credentials for integration
 				</Text>
 			</div>
 
 			{/* Warning Banner */}
-			<Alert variant="warning" className="mb-6">
-				<div className="flex gap-4">
-					<Icon icon={IconType.AlertCircle} size={20} className="text-yellow-500 flex-shrink-0" />
-					<div>
-						<Text className="font-semibold text-text-primary mb-1">
-							Keep these keys secure!
-						</Text>
-						<Text className="text-text-secondary">
-							Never expose these keys in client-side code or public repositories. Store them securely as
-							environment variables.
-						</Text>
-					</div>
+			<Alert variant="warning">
+				<Icon icon={IconType.AlertCircle} size={20} />
+				<div>
+					<Text className="font-semibold mb-1">
+						Keep these keys secure!
+					</Text>
+					<Text className="text-muted-foreground text-sm">
+						Never expose these keys in client-side code or public repositories. Store them securely as
+						environment variables.
+					</Text>
 				</div>
 			</Alert>
 
 			{/* App ID Card */}
-			<Card className="mb-4">
-				<CardBody className="p-6">
-					<div className="flex items-start justify-between">
-						<div className="flex-1">
-							<Text className="form-label">
-								App ID (Public)
-							</Text>
-							<code className="code-block">
-								{app.id}
-							</code>
-							<Text className="text-12px text-text-tertiary mt-2">
-								This is your public app identifier. Safe to use in client-side code.
-							</Text>
-						</div>
+			<Card>
+				<CardBody>
+					<Text className="text-sm font-semibold text-muted-foreground mb-2">
+						App ID (Public)
+					</Text>
+					<code className="block w-full rounded-lg bg-muted/30 px-4 py-3 font-mono text-sm text-foreground break-all">
+						{app.id}
+					</code>
+					<Text className="text-xs text-muted-foreground mt-2">
+						This is your public app identifier. Safe to use in client-side code.
+					</Text>
+					<div className="flex gap-2 mt-4">
 						<Button
 							variant="secondary"
 							size="sm"
 							onClick={() => handleCopy(app.id, "appId")}
-							className="ml-4"
 						>
 							{copying === "appId" ? "✓ Copied" : "Copy"}
 						</Button>
@@ -218,108 +219,102 @@ export function AppApiKeysPage() {
 			</Card>
 
 			{/* Client Secret Card */}
-			<Card className="mb-4">
-				<CardBody className="p-6">
-					<div className="flex items-start justify-between mb-4">
-						<div className="flex-1">
-							<Text className="form-label">
-								Client Secret
-							</Text>
-							<code className="code-block">
-								{showSecret && revealedKeys.clientSecret ? revealedKeys.clientSecret : app.clientSecret}
-							</code>
-							<Text className="text-12px text-text-tertiary mt-2">
-								Used for server-to-server authentication. Keep this secret!
-							</Text>
-						</div>
-						<div className="flex gap-2 ml-4">
-							{showSecret && revealedKeys.clientSecret && (
-								<Button
-									variant="secondary"
-									size="sm"
-									onClick={() => handleCopy(revealedKeys.clientSecret!, "secret")}
-								>
-									{copying === "secret" ? "✓ Copied" : "Copy"}
-								</Button>
-							)}
+			<Card>
+				<CardBody>
+					<Text className="text-sm font-semibold text-muted-foreground mb-2">
+						Client Secret
+					</Text>
+					<code className="block w-full rounded-lg bg-muted/30 px-4 py-3 font-mono text-sm text-foreground break-all">
+						{showSecret && revealedKeys.clientSecret ? revealedKeys.clientSecret : app.clientSecret}
+					</code>
+					<Text className="text-xs text-muted-foreground mt-2">
+						Used for server-to-server authentication. Keep this secret!
+					</Text>
+					<div className="flex gap-2 mt-4">
+						{showSecret && revealedKeys.clientSecret && (
 							<Button
 								variant="secondary"
 								size="sm"
-								onClick={showSecret ? () => setShowSecret(false) : handleRevealKeys}
+								onClick={() => handleCopy(revealedKeys.clientSecret!, "secret")}
 							>
-								{showSecret ? "Hide" : "Reveal"}
+								{copying === "secret" ? "✓ Copied" : "Copy"}
 							</Button>
-						</div>
+						)}
+						<Button
+							variant="secondary"
+							size="sm"
+							onClick={showSecret ? () => setShowSecret(false) : handleRevealKeys}
+						>
+							{showSecret ? "Hide" : "Reveal"}
+						</Button>
+						<Button
+							variant="danger"
+							size="sm"
+							onClick={() => setShowRegenerateSecretModal(true)}
+						>
+							Regenerate Secret
+						</Button>
 					</div>
-					<Button
-						variant="danger"
-						size="sm"
-						onClick={() => setShowRegenerateSecretModal(true)}
-					>
-						Regenerate Secret
-					</Button>
 				</CardBody>
 			</Card>
 
 			{/* Service Token Card */}
-			<Card className="mb-6">
-				<CardBody className="p-6">
-					<div className="flex items-start justify-between mb-4">
-						<div className="flex-1">
-							<Text className="form-label">
-								Service Token
-							</Text>
-							<code className="code-block">
-								{showToken && revealedKeys.serviceToken ? revealedKeys.serviceToken : app.serviceToken}
-							</code>
-							<Text className="text-12px text-text-tertiary mt-2">
-								Used for API calls from your backend. Keep this secret!
-							</Text>
-						</div>
-						<div className="flex gap-2 ml-4">
-							{showToken && revealedKeys.serviceToken && (
-								<Button
-									variant="secondary"
-									size="sm"
-									onClick={() => handleCopy(revealedKeys.serviceToken!, "token")}
-								>
-									{copying === "token" ? "✓ Copied" : "Copy"}
-								</Button>
-							)}
+			<Card>
+				<CardBody>
+					<Text className="text-sm font-semibold text-muted-foreground mb-2">
+						Service Token
+					</Text>
+					<code className="block w-full rounded-lg bg-muted/30 px-4 py-3 font-mono text-sm text-foreground break-all">
+						{showToken && revealedKeys.serviceToken ? revealedKeys.serviceToken : app.serviceToken}
+					</code>
+					<Text className="text-xs text-muted-foreground mt-2">
+						Used for API calls from your backend. Keep this secret!
+					</Text>
+					<div className="flex gap-2 mt-4">
+						{showToken && revealedKeys.serviceToken && (
 							<Button
 								variant="secondary"
 								size="sm"
-								onClick={showToken ? () => setShowToken(false) : handleRevealKeys}
+								onClick={() => handleCopy(revealedKeys.serviceToken!, "token")}
 							>
-								{showToken ? "Hide" : "Reveal"}
+								{copying === "token" ? "✓ Copied" : "Copy"}
 							</Button>
-						</div>
+						)}
+						<Button
+							variant="secondary"
+							size="sm"
+							onClick={showToken ? () => setShowToken(false) : handleRevealKeys}
+						>
+							{showToken ? "Hide" : "Reveal"}
+						</Button>
+						<Button
+							variant="danger"
+							size="sm"
+							onClick={() => setShowRegenerateTokenModal(true)}
+						>
+							Regenerate Token
+						</Button>
 					</div>
-					<Button
-						variant="danger"
-						size="sm"
-						onClick={() => setShowRegenerateTokenModal(true)}
-					>
-						Regenerate Token
-					</Button>
 				</CardBody>
 			</Card>
 
 			{/* Integration Guide Link */}
-			<Card className="bg-surface-secondary">
-				<CardBody className="p-6">
+			<Card className="bg-muted/20">
+				<CardBody>
 					<div className="flex items-center gap-4 mb-4">
-						<Icon icon={IconType.Bookmark} size={24} className="text-primary" />
+						<IconBox variant="primary-subtle" size="lg">
+							<Icon icon={IconType.Bookmark} size={22} />
+						</IconBox>
 						<div>
-							<Text className="font-semibold text-text-primary mb-1">
+							<Text className="font-semibold mb-1">
 								Integration Guide
 							</Text>
-							<Text className="text-text-tertiary">
+							<Text className="text-muted-foreground text-sm">
 								Learn how to integrate Proofa into your application with code examples
 							</Text>
 						</div>
 					</div>
-					<Button variant="primary" size="sm" onClick={() => window.location.href = `/projects/${projectId}/apps/${appId}/developers`}>
+					<Button variant="primary" size="sm" onClick={() => navigate(`/projects/${projectId}/apps/${appId}/developers`)}>
 						View Guide
 					</Button>
 				</CardBody>

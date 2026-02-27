@@ -134,14 +134,14 @@ set_gateway_secrets() {
 # Deploy Core
 deploy_core() {
     echo -e "${BLUE}Deploying $CORE_APP...${NC}"
-    fly deploy . --dockerfile apps/core/Dockerfile --config apps/core/fly.toml --app "$CORE_APP" --no-cache
+    fly deploy . --dockerfile apps/services/core/Dockerfile --config apps/services/core/fly.toml --app "$CORE_APP" --no-cache
     echo -e "${GREEN}Core deployed successfully${NC}"
 }
 
 # Deploy Gateway
 deploy_gateway() {
     echo -e "${BLUE}Deploying $GATEWAY_APP...${NC}"
-    fly deploy . --dockerfile apps/gateway/Dockerfile --config apps/gateway/fly.toml --app "$GATEWAY_APP" --no-cache
+    fly deploy . --dockerfile apps/services/gateway/Dockerfile --config apps/services/gateway/fly.toml --app "$GATEWAY_APP" --no-cache
     echo -e "${GREEN}Gateway deployed successfully${NC}"
 }
 
