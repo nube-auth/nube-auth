@@ -1,0 +1,120 @@
+apps/packages/auth/src/crypto.ts
+  ca0797480df5063e 5,8,14-15,18-20,24,26-31,49,52-53
+docs/PRODUCT_SPEC.md
+  ca0797480df5063e 169
+docs/DASHBOARDS_COMPLETE_GUIDE.md
+  ca0797480df5063e 377,1271
+apps/packages/auth/src/adapters/google.ts
+  351020bd6da3ac9f 5,9-11,13-14,16-25,150,154,156-157,163-168
+apps/services/core/src/routes/v1/admin/license-management.ts
+  351020bd6da3ac9f 194,298
+docs/TODO_AUTH_FLOWS.md
+  351020bd6da3ac9f 1-228,230,232,234,236-339
+apps/services/core/src/routes/v1/license/index.ts
+  351020bd6da3ac9f 16
+apps/services/core/src/routes/v1/admin/plans.ts
+  351020bd6da3ac9f 24
+apps/services/gateway/src/routes/admin.ts
+  351020bd6da3ac9f 71-73,78-79,81
+apps/dashboard/admin/src/hooks/api.ts
+  351020bd6da3ac9f 50
+apps/services/gateway/src/middleware/csrf.ts
+  351020bd6da3ac9f 24
+turbo.json
+  ca0797480df5063e 25
+apps/services/gateway/src/middleware/rateLimit.ts
+  ca0797480df5063e 87-98
+docs/TODO_RATE_LIMITING.md
+  351020bd6da3ac9f 1-222
+apps/services/gateway/src/middleware/s2s.ts
+  ca0797480df5063e 3,9,14,16-17
+apps/packages/cache/src/client.ts
+  ca0797480df5063e 226-249
+  351020bd6da3ac9f 321,326,335
+apps/services/gateway/src/lib/core-client.ts
+  351020bd6da3ac9f 25
+apps/packages/shared/src/index.ts
+  ca0797480df5063e 84,97
+apps/dashboard/user/src/pages/Sessions.tsx
+  ca0797480df5063e 271-280
+  351020bd6da3ac9f 92,160-161,164,167,196-197,200,205,220
+apps/services/gateway/src/index.ts
+  351020bd6da3ac9f 71
+apps/packages/components/package.json
+  351020bd6da3ac9f 17,19-21,24
+apps/services/core/src/middleware/rateLimit.ts
+  ca0797480df5063e 67-69
+apps/services/core/src/index.ts
+  351020bd6da3ac9f 8,41-48
+docs/AUDIT_REPORT.md
+  ca0797480df5063e 214,375
+apps/packages/db/drizzle/0001_remove_is_admin.sql
+  ca0797480df5063e 1-3
+apps/packages/auth/src/session.ts
+  ca0797480df5063e 59,70-71
+apps/services/gateway/src/middleware/logger.ts
+  351020bd6da3ac9f 10
+apps/services/core/src/routes/v1/auth/index.ts
+  ca0797480df5063e 123-134,136-147
+apps/services/gateway/src/routes/auth.ts
+  ca0797480df5063e 4,108-144,263-265,275
+docs/TODO_ADMIN_DASHBOARD.md
+  ca0797480df5063e 1-454
+apps/services/core/src/middleware/s2s.ts
+  ca0797480df5063e 17
+apps/services/core/src/routes/v1/admin/test.ts
+  ca0797480df5063e 82,84-91
+apps/services/gateway/src/middleware/auth.ts
+  ca0797480df5063e 25,116,145,169,175-180
+apps/services/core/src/middleware/auth.ts
+  ca0797480df5063e 19,30
+apps/services/core/src/config/env.ts
+  ca0797480df5063e 43-44,109-113
+docs/TODO_USER_DASHBOARD.md
+  ca0797480df5063e 1-324
+apps/packages/shared/src/types/index.ts
+  ca0797480df5063e 210-227
+apps/services/core/src/routes/v1/admin/providers.ts
+  351020bd6da3ac9f 27
+apps/services/gateway/src/config/constants.ts
+  351020bd6da3ac9f 35,37
+apps/services/gateway/src/routes/me.ts
+  ca0797480df5063e 52
+apps/services/core/src/routes/v1/admin/index.ts
+  351020bd6da3ac9f 74
+apps/packages/db/src/queries.ts
+  ca0797480df5063e 1174
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.5",
+  "base_commit_sha": "b50c2cad1f17e95ed42d989ce842aa0d462be7d1",
+  "prompts": {
+    "351020bd6da3ac9f": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "bb71da80-1907-4c7f-85c6-f3afd893b747",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 781,
+      "total_deletions": 98,
+      "accepted_lines": 629,
+      "overriden_lines": 4
+    },
+    "ca0797480df5063e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6a3cebda-12e4-4b70-bcc0-c715a02f1d6b",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 1232,
+      "total_deletions": 55,
+      "accepted_lines": 984,
+      "overriden_lines": 1
+    }
+  }
+}
