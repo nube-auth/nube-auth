@@ -9,7 +9,6 @@ export interface User {
 	primary_email_verified: boolean;
 	name: string | null;
 	avatar_url: string | null;
-	is_admin: boolean;
 	created_at: number; // epoch seconds
 	updated_at: number; // epoch seconds
 }
@@ -207,6 +206,25 @@ export interface AuditLog {
 	ip_address: string | null;
 	created_at: number;
 }
+
+/**
+ * App Entitlement
+ * Represents what a session can do within a specific scope
+ */
+export interface AppEntitlement {
+	role: string;
+	resources?: string[];
+	metadata?: Record<string, unknown>;
+}
+
+/**
+ * Session Entitlements
+ * Map of scope key → entitlement
+ * For admin dashboard: key = project public_id, value = { role, resources: [app public_ids] }
+ * For user dashboard: key = "identity"
+ * For third-party apps: key = app-defined scope
+ */
+export type SessionEntitlements = Record<string, AppEntitlement>;
 
 /**
  * API Response wrapper

@@ -191,7 +191,7 @@ licenseManagementRouter.patch("/:projectId/licenses/:licenseId", async (c: Conte
 			return c.json({ error: "Must provide at least one field to update: status, planSlug, or validUntil" }, 400);
 		}
 
-		const userId = c.req.header("X-User-Id");
+		const userId = c.req.header("X-Proofa-User-Id");
 		if (!userId) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}
@@ -295,7 +295,7 @@ licenseManagementRouter.delete("/:projectId/licenses/:licenseId", async (c: Cont
 			return c.json({ error: "Invalid licenseId" }, 400);
 		}
 
-		const userId = c.req.header("X-User-Id");
+		const userId = c.req.header("X-Proofa-User-Id");
 		if (!userId) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}

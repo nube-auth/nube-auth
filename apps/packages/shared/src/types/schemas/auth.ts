@@ -10,7 +10,6 @@ export const UserDTOSchema = z.object({
 	email: EmailSchema,
 	name: NameSchema.nullable().optional(),
 	avatarUrl: z.string().url().nullable().optional(),
-	isAdmin: z.boolean(),
 	createdAt: z.number(),
 	updatedAt: z.number(),
 });

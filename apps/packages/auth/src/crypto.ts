@@ -2,29 +2,33 @@ import * as crypto from "node:crypto";
 import { OTP_LENGTH } from "@proofa/shared";
 
 /**
- * Generate a random 6-digit OTP
+ * Generate a cryptographically secure random 6-digit OTP
  */
 export function generateOTP(): string {
-	return Math.floor(Math.random() * 1000000)
+	return crypto.randomInt(0, 1000000)
 		.toString()
 		.padStart(OTP_LENGTH, "0");
 }
 
 /**
- * Hash OTP using bcrypt-like approach
- * (In production, use bcrypt library)
+ * Hash OTP using PBKDF2 with a random per-OTP salt.
+ * Returns "salt:hash" string.
  */
 export function hashOTP(otp: string): string {
-	// For MVP, use simple PBKDF2 hashing
-	return crypto.pbkdf2Sync(otp, "proofa-otp-salt", 100000, 64, "sha256").toString("hex");
+	const salt = crypto.randomBytes(16).toString("hex");
+	const hash = crypto.pbkdf2Sync(otp, salt, 100000, 64, "sha256").toString("hex");
+	return `${salt}:${hash}`;
 }
 
 /**
- * Verify OTP against hash
+ * Verify OTP against stored "salt:hash" using constant-time comparison
  */
-export function verifyOTP(otp: string, hash: string): boolean {
-	const otpHash = hashOTP(otp);
-	return otpHash === hash;
+export function verifyOTP(otp: string, storedHash: string): boolean {
+	const [salt, hash] = storedHash.split(":");
+	if (!salt || !hash) return false;
+	const otpHash = crypto.pbkdf2Sync(otp, salt, 100000, 64, "sha256").toString("hex");
+	if (otpHash.length !== hash.length) return false;
+	return crypto.timingSafeEqual(Buffer.from(otpHash), Buffer.from(hash));
 }
 
 /**
@@ -42,8 +46,9 @@ export function generateS2SToken(length = 32): string {
 }
 
 /**
- * Validate S2S token
+ * Validate S2S token using constant-time comparison
  */
 export function validateS2SToken(token: string, expectedToken: string): boolean {
-	return token === expectedToken;
+	if (token.length !== expectedToken.length) return false;
+	return crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expectedToken));
 }

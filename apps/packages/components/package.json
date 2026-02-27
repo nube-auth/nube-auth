@@ -14,14 +14,14 @@
       "import": "./dist/components/*.js",
       "types": "./dist/components/*.d.ts"
     },
-    "./theme.css": "./theme.css",
+    "./theme.css": "./src/styles/theme.css",
     "./selia-theme.css": "./selia-theme.css",
-    "./tailwind.css": "./tailwind.css",
-    "./styles": "./tailwind.css",
-    "./styles/theme.css": "./theme.css",
+    "./tailwind.css": "./src/styles/tailwind.css",
+    "./styles": "./src/styles/tailwind.css",
+    "./styles/theme.css": "./src/styles/theme.css",
     "./styles/selia-theme.css": "./selia-theme.css",
     "./styles/selia.css": "./src/styles/selia.css",
-    "./styles/tailwind.css": "./tailwind.css"
+    "./styles/tailwind.css": "./src/styles/tailwind.css"
   },
   "files": [
     "dist",

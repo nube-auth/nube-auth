@@ -166,7 +166,7 @@ Foreign keys reference internal `id`. Public IDs are for API responses and loggi
 | `primary_email_verified` | BOOLEAN | NO | DEFAULT false | |
 | `name` | TEXT | YES | | Display name |
 | `avatar_url` | TEXT | YES | | Profile picture URL |
-| `is_admin` | BOOLEAN | NO | DEFAULT false | Admin flag for authorization |
+| `is_test` | BOOLEAN | NO | DEFAULT false | Test user flag |
 | `created_at` | INTEGER | NO | | Epoch seconds |
 | `updated_at` | INTEGER | NO | | Epoch seconds |
 

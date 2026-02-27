@@ -14,7 +14,7 @@ const log = createLogger("s2s-middleware");
  */
 export async function s2sMiddleware(c: Context, next: Next): Promise<Response | undefined> {
 	try {
-		const s2sToken = c.req.header("x-s2s-token");
+		const s2sToken = c.req.header("x-proofa-s2s-token");
 
 		if (!s2sToken) {
 			log.warn({ path: c.req.path }, "Missing S2S token");

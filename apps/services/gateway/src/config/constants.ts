@@ -32,9 +32,9 @@ export const PUBLIC_ROUTES = ["/auth/start", "/auth/callback", "/health"];
 export const AUTH_REQUIRED_ROUTES = ["/me", "/me/profile", "/me/sessions", "/me/logout", "/admin"];
 
 // Headers
-export const REQUEST_ID_HEADER = "X-Request-ID";
+export const REQUEST_ID_HEADER = "X-Proofa-Request-Id";
 export const SERVICE_TOKEN_HEADER = "X-Proofa-Service-Token";
-export const APP_ID_HEADER = "X-App-ID";
+export const APP_ID_HEADER = "X-Proofa-App-Id";
 
 // CORS
 export const CORS_DEFAULT_METHODS = ["GET", "POST", "PATCH", "DELETE", "OPTIONS"];

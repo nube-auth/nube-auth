@@ -211,7 +211,7 @@ All secret comparisons use `===`/`!==` instead of `crypto.timingSafeEqual`, enab
 | 2 | **No transactions used in any query** — despite having transaction utilities | `packages/db/src/queries.ts` | Wrap multi-step mutations in transactions |
 | 3 | **`setAsDefault` race condition** — two UPDATEs without transaction | `packages/db/src/queries.ts:964` | Wrap in transaction |
 | 4 | **License delete is a no-op** — returns success without deleting | `core/src/routes/v1/admin/index.ts:150` | Implement actual deletion |
-| 5 | **No admin role verification in Gateway** — only checks cookie type, not `is_admin` flag | `gateway/src/routes/admin.ts:23` | Verify `is_admin` from database |
+| 5 | **~~No admin role verification in Gateway~~** — ✅ RESOLVED: Replaced `is_admin` with session entitlements from project_members | `gateway/src/routes/admin.ts` | N/A |
 
 ---
 
@@ -372,7 +372,7 @@ All secret comparisons use `===`/`!==` instead of `crypto.timingSafeEqual`, enab
 | 9 | Implement actual Toast notification component | Users can see success/error feedback |
 | 10 | Add React Error Boundaries | Prevents white-screen crashes |
 | 11 | Implement gateway user routes (currently all stubs) | User dashboard becomes functional |
-| 12 | Add admin role verification (check `is_admin` in DB) | Prevents privilege escalation |
+| 12 | ~~Add admin role verification~~ ✅ Implemented via session entitlements | Prevents privilege escalation |
 | 13 | Fix rate limiter (atomic INCR+EXPIRE, fail closed for auth) | Prevents brute force attacks |
 | 14 | Add pool error handler | Prevents process crashes |
 | 15 | Verify Google JWT signatures | Prevents identity spoofing |

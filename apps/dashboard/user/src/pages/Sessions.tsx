@@ -89,7 +89,7 @@ function getDeviceIcon(os: string) {
 
 export function SessionsPage() {
 	const { user } = useMe();
-	const { sessions, isLoading } = useSessions();
+	const { sessions, isLoading, deleteSession, isDeleting, deleteAll, isDeletingAll } = useSessions();
 	const { logout, isLoggingOut } = useAuth();
 
 	if (isLoading) {
@@ -157,14 +157,14 @@ export function SessionsPage() {
 						<Icon icon={IconType.Info} size={18} />
 						<span>You have {activeSessions.length} active sessions across your devices.</span>
 					</div>
-					<Button variant="danger" size="sm" onClick={() => logout()} disabled={isLoggingOut}>
-						{isLoggingOut ? (
+					<Button variant="danger" size="sm" onClick={() => deleteAll()} disabled={isDeletingAll}>
+						{isDeletingAll ? (
 							<>
 							<Spinner className="size-3.5" />
-							<span>Logging out...</span>
+							<span>Revoking...</span>
 						</>
 					) : (
-						"Log Out All Other Devices"
+						"Revoke All Other Sessions"
 					)}
 				</Button>
 			</Alert>		)}
@@ -193,16 +193,16 @@ export function SessionsPage() {
 			<Card>
 				<CardHeader className="flex items-center justify-between">
 					<CardTitle>All Sessions</CardTitle>
-					<Button variant="danger" size="sm" onClick={() => logout()} disabled={isLoggingOut}>
-						{isLoggingOut ? (
+					<Button variant="danger" size="sm" onClick={() => deleteAll()} disabled={isDeletingAll}>
+						{isDeletingAll ? (
 							<>
 								<Spinner className="size-3.5" />
-								Logging out...
+								Revoking...
 							</>
 						) : (
 							<>
 								<Icon icon={IconType.Logout} size={16} bold />
-								Logout All
+								Revoke All
 							</>
 						)}
 					</Button>
@@ -217,6 +217,7 @@ export function SessionsPage() {
 										<TableHead>Location</TableHead>
 										<TableHead>Created</TableHead>
 										<TableHead>Status</TableHead>
+										<TableHead></TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
@@ -265,6 +266,18 @@ export function SessionsPage() {
 														<Chip variant="danger" size="sm" pill>Expired</Chip>
 													) : (
 														<Chip variant="info" size="sm" pill>Active</Chip>
+													)}
+												</TableCell>
+												<TableCell>
+													{!isCurrent && !isExpired && (
+														<Button
+															variant="danger"
+															size="sm"
+															onClick={() => deleteSession(session.id)}
+															disabled={isDeleting}
+														>
+															Revoke
+														</Button>
 													)}
 												</TableCell>
 											</TableRow>

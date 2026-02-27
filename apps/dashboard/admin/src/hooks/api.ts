@@ -47,7 +47,7 @@ async function fetchAPI<T>(path: string, options?: RequestInit, schema?: any): P
 	if (options?.method && !["GET", "HEAD", "OPTIONS"].includes(options.method.toUpperCase())) {
 		const csrfToken = getCsrfToken();
 		if (csrfToken) {
-			headers["X-CSRF-Token"] = csrfToken;
+			headers["X-Proofa-CSRF-Token"] = csrfToken;
 		}
 	}
 

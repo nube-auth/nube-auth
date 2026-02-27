@@ -13,7 +13,7 @@ const router = new Hono();
  */
 router.get("/:appId", async (c: Context) => {
 	const appId = c.req.param("appId");
-	const userPublicId = c.req.header("X-User-Id") ?? c.req.header("x-user-id");
+	const userPublicId = c.req.header("X-Proofa-User-Id");
 
 	if (!userPublicId) {
 		return c.json({ error: "Unauthorized - missing user ID" }, 401);

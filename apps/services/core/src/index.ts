@@ -5,6 +5,7 @@ import { cors } from "hono/cors";
 import { env } from "./config/env";
 import { errorHandler } from "./middleware/error";
 import { httpLogger, requestIdMiddleware } from "./middleware/logger";
+import { s2sMiddleware } from "./middleware/s2s";
 import { adminRoutes } from "./routes/v1/admin";
 import { authRoutes } from "./routes/v1/auth";
 import { billingRoutes } from "./routes/v1/billing";
@@ -29,13 +30,21 @@ app.use(
 		},
 		credentials: true,
 		allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-		allowHeaders: ["Content-Type", "Authorization", "X-Proofa-Service-Token"],
+		allowHeaders: ["Content-Type", "Authorization", "X-Proofa-Service-Token", "X-Proofa-S2S-Token", "X-Proofa-User-Id", "X-Proofa-Session-Id", "X-Proofa-Project-Id"],
 		exposeHeaders: ["Set-Cookie"],
 	}),
 );
 
 app.use("*", httpLogger(log));
 app.use("*", requestIdMiddleware);
+
+// S2S authentication — protect all service-to-service routes
+// Auth /start and /callback are browser-facing (OAuth redirects), exempt from S2S
+app.use("/v1/auth/exchange", s2sMiddleware);
+app.use("/v1/billing/*", s2sMiddleware);
+app.use("/v1/email/*", s2sMiddleware);
+app.use("/v1/license/*", s2sMiddleware);
+app.use("/v1/admin/*", s2sMiddleware);
 
 // Routes
 app.route("/v1/auth", authRoutes);

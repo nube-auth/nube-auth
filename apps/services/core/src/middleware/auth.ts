@@ -16,7 +16,7 @@ export interface AuthenticatedContext {
 
 /**
  * Core session validation middleware
- * Validates session from X-Session-Id header (S2S calls) or signed cookie
+ * Validates session from X-Proofa-Session-Id header (S2S calls) or signed cookie
  * 
  * Security: Session must exist, be unexpired, and belong to a valid user
  * Tracking: https://github.com/0xdps/proofa-core/issues/42
@@ -27,7 +27,7 @@ export async function authMiddleware(c: Context, next: Next): Promise<Response |
 		const now = new Date();
 
 		// Check for session in header (S2S) or signed cookie
-		const sessionHeader = c.req.header("x-session-id");
+		const sessionHeader = c.req.header("x-proofa-session-id");
 		const sessionCookie = await getSignedCookie(c, "session_secret", "sessionId");
 		const sessionPublicId = sessionHeader || sessionCookie;
 

@@ -2,32 +2,27 @@ import { GoogleTokenResponseSchema, GoogleUserInfoSchema } from "../schemas/inde
 import type { OAuthAdapter, OAuthProfile } from "../types/index.js";
 import { pingpongFetch } from "../pingpong.js";
 import { createLogger } from "@proofa/shared";
+import * as jose from "jose";
 
 const log = createLogger("google-oauth-adapter");
 
+const GOOGLE_JWKS_URL = "https://www.googleapis.com/oauth2/v3/certs";
+const GOOGLE_ISSUERS = ["https://accounts.google.com", "accounts.google.com"];
+
 /**
- * Decode JWT payload without verification
- * Note: In production, you should verify the JWT signature
- * For now, we trust Google's signed response
+ * Verify and decode a Google id_token using JWKS
+ * Validates signature, audience, issuer, and expiry
  */
-function decodeJWT(token: string): Record<string, any> {
-	try {
-		const parts = token.split('.');
-		if (parts.length !== 3) {
-			throw new Error('Invalid JWT format');
-		}
-		const payload = parts[1];
-		if (!payload) {
-			throw new Error('Invalid JWT payload');
-		}
-		// Add padding if needed
-		const padded = payload + '='.repeat((4 - payload.length % 4) % 4);
-		const decoded = Buffer.from(padded, 'base64').toString('utf-8');
-		return JSON.parse(decoded);
-	} catch (error) {
-		log.error({ error: error instanceof Error ? error.message : String(error) }, "Failed to decode JWT");
-		throw new Error(`Failed to decode JWT: ${error instanceof Error ? error.message : String(error)}`);
-	}
+async function verifyGoogleIdToken(
+	idToken: string,
+	clientId: string,
+): Promise<Record<string, unknown>> {
+	const jwks = jose.createRemoteJWKSet(new URL(GOOGLE_JWKS_URL));
+	const { payload } = await jose.jwtVerify(idToken, jwks, {
+		audience: clientId,
+		issuer: GOOGLE_ISSUERS,
+	});
+	return payload as Record<string, unknown>;
 }
 
 /**
@@ -152,21 +147,25 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
 
 	/**
 	 * Fetch user profile using id_token (JWT) from OpenID Connect flow
-	 * The id_token contains all user info we need, no HTTP call required
+	 * Verifies JWT signature against Google's JWKS before extracting claims
 	 */
 	async fetchUserProfile(idTokenOrAccessToken: string): Promise<OAuthProfile> {
 		try {
-			// For OpenID Connect, we should have been called with idToken instead of accessToken
-			// If idTokenOrAccessToken looks like a JWT (has dots), decode it
+			// For OpenID Connect, if it looks like a JWT (has dots), verify and decode it
 			if (idTokenOrAccessToken.includes('.')) {
-				log.debug({ tokenPrefix: idTokenOrAccessToken.substring(0, 20) }, "Decoding id_token JWT");
-				const decoded = decodeJWT(idTokenOrAccessToken);
+				log.debug({ tokenPrefix: idTokenOrAccessToken.substring(0, 20) }, "Verifying id_token JWT");
+				const decoded = await verifyGoogleIdToken(idTokenOrAccessToken, this.clientId);
 				
 				log.debug({ 
 					keys: Object.keys(decoded),
 					hasEmail: !!decoded['email'],
 					hasSub: !!decoded['sub']
-				}, "Decoded id_token");
+				}, "Verified id_token");
+
+				// Reject unverified emails
+				if (decoded['email_verified'] !== true) {
+					throw new Error("Google email not verified");
+				}
 
 				const data = GoogleUserInfoSchema.parse({
 					sub: decoded['sub'],

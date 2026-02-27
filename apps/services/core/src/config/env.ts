@@ -40,6 +40,8 @@ export interface Environment {
 	RATE_LIMIT_WINDOW_SECONDS: number;
 	MAX_EMAIL_ATTEMPTS: number;
 	MAX_OAUTH_ATTEMPTS: number;
+	// Allowed redirect origins for OAuth (comma-separated)
+	ALLOWED_REDIRECT_ORIGINS: string[];
 	// Payment provider keys (optional - for testing/integration)
 	STRIPE_SECRET_KEY?: string | undefined;
 	STRIPE_PUBLISHABLE_KEY?: string | undefined;
@@ -104,6 +106,11 @@ function getEnvironment(): Environment {
 		RATE_LIMIT_WINDOW_SECONDS: parseInt(process.env["RATE_LIMIT_WINDOW_SECONDS"] ?? "900", 10), // 15 minutes
 		MAX_EMAIL_ATTEMPTS: parseInt(process.env["MAX_EMAIL_ATTEMPTS"] ?? "3", 10),
 		MAX_OAUTH_ATTEMPTS: parseInt(process.env["MAX_OAUTH_ATTEMPTS"] ?? "3", 10),
+		// Allowed redirect origins for OAuth
+		ALLOWED_REDIRECT_ORIGINS: (process.env["ALLOWED_REDIRECT_ORIGINS"] ?? "http://localhost:3004,http://localhost:5173,http://localhost:5174,https://api.proofa.sh,https://user.proofa.sh,https://manage.proofa.sh")
+			.split(",")
+			.map((s) => s.trim())
+			.filter(Boolean),
 		// Payment provider keys (optional)
 		STRIPE_SECRET_KEY: process.env["STRIPE_SECRET_KEY"],
 		STRIPE_PUBLISHABLE_KEY: process.env["STRIPE_PUBLISHABLE_KEY"],

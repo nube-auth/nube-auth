@@ -1,6 +1,12 @@
 import { createClient, type RedisClientType } from "redis";
 
 /**
+ * Session entitlements stored in Redis.
+ * Canonical definition lives in @proofa/shared — this is a structural match.
+ */
+type SessionEntitlements = Record<string, { role: string; resources?: string[]; metadata?: Record<string, unknown> }>;
+
+/**
  * Redis singleton instance
  * Lazily initialized on first use
  */
@@ -217,6 +223,30 @@ export const cache = {
 			console.error(`Cache clear error:`, error);
 		}
 	},
+
+	/**
+	 * Atomically increment a key and set expiry if it's the first increment.
+	 * Uses MULTI/EXEC to ensure INCR and EXPIRE are applied together.
+	 * Returns { current, ttl }.
+	 */
+	async incrementWithExpire(key: string, ttlSeconds: number): Promise<{ current: number; ttl: number }> {
+		const client = await getRedisClient();
+		const multi = client.multi();
+		multi.incr(key);
+		multi.ttl(key);
+		const results = await multi.exec();
+
+		const current = results[0] as number;
+		const ttl = results[1] as number;
+
+		// If TTL is -1, the key has no expiry (first increment) — set it now
+		if (ttl === -1) {
+			await client.expire(key, ttlSeconds);
+			return { current, ttl: ttlSeconds };
+		}
+
+		return { current, ttl };
+	},
 };
 
 /**
@@ -288,11 +318,12 @@ export const sessionStore = {
 		appId: string,
 		ttlSeconds: number,
 		metadata?: Record<string, unknown>,
+		entitlements?: SessionEntitlements,
 	): Promise<void> {
 		try {
 			const client = await getRedisClient();
 			const key = `session:app:${sessionId}`;
-			const sessionData = { userId, appId, metadata };
+			const sessionData = { userId, appId, metadata, entitlements };
 			await client.setEx(key, ttlSeconds, JSON.stringify(sessionData));
 		} catch (error) {
 			console.error(`Session store setAppSession error:`, error);
@@ -301,7 +332,7 @@ export const sessionStore = {
 
 	async getAppSession(
 		sessionId: string,
-	): Promise<{ userId: string; appId: string; metadata?: Record<string, unknown> } | null> {
+	): Promise<{ userId: string; appId: string; metadata?: Record<string, unknown>; entitlements?: SessionEntitlements } | null> {
 		try {
 			const client = await getRedisClient();
 			const key = `session:app:${sessionId}`;

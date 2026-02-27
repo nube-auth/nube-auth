@@ -51,22 +51,14 @@ export function rateLimitMiddleware(options: RateLimitOptions) {
 			const path = c.req.path;
 			const key = `${keyPrefix}:${id}:${path}`;
 
-			// Increment counter
-			const current = await cache.increment(key, 1);
-
-			// Set expiry on first request
-			if (current === 1) {
-				await cache.setTTL(key, windowSeconds);
-			}
-
-			// Get TTL for rate limit reset time
-			const ttl = await cache.ttl(key);
+			// Atomically increment counter and get TTL
+			const { current, ttl } = await cache.incrementWithExpire(key, windowSeconds);
 			const resetTime = Date.now() + ttl * 1000;
 
 			// Set rate limit headers
-			c.header("X-RateLimit-Limit", maxRequests.toString());
-			c.header("X-RateLimit-Remaining", Math.max(0, maxRequests - current).toString());
-			c.header("X-RateLimit-Reset", resetTime.toString());
+			c.header("X-Proofa-RateLimit-Limit", maxRequests.toString());
+			c.header("X-Proofa-RateLimit-Remaining", Math.max(0, maxRequests - current).toString());
+			c.header("X-Proofa-RateLimit-Reset", resetTime.toString());
 
 			// Check if limit exceeded
 			if (current > maxRequests) {
@@ -92,8 +84,18 @@ export function rateLimitMiddleware(options: RateLimitOptions) {
 			await next();
 			return;
 		} catch (error) {
-			// Don't block requests if rate limiting fails
-			log.error({ err: error }, "Rate limiting error, allowing request");
+			// Fail closed on sensitive auth/email endpoints to prevent brute force
+			const path = c.req.path;
+			const isSensitive = path.startsWith("/v1/auth") ||
+				path.startsWith("/v1/email") ||
+				path.includes("/login");
+
+			if (isSensitive) {
+				log.error({ err: error, path }, "Rate limit Redis failure on auth endpoint — blocking request");
+				return c.json({ error: "Service temporarily unavailable" }, 503);
+			}
+
+			log.error({ err: error, path }, "Rate limiting error, allowing request");
 			await next();
 			return;
 		}

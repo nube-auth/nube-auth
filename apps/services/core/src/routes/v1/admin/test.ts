@@ -3,7 +3,7 @@
  * Admin-only endpoints for testing payment flows without manual setup
  */
 
-import { getDb, testSessionQueries, userQueries, appQueries, planQueries, projectQueries } from "@proofa/db";
+import { getDb, testSessionQueries, userQueries, appQueries, planQueries, projectQueries, projectMemberQueries } from "@proofa/db";
 import { createId, createLogger, serializeError, publicId } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -22,7 +22,7 @@ const testRateLimit = rateLimitMiddleware({
 	keyPrefix: "rate-limit:admin-test",
 	identifier: async (c: Context) => {
 		// Use admin ID from header as identifier
-		const adminId = c.req.header("X-User-Id");
+		const adminId = c.req.header("X-Proofa-User-Id");
 		return adminId || "anonymous";
 	},
 });
@@ -72,17 +72,23 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 		}
 
 		// Get admin user ID from header
-		const adminPublicId = c.req.header("X-User-Id");
+		const adminPublicId = c.req.header("X-Proofa-User-Id");
 		if (!adminPublicId) {
 			return c.json({ error: "Unauthorized - no admin ID" }, 401);
 		}
 
 		const db = getDb();
 
-		// Validate admin exists
+		// Validate admin exists and has admin/owner role in at least one project
 		const adminUser = await userQueries.findByPublicId(db, adminPublicId);
-		if (!adminUser || !adminUser.is_admin) {
-			return c.json({ error: "Unauthorized - not an admin" }, 403);
+		if (!adminUser) {
+			return c.json({ error: "Unauthorized - user not found" }, 403);
+		}
+
+		const memberships = await projectMemberQueries.findByUserId(db, adminUser.id);
+		const hasAdminRole = memberships.some((m) => m.role === "owner" || m.role === "admin");
+		if (!hasAdminRole) {
+			return c.json({ error: "Unauthorized - not a project admin" }, 403);
 		}
 
 		// SECURITY: Validate test mode credentials

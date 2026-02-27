@@ -24,7 +24,7 @@ const log = createLogger("admin-providers");
 const providersRouter = new Hono();
 
 function getUserIdHeader(c: Context): string | null {
-	const header = c.req.header("X-User-Id") ?? c.req.header("x-user-id");
+	const header = c.req.header("X-Proofa-User-Id");
 	return header || null;
 }
 

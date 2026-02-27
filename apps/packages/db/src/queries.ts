@@ -1171,7 +1171,7 @@ export const testSessionQueries = {
 		const deletedUsers = await db
 			.delete(users)
 			.where(
-				and(eq(users.is_test, true), eq(users.is_admin, false), lt(users.created_at, cutoffTime))
+				and(eq(users.is_test, true), lt(users.created_at, cutoffTime))
 			)
 			.returning({ id: users.id });
 

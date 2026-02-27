@@ -1,5 +1,6 @@
 import { parseSessionCookie } from "@proofa/auth";
 import { cache, sessionStore } from "@proofa/cache";
+import type { SessionEntitlements } from "@proofa/shared";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
@@ -21,6 +22,7 @@ export interface AuthContext {
 	sessionId: string;
 	appSessionId?: string;
 	coreSessionId: string;
+	entitlements: SessionEntitlements;
 }
 
 /**
@@ -111,7 +113,7 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 			await sessionStore.setAppSession(sessionId, appSession.userId, appSession.appId, ADMIN_INACTIVITY_TIMEOUT, {
 				...appSession.metadata,
 				lastActivityAt: Date.now(),
-			});
+			}, appSession.entitlements);
 		}
 
 		// Refresh gateway session TTL on access (rolling TTL for app session)
@@ -140,6 +142,7 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 			sessionId,
 			appSessionId: sessionId,
 			coreSessionId,
+			entitlements: appSession.entitlements ?? {},
 		};
 
 		c.set("auth", auth);
@@ -163,12 +166,18 @@ export function getAuth(c: Context): AuthContext {
 
 /**
  * S2S token validation middleware for internal requests
+ * Uses constant-time comparison to prevent timing attacks
  */
 export const s2sAuthMiddleware = createMiddleware(async (c: Context, next) => {
-	const token = c.req.header("X-S2S-Token");
+	const token = c.req.header("X-Proofa-S2S-Token");
 	const expectedToken = env.X_PROOFA_SERVICE_TOKEN;
 
-	if (!token || !expectedToken || token !== expectedToken) {
+	if (!token || !expectedToken || token.length !== expectedToken.length) {
+		return c.json({ error: "Unauthorized" }, 401);
+	}
+
+	const { timingSafeEqual } = await import("node:crypto");
+	if (!timingSafeEqual(Buffer.from(token), Buffer.from(expectedToken))) {
 		return c.json({ error: "Unauthorized" }, 401);
 	}
 

@@ -22,8 +22,9 @@
 		"dev": "tsc --watch"
 	},
 	"dependencies": {
-		"@proofa/shared": "workspace:*",
 		"@pingpong-js/fetch": "^1.0.2",
+		"@proofa/shared": "workspace:*",
+		"jose": "^6.1.3",
 		"zod": "^4.2.1"
 	},
 	"devDependencies": {

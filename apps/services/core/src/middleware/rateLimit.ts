@@ -64,9 +64,9 @@ export function rateLimitMiddleware(options: RateLimitOptions) {
 			const resetTime = Date.now() + ttl * 1000;
 
 			// Set rate limit headers
-			c.header("X-RateLimit-Limit", maxRequests.toString());
-			c.header("X-RateLimit-Remaining", Math.max(0, maxRequests - current).toString());
-			c.header("X-RateLimit-Reset", resetTime.toString());
+			c.header("X-Proofa-RateLimit-Limit", maxRequests.toString());
+			c.header("X-Proofa-RateLimit-Remaining", Math.max(0, maxRequests - current).toString());
+			c.header("X-Proofa-RateLimit-Reset", resetTime.toString());
 
 			// Check if limit exceeded
 			if (current > maxRequests) {

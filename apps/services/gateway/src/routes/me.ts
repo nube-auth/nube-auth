@@ -49,6 +49,7 @@ meRoutes.get("/", async (c: Context) => {
 			email: auth.email,
 			name: auth.name,
 			createdAt: user?.created_at ? new Date(user.created_at).toISOString() : null,
+			entitlements: auth.entitlements,
 		});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get me error:");

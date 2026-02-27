@@ -50,7 +50,6 @@ async function seedProjectAndApp() {
 				primary_email: "demo@example.com",
 				primary_email_verified: true,
 				name: "Demo User",
-				is_admin: false,
 				created_at: new Date(),
 				updated_at: new Date(),
 			});

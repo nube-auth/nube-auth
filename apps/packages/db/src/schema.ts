@@ -13,7 +13,6 @@ export const users = pgTable(
 		primary_email_verified: boolean("primary_email_verified").notNull().default(false),
 		name: varchar("name", { length: 255 }),
 		avatar_url: text("avatar_url"),
-		is_admin: boolean("is_admin").notNull().default(false),
 		is_test: boolean("is_test").notNull().default(false),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 		updated_at: timestamp("updated_at").notNull().defaultNow(),

@@ -81,6 +81,7 @@ export type { LockoutConfig } from "./middleware/lockout.js";
 export type {
 	ApiResponse,
 	App,
+	AppEntitlement,
 	AppTokens,
 	AuditLog,
 	AuthCode,
@@ -93,6 +94,7 @@ export type {
 	ProjectMember,
 	SecuritySettings,
 	Session,
+	SessionEntitlements,
 	TrialConfig,
 	User,
 } from "./types/index.js";

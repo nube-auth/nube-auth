@@ -71,7 +71,7 @@ router.post("/license/grant", async (c: Context) => {
 
 		// Audit log: license granted
 		try {
-			const adminUserId = c.req.header("X-User-Id");
+			const adminUserId = c.req.header("X-Proofa-User-Id");
 			const adminUser = adminUserId ? await userQueries.findByPublicId(db, adminUserId) : null;
 
 			await auditLogQueries.create(db, {

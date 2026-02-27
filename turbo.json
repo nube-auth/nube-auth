@@ -22,6 +22,7 @@
 			"cache": true
 		},
 		"typecheck": {
+			"dependsOn": ["^build"],
 			"cache": true
 		},
 		"format": {

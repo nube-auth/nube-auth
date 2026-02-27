@@ -120,6 +120,31 @@ router.get("/start", async (c: Context) => {
 		return c.json({ error: "Missing redirect_uri" }, 400);
 	}
 
+	// Validate redirect_uri against allowed origins
+	try {
+		const redirectUrl = new URL(redirectUri);
+		const redirectOrigin = redirectUrl.origin;
+		const isAllowed = env.ALLOWED_REDIRECT_ORIGINS.some((allowed) => redirectOrigin === allowed);
+
+		if (!isAllowed) {
+			// If an app is specified, also check the app's own redirect URIs
+			let appAllowed = false;
+			if (appId) {
+				const db = getDb();
+				const app = await appQueries.findByPublicId(db, appId);
+				const appRedirectUris = (app?.security_settings as Record<string, unknown> | null)?.['redirectUris'] as string[] | undefined;
+				appAllowed = appRedirectUris?.includes(redirectUri) ?? false;
+			}
+			if (!appAllowed) {
+				log.warn({ redirectUri, appId }, "Invalid redirect_uri - not in allowlist");
+				return c.json({ error: "Invalid redirect_uri" }, 400);
+			}
+		}
+	} catch {
+		log.warn({ redirectUri }, "Invalid redirect_uri format");
+		return c.json({ error: "Invalid redirect_uri" }, 400);
+	}
+
 	try {
 		let adapter;
 		if (provider === "google") {

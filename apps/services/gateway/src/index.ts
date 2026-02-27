@@ -68,7 +68,7 @@ app.use(
 		},
 		credentials: true,
 		allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-		allowHeaders: ["Content-Type", "Authorization", "X-Proofa-Service-Token", "X-CSRF-Token"],
+		allowHeaders: ["Content-Type", "Authorization", "X-Proofa-Service-Token", "X-Proofa-CSRF-Token", "X-Proofa-S2S-Token", "X-Proofa-Project-Id"],
 		exposeHeaders: ["Set-Cookie"],
 	}),
 );

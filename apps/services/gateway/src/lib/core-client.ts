@@ -22,7 +22,7 @@ export class CoreClient {
 		const url = `${this.baseUrl}${path}`;
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
-			"X-S2S-Token": this.s2sToken,
+			"X-Proofa-S2S-Token": this.s2sToken,
 		};
 
 		try {

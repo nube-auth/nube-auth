@@ -21,7 +21,7 @@ export const csrfProtection = createMiddleware(async (c: Context, next) => {
 	}
 
 	// Get CSRF token from header
-	const csrfTokenHeader = c.req.header("X-CSRF-Token");
+	const csrfTokenHeader = c.req.header("X-Proofa-CSRF-Token");
 
 	if (!csrfTokenHeader) {
 		loggers.auth.warn({ path: c.req.path, method }, "CSRF token missing from header");

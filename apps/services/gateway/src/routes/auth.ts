@@ -1,8 +1,8 @@
 import crypto from "node:crypto";
 import { createSessionCookie, parseSessionCookie } from "@proofa/auth";
 import { sessionStore } from "@proofa/cache";
-import { getDb, sessionQueries } from "@proofa/db";
-import { createLogger, GatewayLoginRequestSchema, serializeError } from "@proofa/shared";
+import { getDb, sessionQueries, userQueries, projectMemberQueries, projectQueries, appQueries } from "@proofa/db";
+import { createLogger, GatewayLoginRequestSchema, serializeError, type SessionEntitlements } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
@@ -105,6 +105,44 @@ authRoutes.get("/start", async (c: Context) => {
 });
 
 /**
+ * Build session entitlements for a user based on audience type.
+ * Admin: project memberships with roles and app resources.
+ * User: basic identity entitlement.
+ */
+async function buildEntitlements(userPublicId: string, audience: "user" | "admin"): Promise<SessionEntitlements> {
+	if (audience === "user") {
+		return { identity: { role: "user" } };
+	}
+
+	// Admin: build entitlements from project memberships
+	const db = getDb();
+	const user = await userQueries.findByPublicId(db, userPublicId);
+	if (!user) {
+		return {};
+	}
+
+	const memberships = await projectMemberQueries.findByUserId(db, user.id);
+	const entitlements: SessionEntitlements = {};
+
+	for (const membership of memberships) {
+		// Get project public_id
+		const project = await projectQueries.findById(db, membership.project_id);
+		if (!project) continue;
+
+		// Get apps for this project
+		const projectApps = await appQueries.findByProjectId(db, membership.project_id);
+		const appPublicIds = projectApps.map((a) => a.public_id);
+
+		entitlements[project.public_id] = {
+			role: membership.role,
+			resources: appPublicIds,
+		};
+	}
+
+	return entitlements;
+}
+
+/**
  * GET /v1/auth/callback
  * OAuth callback from Core - receives auth code and exchanges it for session
  */
@@ -170,7 +208,7 @@ authRoutes.get("/callback", async (c: Context) => {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
-				"X-Proofa-Service-Token": env.S2S_SECRET,
+				"X-Proofa-S2S-Token": env.S2S_SECRET,
 			},
 			body: {
 				sessionId: code, // Core passes session ID as "code" param
@@ -222,6 +260,9 @@ authRoutes.get("/callback", async (c: Context) => {
 			c.req.header("x-real-ip") || 
 			"unknown";
 		const userAgent = c.req.header("user-agent") || "unknown";
+
+		// Build session entitlements based on audience
+		const entitlements = await buildEntitlements(data.userId, audience);
 		
 		await sessionStore.setAppSession(gatewaySessionId, data.userId, appId, ttlSeconds, {
 			coreSessionId: code, // Store Core session in metadata
@@ -231,7 +272,7 @@ authRoutes.get("/callback", async (c: Context) => {
 			lastActivityAt: Date.now(), // Track last activity
 			ipAddress, // IP address for location/security tracking
 			userAgent, // Browser/device info
-		});
+		}, entitlements);
 
 		// Create signed cookie with domain for cross-subdomain access
 		const cookieDomain = env.COOKIE_DOMAIN; // e.g., ".proofa.sh" or "localhost"

@@ -68,17 +68,17 @@ adminRoutes.all("/*", async (c: Context) => {
 		const coreUrl = `${env.CORE_URL}${corePath}`;
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
-			"X-S2S-Token": env.S2S_SECRET,
-			"X-User-Id": auth.userId, // Send public user ID
-			"X-Session-Id": auth.coreSessionId || "",
+			"X-Proofa-S2S-Token": env.S2S_SECRET,
+			"X-Proofa-User-Id": auth.userId, // Send public user ID
+			"X-Proofa-Session-Id": auth.coreSessionId || "",
 		};
 
 
 
-		// Pass through x-project-id header if present (needed for authorization checks)
-		const projectId = c.req.header("x-project-id");
+		// Pass through x-proofa-project-id header if present (needed for authorization checks)
+		const projectId = c.req.header("x-proofa-project-id");
 		if (projectId) {
-			headers["X-Project-Id"] = projectId;
+			headers["X-Proofa-Project-Id"] = projectId;
 		}
 
 		// Add query parameters if present

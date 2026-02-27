@@ -374,7 +374,7 @@ The sidebar adapts to three contexts:
 Admin endpoints check:
 1. Valid session cookie
 2. User exists in database
-3. User has `is_admin` flag OR is project owner/team member
+3. User is project owner/admin/member (via session entitlements)
 4. Project/app access based on team membership
 
 ### API Integration
@@ -1268,7 +1268,7 @@ pnpm --filter=@proofa/admin build
 
 1. Verify user has correct permissions
 2. Check team membership for project/app access
-3. Verify `is_admin` flag for admin actions
+3. Verify project role via session entitlements for admin actions
 4. Check Gateway logs for authorization errors
 
 ### Session expires too quickly (admin)

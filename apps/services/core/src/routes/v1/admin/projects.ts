@@ -13,7 +13,7 @@ export const projectsRouter = new Hono();
  */
 projectsRouter.get("/", async (c: Context) => {
 	try {
-		const userId = c.req.header("X-User-Id");
+		const userId = c.req.header("X-Proofa-User-Id");
 		if (!userId) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}
@@ -135,7 +135,7 @@ projectsRouter.post("/", async (c: Context) => {
 		}
 
 		// Get current user from context
-		const userId = c.req.header("X-User-Id");
+		const userId = c.req.header("X-Proofa-User-Id");
 		if (!userId) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}
@@ -258,7 +258,7 @@ projectsRouter.patch("/:projectId", async (c: Context) => {
 			return c.json({ error: "Invalid projectId" }, 400);
 		}
 
-		const userId = c.req.header("X-User-Id");
+		const userId = c.req.header("X-Proofa-User-Id");
 		if (!userId) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}
@@ -325,7 +325,7 @@ projectsRouter.delete("/:projectId", async (c: Context) => {
 			return c.json({ error: "Invalid projectId" }, 400);
 		}
 
-		const userId = c.req.header("X-User-Id");
+		const userId = c.req.header("X-Proofa-User-Id");
 		if (!userId) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}

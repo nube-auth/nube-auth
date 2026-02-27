@@ -132,7 +132,7 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 			return c.json({ error: "Missing required fields: name, slug" }, 400);
 		}
 
-		const userId = c.req.header("X-User-Id");
+		const userId = c.req.header("X-Proofa-User-Id");
 		if (!userId) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}
@@ -315,7 +315,7 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 			return c.json({ error: "Invalid appId" }, 400);
 		}
 
-		const userId = c.req.header("X-User-Id");
+		const userId = c.req.header("X-Proofa-User-Id");
 		if (!userId) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}
@@ -414,7 +414,7 @@ appsRouter.delete("/:projectId/apps/:appId", async (c: Context) => {
 			return c.json({ error: "Invalid appId" }, 400);
 		}
 
-		const userId = c.req.header("X-User-Id");
+		const userId = c.req.header("X-Proofa-User-Id");
 		if (!userId) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}
