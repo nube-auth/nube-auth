@@ -11,6 +11,7 @@ import {
 	licenses,
 	license_history,
 	purchases,
+	prices as pricesTable,
 	subscriptions,
 	users,
 	plans,
@@ -76,7 +77,7 @@ export async function createPurchaseRecords(
 		// Get plan internal ID
 		const plan = await db.query.plans.findFirst({
 			where: eq(plans.public_id, planPublicId),
-			columns: { id: true, duration_days: true },
+			columns: { id: true },
 		});
 
 		if (!plan) {
@@ -84,14 +85,19 @@ export async function createPurchaseRecords(
 			throw new Error("Plan not found");
 		}
 
-		const planPrice = await db.query.plan_provider_prices.findFirst({
-			where: (plan_provider_prices, { and, eq }) =>
-				and(eq(plan_provider_prices.plan_id, plan.id), eq(plan_provider_prices.provider_config_id, providerConfigId)),
-			columns: { id: true, interval: true, amount_cents: true, currency: true },
+		// Find the price record for this plan+provider
+		const price = await db.query.prices.findFirst({
+			where: (p, { and, eq: eqCol }) =>
+				and(
+					eqCol(p.plan_id, plan.id),
+					eqCol(p.external_provider, provider),
+					eqCol(p.is_active, true),
+				),
+			columns: { id: true, interval: true, amount_cents: true, currency: true, duration_days: true, billing_type: true },
 		});
 
-		if (!planPrice) {
-			throw new Error("Plan price not found for provider");
+		if (!price) {
+			throw new Error("Price not found for plan and provider");
 		}
 
 		// Create purchase record
@@ -102,7 +108,7 @@ export async function createPurchaseRecords(
 				app_id: app.id,
 				subject_type: "user",
 				subject_id: user.id,
-				plan_provider_price_id: planPrice.id,
+				price_id: price.id,
 				provider_config_id: providerConfigId,
 				provider_session_id: paymentDetails.metadata?.["sessionId"] || paymentDetails.transactionId,
 				status: paymentDetails.status === "succeeded" ? "completed" : paymentDetails.status === "failed" ? "failed" : "pending",
@@ -115,10 +121,10 @@ export async function createPurchaseRecords(
 
 		log.info({ purchaseId: purchase.public_id }, "Purchase record created");
 
-		// Calculate valid_until based on plan duration
+		// Calculate valid_until based on price duration
 		let validUntil: Date | null = null;
-		if (plan.duration_days) {
-			validUntil = new Date(Date.now() + plan.duration_days * 24 * 60 * 60 * 1000);
+		if (price.duration_days) {
+			validUntil = new Date(Date.now() + price.duration_days * 24 * 60 * 60 * 1000);
 		}
 		// If duration_days is null, valid_until stays null (lifetime license)
 
@@ -221,23 +227,24 @@ export async function createPurchaseRecords(
 				.insert(subscriptions)
 				.values({
 					public_id: id.request(),
-					purchase_id: purchase.id,
+					user_id: user.id,
+					app_id: app.id,
 					license_id: license.id,
+					price_id: price.id,
 					provider_config_id: providerConfigId,
 					provider,
 					provider_subscription_id: paymentDetails.subscriptionId,
 					provider_customer_id: paymentDetails.customerId || null,
-					plan_provider_price_id: planPrice.id,
 					status: "active",
-					billing_interval: planPrice.interval || "monthly",
+					billing_interval: price.interval || "month",
 					billing_period_start: new Date(),
 					billing_period_end: null,
 					next_billing_date: null,
 					cancel_at_period_end: false,
 					canceled_at: null,
 					ended_at: null,
-					amount_cents: planPrice.amount_cents,
-					currency: planPrice.currency || "usd",
+					amount_cents: price.amount_cents,
+					currency: price.currency || "usd",
 					metadata: paymentDetails.metadata || {},
 					trial_start: null,
 					trial_end: null,

@@ -13,7 +13,7 @@ importers:
     dependencies:
       '@astrojs/tailwind':
         specifier: ^6.0.0
-        version: 6.0.2(astro@4.16.19(@types/node@25.0.3)(lightningcss@1.30.2)(rollup@4.55.1)(typescript@5.9.3))(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.8.2))
+        version: 6.0.2(astro@4.16.19(@types/node@25.0.3)(lightningcss@1.30.2)(rollup@4.55.1)(typescript@6.0.0-beta))(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.8.2))
       '@pingpong-js/fetch':
         specifier: ^1.0.2
         version: 1.0.2
@@ -85,8 +85,8 @@ importers:
         specifier: ^2.8.11
         version: 2.8.11
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 6.0.0-beta
+        version: 6.0.0-beta
 
   apps/dashboard/admin:
     dependencies:
@@ -319,10 +319,13 @@ importers:
     dependencies:
       '@base-ui/react':
         specifier: ^1.0.0-alpha.8
-        version: 1.1.0(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 1.1.0(@types/react@18.3.27)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@hugeicons/core-free-icons':
+        specifier: ^3.1.1
+        version: 3.1.1
       '@hugeicons/react':
         specifier: ^1.1.4
-        version: 1.1.4(react@18.3.1)
+        version: 1.1.4(react@19.2.3)
       '@types/react':
         specifier: ^18.0.0
         version: 18.3.27
@@ -337,10 +340,10 @@ importers:
         version: 2.1.1
       react:
         specifier: ^18.0.0
-        version: 18.3.1
+        version: 19.2.3
       react-dom:
         specifier: ^18.0.0
-        version: 18.3.1(react@18.3.1)
+        version: 19.2.3(react@19.2.3)
       tailwind-merge:
         specifier: ^2.0.0
         version: 2.6.0
@@ -5324,6 +5327,11 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
+  typescript@6.0.0-beta:
+    resolution: {integrity: sha512-CldZdztDpQRLM1HC6WDQjQkQN5Ub5zRau737a1diGh3lPmb9oRsaWHk1y5iqK0o7+1bNJ0oXfEGRkAogFZBL+Q==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
   ufo@1.6.1:
     resolution: {integrity: sha512-9a4/uxlTWJ4+a5i0ooc1rU7C7YOw3wT+UGqdeNNHWnOF9qcMBgLRS+4IYUqbczewFx4mLEig6gawh7X6mFlEkA==}
 
@@ -5807,9 +5815,9 @@ snapshots:
     transitivePeerDependencies:
       - ts-node
 
-  '@astrojs/tailwind@6.0.2(astro@4.16.19(@types/node@25.0.3)(lightningcss@1.30.2)(rollup@4.55.1)(typescript@5.9.3))(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.8.2))':
+  '@astrojs/tailwind@6.0.2(astro@4.16.19(@types/node@25.0.3)(lightningcss@1.30.2)(rollup@4.55.1)(typescript@6.0.0-beta))(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
-      astro: 4.16.19(@types/node@25.0.3)(lightningcss@1.30.2)(rollup@4.55.1)(typescript@5.9.3)
+      astro: 4.16.19(@types/node@25.0.3)(lightningcss@1.30.2)(rollup@4.55.1)(typescript@6.0.0-beta)
       autoprefixer: 10.4.23(postcss@8.5.6)
       postcss: 8.5.6
       postcss-load-config: 4.0.2(postcss@8.5.6)
@@ -6397,6 +6405,20 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.27
 
+  '@base-ui/react@1.1.0(@types/react@18.3.27)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+    dependencies:
+      '@babel/runtime': 7.28.6
+      '@base-ui/utils': 0.2.4(@types/react@18.3.27)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@floating-ui/react-dom': 2.1.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@floating-ui/utils': 0.2.10
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
+      reselect: 5.1.1
+      tabbable: 6.4.0
+      use-sync-external-store: 1.6.0(react@19.2.3)
+    optionalDependencies:
+      '@types/react': 18.3.27
+
   '@base-ui/utils@0.2.4(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@babel/runtime': 7.28.6
@@ -6405,6 +6427,17 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       reselect: 5.1.1
       use-sync-external-store: 1.6.0(react@18.3.1)
+    optionalDependencies:
+      '@types/react': 18.3.27
+
+  '@base-ui/utils@0.2.4(@types/react@18.3.27)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+    dependencies:
+      '@babel/runtime': 7.28.6
+      '@floating-ui/utils': 0.2.10
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
+      reselect: 5.1.1
+      use-sync-external-store: 1.6.0(react@19.2.3)
     optionalDependencies:
       '@types/react': 18.3.27
 
@@ -6804,6 +6837,12 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
+  '@floating-ui/react-dom@2.1.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+    dependencies:
+      '@floating-ui/dom': 1.7.4
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
+
   '@floating-ui/utils@0.2.10': {}
 
   '@hono/node-server@1.19.7(hono@4.11.3)':
@@ -6820,6 +6859,10 @@ snapshots:
   '@hugeicons/react@1.1.4(react@18.3.1)':
     dependencies:
       react: 18.3.1
+
+  '@hugeicons/react@1.1.4(react@19.2.3)':
+    dependencies:
+      react: 19.2.3
 
   '@iconify-json/simple-icons@1.2.66':
     dependencies:
@@ -8229,7 +8272,7 @@ snapshots:
       - terser
       - typescript
 
-  astro@4.16.19(@types/node@25.0.3)(lightningcss@1.30.2)(rollup@4.55.1)(typescript@5.9.3):
+  astro@4.16.19(@types/node@25.0.3)(lightningcss@1.30.2)(rollup@4.55.1)(typescript@6.0.0-beta):
     dependencies:
       '@astrojs/compiler': 2.13.0
       '@astrojs/internal-helpers': 0.4.1
@@ -8282,7 +8325,7 @@ snapshots:
       semver: 7.7.3
       shiki: 1.29.2
       tinyexec: 0.3.2
-      tsconfck: 3.1.6(typescript@5.9.3)
+      tsconfck: 3.1.6(typescript@6.0.0-beta)
       unist-util-visit: 5.0.0
       vfile: 6.0.3
       vite: 5.4.21(@types/node@25.0.3)(lightningcss@1.30.2)
@@ -8292,7 +8335,7 @@ snapshots:
       yargs-parser: 21.1.1
       zod: 3.25.76
       zod-to-json-schema: 3.25.1(zod@3.25.76)
-      zod-to-ts: 1.2.0(typescript@5.9.3)(zod@3.25.76)
+      zod-to-ts: 1.2.0(typescript@6.0.0-beta)(zod@3.25.76)
     optionalDependencies:
       sharp: 0.33.5
     transitivePeerDependencies:
@@ -10980,6 +11023,10 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
+  tsconfck@3.1.6(typescript@6.0.0-beta):
+    optionalDependencies:
+      typescript: 6.0.0-beta
+
   tslib@2.8.1: {}
 
   tsup@8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2):
@@ -11049,6 +11096,8 @@ snapshots:
   type-fest@4.41.0: {}
 
   typescript@5.9.3: {}
+
+  typescript@6.0.0-beta: {}
 
   ufo@1.6.1: {}
 
@@ -11130,6 +11179,10 @@ snapshots:
   use-sync-external-store@1.6.0(react@18.3.1):
     dependencies:
       react: 18.3.1
+
+  use-sync-external-store@1.6.0(react@19.2.3):
+    dependencies:
+      react: 19.2.3
 
   util-deprecate@1.0.2: {}
 
@@ -11395,6 +11448,11 @@ snapshots:
   zod-to-ts@1.2.0(typescript@5.9.3)(zod@3.25.76):
     dependencies:
       typescript: 5.9.3
+      zod: 3.25.76
+
+  zod-to-ts@1.2.0(typescript@6.0.0-beta)(zod@3.25.76):
+    dependencies:
+      typescript: 6.0.0-beta
       zod: 3.25.76
 
   zod@3.25.76: {}

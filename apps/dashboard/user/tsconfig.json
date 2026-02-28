@@ -12,7 +12,6 @@
 		"noEmit": true,
 		"jsx": "react-jsx",
 		"types": ["vite/client"],
-		"baseUrl": ".",
 		"paths": {
 			"@proofa/auth": ["../../packages/auth/src"],
 			"@proofa/auth/*": ["../../packages/auth/src/*"],

@@ -1,18 +1,17 @@
 /**
- * Plan Sync Worker
+ * Plan Sync Worker (v2)
  * 
- * Syncs plans to all configured payment providers:
+ * Syncs plan prices to all configured payment providers:
  * 1. Creates product in provider (Stripe, LemonSqueezy, etc.)
- * 2. Creates prices for each billing interval
- * 3. Stores mappings in plan_provider_prices table
+ * 2. Creates provider prices for each active price
+ * 3. Stores external refs on the price record
  * 4. Implements retry logic with exponential backoff
- * 5. Sends notifications on complete/failure
  */
 
-import { getDb, planQueries, appQueries, } from "@proofa/db";
-import { plan_provider_prices, payment_provider_configs } from "@proofa/db/schema";
+import { getDb, planQueries, appQueries, priceQueries } from "@proofa/db";
+import { prices, payment_provider_configs } from "@proofa/db/schema";
 import { eq } from "@proofa/db";
-import { createLogger, id, serializeError } from "@proofa/shared";
+import { createLogger, serializeError } from "@proofa/shared";
 import { createProviderAdapter } from "../../core/src/billing/adapters/index.js";
 import { decryptString } from "../../core/src/utils/encryption.js";
 
@@ -61,6 +60,14 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 		throw new Error(`App not found for plan: ${planId}`);
 	}
 
+	// Get active prices for this plan (v2: pricing lives on prices table)
+	const activePrices = await priceQueries.findActiveByPlanId(db, plan.id);
+
+	if (activePrices.length === 0) {
+		log.warn({ planId }, "No active prices found for plan");
+		return { success: true, planId, synced: [], failed: [] };
+	}
+
 	// Get all active payment providers for the project
 	const providers = await db.query.payment_provider_configs.findMany({
 		where: eq(payment_provider_configs.project_id, app.project_id),
@@ -77,17 +84,12 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 
 	if (activeProviders.length === 0) {
 		log.warn({ planId, projectId: app.project_id }, "No active payment providers found");
-		return {
-			success: true,
-			planId,
-			synced: [],
-			failed: [],
-		};
+		return { success: true, planId, synced: [], failed: [] };
 	}
 
 	log.info(
-		{ planId, providersCount: activeProviders.length },
-		"Found active providers to sync"
+		{ planId, providersCount: activeProviders.length, pricesCount: activePrices.length },
+		"Found active providers and prices to sync",
 	);
 
 	const syncedProviders: SyncResult["synced"] = [];
@@ -106,7 +108,7 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 			} catch (error) {
 				log.error(
 					{ err: serializeError(error as Error), providerId: provider.public_id },
-					"Failed to decrypt provider credentials"
+					"Failed to decrypt provider credentials",
 				);
 				failedProviders.push({
 					provider: provider.provider,
@@ -126,88 +128,70 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 
 			log.info(
 				{ planId, provider: provider.provider, productId: product.productId },
-				"Product created in provider"
+				"Product created in provider",
 			);
 
-			const prices: Array<{ interval: string; priceId: string }> = [];
+			const syncedPrices: Array<{ interval: string; priceId: string }> = [];
 
-			// Create price for each billing interval that has a price set
-			const intervals: Array<{
-				type: "month" | "year" | "one_time";
-				price: number | null;
-			}> = [
-				{ type: "month", price: plan.monthly_price },
-				{ type: "year", price: plan.yearly_price },
-				{ type: "one_time", price: plan.one_time_price },
-			];
+			// Create a provider price for each active price record
+			for (const priceRecord of activePrices) {
+				try {
+					const providerPrice = await adapter.createPrice({
+						productId: product.productId,
+						amountCents: priceRecord.amount_cents,
+						currency: priceRecord.currency,
+						interval: priceRecord.billing_type === "one_time" || priceRecord.billing_type === "lifetime"
+							? "one_time"
+							: (priceRecord.interval as "month" | "year"),
+					});
 
-			for (const interval of intervals) {
-				if (interval.price && interval.price > 0) {
-					try {
-						const price = await adapter.createPrice({
-							productId: product.productId,
-							amountCents: interval.price,
-							currency: "usd",
-							interval: interval.type,
-						});
+					// Store external ref directly on the price record
+					await db
+						.update(prices)
+						.set({
+							external_provider: provider.provider,
+							external_price_id: providerPrice.priceId,
+							updated_at: new Date(),
+						})
+						.where(eq(prices.id, priceRecord.id));
 
-						log.info(
-							{
-								planId,
-								provider: provider.provider,
-								interval: interval.type,
-								priceId: price.priceId,
-							},
-							"Price created in provider"
-						);
+					log.info(
+						{
+							planId,
+							priceId: priceRecord.public_id,
+							provider: provider.provider,
+							providerPriceId: providerPrice.priceId,
+						},
+						"Price synced to provider",
+					);
 
-						prices.push({
-							interval: interval.type,
-							priceId: price.priceId,
-						});
-
-						// Store mapping in plan_provider_prices table
-						await db.insert(plan_provider_prices).values({
-							public_id: id.planProviderPrice(),
-							plan_id: plan.id,
-							provider_config_id: provider.id,
-							billing_type: interval.type === "one_time" ? "one-time" : "recurring",
-							interval: interval.type === "one_time" ? null : interval.type,
-							provider_price_id: price.priceId,
-							amount_cents: interval.price,
-							currency: "usd",
-							is_active: true,
-						});
-
-						log.info(
-							{ planId, provider: provider.provider, interval: interval.type },
-							"Price mapping stored"
-						);
-					} catch (error) {
-						log.error(
-							{
-								err: serializeError(error as Error),
-								planId,
-								provider: provider.provider,
-								interval: interval.type,
-							},
-							"Failed to create price"
-						);
-						// Continue with other intervals even if one fails
-					}
+					syncedPrices.push({
+						interval: priceRecord.interval ?? priceRecord.billing_type,
+						priceId: providerPrice.priceId,
+					});
+				} catch (error) {
+					log.error(
+						{
+							err: serializeError(error as Error),
+							planId,
+							priceId: priceRecord.public_id,
+							provider: provider.provider,
+						},
+						"Failed to create price in provider",
+					);
 				}
 			}
 
-			if (prices.length > 0) {
+			if (syncedPrices.length > 0) {
 				syncedProviders.push({
 					provider: provider.provider,
 					productId: product.productId,
-					prices,
+					prices: syncedPrices,
 				});
 			} else {
 				failedProviders.push({
 					provider: provider.provider,
-					error: "No prices created (no valid price configurations)",
+					error: "No prices created (all price syncs failed)",
 				});
 			}
 		} catch (error) {
@@ -217,7 +201,7 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 					planId,
 					provider: provider.provider,
 				},
-				"Failed to sync to provider"
+				"Failed to sync to provider",
 			);
 
 			failedProviders.push({
@@ -244,7 +228,7 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 				syncedCount: syncedProviders.length,
 				failedCount: failedProviders.length,
 			},
-			"Plan sync completed with failures"
+			"Plan sync completed with failures",
 		);
 
 		// Retry logic with exponential backoff
@@ -254,20 +238,17 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 
 			log.info(
 				{ planId, retryCount: retryCount + 1, delayMinutes },
-				"Scheduling retry for failed providers"
+				"Scheduling retry for failed providers",
 			);
 
-			// In a real implementation, you would queue a new job with increased retry count
-			// For now, we'll just log the intent
+			// TODO(@devendra): Queue a new job with increased retry count
 			// await queueJob('sync-plan-to-providers', { planId, retryCount: retryCount + 1 }, delayMinutes * 60 * 1000);
 		} else {
 			log.error({ planId }, "Max retries reached, giving up on plan sync");
-			// Send notification to admin
 			await sendSyncFailureNotification(plan.public_id, failedProviders);
 		}
 	}
 
-	// Send success notification
 	if (success) {
 		await sendSyncSuccessNotification(plan.public_id, syncedProviders);
 	}
@@ -275,39 +256,28 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 	return result;
 }
 
-/**
- * Send notification on successful sync
- */
 async function sendSyncSuccessNotification(
 	planId: string,
-	synced: SyncResult["synced"]
+	synced: SyncResult["synced"],
 ): Promise<void> {
 	log.info(
 		{ planId, providers: synced.map((s) => s.provider) },
-		"Plan sync successful - notification sent"
+		"Plan sync successful - notification sent",
 	);
-	// TODO: Implement actual notification (email, webhook, etc.)
-	// For now, just log
+	// TODO(@devendra): Implement actual notification (email, webhook, etc.)
 }
 
-/**
- * Send notification on sync failure
- */
 async function sendSyncFailureNotification(
 	planId: string,
-	failed: SyncResult["failed"]
+	failed: SyncResult["failed"],
 ): Promise<void> {
 	log.error(
 		{ planId, failures: failed },
-		"Plan sync failed after max retries - notification sent"
+		"Plan sync failed after max retries - notification sent",
 	);
-	// TODO: Implement actual notification (email, webhook, etc.)
-	// For now, just log
+	// TODO(@devendra): Implement actual notification (email, webhook, etc.)
 }
 
-/**
- * Export for queue worker integration
- */
 export const planSyncJob = {
 	name: "sync-plan-to-providers",
 	handler: syncPlanToProviders,

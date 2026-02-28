@@ -75,20 +75,28 @@ export {
 } from "./utils/jsonb.js";
 // Export all query helpers
 export {
+	activationQueries,
 	appQueries,
 	auditLogQueries,
 	authCodeQueries,
 	emailVerificationQueries,
 	identityQueries,
 	invitationQueries,
+	licenseHistoryQueries,
 	licenseQueries,
 	paymentProviderConfigQueries,
 	planQueries,
+	priceQueries,
 	projectInvitationQueries,
 	projectMemberQueries,
 	projectQueries,
+	promotionCodeQueries,
+	promotionPlanQueries,
+	promotionProviderRefQueries,
+	promotionQueries,
 	routingRuleQueries,
 	sessionQueries,
+	subscriptionQueries,
 	testSessionQueries,
 	userQueries,
 } from "./queries.js";

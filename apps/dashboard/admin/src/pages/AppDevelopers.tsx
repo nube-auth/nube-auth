@@ -66,8 +66,8 @@ export function AppDevelopersPage() {
 						{app.name}
 					</BreadcrumbButton>
 				</BreadcrumbItem>
-				<BreadcrumbItem active>
-					Integration Guide
+				<BreadcrumbItem>
+					<BreadcrumbButton active>Integration Guide</BreadcrumbButton>
 				</BreadcrumbItem>
 			</BreadcrumbList>
 

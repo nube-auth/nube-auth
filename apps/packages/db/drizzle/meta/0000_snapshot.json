@@ -1,5 +1,5 @@
 {
-  "id": "f1774adf-7719-4d03-aae2-1bcaa7a737c5",
+  "id": "2840d0b7-eee3-43c1-b04a-581b87cddb79",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1035,6 +1035,170 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.license_activations": {
+      "name": "license_activations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "public_id": {
+          "name": "public_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "license_id": {
+          "name": "license_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "device_id": {
+          "name": "device_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "device_name": {
+          "name": "device_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "device_type": {
+          "name": "device_type",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_seen_at": {
+          "name": "last_seen_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deactivated_at": {
+          "name": "deactivated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "license_activations_license_id_idx": {
+          "name": "license_activations_license_id_idx",
+          "columns": [
+            {
+              "expression": "license_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "license_activations_device_id_idx": {
+          "name": "license_activations_device_id_idx",
+          "columns": [
+            {
+              "expression": "device_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "license_activations_last_seen_at_idx": {
+          "name": "license_activations_last_seen_at_idx",
+          "columns": [
+            {
+              "expression": "last_seen_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "license_activations_license_id_licenses_id_fk": {
+          "name": "license_activations_license_id_licenses_id_fk",
+          "tableFrom": "license_activations",
+          "tableTo": "licenses",
+          "columnsFrom": [
+            "license_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "license_activations_public_id_unique": {
+          "name": "license_activations_public_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "public_id"
+          ]
+        },
+        "license_activations_license_device_unique": {
+          "name": "license_activations_license_device_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "license_id",
+            "device_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.license_history": {
       "name": "license_history",
       "schema": "",
@@ -1265,6 +1429,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "price_id": {
+          "name": "price_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "status": {
           "name": "status",
           "type": "varchar(20)",
@@ -1275,6 +1445,25 @@
         "valid_until": {
           "name": "valid_until",
           "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source": {
+          "name": "source",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'purchase'"
+        },
+        "max_activations": {
+          "name": "max_activations",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },
@@ -1342,6 +1531,21 @@
           "columns": [
             {
               "expression": "plan_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "licenses_price_id_idx": {
+          "name": "licenses_price_id_idx",
+          "columns": [
+            {
+              "expression": "price_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1422,6 +1626,19 @@
           "tableTo": "plans",
           "columnsFrom": [
             "plan_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "licenses_price_id_prices_id_fk": {
+          "name": "licenses_price_id_prices_id_fk",
+          "tableFrom": "licenses",
+          "tableTo": "prices",
+          "columnsFrom": [
+            "price_id"
           ],
           "columnsTo": [
             "id"
@@ -2217,183 +2434,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.plan_provider_prices": {
-      "name": "plan_provider_prices",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "public_id": {
-          "name": "public_id",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "plan_id": {
-          "name": "plan_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "provider_config_id": {
-          "name": "provider_config_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "billing_type": {
-          "name": "billing_type",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "interval": {
-          "name": "interval",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "amount_cents": {
-          "name": "amount_cents",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "currency": {
-          "name": "currency",
-          "type": "varchar(3)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'usd'"
-        },
-        "provider_price_id": {
-          "name": "provider_price_id",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_active": {
-          "name": "is_active",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "plan_provider_prices_plan_id_idx": {
-          "name": "plan_provider_prices_plan_id_idx",
-          "columns": [
-            {
-              "expression": "plan_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "plan_provider_prices_provider_config_id_idx": {
-          "name": "plan_provider_prices_provider_config_id_idx",
-          "columns": [
-            {
-              "expression": "provider_config_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "plan_provider_prices_billing_type_idx": {
-          "name": "plan_provider_prices_billing_type_idx",
-          "columns": [
-            {
-              "expression": "billing_type",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "plan_provider_prices_plan_id_plans_id_fk": {
-          "name": "plan_provider_prices_plan_id_plans_id_fk",
-          "tableFrom": "plan_provider_prices",
-          "tableTo": "plans",
-          "columnsFrom": [
-            "plan_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "plan_provider_prices_provider_config_id_payment_provider_configs_id_fk": {
-          "name": "plan_provider_prices_provider_config_id_payment_provider_configs_id_fk",
-          "tableFrom": "plan_provider_prices",
-          "tableTo": "payment_provider_configs",
-          "columnsFrom": [
-            "provider_config_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "plan_provider_prices_public_id_unique": {
-          "name": "plan_provider_prices_public_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "public_id"
-          ]
-        },
-        "plan_provider_prices_provider_price_id_unique": {
-          "name": "plan_provider_prices_provider_price_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "provider_price_id"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.plans": {
       "name": "plans",
       "schema": "",
@@ -2434,48 +2474,12 @@
           "primaryKey": false,
           "notNull": false
         },
-        "monthly_price": {
-          "name": "monthly_price",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "yearly_price": {
-          "name": "yearly_price",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "one_time_price": {
-          "name": "one_time_price",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "duration_days": {
-          "name": "duration_days",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "trial_enabled": {
-          "name": "trial_enabled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "trial_days": {
-          "name": "trial_days",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "features": {
           "name": "features",
           "type": "jsonb",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "'[]'"
         },
         "status": {
           "name": "status",
@@ -2566,11 +2570,249 @@
           "with": {}
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "plans_app_id_apps_id_fk": {
+          "name": "plans_app_id_apps_id_fk",
+          "tableFrom": "plans",
+          "tableTo": "apps",
+          "columnsFrom": [
+            "app_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "plans_public_id_unique": {
           "name": "plans_public_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "public_id"
+          ]
+        },
+        "plans_app_slug_unique": {
+          "name": "plans_app_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "app_id",
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.prices": {
+      "name": "prices",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "public_id": {
+          "name": "public_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "plan_id": {
+          "name": "plan_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "app_id": {
+          "name": "app_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "billing_type": {
+          "name": "billing_type",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "interval": {
+          "name": "interval",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "amount_cents": {
+          "name": "amount_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "currency": {
+          "name": "currency",
+          "type": "varchar(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'usd'"
+        },
+        "duration_days": {
+          "name": "duration_days",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "trial_enabled": {
+          "name": "trial_enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "trial_days": {
+          "name": "trial_days",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "external_provider": {
+          "name": "external_provider",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "external_price_id": {
+          "name": "external_price_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "prices_plan_id_idx": {
+          "name": "prices_plan_id_idx",
+          "columns": [
+            {
+              "expression": "plan_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "prices_app_id_idx": {
+          "name": "prices_app_id_idx",
+          "columns": [
+            {
+              "expression": "app_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "prices_billing_type_idx": {
+          "name": "prices_billing_type_idx",
+          "columns": [
+            {
+              "expression": "billing_type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "prices_external_price_id_idx": {
+          "name": "prices_external_price_id_idx",
+          "columns": [
+            {
+              "expression": "external_price_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "prices_plan_id_plans_id_fk": {
+          "name": "prices_plan_id_plans_id_fk",
+          "tableFrom": "prices",
+          "tableTo": "plans",
+          "columnsFrom": [
+            "plan_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "prices_app_id_apps_id_fk": {
+          "name": "prices_app_id_apps_id_fk",
+          "tableFrom": "prices",
+          "tableTo": "apps",
+          "columnsFrom": [
+            "app_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "prices_public_id_unique": {
+          "name": "prices_public_id_unique",
           "nullsNotDistinct": false,
           "columns": [
             "public_id"
@@ -3230,6 +3472,256 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.promotion_plans": {
+      "name": "promotion_plans",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "promotion_id": {
+          "name": "promotion_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "plan_id": {
+          "name": "plan_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "promotion_plans_promotion_id_idx": {
+          "name": "promotion_plans_promotion_id_idx",
+          "columns": [
+            {
+              "expression": "promotion_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "promotion_plans_plan_id_idx": {
+          "name": "promotion_plans_plan_id_idx",
+          "columns": [
+            {
+              "expression": "plan_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "promotion_plans_promotion_id_promotions_id_fk": {
+          "name": "promotion_plans_promotion_id_promotions_id_fk",
+          "tableFrom": "promotion_plans",
+          "tableTo": "promotions",
+          "columnsFrom": [
+            "promotion_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "promotion_plans_plan_id_plans_id_fk": {
+          "name": "promotion_plans_plan_id_plans_id_fk",
+          "tableFrom": "promotion_plans",
+          "tableTo": "plans",
+          "columnsFrom": [
+            "plan_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "promotion_plans_promo_plan_unique": {
+          "name": "promotion_plans_promo_plan_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "promotion_id",
+            "plan_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.promotion_provider_refs": {
+      "name": "promotion_provider_refs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "public_id": {
+          "name": "public_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "promotion_id": {
+          "name": "promotion_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_config_id": {
+          "name": "provider_config_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_coupon_id": {
+          "name": "provider_coupon_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_object_type": {
+          "name": "provider_object_type",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'coupon'"
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "promotion_provider_refs_promotion_id_idx": {
+          "name": "promotion_provider_refs_promotion_id_idx",
+          "columns": [
+            {
+              "expression": "promotion_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "promotion_provider_refs_provider_config_id_idx": {
+          "name": "promotion_provider_refs_provider_config_id_idx",
+          "columns": [
+            {
+              "expression": "provider_config_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "promotion_provider_refs_promotion_id_promotions_id_fk": {
+          "name": "promotion_provider_refs_promotion_id_promotions_id_fk",
+          "tableFrom": "promotion_provider_refs",
+          "tableTo": "promotions",
+          "columnsFrom": [
+            "promotion_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "promotion_provider_refs_provider_config_id_payment_provider_configs_id_fk": {
+          "name": "promotion_provider_refs_provider_config_id_payment_provider_configs_id_fk",
+          "tableFrom": "promotion_provider_refs",
+          "tableTo": "payment_provider_configs",
+          "columnsFrom": [
+            "provider_config_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "promotion_provider_refs_public_id_unique": {
+          "name": "promotion_provider_refs_public_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "public_id"
+          ]
+        },
+        "promotion_provider_refs_promo_provider_unique": {
+          "name": "promotion_provider_refs_promo_provider_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "promotion_id",
+            "provider_config_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.promotion_redemptions": {
       "name": "promotion_redemptions",
       "schema": "",
@@ -3464,6 +3956,32 @@
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false
+        },
+        "allowed_intervals": {
+          "name": "allowed_intervals",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_new_customers_only": {
+          "name": "is_new_customers_only",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "max_redemptions": {
+          "name": "max_redemptions",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_redemptions": {
+          "name": "current_redemptions",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
         },
         "is_active": {
           "name": "is_active",
@@ -3772,8 +4290,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "plan_provider_price_id": {
-          "name": "plan_provider_price_id",
+        "price_id": {
+          "name": "price_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -3921,12 +4439,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "purchases_plan_provider_price_id_plan_provider_prices_id_fk": {
-          "name": "purchases_plan_provider_price_id_plan_provider_prices_id_fk",
+        "purchases_price_id_prices_id_fk": {
+          "name": "purchases_price_id_prices_id_fk",
           "tableFrom": "purchases",
-          "tableTo": "plan_provider_prices",
+          "tableTo": "prices",
           "columnsFrom": [
-            "plan_provider_price_id"
+            "price_id"
           ],
           "columnsTo": [
             "id"
@@ -4127,14 +4645,26 @@
           "primaryKey": false,
           "notNull": true
         },
-        "purchase_id": {
-          "name": "purchase_id",
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "app_id": {
+          "name": "app_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
         "license_id": {
           "name": "license_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "price_id": {
+          "name": "price_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -4163,12 +4693,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "plan_provider_price_id": {
-          "name": "plan_provider_price_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
         "status": {
           "name": "status",
           "type": "varchar(50)",
@@ -4195,6 +4719,12 @@
         },
         "next_billing_date": {
           "name": "next_billing_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "grace_period_end": {
+          "name": "grace_period_end",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false
@@ -4265,11 +4795,26 @@
         }
       },
       "indexes": {
-        "subscriptions_purchase_id_idx": {
-          "name": "subscriptions_purchase_id_idx",
+        "subscriptions_user_id_idx": {
+          "name": "subscriptions_user_id_idx",
           "columns": [
             {
-              "expression": "purchase_id",
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscriptions_app_id_idx": {
+          "name": "subscriptions_app_id_idx",
+          "columns": [
+            {
+              "expression": "app_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -4285,6 +4830,21 @@
           "columns": [
             {
               "expression": "license_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "subscriptions_price_id_idx": {
+          "name": "subscriptions_price_id_idx",
+          "columns": [
+            {
+              "expression": "price_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -4357,12 +4917,25 @@
         }
       },
       "foreignKeys": {
-        "subscriptions_purchase_id_purchases_id_fk": {
-          "name": "subscriptions_purchase_id_purchases_id_fk",
+        "subscriptions_user_id_users_id_fk": {
+          "name": "subscriptions_user_id_users_id_fk",
           "tableFrom": "subscriptions",
-          "tableTo": "purchases",
+          "tableTo": "users",
           "columnsFrom": [
-            "purchase_id"
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "subscriptions_app_id_apps_id_fk": {
+          "name": "subscriptions_app_id_apps_id_fk",
+          "tableFrom": "subscriptions",
+          "tableTo": "apps",
+          "columnsFrom": [
+            "app_id"
           ],
           "columnsTo": [
             "id"
@@ -4383,12 +4956,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "subscriptions_provider_config_id_payment_provider_configs_id_fk": {
-          "name": "subscriptions_provider_config_id_payment_provider_configs_id_fk",
+        "subscriptions_price_id_prices_id_fk": {
+          "name": "subscriptions_price_id_prices_id_fk",
           "tableFrom": "subscriptions",
-          "tableTo": "payment_provider_configs",
+          "tableTo": "prices",
           "columnsFrom": [
-            "provider_config_id"
+            "price_id"
           ],
           "columnsTo": [
             "id"
@@ -4396,12 +4969,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "subscriptions_plan_provider_price_id_plan_provider_prices_id_fk": {
-          "name": "subscriptions_plan_provider_price_id_plan_provider_prices_id_fk",
+        "subscriptions_provider_config_id_payment_provider_configs_id_fk": {
+          "name": "subscriptions_provider_config_id_payment_provider_configs_id_fk",
           "tableFrom": "subscriptions",
-          "tableTo": "plan_provider_prices",
+          "tableTo": "payment_provider_configs",
           "columnsFrom": [
-            "plan_provider_price_id"
+            "provider_config_id"
           ],
           "columnsTo": [
             "id"
@@ -4419,8 +4992,8 @@
             "public_id"
           ]
         },
-        "subscriptions_provider_subscription_unique": {
-          "name": "subscriptions_provider_subscription_unique",
+        "subscriptions_provider_sub_unique": {
+          "name": "subscriptions_provider_sub_unique",
           "nullsNotDistinct": false,
           "columns": [
             "provider_config_id",

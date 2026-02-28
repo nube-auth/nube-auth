@@ -305,30 +305,20 @@ async function findLicenseBySubscriptionId(subscriptionId: string) {
 	const db = getDb();
 
 	try {
-		// Find subscription record first
+		// Find subscription record — v2 subscriptions have user_id and app_id directly
 		const subscription = await db.query.subscriptions.findFirst({
 			where: (subscriptions, { eq }) => eq(subscriptions.provider_subscription_id, subscriptionId),
-			columns: { purchase_id: true },
+			columns: { user_id: true, app_id: true },
 		});
 
 		if (!subscription) {
 			return null;
 		}
 
-		// Find purchase to get user and app IDs
-		const purchase = await db.query.purchases.findFirst({
-			where: (purchases, { eq }) => eq(purchases.id, subscription.purchase_id),
-			columns: { app_id: true, subject_id: true },
-		});
-
-		if (!purchase) {
-			return null;
-		}
-
-		// Find license (subject_id is user_id in Phase 1)
+		// Find license directly from subscription's user_id + app_id
 		const license = await db.query.licenses.findFirst({
 			where: (licenses, { and, eq, isNull }) =>
-				and(eq(licenses.user_id, purchase.subject_id), eq(licenses.app_id, purchase.app_id), isNull(licenses.deleted_at)),
+				and(eq(licenses.user_id, subscription.user_id), eq(licenses.app_id, subscription.app_id), isNull(licenses.deleted_at)),
 		});
 
 		return license || null;

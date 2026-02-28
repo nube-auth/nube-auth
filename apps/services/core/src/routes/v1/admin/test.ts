@@ -184,13 +184,7 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 				name: "Pro Plan",
 				slug: "pro",
 				description: "Test Pro Plan",
-				monthly_price: 2900,
-				yearly_price: null,
-				one_time_price: null,
-				duration_days: null,
-				trial_enabled: false,
-				trial_days: null,
-				features: [{ name: "Test feature", value: "true" }],
+				features: ["Test feature"],
 				status: "active",
 				display_order: 0,
 			});
@@ -254,8 +248,6 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 				plan: {
 					id: selectedPlan.slug,
 					name: selectedPlan.name,
-					amount: selectedPlan.monthly_price ?? selectedPlan.yearly_price ?? selectedPlan.one_time_price ?? 0,
-					interval: selectedPlan.monthly_price ? "monthly" : selectedPlan.yearly_price ? "yearly" : "one_time",
 				},
 			},
 			checkoutUrl,

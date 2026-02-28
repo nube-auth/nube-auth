@@ -74,6 +74,21 @@ export const id = {
 
 	/** Generate app OAuth selection ID (AOS0, 13 chars total) */
 	appOAuthSelection: () => `AOS0${nano9()}`,
+
+	/** Generate price ID (PRC0, 13 chars total) */
+	price: () => `PRC0${nano9()}`,
+
+	/** Generate subscription ID (SUB0, 13 chars total) */
+	subscription: () => `SUB0${nano9()}`,
+
+	/** Generate license activation ID (ACT0, 13 chars total) */
+	licenseActivation: () => `ACT0${nano9()}`,
+
+	/** Generate license history ID (LHI0, 13 chars total) */
+	licenseHistory: () => `LHI0${nano9()}`,
+
+	/** Generate promotion provider ref ID (PPR0, 13 chars total) */
+	promotionProviderRef: () => `PPR0${nano9()}`,
 } as const;
 
 /** Type representing valid ID entity types */
@@ -112,6 +127,11 @@ export const idPatterns = {
 	state: /^STA0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 	paymentConfig: /^CFG0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 	planProviderPrice: /^PPP0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+	price: /^PRC0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+	subscription: /^SUB0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+	licenseActivation: /^ACT0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+	licenseHistory: /^LHI0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+	promotionProviderRef: /^PPR0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 } as const;
 
 /**

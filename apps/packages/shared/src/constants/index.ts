@@ -70,6 +70,7 @@ export type LicensePlanType = (typeof LICENSE_PLANS)[keyof typeof LICENSE_PLANS]
  */
 export const LICENSE_STATUSES = {
 	ACTIVE: "active",
+	TRIALING: "trialing",
 	EXPIRED: "expired",
 	CANCELED: "canceled",
 	SUSPENDED: "suspended",
@@ -78,17 +79,53 @@ export const LICENSE_STATUSES = {
 export type LicenseStatusType = (typeof LICENSE_STATUSES)[keyof typeof LICENSE_STATUSES];
 
 /**
- * License sources
+ * License sources — how the license was created
  */
 export const LICENSE_SOURCES = {
-	MANUAL: "manual",
-	PROMO: "promo",
-	STRIPE: "stripe",
-	LEMONSQUEEZY: "lemonsqueezy",
-	INTERNAL: "internal",
+	PURCHASE: "purchase",
+	ADMIN_GRANT: "admin_grant",
+	AUTO_FREE: "auto_free",
+	INVITATION: "invitation",
+	WEBHOOK: "webhook",
 } as const;
 
 export type LicenseSourceType = (typeof LICENSE_SOURCES)[keyof typeof LICENSE_SOURCES];
+
+/**
+ * Subscription statuses
+ */
+export const SUBSCRIPTION_STATUSES = {
+	TRIALING: "trialing",
+	ACTIVE: "active",
+	PAST_DUE: "past_due",
+	CANCELED: "canceled",
+	UNPAID: "unpaid",
+	ENDED: "ended",
+	PAUSED: "paused",
+} as const;
+
+export type SubscriptionStatusType = (typeof SUBSCRIPTION_STATUSES)[keyof typeof SUBSCRIPTION_STATUSES];
+
+/**
+ * Price billing types
+ */
+export const BILLING_TYPES = {
+	RECURRING: "recurring",
+	ONE_TIME: "one_time",
+	LIFETIME: "lifetime",
+} as const;
+
+export type BillingType = (typeof BILLING_TYPES)[keyof typeof BILLING_TYPES];
+
+/**
+ * Price billing intervals (for recurring prices)
+ */
+export const BILLING_INTERVALS = {
+	MONTH: "month",
+	YEAR: "year",
+} as const;
+
+export type BillingInterval = (typeof BILLING_INTERVALS)[keyof typeof BILLING_INTERVALS];
 
 /**
  * Project/App member roles

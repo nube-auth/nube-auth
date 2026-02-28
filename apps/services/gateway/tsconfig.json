@@ -1,12 +1,6 @@
 {
 	"extends": "../../../tsconfig.json",
 	"compilerOptions": {
-		"outDir": "./dist",
-		"noEmit": false,
-		"allowImportingTsExtensions": false,
-		"declaration": true,
-		"declarationMap": true,
-		"sourceMap": true,
 		"strict": true,
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,

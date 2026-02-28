@@ -7,6 +7,7 @@ import {
 	invitationQueries,
 	licenseQueries,
 	planQueries,
+	priceQueries,
 	projectInvitationQueries,
 	projectMemberQueries,
 	sessionQueries,
@@ -79,10 +80,14 @@ async function ensureLicenseForApp(db: ReturnType<typeof getDb>, userId: number,
 		const now = new Date();
 		let validUntil: Date | null = null;
 
-		if (plan.trial_enabled && plan.trial_days) {
-			validUntil = new Date(now.getTime() + plan.trial_days * ONE_DAY_MS);
-		} else if (plan.duration_days) {
-			validUntil = new Date(now.getTime() + plan.duration_days * ONE_DAY_MS);
+		// Look up the default active price for trial/duration info
+		const activePrices = await priceQueries.findActiveByPlanId(db, plan.id);
+		const defaultPrice = activePrices[0] ?? null;
+
+		if (defaultPrice?.trial_enabled && defaultPrice.trial_days) {
+			validUntil = new Date(now.getTime() + defaultPrice.trial_days * ONE_DAY_MS);
+		} else if (defaultPrice?.duration_days) {
+			validUntil = new Date(now.getTime() + defaultPrice.duration_days * ONE_DAY_MS);
 		}
 
 		await licenseQueries.create(db, {
@@ -96,7 +101,7 @@ async function ensureLicenseForApp(db: ReturnType<typeof getDb>, userId: number,
 			updated_at: now,
 		});
 	} catch (licenseError) {
-		console.error({ appId: appPublicId, err: licenseError }, "Auto-license creation failed");
+		log.error({ appId: appPublicId, err: serializeError(licenseError as Error) }, "Auto-license creation failed");
 	}
 }
 

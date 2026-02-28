@@ -7,12 +7,20 @@ import {
 	email_verifications,
 	identities,
 	invitations,
+	license_activations,
+	license_history,
 	licenses,
 	plans,
+	prices,
 	project_invitations,
 	project_members,
 	projects,
+	promotion_codes,
+	promotion_plans,
+	promotion_provider_refs,
+	promotions,
 	sessions,
+	subscriptions,
 	users,
 	payment_provider_configs,
 	payment_routing_rules,
@@ -583,6 +591,22 @@ export const licenseQueries = {
 		return results[0];
 	},
 
+	async findByPublicId(db: DbClient, publicId: string) {
+		const results = await db
+			.select()
+			.from(licenses)
+			.where(and(eq(licenses.public_id, publicId), isNull(licenses.deleted_at)));
+		return results[0];
+	},
+
+	async findById(db: DbClient, id: number) {
+		const results = await db
+			.select()
+			.from(licenses)
+			.where(and(eq(licenses.id, id), isNull(licenses.deleted_at)));
+		return results[0];
+	},
+
 	async findByUserId(db: DbClient, userId: number) {
 		return db
 			.select()
@@ -636,6 +660,40 @@ export const licenseQueries = {
 			return results[0]!;
 		}
 	},
+
+	/** Transition a license to the free plan (post-cancel, post-refund). */
+	async transitionToFreePlan(db: DbClient, licenseId: number, freePlanId: number) {
+		const now = new Date();
+		const results = await db
+			.update(licenses)
+			.set({
+				plan_id: freePlanId,
+				price_id: null,
+				status: "active",
+				valid_until: null,
+				source: "auto_free",
+				updated_at: now,
+			})
+			.where(eq(licenses.id, licenseId))
+			.returning();
+		return results[0]!;
+	},
+
+	/** Check if a user has ever had a paid license for an app (for promo eligibility). */
+	async hasHadPaidLicense(db: DbClient, userId: number, appId: number) {
+		const result = await db
+			.select({ count: sql<number>`count(*)` })
+			.from(licenses)
+			.where(
+				and(
+					eq(licenses.user_id, userId),
+					eq(licenses.app_id, appId),
+					eq(licenses.source, "purchase"),
+				),
+			);
+		return (result[0]?.count ?? 0) > 0;
+	},
+
 	async delete(db: DbClient, licenseId: number) {
 		const results = await db
 			.update(licenses)
@@ -823,6 +881,10 @@ export const planQueries = {
 			.from(plans)
 			.where(and(eq(plans.app_id, appId), eq(plans.slug, slug), isNull(plans.deleted_at)));
 		return results[0];
+	},
+
+	async findFreePlan(db: DbClient, appId: number) {
+		return this.findByAppAndSlug(db, appId, "free");
 	},
 
 	async findActiveByAppId(db: DbClient, appId: number) {
@@ -1180,5 +1242,497 @@ export const testSessionQueries = {
 			apps: deletedApps.length,
 			users: deletedUsers.length,
 		};
+	},
+};
+
+/**
+ * Price queries
+ */
+export const priceQueries = {
+	async create(db: DbClient, data: typeof prices.$inferInsert) {
+		const results = await db.insert(prices).values(data).returning();
+		return results[0]!;
+	},
+
+	async findByPublicId(db: DbClient, publicId: string) {
+		const results = await db
+			.select()
+			.from(prices)
+			.where(and(eq(prices.public_id, publicId), isNull(prices.deleted_at)));
+		return results[0];
+	},
+
+	async findById(db: DbClient, id: number) {
+		const results = await db
+			.select()
+			.from(prices)
+			.where(and(eq(prices.id, id), isNull(prices.deleted_at)));
+		return results[0];
+	},
+
+	async findByPlanId(db: DbClient, planId: number) {
+		return db
+			.select()
+			.from(prices)
+			.where(and(eq(prices.plan_id, planId), isNull(prices.deleted_at)));
+	},
+
+	async findActiveByPlanId(db: DbClient, planId: number) {
+		return db
+			.select()
+			.from(prices)
+			.where(and(eq(prices.plan_id, planId), eq(prices.is_active, true), isNull(prices.deleted_at)));
+	},
+
+	async findByAppId(db: DbClient, appId: number) {
+		return db
+			.select()
+			.from(prices)
+			.where(and(eq(prices.app_id, appId), isNull(prices.deleted_at)));
+	},
+
+	async findByExternalPriceId(db: DbClient, externalPriceId: string) {
+		const results = await db
+			.select()
+			.from(prices)
+			.where(and(eq(prices.external_price_id, externalPriceId), isNull(prices.deleted_at)));
+		return results[0];
+	},
+
+	async update(db: DbClient, priceId: number, data: Partial<typeof prices.$inferInsert>) {
+		const now = new Date();
+		const results = await db
+			.update(prices)
+			.set({ ...data, updated_at: now })
+			.where(eq(prices.id, priceId))
+			.returning();
+		return results[0]!;
+	},
+
+	async deactivate(db: DbClient, priceId: number) {
+		return this.update(db, priceId, { is_active: false });
+	},
+
+	async delete(db: DbClient, priceId: number) {
+		const results = await db
+			.update(prices)
+			.set({ deleted_at: new Date(), updated_at: new Date(), is_active: false })
+			.where(eq(prices.id, priceId))
+			.returning();
+		return results[0]!;
+	},
+};
+
+/**
+ * License history queries
+ */
+export const licenseHistoryQueries = {
+	async create(db: DbClient, data: typeof license_history.$inferInsert) {
+		const results = await db.insert(license_history).values(data).returning();
+		return results[0]!;
+	},
+
+	async findByLicenseId(db: DbClient, licenseId: number, limit = 100) {
+		return db
+			.select()
+			.from(license_history)
+			.where(eq(license_history.license_id, licenseId))
+			.orderBy(desc(license_history.created_at))
+			.limit(limit);
+	},
+
+	async findByChangeType(db: DbClient, licenseId: number, changeType: string) {
+		return db
+			.select()
+			.from(license_history)
+			.where(
+				and(eq(license_history.license_id, licenseId), eq(license_history.change_type, changeType)),
+			)
+			.orderBy(desc(license_history.created_at));
+	},
+};
+
+/**
+ * Subscription queries
+ */
+export const subscriptionQueries = {
+	async create(db: DbClient, data: typeof subscriptions.$inferInsert) {
+		const results = await db.insert(subscriptions).values(data).returning();
+		return results[0]!;
+	},
+
+	async findByPublicId(db: DbClient, publicId: string) {
+		const results = await db
+			.select()
+			.from(subscriptions)
+			.where(eq(subscriptions.public_id, publicId));
+		return results[0];
+	},
+
+	async findById(db: DbClient, id: number) {
+		const results = await db
+			.select()
+			.from(subscriptions)
+			.where(eq(subscriptions.id, id));
+		return results[0];
+	},
+
+	async findByUserAndApp(db: DbClient, userId: number, appId: number) {
+		const results = await db
+			.select()
+			.from(subscriptions)
+			.where(and(eq(subscriptions.user_id, userId), eq(subscriptions.app_id, appId)))
+			.orderBy(desc(subscriptions.created_at));
+		return results[0];
+	},
+
+	async findActiveByUserAndApp(db: DbClient, userId: number, appId: number) {
+		const results = await db
+			.select()
+			.from(subscriptions)
+			.where(
+				and(
+					eq(subscriptions.user_id, userId),
+					eq(subscriptions.app_id, appId),
+					inArray(subscriptions.status, ["active", "trialing", "past_due"]),
+				),
+			);
+		return results[0];
+	},
+
+	async findByLicenseId(db: DbClient, licenseId: number) {
+		return db
+			.select()
+			.from(subscriptions)
+			.where(eq(subscriptions.license_id, licenseId))
+			.orderBy(desc(subscriptions.created_at));
+	},
+
+	async findByAppId(db: DbClient, appId: number, limit = 100) {
+		return db
+			.select()
+			.from(subscriptions)
+			.where(eq(subscriptions.app_id, appId))
+			.orderBy(desc(subscriptions.created_at))
+			.limit(limit);
+	},
+
+	async findByProviderSubscriptionId(db: DbClient, providerConfigId: number, providerSubscriptionId: string) {
+		const results = await db
+			.select()
+			.from(subscriptions)
+			.where(
+				and(
+					eq(subscriptions.provider_config_id, providerConfigId),
+					eq(subscriptions.provider_subscription_id, providerSubscriptionId),
+				),
+			);
+		return results[0];
+	},
+
+	async update(db: DbClient, subscriptionId: number, data: Partial<typeof subscriptions.$inferInsert>) {
+		const now = new Date();
+		const results = await db
+			.update(subscriptions)
+			.set({ ...data, updated_at: now })
+			.where(eq(subscriptions.id, subscriptionId))
+			.returning();
+		return results[0]!;
+	},
+};
+
+/**
+ * License activation queries (seats/devices)
+ */
+export const activationQueries = {
+	async create(db: DbClient, data: typeof license_activations.$inferInsert) {
+		const results = await db.insert(license_activations).values(data).returning();
+		return results[0]!;
+	},
+
+	async findByLicenseId(db: DbClient, licenseId: number) {
+		return db
+			.select()
+			.from(license_activations)
+			.where(and(eq(license_activations.license_id, licenseId), isNull(license_activations.deactivated_at)))
+			.orderBy(desc(license_activations.last_seen_at));
+	},
+
+	async countActiveByLicenseId(db: DbClient, licenseId: number) {
+		const result = await db
+			.select({ count: sql<number>`count(*)` })
+			.from(license_activations)
+			.where(and(eq(license_activations.license_id, licenseId), isNull(license_activations.deactivated_at)));
+		return result[0]?.count ?? 0;
+	},
+
+	async findByLicenseAndDevice(db: DbClient, licenseId: number, deviceId: string) {
+		const results = await db
+			.select()
+			.from(license_activations)
+			.where(
+				and(
+					eq(license_activations.license_id, licenseId),
+					eq(license_activations.device_id, deviceId),
+					isNull(license_activations.deactivated_at),
+				),
+			);
+		return results[0];
+	},
+
+	async deactivate(db: DbClient, activationId: number) {
+		const now = new Date();
+		const results = await db
+			.update(license_activations)
+			.set({ deactivated_at: now, updated_at: now })
+			.where(eq(license_activations.id, activationId))
+			.returning();
+		return results[0]!;
+	},
+
+	async deactivateByDevice(db: DbClient, licenseId: number, deviceId: string) {
+		const now = new Date();
+		const results = await db
+			.update(license_activations)
+			.set({ deactivated_at: now, updated_at: now })
+			.where(
+				and(
+					eq(license_activations.license_id, licenseId),
+					eq(license_activations.device_id, deviceId),
+					isNull(license_activations.deactivated_at),
+				),
+			)
+			.returning();
+		return results[0];
+	},
+
+	async updateLastSeen(db: DbClient, activationId: number) {
+		const now = new Date();
+		return db
+			.update(license_activations)
+			.set({ last_seen_at: now, updated_at: now })
+			.where(eq(license_activations.id, activationId))
+			.returning();
+	},
+
+	async deactivateStale(db: DbClient, staleDays = 30) {
+		const cutoff = new Date(Date.now() - staleDays * 24 * 60 * 60 * 1000);
+		return db
+			.update(license_activations)
+			.set({ deactivated_at: new Date(), updated_at: new Date() })
+			.where(
+				and(
+					isNull(license_activations.deactivated_at),
+					lt(license_activations.last_seen_at, cutoff),
+				),
+			)
+			.returning();
+	},
+};
+
+/**
+ * Promotion queries
+ */
+export const promotionQueries = {
+	async create(db: DbClient, data: typeof promotions.$inferInsert) {
+		const results = await db.insert(promotions).values(data).returning();
+		return results[0]!;
+	},
+
+	async findByPublicId(db: DbClient, publicId: string) {
+		const results = await db
+			.select()
+			.from(promotions)
+			.where(eq(promotions.public_id, publicId));
+		return results[0];
+	},
+
+	async findById(db: DbClient, id: number) {
+		const results = await db
+			.select()
+			.from(promotions)
+			.where(eq(promotions.id, id));
+		return results[0];
+	},
+
+	async findByAppId(db: DbClient, appId: number) {
+		return db
+			.select()
+			.from(promotions)
+			.where(eq(promotions.app_id, appId))
+			.orderBy(desc(promotions.created_at));
+	},
+
+	async findActiveByAppId(db: DbClient, appId: number) {
+		return db
+			.select()
+			.from(promotions)
+			.where(
+				and(
+					eq(promotions.app_id, appId),
+					eq(promotions.is_active, true),
+				),
+			)
+			.orderBy(desc(promotions.created_at));
+	},
+
+	async update(db: DbClient, promoId: number, data: Partial<typeof promotions.$inferInsert>) {
+		const now = new Date();
+		const results = await db
+			.update(promotions)
+			.set({ ...data, updated_at: now })
+			.where(eq(promotions.id, promoId))
+			.returning();
+		return results[0]!;
+	},
+
+	async incrementRedemptions(db: DbClient, promoId: number) {
+		return db
+			.update(promotions)
+			.set({
+				current_redemptions: sql`${promotions.current_redemptions} + 1`,
+				updated_at: new Date(),
+			})
+			.where(eq(promotions.id, promoId))
+			.returning();
+	},
+
+	async deactivate(db: DbClient, promoId: number) {
+		return this.update(db, promoId, { is_active: false });
+	},
+};
+
+/**
+ * Promotion code queries
+ */
+export const promotionCodeQueries = {
+	async create(db: DbClient, data: typeof promotion_codes.$inferInsert) {
+		const results = await db.insert(promotion_codes).values(data).returning();
+		return results[0]!;
+	},
+
+	async findByCode(db: DbClient, code: string) {
+		const results = await db
+			.select()
+			.from(promotion_codes)
+			.where(eq(promotion_codes.code, code));
+		return results[0];
+	},
+
+	async findByPublicId(db: DbClient, publicId: string) {
+		const results = await db
+			.select()
+			.from(promotion_codes)
+			.where(eq(promotion_codes.public_id, publicId));
+		return results[0];
+	},
+
+	async findByPromotionId(db: DbClient, promotionId: number) {
+		return db
+			.select()
+			.from(promotion_codes)
+			.where(eq(promotion_codes.promotion_id, promotionId));
+	},
+
+	async update(db: DbClient, codeId: number, data: Partial<typeof promotion_codes.$inferInsert>) {
+		const results = await db
+			.update(promotion_codes)
+			.set({ ...data, updated_at: new Date() })
+			.where(eq(promotion_codes.id, codeId))
+			.returning();
+		return results[0]!;
+	},
+
+	async incrementUses(db: DbClient, codeId: number) {
+		return db
+			.update(promotion_codes)
+			.set({
+				current_uses: sql`${promotion_codes.current_uses} + 1`,
+				updated_at: new Date(),
+			})
+			.where(eq(promotion_codes.id, codeId))
+			.returning();
+	},
+};
+
+/**
+ * Promotion plan targeting queries
+ */
+export const promotionPlanQueries = {
+	async create(db: DbClient, data: typeof promotion_plans.$inferInsert) {
+		const results = await db.insert(promotion_plans).values(data).returning();
+		return results[0]!;
+	},
+
+	async findByPromotionId(db: DbClient, promotionId: number) {
+		return db
+			.select()
+			.from(promotion_plans)
+			.where(eq(promotion_plans.promotion_id, promotionId));
+	},
+
+	async deleteByPromotionId(db: DbClient, promotionId: number) {
+		return db
+			.delete(promotion_plans)
+			.where(eq(promotion_plans.promotion_id, promotionId))
+			.returning();
+	},
+
+	async replaceForPromotion(db: DbClient, promotionId: number, planIds: number[]) {
+		await this.deleteByPromotionId(db, promotionId);
+		if (planIds.length === 0) return [];
+		const rows = planIds.map((plan_id) => ({
+			promotion_id: promotionId,
+			plan_id,
+		}));
+		return db.insert(promotion_plans).values(rows).returning();
+	},
+};
+
+/**
+ * Promotion provider ref queries
+ */
+export const promotionProviderRefQueries = {
+	async create(db: DbClient, data: typeof promotion_provider_refs.$inferInsert) {
+		const results = await db.insert(promotion_provider_refs).values(data).returning();
+		return results[0]!;
+	},
+
+	async findByPublicId(db: DbClient, publicId: string) {
+		const results = await db
+			.select()
+			.from(promotion_provider_refs)
+			.where(eq(promotion_provider_refs.public_id, publicId));
+		return results[0];
+	},
+
+	async findByPromotionId(db: DbClient, promotionId: number) {
+		return db
+			.select()
+			.from(promotion_provider_refs)
+			.where(and(eq(promotion_provider_refs.promotion_id, promotionId), eq(promotion_provider_refs.is_active, true)));
+	},
+
+	async findByPromotionAndProvider(db: DbClient, promotionId: number, providerConfigId: number) {
+		const results = await db
+			.select()
+			.from(promotion_provider_refs)
+			.where(
+				and(
+					eq(promotion_provider_refs.promotion_id, promotionId),
+					eq(promotion_provider_refs.provider_config_id, providerConfigId),
+					eq(promotion_provider_refs.is_active, true),
+				),
+			);
+		return results[0];
+	},
+
+	async deactivate(db: DbClient, refId: number) {
+		const results = await db
+			.update(promotion_provider_refs)
+			.set({ is_active: false, updated_at: new Date() })
+			.where(eq(promotion_provider_refs.id, refId))
+			.returning();
+		return results[0]!;
 	},
 };

@@ -900,12 +900,14 @@ export function AppLicensesPage() {
 
 							{/* Trial */}
 							<div className="mb-5">
-								<Checkbox
-									checked={planForm.trialEnabled}
-									onCheckedChange={(checked: boolean) => setPlanForm({ ...planForm, trialEnabled: checked })}
-									disabled={isUpdating}
-									label="Enable Free Trial"
-								/>
+								<label className="inline-flex items-center gap-2 cursor-pointer">
+									<Checkbox
+										checked={planForm.trialEnabled}
+										onCheckedChange={(checked: boolean) => setPlanForm({ ...planForm, trialEnabled: checked })}
+										disabled={isUpdating}
+									/>
+									<span>Enable Free Trial</span>
+								</label>
 								{planForm.trialEnabled && (
 									<div className="mt-3 ml-7">
 										<Label className="font-semibold mb-2">Trial Duration (days)</Label>

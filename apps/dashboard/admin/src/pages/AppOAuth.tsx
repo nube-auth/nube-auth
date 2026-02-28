@@ -110,8 +110,8 @@ export default function AppOAuthPage() {
 						{app.name}
 					</BreadcrumbButton>
 				</BreadcrumbItem>
-				<BreadcrumbItem active>
-					OAuth
+				<BreadcrumbItem>
+					<BreadcrumbButton active>OAuth</BreadcrumbButton>
 				</BreadcrumbItem>
 			</BreadcrumbList>
 

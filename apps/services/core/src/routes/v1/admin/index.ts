@@ -176,7 +176,7 @@ router.route("/projects", membersRouter);
 router.route("/projects", licenseManagementRouter);
 router.route("/providers", providersRouter);
 router.route("/routing-rules", routingRulesRouter);
-router.route("/plans", plansRouter);
+router.route("/apps/:appId/plans", plansRouter);
 router.route("/test", testRouter);
 
 export const adminRoutes = router;

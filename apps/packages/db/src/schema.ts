@@ -165,26 +165,23 @@ export const project_invitations = pgTable(
 );
 
 /**
- * Plans table
- * Subscription/licensing plans
+ * Plans table (Capability Only)
+ * What does the user get? No pricing information.
+ * Pricing lives in the `prices` table.
  */
 export const plans = pgTable(
 	"plans",
 	{
 		id: serial("id").primaryKey(),
 		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
-		app_id: integer("app_id").notNull(),
+		app_id: integer("app_id")
+			.notNull()
+			.references(() => apps.id),
 		name: varchar("name", { length: 255 }).notNull(),
 		slug: varchar("slug", { length: 255 }).notNull(),
 		description: text("description"),
-		monthly_price: integer("monthly_price"),
-		yearly_price: integer("yearly_price"),
-		one_time_price: integer("one_time_price"),
-		duration_days: integer("duration_days"),
-		trial_enabled: boolean("trial_enabled").notNull().default(false),
-		trial_days: integer("trial_days"),
-		features: jsonb("features"),
-		status: varchar("status", { length: 20 }).notNull().default("active"),
+		features: jsonb("features").notNull().default("[]"),
+		status: varchar("status", { length: 20 }).notNull().default("active"), // 'active' | 'archived'
 		display_order: integer("display_order").notNull().default(0),
 		is_active: boolean("is_active").notNull().default(true),
 		created_at: timestamp("created_at").notNull().defaultNow(),
@@ -192,9 +189,56 @@ export const plans = pgTable(
 		deleted_at: timestamp("deleted_at"),
 	},
 	(table) => [
+		unique("plans_app_slug_unique").on(table.app_id, table.slug),
 		index("plans_app_id_idx").on(table.app_id),
 		index("plans_slug_idx").on(table.slug),
 		index("plans_status_idx").on(table.status),
+	],
+);
+
+/**
+ * Prices table (Commercial Packaging)
+ * How do they pay? Pricing lives here, not on the plan.
+ * One plan can have multiple prices (monthly, yearly, lifetime).
+ */
+export const prices = pgTable(
+	"prices",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		plan_id: integer("plan_id")
+			.notNull()
+			.references(() => plans.id),
+		app_id: integer("app_id")
+			.notNull()
+			.references(() => apps.id),
+
+		// Billing
+		billing_type: varchar("billing_type", { length: 20 }).notNull(), // 'recurring' | 'one_time' | 'lifetime'
+		interval: varchar("interval", { length: 20 }), // 'month' | 'year' (NULL for one_time/lifetime)
+		amount_cents: integer("amount_cents").notNull(), // Price in cents (999 = $9.99)
+		currency: varchar("currency", { length: 3 }).notNull().default("usd"),
+		duration_days: integer("duration_days"), // License duration. NULL = perpetual/until canceled
+
+		// Trial
+		trial_enabled: boolean("trial_enabled").notNull().default(false),
+		trial_days: integer("trial_days"), // Trial period in days (requires trial_enabled=true)
+
+		// Provider mapping
+		external_provider: varchar("external_provider", { length: 50 }), // 'stripe' | 'lemonsqueezy' | 'dodo'
+		external_price_id: varchar("external_price_id", { length: 255 }), // Provider's price ID
+
+		// Status
+		is_active: boolean("is_active").notNull().default(true),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+		deleted_at: timestamp("deleted_at"),
+	},
+	(table) => [
+		index("prices_plan_id_idx").on(table.plan_id),
+		index("prices_app_id_idx").on(table.app_id),
+		index("prices_billing_type_idx").on(table.billing_type),
+		index("prices_external_price_id_idx").on(table.external_price_id),
 	],
 );
 
@@ -261,8 +305,9 @@ export const auth_codes = pgTable(
 );
 
 /**
- * Licenses table
- * User licenses for apps
+ * Licenses table (Access Control)
+ * Can they access the app? The artifact the SDK checks.
+ * One active license per user per app.
  */
 export const licenses = pgTable(
 	"licenses",
@@ -278,8 +323,20 @@ export const licenses = pgTable(
 		plan_id: integer("plan_id")
 			.notNull()
 			.references(() => plans.id),
+		price_id: integer("price_id").references(() => prices.id), // NULL for admin-granted licenses
+
+		// Status
 		status: varchar("status", { length: 20 }).notNull().default("active"),
-		valid_until: timestamp("valid_until"),
+		// 'active' | 'trialing' | 'expired' | 'canceled' | 'suspended'
+		valid_until: timestamp("valid_until"), // NULL = perpetual / until canceled
+
+		// Source
+		source: varchar("source", { length: 20 }).notNull().default("purchase"),
+		// 'purchase' | 'admin_grant' | 'auto_free' | 'invitation' | 'webhook'
+
+		// Metadata
+		max_activations: integer("max_activations"), // NULL = unlimited. Max concurrent devices/seats.
+		metadata: jsonb("metadata"), // Flexible: { granted_by, note, ... }
 		is_test: boolean("is_test").notNull().default(false),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 		updated_at: timestamp("updated_at").notNull().defaultNow(),
@@ -290,6 +347,7 @@ export const licenses = pgTable(
 		index("licenses_user_id_idx").on(table.user_id),
 		index("licenses_app_id_idx").on(table.app_id),
 		index("licenses_plan_id_idx").on(table.plan_id),
+		index("licenses_price_id_idx").on(table.price_id),
 		index("licenses_status_idx").on(table.status),
 		index("licenses_is_test_idx").on(table.is_test, table.created_at),
 	],
@@ -334,6 +392,36 @@ export const license_history = pgTable(
 );
 
 /**
+ * License Activations table (Seats/Devices)
+ * Tracks concurrent device/seat usage against licenses.max_activations.
+ */
+export const license_activations = pgTable(
+	"license_activations",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		license_id: integer("license_id")
+			.notNull()
+			.references(() => licenses.id),
+		device_id: varchar("device_id", { length: 255 }).notNull(), // Client-generated device fingerprint
+		device_name: varchar("device_name", { length: 255 }), // "MacBook Pro", "iPhone 15"
+		device_type: varchar("device_type", { length: 50 }), // 'desktop' | 'mobile' | 'tablet' | 'browser'
+		ip_address: varchar("ip_address", { length: 50 }),
+		user_agent: text("user_agent"),
+		last_seen_at: timestamp("last_seen_at").notNull().defaultNow(),
+		deactivated_at: timestamp("deactivated_at"), // NULL = currently active
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [
+		unique("license_activations_license_device_unique").on(table.license_id, table.device_id),
+		index("license_activations_license_id_idx").on(table.license_id),
+		index("license_activations_device_id_idx").on(table.device_id),
+		index("license_activations_last_seen_at_idx").on(table.last_seen_at),
+	],
+);
+
+/**
  * Payment Provider Configs table
  * Payment provider configurations (renamed from payment_providers)
  */
@@ -370,38 +458,6 @@ export const payment_provider_configs = pgTable(
 );
 
 /**
- * Plan Provider Prices table
- * Pricing per plan per provider (what can be purchased)
- */
-export const plan_provider_prices = pgTable(
-	"plan_provider_prices",
-	{
-		id: serial("id").primaryKey(),
-		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
-		plan_id: integer("plan_id")
-			.notNull()
-			.references(() => plans.id),
-		provider_config_id: integer("provider_config_id")
-			.notNull()
-			.references(() => payment_provider_configs.id),
-		billing_type: varchar("billing_type", { length: 50 }).notNull(), // 'recurring', 'one-time'
-		interval: varchar("interval", { length: 20 }), // 'month', 'year' (null for one-time)
-		amount_cents: integer("amount_cents").notNull(),
-		currency: varchar("currency", { length: 3 }).notNull().default("usd"),
-		provider_price_id: varchar("provider_price_id", { length: 255 }).notNull(), // e.g., Stripe price ID
-		is_active: boolean("is_active").notNull().default(true),
-		created_at: timestamp("created_at").notNull().defaultNow(),
-		updated_at: timestamp("updated_at").notNull().defaultNow(),
-	},
-	(table) => [
-		index("plan_provider_prices_plan_id_idx").on(table.plan_id),
-		index("plan_provider_prices_provider_config_id_idx").on(table.provider_config_id),
-		index("plan_provider_prices_billing_type_idx").on(table.billing_type),
-		unique("plan_provider_prices_provider_price_id_unique").on(table.provider_price_id),
-	],
-);
-
-/**
  * Purchases table
  * First-class record bridging checkout session to payment transaction
  * Enables Phase 2 multi-provider routing and reconciliation
@@ -422,10 +478,10 @@ export const purchases = pgTable(
 		// user_id (Phase 1), organization_id (Phase 2)
 
 		// What was ordered
-		plan_provider_price_id: integer("plan_provider_price_id")
+		price_id: integer("price_id")
 			.notNull()
-			.references(() => plan_provider_prices.id),
-		// Direct link to price record (includes plan, provider, billing interval)
+			.references(() => prices.id),
+		// Direct link to price record (includes plan, billing interval)
 
 		// Where the purchase happens (routing)
 		provider_config_id: integer("provider_config_id")
@@ -465,7 +521,7 @@ export const purchases = pgTable(
 
 /**
  * Promotions table
- * Promotion configurations
+ * Promotion configurations — first-payment-only discounts
  */
 export const promotions = pgTable(
 	"promotions",
@@ -476,10 +532,17 @@ export const promotions = pgTable(
 			.notNull()
 			.references(() => apps.id),
 		name: varchar("name", { length: 255 }).notNull(), // Internal label: "Launch 50% off"
-		discount_type: varchar("discount_type", { length: 20 }).notNull(), // 'percent', 'fixed'
+		discount_type: varchar("discount_type", { length: 20 }).notNull(), // 'percent' | 'fixed'
 		discount_value: integer("discount_value").notNull(), // 50 (for 50%) or cents (for $50)
 		starts_at: timestamp("starts_at").notNull(),
 		ends_at: timestamp("ends_at"),
+
+		// Eligibility
+		allowed_intervals: jsonb("allowed_intervals"), // ["month","year"] or NULL (all intervals)
+		is_new_customers_only: boolean("is_new_customers_only").notNull().default(false),
+		max_redemptions: integer("max_redemptions"), // Global cap across all codes (NULL = unlimited)
+		current_redemptions: integer("current_redemptions").notNull().default(0),
+
 		is_active: boolean("is_active").notNull().default(true),
 		created_at: timestamp("created_at").notNull().defaultNow(),
 		updated_at: timestamp("updated_at").notNull().defaultNow(),
@@ -548,6 +611,61 @@ export const promotion_redemptions = pgTable(
 		index("promotion_redemptions_purchase_id_idx").on(table.purchase_id),
 		index("promotion_redemptions_app_id_idx").on(table.app_id),
 		index("promotion_redemptions_subject_idx").on(table.subject_type, table.subject_id),
+	],
+);
+
+/**
+ * Promotion Plans table (Plan Targeting)
+ * M:M mapping — which plans a promotion targets.
+ * Empty (no rows) = all plans eligible.
+ */
+export const promotion_plans = pgTable(
+	"promotion_plans",
+	{
+		id: serial("id").primaryKey(),
+		promotion_id: integer("promotion_id")
+			.notNull()
+			.references(() => promotions.id),
+		plan_id: integer("plan_id")
+			.notNull()
+			.references(() => plans.id),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+	},
+	(table) => [
+		unique("promotion_plans_promo_plan_unique").on(table.promotion_id, table.plan_id),
+		index("promotion_plans_promotion_id_idx").on(table.promotion_id),
+		index("promotion_plans_plan_id_idx").on(table.plan_id),
+	],
+);
+
+/**
+ * Promotion Provider Refs table (Provider Coupon Mapping)
+ * Maps Proofa promotions to provider-specific coupons/discounts.
+ * Immutable pattern — deactivate old ref, create new promotion if terms change.
+ */
+export const promotion_provider_refs = pgTable(
+	"promotion_provider_refs",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		promotion_id: integer("promotion_id")
+			.notNull()
+			.references(() => promotions.id),
+		provider_config_id: integer("provider_config_id")
+			.notNull()
+			.references(() => payment_provider_configs.id),
+		provider_coupon_id: varchar("provider_coupon_id", { length: 255 }).notNull(),
+		// Provider's coupon/discount ID (Stripe: 'coupon_abc', LS: 'discount_xyz')
+		provider_object_type: varchar("provider_object_type", { length: 50 }).notNull().default("coupon"),
+		// 'coupon' | 'promotion_code' | 'discount'
+		is_active: boolean("is_active").notNull().default(true),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [
+		unique("promotion_provider_refs_promo_provider_unique").on(table.promotion_id, table.provider_config_id),
+		index("promotion_provider_refs_promotion_id_idx").on(table.promotion_id),
+		index("promotion_provider_refs_provider_config_id_idx").on(table.provider_config_id),
 	],
 );
 
@@ -634,8 +752,9 @@ export const payment_transactions = pgTable(
 );
 
 /**
- * Subscriptions table
- * Tracks recurring payment subscriptions across providers
+ * Subscriptions table (Billing Lifecycle)
+ * What is their billing state? Only for recurring prices.
+ * Not created for one-time purchases.
  */
 export const subscriptions = pgTable(
 	"subscriptions",
@@ -643,64 +762,69 @@ export const subscriptions = pgTable(
 		id: serial("id").primaryKey(),
 		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
 
-		// Link to purchase & license
-		purchase_id: integer("purchase_id")
+		// Core relationships
+		user_id: integer("user_id")
 			.notNull()
-			.references(() => purchases.id),
+			.references(() => users.id),
+		app_id: integer("app_id")
+			.notNull()
+			.references(() => apps.id),
 		license_id: integer("license_id")
 			.notNull()
 			.references(() => licenses.id),
+		price_id: integer("price_id")
+			.notNull()
+			.references(() => prices.id),
 
 		// Provider info
 		provider_config_id: integer("provider_config_id")
 			.notNull()
 			.references(() => payment_provider_configs.id),
-		provider: varchar("provider", { length: 50 }).notNull(), // 'stripe', 'lemon_squeezy', 'paddle'
+		provider: varchar("provider", { length: 50 }).notNull(), // 'stripe' | 'lemonsqueezy' | 'dodo'
 		provider_subscription_id: varchar("provider_subscription_id", { length: 255 }).notNull(),
 		provider_customer_id: varchar("provider_customer_id", { length: 255 }),
 
-		// Plan & pricing
-		plan_provider_price_id: integer("plan_provider_price_id")
-			.notNull()
-			.references(() => plan_provider_prices.id),
+		// Status
+		status: varchar("status", { length: 50 }).notNull(),
+		// 'trialing' | 'active' | 'past_due' | 'canceled' | 'unpaid' | 'ended' | 'paused'
 
-		// Subscription status
-		status: varchar("status", { length: 50 }).notNull(), // 'active', 'canceled', 'past_due', 'unpaid', 'trialing', 'paused'
-		billing_interval: varchar("billing_interval", { length: 20 }).notNull(), // 'monthly', 'yearly', 'quarterly'
-
-		// Billing period tracking
+		// Billing period
+		billing_interval: varchar("billing_interval", { length: 20 }).notNull(), // 'month' | 'year'
 		billing_period_start: timestamp("billing_period_start"),
 		billing_period_end: timestamp("billing_period_end"),
 		next_billing_date: timestamp("next_billing_date"),
 
-		// Cancellation tracking
+		// Grace period
+		grace_period_end: timestamp("grace_period_end"), // When grace period expires after failed payment
+
+		// Cancellation
 		cancel_at_period_end: boolean("cancel_at_period_end").notNull().default(false),
 		canceled_at: timestamp("canceled_at"),
-		ended_at: timestamp("ended_at"),
+		ended_at: timestamp("ended_at"), // When subscription fully ended
 
-		// Trial tracking
+		// Trial
 		trial_start: timestamp("trial_start"),
 		trial_end: timestamp("trial_end"),
 
-		// Amount tracking (always in smallest currency unit - cents)
+		// Amount
 		amount_cents: integer("amount_cents").notNull(),
 		currency: varchar("currency", { length: 3 }).notNull().default("usd"),
 
 		// Metadata
 		metadata: jsonb("metadata"), // Provider-specific data
-
-		// Timeline
 		created_at: timestamp("created_at").notNull().defaultNow(),
 		updated_at: timestamp("updated_at").notNull().defaultNow(),
 	},
 	(table) => [
-		index("subscriptions_purchase_id_idx").on(table.purchase_id),
+		index("subscriptions_user_id_idx").on(table.user_id),
+		index("subscriptions_app_id_idx").on(table.app_id),
 		index("subscriptions_license_id_idx").on(table.license_id),
+		index("subscriptions_price_id_idx").on(table.price_id),
 		index("subscriptions_provider_config_id_idx").on(table.provider_config_id),
 		index("subscriptions_provider_subscription_id_idx").on(table.provider_subscription_id),
 		index("subscriptions_status_idx").on(table.status),
 		index("subscriptions_next_billing_date_idx").on(table.next_billing_date),
-		unique("subscriptions_provider_subscription_unique").on(
+		unique("subscriptions_provider_sub_unique").on(
 			table.provider_config_id,
 			table.provider_subscription_id,
 		),

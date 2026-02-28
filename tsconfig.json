@@ -7,25 +7,23 @@
 
 		/* Bundler mode */
 		"moduleResolution": "bundler",
-		"baseUrl": ".",
 		"resolveJsonModule": true,
 		"noEmit": true,
-		"ignoreDeprecations": "6.0",
 		"paths": {
-			"@proofa/auth": ["apps/packages/auth/src"],
-			"@proofa/auth/*": ["apps/packages/auth/src/*"],
-			"@proofa/cache": ["apps/packages/cache/src"],
-			"@proofa/cache/*": ["apps/packages/cache/src/*"],
-			"@proofa/client": ["apps/packages/client/src"],
-			"@proofa/client/*": ["apps/packages/client/src/*"],
-			"@proofa/db": ["apps/packages/db/src"],
-			"@proofa/db/*": ["apps/packages/db/src/*"],
-			"@proofa/queue": ["apps/packages/queue/src"],
-			"@proofa/queue/*": ["apps/packages/queue/src/*"],
-			"@proofa/react": ["apps/packages/react/src"],
-			"@proofa/react/*": ["apps/packages/react/src/*"],
-			"@proofa/shared": ["apps/packages/shared/src"],
-			"@proofa/shared/*": ["apps/packages/shared/src/*"]
+			"@proofa/auth": ["./apps/packages/auth/src"],
+			"@proofa/auth/*": ["./apps/packages/auth/src/*"],
+			"@proofa/cache": ["./apps/packages/cache/src"],
+			"@proofa/cache/*": ["./apps/packages/cache/src/*"],
+			"@proofa/client": ["./apps/packages/client/src"],
+			"@proofa/client/*": ["./apps/packages/client/src/*"],
+			"@proofa/db": ["./apps/packages/db/src"],
+			"@proofa/db/*": ["./apps/packages/db/src/*"],
+			"@proofa/queue": ["./apps/packages/queue/src"],
+			"@proofa/queue/*": ["./apps/packages/queue/src/*"],
+			"@proofa/react": ["./apps/packages/react/src"],
+			"@proofa/react/*": ["./apps/packages/react/src/*"],
+			"@proofa/shared": ["./apps/packages/shared/src"],
+			"@proofa/shared/*": ["./apps/packages/shared/src/*"]
 		},
 
 		/* Strict mode (enables strict null checks and type checking) */

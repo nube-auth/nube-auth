@@ -4,7 +4,7 @@
  * Handles payment checkout session creation using provider routing
  */
 
-import { getDb, plan_provider_prices, plans, eq, and } from "@proofa/db";
+import { getDb, prices, plans, eq, and } from "@proofa/db";
 import { createLogger, serializeError } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -64,15 +64,16 @@ checkoutRoutes.post("/", async (c: Context) => {
 			return c.json({ error: "No payment provider configured for this app" }, 400);
 		}
 
-		// Lookup provider price mapping for this plan + provider + interval
-		const priceMapping = await db.query.plan_provider_prices.findFirst({
+		// Lookup active price for this plan + interval + provider
+		const priceMapping = await db.query.prices.findFirst({
 			where: and(
-				eq(plan_provider_prices.plan_id, plan.id),
-				eq(plan_provider_prices.provider_config_id, providerConfig.id),
-				eq(plan_provider_prices.interval, validated.interval)
+				eq(prices.plan_id, plan.id),
+				eq(prices.interval, validated.interval),
+				eq(prices.is_active, true),
+				eq(prices.external_provider, providerConfig.provider)
 			),
 			columns: {
-				provider_price_id: true,
+				external_price_id: true,
 				amount_cents: true,
 				billing_type: true,
 			},
@@ -116,7 +117,7 @@ checkoutRoutes.post("/", async (c: Context) => {
 		const session = await adapter.createCheckout({
 			customerId: validated.customerId || "",
 			customerEmail: validated.customerEmail,
-			productId: priceMapping.provider_price_id, // Use provider's price ID
+			productId: priceMapping.external_price_id || "", // Use provider's price ID
 			...(validated.quantity && { quantity: validated.quantity }),
 			successUrl: validated.successUrl,
 			cancelUrl: validated.cancelUrl,
