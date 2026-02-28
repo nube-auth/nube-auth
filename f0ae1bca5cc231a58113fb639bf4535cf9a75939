@@ -1,0 +1,29 @@
+apps/packages/components/src/base/layout/dialog.tsx
+  ca0797480df5063e 33,41
+apps/dashboard/admin/src/pages/AppLicenses.tsx
+  ca0797480df5063e 765
+apps/dashboard/admin/src/pages/ProjectApps.tsx
+  ca0797480df5063e 19,74,80-83,88-91,96,103,124,128,132-147,149-150,154,156,161-176,178,207-208,211,214,221,224,227
+apps/dashboard/admin/src/pages/AppDetail.tsx
+  ca0797480df5063e 13,136-144,146-168
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.5",
+  "base_commit_sha": "f0ae1bca5cc231a58113fb639bf4535cf9a75939",
+  "prompts": {
+    "ca0797480df5063e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6a3cebda-12e4-4b70-bcc0-c715a02f1d6b",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 98,
+      "total_deletions": 92,
+      "accepted_lines": 94,
+      "overriden_lines": 0
+    }
+  }
+}
