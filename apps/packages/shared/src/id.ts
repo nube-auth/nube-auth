@@ -98,6 +98,15 @@ export const id = {
 
 	/** Generate promotion provider ref ID (PPR0, 13 chars total) */
 	promotionProviderRef: () => `PPR0${nano9()}`,
+
+	/** Generate purchase ID (PUR0, 13 chars total) */
+	purchase: () => `PUR0${nano9()}`,
+
+	/** Generate payment transaction ID (PTX0, 13 chars total) */
+	paymentTransaction: () => `PTX0${nano9()}`,
+
+	/** Generate webhook log ID (WHL0, 13 chars total) */
+	webhookLog: () => `WHL0${nano9()}`,
 } as const;
 
 /** Type representing valid ID entity types */
@@ -144,6 +153,9 @@ export const idPatterns = {
 	promotionCode: /^PMC0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 	promotionRedemption: /^PMR0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 	promotionProviderRef: /^PPR0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+	purchase: /^PUR0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+	paymentTransaction: /^PTX0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+	webhookLog: /^WHL0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 } as const;
 
 /**

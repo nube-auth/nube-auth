@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, inArray, isNull, lt, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, gte, inArray, isNull, lt, lte, sql } from "drizzle-orm";
 import type { DbClient } from "./index.js";
 import {
 	apps,
@@ -10,6 +10,7 @@ import {
 	license_activations,
 	license_history,
 	licenses,
+	payment_transactions,
 	plans,
 	prices,
 	project_invitations,
@@ -20,12 +21,14 @@ import {
 	promotion_provider_refs,
 	promotion_redemptions,
 	promotions,
+	purchases,
 	sessions,
 	subscriptions,
 	users,
 	payment_provider_configs,
 	payment_routing_rules,
 	test_sessions,
+	webhook_logs,
 } from "./schema.js";
 import { buildJsonbMergeClause, createJsonbUpdateChain } from "./utils/jsonb.js";
 
@@ -1771,5 +1774,327 @@ export const promotionRedemptionQueries = {
 					inArray(promotion_redemptions.promotion_code_id, promotionCodeIds),
 				),
 			);
+	},
+};
+
+/**
+ * Purchase queries
+ */
+export const purchaseQueries = {
+	async findByPublicId(db: DbClient, publicId: string) {
+		const results = await db
+			.select()
+			.from(purchases)
+			.where(eq(purchases.public_id, publicId));
+		return results[0];
+	},
+
+	async findById(db: DbClient, id: number) {
+		const results = await db
+			.select()
+			.from(purchases)
+			.where(eq(purchases.id, id));
+		return results[0];
+	},
+
+	async findAll(db: DbClient, filters: {
+		appId?: number | undefined;
+		status?: string | undefined;
+		providerConfigId?: number | undefined;
+		startDate?: Date | undefined;
+		endDate?: Date | undefined;
+		limit?: number | undefined;
+		offset?: number | undefined;
+	} = {}) {
+		const conditions = [];
+		if (filters.appId) conditions.push(eq(purchases.app_id, filters.appId));
+		if (filters.status) conditions.push(eq(purchases.status, filters.status));
+		if (filters.providerConfigId) conditions.push(eq(purchases.provider_config_id, filters.providerConfigId));
+		if (filters.startDate) conditions.push(gte(purchases.created_at, filters.startDate));
+		if (filters.endDate) conditions.push(lte(purchases.created_at, filters.endDate));
+
+		const where = conditions.length > 0 ? and(...conditions) : undefined;
+		const limit = filters.limit ?? 20;
+		const offset = filters.offset ?? 0;
+
+		const [items, countResult] = await Promise.all([
+			db
+				.select()
+				.from(purchases)
+				.where(where)
+				.orderBy(desc(purchases.created_at))
+				.limit(limit)
+				.offset(offset),
+			db
+				.select({ count: sql<number>`count(*)` })
+				.from(purchases)
+				.where(where),
+		]);
+
+		return { items, total: countResult[0]?.count ?? 0 };
+	},
+
+	async findByProviderSessionId(db: DbClient, providerSessionId: string) {
+		const results = await db
+			.select()
+			.from(purchases)
+			.where(eq(purchases.provider_session_id, providerSessionId));
+		return results[0];
+	},
+
+	async create(db: DbClient, data: typeof purchases.$inferInsert) {
+		const results = await db.insert(purchases).values(data).returning();
+		return results[0]!;
+	},
+
+	async update(db: DbClient, purchaseId: number, data: Partial<typeof purchases.$inferInsert>) {
+		const results = await db
+			.update(purchases)
+			.set({ ...data, updated_at: new Date() })
+			.where(eq(purchases.id, purchaseId))
+			.returning();
+		return results[0]!;
+	},
+};
+
+/**
+ * Payment transaction queries
+ */
+export const paymentTransactionQueries = {
+	async findByPublicId(db: DbClient, publicId: string) {
+		const results = await db
+			.select()
+			.from(payment_transactions)
+			.where(eq(payment_transactions.public_id, publicId));
+		return results[0];
+	},
+
+	async findById(db: DbClient, id: number) {
+		const results = await db
+			.select()
+			.from(payment_transactions)
+			.where(eq(payment_transactions.id, id));
+		return results[0];
+	},
+
+	async findByPurchaseId(db: DbClient, purchaseId: number) {
+		return db
+			.select()
+			.from(payment_transactions)
+			.where(eq(payment_transactions.purchase_id, purchaseId))
+			.orderBy(desc(payment_transactions.created_at));
+	},
+
+	async findAll(db: DbClient, filters: {
+		type?: string | undefined;
+		status?: string | undefined;
+		provider?: string | undefined;
+		providerConfigId?: number | undefined;
+		startDate?: Date | undefined;
+		endDate?: Date | undefined;
+		limit?: number | undefined;
+		offset?: number | undefined;
+	} = {}) {
+		const conditions = [];
+		if (filters.type) conditions.push(eq(payment_transactions.type, filters.type));
+		if (filters.status) conditions.push(eq(payment_transactions.status, filters.status));
+		if (filters.provider) conditions.push(eq(payment_transactions.provider, filters.provider));
+		if (filters.providerConfigId) conditions.push(eq(payment_transactions.provider_config_id, filters.providerConfigId));
+		if (filters.startDate) conditions.push(gte(payment_transactions.transaction_date, filters.startDate));
+		if (filters.endDate) conditions.push(lte(payment_transactions.transaction_date, filters.endDate));
+
+		const where = conditions.length > 0 ? and(...conditions) : undefined;
+		const limit = filters.limit ?? 20;
+		const offset = filters.offset ?? 0;
+
+		const [items, countResult] = await Promise.all([
+			db
+				.select()
+				.from(payment_transactions)
+				.where(where)
+				.orderBy(desc(payment_transactions.created_at))
+				.limit(limit)
+				.offset(offset),
+			db
+				.select({ count: sql<number>`count(*)` })
+				.from(payment_transactions)
+				.where(where),
+		]);
+
+		return { items, total: countResult[0]?.count ?? 0 };
+	},
+
+	async create(db: DbClient, data: typeof payment_transactions.$inferInsert) {
+		const results = await db.insert(payment_transactions).values(data).returning();
+		return results[0]!;
+	},
+
+	async update(db: DbClient, txId: number, data: Partial<typeof payment_transactions.$inferInsert>) {
+		const results = await db
+			.update(payment_transactions)
+			.set(data)
+			.where(eq(payment_transactions.id, txId))
+			.returning();
+		return results[0]!;
+	},
+
+	/** Get revenue stats grouped by type */
+	async revenueByType(db: DbClient, filters: { startDate?: Date | undefined; endDate?: Date | undefined; provider?: string | undefined } = {}) {
+		const conditions = [eq(payment_transactions.status, "success")];
+		if (filters.startDate) conditions.push(gte(payment_transactions.transaction_date, filters.startDate));
+		if (filters.endDate) conditions.push(lte(payment_transactions.transaction_date, filters.endDate));
+		if (filters.provider) conditions.push(eq(payment_transactions.provider, filters.provider));
+
+		return db
+			.select({
+				type: payment_transactions.type,
+				total: sql<number>`coalesce(sum(${payment_transactions.amount_cents}), 0)`,
+				count: sql<number>`count(*)`,
+			})
+			.from(payment_transactions)
+			.where(and(...conditions))
+			.groupBy(payment_transactions.type);
+	},
+
+	/** Get revenue stats grouped by provider */
+	async revenueByProvider(db: DbClient, filters: { startDate?: Date | undefined; endDate?: Date | undefined } = {}) {
+		const conditions = [eq(payment_transactions.status, "success")];
+		if (filters.startDate) conditions.push(gte(payment_transactions.transaction_date, filters.startDate));
+		if (filters.endDate) conditions.push(lte(payment_transactions.transaction_date, filters.endDate));
+
+		return db
+			.select({
+				provider: payment_transactions.provider,
+				total: sql<number>`coalesce(sum(${payment_transactions.amount_cents}), 0)`,
+				count: sql<number>`count(*)`,
+			})
+			.from(payment_transactions)
+			.where(and(...conditions))
+			.groupBy(payment_transactions.provider);
+	},
+
+	/** Get revenue stats grouped by currency */
+	async revenueByCurrency(db: DbClient, filters: { startDate?: Date | undefined; endDate?: Date | undefined; provider?: string | undefined } = {}) {
+		const conditions = [eq(payment_transactions.status, "success")];
+		if (filters.startDate) conditions.push(gte(payment_transactions.transaction_date, filters.startDate));
+		if (filters.endDate) conditions.push(lte(payment_transactions.transaction_date, filters.endDate));
+		if (filters.provider) conditions.push(eq(payment_transactions.provider, filters.provider));
+
+		return db
+			.select({
+				currency: payment_transactions.currency,
+				total: sql<number>`coalesce(sum(${payment_transactions.amount_cents}), 0)`,
+				count: sql<number>`count(*)`,
+			})
+			.from(payment_transactions)
+			.where(and(...conditions))
+			.groupBy(payment_transactions.currency);
+	},
+
+	/** Count transactions in last N days */
+	async countRecent(db: DbClient, days: number) {
+		const since = new Date();
+		since.setDate(since.getDate() - days);
+		const result = await db
+			.select({ count: sql<number>`count(*)` })
+			.from(payment_transactions)
+			.where(gte(payment_transactions.created_at, since));
+		return result[0]?.count ?? 0;
+	},
+};
+
+/**
+ * Webhook log queries
+ */
+export const webhookLogQueries = {
+	async findByPublicId(db: DbClient, publicId: string) {
+		const results = await db
+			.select()
+			.from(webhook_logs)
+			.where(eq(webhook_logs.public_id, publicId));
+		return results[0];
+	},
+
+	async findById(db: DbClient, id: number) {
+		const results = await db
+			.select()
+			.from(webhook_logs)
+			.where(eq(webhook_logs.id, id));
+		return results[0];
+	},
+
+	async findAll(db: DbClient, filters: {
+		provider?: string | undefined;
+		status?: string | undefined;
+		eventType?: string | undefined;
+		startDate?: Date | undefined;
+		endDate?: Date | undefined;
+		limit?: number | undefined;
+		offset?: number | undefined;
+	} = {}) {
+		const conditions = [];
+		if (filters.provider) conditions.push(eq(webhook_logs.provider, filters.provider));
+		if (filters.status) conditions.push(eq(webhook_logs.status, filters.status));
+		if (filters.eventType) conditions.push(eq(webhook_logs.event_type, filters.eventType));
+		if (filters.startDate) conditions.push(gte(webhook_logs.received_at, filters.startDate));
+		if (filters.endDate) conditions.push(lte(webhook_logs.received_at, filters.endDate));
+
+		const where = conditions.length > 0 ? and(...conditions) : undefined;
+		const limit = filters.limit ?? 20;
+		const offset = filters.offset ?? 0;
+
+		const [items, countResult] = await Promise.all([
+			db
+				.select({
+					id: webhook_logs.id,
+					public_id: webhook_logs.public_id,
+					provider: webhook_logs.provider,
+					event_type: webhook_logs.event_type,
+					event_id: webhook_logs.event_id,
+					status: webhook_logs.status,
+					ip_address: webhook_logs.ip_address,
+					processing_duration_ms: webhook_logs.processing_duration_ms,
+					error_message: webhook_logs.error_message,
+					retry_count: webhook_logs.retry_count,
+					received_at: webhook_logs.received_at,
+					processing_completed_at: webhook_logs.processing_completed_at,
+				})
+				.from(webhook_logs)
+				.where(where)
+				.orderBy(desc(webhook_logs.received_at))
+				.limit(limit)
+				.offset(offset),
+			db
+				.select({ count: sql<number>`count(*)` })
+				.from(webhook_logs)
+				.where(where),
+		]);
+
+		return { items, total: countResult[0]?.count ?? 0 };
+	},
+
+	/** Count webhooks by status */
+	async countByStatus(db: DbClient) {
+		return db
+			.select({
+				status: webhook_logs.status,
+				count: sql<number>`count(*)`,
+			})
+			.from(webhook_logs)
+			.groupBy(webhook_logs.status);
+	},
+
+	async create(db: DbClient, data: typeof webhook_logs.$inferInsert) {
+		const results = await db.insert(webhook_logs).values(data).returning();
+		return results[0]!;
+	},
+
+	async update(db: DbClient, logId: number, data: Partial<typeof webhook_logs.$inferInsert>) {
+		const results = await db
+			.update(webhook_logs)
+			.set({ ...data, updated_at: new Date() })
+			.where(eq(webhook_logs.id, logId))
+			.returning();
+		return results[0]!;
 	},
 };

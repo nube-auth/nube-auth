@@ -85,6 +85,7 @@ export {
 	licenseHistoryQueries,
 	licenseQueries,
 	paymentProviderConfigQueries,
+	paymentTransactionQueries,
 	planQueries,
 	priceQueries,
 	projectInvitationQueries,
@@ -95,11 +96,13 @@ export {
 	promotionProviderRefQueries,
 	promotionQueries,
 	promotionRedemptionQueries,
+	purchaseQueries,
 	routingRuleQueries,
 	sessionQueries,
 	subscriptionQueries,
 	testSessionQueries,
 	userQueries,
+	webhookLogQueries,
 } from "./queries.js";
 // Export schema for migrations and types
 export * from "./schema.js";

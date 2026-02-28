@@ -1,5 +1,7 @@
 import { createLogger } from "@proofa/shared";
 import { Hono } from "hono";
+import { billingRouter } from "./billing.js";
+import { globalLicensesRouter } from "./global-licenses.js";
 import { providersRouter } from "./providers.js";
 import { projectsRouter } from "./projects.js";
 import { appsRouter } from "./apps.js";
@@ -22,6 +24,10 @@ router.route("/projects", statsRouter);
 router.route("/projects", membersRouter);
 router.route("/providers", providersRouter);
 router.route("/routing-rules", routingRulesRouter);
+
+// Billing & global routes
+router.route("/billing", billingRouter);
+router.route("/licenses", globalLicensesRouter);
 
 // App-scoped v2 routes
 router.route("/apps/:appId/plans", plansRouter);
