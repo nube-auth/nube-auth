@@ -1,0 +1,73 @@
+apps/dashboard/admin/src/hooks/api.ts
+  ca0797480df5063e 1102-1359,1361-1455
+apps/dashboard/admin/src/pages/AppSubscriptions.tsx
+  ca0797480df5063e 88,90,160,200
+  351020bd6da3ac9f 1-87,89,91-159,161-199,201-317
+apps/dashboard/admin/src/App.tsx
+  ca0797480df5063e 15-16,244-256
+apps/services/core/src/index.ts
+  ca0797480df5063e 14,48
+  351020bd6da3ac9f 56
+docs/PRD_LICENSING_V2.md
+  ca0797480df5063e 1607,1609,1616,1618
+apps/services/core/src/routes/v1/admin/subscriptions.ts
+  351020bd6da3ac9f 1-194,199-200,202-208,212-224,226-263
+apps/services/core/src/routes/v1/subscription/index.ts
+  351020bd6da3ac9f 1-314
+apps/dashboard/admin/src/pages/AppPromotions.tsx
+  351020bd6da3ac9f 1-23,25-76,79-106,108-119,122-139,142-143,145-175,178,181-191,193,195-243,245-268,271-274,276-327,329-428,430-431,434-436,441,443-492
+  ca0797480df5063e 24,77-78,107,120-121,140-141,144,176-177,179-180,192,194,244,269-270,275,328,429,432-433,437-440,442
+apps/services/core/src/routes/v1/admin/promotions.ts
+  351020bd6da3ac9f 1-568
+apps/packages/db/src/index.ts
+  ca0797480df5063e 97
+apps/packages/shared/src/id.ts
+  ca0797480df5063e 90-98,143-145
+apps/services/core/src/routes/v1/license/index.ts
+  ca0797480df5063e 2,4,7-8,10,13,18-23,27,31,39,44,47-51,54-123,125-127,131-188,190-193,195-212,215-228,232-233,235,240-243,245,248-249,251-252,254,258-260,262-265,267,269-270,272-273,277-278,280-281,283-286,288-290,292-297,300,302-305,309-310,313-314,316-317,319
+apps/services/core/src/routes/v1/admin/license-management.ts
+  ca0797480df5063e 2,4-5,8-9,11,14,16,19-20,22-79,81-83,85-86,90-91,93-94,96-98,100-105,107-110,114-122,124-140,142-165,167-168,170-171,173,177-181,183-185,187-191,193-218,220-226,229-230,232,234-236,239-245,248,253,256-257,262,268-272,274,280-282,284-286,288-292,294-297,299-310,312,314-326,328-333,335-336,338-339,341-343,345-346,349-357,359,363-366,368-369,371,373-380,384,388-389,394-395,400-420,423,428,432-433,436,442-446,448,454-455,458-459,461-462,465-470,473-486,489,492-494,496-499,504,509-552
+apps/packages/db/src/queries.ts
+  ca0797480df5063e 21,1740-1773
+apps/services/core/src/routes/v1/billing/index.ts
+  ca0797480df5063e 4,8-19,21,27-183,187,194,202
+apps/dashboard/admin/src/pages/AppLicenses.tsx
+  ca0797480df5063e 36-39,46-61,69,71-108,110-142,144-151,157,159,162,164,166,168,173,180,182,188-190,193,200-202,204-209,213,215,219-220,222-223,229-231,233-241,243-294,296-305,307-420,422-425,427-438,440,442-447,449-458,460,462,467-473,476-490,492-498,500-502,504-520,522-552,554-579,581-583,586-587,589-608,610-611,613-635,637-645,647-649,651-659,661-667,669-671,673,675-704,706-777,779-795,797-798,800-801,804-838,840-842,844-846,848-850,852-871,873-884,886-894
+apps/services/core/src/routes/v1/admin/index.ts
+  ca0797480df5063e 9,15,18,25-26,28-31
+apps/dashboard/admin/src/layouts/AppSidebar.tsx
+  ca0797480df5063e 198-199,201-204,206
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.6",
+  "base_commit_sha": "122564363f79909376a7169566e4fee23e06410b",
+  "prompts": {
+    "351020bd6da3ac9f": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "bb71da80-1907-4c7f-85c6-f3afd893b747",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 1957,
+      "total_deletions": 0,
+      "accepted_lines": 1914,
+      "overriden_lines": 9
+    },
+    "ca0797480df5063e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6a3cebda-12e4-4b70-bcc0-c715a02f1d6b",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 2249,
+      "total_deletions": 621,
+      "accepted_lines": 2176,
+      "overriden_lines": 8
+    }
+  }
+}
