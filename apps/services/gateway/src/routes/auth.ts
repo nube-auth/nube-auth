@@ -282,8 +282,8 @@ authRoutes.get("/callback", async (c: Context) => {
 		// For localhost: DON'T set domain (host-only cookie works across ports)
 		// For production: set domain=.proofa.sh for subdomain sharing
 		const cookieOptions = cookieDomain && cookieDomain !== "localhost"
-			? { domain: cookieDomain, secure: secureCookies }
-			: { secure: secureCookies };
+			? { domain: cookieDomain, secure: secureCookies, maxAge: ttlSeconds }
+			: { secure: secureCookies, maxAge: ttlSeconds };
 		
 		const { value, attributes } = createSessionCookie(
 			gatewaySessionId,
@@ -366,8 +366,8 @@ authRoutes.post("/login", async (c: Context) => {
 		// Generate NEW session ID for Gateway (session fixation protection)
 		const gatewaySessionId = crypto.randomBytes(SESSION_ID_BYTES).toString("hex");
 		const csrfToken = crypto.randomBytes(CSRF_TOKEN_BYTES).toString("hex"); // Generate CSRF token
-		const ttlSeconds = SESSION_TTL;
 		const resolvedAudience = audience === "admin" ? "admin" : "user";
+		const ttlSeconds = resolvedAudience === "admin" ? ADMIN_SESSION_TTL : SESSION_TTL;
 
 		// Capture IP address and user-agent for session tracking
 		const ipAddress = c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || 
@@ -397,7 +397,7 @@ authRoutes.post("/login", async (c: Context) => {
 			env.NODE_ENV === "production" || (env.GATEWAY_PUBLIC_URL ? env.GATEWAY_PUBLIC_URL.startsWith("https://") : false);
 		const { value, attributes } = createSessionCookie(
 			gatewaySessionId,
-			cookieDomain ? { domain: cookieDomain, secure: secureCookies } : { secure: secureCookies },
+			cookieDomain ? { domain: cookieDomain, secure: secureCookies, maxAge: ttlSeconds } : { secure: secureCookies, maxAge: ttlSeconds },
 		);
 
 		const httpOnly = safeAttrBoolean(attributes['httpOnly']);

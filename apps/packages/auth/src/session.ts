@@ -17,6 +17,7 @@ export function createSessionCookie(
 		sameSite?: "Strict" | "Lax" | "None";
 		domain?: string;
 		path?: string;
+		maxAge?: number;
 	},
 ): { name: string; value: string; attributes: Record<string, unknown> } {
 	const signed = signSessionId(sessionId);
@@ -30,7 +31,7 @@ export function createSessionCookie(
 			sameSite: options?.sameSite ?? "Lax",
 			domain: options?.domain,
 			path: options?.path ?? "/",
-			maxAge: 7 * 24 * 60 * 60, // 7 days
+			maxAge: options?.maxAge ?? 7 * 24 * 60 * 60,
 		},
 	};
 }
