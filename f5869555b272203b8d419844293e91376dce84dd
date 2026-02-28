@@ -1,0 +1,25 @@
+apps/packages/auth/src/session.ts
+  ca0797480df5063e 20,34
+apps/services/gateway/src/routes/auth.ts
+  ca0797480df5063e 285-286,370,400
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.6",
+  "base_commit_sha": "f5869555b272203b8d419844293e91376dce84dd",
+  "prompts": {
+    "ca0797480df5063e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6a3cebda-12e4-4b70-bcc0-c715a02f1d6b",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 6,
+      "total_deletions": 5,
+      "accepted_lines": 6,
+      "overriden_lines": 0
+    }
+  }
+}
