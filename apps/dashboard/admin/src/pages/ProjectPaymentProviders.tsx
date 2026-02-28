@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { ConfirmModal } from "../components/ConfirmModal";
 import {
 	Icon,
 	IconType,
@@ -88,6 +89,7 @@ export default function ProjectPaymentProvidersPage() {
 	const [showForm, setShowForm] = useState(false);
 	const [editingProvider, setEditingProvider] = useState<PaymentProviderItem | null>(null);
 	const [detailProvider, setDetailProvider] = useState<PaymentProviderItem | null>(null);
+	const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
 	const [formData, setFormData] = useState({
 		provider: "stripe" as Provider,
@@ -179,10 +181,6 @@ export default function ProjectPaymentProvidersPage() {
 	};
 
 	const handleDelete = async (providerId: string) => {
-		if (!confirm("Are you sure you want to delete this payment provider?")) {
-			return;
-		}
-
 		try {
 			await deleteMutation.mutateAsync({ projectId: projectId!, providerId });
 			showToast("Provider deleted successfully", "success");
@@ -637,7 +635,7 @@ export default function ProjectPaymentProvidersPage() {
 											<Button
 												variant="danger"
 												size="sm"
-												onClick={() => handleDelete(provider.id)}
+												onClick={() => setDeleteTargetId(provider.id)}
 												disabled={deleteMutation.isPending}
 											>
 												Delete
@@ -651,6 +649,16 @@ export default function ProjectPaymentProvidersPage() {
 					</TableContainer>
 				</Card>
 			)}
+
+			<ConfirmModal
+				isOpen={!!deleteTargetId}
+				onClose={() => setDeleteTargetId(null)}
+				onConfirm={() => handleDelete(deleteTargetId!)}
+				title="Delete Payment Provider"
+				message="Are you sure you want to delete this payment provider? This action cannot be undone."
+				confirmText="Delete"
+				variant="danger"
+			/>
 		</div>
 	);
 }

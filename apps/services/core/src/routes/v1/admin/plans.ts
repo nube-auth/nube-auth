@@ -57,7 +57,7 @@ function formatPlan(plan: {
 	updated_at: Date;
 }, appPublicId: string) {
 	return {
-		id: plan.public_id,
+		planId: plan.public_id,
 		appId: appPublicId,
 		name: plan.name,
 		slug: plan.slug,
@@ -158,7 +158,7 @@ plansRouter.get("/", async (c: Context) => {
 				plansList.map(async (plan) => ({
 					...formatPlan(plan, app.public_id),
 					prices: (await priceQueries.findActiveByPlanId(db, plan.id)).map((p) => ({
-						id: p.public_id,
+						priceId: p.public_id,
 						billingType: p.billing_type,
 						interval: p.interval,
 						amountCents: p.amount_cents,
@@ -202,7 +202,7 @@ plansRouter.get("/:planId", async (c: Context) => {
 			plan: {
 				...formatPlan(plan, app.public_id),
 				prices: planPrices.map((p) => ({
-					id: p.public_id,
+					priceId: p.public_id,
 					billingType: p.billing_type,
 					interval: p.interval,
 					amountCents: p.amount_cents,

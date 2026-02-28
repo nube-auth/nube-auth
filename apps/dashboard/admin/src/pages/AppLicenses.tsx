@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { ConfirmModal } from "../components/ConfirmModal";
 import {
 	Icon,
 	IconType,
@@ -160,6 +161,7 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 	});
 	const [featureInput, setFeatureInput] = useState("");
 	const [saving, setSaving] = useState(false);
+	const [deleteTarget, setDeleteTarget] = useState<V2Plan | null>(null);
 
 	const plans = data?.plans ?? [];
 
@@ -217,7 +219,6 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 	};
 
 	const handleDelete = async (plan: V2Plan) => {
-		if (!confirm(`Delete plan "${plan.name}"? This cannot be undone.`)) return;
 		try {
 			await deletePlan.mutateAsync(plan.planId);
 			showToast("Plan deleted", "success");
@@ -287,7 +288,7 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 										<Button size="sm" variant="outline" onClick={() => openEdit(plan)}>
 											<Icon icon={IconType.Edit} size={14} />
 										</Button>
-										<Button size="sm" variant="danger" onClick={() => handleDelete(plan)}>
+										<Button size="sm" variant="danger" onClick={() => setDeleteTarget(plan)}>
 											<Icon icon={IconType.Delete} size={14} />
 										</Button>
 									</div>
@@ -415,6 +416,16 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 					</DialogFooter>
 				</DialogPopup>
 			</Dialog>
+
+			<ConfirmModal
+				isOpen={!!deleteTarget}
+				onClose={() => setDeleteTarget(null)}
+				onConfirm={() => handleDelete(deleteTarget!)}
+				title="Delete Plan"
+				message={`Are you sure you want to delete plan "${deleteTarget?.name}"? This cannot be undone.`}
+				confirmText="Delete"
+				variant="danger"
+			/>
 		</div>
 	);
 }
@@ -606,6 +617,7 @@ function LicensesTab({ appId, showToast }: { appId: string; showToast: (msg: str
 	});
 	const [saving, setSaving] = useState(false);
 	const [viewingHistory, setViewingHistory] = useState<string | null>(null);
+	const [revokeTarget, setRevokeTarget] = useState<V2License | null>(null);
 
 	const licenses = licensesData?.licenses ?? [];
 	const plans = plansData?.plans ?? [];
@@ -635,7 +647,6 @@ function LicensesTab({ appId, showToast }: { appId: string; showToast: (msg: str
 	};
 
 	const handleRevoke = async (license: V2License) => {
-		if (!confirm(`Revoke license for ${license.userEmail || license.userId}?`)) return;
 		try {
 			await revokeLicense.mutateAsync(license.licenseId);
 			showToast("License revoked", "success");
@@ -764,7 +775,7 @@ function LicensesTab({ appId, showToast }: { appId: string; showToast: (msg: str
 											<Button size="sm" variant="outline" onClick={() => setViewingHistory(lic.licenseId)}>
 												<Icon icon={IconType.Clock} size={14} />
 											</Button>
-											<Button size="sm" variant="danger" onClick={() => handleRevoke(lic)}>
+											<Button size="sm" variant="danger" onClick={() => setRevokeTarget(lic)}>
 												<Icon icon={IconType.Delete} size={14} />
 											</Button>
 										</div>
@@ -837,6 +848,16 @@ function LicensesTab({ appId, showToast }: { appId: string; showToast: (msg: str
 					onClose={() => setViewingHistory(null)}
 				/>
 			)}
+
+			<ConfirmModal
+				isOpen={!!revokeTarget}
+				onClose={() => setRevokeTarget(null)}
+				onConfirm={() => handleRevoke(revokeTarget!)}
+				title="Revoke License"
+				message={`Are you sure you want to revoke the license for ${revokeTarget?.userEmail || revokeTarget?.userId}?`}
+				confirmText="Revoke"
+				variant="danger"
+			/>
 		</div>
 	);
 }

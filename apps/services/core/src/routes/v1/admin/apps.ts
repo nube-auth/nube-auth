@@ -1,5 +1,5 @@
-import { appQueries, auditLogQueries, getDb, projectMemberQueries, projectQueries, userQueries, licenseQueries } from "@proofa/db";
-import { createId, createLogger, idPatterns, serializeError } from "@proofa/shared";
+import { appQueries, auditLogQueries, getDb, planQueries, projectMemberQueries, projectQueries, userQueries, licenseQueries } from "@proofa/db";
+import { createId, createLogger, CreateAppRequestSchema, idPatterns, serializeError } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { randomBytes } from "node:crypto";
@@ -118,18 +118,17 @@ appsRouter.patch("/:projectId/apps/:appId/provider-selection", async (c: Context
 appsRouter.post("/:projectId/apps", async (c: Context) => {
 	try {
 		const projectId = c.req.param("projectId");
-		const { name, slug, description } = (await c.req.json()) as {
-			name?: string;
-			slug?: string;
-			description?: string;
-		};
+		const rawBody = await c.req.json();
+		const parsed = CreateAppRequestSchema.safeParse(rawBody);
+
+		if (!parsed.success) {
+			return c.json({ error: "Invalid request body", details: parsed.error.flatten().fieldErrors }, 400);
+		}
+
+		const body = parsed.data;
 
 		if (!projectId || !idPatterns.project.test(projectId)) {
 			return c.json({ error: "Invalid projectId" }, 400);
-		}
-
-		if (!name || !slug) {
-			return c.json({ error: "Missing required fields: name, slug" }, 400);
 		}
 
 		const userId = c.req.header("X-Proofa-User-Id");
@@ -158,29 +157,48 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 			return c.json({ error: "Forbidden" }, 403);
 		}
 
+		const appSlug = body.slug || body.name.toLowerCase().replace(/\s+/g, "-");
+
 		// Create app
 		const clientSecret = randomBytes(32).toString("hex");
 		const newApp = await appQueries.create(db, {
 			public_id: createId("app"),
 			project_id: project.id,
-			name,
-			slug,
-			description: description || null,
-			enabled_providers: ["google"],
+			name: body.name,
+			slug: appSlug,
+			description: body.description || null,
+			enabled_providers: body.enabledProviders,
 			app_tokens: {
 				clientSecret,
 			},
 			security_settings: {
-				redirectUris: [],
-				allowedHosts: [],
-				sessionTtlDays: 28,
+				redirectUris: body.redirectUris || [],
+				allowedHosts: body.allowedHosts || [],
+				sessionTtlDays: body.sessionTtlDays ?? 28,
 			},
 			plan_settings: {
-				licensingRequired: false,
-				defaultPlan: "free",
+				licensingRequired: body.requiresLicensing,
+				defaultPlan: body.requiresLicensing ? "free" : null,
 			},
 			is_active: true,
 		});
+
+		// If licensing is enabled and a default plan is provided, create it
+		let defaultPlan = null;
+		if (body.requiresLicensing && body.defaultLicensePlan) {
+			const planSlug = body.defaultLicensePlan.slug || body.defaultLicensePlan.name.toLowerCase().replace(/\s+/g, "-");
+			defaultPlan = await planQueries.create(db, {
+				public_id: createId("plan"),
+				app_id: newApp.id,
+				name: body.defaultLicensePlan.name,
+				slug: planSlug,
+				description: body.defaultLicensePlan.description || null,
+				features: body.defaultLicensePlan.features || {},
+				status: "active",
+				display_order: 0,
+				is_active: true,
+			});
+		}
 
 		// Extract JSONB fields
 		const securitySettings = newApp.security_settings as any;
@@ -196,13 +214,14 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 				action: "app.created",
 				entity_type: "app",
 				entity_id: newApp.public_id,
-				changes: { name, slug, description },
+				changes: { name: body.name, slug: appSlug, description: body.description, requiresLicensing: body.requiresLicensing },
 				ip_address: c.req.header("X-Forwarded-For") || c.req.header("X-Real-IP") || null,
 			});
 		} catch (auditError) {
 			log.error({ err: serializeError(auditError as Error) }, "Failed to create audit log");
 		}
 
+		const planSettings = newApp.plan_settings as any;
 		return c.json(
 			{
 				id: newApp.public_id,
@@ -220,7 +239,15 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 				cacheTtlMinutes: securitySettings?.cacheTtlMinutes || 60,
 				rateLimit: securitySettings?.rateLimit || 100,
 				enabledProviders: newApp.enabled_providers || [],
-				// selectedPaymentProviderId removed - use /v1/admin/routing-rules/:appId
+				requiresLicensing: planSettings?.licensingRequired ?? false,
+				...(defaultPlan ? {
+					defaultPlan: {
+						id: defaultPlan.public_id,
+						name: defaultPlan.name,
+						slug: defaultPlan.slug,
+						description: defaultPlan.description,
+					},
+				} : {}),
 				createdAt: new Date(newApp.created_at).toISOString(),
 				updatedAt: new Date(newApp.updated_at).toISOString(),
 			},

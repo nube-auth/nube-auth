@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { ConfirmModal } from "../components/ConfirmModal";
 import {
 	Icon,
 	IconType,
@@ -66,6 +67,7 @@ export function AppPromotionsPage() {
 	const [expandedPromo, setExpandedPromo] = useState<string | null>(null);
 	const [showCodeModal, setShowCodeModal] = useState<string | null>(null);
 	const [saving, setSaving] = useState(false);
+	const [deactivateTarget, setDeactivateTarget] = useState<V2Promotion | null>(null);
 
 	const [form, setForm] = useState({
 		name: "",
@@ -156,7 +158,6 @@ export function AppPromotionsPage() {
 	};
 
 	const handleDeactivate = async (promo: V2Promotion) => {
-		if (!confirm(`Deactivate promotion "${promo.name}"?`)) return;
 		try {
 			await deactivatePromotion.mutateAsync(promo.promotionId);
 			showToast("Promotion deactivated", "success");
@@ -284,7 +285,7 @@ export function AppPromotionsPage() {
 											<Icon icon={IconType.Edit} size={14} />
 										</Button>
 										{promo.isActive && (
-											<Button size="sm" variant="danger" onClick={() => handleDeactivate(promo)}>
+											<Button size="sm" variant="danger" onClick={() => setDeactivateTarget(promo)}>
 												<Icon icon={IconType.Cancel} size={14} />
 											</Button>
 										)}
@@ -487,6 +488,15 @@ export function AppPromotionsPage() {
 					</DialogFooter>
 				</DialogPopup>
 			</Dialog>
+			<ConfirmModal
+				isOpen={!!deactivateTarget}
+				onClose={() => setDeactivateTarget(null)}
+				onConfirm={() => handleDeactivate(deactivateTarget!)}
+				title="Deactivate Promotion"
+				message={`Are you sure you want to deactivate promotion "${deactivateTarget?.name}"?`}
+				confirmText="Deactivate"
+				variant="warning"
+			/>
 		</div>
 	);
 }

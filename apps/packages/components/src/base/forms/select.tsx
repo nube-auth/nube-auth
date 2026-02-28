@@ -13,9 +13,22 @@ export type SelectItem = {
 };
 
 export function Select({
+  onValueChange,
   ...props
 }: React.ComponentProps<typeof BaseSelect.Root>) {
-  return <BaseSelect.Root {...props} />;
+  // SelectItem wraps values as {value, label} for rendering purposes.
+  // Normalize onValueChange to return the raw string value to consumers.
+  const handleValueChange = React.useCallback(
+    (value: unknown, details: Parameters<NonNullable<typeof onValueChange>>[1]) => {
+      if (!onValueChange) return;
+      const unwrapped = value != null && typeof value === 'object' && 'value' in value
+        ? (value as SelectItem).value
+        : value;
+      onValueChange(unwrapped as any, details);
+    },
+    [onValueChange],
+  );
+  return <BaseSelect.Root onValueChange={handleValueChange} {...props} />;
 }
 
 export const selectTriggerVariants = cva(
@@ -160,8 +173,9 @@ export function SelectPopup({
   }) {
   return (
     <BaseSelect.Portal>
-      <BaseSelect.Backdrop />
+      <BaseSelect.Backdrop className="fixed inset-0 z-[60]" />
       <BaseSelect.Positioner
+        className="z-[60]"
         align={align}
         alignOffset={alignOffset}
         side={side}
