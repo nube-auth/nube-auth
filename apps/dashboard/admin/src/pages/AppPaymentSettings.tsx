@@ -9,7 +9,7 @@ import {
 	Card,
 	CardBody,
 	Button,
-	Badge,
+	Chip,
 	EmptyState,
 	Breadcrumb,
 	BreadcrumbSeparator,
@@ -53,9 +53,9 @@ export default function AppPaymentSettingsPage() {
 	const getEnvironmentBadge = (environment: string) => {
 		const isProduction = environment === "production";
 		return (
-			<Badge variant={isProduction ? "success" : "warning"}>
+			<Chip variant={isProduction ? "success" : "warning"} size="sm">
 				{environment}
-			</Badge>
+			</Chip>
 		);
 	};
 
@@ -166,9 +166,9 @@ export default function AppPaymentSettingsPage() {
 											</h3>
 											{getEnvironmentBadge(provider.environment)}
 											{isSelected && (
-													<Badge variant="success">
+													<Chip variant="success" size="sm">
 														Active
-													</Badge>
+													</Chip>
 											)}
 										</div>
 										<div className="flex items-center gap-4 text-[13px] [color:var(--text-secondary)]">

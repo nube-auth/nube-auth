@@ -1,4 +1,22 @@
-import { Heading, Text, Card, CardBody, Button, Alert, Badge, Label } from "@proofa/components";
+import {
+	Heading,
+	Text,
+	Card,
+	CardBody,
+	Button,
+	Alert,
+	Chip,
+	Label,
+	Input,
+	Table,
+	TableContainer,
+	TableHeader,
+	TableHead,
+	TableBody,
+	TableRow,
+	TableCell,
+} from "@proofa/components";
+import { Select } from "../components/Select";
 import { useState } from "react";
 import { useBillingTransactions } from "../hooks/api";
 import { useToast } from "../components/Toast";
@@ -147,113 +165,93 @@ export function TransactionExportPage() {
 
 				{/* Format Selection */}
 				<div className="mb-6">
-					<label className="text-sm font-medium mb-3 block">
+					<Label className="text-sm font-medium mb-3 block">
 						Export Format
-					</label>
-					<div className="flex gap-4">
-						<label className="flex items-center gap-2 cursor-pointer">
-							<input
-								type="radio"
-								value="csv"
-								checked={exportFormat === "csv"}
-								onChange={(e) => setExportFormat(e.target.value as "csv")}
-								className="cursor-pointer"
-							/>
-							<span>CSV (Spreadsheet)</span>
-						</label>
-						<label className="flex items-center gap-2 cursor-pointer">
-							<input
-								type="radio"
-								value="json"
-								checked={exportFormat === "json"}
-								onChange={(e) => setExportFormat(e.target.value as "json")}
-								className="cursor-pointer"
-							/>
-							<span>JSON (Data)</span>
-						</label>
+					</Label>
+					<div className="flex gap-2">
+						<Button
+							variant={exportFormat === "csv" ? "primary" : "secondary"}
+							size="sm"
+							onClick={() => setExportFormat("csv")}
+						>
+							CSV (Spreadsheet)
+						</Button>
+						<Button
+							variant={exportFormat === "json" ? "primary" : "secondary"}
+							size="sm"
+							onClick={() => setExportFormat("json")}
+						>
+							JSON (Data)
+						</Button>
 					</div>
 				</div>
 
 				<div className="h-px bg-border-primary mb-6" />
 
 				{/* Filters */}
-				<h4 className="mt-0 mb-4 text-sm">Filters</h4>
+				<Heading level={4} size="sm" className="mt-0 mb-4">Filters</Heading>
 				<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-4">
-					<div className="form-group m-0">
-						<label htmlFor="type" className="text-xs mb-1.5">
-							Transaction Type
-						</label>
-						<select
-							id="type"
+					<div>
+						<Label className="text-xs mb-1.5">Transaction Type</Label>
+						<Select
 							value={filters.type}
-							onChange={(e) => setFilters({ ...filters, type: e.target.value, offset: 0 })}
-							className="w-full px-2 py-2 rounded-md border border-border-color text-sm"
-						>
-							<option value="">All Types</option>
-							<option value="purchase">Purchase</option>
-							<option value="renewal">Renewal</option>
-							<option value="refund">Refund</option>
-							<option value="chargeback">Chargeback</option>
-							<option value="manual_adjustment">Manual Adjustment</option>
-						</select>
-					</div>
-
-					<div className="form-group m-0">
-						<label htmlFor="status" className="text-xs mb-1.5">
-							Status
-						</label>
-						<select
-							id="status"
-							value={filters.status}
-							onChange={(e) => setFilters({ ...filters, status: e.target.value, offset: 0 })}
-							className="w-full px-2 py-2 rounded-md border border-border-color text-sm"
-						>
-							<option value="">All Statuses</option>
-							<option value="pending">Pending</option>
-							<option value="completed">Completed</option>
-							<option value="failed">Failed</option>
-						</select>
-					</div>
-
-					<div className="form-group m-0">
-						<label htmlFor="provider" className="text-xs mb-1.5">
-							Provider
-						</label>
-						<select
-							id="provider"
-							value={filters.provider}
-							onChange={(e) => setFilters({ ...filters, provider: e.target.value, offset: 0 })}
-							className="w-full px-2 py-2 rounded-md border border-border-color text-sm"
-						>
-							<option value="">All Providers</option>
-							<option value="lemon_squeezy">LemonSqueezy</option>
-							<option value="paddle">Paddle</option>
-						</select>
-					</div>
-
-					<div className="form-group m-0">
-						<label htmlFor="startDate" className="text-xs mb-1.5">
-							Start Date
-						</label>
-						<input
-							type="date"
-							id="startDate"
-							value={filters.start_date}
-							onChange={(e) => setFilters({ ...filters, start_date: e.target.value, offset: 0 })}
-							className="w-full px-2 py-2 rounded-md border border-border-color text-sm"
+							onChange={(value) => setFilters({ ...filters, type: value, offset: 0 })}
+							placeholder="All Types"
+							options={[
+								{ value: "", label: "All Types" },
+								{ value: "purchase", label: "Purchase" },
+								{ value: "renewal", label: "Renewal" },
+								{ value: "refund", label: "Refund" },
+								{ value: "chargeback", label: "Chargeback" },
+								{ value: "manual_adjustment", label: "Manual Adjustment" },
+							]}
 						/>
 					</div>
 
-					<div className="form-group m-0">
-						<label htmlFor="endDate" className="text-xs mb-1.5">
-							End Date
-						</label>
-						<input
+					<div>
+						<Label className="text-xs mb-1.5">Status</Label>
+						<Select
+							value={filters.status}
+							onChange={(value) => setFilters({ ...filters, status: value, offset: 0 })}
+							placeholder="All Statuses"
+							options={[
+								{ value: "", label: "All Statuses" },
+								{ value: "pending", label: "Pending" },
+								{ value: "completed", label: "Completed" },
+								{ value: "failed", label: "Failed" },
+							]}
+						/>
+					</div>
+
+					<div>
+						<Label className="text-xs mb-1.5">Provider</Label>
+						<Select
+							value={filters.provider}
+							onChange={(value) => setFilters({ ...filters, provider: value, offset: 0 })}
+							placeholder="All Providers"
+							options={[
+								{ value: "", label: "All Providers" },
+								{ value: "lemon_squeezy", label: "LemonSqueezy" },
+								{ value: "paddle", label: "Paddle" },
+							]}
+						/>
+					</div>
+
+					<div>
+						<Label className="text-xs mb-1.5">Start Date</Label>
+						<Input
 							type="date"
-							id="endDate"
+							value={filters.start_date}
+							onChange={(e) => setFilters({ ...filters, start_date: e.target.value, offset: 0 })}
+						/>
+					</div>
+
+					<div>
+						<Label className="text-xs mb-1.5">End Date</Label>
+						<Input
+							type="date"
 							value={filters.end_date}
 							onChange={(e) => setFilters({ ...filters, end_date: e.target.value, offset: 0 })}
-							className="w-full px-2 py-2 rounded-md border border-border-color text-sm"
 						/>
 					</div>
 				</div>
@@ -316,88 +314,69 @@ export function TransactionExportPage() {
 			</CardBody></Card>
 
 			{/* Preview Table */}
-			<div className="card">
-				<div className="p-6 border-b border-border-primary">
-					<h3 className="mt-0 mb-0 text-base">Preview ({transactionsQuery.data?.data?.length || 0} transactions)</h3>
-				</div>
+			<Card>
+				<CardBody className="p-6 border-b border-border-primary">
+					<Heading level={3} size="sm">Preview ({transactionsQuery.data?.data?.length || 0} transactions)</Heading>
+				</CardBody>
 
 				{!transactionsQuery.data || transactionsQuery.data.data.length === 0 ? (
 					<div className="py-16 px-6 text-center">
 						<div className="text-5xl mb-4">📊</div>
-						<h2 className="text-lg font-semibold mb-2 text-text-primary">
+						<Heading level={2} size="md" className="mb-2">
 							No transactions found
-						</h2>
+						</Heading>
 						<Text className="text-sm text-text-tertiary">
 							Adjust your filters to find transactions to export
 						</Text>
 					</div>
 				) : (
-					<div className="overflow-x-auto">
-						<table className="w-full border-collapse">
-							<thead>
-								<tr className="border-b border-border-primary bg-surface-secondary">
-									<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider whitespace-nowrap">
-										Date
-									</th>
-									<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider whitespace-nowrap">
-										Type
-									</th>
-									<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider whitespace-nowrap">
-										Status
-									</th>
-									<th className="px-4 py-3.5 text-right text-xs font-semibold text-text-tertiary uppercase tracking-wider whitespace-nowrap">
-										Amount
-									</th>
-									<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider whitespace-nowrap">
-										Provider
-									</th>
-								</tr>
-							</thead>
-							<tbody>
-								{transactionsQuery.data.data.slice(0, 10).map((txn) => (
-									<tr key={txn.id} className="border-b border-border-primary">
-										<td className="px-4 py-3.5 text-sm text-text-secondary whitespace-nowrap">
-											{formatDate(txn.created_at)}
-										</td>
-										<td className="px-4 py-3.5 text-sm capitalize">
-											<span className="inline-block px-2.5 py-1 bg-primary-light text-primary rounded-xl text-xs font-medium"
-											>
-												{txn.type}
-											</span>
-										</td>
-										<td className="px-4 py-3.5 text-sm">
-											<span
-												className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-12px font-medium ${
-													txn.status === "completed"
-														? "badge-success"
-														: txn.status === "pending"
-															? "badge-warning"
-															: "badge-danger"
-												}`}
-											>
-												{txn.status === "completed" && "✓"}
-												{txn.status === "pending" && "⏱"}
-												{txn.status === "failed" && "✗"}
-												<span className="capitalize">{txn.status}</span>
-											</span>
-										</td>
-										<td className="px-4 py-3.5 text-sm font-semibold text-text-primary text-right">
-											{formatCurrency(txn.amount, txn.currency)}
-										</td>
-										<td className="px-4 py-3.5 text-sm capitalize">
-											<span
-													className={`inline-block px-2.5 py-1 rounded-xl text-12px font-medium ${
-														txn.provider === "lemon_squeezy" ? "badge-success" : "badge-info"
-													}`}
-											>
-												{txn.provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
-											</span>
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
+					<CardBody className="p-0">
+						<TableContainer>
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>Date</TableHead>
+										<TableHead>Type</TableHead>
+										<TableHead>Status</TableHead>
+										<TableHead align="right">Amount</TableHead>
+										<TableHead>Provider</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{transactionsQuery.data.data.slice(0, 10).map((txn) => (
+										<TableRow key={txn.id}>
+											<TableCell>
+												<Text className="text-text-secondary whitespace-nowrap">{formatDate(txn.created_at)}</Text>
+											</TableCell>
+											<TableCell>
+												<Chip variant="primary" size="sm" pill>{txn.type}</Chip>
+											</TableCell>
+											<TableCell>
+												<Chip
+													variant={txn.status === "completed" ? "success" : txn.status === "pending" ? "warning" : "danger"}
+													size="sm"
+													pill
+												>
+													{txn.status === "completed" && "✓ "}
+													{txn.status === "pending" && "⏱ "}
+													{txn.status === "failed" && "✗ "}
+													{txn.status}
+												</Chip>
+											</TableCell>
+											<TableCell align="right">
+												<Text className="font-semibold text-text-primary">{formatCurrency(txn.amount, txn.currency)}</Text>
+											</TableCell>
+											<TableCell>
+												<Chip variant={txn.provider === "lemon_squeezy" ? "success" : "info"} size="sm" pill>
+													{txn.provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
+												</Chip>
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						</TableContainer>
+					</CardBody>
 				)}
 
 				{transactionsQuery.data && transactionsQuery.data.data.length > 10 && (
@@ -405,7 +384,7 @@ export function TransactionExportPage() {
 						Showing 10 of {transactionsQuery.data.data.length} transactions. Download to see all records.
 					</div>
 				)}
-			</div>
+			</Card>
 		</div>
 	);
 }

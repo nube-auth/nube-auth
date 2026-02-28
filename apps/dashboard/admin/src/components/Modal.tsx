@@ -5,6 +5,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 	DialogFooter,
+	Button,
 } from "@proofa/components";
 import { Icon, IconType } from "@proofa/components";
 
@@ -43,14 +44,15 @@ export function ModalHeader({ children, onClose }: ModalHeaderProps) {
 		<DialogHeader className="flex items-center justify-between pr-8">
 			<DialogTitle>{children}</DialogTitle>
 			{onClose && (
-				<button
-					type="button"
+				<Button
+					variant="plain"
+					size="sm"
 					onClick={onClose}
-					className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+					className="absolute right-4 top-4"
 				>
 					<Icon icon={IconType.Close} size={20} />
 					<span className="sr-only">Close</span>
-				</button>
+				</Button>
 			)}
 		</DialogHeader>
 	);

@@ -16,7 +16,7 @@ import {
 	BreadcrumbItem,
 	BreadcrumbButton,
 	BreadcrumbSeparator,
-	Badge,
+	Chip,
 	Table,
 	TableContainer,
 	TableHeader,
@@ -175,7 +175,7 @@ export function ProjectAppsPage() {
 									<Text className="text-xs text-muted">
 										{new Date(app.createdAt).toLocaleDateString()}
 									</Text>
-									<Badge variant="info">{app.id}</Badge>
+									<Chip variant="info" size="sm">{app.id}</Chip>
 								</div>
 							</CardBody>
 						</Card>

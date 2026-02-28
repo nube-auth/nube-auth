@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Icon, IconType } from "@proofa/components";
+import { Icon, IconType, Input, Textarea, Button, Checkbox, Label } from "@proofa/components";
 
 import { Select } from "./Select";
 import { pingpong } from "../lib/pingpong";
@@ -154,14 +154,14 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 						<h2 className="text-20px font-bold text-text-primary mb-1">Invite User</h2>
 						<p className="text-14px text-text-secondary m-0">Send an invitation or grant access to an existing user</p>
 					</div>
-					<button
-						type="button"
+					<Button
+						variant="plain"
+						size="sm"
 						onClick={handleClose}
 						disabled={loading}
-						className={`bg-transparent border-none text-text-secondary p-1 rounded-md transition-all duration-200 ${loading ? "cursor-not-allowed" : "cursor-pointer hover:bg-content-bg hover:text-text-primary"}`}
 					>
 						<Icon icon={IconType.Cancel} size={20} />
-					</button>
+					</Button>
 				</div>
 
 				{/* Success Message */}
@@ -183,35 +183,29 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 				)}
 				{/* Form */}
 				<form onSubmit={handleSubmit}>
-					{/* Email Field */}
 					<div className="mb-5">
-						<label htmlFor="email" className="form-label">
+						<Label className="form-label">
 							Email Address <span className="text-danger">*</span>
-						</label>
-						<input
+						</Label>
+						<Input
 							type="email"
-							id="email"
 							required
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							disabled={loading}
 							placeholder="user@example.com"
-								className="form-control w-full px-3 py-2.5 border border-card-border rounded-lg bg-content-bg text-text-primary text-14px outline-none transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
 						/>
 						<p className="text-12px text-text-tertiary mt-1.5">We'll check if this user exists before sending an invitation</p>
 					</div>
 
-					{/* Grant License Checkbox */}
 					<div className="mb-5">
 						<label
 							className={`flex items-center gap-2.5 p-3 rounded-lg border transition-all duration-200 ${loading ? "cursor-not-allowed" : "cursor-pointer"} ${grantLicense ? "bg-primary-light border-primary" : "bg-content-bg border-card-border"}`}
 						>
-							<input
-								type="checkbox"
+							<Checkbox
 								checked={grantLicense}
-								onChange={(e) => setGrantLicense(e.target.checked)}
+								onCheckedChange={(checked) => setGrantLicense(!!checked)}
 								disabled={loading}
-								className={`w-4.5 h-4.5 ${loading ? "cursor-not-allowed" : "cursor-pointer"}`}
 							/>
 							<div className="flex-1">
 								<div className="text-14px font-semibold text-text-primary">Grant License</div>
@@ -250,21 +244,18 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 								/>
 							</div>
 
-							{/* License Duration */}
 							<div className="mb-5">
-								<label htmlFor="licenseDuration" className="form-label">
+								<Label className="form-label">
 									License Duration <span className="text-11px font-normal">(Optional)</span>
-								</label>
+								</Label>
 								<div className="relative">
-									<input
+									<Input
 										type="number"
-										id="licenseDuration"
 										value={licenseDuration}
 										onChange={(e) => setLicenseDuration(e.target.value)}
 										disabled={loading}
 										placeholder="Leave empty for no expiry"
 										min="1"
-										className="form-control w-full px-3 py-2.5 pr-15 border border-card-border rounded-lg bg-content-bg text-text-primary text-14px outline-none transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
 									/>
 									<span className="absolute right-3 top-1/2 -translate-y-1/2 text-13px text-text-tertiary pointer-events-none">
 										days
@@ -277,36 +268,31 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 						</>
 					)}
 
-					{/* Custom Message */}
 					<div className="mb-6">
-						<label htmlFor="customMessage" className="form-label">
+						<Label className="form-label">
 							Custom Message <span className="text-11px font-normal">(Optional)</span>
-						</label>
-						<textarea
-							id="customMessage"
+						</Label>
+						<Textarea
 							value={customMessage}
 							onChange={(e) => setCustomMessage(e.target.value)}
 							disabled={loading}
 							placeholder="Add a personal message to the invitation..."
 							rows={3}
-							className="form-control w-full px-3 py-2.5 border border-card-border rounded-lg bg-content-bg text-text-primary text-14px outline-none resize-vertical font-inherit transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
 						/>
 					</div>
 
-					{/* Form Actions */}
 					<div className="flex gap-3 justify-end">
-						<button
-							type="button"
+						<Button
+							variant="secondary"
 							onClick={handleClose}
 							disabled={loading}
-							className={`px-5 py-2.5 text-14px font-semibold border border-card-border rounded-lg bg-transparent text-text-secondary transition-all duration-200 ${loading ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-content-bg hover:text-text-primary"}`}
 						>
 							Cancel
-						</button>
-						<button
+						</Button>
+						<Button
+							variant="primary"
 							type="submit"
 							disabled={loading || !email}
-							className={`px-6 py-2.5 text-14px font-semibold border-none rounded-lg text-white transition-all duration-200 flex items-center gap-2 ${loading || !email ? "bg-text-tertiary cursor-not-allowed" : "bg-primary cursor-pointer hover:bg-primary-hover hover:-translate-y-px hover:shadow-lg"}`}
 						>
 							{loading ? (
 								<>
@@ -319,7 +305,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 									Send Invitation
 								</>
 							)}
-						</button>
+						</Button>
 					</div>
 				</form>
 			</div>

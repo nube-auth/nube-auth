@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useBillingPurchases, useBillingRefunds, useCreateRefund } from "../hooks/api";
 import { useToast } from "../components/Toast";
-import { Heading, Text, Card, CardBody, Button, Alert, Badge, Label, Input, Select as SeliaSelect, EmptyState, Table, TableContainer, TableHeader, TableHead, TableBody, TableRow, TableCell } from "@proofa/components";
+import { Heading, Text, Card, CardBody, Button, Alert, Chip, Label, Input, EmptyState, Table, TableContainer, TableHeader, TableHead, TableBody, TableRow, TableCell } from "@proofa/components";
+import { Select } from "../components/Select";
 
 export function RefundProcessingPage() {
 	const [activeTab, setActiveTab] = useState<"refunds" | "create">("refunds");
@@ -67,18 +68,18 @@ export function RefundProcessingPage() {
 			failed: "✗",
 		};
 		return (
-			<Badge variant={badgeVariants[status] || "warning"}>
+			<Chip variant={badgeVariants[status] || "warning"} size="sm">
 				{icons[status] || "⏱"} {status.charAt(0).toUpperCase() + status.slice(1)}
-			</Badge>
+			</Chip>
 		);
 	};
 
 	const handleProviderBadge = (provider: string) => {
 		const variant = provider === "lemon_squeezy" ? "success" : "info";
 		return (
-			<Badge variant={variant}>
+			<Chip variant={variant} size="sm">
 				{provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
-			</Badge>
+			</Chip>
 		);
 	};
 
@@ -101,23 +102,20 @@ export function RefundProcessingPage() {
 
 						<form onSubmit={handleCreateRefund}>
 							<div className="form-group mb-5">
-								<label htmlFor="purchase_id" className="font-medium mb-2 block text-sm">
+								<Label className="font-medium mb-2 block text-sm">
 									Purchase <span className="text-danger">*</span>
-								</label>
-								<select
-									id="purchase_id"
+								</Label>
+								<Select
 									value={refundForm.purchase_id}
-									onChange={(e) => setRefundForm({ ...refundForm, purchase_id: e.target.value })}
-									required
-									className="w-full px-2.5 py-2.5 rounded-md border border-border-color text-sm"
-								>
-									<option value="">Select a purchase...</option>
-									{purchasesQuery.data?.data?.map((purchase) => (
-										<option key={purchase.id} value={purchase.id}>
-											{purchase.app?.name || "Unnamed App"} - {formatCurrency(purchase.amount, purchase.currency)} ({purchase.provider})
-										</option>
-									))}
-								</select>
+									onChange={(value) => setRefundForm({ ...refundForm, purchase_id: value })}
+									placeholder="Select a purchase..."
+									options={[
+										...(purchasesQuery.data?.data?.map((purchase) => ({
+											value: purchase.id,
+											label: `${purchase.app?.name || "Unnamed App"} - ${formatCurrency(purchase.amount, purchase.currency)} (${purchase.provider})`,
+										})) || []),
+									]}
+								/>
 							</div>
 
 							{refundForm.purchase_id && purchasesQuery.data?.data && (
@@ -144,19 +142,17 @@ export function RefundProcessingPage() {
 							)}
 
 							<div className="form-group mb-5">
-								<label htmlFor="amount" className="font-medium mb-2 block text-sm">
+								<Label className="font-medium mb-2 block text-sm">
 									Refund Amount <span className="text-danger">*</span>
-								</label>
-								<input
+								</Label>
+								<Input
 									type="number"
-									id="amount"
 									value={refundForm.amount}
 									onChange={(e) => setRefundForm({ ...refundForm, amount: e.target.value })}
 									placeholder="0.00"
 									step="0.01"
 									min="0"
 									required
-									className="w-full px-2.5 py-2.5 rounded-md border border-border-color text-sm"
 								/>
 								<div className="text-xs text-text-tertiary mt-1.5">
 									Partial refunds are supported. Enter the amount to refund.
@@ -164,24 +160,22 @@ export function RefundProcessingPage() {
 							</div>
 
 							<div className="form-group mb-5">
-								<label htmlFor="reason" className="font-medium mb-2 block text-sm">
+								<Label className="font-medium mb-2 block text-sm">
 									Reason <span className="text-danger">*</span>
-								</label>
-								<select
-									id="reason"
+								</Label>
+								<Select
 									value={refundForm.reason}
-									onChange={(e) => setRefundForm({ ...refundForm, reason: e.target.value })}
-									required
-									className="w-full px-2.5 py-2.5 rounded-md border border-border-color text-sm"
-								>
-									<option value="">Select a reason...</option>
-									<option value="customer_request">Customer Request</option>
-									<option value="product_defect">Product Defect</option>
-									<option value="duplicate_purchase">Duplicate Purchase</option>
-									<option value="service_issue">Service Issue</option>
-									<option value="user_error">User Error</option>
-									<option value="other">Other</option>
-								</select>
+									onChange={(value) => setRefundForm({ ...refundForm, reason: value })}
+									placeholder="Select a reason..."
+									options={[
+										{ value: "customer_request", label: "Customer Request" },
+										{ value: "product_defect", label: "Product Defect" },
+										{ value: "duplicate_purchase", label: "Duplicate Purchase" },
+										{ value: "service_issue", label: "Service Issue" },
+										{ value: "user_error", label: "User Error" },
+										{ value: "other", label: "Other" },
+									]}
+								/>
 							</div>
 
 							<Alert variant="info" className="mb-6">
@@ -223,62 +217,58 @@ export function RefundProcessingPage() {
 				<Heading level={3} size="md" className="mb-4">Filters</Heading>
 				<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-4">
 					<div className="form-group m-0">
-						<label htmlFor="provider" className="text-xs mb-1.5">
+						<Label className="text-xs mb-1.5">
 							Provider
-						</label>
-						<select
-							id="provider"
+						</Label>
+						<Select
 							value={filters.provider}
-							onChange={(e) => setFilters({ ...filters, provider: e.target.value, offset: 0 })}
-							className="w-full px-2 py-2 rounded-md border border-border-color text-sm"
-						>
-							<option value="">All Providers</option>
-							<option value="lemon_squeezy">LemonSqueezy</option>
-							<option value="paddle">Paddle</option>
-						</select>
-					</div>
-
-					<div className="form-group m-0">
-						<label htmlFor="status" className="text-xs mb-1.5">
-							Status
-						</label>
-						<select
-							id="status"
-							value={filters.status}
-							onChange={(e) => setFilters({ ...filters, status: e.target.value, offset: 0 })}
-							className="w-full px-2 py-2 rounded-md border border-border-color text-sm"
-						>
-							<option value="">All Statuses</option>
-							<option value="completed">Completed</option>
-							<option value="pending">Pending</option>
-							<option value="processing">Processing</option>
-							<option value="failed">Failed</option>
-						</select>
-					</div>
-
-					<div className="form-group m-0">
-						<label htmlFor="startDate" className="text-xs mb-1.5">
-							Start Date
-						</label>
-						<input
-							type="date"
-							id="startDate"
-							value={filters.start_date}
-							onChange={(e) => setFilters({ ...filters, start_date: e.target.value, offset: 0 })}
-							className="w-full px-2 py-2 rounded-md border border-border-color text-sm"
+							onChange={(value) => setFilters({ ...filters, provider: value, offset: 0 })}
+							placeholder="All Providers"
+							options={[
+								{ value: "", label: "All Providers" },
+								{ value: "lemon_squeezy", label: "LemonSqueezy" },
+								{ value: "paddle", label: "Paddle" },
+							]}
 						/>
 					</div>
 
 					<div className="form-group m-0">
-						<label htmlFor="endDate" className="text-xs mb-1.5">
-							End Date
-						</label>
-						<input
+						<Label className="text-xs mb-1.5">
+							Status
+						</Label>
+						<Select
+							value={filters.status}
+							onChange={(value) => setFilters({ ...filters, status: value, offset: 0 })}
+							placeholder="All Statuses"
+							options={[
+								{ value: "", label: "All Statuses" },
+								{ value: "completed", label: "Completed" },
+								{ value: "pending", label: "Pending" },
+								{ value: "processing", label: "Processing" },
+								{ value: "failed", label: "Failed" },
+							]}
+						/>
+					</div>
+
+					<div className="form-group m-0">
+						<Label className="text-xs mb-1.5">
+							Start Date
+						</Label>
+						<Input
 							type="date"
-							id="endDate"
+							value={filters.start_date}
+							onChange={(e) => setFilters({ ...filters, start_date: e.target.value, offset: 0 })}
+						/>
+					</div>
+
+					<div className="form-group m-0">
+						<Label className="text-xs mb-1.5">
+							End Date
+						</Label>
+						<Input
+							type="date"
 							value={filters.end_date}
 							onChange={(e) => setFilters({ ...filters, end_date: e.target.value, offset: 0 })}
-							className="w-full px-2 py-2 rounded-md border border-border-color text-sm"
 						/>
 					</div>
 				</div>
@@ -316,50 +306,40 @@ export function RefundProcessingPage() {
 				</CardBody></Card>
 			) : (
 				<Card><CardBody className="p-0 overflow-hidden">
-					<table className="w-full border-collapse">
-						<thead>
-							<tr className="border-b border-border-primary bg-surface-secondary">
-								<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
-									Status
-								</th>
-								<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
-									Amount
-								</th>
-								<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
-									Provider
-								</th>
-								<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
-									Reason
-								</th>
-								<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
-									Created
-								</th>
-								<th className="px-4 py-3.5 text-left text-xs font-semibold text-text-tertiary uppercase tracking-wider">
-									App
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{refundsQuery.data.refunds.map((refund) => (
-								<tr key={refund.id} className="border-b border-border-primary">
-									<td className="px-4 py-3.5">{handleStatusBadge(refund.status)}</td>
-									<td className="px-4 py-3.5 text-sm font-semibold text-text-primary">
-										{formatCurrency(refund.amount, refund.currency)}
-									</td>
-									<td className="px-4 py-3.5">{handleProviderBadge(refund.provider)}</td>
-									<td className="px-4 py-3.5 text-sm text-text-secondary capitalize">
-										{refund.reason?.replace(/_/g, " ") || "—"}
-									</td>
-									<td className="px-4 py-3.5 text-sm text-text-secondary">
-										{new Date(refund.created_at).toLocaleDateString()}
-									</td>
-									<td className="px-4 py-3.5 text-sm text-text-secondary">
-										{refund.purchase?.app?.name || "—"}
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
+					<TableContainer>
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>Status</TableHead>
+									<TableHead>Amount</TableHead>
+									<TableHead>Provider</TableHead>
+									<TableHead>Reason</TableHead>
+									<TableHead>Created</TableHead>
+									<TableHead>App</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{refundsQuery.data.refunds.map((refund) => (
+									<TableRow key={refund.id}>
+										<TableCell>{handleStatusBadge(refund.status)}</TableCell>
+										<TableCell className="text-sm font-semibold text-text-primary">
+											{formatCurrency(refund.amount, refund.currency)}
+										</TableCell>
+										<TableCell>{handleProviderBadge(refund.provider)}</TableCell>
+										<TableCell className="text-sm text-text-secondary capitalize">
+											{refund.reason?.replace(/_/g, " ") || "—"}
+										</TableCell>
+										<TableCell className="text-sm text-text-secondary">
+											{new Date(refund.created_at).toLocaleDateString()}
+										</TableCell>
+										<TableCell className="text-sm text-text-secondary">
+											{refund.purchase?.app?.name || "—"}
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</TableContainer>
 				</CardBody></Card>
 			)}
 

@@ -10,7 +10,7 @@ import {
 	Heading,
 	Text,
 	Input,
-	Badge,
+	Chip,
 	Avatar,
 	Card,
 	CardBody,
@@ -47,7 +47,6 @@ export function AppUsersPage() {
 
 	const [searchQuery, setSearchQuery] = useState("");
 	const [filterStatus, setFilterStatus] = useState<string>("all");
-	const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 	const [showInviteModal, setShowInviteModal] = useState(false);
 	const [editingUser, setEditingUser] = useState<any>(null);
 	const [editLicensePlan, setEditLicensePlan] = useState<number | null>(null);
@@ -102,13 +101,6 @@ export function AppUsersPage() {
 
 		return matchesSearch && matchesStatus;
 	});
-
-	const statusIcons = {
-		all: IconType.Grid,
-		active: IconType.Check,
-		suspended: IconType.Shield,
-		trial: IconType.Clock,
-	} as const;
 
 	// Handler for Suspend/Activate toggle
 	const handleSuspendToggle = async (userId: string, currentStatus: string) => {
@@ -269,57 +261,19 @@ export function AppUsersPage() {
 					/>
 				</div>
 
-				{/* Custom Status Dropdown */}
-				<div className="relative min-w-[160px]">
-					<button
-						type="button"
-						onClick={() => setShowStatusDropdown(!showStatusDropdown)}
-						className={`flex w-full items-center justify-between gap-2 rounded-[10px] border bg-bg-surface px-3 py-2.5 text-14px text-text-primary transition-all focus:outline-none ${showStatusDropdown ? "border-primary" : "border-border hover:border-primary/70"}`}
-					>
-						<span className="flex items-center gap-2">
-							<Icon icon={IconType.Filter} size={16} className="text-text-tertiary" />
-							{filterStatus === "all" ? "All Status" : filterStatus.charAt(0).toUpperCase() + filterStatus.slice(1)}
-						</span>
-						<Icon
-							icon={showStatusDropdown ? IconType.ArrowUp : IconType.ArrowDown}
-							size={14}
-							className="text-text-tertiary"
-						/>
-					</button>
-
-					{/* Dropdown Menu */}
-					{showStatusDropdown && (
-						<>
-							{/* Backdrop */}
-							<div className="fixed inset-0 z-[999]" onClick={() => setShowStatusDropdown(false)} />
-
-							{/* Dropdown */}
-							<div className="absolute top-[calc(100%+6px)] left-0 right-0 z-[1000] overflow-hidden rounded-[10px] border border-border bg-bg-surface shadow-xl">
-								{[
-									{ value: "all", label: "All Status", icon: "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" },
-									{ value: "active", label: "Active", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" },
-									{ value: "suspended", label: "Suspended", icon: "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" },
-									{ value: "trial", label: "Trial", icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" },
-								].map((option) => (
-									<button
-										key={option.value}
-										type="button"
-										onClick={() => {
-											setFilterStatus(option.value);
-											setShowStatusDropdown(false);
-										}}
-										className={`flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-14px transition-all ${filterStatus === option.value ? "bg-primary/10 text-primary" : "text-text-primary hover:bg-surface/50"} ${option.value !== "trial" ? "border-b border-border/60" : ""}`}
-									>
-										<Icon icon={statusIcons[option.value as keyof typeof statusIcons]} size={16} className="flex-shrink-0" />
-										<span className={filterStatus === option.value ? "font-semibold" : "font-normal"}>{option.label}</span>
-										{filterStatus === option.value && (
-											<Icon icon={IconType.Check} size={16} className="ml-auto text-primary" />
-										)}
-									</button>
-								))}
-							</div>
-						</>
-					)}
+				{/* Status Filter */}
+				<div className="min-w-[160px]">
+					<Select
+						value={filterStatus}
+						onChange={(value) => setFilterStatus(value)}
+						placeholder="All Status"
+						options={[
+							{ value: "all", label: "All Status" },
+							{ value: "active", label: "Active" },
+							{ value: "suspended", label: "Suspended" },
+							{ value: "trial", label: "Trial" },
+						]}
+					/>
 				</div>
 			</div>
 
@@ -349,185 +303,143 @@ export function AppUsersPage() {
 
 			{/* Users Table */}
 			{!usersLoading && filteredUsers.length > 0 && (
-				<div className="card p-0 overflow-hidden">
-					<table className="w-full border-collapse table-container">
-						<thead>
-							<tr className="bg-surface-secondary border-b border-border-secondary">
-								<th className="px-4 py-3 text-left text-12px font-semibold text-text-secondary uppercase">
-									User
-								</th>
-								<th className="px-4 py-3 text-center text-12px font-semibold text-text-secondary uppercase">
-									Plan
-								</th>
-								<th className="px-4 py-3 text-center text-12px font-semibold text-text-secondary uppercase">
-									Status
-								</th>
-								<th className="px-4 py-3 text-center text-12px font-semibold text-text-secondary uppercase">
-									Joined
-								</th>
-								<th className="px-4 py-3 text-center text-12px font-semibold text-text-secondary uppercase">
-									License Valid Until
-								</th>
-								<th className="px-4 py-3 text-right text-12px font-semibold text-text-secondary uppercase">
-									Actions
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{filteredUsers.map((user) => (
-								<tr
-									key={user.id}
-									className="border-b border-border-secondary"
-								>
-									<td className="px-4 py-4">
-										<div className="flex items-center gap-3">
-											<div className="w-40px h-40px bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center text-white text-14px font-semibold shrink-0">
-												{(user.name || user.email).charAt(0).toUpperCase()}
-											</div>
-											<div>
-												<div className="text-14px font-medium text-text-primary mb-2px">
-													{user.name || "Anonymous"}
-													{user.primaryEmailVerified && (
-														<Icon icon={IconType.Check} size={14} className="text-primary ml-4px inline" />
-													)}
-												</div>
-												<div className="text-12px text-text-tertiary">
-													{user.email}
-												</div>
-											</div>
-										</div>
-									</td>
-									<td className="px-4 py-4 text-center">
-										<span
-											className={`inline-block px-12px py-4px rounded-12px text-12px font-semibold capitalize ${
-												user.plan === "pro"
-													? "bg-purple-100 text-primary"
-													: "bg-bg-muted text-text-tertiary"
-											}`}
-										>
-											{user.plan}
-										</span>
-									</td>
-									<td className="px-4 py-4 text-center">
-										<span
-											className={`inline-flex items-center gap-4px px-10px py-4px rounded-12px text-12px font-medium capitalize ${
-												user.status === "active"
-													? "bg-success-bg text-success"
-													: "bg-danger-bg text-danger"
-											}`}
-										>
-											<span className="w-6px h-6px bg-current rounded-full" />
-											{user.status}
-										</span>
-									</td>
-									<td className="px-4 py-4 text-center text-13px text-text-secondary">
-										{new Date(user.createdAt).toLocaleDateString()}
-									</td>
-									<td className="px-4 py-4 text-center text-13px">
-										{user.licenseValidUntil ? (
-											(() => {
-												const now = Math.floor(Date.now() / 1000);
-												const daysUntilExpiry = Math.floor(
-													(user.licenseValidUntil - now) / (24 * 60 * 60),
-												);
-												const isExpired = daysUntilExpiry < 0;
-												const isExpiringSoon = daysUntilExpiry >= 0 && daysUntilExpiry <= 7;
-
-												return (
-														<div className="flex items-center justify-center gap-1.5">
-														<span
-															className={`${
-																isExpired
-																	? "text-danger"
-																	: isExpiringSoon
-																		? "text-warning"
-																		: "text-text-secondary"
-															}`}
-														>
-															{new Date(user.licenseValidUntil).toLocaleDateString()}
-														</span>
-														{isExpired && (
-															<span className="px-6px py-2px bg-danger-bg border border-danger/30 rounded-4px text-danger text-11px font-semibold">
-																EXPIRED
-															</span>
-														)}
-														{isExpiringSoon && !isExpired && (
-															<span className="px-6px py-2px bg-warning-bg border border-warning/30 rounded-4px text-warning text-11px font-semibold">
-																{daysUntilExpiry}d left
-															</span>
-														)}
+				<Card className="overflow-hidden">
+					<CardBody className="p-0">
+						<TableContainer>
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>User</TableHead>
+										<TableHead align="center">Plan</TableHead>
+										<TableHead align="center">Status</TableHead>
+										<TableHead align="center">Joined</TableHead>
+										<TableHead align="center">License Valid Until</TableHead>
+										<TableHead align="right">Actions</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{filteredUsers.map((user) => (
+										<TableRow key={user.id}>
+											<TableCell>
+												<div className="flex items-center gap-3">
+													<div className="w-40px h-40px bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center text-white text-14px font-semibold shrink-0">
+														{(user.name || user.email).charAt(0).toUpperCase()}
 													</div>
-												);
-											})()
-										) : (
-											<span className="text-text-tertiary">Lifetime</span>
-										)}
-									</td>
-									<td className="px-4 py-4 text-right">
-										<div className="flex gap-2 justify-end items-center">
-											{/* Quick Suspend/Activate Toggle */}
-											<button
-												type="button"
-												onClick={(e) => {
-													e.stopPropagation();
-													handleSuspendToggle(user.id, user.status);
-												}}
-												className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-13px font-medium rounded-lg border transition-all cursor-pointer ${
-													user.status === "active"
-														? "bg-danger/10 border-danger/20 text-danger hover:bg-danger/15 hover:border-danger"
-														: "bg-success/10 border-success/20 text-success hover:bg-success/15 hover:border-success"
-												}`}
-											>
-												{user.status === "active" ? (
-													<>
-														<Icon icon={IconType.Shield} size={14} />
-														Suspend
-													</>
+													<div>
+														<div className="text-14px font-medium text-text-primary mb-2px">
+															{user.name || "Anonymous"}
+															{user.primaryEmailVerified && (
+																<Icon icon={IconType.Check} size={14} className="text-primary ml-4px inline" />
+															)}
+														</div>
+														<div className="text-12px text-text-tertiary">
+															{user.email}
+														</div>
+													</div>
+												</div>
+											</TableCell>
+											<TableCell align="center">
+												<Chip
+													variant={user.plan === "pro" ? "primary" : "default"}
+													size="sm"
+													pill
+												>
+													{user.plan}
+												</Chip>
+											</TableCell>
+											<TableCell align="center">
+												<Chip
+													variant={user.status === "active" ? "success" : "danger"}
+													size="sm"
+													pill
+												>
+													{user.status}
+												</Chip>
+											</TableCell>
+											<TableCell align="center">
+												<Text className="text-text-secondary">{new Date(user.createdAt).toLocaleDateString()}</Text>
+											</TableCell>
+											<TableCell align="center">
+												{user.licenseValidUntil ? (
+													(() => {
+														const now = Math.floor(Date.now() / 1000);
+														const daysUntilExpiry = Math.floor(
+															(user.licenseValidUntil - now) / (24 * 60 * 60),
+														);
+														const isExpired = daysUntilExpiry < 0;
+														const isExpiringSoon = daysUntilExpiry >= 0 && daysUntilExpiry <= 7;
+
+														return (
+															<div className="flex items-center justify-center gap-1.5">
+																<Text className={isExpired ? "text-danger" : isExpiringSoon ? "text-warning" : "text-text-secondary"}>
+																	{new Date(user.licenseValidUntil).toLocaleDateString()}
+																</Text>
+																{isExpired && (
+																	<Chip variant="danger" size="sm">EXPIRED</Chip>
+																)}
+																{isExpiringSoon && !isExpired && (
+																	<Chip variant="warning" size="sm">{daysUntilExpiry}d left</Chip>
+																)}
+															</div>
+														);
+													})()
 												) : (
-													<>
-														<Icon icon={IconType.Check} size={14} />
-														Activate
-													</>
+													<Text className="text-text-tertiary">Lifetime</Text>
 												)}
-											</button>
+											</TableCell>
+											<TableCell align="right">
+												<div className="flex gap-2 justify-end items-center">
+													<Button
+														variant={user.status === "active" ? "danger" : "primary"}
+														size="sm"
+														onClick={(e) => {
+															e.stopPropagation();
+															handleSuspendToggle(user.id, user.status);
+														}}
+													>
+														{user.status === "active" ? (
+															<><Icon icon={IconType.Shield} size={14} /> Suspend</>
+														) : (
+															<><Icon icon={IconType.Check} size={14} /> Activate</>
+														)}
+													</Button>
 
-											{/* Renew License Button */}
-											{user.licenseValidUntil && (
-												<button
-													type="button"
-													onClick={(e) => {
-														e.stopPropagation();
-														setUserToRenew({
-															id: user.id,
-															name: user.name || "",
-															email: user.email,
-														});
-													}}
-													className="inline-flex items-center gap-1 px-2.5 py-1.5 text-13px font-medium rounded-lg border bg-primary/10 border-primary/20 text-primary transition-all cursor-pointer hover:bg-primary/15 hover:border-primary">
-													<Icon icon={IconType.Refresh} size={14} />
-													Renew
-												</button>
-											)}
+													{user.licenseValidUntil && (
+														<Button
+															variant="secondary"
+															size="sm"
+															onClick={(e) => {
+																e.stopPropagation();
+																setUserToRenew({
+																	id: user.id,
+																	name: user.name || "",
+																	email: user.email,
+																});
+															}}
+														>
+															<Icon icon={IconType.Refresh} size={14} /> Renew
+														</Button>
+													)}
 
-										{/* Edit User Button */}
-										<button
-											type="button"
-											onClick={(e) => {
-												e.stopPropagation();
-												setEditingUser(user);
-											}}
-											className="inline-flex items-center gap-1 px-2.5 py-1.5 text-13px font-medium rounded-lg border bg-secondary/10 border-secondary/20 text-secondary transition-all cursor-pointer hover:bg-secondary/15 hover:border-secondary"
-										>
-											<Icon icon={IconType.Edit} size={14} />
-											Edit
-										</button>
-									</div>
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
+													<Button
+														variant="secondary"
+														size="sm"
+														onClick={(e) => {
+															e.stopPropagation();
+															setEditingUser(user);
+														}}
+													>
+														<Icon icon={IconType.Edit} size={14} /> Edit
+													</Button>
+												</div>
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						</TableContainer>
+					</CardBody>
+				</Card>
 			)}
 
 			{/* Invite User Modal */}

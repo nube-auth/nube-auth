@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useBillingPurchases, useBillingStats, useBillingTransactions } from "../hooks/api";
 import {
-	Badge,
+	Chip,
 	Button,
 	Card,
 	CardBody,
@@ -270,18 +270,18 @@ export function BillingDashboardPage() {
 																		{formatCurrency(purchase.amount, purchase.currency)}
 																	</TableCell>
 																	<TableCell>
-																		<Badge
-																			variant={
-																				purchase.status === "completed"
-																					? "success"
-																					: purchase.status === "pending"
-																						? "info"
-																						: "danger"
-																			}
-																			size="sm"
-																		>
-																			{purchase.status}
-																		</Badge>
+																	<Chip
+																		variant={
+																			purchase.status === "completed"
+																				? "success"
+																				: purchase.status === "pending"
+																					? "info"
+																					: "danger"
+																		}
+																		size="sm"
+																	>
+																		{purchase.status}
+																	</Chip>
 																	</TableCell>
 																	<TableCell>{purchase.app?.name || "—"}</TableCell>
 																</TableRow>
@@ -336,18 +336,18 @@ export function BillingDashboardPage() {
 																		{formatCurrency(txn.amount, txn.currency)}
 																	</TableCell>
 																	<TableCell>
-																		<Badge
-																			variant={
-																				txn.status === "completed"
-																					? "success"
-																					: txn.status === "pending"
-																						? "info"
-																						: "danger"
-																			}
-																			size="sm"
-																		>
-																			{txn.status}
-																		</Badge>
+																	<Chip
+																		variant={
+																			txn.status === "completed"
+																				? "success"
+																				: txn.status === "pending"
+																					? "info"
+																					: "danger"
+																		}
+																		size="sm"
+																	>
+																		{txn.status}
+																	</Chip>
 																	</TableCell>
 																</TableRow>
 															))}

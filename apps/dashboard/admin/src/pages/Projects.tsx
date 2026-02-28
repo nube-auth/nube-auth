@@ -18,7 +18,7 @@ import {
 	TableCell,
 	Heading,
 	Text,
-	Badge,
+	Chip,
 } from "@proofa/components";
 import { getIconById } from "../components/IconPicker";
 import type { Project } from "../types/admin";
@@ -187,7 +187,7 @@ export default function Projects() {
 											${(project.totalRevenue || 0).toFixed(2)}
 										</span>
 									</div>
-									<Badge variant="info"> {project.id} </Badge>
+									<Chip variant="info" size="sm"> {project.id} </Chip>
 								</div>
 							</CardBody>
 						</Card>

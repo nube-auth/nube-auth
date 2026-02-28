@@ -8,7 +8,6 @@ import {
 	CardBody,
 	Label,
 	Input,
-	Select,
 	EmptyState,
 	Table,
 	TableContainer,
@@ -18,6 +17,7 @@ import {
 	TableRow,
 	TableCell,
 } from "@proofa/components";
+import { Select } from "../components/Select";
 
 export function WebhookMonitoringPage() {
 	const [activeTab, setActiveTab] = useState<"logs" | "detail">("logs");
@@ -234,51 +234,53 @@ export function WebhookMonitoringPage() {
 				<div
 					className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-4"
 				>
-						<Label>
-							Provider
+						<div>
+							<Label>Provider</Label>
 							<Select
-								id="provider"
 								value={filters.provider}
-							>
-								<option value="">All Providers</option>
-								<option value="lemon_squeezy">LemonSqueezy</option>
-								<option value="paddle">Paddle</option>
-							</Select>
-						</Label>
+								onChange={(value) => setFilters({ ...filters, provider: value, offset: 0 })}
+								placeholder="All Providers"
+								options={[
+									{ value: "", label: "All Providers" },
+									{ value: "lemon_squeezy", label: "LemonSqueezy" },
+									{ value: "paddle", label: "Paddle" },
+								]}
+							/>
+						</div>
 
-						<Label>
-							Status
+						<div>
+							<Label>Status</Label>
 							<Select
-								id="status"
 								value={filters.status}
-							>
-								<option value="">All Statuses</option>
-								<option value="success">Success</option>
-								<option value="failed">Failed</option>
-								<option value="processing">Processing</option>
-								<option value="not_started">Not Started</option>
-							</Select>
-						</Label>
+								onChange={(value) => setFilters({ ...filters, status: value, offset: 0 })}
+								placeholder="All Statuses"
+								options={[
+									{ value: "", label: "All Statuses" },
+									{ value: "success", label: "Success" },
+									{ value: "failed", label: "Failed" },
+									{ value: "processing", label: "Processing" },
+									{ value: "not_started", label: "Not Started" },
+								]}
+							/>
+						</div>
 
-						<Label>
-							Start Date
+						<div>
+							<Label>Start Date</Label>
 							<Input
 								type="date"
-								id="startDate"
 								value={filters.start_date}
 								onChange={(e) => setFilters({ ...filters, start_date: e.target.value, offset: 0 })}
 							/>
-						</Label>
+						</div>
 
-						<Label>
-							End Date
+						<div>
+							<Label>End Date</Label>
 							<Input
 								type="date"
-								id="endDate"
 								value={filters.end_date}
 								onChange={(e) => setFilters({ ...filters, end_date: e.target.value, offset: 0 })}
 							/>
-						</Label>
+						</div>
 				</div>
 
 				<Button

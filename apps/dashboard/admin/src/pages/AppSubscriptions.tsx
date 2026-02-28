@@ -19,6 +19,8 @@ import {
 	DialogFooter,
 	Chip,
 	IconBox,
+	Label,
+	Input,
 	Breadcrumb,
 	BreadcrumbList,
 	BreadcrumbItem,
@@ -289,9 +291,8 @@ export function AppSubscriptionsPage() {
 							<strong>{actionModal?.sub.userName || actionModal?.sub.userEmail || actionModal?.sub.subscriptionId}</strong>?
 						</Text>
 						<div>
-							<label className="block text-sm font-medium mb-1">Reason (optional)</label>
-							<input
-								className="w-full px-3 py-2 rounded-lg border border-card-border bg-bg-muted text-sm"
+							<Label className="block text-sm font-medium mb-1">Reason (optional)</Label>
+							<Input
 								value={reason}
 								onChange={(e) => setReason(e.target.value)}
 								placeholder="Enter reason..."

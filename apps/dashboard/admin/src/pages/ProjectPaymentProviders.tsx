@@ -12,7 +12,7 @@ import {
 	Label,
 	Input,
 	Textarea,
-	Badge,
+	Chip,
 	Alert,
 	EmptyState,
 	Dialog,
@@ -231,10 +231,9 @@ export default function ProjectPaymentProvidersPage() {
 				return (
 					<>
 						<div className="form-group">
-							<label htmlFor="storeId">Store ID</label>
-							<input
+							<Label>Store ID</Label>
+							<Input
 								type="text"
-								id="storeId"
 								value={config.storeId || ""}
 								onChange={(e) =>
 									setFormData({ ...formData, config: { ...config, storeId: e.target.value } })
@@ -243,10 +242,9 @@ export default function ProjectPaymentProvidersPage() {
 							/>
 						</div>
 						<div className="form-group">
-							<label htmlFor="apiKey">API Key</label>
-							<input
+							<Label>API Key</Label>
+							<Input
 								type="password"
-								id="apiKey"
 								value={config.apiKey || ""}
 								onChange={(e) =>
 									setFormData({ ...formData, config: { ...config, apiKey: e.target.value } })
@@ -262,10 +260,9 @@ export default function ProjectPaymentProvidersPage() {
 				return (
 					<>
 						<div className="form-group">
-							<label htmlFor="apiKey">API Key</label>
-							<input
+							<Label>API Key</Label>
+							<Input
 								type="password"
-								id="apiKey"
 								value={config.apiKey || ""}
 								onChange={(e) =>
 									setFormData({ ...formData, config: { ...config, apiKey: e.target.value } })
@@ -274,10 +271,9 @@ export default function ProjectPaymentProvidersPage() {
 							/>
 						</div>
 						<div className="form-group">
-							<label htmlFor="webhookSecret">Webhook Secret</label>
-							<input
+							<Label>Webhook Secret</Label>
+							<Input
 								type="password"
-								id="webhookSecret"
 								value={config.webhookSecret || ""}
 								onChange={(e) =>
 									setFormData({ ...formData, config: { ...config, webhookSecret: e.target.value } })
@@ -286,10 +282,9 @@ export default function ProjectPaymentProvidersPage() {
 							/>
 						</div>
 						<div className="form-group">
-							<label htmlFor="publicKey">Public Key (optional)</label>
-							<input
+							<Label>Public Key (optional)</Label>
+							<Input
 								type="text"
-								id="publicKey"
 								value={(config as any).publicKey || ""}
 								onChange={(e) =>
 									setFormData({ ...formData, config: { ...config, publicKey: e.target.value } })
@@ -305,10 +300,9 @@ export default function ProjectPaymentProvidersPage() {
 				return (
 					<>
 						<div className="form-group">
-							<label htmlFor="publishableKey">Publishable Key</label>
-							<input
+							<Label>Publishable Key</Label>
+							<Input
 								type="text"
-								id="publishableKey"
 								value={config.publishableKey || ""}
 								onChange={(e) =>
 									setFormData({ ...formData, config: { ...config, publishableKey: e.target.value } })
@@ -317,10 +311,9 @@ export default function ProjectPaymentProvidersPage() {
 							/>
 						</div>
 						<div className="form-group">
-							<label htmlFor="secretKey">Secret Key</label>
-							<input
+							<Label>Secret Key</Label>
+							<Input
 								type="password"
-								id="secretKey"
 								value={config.secretKey || ""}
 								onChange={(e) =>
 									setFormData({ ...formData, config: { ...config, secretKey: e.target.value } })
@@ -329,10 +322,9 @@ export default function ProjectPaymentProvidersPage() {
 							/>
 						</div>
 						<div className="form-group">
-							<label htmlFor="webhookSecret">Webhook Secret</label>
-							<input
+							<Label>Webhook Secret</Label>
+							<Input
 								type="password"
-								id="webhookSecret"
 								value={config.webhookSecret || ""}
 								onChange={(e) =>
 									setFormData({ ...formData, config: { ...config, webhookSecret: e.target.value } })
@@ -392,15 +384,15 @@ export default function ProjectPaymentProvidersPage() {
 					<div className="bg-card-bg border border-card-border rounded-xl w-full max-w-500px max-h-[calc(100vh-64px)] overflow-y-auto shadow-lg" onClick={(e) => e.stopPropagation()}>
 						<div className="flex items-center justify-between p-4 px-5 border-b border-card-border">
 							<h3 className="text-18px font-600 text-text-primary m-0">{editingProvider ? "Edit Payment Provider" : "Add Payment Provider"}</h3>
-							<button type="button" className="w-8 h-8 flex items-center justify-center border-none bg-transparent text-text-secondary cursor-pointer rounded-md transition-all hover:bg-surface-secondary hover:text-text-primary" onClick={handleCancel}>
+							<Button variant="plain" size="sm" onClick={handleCancel}>
 								<Icon icon={IconType.Cancel} size={20} />
-							</button>
+							</Button>
 						</div>
 						<form onSubmit={handleSubmit}>
 							<div className="p-5 text-text-primary">
 								<div className="form-row">
 									<div className="form-group">
-										<label htmlFor="provider">Provider</label>
+										<Label>Provider</Label>
 										<Select
 											value={formData.provider}
 											onChange={(value) => {
@@ -421,7 +413,7 @@ export default function ProjectPaymentProvidersPage() {
 									</div>
 
 									<div className="form-group">
-										<label htmlFor="environment">Environment</label>
+										<Label>Environment</Label>
 										<Select
 											value={formData.environment}
 											onChange={(value) =>
@@ -438,23 +430,23 @@ export default function ProjectPaymentProvidersPage() {
 								{renderConfigFields()}
 
 								{editingProvider && (
-									<div className="alert alert-warning">
+									<Alert variant="warning">
 										<strong>Security Note:</strong> Credentials are encrypted and cannot be viewed.
 										You must re-enter them to update.
-									</div>
+									</Alert>
 								)}
 							</div>
 							<div className="flex items-center justify-end gap-3 p-4 px-5 border-t border-card-border">
-								<button type="button" className="btn btn-secondary" onClick={handleCancel}>
+								<Button variant="secondary" onClick={handleCancel}>
 									Cancel
-								</button>
-								<button
+								</Button>
+								<Button
+									variant="primary"
 									type="submit"
-									className="btn btn-primary"
 									disabled={createMutation.isPending || updateMutation.isPending}
 								>
 									{editingProvider ? "Update Provider" : "Create Provider"}
-								</button>
+								</Button>
 							</div>
 						</form>
 					</div>
@@ -467,9 +459,9 @@ export default function ProjectPaymentProvidersPage() {
 					<div className="bg-card-bg border border-card-border rounded-xl w-full max-w-600px max-h-[calc(100vh-64px)] overflow-y-auto shadow-lg" onClick={(e) => e.stopPropagation()}>
 						<div className="flex items-center justify-between p-4 px-5 border-b border-card-border">
 							<h3 className="text-18px font-600 text-text-primary m-0">Provider Details</h3>
-							<button type="button" className="w-8 h-8 flex items-center justify-center border-none bg-transparent text-text-secondary cursor-pointer rounded-md transition-all hover:bg-surface-secondary hover:text-text-primary" onClick={() => setDetailProvider(null)}>
+							<Button variant="plain" size="sm" onClick={() => setDetailProvider(null)}>
 							<Icon icon={IconType.Cancel} size={20} />
-							</button>
+							</Button>
 						</div>
 						<div className="p-6 text-text-primary">
 							{/* Provider Info */}
@@ -483,15 +475,12 @@ export default function ProjectPaymentProvidersPage() {
 									<div>
 										<div className="text-12px text-text-tertiary mb-1">Environment</div>
 										<div>
-											<span 
-												className={`inline-block px-2.5 py-1 rounded-3 text-12px font-500 capitalize ${
-													detailProvider.environment === "production" 
-														? "bg-success-bg text-success" 
-														: "bg-warning-bg text-warning"
-												}`}
+											<Chip
+												variant={detailProvider.environment === "production" ? "success" : "warning"}
+												size="sm"
 											>
 												{detailProvider.environment}
-											</span>
+											</Chip>
 										</div>
 									</div>
 								</div>
@@ -517,16 +506,12 @@ export default function ProjectPaymentProvidersPage() {
 								<div className="grid grid-cols-2 gap-4">
 									<div>
 										<div className="text-12px text-text-tertiary mb-1">Status</div>
-										<span 
-											className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-3 text-12px font-500 ${
-												detailProvider.isActive 
-													? "bg-success-bg text-success" 
-													: "bg-bg-secondary text-text-tertiary"
-											}`}
+										<Chip
+											variant={detailProvider.isActive ? "success" : "default"}
+											size="sm"
 										>
-											<span className="w-1.5 h-1.5 bg-current rounded-full" />
 											{detailProvider.isActive ? "Active" : "Inactive"}
-										</span>
+										</Chip>
 									</div>
 									<div>
 										<div className="text-12px text-text-tertiary mb-1">Created</div>
@@ -544,12 +529,12 @@ export default function ProjectPaymentProvidersPage() {
 							</div>
 						</div>
 						<div className="flex items-center justify-end gap-3 p-4 px-5 border-t border-card-border">
-							<button type="button" className="btn btn-secondary" onClick={() => setDetailProvider(null)}>
+							<Button variant="secondary" onClick={() => setDetailProvider(null)}>
 								Close
-							</button>
-							<button type="button" onClick={() => { handleEdit(detailProvider); setDetailProvider(null); }} className="btn btn-primary">
+							</Button>
+							<Button variant="primary" onClick={() => { handleEdit(detailProvider); setDetailProvider(null); }}>
 								Edit Provider
-							</button>
+							</Button>
 						</div>
 					</div>
 				</div>
@@ -565,96 +550,80 @@ export default function ProjectPaymentProvidersPage() {
 					<p className="text-14px text-text-tertiary mb-6 max-w-400px mx-auto">
 						Get started by adding your first payment provider to accept payments
 					</p>
-					<button type="button" onClick={handleCreate} className="btn btn-primary">
+					<Button variant="primary" onClick={handleCreate}>
 						Add Your First Provider
-					</button>
+					</Button>
 				</div>
 			) : (
 				<div className="card p-0 overflow-hidden">
-					<table className="w-full border-collapse">
-						<thead>
-							<tr className="border-b border-border bg-surface-secondary">
-								<th className="px-4 py-3.5 text-left text-12px font-600 text-text-tertiary uppercase tracking-wider">
-									Provider
-								</th>
-								<th className="px-4 py-3.5 text-left text-12px font-600 text-text-tertiary uppercase tracking-wider">
-									Environment
-								</th>
-								<th className="px-4 py-3.5 text-left text-12px font-600 text-text-tertiary uppercase tracking-wider">
-									Status
-								</th>
-								<th className="px-4 py-3.5 text-left text-12px font-600 text-text-tertiary uppercase tracking-wide">
-									Default
-								</th>
-								<th className="px-4 py-3.5 text-left text-12px font-600 text-text-tertiary uppercase tracking-wider">
-									Created
-								</th>
-								<th className="px-4 py-3.5 text-right text-12px font-600 text-text-tertiary uppercase tracking-wider">
-									Actions
-								</th>
-							</tr>
-						</thead>
-						<tbody>
+					<TableContainer>
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>Provider</TableHead>
+									<TableHead>Environment</TableHead>
+									<TableHead>Status</TableHead>
+									<TableHead>Default</TableHead>
+									<TableHead>Created</TableHead>
+									<TableHead className="text-right">Actions</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
 							{providers.map((provider) => (
-								<tr
-									key={provider.id}
-									className="border-b border-border hover:bg-surface-secondary cursor-pointer"
-								>
-									<td className="px-4 py-3.5">
-										<span className="inline-block px-2.5 py-1 bg-primary-light text-primary rounded-3 text-12px font-500 capitalize">
+								<TableRow key={provider.id}>
+									<TableCell>
+										<Chip variant="primary" size="sm">
 											{provider.provider}
-										</span>
-									</td>
-									<td className="px-4 py-3.5">
-										<span 
-											className={`inline-block px-2.5 py-1 rounded-3 text-12px font-500 capitalize ${
-												provider.environment === "production"
-													? "bg-success-bg text-success"
-													: "bg-warning-bg text-warning"
-											}`}
+										</Chip>
+									</TableCell>
+									<TableCell>
+										<Chip
+											variant={provider.environment === "production" ? "success" : "warning"}
+											size="sm"
 										>
 											{provider.environment}
-										</span>
-									</td>
-									<td className="px-4 py-3.5">
-										<span
-										className={`badge ${provider.isActive ? "badge-success" : "badge-gray"}`}
+										</Chip>
+									</TableCell>
+									<TableCell>
+										<Chip
+											variant={provider.isActive ? "success" : "default"}
+											size="sm"
 										>
-											<span className="w-6px h-6px bg-current rounded-full" />
 											{provider.isActive ? "Active" : "Inactive"}
-										</span>
-									</td>
-									<td className="px-4 py-3.5">
+										</Chip>
+									</TableCell>
+									<TableCell>
 										{provider.isDefault ? (
-										<span className="badge badge-info">
+											<Chip variant="info" size="sm">
 												Default
-											</span>
+											</Chip>
 										) : (
 											<span className="text-text-tertiary text-12px">—</span>
 										)}
-									</td>
-									<td className="px-4 py-3.5 text-14px text-text-secondary">
+									</TableCell>
+									<TableCell className="text-14px text-text-secondary">
 										{new Date(provider.createdAt).toLocaleDateString()}
-									</td>
-									<td className="px-4 py-3.5 text-right">
+									</TableCell>
+									<TableCell className="text-right">
 										<div className="flex gap-2 justify-end">
-											<button
-												type="button"
+											<Button
+												variant="outline"
+												size="sm"
 												onClick={() => setDetailProvider(provider)}
-												className="btn btn-secondary-outline btn-sm"
 											>
 												View
-											</button>
-											<button
-												type="button"
+											</Button>
+											<Button
+												variant="outline"
+												size="sm"
 												onClick={() => handleEdit(provider)}
-												className="btn btn-secondary-outline btn-sm"
 											>
 												Edit
-											</button>
+											</Button>
 											{!provider.isDefault && provider.isActive && (
-												<button
-													type="button"
+												<Button
+													variant="primary"
+													size="sm"
 													onClick={async () => {
 														try {
 															await selectDefaultMutation.mutateAsync(provider.id);
@@ -664,26 +633,26 @@ export default function ProjectPaymentProvidersPage() {
 															showToast(err?.message || "Failed to set default", "error");
 														}
 													}}
-													className="btn btn-primary-outline btn-sm"
 													disabled={selectDefaultMutation.isPending}
 												>
 													Make Default
-												</button>
+												</Button>
 											)}
-											<button
-												type="button"
+											<Button
+												variant="danger"
+												size="sm"
 												onClick={() => handleDelete(provider.id)}
 												disabled={deleteMutation.isPending}
-												className="btn btn-danger-outline btn-sm"
 											>
 												Delete
-											</button>
+											</Button>
 										</div>
-									</td>
-								</tr>
+									</TableCell>
+								</TableRow>
 							))}
-						</tbody>
-					</table>
+							</TableBody>
+						</Table>
+					</TableContainer>
 				</div>
 			)}
 		</div>
