@@ -195,6 +195,16 @@ function Navigation({
       icon: IconType.License,
     },
     {
+      to: `/projects/${projectId}/apps/${appId}/subscriptions`,
+      label: 'Subscriptions',
+      icon: IconType.CreditCard,
+    },
+    {
+      to: `/projects/${projectId}/apps/${appId}/promotions`,
+      label: 'Promotions',
+      icon: IconType.Ticket,
+    },
+    {
       to: `/projects/${projectId}/apps/${appId}/api-keys`,
       label: 'API Keys',
       icon: IconType.Key,

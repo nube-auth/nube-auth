@@ -1,175 +1,322 @@
-import { appQueries, getDb, gte, licenses, licenseQueries, planQueries, userQueries } from "@proofa/db";
-import { createId, createLogger, serializeError } from "@proofa/shared";
-import { and, eq, or, isNull } from "@proofa/db";
+import {
+	activationQueries,
+	appQueries,
+	getDb,
+	licenseQueries,
+	planQueries,
+	priceQueries,
+	userQueries,
+} from "@proofa/db";
+import { createId, createLogger, idPatterns, serializeError } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
+import { z } from "zod";
 
 const log = createLogger("license-routes");
 const router = new Hono();
 
-/**
- * GET /v1/license/:appId
- * Check if the authenticated user has an active license for the specified app
- */
-router.get("/:appId", async (c: Context) => {
-	const appId = c.req.param("appId");
+// ---------------------------------------------------------------------------
+// GET /validate — Validate license for current user + app
+// ---------------------------------------------------------------------------
+
+router.get("/validate", async (c: Context) => {
+	const appId = c.req.query("appId");
 	const userPublicId = c.req.header("X-Proofa-User-Id");
 
 	if (!userPublicId) {
-		return c.json({ error: "Unauthorized - missing user ID" }, 401);
+		return c.json({ error: "Unauthorized — missing user ID" }, 401);
 	}
 
 	if (!appId) {
-		return c.json({ error: "Missing appId" }, 400);
+		return c.json({ error: "Missing appId query parameter" }, 400);
 	}
 
 	try {
 		const db = getDb();
 
-		// Get user
 		const user = await userQueries.findByPublicId(db, userPublicId);
 		if (!user) {
-			log.warn({ userPublicId }, "User not found");
-			return c.json({ error: "User not found" }, 404);
+			return c.json({ valid: false, reason: "user_not_found" });
 		}
 
-		// Get app
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) {
-			log.warn({ appId }, "App not found");
-			return c.json({ error: "App not found" }, 404);
+			return c.json({ valid: false, reason: "app_not_found" });
 		}
 
-		// Check for active license (valid_until is null OR in the future)
-		const license = (await db.query.licenses.findFirst({
-			where: and(
-				eq(licenses.user_id, user.id),
-				eq(licenses.app_id, app.id),
-				eq(licenses.status, "active"),
-				or(
-					isNull(licenses.valid_until),
-					gte(licenses.valid_until, new Date())
-				)
-			),
-			with: {
-				plan: {
-					columns: {
-						id: true,
-						public_id: true,
-						name: true,
-						slug: true,
-						description: true,
-						features: true,
-					},
-				},
-			},
-		})) as any;
+		const license = await licenseQueries.findByUserAndApp(
+			db,
+			user.id,
+			app.id,
+		);
 
 		if (!license) {
-			log.info(
-				{ userId: user.public_id, appId },
-				"No active license found"
-			);
+			return c.json({ valid: false, reason: "no_license" });
+		}
+
+		// Check expiry
+		const now = new Date();
+		const isExpired =
+			license.valid_until && new Date(license.valid_until) < now;
+
+		const plan = await planQueries.findById(db, license.plan_id);
+		const price = license.price_id
+			? await priceQueries.findById(db, license.price_id)
+			: null;
+		const activeCount = await activationQueries.countActiveByLicenseId(
+			db,
+			license.id,
+		);
+
+		const licensePayload: Record<string, unknown> = {
+			licenseId: license.public_id,
+			status: license.status,
+			plan: plan
+				? {
+						planId: plan.public_id,
+						slug: plan.slug,
+						name: plan.name,
+						features: plan.features,
+					}
+				: null,
+			price: price
+				? {
+						priceId: price.public_id,
+						billingType: price.billing_type,
+						interval: price.interval,
+						amountCents: price.amount_cents,
+					}
+				: null,
+			validUntil: license.valid_until
+				? new Date(license.valid_until).toISOString()
+				: null,
+			activations: {
+				current: activeCount,
+				max: license.max_activations,
+			},
+		};
+
+		if (isExpired || license.status === "expired") {
 			return c.json({
-				hasLicense: false,
-				appId,
-				message: "No active license found for this app",
+				valid: false,
+				reason: "expired",
+				license: licensePayload,
 			});
+		}
+
+		if (license.status === "canceled") {
+			return c.json({
+				valid: false,
+				reason: "canceled",
+				license: licensePayload,
+			});
+		}
+
+		if (license.status === "suspended") {
+			return c.json({
+				valid: false,
+				reason: "suspended",
+				license: licensePayload,
+			});
+		}
+
+		if (license.status !== "active" && license.status !== "trialing") {
+			return c.json({
+				valid: false,
+				reason: license.status,
+				license: licensePayload,
+			});
+		}
+
+		return c.json({ valid: true, license: licensePayload });
+	} catch (error) {
+		log.error(
+			{ err: serializeError(error as Error) },
+			"License validation error",
+		);
+		return c.json({ error: "Failed to validate license" }, 500);
+	}
+});
+
+// ---------------------------------------------------------------------------
+// POST /activate — Register device activation
+// ---------------------------------------------------------------------------
+
+const ActivateSchema = z.object({
+	appId: z.string().regex(idPatterns.app),
+	deviceId: z.string().min(1).max(255),
+	deviceName: z.string().max(255).optional(),
+	deviceType: z.string().max(100).optional(),
+});
+
+router.post("/activate", async (c: Context) => {
+	try {
+		const userPublicId = c.req.header("X-Proofa-User-Id");
+		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
+
+		const body = await c.req.json();
+		const validated = ActivateSchema.parse(body);
+
+		const db = getDb();
+
+		const user = await userQueries.findByPublicId(db, userPublicId);
+		if (!user) return c.json({ error: "User not found" }, 404);
+
+		const app = await appQueries.findByPublicId(db, validated.appId);
+		if (!app) return c.json({ error: "App not found" }, 404);
+
+		const license = await licenseQueries.findByUserAndApp(
+			db,
+			user.id,
+			app.id,
+		);
+		if (
+			!license ||
+			(license.status !== "active" && license.status !== "trialing")
+		) {
+			return c.json({ error: "No active license found" }, 403);
+		}
+
+		// Check if already activated on this device
+		const existing = await activationQueries.findByLicenseAndDevice(
+			db,
+			license.id,
+			validated.deviceId,
+		);
+		if (existing) {
+			// Refresh last_seen
+			await activationQueries.updateLastSeen(db, existing.id);
+			return c.json({
+				activationId: existing.public_id,
+				deviceId: existing.device_id,
+				deviceName: existing.device_name,
+				alreadyActive: true,
+			});
+		}
+
+		// Check max activations limit
+		if (license.max_activations !== null) {
+			const activeCount = await activationQueries.countActiveByLicenseId(
+				db,
+				license.id,
+			);
+			if (activeCount >= license.max_activations) {
+				return c.json(
+					{
+						error: "Activation limit reached",
+						current: activeCount,
+						max: license.max_activations,
+					},
+					409,
+				);
+			}
+		}
+
+		const activation = await activationQueries.create(db, {
+			public_id: createId("licenseActivation"),
+			license_id: license.id,
+			device_id: validated.deviceId,
+			device_name: validated.deviceName ?? null,
+			device_type: validated.deviceType ?? null,
+			ip_address:
+				c.req.header("X-Forwarded-For") ||
+				c.req.header("X-Real-IP") ||
+				null,
+			user_agent: c.req.header("User-Agent") ?? null,
+			last_seen_at: new Date(),
+		});
+
+		log.info(
+			{
+				licenseId: license.public_id,
+				deviceId: validated.deviceId,
+				activationId: activation.public_id,
+			},
+			"Device activated",
+		);
+
+		return c.json(
+			{
+				activationId: activation.public_id,
+				deviceId: activation.device_id,
+				deviceName: activation.device_name,
+				createdAt: new Date(activation.created_at).toISOString(),
+			},
+			201,
+		);
+	} catch (error) {
+		if (error instanceof z.ZodError)
+			return c.json({ error: "Invalid request", details: error.issues }, 400);
+		log.error(
+			{ err: serializeError(error as Error) },
+			"Device activation error",
+		);
+		return c.json({ error: "Failed to activate device" }, 500);
+	}
+});
+
+// ---------------------------------------------------------------------------
+// POST /deactivate — Remove device activation
+// ---------------------------------------------------------------------------
+
+const DeactivateSchema = z.object({
+	appId: z.string().regex(idPatterns.app),
+	deviceId: z.string().min(1).max(255),
+});
+
+router.post("/deactivate", async (c: Context) => {
+	try {
+		const userPublicId = c.req.header("X-Proofa-User-Id");
+		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
+
+		const body = await c.req.json();
+		const validated = DeactivateSchema.parse(body);
+
+		const db = getDb();
+
+		const user = await userQueries.findByPublicId(db, userPublicId);
+		if (!user) return c.json({ error: "User not found" }, 404);
+
+		const app = await appQueries.findByPublicId(db, validated.appId);
+		if (!app) return c.json({ error: "App not found" }, 404);
+
+		const license = await licenseQueries.findByUserAndApp(
+			db,
+			user.id,
+			app.id,
+		);
+		if (!license) return c.json({ error: "License not found" }, 404);
+
+		const deactivated = await activationQueries.deactivateByDevice(
+			db,
+			license.id,
+			validated.deviceId,
+		);
+
+		if (!deactivated) {
+			return c.json({ error: "No active activation for this device" }, 404);
 		}
 
 		log.info(
 			{
-				userId: user.public_id,
-				appId,
 				licenseId: license.public_id,
-				planId: license.plan.public_id,
+				deviceId: validated.deviceId,
 			},
-			"Active license found"
+			"Device deactivated",
 		);
 
 		return c.json({
-			hasLicense: true,
-			license: {
-				id: license.public_id,
-				status: license.status,
-				validUntil: license.valid_until,
-				plan: {
-					id: license.plan.public_id,
-					name: license.plan.name,
-					slug: license.plan.slug,
-					description: license.plan.description,
-					features: license.plan.features,
-				},
-			},
+			message: "Device deactivated",
+			deviceId: validated.deviceId,
 		});
 	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "License check error");
-		return c.json({ error: "Failed to check license" }, 500);
-	}
-});
-
-/**
- * POST /v1/license/grant
- * Admin endpoint to grant a license to a user
- */
-router.post("/grant", async (c: Context) => {
-	const { userId, appId, plan, validUntil } = (await c.req.json()) as {
-		userId?: string;
-		appId?: string;
-		plan?: string;
-		validUntil?: number;
-	};
-
-	if (!userId || !appId) {
-		return c.json({ error: "Missing required fields: userId, appId" }, 400);
-	}
-
-	try {
-		const db = getDb();
-
-		// Validate user exists
-		const user = await userQueries.findByPublicId(db, userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
-
-		// Validate app exists
-		const app = await appQueries.findByPublicId(db, appId);
-		if (!app) {
-			return c.json({ error: "App not found" }, 404);
-		}
-
-		// Create or update license using upsert
-		const planSlug = plan ?? "pro";
-		type PlanRow = Awaited<ReturnType<typeof planQueries.findByAppAndSlug>>;
-		let selectedPlan: PlanRow | undefined = await planQueries.findByAppAndSlug(db, app.id, planSlug);
-		if (!selectedPlan) {
-			const activePlans = await planQueries.findActiveByAppId(db, app.id);
-			selectedPlan = activePlans[0];
-		}
-		if (!selectedPlan) {
-			return c.json({ error: "Plan not found" }, 400);
-		}
-
-		const license = await licenseQueries.upsert(db, user.id, app.id, {
-			public_id: createId("license"),
-			plan_id: selectedPlan.id,
-			status: "active",
-			valid_until: validUntil ? new Date(validUntil) : null,
-		});
-
-		return c.json({
-			message: "License granted",
-			license: {
-				id: license.public_id,
-				plan: selectedPlan.slug,
-				status: license.status,
-				validUntil: license.valid_until,
-			},
-		});
-	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "License grant error");
-		return c.json({ error: "Failed to grant license" }, 500);
+		if (error instanceof z.ZodError)
+			return c.json({ error: "Invalid request", details: error.issues }, 400);
+		log.error(
+			{ err: serializeError(error as Error) },
+			"Device deactivation error",
+		);
+		return c.json({ error: "Failed to deactivate device" }, 500);
 	}
 });
 

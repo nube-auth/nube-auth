@@ -1604,14 +1604,18 @@ Per project conventions:
 17. Add subscription list view (read-only)
 18. Add Promotions tab: promotion list, create/edit dialog, codes management, provider refs, redemption history
 
-### Phase 5: Webhook Integration
+### Phase 5: Webhook Integration ⏸️ ON HOLD
+
+> **Status: On hold.** Phases 1–4 are complete. Phase 5 is deferred until further notice.
 
 19. Webhook endpoints: `/v1/webhooks/:provider`
 20. Event processing logic (checkout complete → create license + record redemption)
 21. Queue worker for async processing
 22. Webhook handler: record `promotion_id`, `promotion_code_id`, `discount_applied_cents` on `payment_transaction`, create `promotion_redemption`, increment counters
 
-### Phase 6: SDK
+### Phase 6: SDK ⏸️ ON HOLD
+
+> **Status: On hold.** Deferred until further notice.
 
 23. Update `@proofa/client` license validation response type
 24. Add activation/deactivation methods

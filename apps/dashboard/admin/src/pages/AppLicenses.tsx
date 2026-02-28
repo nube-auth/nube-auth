@@ -1,5 +1,4 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
 	Icon,
@@ -34,319 +33,40 @@ import {
 	TableHead,
 	TableCell,
 	Checkbox,
+	Tabs,
+	TabsList,
+	TabsItem,
+	TabsPanel,
 } from "@proofa/components";
 
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
-import { useApp, useAppUsers, useProject } from "../hooks/api";
-import { pingpong } from "../lib/pingpong";
-
-interface Plan {
-	id: string;
-	name: string;
-	slug: string;
-	description?: string;
-	monthlyPrice?: number;
-	yearlyPrice?: number;
-	oneTimePrice?: number;
-	durationDays?: number | null;
-	trialEnabled: boolean;
-	trialDays?: number;
-	features: string[];
-	status: string;
-	displayOrder: number;
-}
+import { useApp, useProject } from "../hooks/api";
+import {
+	useV2Plans,
+	useCreateV2Plan,
+	useUpdateV2Plan,
+	useDeleteV2Plan,
+	useV2Prices,
+	useCreateV2Price,
+	useV2Licenses,
+	useV2LicenseSummary,
+	useGrantV2License,
+	useUpdateV2License,
+	useRevokeV2License,
+	useV2LicenseHistory,
+	type V2Plan,
+	type V2Price,
+	type V2License,
+} from "../hooks/api";
 
 export function AppLicensesPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
-	const queryClient = useQueryClient();
 	const { data: project, isLoading: projectLoading } = useProject(projectId || "");
 	const { data: app, isLoading: appLoading } = useApp(projectId || "", appId || "");
-	const { data, isLoading: usersLoading } = useAppUsers(projectId || "", appId || "");
-
-	const [showPlansSection, setShowPlansSection] = useState(false);
-	const [filterStatus, setFilterStatus] = useState<string>("all");
-	const [searchQuery, setSearchQuery] = useState("");
-	const [showStatusDropdown, setShowStatusDropdown] = useState(false);
-	const [changingLicense, setChangingLicense] = useState<any>(null);
-	const [newPlan, setNewPlan] = useState("");
-	const [isUpdating, setIsUpdating] = useState(false);
 	const { showToast } = useToast();
 
-	const statusIcons = {
-		all: IconType.Grid,
-		active: IconType.Check,
-		suspended: IconType.Shield,
-		trial: IconType.Clock,
-	} as const;
-
-	// Plans state
-	const [plans, setPlans] = useState<Plan[]>([]);
-	const [plansLoading, setPlansLoading] = useState(false);
-	const [showPlanModal, setShowPlanModal] = useState(false);
-	const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
-	const [deletingPlan, setDeletingPlan] = useState<Plan | null>(null);
-
-	// Plan form state
-	const [planForm, setPlanForm] = useState({
-		name: "",
-		slug: "",
-		description: "",
-		monthlyPrice: "",
-		yearlyPrice: "",
-		oneTimePrice: "",
-		durationDays: null as number | null,
-		trialEnabled: false,
-		trialDays: "",
-		features: [] as string[],
-		displayOrder: 0,
-	});
-	const [featureInput, setFeatureInput] = useState("");
-	const [planError, setPlanError] = useState<string | null>(null);
-
-	const users = data?.users || [];
-
-	// Calculate stats
-	const activeLicenses = users.filter((u) => u.status === "active").length;
-	const freeUsers = users.filter((u) => u.plan === "free" && u.status === "active").length;
-	const paidUsers = users.filter((u) => u.plan !== "free" && u.status === "active").length;
-
-	// Fetch plans
-	const fetchPlans = useCallback(async () => {
-		setPlansLoading(true);
-		try {
-			const response = await pingpong(
-				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/plans`,
-				{
-					credentials: "include",
-				},
-			);
-
-			if (!response.ok) {
-				throw new Error("Failed to fetch plans");
-			}
-
-			const data = await response.json();
-			setPlans(data.plans || []);
-		} catch (err) {
-			console.error("Failed to fetch plans:", err);
-		} finally {
-			setPlansLoading(false);
-		}
-	}, [projectId, appId]);
-
-	// Fetch plans when section is expanded
-	useEffect(() => {
-		if (showPlansSection && projectId && appId) {
-			fetchPlans();
-		}
-	}, [showPlansSection, projectId, appId, fetchPlans]);
-
-	// Open create plan modal
-	const handleCreatePlan = () => {
-		setEditingPlan(null);
-		setPlanForm({
-			name: "",
-			slug: "",
-			description: "",
-			monthlyPrice: "",
-			yearlyPrice: "",
-			oneTimePrice: "",
-			durationDays: null,
-			trialEnabled: false,
-			trialDays: "",
-			features: [],
-			displayOrder: 0,
-		});
-		setFeatureInput("");
-		setPlanError(null);
-		setShowPlanModal(true);
-	};
-
-	// Open edit plan modal
-	const handleEditPlan = (plan: Plan) => {
-		setEditingPlan(plan);
-		setPlanForm({
-			name: plan.name,
-			slug: plan.slug,
-			description: plan.description || "",
-			monthlyPrice: plan.monthlyPrice ? (plan.monthlyPrice / 100).toString() : "",
-			yearlyPrice: plan.yearlyPrice ? (plan.yearlyPrice / 100).toString() : "",
-			oneTimePrice: plan.oneTimePrice ? (plan.oneTimePrice / 100).toString() : "",
-			durationDays: plan.durationDays || null,
-			trialEnabled: plan.trialEnabled,
-			trialDays: plan.trialDays?.toString() || "",
-			features: [...plan.features],
-			displayOrder: plan.displayOrder,
-		});
-		setFeatureInput("");
-		setPlanError(null);
-		setShowPlanModal(true);
-	};
-
-	// Save plan (create or update)
-	const handleSavePlan = async () => {
-		setPlanError(null);
-
-		// Validation
-		if (!planForm.name.trim()) {
-			setPlanError("Plan name is required");
-			return;
-		}
-
-		if (!planForm.slug.trim()) {
-			setPlanError("Plan slug is required");
-			return;
-		}
-
-		setIsUpdating(true);
-
-		try {
-			const payload = {
-				name: planForm.name,
-				slug: planForm.slug,
-				description: planForm.description || null,
-				monthly_price: planForm.monthlyPrice ? Math.round(parseFloat(planForm.monthlyPrice) * 100) : null,
-				yearly_price: planForm.yearlyPrice ? Math.round(parseFloat(planForm.yearlyPrice) * 100) : null,
-				one_time_price: planForm.oneTimePrice ? Math.round(parseFloat(planForm.oneTimePrice) * 100) : null,
-				duration_days: planForm.durationDays || null,
-				trial_enabled: planForm.trialEnabled,
-				trial_days: planForm.trialDays ? parseInt(planForm.trialDays, 10) : null,
-				features: planForm.features,
-				display_order: planForm.displayOrder,
-			};
-
-			const url = editingPlan
-				? `${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/plans/${editingPlan.id}`
-				: `${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/plans`;
-
-			const response = await pingpong(url, {
-				method: editingPlan ? "PATCH" : "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				credentials: "include",
-				body: JSON.stringify(payload),
-			});
-
-			if (!response.ok) {
-				const data = await response.json();
-				throw new Error(data.error || "Failed to save plan");
-			}
-
-			// Refresh plans list
-			await fetchPlans();
-
-			// Close modal
-			setShowPlanModal(false);
-		} catch (err) {
-			setPlanError(err instanceof Error ? err.message : "Failed to save plan");
-		} finally {
-			setIsUpdating(false);
-		}
-	};
-
-	// Delete plan
-	const handleDeletePlan = async () => {
-		if (!deletingPlan) return;
-
-		setIsUpdating(true);
-
-		try {
-			const response = await pingpong(
-				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/plans/${deletingPlan.id}`,
-				{
-					method: "DELETE",
-					credentials: "include",
-				},
-			);
-
-			if (!response.ok) {
-				const data = await response.json();
-				throw new Error(data.error || "Failed to delete plan");
-			}
-
-			// Refresh plans list
-			await fetchPlans();
-
-			// Close dialog
-			setDeletingPlan(null);
-		} catch (err) {
-			showToast(err instanceof Error ? err.message : "Failed to delete plan", "error");
-		} finally {
-			setIsUpdating(false);
-		}
-	};
-
-	// Add feature to list
-	const handleAddFeature = () => {
-		if (featureInput.trim()) {
-			setPlanForm({
-				...planForm,
-				features: [...planForm.features, featureInput.trim()],
-			});
-			setFeatureInput("");
-		}
-	};
-
-	// Remove feature from list
-	const handleRemoveFeature = (index: number) => {
-		setPlanForm({
-			...planForm,
-			features: planForm.features.filter((_, i) => i !== index),
-		});
-	};
-
-	// Filter licenses
-	const filteredLicenses = users.filter((user) => {
-		const matchesSearch =
-			user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			user.email.toLowerCase().includes(searchQuery.toLowerCase());
-
-		const matchesStatus = filterStatus === "all" || user.status === filterStatus;
-
-		return matchesSearch && matchesStatus;
-	});
-
-	// Handler for changing plan
-	const handleChangePlan = async () => {
-		if (!changingLicense || !newPlan) return;
-
-		setIsUpdating(true);
-
-		try {
-			const response = await pingpong(
-				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/users/${changingLicense.id}`,
-				{
-					method: "PATCH",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					credentials: "include",
-					body: JSON.stringify({
-						license_plan: newPlan,
-					}),
-				},
-			);
-
-			if (!response.ok) {
-				const data = await response.json();
-				throw new Error(data.error || "Failed to update license plan");
-			}
-
-			// Refresh users list
-			queryClient.invalidateQueries({ queryKey: ["appUsers", projectId, appId] });
-
-			// Close modal
-			setChangingLicense(null);
-			setNewPlan("");
-		} catch (err) {
-			console.error("Failed to update license plan:", err);
-			showToast(err instanceof Error ? err.message : "Failed to update license plan", "error");
-		} finally {
-			setIsUpdating(false);
-		}
-	};
+	const [activeTab, setActiveTab] = useState<string>("plans");
 
 	if (projectLoading || appLoading) {
 		return (
@@ -367,7 +87,6 @@ export function AppLicensesPage() {
 
 	return (
 		<div className="space-y-6">
-			{/* Breadcrumb */}
 			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
@@ -383,642 +102,795 @@ export function AppLicensesPage() {
 					</BreadcrumbItem>
 					/
 					<BreadcrumbItem>
-						<BreadcrumbButton active>Licenses</BreadcrumbButton>
+						<BreadcrumbButton active>Licenses & Plans</BreadcrumbButton>
 					</BreadcrumbItem>
 				</BreadcrumbList>
 			</Breadcrumb>
 
-			{/* Page Header */}
 			<div>
-				<Heading level={1} size="lg">Licenses</Heading>
-				<Text className="text-muted-foreground mt-1">Manage user licenses and pricing plans for {app.name}</Text>
+				<Heading level={1} size="lg">Licenses & Plans</Heading>
+				<Text className="text-muted-foreground mt-1">Manage plans, pricing, and user licenses for {app.name}</Text>
 			</div>
 
-			{/* Stats Cards */}
-			<div className="grid grid-cols-4 gap-4">
-				{[
-					{ label: "Active Licenses", value: activeLicenses, icon: IconType.Key, variant: "primary-subtle" as const },
-					{ label: "Free Plan", value: freeUsers, icon: IconType.UserMultiple, variant: "success-subtle" as const },
-					{ label: "Paid Plans", value: paidUsers, icon: IconType.DollarCircle, variant: "warning-subtle" as const },
-					{ label: "Monthly Revenue", value: "$0", icon: IconType.ArrowDown, variant: "info-subtle" as const },
-				].map((stat) => (
-					<Card key={stat.label}>
-						<CardBody className="flex items-center gap-4">
-							<IconBox variant={stat.variant} size="lg">
-								<Icon icon={stat.icon} size={22} />
-							</IconBox>
-							<div>
-								<Text className="text-muted-foreground text-sm">{stat.label}</Text>
-								<Heading level={3} size="lg">{stat.value}</Heading>
-							</div>
-						</CardBody>
-					</Card>
-				))}
+			<Tabs value={activeTab} onValueChange={setActiveTab}>
+				<TabsList>
+					<TabsItem value="plans">
+						<Icon icon={IconType.Key} size={16} />
+						Plans & Prices
+					</TabsItem>
+					<TabsItem value="licenses">
+						<Icon icon={IconType.License} size={16} />
+						Licenses
+					</TabsItem>
+				</TabsList>
+
+				<TabsPanel value="plans" className="mt-6">
+					<PlansTab appId={appId!} showToast={showToast} />
+				</TabsPanel>
+
+				<TabsPanel value="licenses" className="mt-6">
+					<LicensesTab appId={appId!} showToast={showToast} />
+				</TabsPanel>
+			</Tabs>
+		</div>
+	);
+}
+
+// ===========================================================================
+// Plans & Prices Tab
+// ===========================================================================
+
+function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string, type?: "success" | "error" | "info" | "warning") => void }) {
+	const { data, isLoading } = useV2Plans(appId);
+	const createPlan = useCreateV2Plan(appId);
+	const updatePlan = useUpdateV2Plan(appId);
+	const deletePlan = useDeleteV2Plan(appId);
+
+	const [showPlanModal, setShowPlanModal] = useState(false);
+	const [editingPlan, setEditingPlan] = useState<V2Plan | null>(null);
+	const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
+	const [planForm, setPlanForm] = useState({
+		name: "",
+		slug: "",
+		description: "",
+		features: [] as string[],
+		trialDays: "",
+		displayOrder: 0,
+		isDefault: false,
+	});
+	const [featureInput, setFeatureInput] = useState("");
+	const [saving, setSaving] = useState(false);
+
+	const plans = data?.plans ?? [];
+
+	const openCreate = () => {
+		setEditingPlan(null);
+		setPlanForm({ name: "", slug: "", description: "", features: [], trialDays: "", displayOrder: 0, isDefault: false });
+		setFeatureInput("");
+		setShowPlanModal(true);
+	};
+
+	const openEdit = (plan: V2Plan) => {
+		setEditingPlan(plan);
+		setPlanForm({
+			name: plan.name,
+			slug: plan.slug,
+			description: plan.description || "",
+			features: [...plan.features],
+			trialDays: plan.trialDays?.toString() || "",
+			displayOrder: plan.displayOrder,
+			isDefault: plan.isDefault,
+		});
+		setFeatureInput("");
+		setShowPlanModal(true);
+	};
+
+	const handleSave = async () => {
+		if (!planForm.name.trim() || !planForm.slug.trim()) {
+			showToast("Name and slug are required", "error");
+			return;
+		}
+		setSaving(true);
+		try {
+			const payload = {
+				name: planForm.name,
+				slug: planForm.slug,
+				description: planForm.description || null,
+				features: planForm.features,
+				trialDays: planForm.trialDays ? parseInt(planForm.trialDays, 10) : null,
+				displayOrder: planForm.displayOrder,
+				isDefault: planForm.isDefault,
+			};
+			if (editingPlan) {
+				await updatePlan.mutateAsync({ planId: editingPlan.planId, data: payload });
+				showToast("Plan updated", "success");
+			} else {
+				await createPlan.mutateAsync(payload);
+				showToast("Plan created", "success");
+			}
+			setShowPlanModal(false);
+		} catch (err) {
+			showToast(err instanceof Error ? err.message : "Failed to save plan", "error");
+		} finally {
+			setSaving(false);
+		}
+	};
+
+	const handleDelete = async (plan: V2Plan) => {
+		if (!confirm(`Delete plan "${plan.name}"? This cannot be undone.`)) return;
+		try {
+			await deletePlan.mutateAsync(plan.planId);
+			showToast("Plan deleted", "success");
+		} catch (err) {
+			showToast(err instanceof Error ? err.message : "Failed to delete plan", "error");
+		}
+	};
+
+	if (isLoading) {
+		return <div className="flex justify-center py-12"><Spinner /></div>;
+	}
+
+	return (
+		<div className="space-y-4">
+			<div className="flex justify-between items-center">
+				<Text className="text-muted-foreground">{plans.length} plan{plans.length !== 1 ? "s" : ""}</Text>
+				<Button size="sm" onClick={openCreate}>
+					<Icon icon={IconType.Add} size={16} />
+					Create Plan
+				</Button>
 			</div>
 
-			{/* Plans Section */}
-			<Card>
-				<button
-					type="button"
-					onClick={() => setShowPlansSection(!showPlansSection)}
-					className="w-full px-6 py-4 flex items-center justify-between bg-transparent border-none cursor-pointer transition-colors duration-200 hover:bg-muted/30 rounded-t-xl"
-				>
-					<div className="flex items-center gap-3">
-						<IconBox variant="primary-subtle" size="md">
-							<Icon icon={IconType.Key} size={18} />
-						</IconBox>
-						<div className="text-left">
-							<Heading level={3} size="sm">Pricing Plans</Heading>
-							<Text className="text-muted-foreground text-sm">Configure plans and pricing for your app</Text>
-						</div>
-					</div>
-					<Icon
-						icon={IconType.ArrowDown}
-						size={20}
-						className={`text-muted-foreground transition-transform duration-200 ${showPlansSection ? "rotate-180" : ""}`}
-					/>
-				</button>
+			{plans.length === 0 ? (
+				<EmptyState
+					icon={IconType.Key}
+					title="No plans yet"
+					description="Create your first plan to define capabilities for your app"
+				/>
+			) : (
+				<div className="space-y-4">
+					{plans.map((plan) => (
+						<Card key={plan.planId}>
+							<CardBody>
+								<div className="flex items-start justify-between">
+									<div className="flex-1">
+										<div className="flex items-center gap-2 mb-1">
+											<Heading level={4} size="sm">{plan.name}</Heading>
+											<Chip variant={plan.isActive ? "success" : "default"} size="sm">
+												{plan.isActive ? "active" : "inactive"}
+											</Chip>
+											{plan.isDefault && (
+												<Chip variant="info" size="sm">default</Chip>
+											)}
+										</div>
+										<Text className="text-muted-foreground text-xs mb-2">{plan.slug}</Text>
+										{plan.description && (
+											<Text className="text-muted-foreground text-sm mb-2">{plan.description}</Text>
+										)}
+										{plan.features.length > 0 && (
+											<div className="flex flex-wrap gap-1.5 mb-2">
+												{plan.features.map((f) => (
+													<Chip key={f} size="sm" variant="default">{f}</Chip>
+												))}
+											</div>
+										)}
+										{plan.trialDays && (
+											<Text className="text-xs text-muted-foreground">
+												{plan.trialDays}-day trial
+											</Text>
+										)}
+									</div>
+									<div className="flex gap-2">
+										<Button size="sm" variant="outline" onClick={() => setExpandedPlan(expandedPlan === plan.planId ? null : plan.planId)}>
+											<Icon icon={IconType.DollarCircle} size={14} />
+											Prices
+										</Button>
+										<Button size="sm" variant="outline" onClick={() => openEdit(plan)}>
+											<Icon icon={IconType.Edit} size={14} />
+										</Button>
+										<Button size="sm" variant="danger" onClick={() => handleDelete(plan)}>
+											<Icon icon={IconType.Delete} size={14} />
+										</Button>
+									</div>
+								</div>
 
-				{showPlansSection && (
-					<CardBody className="border-t border-card-border">
-						{/* Create Plan Button */}
-						<div className="flex justify-end mb-4">
-							<Button size="sm" onClick={handleCreatePlan}>
-								<Icon icon={IconType.Add} size={16} />
-								Create Plan
-							</Button>
-						</div>
+								{expandedPlan === plan.planId && (
+									<div className="mt-4 pt-4 border-t border-card-border">
+										<PricesSection appId={appId} plan={plan} showToast={showToast} />
+									</div>
+								)}
+							</CardBody>
+						</Card>
+					))}
+				</div>
+			)}
 
-						{/* Plans List */}
-						{plansLoading ? (
-							<div className="flex items-center justify-center py-10">
-								<Spinner />
-							</div>
-						) : plans.length === 0 ? (
-							<EmptyState
-								icon={IconType.AlertCircle}
-								title="No plans yet"
-								description="Create your first pricing plan to get started"
+			{/* Create/Edit Plan Modal */}
+			<Dialog open={showPlanModal} onOpenChange={setShowPlanModal}>
+				<DialogPopup>
+					<DialogHeader>
+						<DialogTitle>{editingPlan ? "Edit Plan" : "Create Plan"}</DialogTitle>
+					</DialogHeader>
+					<DialogBody className="space-y-4">
+						<div>
+							<Label>Name</Label>
+							<Input
+								value={planForm.name}
+								onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
+								placeholder="Pro Plan"
 							/>
-						) : (
-							<div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 items-stretch">
-								{plans.map((plan) => (
-									<Card key={plan.id} className="flex flex-col h-full">
-										<CardBody className="flex flex-col flex-1">
-											<div className="flex justify-between items-start mb-3">
-												<div>
-													<Heading level={4} size="sm">{plan.name}</Heading>
-													<Text className="text-muted-foreground text-xs mt-0.5">{plan.slug}</Text>
-												</div>
-												<Chip
-													variant={plan.status === "active" ? "success" : "default"}
-													size="sm"
-												>
-													{plan.status}
-												</Chip>
-											</div>
-
-											{plan.description && (
-												<Text className="text-muted-foreground text-sm mb-3 leading-relaxed">
-													{plan.description}
-												</Text>
-											)}
-
-											<div className="mb-3">
-												{plan.monthlyPrice && (
-													<div className="text-sm text-foreground mb-1">
-														<span className="font-semibold">
-															${(plan.monthlyPrice / 100).toFixed(2)}
-														</span>
-														<span className="text-xs text-muted-foreground">/month</span>
-													</div>
-												)}
-												{plan.yearlyPrice && (
-													<div className="text-sm text-foreground mb-1">
-														<span className="font-semibold">
-															${(plan.yearlyPrice / 100).toFixed(2)}
-														</span>
-														<span className="text-xs text-muted-foreground">/year</span>
-													</div>
-												)}
-												{plan.oneTimePrice && (
-													<div className="text-sm text-foreground mb-1">
-														<span className="font-semibold">
-															${(plan.oneTimePrice / 100).toFixed(2)}
-														</span>
-														<span className="text-xs text-muted-foreground"> one-time</span>
-													</div>
-												)}
-												{!plan.monthlyPrice && !plan.yearlyPrice && !plan.oneTimePrice && (
-													<Text className="text-sm font-semibold">Free</Text>
-												)}
-												{plan.trialEnabled && plan.trialDays && (
-													<Text className="text-xs text-primary mt-1">
-														{plan.trialDays} day free trial
-													</Text>
-												)}
-											</div>
-
-											{plan.features.length > 0 && (
-												<div className="mb-4">
-													<Text className="text-xs font-semibold text-muted-foreground mb-2">
-														Features:
-													</Text>
-													<ul className="m-0 pl-5 text-xs text-muted-foreground">
-														{plan.features.slice(0, 3).map((feature) => (
-															<li key={feature} className="mb-1">{feature}</li>
-														))}
-														{plan.features.length > 3 && (
-															<li className="text-muted-foreground/60">
-																+{plan.features.length - 3} more
-															</li>
-														)}
-													</ul>
-												</div>
-											)}
-
-											<div className="flex gap-2 pt-3 border-t border-card-border mt-auto">
-												<Button
-													variant="secondary"
-													size="sm"
-													className="flex-1"
-													onClick={() => handleEditPlan(plan)}
-												>
-													Edit
-												</Button>
-												<Button
-													variant="danger"
-													size="sm"
-													className="flex-1"
-													onClick={() => setDeletingPlan(plan)}
-												>
-													Delete
-												</Button>
-											</div>
-										</CardBody>
-									</Card>
+						</div>
+						<div>
+							<Label>Slug</Label>
+							<Input
+								value={planForm.slug}
+								onChange={(e) => setPlanForm({ ...planForm, slug: e.target.value })}
+								placeholder="pro"
+							/>
+						</div>
+						<div>
+							<Label>Description</Label>
+							<Textarea
+								value={planForm.description}
+								onChange={(e) => setPlanForm({ ...planForm, description: e.target.value })}
+								placeholder="Full access to all features"
+							/>
+						</div>
+						<div>
+							<Label>Trial Days</Label>
+							<Input
+								type="number"
+								value={planForm.trialDays}
+								onChange={(e) => setPlanForm({ ...planForm, trialDays: e.target.value })}
+								placeholder="14"
+							/>
+						</div>
+						<div>
+							<Label>Display Order</Label>
+							<Input
+								type="number"
+								value={planForm.displayOrder.toString()}
+								onChange={(e) => setPlanForm({ ...planForm, displayOrder: parseInt(e.target.value, 10) || 0 })}
+							/>
+						</div>
+						<div className="flex items-center gap-2">
+							<Checkbox
+								checked={planForm.isDefault}
+								onCheckedChange={(checked) => setPlanForm({ ...planForm, isDefault: !!checked })}
+							/>
+							<Label>Default plan (assigned to new users)</Label>
+						</div>
+						<div>
+							<Label>Features</Label>
+							<div className="flex gap-2 mb-2">
+								<Input
+									value={featureInput}
+									onChange={(e) => setFeatureInput(e.target.value)}
+									placeholder="e.g. unlimited_projects"
+									onKeyDown={(e) => {
+										if (e.key === "Enter") {
+											e.preventDefault();
+											if (featureInput.trim()) {
+												setPlanForm({ ...planForm, features: [...planForm.features, featureInput.trim()] });
+												setFeatureInput("");
+											}
+										}
+									}}
+								/>
+								<Button
+									size="sm"
+									variant="outline"
+									onClick={() => {
+										if (featureInput.trim()) {
+											setPlanForm({ ...planForm, features: [...planForm.features, featureInput.trim()] });
+											setFeatureInput("");
+										}
+									}}
+								>
+									Add
+								</Button>
+							</div>
+							<div className="flex flex-wrap gap-1.5">
+								{planForm.features.map((f, i) => (
+									<span key={`${f}-${i}`} className="inline-flex items-center gap-1">
+										<Chip size="sm">{f}</Chip>
+										<button
+											type="button"
+											className="text-muted-foreground hover:text-text-primary text-xs"
+											onClick={() =>
+												setPlanForm({ ...planForm, features: planForm.features.filter((_, idx) => idx !== i) })
+											}
+										>
+											×
+										</button>
+									</span>
 								))}
 							</div>
-						)}
-					</CardBody>
-				)}
-			</Card>
+						</div>
+					</DialogBody>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setShowPlanModal(false)}>Cancel</Button>
+						<Button onClick={handleSave} disabled={saving}>
+							{saving ? <Spinner /> : editingPlan ? "Update" : "Create"}
+						</Button>
+					</DialogFooter>
+				</DialogPopup>
+			</Dialog>
+		</div>
+	);
+}
 
-			{/* Licenses Table */}
-			<Card>
-				<CardBody className="border-b border-card-border">
-					<Heading level={2} size="sm">Active Licenses</Heading>
-					<Text className="text-muted-foreground text-sm mt-1">View and manage user licenses</Text>
-				</CardBody>
+// ===========================================================================
+// Prices Section (nested under a plan)
+// ===========================================================================
 
-				{/* Filters */}
-				<div className="px-6 py-4 border-b border-card-border flex items-center gap-3">
-					<div className="w-full max-w-[400px]">
-						<Input
-							type="text"
-							placeholder="Search by name or email..."
-							value={searchQuery}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-						/>
-					</div>
+function PricesSection({ appId, plan, showToast }: { appId: string; plan: V2Plan; showToast: (msg: string, type?: "success" | "error" | "info" | "warning") => void }) {
+	const { data, isLoading } = useV2Prices(appId, plan.planId);
+	const createPrice = useCreateV2Price(appId, plan.planId);
 
-					{/* Custom Status Dropdown */}
-					<div className="relative min-w-[160px]">
-						<button
-							type="button"
-							onClick={() => setShowStatusDropdown(!showStatusDropdown)}
-							className={`flex w-full items-center justify-between gap-2 rounded-[10px] border bg-bg-surface px-3 py-2.5 text-14px text-text-primary transition-all focus:outline-none ${showStatusDropdown ? "border-primary" : "border-border hover:border-primary/70"}`}
-						>
-							<span className="flex items-center gap-2">
-								<Icon icon={IconType.Filter} size={16} className="text-text-tertiary" />
-								{filterStatus === "all" ? "All Status" : filterStatus.charAt(0).toUpperCase() + filterStatus.slice(1)}
-							</span>
-							<Icon
-								icon={showStatusDropdown ? IconType.ArrowUp : IconType.ArrowDown}
-								size={14}
-								className="text-text-tertiary"
+	const [showModal, setShowModal] = useState(false);
+	const [form, setForm] = useState({
+		billingType: "recurring",
+		interval: "month",
+		intervalCount: "1",
+		amountCents: "",
+		currency: "usd",
+	});
+	const [saving, setSaving] = useState(false);
+
+	const prices = data?.prices ?? [];
+
+	const handleCreate = async () => {
+		if (!form.amountCents) {
+			showToast("Amount is required", "error");
+			return;
+		}
+		setSaving(true);
+		try {
+			await createPrice.mutateAsync({
+				billingType: form.billingType,
+				interval: form.billingType === "recurring" ? form.interval : null,
+				intervalCount: form.billingType === "recurring" ? parseInt(form.intervalCount, 10) : null,
+				amountCents: parseInt(form.amountCents, 10),
+				currency: form.currency,
+			});
+			showToast("Price created", "success");
+			setShowModal(false);
+			setForm({ billingType: "recurring", interval: "month", intervalCount: "1", amountCents: "", currency: "usd" });
+		} catch (err) {
+			showToast(err instanceof Error ? err.message : "Failed to create price", "error");
+		} finally {
+			setSaving(false);
+		}
+	};
+
+	return (
+		<div>
+			<div className="flex justify-between items-center mb-3">
+				<Text className="text-sm font-medium">Prices for {plan.name}</Text>
+				<Button size="sm" variant="outline" onClick={() => setShowModal(true)}>
+					<Icon icon={IconType.Add} size={14} />
+					Add Price
+				</Button>
+			</div>
+
+			{isLoading ? (
+				<Spinner />
+			) : prices.length === 0 ? (
+				<Text className="text-muted-foreground text-sm py-4">No prices yet. Add a price to enable purchases.</Text>
+			) : (
+				<div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
+					{prices.map((price) => (
+						<div key={price.priceId} className="p-3 rounded-lg border border-card-border bg-bg-muted">
+							<div className="flex items-center gap-2 mb-1">
+								<Text className="font-semibold">
+									${(price.amountCents / 100).toFixed(2)}
+								</Text>
+								{price.interval && (
+									<Text className="text-muted-foreground text-xs">/{price.interval}</Text>
+								)}
+							</div>
+							<div className="flex gap-1.5">
+								<Chip size="sm" variant="default">{price.billingType}</Chip>
+								<Chip size="sm" variant={price.isActive ? "success" : "default"}>
+									{price.isActive ? "active" : "inactive"}
+								</Chip>
+							</div>
+							<Text className="text-muted-foreground text-xs mt-1">{price.currency.toUpperCase()}</Text>
+						</div>
+					))}
+				</div>
+			)}
+
+			<Dialog open={showModal} onOpenChange={setShowModal}>
+				<DialogPopup>
+					<DialogHeader>
+						<DialogTitle>Add Price</DialogTitle>
+					</DialogHeader>
+					<DialogBody className="space-y-4">
+						<div>
+							<Label>Billing Type</Label>
+							<Select
+								value={form.billingType}
+								onChange={(v) => setForm({ ...form, billingType: v })}
+								options={[
+									{ value: "recurring", label: "Recurring" },
+									{ value: "one_time", label: "One Time" },
+									{ value: "lifetime", label: "Lifetime" },
+								]}
 							/>
-						</button>
-
-						{showStatusDropdown && (
+						</div>
+						{form.billingType === "recurring" && (
 							<>
-								<div className="fixed inset-0 z-[999]" onClick={() => setShowStatusDropdown(false)} />
-								<div className="absolute top-[calc(100%+6px)] left-0 right-0 z-[1000] overflow-hidden rounded-[10px] border border-border bg-bg-surface shadow-xl">
-									{[
-										{ value: "all", label: "All Status" },
-										{ value: "active", label: "Active" },
-										{ value: "suspended", label: "Suspended" },
-										{ value: "trial", label: "Trial" },
-									].map((option) => (
-										<button
-											key={option.value}
-											type="button"
-											onClick={() => {
-												setFilterStatus(option.value);
-												setShowStatusDropdown(false);
-											}}
-											className={`flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-14px transition-all ${filterStatus === option.value ? "bg-primary/10 text-primary" : "text-text-primary hover:bg-surface/50"} ${option.value !== "trial" ? "border-b border-border/60" : ""}`}
-										>
-											<Icon icon={statusIcons[option.value as keyof typeof statusIcons]} size={16} className="flex-shrink-0" />
-											<span className={filterStatus === option.value ? "font-semibold" : "font-normal"}>{option.label}</span>
-											{filterStatus === option.value && (
-												<Icon icon={IconType.Check} size={16} className="ml-auto text-primary" />
-											)}
-										</button>
-									))}
+								<div>
+									<Label>Interval</Label>
+									<Select
+										value={form.interval}
+										onChange={(v) => setForm({ ...form, interval: v })}
+										options={[
+											{ value: "month", label: "Monthly" },
+											{ value: "year", label: "Yearly" },
+										]}
+									/>
+								</div>
+								<div>
+									<Label>Interval Count</Label>
+									<Input
+										type="number"
+										value={form.intervalCount}
+										onChange={(e) => setForm({ ...form, intervalCount: e.target.value })}
+										placeholder="1"
+									/>
 								</div>
 							</>
 						)}
-					</div>
-				</div>
-
-				{/* Table */}
-				{!usersLoading && filteredLicenses.length > 0 ? (
-					<div className="overflow-x-auto">
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>User</TableHead>
-									<TableHead>Email</TableHead>
-									<TableHead className="text-center">Plan</TableHead>
-									<TableHead className="text-center">Status</TableHead>
-									<TableHead className="text-center">Valid Until</TableHead>
-									<TableHead className="text-right">Actions</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{filteredLicenses.map((user) => (
-									<TableRow key={user.id}>
-										<TableCell>
-											<div className="flex items-center gap-2.5">
-												<div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary flex-shrink-0">
-													{user.name
-														? user.name.charAt(0).toUpperCase()
-														: user.email.charAt(0).toUpperCase()}
-												</div>
-												<Text className="font-medium">
-													{user.name || "—"}
-												</Text>
-											</div>
-										</TableCell>
-										<TableCell>
-											<Text className="text-muted-foreground text-sm">{user.email}</Text>
-										</TableCell>
-										<TableCell className="text-center">
-											<Chip
-												variant={user.plan === "free" ? "default" : "primary"}
-												size="sm"
-											>
-												{user.plan || "free"}
-											</Chip>
-										</TableCell>
-										<TableCell className="text-center">
-											<Chip
-												variant={user.status === "active" ? "success" : "danger"}
-												size="sm"
-											>
-												{user.status}
-											</Chip>
-										</TableCell>
-										<TableCell className="text-center">
-											<Text className="text-muted-foreground text-sm">
-												{user.licenseValidUntil
-													? new Date(user.licenseValidUntil).toLocaleDateString()
-													: "—"}
-											</Text>
-										</TableCell>
-										<TableCell className="text-right">
-											<Button
-												variant="secondary"
-												size="sm"
-												onClick={() => {
-													setChangingLicense(user);
-													setNewPlan(user.plan || "free");
-												}}
-											>
-												Change Plan
-											</Button>
-										</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					</div>
-				) : (
-					<EmptyState
-						icon={IconType.AlertCircle}
-						title="No licenses found"
-						description={
-							searchQuery || filterStatus !== "all"
-								? "Try adjusting your filters"
-								: "Licenses will appear here when users sign up"
-						}
-					/>
-				)}
-			</Card>
-
-			{/* Change Plan Modal */}
-			{changingLicense && (
-				<Dialog open={!!changingLicense} onOpenChange={(open: boolean) => !open && setChangingLicense(null)}>
-					<DialogPopup>
-						<DialogHeader>
-							<DialogTitle>Change License Plan</DialogTitle>
-							<Text className="text-muted-foreground mt-2">
-								Update license plan for {changingLicense.name || changingLicense.email}
-							</Text>
-						</DialogHeader>
-
-						<DialogBody>
-							<Label className="font-semibold">New Plan</Label>
-							<Select
-								value={newPlan}
-								onChange={(value) => setNewPlan(value)}
-								options={[
-									{ value: "free", label: "Free" },
-									{ value: "trial", label: "Trial" },
-									{ value: "pro", label: "Pro" },
-									{ value: "enterprise", label: "Enterprise" },
-								]}
-								disabled={isUpdating}
+						<div>
+							<Label>Amount (cents)</Label>
+							<Input
+								type="number"
+								value={form.amountCents}
+								onChange={(e) => setForm({ ...form, amountCents: e.target.value })}
+								placeholder="999"
 							/>
-						</DialogBody>
-
-						<DialogFooter>
-							<Button variant="secondary" onClick={() => setChangingLicense(null)} disabled={isUpdating}>
-								Cancel
-							</Button>
-							<Button
-								variant="primary"
-								onClick={handleChangePlan}
-								disabled={isUpdating || newPlan === changingLicense.plan}
-							>
-								{isUpdating ? "Saving..." : "Save Changes"}
-							</Button>
-						</DialogFooter>
-					</DialogPopup>
-				</Dialog>
-			)}
-
-			{/* Plan Create/Edit Modal */}
-			{showPlanModal && (
-				<Dialog open={showPlanModal} onOpenChange={(open: boolean) => !open && !isUpdating && setShowPlanModal(false)}>
-					<DialogPopup className="!w-[800px] max-h-[90vh] overflow-y-auto">
-						<DialogHeader>
-							<DialogTitle>{editingPlan ? "Edit Plan" : "Create Plan"}</DialogTitle>
-							<Text className="text-muted-foreground mt-2">
-								{editingPlan ? "Update plan details and pricing" : "Create a new pricing plan for your app"}
-							</Text>
-						</DialogHeader>
-
-						<DialogBody>
-							{planError && (
-								<Alert variant="danger" className="mb-4">
-									<Icon icon={IconType.AlertCircle} size={20} />
-									<span>{planError}</span>
-								</Alert>
-							)}
-
-						<form
-							onSubmit={(e) => {
-								e.preventDefault();
-								handleSavePlan();
-							}}
-						>
-							{/* Plan Name */}
-							<div className="mb-5">
-								<Label className="font-semibold mb-2">
-									Plan Name <span className="text-danger">*</span>
-								</Label>
-								<Input
-									type="text"
-									value={planForm.name}
-									onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlanForm({ ...planForm, name: e.target.value })}
-									disabled={isUpdating}
-									placeholder="e.g., Pro Plan"
-									required
-								/>
-							</div>
-
-							{/* Plan Slug */}
-							<div className="mb-5">
-								<Label className="font-semibold mb-2">
-									Plan Slug <span className="text-danger">*</span>
-								</Label>
-								<Input
-									type="text"
-									value={planForm.slug}
-									onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-										setPlanForm({
-											...planForm,
-											slug: e.target.value.toLowerCase().replace(/\s+/g, "-"),
-										})
-									}
-									disabled={isUpdating || !!editingPlan}
-									placeholder="e.g., pro"
-									required
-									className={editingPlan ? "opacity-60" : ""}
-								/>
-								{editingPlan && (
-									<Text className="text-xs text-muted-foreground mt-1.5">
-										Slug cannot be changed after creation
-									</Text>
-								)}
-							</div>
-
-							{/* Description */}
-							<div className="mb-5">
-								<Label className="font-semibold mb-2">Description</Label>
-								<Textarea
-									value={planForm.description}
-									onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setPlanForm({ ...planForm, description: e.target.value })}
-									disabled={isUpdating}
-									placeholder="Brief description of this plan..."
-									rows={3}
-								/>
-							</div>
-
-							{/* Pricing */}
-							<div className="grid grid-cols-3 gap-3 mb-5">
-								<div>
-									<Label className="font-semibold mb-2">Monthly Price ($)</Label>
-									<Input
-										type="number"
-										step="0.01"
-										min="0"
-										value={planForm.monthlyPrice}
-										onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlanForm({ ...planForm, monthlyPrice: e.target.value })}
-										disabled={isUpdating}
-										placeholder="9.99"
-									/>
-								</div>
-								<div>
-									<Label className="font-semibold mb-2">Yearly Price ($)</Label>
-									<Input
-										type="number"
-										step="0.01"
-										min="0"
-										value={planForm.yearlyPrice}
-										onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlanForm({ ...planForm, yearlyPrice: e.target.value })}
-										disabled={isUpdating}
-										placeholder="99.99"
-									/>
-								</div>
-								<div>
-									<Label className="font-semibold mb-2">One-Time Price ($)</Label>
-									<Input
-										type="number"
-										step="0.01"
-										min="0"
-										value={planForm.oneTimePrice}
-										onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlanForm({ ...planForm, oneTimePrice: e.target.value })}
-										disabled={isUpdating}
-										placeholder="499.99"
-									/>
-								</div>
-							</div>
-
-							{/* Duration */}
-							<div className="mb-5">
-								<Label className="font-semibold mb-2">License Duration (Days)</Label>
-								<Input
-									type="number"
-									min="1"
-									value={planForm.durationDays || ""}
-									onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-										setPlanForm({
-											...planForm,
-											durationDays: e.target.value ? parseInt(e.target.value, 10) : null,
-										})
-									}
-									disabled={isUpdating}
-									placeholder="e.g., 30, 365 (leave empty for lifetime)"
-								/>
-								<Text className="text-xs text-muted-foreground mt-1.5">
-									How long the license is valid after activation. Leave empty for lifetime access.
+							{form.amountCents && (
+								<Text className="text-xs text-muted-foreground mt-1">
+									= ${(parseInt(form.amountCents, 10) / 100).toFixed(2)}
 								</Text>
-							</div>
+							)}
+						</div>
+						<div>
+							<Label>Currency</Label>
+							<Input
+								value={form.currency}
+								onChange={(e) => setForm({ ...form, currency: e.target.value })}
+								placeholder="usd"
+							/>
+						</div>
+					</DialogBody>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
+						<Button onClick={handleCreate} disabled={saving}>
+							{saving ? <Spinner /> : "Create Price"}
+						</Button>
+					</DialogFooter>
+				</DialogPopup>
+			</Dialog>
+		</div>
+	);
+}
 
-							{/* Trial */}
-							<div className="mb-5">
-								<label className="inline-flex items-center gap-2 cursor-pointer">
-									<Checkbox
-										checked={planForm.trialEnabled}
-										onCheckedChange={(checked: boolean) => setPlanForm({ ...planForm, trialEnabled: checked })}
-										disabled={isUpdating}
-									/>
-									<span>Enable Free Trial</span>
-								</label>
-								{planForm.trialEnabled && (
-									<div className="mt-3 ml-7">
-										<Label className="font-semibold mb-2">Trial Duration (days)</Label>
-										<Input
-											type="number"
-											min="1"
-											value={planForm.trialDays}
-											onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlanForm({ ...planForm, trialDays: e.target.value })}
-											disabled={isUpdating}
-											placeholder="14"
-											className="w-[120px]"
-										/>
-									</div>
-								)}
-							</div>
+// ===========================================================================
+// Licenses Tab
+// ===========================================================================
 
-							{/* Features */}
-							<div className="mb-6">
-								<Label className="font-semibold mb-2">Features</Label>
-								<div className="flex gap-2 mb-3">
-									<Input
-										type="text"
-										value={featureInput}
-										onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFeatureInput(e.target.value)}
-										onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
-											if (e.key === "Enter") {
-												e.preventDefault();
-												handleAddFeature();
-											}
-										}}
-										disabled={isUpdating}
-										placeholder="Add a feature..."
-										className="flex-1"
-									/>
-									<Button
-										type="button"
-										variant="secondary"
-										onClick={handleAddFeature}
-										disabled={isUpdating || !featureInput.trim()}
-									>
-										Add
-									</Button>
+function LicensesTab({ appId, showToast }: { appId: string; showToast: (msg: string, type?: "success" | "error" | "info" | "warning") => void }) {
+	const [statusFilter, setStatusFilter] = useState<string>("");
+	const [sourceFilter, setSourceFilter] = useState<string>("");
+
+	const { data: licensesData, isLoading } = useV2Licenses(appId, {
+		status: statusFilter || undefined,
+		source: sourceFilter || undefined,
+	});
+	const { data: summary } = useV2LicenseSummary(appId);
+	const grantLicense = useGrantV2License(appId);
+	const updateLicense = useUpdateV2License(appId);
+	const revokeLicense = useRevokeV2License(appId);
+	const { data: plansData } = useV2Plans(appId);
+
+	const [showGrantModal, setShowGrantModal] = useState(false);
+	const [grantForm, setGrantForm] = useState({
+		userId: "",
+		planId: "",
+		priceId: "",
+		maxActivations: "",
+		note: "",
+	});
+	const [saving, setSaving] = useState(false);
+	const [viewingHistory, setViewingHistory] = useState<string | null>(null);
+
+	const licenses = licensesData?.licenses ?? [];
+	const plans = plansData?.plans ?? [];
+
+	const handleGrant = async () => {
+		if (!grantForm.userId || !grantForm.planId) {
+			showToast("User ID and Plan are required", "error");
+			return;
+		}
+		setSaving(true);
+		try {
+			await grantLicense.mutateAsync({
+				userId: grantForm.userId,
+				planId: grantForm.planId,
+				priceId: grantForm.priceId || undefined,
+				maxActivations: grantForm.maxActivations ? parseInt(grantForm.maxActivations, 10) : undefined,
+				note: grantForm.note || undefined,
+			});
+			showToast("License granted", "success");
+			setShowGrantModal(false);
+			setGrantForm({ userId: "", planId: "", priceId: "", maxActivations: "", note: "" });
+		} catch (err) {
+			showToast(err instanceof Error ? err.message : "Failed to grant license", "error");
+		} finally {
+			setSaving(false);
+		}
+	};
+
+	const handleRevoke = async (license: V2License) => {
+		if (!confirm(`Revoke license for ${license.userEmail || license.userId}?`)) return;
+		try {
+			await revokeLicense.mutateAsync(license.licenseId);
+			showToast("License revoked", "success");
+		} catch (err) {
+			showToast(err instanceof Error ? err.message : "Failed to revoke", "error");
+		}
+	};
+
+	if (isLoading) {
+		return <div className="flex justify-center py-12"><Spinner /></div>;
+	}
+
+	return (
+		<div className="space-y-6">
+			{/* Summary Stats */}
+			{summary && (
+				<div className="grid grid-cols-4 gap-4">
+					{Object.entries(summary.statusCounts).map(([status, count]) => (
+						<Card key={status}>
+							<CardBody className="flex items-center gap-3">
+								<IconBox
+									variant={status === "active" ? "success-subtle" : status === "suspended" ? "danger-subtle" : "secondary-subtle"}
+									size="md"
+								>
+									<Icon icon={status === "active" ? IconType.Check : status === "suspended" ? IconType.Shield : IconType.Clock} size={18} />
+								</IconBox>
+								<div>
+									<Text className="text-muted-foreground text-xs capitalize">{status}</Text>
+									<Heading level={4} size="sm">{count}</Heading>
 								</div>
-								{planForm.features.length > 0 && (
-									<div className="flex flex-col gap-2">
-										{planForm.features.map((feature, index) => (
-											<div
-												key={`feature-${index}`}
-												className="flex items-center justify-between py-2 px-3 bg-muted/30 border border-card-border rounded-md text-sm text-foreground"
-											>
-												<span>{feature}</span>
-												<button
-													type="button"
-													onClick={() => handleRemoveFeature(index)}
-													disabled={isUpdating}
-													className="bg-transparent border-none text-danger cursor-pointer p-1"
-												>
-													<Icon icon={IconType.Delete} size={16} className="text-danger" />
-												</button>
-											</div>
-										))}
-									</div>
-								)}
-							</div>
-						</form>
-						</DialogBody>
-
-						<DialogFooter>
-							<Button variant="secondary" onClick={() => setShowPlanModal(false)} disabled={isUpdating}>
-								Cancel
-							</Button>
-							<Button variant="primary" disabled={isUpdating} onClick={(e) => {
-								e.preventDefault();
-								handleSavePlan();
-							}}>
-								{isUpdating ? "Saving..." : editingPlan ? "Update Plan" : "Create Plan"}
-							</Button>
-						</DialogFooter>
-					</DialogPopup>
-				</Dialog>
+							</CardBody>
+						</Card>
+					))}
+				</div>
 			)}
 
-			{/* Delete Plan Confirmation Dialog */}
-			{deletingPlan && (
-				<Dialog open={!!deletingPlan} onOpenChange={(open: boolean) => !open && !isUpdating && setDeletingPlan(null)}>
-					<DialogPopup>
-						<DialogHeader>
-							<IconBox variant="danger-subtle" size="lg" className="mb-4">
-								<Icon icon={IconType.AlertCircle} size={24} />
-							</IconBox>
-							<DialogTitle>Delete Plan?</DialogTitle>
-							<Text className="text-muted-foreground mt-2 mb-3">
-								Are you sure you want to delete the <strong>{deletingPlan.name}</strong> plan? This
-								action cannot be undone.
-							</Text>
-							<Text className="text-muted-foreground text-sm">
-								Note: Plans with active licenses cannot be deleted.
-							</Text>
-						</DialogHeader>
+			{/* Filters & Actions */}
+			<div className="flex items-center gap-3">
+				<Select
+					value={statusFilter}
+					onChange={setStatusFilter}
+					options={[
+						{ value: "", label: "All statuses" },
+						{ value: "active", label: "Active" },
+						{ value: "suspended", label: "Suspended" },
+						{ value: "expired", label: "Expired" },
+						{ value: "revoked", label: "Revoked" },
+						{ value: "trial", label: "Trial" },
+					]}
+				/>
+				<Select
+					value={sourceFilter}
+					onChange={setSourceFilter}
+					options={[
+						{ value: "", label: "All sources" },
+						{ value: "admin_grant", label: "Admin Grant" },
+						{ value: "purchase", label: "Purchase" },
+						{ value: "system", label: "System" },
+					]}
+				/>
+				<div className="flex-1" />
+				<Button size="sm" onClick={() => setShowGrantModal(true)}>
+					<Icon icon={IconType.Add} size={16} />
+					Grant License
+				</Button>
+			</div>
 
-						<DialogFooter>
-							<Button variant="secondary" onClick={() => setDeletingPlan(null)} disabled={isUpdating}>
-								Cancel
-							</Button>
-							<Button variant="danger" onClick={handleDeletePlan} disabled={isUpdating}>
-								{isUpdating ? "Deleting..." : "Delete Plan"}
-							</Button>
-						</DialogFooter>
-					</DialogPopup>
-				</Dialog>
+			{/* Licenses Table */}
+			{licenses.length === 0 ? (
+				<EmptyState
+					icon={IconType.License}
+					title="No licenses"
+					description="No licenses match the current filters"
+				/>
+			) : (
+				<Card>
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>User</TableHead>
+								<TableHead>Plan</TableHead>
+								<TableHead>Status</TableHead>
+								<TableHead>Source</TableHead>
+								<TableHead>Valid Until</TableHead>
+								<TableHead>Activations</TableHead>
+								<TableHead>Actions</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{licenses.map((lic) => (
+								<TableRow key={lic.licenseId}>
+									<TableCell>
+										<div>
+											<Text className="text-sm font-medium">{lic.userName || lic.userEmail || "—"}</Text>
+											{lic.userEmail && lic.userName && (
+												<Text className="text-xs text-muted-foreground">{lic.userEmail}</Text>
+											)}
+										</div>
+									</TableCell>
+									<TableCell>
+										<Text className="text-sm">{lic.plan?.name || "—"}</Text>
+									</TableCell>
+									<TableCell>
+										<Chip
+											variant={lic.status === "active" ? "success" : lic.status === "suspended" ? "danger" : lic.status === "trial" ? "info" : "default"}
+											size="sm"
+										>
+											{lic.status}
+										</Chip>
+									</TableCell>
+									<TableCell>
+										<Chip size="sm" variant="default">{lic.source}</Chip>
+									</TableCell>
+									<TableCell>
+										<Text className="text-sm text-muted-foreground">
+											{lic.validUntil ? new Date(lic.validUntil).toLocaleDateString() : "—"}
+										</Text>
+									</TableCell>
+									<TableCell>
+										<Text className="text-sm">
+											{lic.activationsCount ?? 0}{lic.maxActivations ? ` / ${lic.maxActivations}` : ""}
+										</Text>
+									</TableCell>
+									<TableCell>
+										<div className="flex gap-1">
+											<Button size="sm" variant="outline" onClick={() => setViewingHistory(lic.licenseId)}>
+												<Icon icon={IconType.Clock} size={14} />
+											</Button>
+											<Button size="sm" variant="danger" onClick={() => handleRevoke(lic)}>
+												<Icon icon={IconType.Delete} size={14} />
+											</Button>
+										</div>
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</Card>
+			)}
+
+			{/* Grant License Modal */}
+			<Dialog open={showGrantModal} onOpenChange={setShowGrantModal}>
+				<DialogPopup>
+					<DialogHeader>
+						<DialogTitle>Grant License</DialogTitle>
+					</DialogHeader>
+					<DialogBody className="space-y-4">
+						<div>
+							<Label>User ID (public)</Label>
+							<Input
+								value={grantForm.userId}
+								onChange={(e) => setGrantForm({ ...grantForm, userId: e.target.value })}
+								placeholder="USR0..."
+							/>
+						</div>
+						<div>
+							<Label>Plan</Label>
+							<Select
+								value={grantForm.planId}
+								onChange={(v) => setGrantForm({ ...grantForm, planId: v })}
+								options={[
+									{ value: "", label: "Select plan..." },
+									...plans.map((p) => ({ value: p.planId, label: p.name })),
+								]}
+							/>
+						</div>
+						<div>
+							<Label>Max Activations (optional)</Label>
+							<Input
+								type="number"
+								value={grantForm.maxActivations}
+								onChange={(e) => setGrantForm({ ...grantForm, maxActivations: e.target.value })}
+								placeholder="5"
+							/>
+						</div>
+						<div>
+							<Label>Note (optional)</Label>
+							<Input
+								value={grantForm.note}
+								onChange={(e) => setGrantForm({ ...grantForm, note: e.target.value })}
+								placeholder="Granted for beta testing"
+							/>
+						</div>
+					</DialogBody>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setShowGrantModal(false)}>Cancel</Button>
+						<Button onClick={handleGrant} disabled={saving}>
+							{saving ? <Spinner /> : "Grant License"}
+						</Button>
+					</DialogFooter>
+				</DialogPopup>
+			</Dialog>
+
+			{/* License History Modal */}
+			{viewingHistory && (
+				<LicenseHistoryModal
+					appId={appId}
+					licenseId={viewingHistory}
+					onClose={() => setViewingHistory(null)}
+				/>
 			)}
 		</div>
+	);
+}
+
+// ===========================================================================
+// License History Modal
+// ===========================================================================
+
+function LicenseHistoryModal({ appId, licenseId, onClose }: { appId: string; licenseId: string; onClose: () => void }) {
+	const { data, isLoading } = useV2LicenseHistory(appId, licenseId);
+	const history = data?.history ?? [];
+
+	return (
+		<Dialog open onOpenChange={() => onClose()}>
+			<DialogPopup>
+				<DialogHeader>
+					<DialogTitle>License History</DialogTitle>
+				</DialogHeader>
+				<DialogBody>
+					{isLoading ? (
+						<div className="flex justify-center py-8"><Spinner /></div>
+					) : history.length === 0 ? (
+						<Text className="text-muted-foreground text-center py-8">No history entries</Text>
+					) : (
+						<div className="space-y-3 max-h-96 overflow-y-auto">
+							{history.map((entry) => (
+								<div key={entry.historyId} className="p-3 rounded-lg border border-card-border">
+									<div className="flex items-center justify-between mb-1">
+										<Chip size="sm" variant="default">{entry.changeType}</Chip>
+										<Text className="text-xs text-muted-foreground">
+											{new Date(entry.createdAt).toLocaleString()}
+										</Text>
+									</div>
+									{entry.oldValue && (
+										<Text className="text-xs text-muted-foreground">From: {entry.oldValue}</Text>
+									)}
+									{entry.newValue && (
+										<Text className="text-xs text-muted-foreground">To: {entry.newValue}</Text>
+									)}
+									{entry.reason && (
+										<Text className="text-xs text-muted-foreground mt-1">{entry.reason}</Text>
+									)}
+									{entry.notes && (
+										<Text className="text-xs text-muted-foreground italic">{entry.notes}</Text>
+									)}
+								</div>
+							))}
+						</div>
+					)}
+				</DialogBody>
+				<DialogFooter>
+					<Button variant="outline" onClick={onClose}>Close</Button>
+				</DialogFooter>
+			</DialogPopup>
+		</Dialog>
 	);
 }

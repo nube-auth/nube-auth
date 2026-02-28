@@ -1,356 +1,554 @@
-import { appQueries, getDb, licenseQueries, planQueries, projectQueries, userQueries } from "@proofa/db";
-import { createLogger, idPatterns, serializeError } from "@proofa/shared";
+import {
+	activationQueries,
+	appQueries,
+	getDb,
+	licenseHistoryQueries,
+	licenseQueries,
+	planQueries,
+	priceQueries,
+	userQueries,
+} from "@proofa/db";
+import { createId, createLogger, idPatterns, serializeError } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
+import { z } from "zod";
 
-const log = createLogger("admin-license-management-routes");
-
-export const licenseManagementRouter = new Hono();
+const log = createLogger("admin-license-routes");
 
 /**
- * GET /:projectId/licenses
- * List all licenses for a project
+ * App-scoped license management routes.
+ * Mounted at: /v1/admin/apps/:appId/licenses
  */
-licenseManagementRouter.get("/:projectId/licenses", async (c: Context) => {
-	try {
-		const projectId = c.req.param("projectId");
-		const { status, appId } = c.req.query() as { status?: string; appId?: string };
+export const licenseManagementRouter = new Hono();
 
-		if (!projectId || !idPatterns.project.test(projectId)) {
-			return c.json({ error: "Invalid projectId" }, 400);
-		}
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function formatLicense(
+	license: any,
+	extras?: { app?: any; user?: any; plan?: any; price?: any },
+) {
+	return {
+		licenseId: license.public_id,
+		appId: extras?.app?.public_id,
+		userId: extras?.user?.public_id,
+		userEmail: extras?.user?.primary_email,
+		userName: extras?.user?.name,
+		plan: extras?.plan
+			? {
+					planId: extras.plan.public_id,
+					name: extras.plan.name,
+					slug: extras.plan.slug,
+				}
+			: undefined,
+		price: extras?.price
+			? {
+					priceId: extras.price.public_id,
+					billingType: extras.price.billing_type,
+					interval: extras.price.interval,
+					amountCents: extras.price.amount_cents,
+				}
+			: undefined,
+		status: license.status,
+		source: license.source,
+		validUntil: license.valid_until
+			? new Date(license.valid_until).toISOString()
+			: null,
+		maxActivations: license.max_activations,
+		isTest: license.is_test,
+		createdAt: new Date(license.created_at).toISOString(),
+		updatedAt: new Date(license.updated_at).toISOString(),
+	};
+}
+
+// ---------------------------------------------------------------------------
+// POST /grant — Admin grant license
+// ---------------------------------------------------------------------------
+
+const GrantLicenseSchema = z.object({
+	userId: z.string().regex(idPatterns.user),
+	planId: z.string().regex(idPatterns.plan),
+	priceId: z.string().regex(idPatterns.price).optional(),
+	source: z.enum(["admin_grant", "invitation"]).default("admin_grant"),
+	durationDays: z.number().int().positive().optional(),
+	maxActivations: z.number().int().positive().optional(),
+	note: z.string().max(500).optional(),
+});
+
+licenseManagementRouter.post("/grant", async (c: Context) => {
+	try {
+		const appId = c.req.param("appId");
+		const body = await c.req.json();
+		const validated = GrantLicenseSchema.parse(body);
+
+		const adminUserId = c.req.header("X-Proofa-User-Id");
+		if (!adminUserId) return c.json({ error: "Unauthorized" }, 401);
 
 		const db = getDb();
 
-		// Get project
-		const project = await projectQueries.findByPublicId(db, projectId);
-		if (!project) {
-			return c.json({ error: "Project not found" }, 404);
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) return c.json({ error: "App not found" }, 404);
+
+		const user = await userQueries.findByPublicId(db, validated.userId);
+		if (!user) return c.json({ error: "User not found" }, 404);
+
+		const plan = await planQueries.findByPublicId(db, validated.planId);
+		if (!plan || plan.app_id !== app.id)
+			return c.json({ error: "Plan not found for this app" }, 404);
+
+		let priceRow: any = null;
+		if (validated.priceId) {
+			priceRow = await priceQueries.findByPublicId(db, validated.priceId);
+			if (!priceRow || priceRow.plan_id !== plan.id)
+				return c.json({ error: "Price not found for this plan" }, 404);
 		}
 
-		// Get all apps in project
-		const apps = await appQueries.findByProjectId(db, project.id);
-		let appIds = apps.map((a) => a.id);
-
-		// Filter by specific app if provided
-		if (appId) {
-			if (!idPatterns.app.test(appId)) {
-				return c.json({ error: "Invalid appId" }, 400);
-			}
-			const app = apps.find((a) => a.public_id === appId);
-			if (!app) {
-				return c.json({ error: "App not found in this project" }, 404);
-			}
-			appIds = [app.id];
+		let validUntil: Date | null = null;
+		if (validated.durationDays) {
+			validUntil = new Date(
+				Date.now() + validated.durationDays * 24 * 60 * 60 * 1000,
+			);
 		}
 
-		// Collect all licenses
-		const allLicenses: any[] = [];
-		for (const appId of appIds) {
-			const licenses = await licenseQueries.findByAppId(db, appId);
-			for (const license of licenses) {
-				// Filter by status if provided
-				if (status && license.status !== status) {
-					continue;
-				}
+		const license = await licenseQueries.upsert(db, user.id, app.id, {
+			public_id: createId("license"),
+			plan_id: plan.id,
+			price_id: priceRow?.id ?? null,
+			status: "active",
+			source: validated.source,
+			valid_until: validUntil,
+			max_activations: validated.maxActivations ?? null,
+			metadata: validated.note ? { note: validated.note } : null,
+		});
 
-				const app = apps.find((a) => a.id === appId);
+		// Write history
+		const adminUser = await userQueries.findByPublicId(db, adminUserId);
+		await licenseHistoryQueries.create(db, {
+			public_id: createId("licenseHistory"),
+			license_id: license.id,
+			change_type: "created",
+			old_value: null,
+			new_value: {
+				plan_id: plan.public_id,
+				status: "active",
+				source: validated.source,
+			},
+			reason: "admin_manual",
+			changed_by_user_id: adminUser?.id ?? null,
+			changed_by_system: false,
+			notes: validated.note ?? null,
+		});
+
+		log.info(
+			{ licenseId: license.public_id, userId: validated.userId, appId },
+			"License granted by admin",
+		);
+
+		return c.json(
+			{
+				licenseId: license.public_id,
+				status: license.status,
+				plan: {
+					planId: plan.public_id,
+					name: plan.name,
+					slug: plan.slug,
+				},
+				source: license.source,
+				validUntil: license.valid_until
+					? new Date(license.valid_until).toISOString()
+					: null,
+				maxActivations: license.max_activations,
+				createdAt: new Date(license.created_at).toISOString(),
+			},
+			201,
+		);
+	} catch (error) {
+		if (error instanceof z.ZodError)
+			return c.json({ error: "Invalid request", details: error.issues }, 400);
+		log.error(
+			{ err: serializeError(error as Error) },
+			"Grant license error",
+		);
+		return c.json({ error: "Failed to grant license" }, 500);
+	}
+});
+
+// ---------------------------------------------------------------------------
+// GET / — List licenses for app
+// ---------------------------------------------------------------------------
+
+licenseManagementRouter.get("/", async (c: Context) => {
+	try {
+		const appId = c.req.param("appId");
+		const statusFilter = c.req.query("status") as string | undefined;
+		const sourceFilter = c.req.query("source") as string | undefined;
+
+		const db = getDb();
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) return c.json({ error: "App not found" }, 404);
+
+		const allLicenses = await licenseQueries.findByAppId(db, app.id);
+
+		const filtered = allLicenses.filter((l) => {
+			if (statusFilter && l.status !== statusFilter) return false;
+			if (sourceFilter && l.source !== sourceFilter) return false;
+			return true;
+		});
+
+		const results = await Promise.all(
+			filtered.map(async (license) => {
 				const user = await userQueries.findById(db, license.user_id);
 				const plan = await planQueries.findById(db, license.plan_id);
+				const price = license.price_id
+					? await priceQueries.findById(db, license.price_id)
+					: null;
+				return formatLicense(license, { app, user, plan, price });
+			}),
+		);
 
-				allLicenses.push({
-					id: license.public_id,
-					appId: app?.public_id,
-					appName: app?.name,
-					userId: user?.public_id,
-					userEmail: user?.primary_email,
-					userName: user?.name,
-					planId: plan?.public_id,
-					planName: plan?.name,
-					planSlug: plan?.slug,
-					status: license.status,
-					validUntil: license.valid_until ? new Date(license.valid_until).toISOString() : null,
-					createdAt: new Date(license.created_at).toISOString(),
-					updatedAt: new Date(license.updated_at).toISOString(),
-				});
-			}
-		}
-
-		return c.json({
-			licenses: allLicenses,
-			total: allLicenses.length,
-		});
+		return c.json({ licenses: results, total: results.length });
 	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "List licenses error");
+		log.error(
+			{ err: serializeError(error as Error) },
+			"List licenses error",
+		);
 		return c.json({ error: "Failed to list licenses" }, 500);
 	}
 });
 
-/**
- * GET /:projectId/licenses/summary
- * Get license summary/statistics for a project
- */
-licenseManagementRouter.get("/:projectId/licenses/summary", async (c: Context) => {
+// ---------------------------------------------------------------------------
+// GET /summary — License statistics for app
+// ---------------------------------------------------------------------------
+
+licenseManagementRouter.get("/summary", async (c: Context) => {
 	try {
-		const projectId = c.req.param("projectId");
-
-		if (!projectId || !idPatterns.project.test(projectId)) {
-			return c.json({ error: "Invalid projectId" }, 400);
-		}
-
+		const appId = c.req.param("appId");
 		const db = getDb();
 
-		// Get project
-		const project = await projectQueries.findByPublicId(db, projectId);
-		if (!project) {
-			return c.json({ error: "Project not found" }, 404);
-		}
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) return c.json({ error: "App not found" }, 404);
 
-		// Get all apps in project
-		const apps = await appQueries.findByProjectId(db, project.id);
+		const allLicenses = await licenseQueries.findByAppId(db, app.id);
 
-		// Collect statistics
-		let totalLicenses = 0;
-		let activeLicenses = 0;
-		let expiredLicenses = 0;
-		let revokedLicenses = 0;
+		const statusCounts: Record<string, number> = {};
+		const sourceCounts: Record<string, number> = {};
+		const planCounts: Record<string, number> = {};
 		const uniqueUsers = new Set<number>();
-		const licenseCounts: Record<string, number> = {};
-		const statusCounts = { active: 0, expired: 0, revoked: 0 };
 
-		const now = new Date();
+		for (const license of allLicenses) {
+			statusCounts[license.status] =
+				(statusCounts[license.status] ?? 0) + 1;
+			sourceCounts[license.source] =
+				(sourceCounts[license.source] ?? 0) + 1;
+			uniqueUsers.add(license.user_id);
 
-		for (const app of apps) {
-			const licenses = await licenseQueries.findByAppId(db, app.id);
-
-			for (const license of licenses) {
-				totalLicenses++;
-				uniqueUsers.add(license.user_id);
-
-				// Count by status
-				if (license.status === "active") {
-					if (license.valid_until && new Date(license.valid_until) < now) {
-						expiredLicenses++;
-						statusCounts.expired++;
-					} else {
-						activeLicenses++;
-						statusCounts.active++;
-					}
-				} else if (license.status === "revoked") {
-					revokedLicenses++;
-					statusCounts.revoked++;
-				}
-
-				// Count by plan
-				const plan = await planQueries.findById(db, license.plan_id);
-				if (plan) {
-					licenseCounts[plan.slug] = (licenseCounts[plan.slug] || 0) + 1;
-				}
+			const plan = await planQueries.findById(db, license.plan_id);
+			if (plan) {
+				planCounts[plan.slug] = (planCounts[plan.slug] ?? 0) + 1;
 			}
 		}
 
 		return c.json({
-			projectId,
-			totalLicenses,
-			activeLicenses,
-			expiredLicenses,
-			revokedLicenses,
+			total: allLicenses.length,
 			uniqueUsers: uniqueUsers.size,
 			statusCounts,
-			licenseCounts,
+			sourceCounts,
+			planCounts,
 		});
 	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "Get license summary error");
+		log.error(
+			{ err: serializeError(error as Error) },
+			"License summary error",
+		);
 		return c.json({ error: "Failed to get license summary" }, 500);
 	}
 });
 
-/**
- * PATCH /:projectId/licenses/:licenseId
- * Update license status or plan
- */
-licenseManagementRouter.patch("/:projectId/licenses/:licenseId", async (c: Context) => {
+// ---------------------------------------------------------------------------
+// GET /:licenseId — Get single license detail
+// ---------------------------------------------------------------------------
+
+licenseManagementRouter.get("/:licenseId", async (c: Context) => {
 	try {
-		const projectId = c.req.param("projectId");
+		const appId = c.req.param("appId");
 		const licenseId = c.req.param("licenseId");
-		const { status, planSlug, validUntil } = (await c.req.json()) as {
-			status?: string;
-			planSlug?: string;
-			validUntil?: number;
-		};
 
-		if (!projectId || !idPatterns.project.test(projectId)) {
-			return c.json({ error: "Invalid projectId" }, 400);
-		}
-
-		if (!licenseId || !idPatterns.license.test(licenseId)) {
+		if (!idPatterns.license.test(licenseId))
 			return c.json({ error: "Invalid licenseId" }, 400);
-		}
-
-		if (!status && !planSlug && validUntil === undefined) {
-			return c.json({ error: "Must provide at least one field to update: status, planSlug, or validUntil" }, 400);
-		}
-
-		const userId = c.req.header("X-Proofa-User-Id");
-		if (!userId) {
-			return c.json({ error: "Unauthorized" }, 401);
-		}
 
 		const db = getDb();
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) return c.json({ error: "App not found" }, 404);
 
-		// Get project
-		const project = await projectQueries.findByPublicId(db, projectId);
-		if (!project) {
-			return c.json({ error: "Project not found" }, 404);
-		}
-
-		// Get requesting user and check authorization
-		const requestingUser = await userQueries.findByPublicId(db, userId);
-		if (!requestingUser) {
-			return c.json({ error: "User not found" }, 404);
-		}
-
-		// Get all apps in project and search for the license
-		const apps = await appQueries.findByProjectId(db, project.id);
-		let targetLicense: any = null;
-
-		for (const app of apps) {
-			const appLicenses = await licenseQueries.findByAppId(db, app.id);
-			const found = appLicenses.find((l) => l.public_id === licenseId);
-			if (found) {
-				targetLicense = found;
-				break;
-			}
-		}
-
-		if (!targetLicense) {
+		const license = await licenseQueries.findByPublicId(db, licenseId);
+		if (!license || license.app_id !== app.id)
 			return c.json({ error: "License not found" }, 404);
+
+		const user = await userQueries.findById(db, license.user_id);
+		const plan = await planQueries.findById(db, license.plan_id);
+		const price = license.price_id
+			? await priceQueries.findById(db, license.price_id)
+			: null;
+
+		const activeCount = await activationQueries.countActiveByLicenseId(
+			db,
+			license.id,
+		);
+
+		const result = formatLicense(license, { app, user, plan, price });
+		return c.json({
+			...result,
+			activations: { current: activeCount, max: license.max_activations },
+			metadata: license.metadata,
+		});
+	} catch (error) {
+		log.error(
+			{ err: serializeError(error as Error) },
+			"Get license error",
+		);
+		return c.json({ error: "Failed to get license" }, 500);
+	}
+});
+
+// ---------------------------------------------------------------------------
+// PATCH /:licenseId — Update license (extend, change plan, suspend, etc.)
+// ---------------------------------------------------------------------------
+
+const UpdateLicenseSchema = z.object({
+	status: z
+		.enum(["active", "trialing", "expired", "canceled", "suspended"])
+		.optional(),
+	planId: z.string().regex(idPatterns.plan).optional(),
+	validUntil: z.number().nullable().optional(),
+	maxActivations: z.number().int().positive().nullable().optional(),
+	note: z.string().max(500).optional(),
+});
+
+licenseManagementRouter.patch("/:licenseId", async (c: Context) => {
+	try {
+		const appId = c.req.param("appId");
+		const licenseId = c.req.param("licenseId");
+		const body = await c.req.json();
+		const validated = UpdateLicenseSchema.parse(body);
+
+		if (!idPatterns.license.test(licenseId))
+			return c.json({ error: "Invalid licenseId" }, 400);
+
+		const adminUserId = c.req.header("X-Proofa-User-Id");
+		if (!adminUserId) return c.json({ error: "Unauthorized" }, 401);
+
+		const db = getDb();
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) return c.json({ error: "App not found" }, 404);
+
+		const license = await licenseQueries.findByPublicId(db, licenseId);
+		if (!license || license.app_id !== app.id)
+			return c.json({ error: "License not found" }, 404);
+
+		const oldSnapshot: Record<string, unknown> = {
+			status: license.status,
+			plan_id: license.plan_id,
+			valid_until: license.valid_until,
+			max_activations: license.max_activations,
+		};
+
+		const updateData: Record<string, unknown> = {};
+		let changeType = "status_changed";
+
+		if (validated.status !== undefined) {
+			updateData["status"] = validated.status;
 		}
 
-		// Check authorization: must be owner or admin of project
-		const projectMembersModule = await import("@proofa/db").then((m) => m.projectMemberQueries);
-		const memberCheck = await projectMembersModule.findByProjectAndUser(db, project.id, requestingUser.id);
-		const member = memberCheck?.[0];
-		if (!member || (member.role !== "owner" && member.role !== "admin")) {
-			return c.json({ error: "Forbidden" }, 403);
-		}
-
-		// Build update data
-		const updateData: Record<string, any> = {};
-
-		if (status) {
-			if (!["active", "expired", "revoked"].includes(status)) {
-				return c.json({ error: 'Invalid status. Must be "active", "expired", or "revoked"' }, 400);
-			}
-			updateData["status"] = status;
-		}
-
-		if (planSlug) {
-			const app = await appQueries.findById(db, targetLicense.app_id);
-			const newPlan = await planQueries.findByAppAndSlug(db, app!.id, planSlug);
-			if (!newPlan) {
-				return c.json({ error: `Plan "${planSlug}" not found for this app` }, 404);
-			}
+		if (validated.planId !== undefined) {
+			const newPlan = await planQueries.findByPublicId(db, validated.planId);
+			if (!newPlan || newPlan.app_id !== app.id)
+				return c.json({ error: "Plan not found for this app" }, 404);
 			updateData["plan_id"] = newPlan.id;
+			changeType = "plan_changed";
 		}
 
-		if (validUntil !== undefined) {
-			updateData["valid_until"] = validUntil > 0 ? new Date(validUntil) : null;
+		if (validated.validUntil !== undefined) {
+			updateData["valid_until"] = validated.validUntil
+				? new Date(validated.validUntil)
+				: null;
+			if (!validated.status && !validated.planId) {
+				changeType =
+					validated.validUntil &&
+					validated.validUntil > (license.valid_until?.getTime() ?? 0)
+						? "expiry_extended"
+						: "expiry_reduced";
+			}
 		}
 
-		// Update license
-		const updateResults = await licenseQueries.update(db, targetLicense.id, updateData);
+		if (validated.maxActivations !== undefined) {
+			updateData["max_activations"] = validated.maxActivations;
+		}
+
+		if (Object.keys(updateData).length === 0) {
+			return c.json({ error: "No valid fields to update" }, 400);
+		}
+
+		const updateResults = await licenseQueries.update(
+			db,
+			license.id,
+			updateData,
+		);
 		const updated = updateResults[0];
-
-		if (!updated) {
+		if (!updated)
 			return c.json({ error: "Failed to update license" }, 500);
-		}
+
+		// Write history
+		const adminUser = await userQueries.findByPublicId(db, adminUserId);
+		await licenseHistoryQueries.create(db, {
+			public_id: createId("licenseHistory"),
+			license_id: license.id,
+			change_type: changeType,
+			old_value: oldSnapshot,
+			new_value: {
+				status: updated.status,
+				plan_id: updated.plan_id,
+				valid_until: updated.valid_until,
+				max_activations: updated.max_activations,
+			},
+			reason: "admin_manual",
+			changed_by_user_id: adminUser?.id ?? null,
+			changed_by_system: false,
+			notes: validated.note ?? null,
+		});
+
+		log.info({ licenseId, changeType }, "License updated by admin");
 
 		return c.json({
-			id: updated.public_id,
+			licenseId: updated.public_id,
 			status: updated.status,
-			validUntil: updated.valid_until ? new Date(updated.valid_until).toISOString() : null,
+			validUntil: updated.valid_until
+				? new Date(updated.valid_until).toISOString()
+				: null,
+			maxActivations: updated.max_activations,
 			updatedAt: new Date(updated.updated_at).toISOString(),
 		});
 	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "Update license error");
+		if (error instanceof z.ZodError)
+			return c.json({ error: "Invalid request", details: error.issues }, 400);
+		log.error(
+			{ err: serializeError(error as Error) },
+			"Update license error",
+		);
 		return c.json({ error: "Failed to update license" }, 500);
 	}
 });
 
-/**
- * DELETE /:projectId/licenses/:licenseId
- * Revoke a license
- */
-licenseManagementRouter.delete("/:projectId/licenses/:licenseId", async (c: Context) => {
+// ---------------------------------------------------------------------------
+// DELETE /:licenseId — Revoke license (transitions to free plan if available)
+// ---------------------------------------------------------------------------
+
+licenseManagementRouter.delete("/:licenseId", async (c: Context) => {
 	try {
-		const projectId = c.req.param("projectId");
+		const appId = c.req.param("appId");
 		const licenseId = c.req.param("licenseId");
 
-		if (!projectId || !idPatterns.project.test(projectId)) {
-			return c.json({ error: "Invalid projectId" }, 400);
-		}
-
-		if (!licenseId || !idPatterns.license.test(licenseId)) {
+		if (!idPatterns.license.test(licenseId))
 			return c.json({ error: "Invalid licenseId" }, 400);
-		}
 
-		const userId = c.req.header("X-Proofa-User-Id");
-		if (!userId) {
-			return c.json({ error: "Unauthorized" }, 401);
-		}
+		const adminUserId = c.req.header("X-Proofa-User-Id");
+		if (!adminUserId) return c.json({ error: "Unauthorized" }, 401);
 
 		const db = getDb();
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) return c.json({ error: "App not found" }, 404);
 
-		// Get project
-		const project = await projectQueries.findByPublicId(db, projectId);
-		if (!project) {
-			return c.json({ error: "Project not found" }, 404);
-		}
-
-		// Get requesting user and check authorization
-		const requestingUser = await userQueries.findByPublicId(db, userId);
-		if (!requestingUser) {
-			return c.json({ error: "User not found" }, 404);
-		}
-
-		// Get all apps in project and search for the license
-		const apps = await appQueries.findByProjectId(db, project.id);
-		let targetLicense: any = null;
-
-		for (const app of apps) {
-			const appLicenses = await licenseQueries.findByAppId(db, app.id);
-			const found = appLicenses.find((l) => l.public_id === licenseId);
-			if (found) {
-				targetLicense = found;
-				break;
-			}
-		}
-
-		if (!targetLicense) {
+		const license = await licenseQueries.findByPublicId(db, licenseId);
+		if (!license || license.app_id !== app.id)
 			return c.json({ error: "License not found" }, 404);
+
+		// Try to transition to free plan; fall back to soft delete
+		const freePlan = await planQueries.findByAppAndSlug(db, app.id, "free");
+		if (freePlan) {
+			await licenseQueries.transitionToFreePlan(db, license.id, freePlan.id);
+		} else {
+			await licenseQueries.delete(db, license.id);
 		}
 
-		// Check authorization: must be owner or admin of project
-		const projectMembersModule = await import("@proofa/db").then((m) => m.projectMemberQueries);
-		const memberCheck = await projectMembersModule.findByProjectAndUser(db, project.id, requestingUser.id);
-		const member = memberCheck?.[0];
-		if (!member || (member.role !== "owner" && member.role !== "admin")) {
-			return c.json({ error: "Forbidden" }, 403);
-		}
+		// Write history
+		const adminUser = await userQueries.findByPublicId(db, adminUserId);
+		await licenseHistoryQueries.create(db, {
+			public_id: createId("licenseHistory"),
+			license_id: license.id,
+			change_type: freePlan ? "plan_changed" : "deleted",
+			old_value: { plan_id: license.plan_id, status: license.status },
+			new_value: freePlan
+				? { plan_id: freePlan.id, status: "active", source: "auto_free" }
+				: { status: "deleted" },
+			reason: "admin_manual",
+			changed_by_user_id: adminUser?.id ?? null,
+			changed_by_system: false,
+			notes: null,
+		});
 
-		// Revoke license (soft delete by setting status to revoked)
-		const revokeResults = await licenseQueries.update(db, targetLicense.id, { status: "revoked" });
-		const _revoked = revokeResults[0];
+		log.info({ licenseId, appId }, "License revoked by admin");
 
 		return c.json({
-			message: "License revoked successfully",
-			id: licenseId,
-			status: "revoked",
-			revokedAt: new Date().toISOString(),
+			message: freePlan
+				? "License revoked — transitioned to free plan"
+				: "License revoked",
+			licenseId,
+			status: freePlan ? "active" : "deleted",
+			plan: freePlan
+				? { planId: freePlan.public_id, slug: "free" }
+				: null,
 		});
 	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "Revoke license error");
+		log.error(
+			{ err: serializeError(error as Error) },
+			"Revoke license error",
+		);
 		return c.json({ error: "Failed to revoke license" }, 500);
+	}
+});
+
+// ---------------------------------------------------------------------------
+// GET /:licenseId/history — License change history (audit trail)
+// ---------------------------------------------------------------------------
+
+licenseManagementRouter.get("/:licenseId/history", async (c: Context) => {
+	try {
+		const appId = c.req.param("appId");
+		const licenseId = c.req.param("licenseId");
+
+		if (!idPatterns.license.test(licenseId))
+			return c.json({ error: "Invalid licenseId" }, 400);
+
+		const db = getDb();
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) return c.json({ error: "App not found" }, 404);
+
+		const license = await licenseQueries.findByPublicId(db, licenseId);
+		if (!license || license.app_id !== app.id)
+			return c.json({ error: "License not found" }, 404);
+
+		const history = await licenseHistoryQueries.findByLicenseId(
+			db,
+			license.id,
+		);
+
+		const entries = history.map((h) => ({
+			historyId: h.public_id,
+			changeType: h.change_type,
+			oldValue: h.old_value,
+			newValue: h.new_value,
+			reason: h.reason,
+			changedBySystem: h.changed_by_system,
+			notes: h.notes,
+			createdAt: new Date(h.created_at).toISOString(),
+		}));
+
+		return c.json({ history: entries, total: entries.length });
+	} catch (error) {
+		log.error(
+			{ err: serializeError(error as Error) },
+			"Get license history error",
+		);
+		return c.json({ error: "Failed to get license history" }, 500);
 	}
 });

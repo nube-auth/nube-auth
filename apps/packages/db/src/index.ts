@@ -94,6 +94,7 @@ export {
 	promotionPlanQueries,
 	promotionProviderRefQueries,
 	promotionQueries,
+	promotionRedemptionQueries,
 	routingRuleQueries,
 	sessionQueries,
 	subscriptionQueries,

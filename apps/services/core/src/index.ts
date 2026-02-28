@@ -11,6 +11,7 @@ import { authRoutes } from "./routes/v1/auth";
 import { billingRoutes } from "./routes/v1/billing";
 import { emailRoutes } from "./routes/v1/email";
 import { licenseRoutes } from "./routes/v1/license";
+import { subscriptionRoutes } from "./routes/v1/subscription";
 
 const log = createLogger("core");
 const app = new Hono();
@@ -44,6 +45,7 @@ app.use("/v1/auth/exchange", s2sMiddleware);
 app.use("/v1/billing/*", s2sMiddleware);
 app.use("/v1/email/*", s2sMiddleware);
 app.use("/v1/license/*", s2sMiddleware);
+app.use("/v1/subscription/*", s2sMiddleware);
 app.use("/v1/admin/*", s2sMiddleware);
 
 // Routes
@@ -51,6 +53,7 @@ app.route("/v1/auth", authRoutes);
 app.route("/v1/billing", billingRoutes);
 app.route("/v1/email", emailRoutes);
 app.route("/v1/license", licenseRoutes);
+app.route("/v1/subscription", subscriptionRoutes);
 app.route("/v1/admin", adminRoutes);
 
 // Health check

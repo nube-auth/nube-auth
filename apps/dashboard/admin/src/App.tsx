@@ -12,6 +12,8 @@ import { AppDetailPage } from "./pages/AppDetail";
 import { AppDevelopersPage } from "./pages/AppDevelopers";
 import { AppLicensesPage } from "./pages/AppLicenses";
 import AppOAuthPage from "./pages/AppOAuth";
+import { AppSubscriptionsPage } from "./pages/AppSubscriptions";
+import { AppPromotionsPage } from "./pages/AppPromotions";
 import AppPaymentSettingsPage from "./pages/AppPaymentSettings";
 import { AppSettingsPage } from "./pages/AppSettings";
 import { AppSetupPage } from "./pages/AppSetup";
@@ -236,6 +238,22 @@ function App() {
 								element={
 									<ProtectedLayout>
 										<AppLicensesPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId/apps/:appId/subscriptions"
+								element={
+									<ProtectedLayout>
+										<AppSubscriptionsPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId/apps/:appId/promotions"
+								element={
+									<ProtectedLayout>
+										<AppPromotionsPage />
 									</ProtectedLayout>
 								}
 							/>

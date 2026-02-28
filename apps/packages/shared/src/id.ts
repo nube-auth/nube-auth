@@ -87,6 +87,15 @@ export const id = {
 	/** Generate license history ID (LHI0, 13 chars total) */
 	licenseHistory: () => `LHI0${nano9()}`,
 
+	/** Generate promotion ID (PRM0, 13 chars total) */
+	promotion: () => `PRM0${nano9()}`,
+
+	/** Generate promotion code ID (PMC0, 13 chars total) */
+	promotionCode: () => `PMC0${nano9()}`,
+
+	/** Generate promotion redemption ID (PMR0, 13 chars total) */
+	promotionRedemption: () => `PMR0${nano9()}`,
+
 	/** Generate promotion provider ref ID (PPR0, 13 chars total) */
 	promotionProviderRef: () => `PPR0${nano9()}`,
 } as const;
@@ -131,6 +140,9 @@ export const idPatterns = {
 	subscription: /^SUB0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 	licenseActivation: /^ACT0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 	licenseHistory: /^LHI0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+	promotion: /^PRM0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+	promotionCode: /^PMC0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+	promotionRedemption: /^PMR0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 	promotionProviderRef: /^PPR0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 } as const;
 

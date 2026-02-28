@@ -18,6 +18,7 @@ import {
 	promotion_codes,
 	promotion_plans,
 	promotion_provider_refs,
+	promotion_redemptions,
 	promotions,
 	sessions,
 	subscriptions,
@@ -1734,5 +1735,41 @@ export const promotionProviderRefQueries = {
 			.where(eq(promotion_provider_refs.id, refId))
 			.returning();
 		return results[0]!;
+	},
+};
+
+/**
+ * Promotion redemption queries
+ */
+export const promotionRedemptionQueries = {
+	async findByPromotionCodeId(db: DbClient, promotionCodeId: number) {
+		return db
+			.select()
+			.from(promotion_redemptions)
+			.where(eq(promotion_redemptions.promotion_code_id, promotionCodeId))
+			.orderBy(desc(promotion_redemptions.created_at));
+	},
+
+	async findByAppId(db: DbClient, appId: number) {
+		return db
+			.select()
+			.from(promotion_redemptions)
+			.where(eq(promotion_redemptions.app_id, appId))
+			.orderBy(desc(promotion_redemptions.created_at));
+	},
+
+	async findByUserForPromotion(db: DbClient, appId: number, subjectType: string, subjectId: number, promotionCodeIds: number[]) {
+		if (promotionCodeIds.length === 0) return [];
+		return db
+			.select()
+			.from(promotion_redemptions)
+			.where(
+				and(
+					eq(promotion_redemptions.app_id, appId),
+					eq(promotion_redemptions.subject_type, subjectType),
+					eq(promotion_redemptions.subject_id, subjectId),
+					inArray(promotion_redemptions.promotion_code_id, promotionCodeIds),
+				),
+			);
 	},
 };

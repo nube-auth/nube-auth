@@ -1099,3 +1099,357 @@ export function useCreateRefund() {
 		},
 	});
 }
+
+// ===========================================================================
+// V2 Licensing API Hooks
+// ===========================================================================
+
+// --- Plans (v2 capability-only) ---
+
+export interface V2Plan {
+	planId: string;
+	name: string;
+	slug: string;
+	description: string | null;
+	features: string[];
+	isDefault: boolean;
+	displayOrder: number;
+	trialDays: number | null;
+	metadata: Record<string, unknown> | null;
+	isActive: boolean;
+	createdAt: string;
+	prices?: V2Price[];
+}
+
+export interface V2Price {
+	priceId: string;
+	billingType: string;
+	interval: string | null;
+	intervalCount: number | null;
+	amountCents: number;
+	currency: string;
+	isActive: boolean;
+	createdAt: string;
+}
+
+export function useV2Plans(appId: string) {
+	return useQuery({
+		queryKey: ["v2-plans", appId],
+		queryFn: () => fetchAPI<{ plans: V2Plan[] }>(`/v1/admin/apps/${appId}/plans`),
+		enabled: !!appId,
+		staleTime: 30_000,
+	});
+}
+
+export function useCreateV2Plan(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (data: Record<string, unknown>) =>
+			fetchAPI<V2Plan>(`/v1/admin/apps/${appId}/plans`, {
+				method: "POST",
+				body: JSON.stringify(data),
+			}),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["v2-plans", appId] }),
+	});
+}
+
+export function useUpdateV2Plan(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({ planId, data }: { planId: string; data: Record<string, unknown> }) =>
+			fetchAPI<V2Plan>(`/v1/admin/apps/${appId}/plans/${planId}`, {
+				method: "PATCH",
+				body: JSON.stringify(data),
+			}),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["v2-plans", appId] }),
+	});
+}
+
+export function useDeleteV2Plan(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (planId: string) =>
+			fetchAPI(`/v1/admin/apps/${appId}/plans/${planId}`, { method: "DELETE" }),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["v2-plans", appId] }),
+	});
+}
+
+// --- Prices ---
+
+export function useV2Prices(appId: string, planId: string) {
+	return useQuery({
+		queryKey: ["v2-prices", appId, planId],
+		queryFn: () => fetchAPI<{ prices: V2Price[] }>(`/v1/admin/apps/${appId}/plans/${planId}/prices`),
+		enabled: !!appId && !!planId,
+		staleTime: 30_000,
+	});
+}
+
+export function useCreateV2Price(appId: string, planId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (data: Record<string, unknown>) =>
+			fetchAPI<V2Price>(`/v1/admin/apps/${appId}/plans/${planId}/prices`, {
+				method: "POST",
+				body: JSON.stringify(data),
+			}),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["v2-prices", appId, planId] });
+			queryClient.invalidateQueries({ queryKey: ["v2-plans", appId] });
+		},
+	});
+}
+
+// --- Licenses (v2 app-scoped) ---
+
+export interface V2License {
+	licenseId: string;
+	appId?: string;
+	userId?: string;
+	userEmail?: string;
+	userName?: string;
+	plan?: { planId: string; name: string; slug: string };
+	price?: { priceId: string; billingType: string; interval: string | null; amountCents: number };
+	status: string;
+	source: string;
+	validUntil: string | null;
+	maxActivations: number | null;
+	activationsCount?: number;
+	isTest: boolean;
+	metadata: Record<string, unknown> | null;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface V2LicenseHistory {
+	historyId: string;
+	changeType: string;
+	oldValue: string | null;
+	newValue: string | null;
+	reason: string | null;
+	notes: string | null;
+	createdAt: string;
+}
+
+export function useV2Licenses(appId: string, params?: { status?: string; source?: string }) {
+	const searchParams = new URLSearchParams();
+	if (params?.status) searchParams.set("status", params.status);
+	if (params?.source) searchParams.set("source", params.source);
+	const qs = searchParams.toString();
+
+	return useQuery({
+		queryKey: ["v2-licenses", appId, params],
+		queryFn: () => fetchAPI<{ licenses: V2License[] }>(`/v1/admin/apps/${appId}/licenses${qs ? `?${qs}` : ""}`),
+		enabled: !!appId,
+		staleTime: 30_000,
+	});
+}
+
+export function useV2LicenseSummary(appId: string) {
+	return useQuery({
+		queryKey: ["v2-license-summary", appId],
+		queryFn: () => fetchAPI<{
+			statusCounts: Record<string, number>;
+			sourceCounts: Record<string, number>;
+			planCounts: Record<string, number>;
+			uniqueUsers: number;
+		}>(`/v1/admin/apps/${appId}/licenses/summary`),
+		enabled: !!appId,
+		staleTime: 30_000,
+	});
+}
+
+export function useGrantV2License(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (data: Record<string, unknown>) =>
+			fetchAPI(`/v1/admin/apps/${appId}/licenses/grant`, {
+				method: "POST",
+				body: JSON.stringify(data),
+			}),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["v2-licenses", appId] });
+			queryClient.invalidateQueries({ queryKey: ["v2-license-summary", appId] });
+		},
+	});
+}
+
+export function useUpdateV2License(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({ licenseId, data }: { licenseId: string; data: Record<string, unknown> }) =>
+			fetchAPI(`/v1/admin/apps/${appId}/licenses/${licenseId}`, {
+				method: "PATCH",
+				body: JSON.stringify(data),
+			}),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["v2-licenses", appId] });
+			queryClient.invalidateQueries({ queryKey: ["v2-license-summary", appId] });
+		},
+	});
+}
+
+export function useRevokeV2License(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (licenseId: string) =>
+			fetchAPI(`/v1/admin/apps/${appId}/licenses/${licenseId}`, { method: "DELETE" }),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["v2-licenses", appId] });
+			queryClient.invalidateQueries({ queryKey: ["v2-license-summary", appId] });
+		},
+	});
+}
+
+export function useV2LicenseHistory(appId: string, licenseId: string) {
+	return useQuery({
+		queryKey: ["v2-license-history", appId, licenseId],
+		queryFn: () => fetchAPI<{ history: V2LicenseHistory[] }>(`/v1/admin/apps/${appId}/licenses/${licenseId}/history`),
+		enabled: !!appId && !!licenseId,
+		staleTime: 30_000,
+	});
+}
+
+// --- Subscriptions ---
+
+export interface V2Subscription {
+	subscriptionId: string;
+	userId?: string;
+	userEmail?: string;
+	userName?: string;
+	plan?: { planId: string; name: string; slug: string };
+	price?: { priceId: string; billingType: string; interval: string | null; amountCents: number };
+	status: string;
+	provider: string | null;
+	currentPeriodStart: string | null;
+	currentPeriodEnd: string | null;
+	cancelAtPeriodEnd: boolean;
+	createdAt: string;
+}
+
+export function useV2Subscriptions(appId: string, params?: { status?: string }) {
+	const searchParams = new URLSearchParams();
+	if (params?.status) searchParams.set("status", params.status);
+	const qs = searchParams.toString();
+
+	return useQuery({
+		queryKey: ["v2-subscriptions", appId, params],
+		queryFn: () => fetchAPI<{ subscriptions: V2Subscription[] }>(`/v1/admin/apps/${appId}/subscriptions${qs ? `?${qs}` : ""}`),
+		enabled: !!appId,
+		staleTime: 30_000,
+	});
+}
+
+export function useV2SubscriptionAction(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({ subId, action, note }: { subId: string; action: string; note?: string }) =>
+			fetchAPI(`/v1/admin/apps/${appId}/subscriptions/${subId}`, {
+				method: "PATCH",
+				body: JSON.stringify({ action, note }),
+			}),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["v2-subscriptions", appId] }),
+	});
+}
+
+// --- Promotions ---
+
+export interface V2Promotion {
+	promotionId: string;
+	name: string;
+	description: string | null;
+	discountType: string;
+	discountValue: number;
+	startsAt: string;
+	endsAt: string | null;
+	allowedIntervals: string[] | null;
+	isNewCustomersOnly: boolean;
+	maxRedemptions: number | null;
+	currentRedemptions: number;
+	isActive: boolean;
+	plans: string[];
+	codes: V2PromoCode[];
+	providerRefs?: V2ProviderRef[];
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface V2PromoCode {
+	codeId: string;
+	code: string;
+	maxUses: number | null;
+	currentUses: number;
+	isActive: boolean;
+	createdAt: string;
+}
+
+export interface V2ProviderRef {
+	refId: string;
+	providerCouponId: string;
+	providerObjectType: string;
+	isActive: boolean;
+	createdAt: string;
+}
+
+export function useV2Promotions(appId: string) {
+	return useQuery({
+		queryKey: ["v2-promotions", appId],
+		queryFn: () => fetchAPI<{ promotions: V2Promotion[] }>(`/v1/admin/apps/${appId}/promotions`),
+		enabled: !!appId,
+		staleTime: 30_000,
+	});
+}
+
+export function useCreateV2Promotion(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (data: Record<string, unknown>) =>
+			fetchAPI<V2Promotion>(`/v1/admin/apps/${appId}/promotions`, {
+				method: "POST",
+				body: JSON.stringify(data),
+			}),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["v2-promotions", appId] }),
+	});
+}
+
+export function useUpdateV2Promotion(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({ promoId, data }: { promoId: string; data: Record<string, unknown> }) =>
+			fetchAPI(`/v1/admin/apps/${appId}/promotions/${promoId}`, {
+				method: "PATCH",
+				body: JSON.stringify(data),
+			}),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["v2-promotions", appId] }),
+	});
+}
+
+export function useDeactivateV2Promotion(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (promoId: string) =>
+			fetchAPI(`/v1/admin/apps/${appId}/promotions/${promoId}`, { method: "DELETE" }),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["v2-promotions", appId] }),
+	});
+}
+
+export function useCreateV2PromoCode(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({ promoId, data }: { promoId: string; data: Record<string, unknown> }) =>
+			fetchAPI(`/v1/admin/apps/${appId}/promotions/${promoId}/codes`, {
+				method: "POST",
+				body: JSON.stringify(data),
+			}),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["v2-promotions", appId] }),
+	});
+}
+
+export function useDeactivateV2PromoCode(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({ promoId, codeId }: { promoId: string; codeId: string }) =>
+			fetchAPI(`/v1/admin/apps/${appId}/promotions/${promoId}/codes/${codeId}`, { method: "DELETE" }),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["v2-promotions", appId] }),
+	});
+}
