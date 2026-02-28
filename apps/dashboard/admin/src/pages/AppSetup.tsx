@@ -37,13 +37,11 @@ const AVAILABLE_PROVIDERS = [
 		id: "google",
 		name: "Google",
 		icon: <Icon icon={IconType.Google} size={20} />,
-		color: "#4285F4",
 	},
 	{
 		id: "github",
 		name: "GitHub",
 		icon: <Icon icon={IconType.GitHub} size={20} />,
-		color: "#333",
 	},
 ] as const;
 

@@ -55,41 +55,49 @@ export function ProjectStatsPage() {
 
 			{/* Stats Cards */}
 		<div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-5 mb-8">
-			<div className="card p-5">
+			<Card>
+				<CardBody>
 				<Text className="text-13px text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
 					Total Apps
 				</Text>
 				<Text className="text-32px font-bold text-text-primary">
 					{stats?.totalApps || 0}
 				</Text>
-			</div>
+				</CardBody>
+			</Card>
 
-			<div className="card p-5">
+			<Card>
+				<CardBody>
 				<Text className="text-13px text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
 					Total Users
 				</Text>
 				<Text className="text-32px font-bold text-text-primary">
 					{stats?.totalUsers || 0}
 				</Text>
-			</div>
+				</CardBody>
+			</Card>
 
-			<div className="card p-5">
+			<Card>
+				<CardBody>
 				<Text className="text-13px text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
 					Active Licenses
 				</Text>
 				<Text className="text-32px font-bold text-text-primary">
 					{stats?.activeLicenses || 0}
 				</Text>
-			</div>
+				</CardBody>
+			</Card>
 
-			<div className="card p-5">
+			<Card>
+				<CardBody>
 				<Text className="text-13px text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
 					Monthly Revenue
 				</Text>
 				<Text className="text-32px font-bold text-text-primary">
 					${stats?.totalRevenue || 0}
 				</Text>
-			</div>
+				</CardBody>
+			</Card>
 		</div>
 
 			{/* Coming Soon Section */}

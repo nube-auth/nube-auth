@@ -8,7 +8,7 @@ import {
 	Heading,
 	Text,
 	Button,
-	Badge,
+	Chip,
 	EmptyState,
 	Dialog,
 	DialogPopup,
@@ -155,9 +155,9 @@ export function ProjectTeamPage() {
 													</div>
 												</TableCell>
 										<TableCell>
-											<Badge variant={member.role === "owner" ? "primary" : "info"} className="capitalize">
+											<Chip variant={member.role === "owner" ? "primary" : "info"} size="sm" className="capitalize">
 												{member.role}
-											</Badge>
+											</Chip>
 										</TableCell>
 										<TableCell>
 											{new Date(member.createdAt).toLocaleDateString()}
@@ -274,9 +274,9 @@ export function ProjectTeamPage() {
 												</div>
 											</TableCell>
 										<TableCell>
-										<Badge variant="warning" className="capitalize">
+										<Chip variant="warning" size="sm" className="capitalize">
 												{invitation.role}
-											</Badge>
+											</Chip>
 										</TableCell>
 										<TableCell>
 											{new Date(invitation.createdAt).toLocaleDateString()}

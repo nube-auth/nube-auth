@@ -5,7 +5,7 @@ import {
 	Heading,
 	Text,
 	Button,
-	Badge,
+	Chip,
 	Card,
 	CardBody,
 	Dialog,
@@ -69,9 +69,9 @@ export function OnboardingPage() {
 				<CardBody>
 					<div className="get-started-content">
 						<div className="get-started-text">
-							<Badge variant="success" className="mb-3">
+							<Chip variant="success" size="sm" className="mb-3">
 								Getting Started
-							</Badge>
+							</Chip>
 							<Heading level={2} size="lg" className="mb-3">
 								Create your first project
 							</Heading>

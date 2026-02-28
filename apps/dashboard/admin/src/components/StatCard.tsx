@@ -4,7 +4,7 @@ import {
   IconBox,
   Heading,
   Text,
-  Badge,
+  Chip,
   Icon,
   type IconType,
 } from '@proofa/components';
@@ -38,12 +38,12 @@ export function StatCard({
         <Text className="text-4xl font-semibold mt-2">{value}</Text>
         {change && changeType && (
           <div className="flex items-center gap-2 mt-2">
-            <Badge
+            <Chip
               variant={changeType === 'increase' ? 'success' : 'danger'}
               size="sm"
             >
               {changeType === 'increase' ? '↑' : '↓'} {change}
-            </Badge>
+            </Chip>
             <Text className="text-sm text-gray-500 dark:text-gray-400">
               {subtitle}
             </Text>

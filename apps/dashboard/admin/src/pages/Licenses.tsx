@@ -8,7 +8,7 @@ import {
 	Text,
 	Card,
 	CardBody,
-	Badge,
+	Chip,
 	Table,
 	TableContainer,
 	TableHeader,
@@ -109,17 +109,17 @@ export function LicensesPage() {
 												<Text className="text-text-secondary">{license.appId || "—"}</Text>
 											</TableCell>
 											<TableCell>
-											<Badge variant="info" className="capitalize">
+											<Chip variant="info" size="sm" className="capitalize">
 												{license.plan || "Standard"}
-											</Badge>
+											</Chip>
 											</TableCell>
 											<TableCell>
 												{isExpired ? (
-													<Badge variant="danger">Expired</Badge>
+													<Chip variant="danger" size="sm">Expired</Chip>
 												) : isActive ? (
-													<Badge variant="success">Active</Badge>
+													<Chip variant="success" size="sm">Active</Chip>
 												) : (
-													<Badge variant="warning">Inactive</Badge>
+													<Chip variant="warning" size="sm">Inactive</Chip>
 												)}
 											</TableCell>
 											<TableCell>

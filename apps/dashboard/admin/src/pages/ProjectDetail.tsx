@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
 	Alert,
 	Avatar,
-	Badge,
+	Chip,
 	Button,
 	Card,
 	CardBody,
@@ -68,7 +68,7 @@ export function ProjectDetailPage() {
 									<Heading size="lg" className="mb-0">
 										{project.name}
 									</Heading>
-									<Badge variant="success">Active</Badge>
+									<Chip variant="success" size="sm">Active</Chip>
 								</div>
 								{project.description && (
 									<Text className="text-text-secondary mb-4 max-w-2xl">
@@ -80,13 +80,13 @@ export function ProjectDetailPage() {
 										<Text className="text-text-muted mb-1 uppercase font-medium text-xs">
 											Slug
 										</Text>
-										<Badge variant="info"> {project.slug} </Badge>
+										<Chip variant="info" size="sm">{project.slug}</Chip>
 									</div>
 									<div>
 										<Text className="text-text-muted mb-1 uppercase font-medium text-xs">
 											Project ID
 										</Text>
-										<Badge variant="info"> {project.id} </Badge>
+										<Chip variant="info" size="sm">{project.id}</Chip>
 									</div>
 								</div>
 							</div>
@@ -207,7 +207,7 @@ export function ProjectDetailPage() {
 												</Text>
 											</TableCell>
 											<TableCell>
-												<Badge variant="success">Active</Badge>
+												<Chip variant="success" size="sm">Active</Chip>
 											</TableCell>
 											<TableCell className="text-right pr-4">
 												<Icon icon={IconType.ArrowRight} size={18} className="text-primary" />
@@ -284,9 +284,9 @@ export function ProjectDetailPage() {
 												</code>
 											</TableCell>
 											<TableCell>
-												<Badge variant={member.role === "owner" ? "info" : "secondary"}>
+												<Chip variant={member.role === "owner" ? "info" : "default"} size="sm">
 													{member.role}
-												</Badge>
+												</Chip>
 											</TableCell>
 											<TableCell>
 												<Text className="text-text-secondary">

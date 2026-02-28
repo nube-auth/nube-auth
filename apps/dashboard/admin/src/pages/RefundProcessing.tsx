@@ -101,7 +101,7 @@ export function RefundProcessingPage() {
 					<Heading level={2} size="lg" className="mb-6">Create Refund</Heading>
 
 						<form onSubmit={handleCreateRefund}>
-							<div className="form-group mb-5">
+							<div className="space-y-1.5 mb-5">
 								<Label className="font-medium mb-2 block text-sm">
 									Purchase <span className="text-danger">*</span>
 								</Label>
@@ -141,7 +141,7 @@ export function RefundProcessingPage() {
 								</div>
 							)}
 
-							<div className="form-group mb-5">
+							<div className="space-y-1.5 mb-5">
 								<Label className="font-medium mb-2 block text-sm">
 									Refund Amount <span className="text-danger">*</span>
 								</Label>
@@ -159,7 +159,7 @@ export function RefundProcessingPage() {
 								</div>
 							</div>
 
-							<div className="form-group mb-5">
+							<div className="space-y-1.5 mb-5">
 								<Label className="font-medium mb-2 block text-sm">
 									Reason <span className="text-danger">*</span>
 								</Label>
@@ -216,7 +216,7 @@ export function RefundProcessingPage() {
 			<Card><CardBody className="mb-6 p-6">
 				<Heading level={3} size="md" className="mb-4">Filters</Heading>
 				<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-4">
-					<div className="form-group m-0">
+					<div className="space-y-1.5">
 						<Label className="text-xs mb-1.5">
 							Provider
 						</Label>
@@ -232,7 +232,7 @@ export function RefundProcessingPage() {
 						/>
 					</div>
 
-					<div className="form-group m-0">
+					<div className="space-y-1.5">
 						<Label className="text-xs mb-1.5">
 							Status
 						</Label>
@@ -250,7 +250,7 @@ export function RefundProcessingPage() {
 						/>
 					</div>
 
-					<div className="form-group m-0">
+					<div className="space-y-1.5">
 						<Label className="text-xs mb-1.5">
 							Start Date
 						</Label>
@@ -261,7 +261,7 @@ export function RefundProcessingPage() {
 						/>
 					</div>
 
-					<div className="form-group m-0">
+					<div className="space-y-1.5">
 						<Label className="text-xs mb-1.5">
 							End Date
 						</Label>
@@ -284,7 +284,7 @@ export function RefundProcessingPage() {
 							end_date: "",
 						})
 					}
-					className="btn btn-secondary-outline btn-sm"
+					variant="outline" size="sm"
 				>
 					Clear Filters
 				</Button>
@@ -359,7 +359,7 @@ export function RefundProcessingPage() {
 								})
 							}
 							disabled={filters.offset === 0}
-							className="btn btn-secondary-outline btn-sm"
+							variant="outline" size="sm"
 						>
 							Previous
 						</Button>
@@ -371,7 +371,7 @@ export function RefundProcessingPage() {
 								})
 							}
 							disabled={!refundsQuery.data.pagination.hasMore}
-							className="btn btn-secondary-outline btn-sm"
+							variant="outline" size="sm"
 						>
 							Next
 						</Button>

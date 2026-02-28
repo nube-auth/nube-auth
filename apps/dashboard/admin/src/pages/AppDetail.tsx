@@ -10,7 +10,7 @@ import {
 	Heading,
 	Text,
 	Button,
-	Badge,
+	Chip,
 	IconBox,
 	Breadcrumb,
 	BreadcrumbList,
@@ -144,7 +144,7 @@ export function AppDetailPage() {
 									<Heading size="lg" className="mb-0">
 										{app.name}
 									</Heading>
-									<Badge variant="success">Active</Badge>
+									<Chip variant="success" size="sm">Active</Chip>
 								</div>
 								{(app.description) && (
 									<Text className="text-muted-foreground mb-4 max-w-2xl">
@@ -156,13 +156,13 @@ export function AppDetailPage() {
 										<Text className="text-muted-foreground mb-1 uppercase font-medium text-xs">
 											Slug
 										</Text>
-										<Badge variant="info">{app.slug}</Badge>
+										<Chip variant="info" size="sm">{app.slug}</Chip>
 									</div>
 									<div>
 										<Text className="text-muted-foreground mb-1 uppercase font-medium text-xs">
 											App ID
 										</Text>
-										<Badge variant="info">{app.id}</Badge>
+										<Chip variant="info" size="sm">{app.id}</Chip>
 									</div>
 								</div>
 							</div>

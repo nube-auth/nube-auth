@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Icon, IconType, Input, Textarea, Button, Checkbox, Label } from "@proofa/components";
+import { Icon, IconType, Input, Textarea, Button, Checkbox, Label, Dialog, DialogPopup, DialogHeader, DialogTitle, DialogBody, DialogFooter, Alert, Heading, Text } from "@proofa/components";
 
 import { Select } from "./Select";
 import { pingpong } from "../lib/pingpong";
@@ -140,51 +140,34 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 	};
 
 	return (
-		<div
-			className="modal-overlay fixed top-0 left-[260px] right-0 bottom-0 bg-black/60 flex items-center justify-center z-1000 p-8"
-			onClick={handleClose}
-		>
-			<div
-				className="modal-content bg-card-bg rounded-xl p-8 max-w-[900px] w-full max-h-[calc(100vh-64px)] overflow-y-auto shadow-2xl border border-card-border"
-				onClick={(e) => e.stopPropagation()}
-			>
-				{/* Header */}
-				<div className="mb-6 flex items-center justify-between">
-					<div>
-						<h2 className="text-20px font-bold text-text-primary mb-1">Invite User</h2>
-						<p className="text-14px text-text-secondary m-0">Send an invitation or grant access to an existing user</p>
-					</div>
-					<Button
-						variant="plain"
-						size="sm"
-						onClick={handleClose}
-						disabled={loading}
-					>
-						<Icon icon={IconType.Cancel} size={20} />
-					</Button>
-				</div>
+		<Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
+			<DialogPopup className="max-w-[900px] w-full">
+				<DialogHeader>
+					<DialogTitle>Invite User</DialogTitle>
+					<Text className="text-text-secondary text-sm mt-1">Send an invitation or grant access to an existing user</Text>
+				</DialogHeader>
 
+				<DialogBody>
 				{/* Success Message */}
 				{success && (
-					<div className="bg-success-bg border border-success rounded-lg p-3 mb-5 flex items-center gap-3">
+					<Alert variant="success" className="mb-5">
 						<Icon icon={IconType.Check} size={20} className="text-success flex-shrink-0" />
-						<div className="flex-1">
-							<p className="text-14px font-semibold text-success-text m-0">{success.message}</p>
-						</div>
-					</div>
+						{success.message}
+					</Alert>
 				)}
 
 				{/* Error Message */}
 				{error && (
-					<div className="bg-danger-bg border border-danger rounded-lg p-3 mb-5 flex items-center gap-3">
+					<Alert variant="danger" className="mb-5">
 						<Icon icon={IconType.AlertCircle} size={20} className="text-danger flex-shrink-0" />
-						<p className="text-14px text-danger-text m-0">{error}</p>
-					</div>
+						{error}
+					</Alert>
 				)}
+
 				{/* Form */}
-				<form onSubmit={handleSubmit}>
+				<form id="invite-form" onSubmit={handleSubmit}>
 					<div className="mb-5">
-						<Label className="form-label">
+						<Label>
 							Email Address <span className="text-danger">*</span>
 						</Label>
 						<Input
@@ -195,7 +178,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 							disabled={loading}
 							placeholder="user@example.com"
 						/>
-						<p className="text-12px text-text-tertiary mt-1.5">We'll check if this user exists before sending an invitation</p>
+						<Text className="text-xs text-text-tertiary mt-1.5">We'll check if this user exists before sending an invitation</Text>
 					</div>
 
 					<div className="mb-5">
@@ -218,9 +201,9 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 					{grantLicense && (
 						<>
 							<div className="mb-5">
-								<label htmlFor="plan" className="form-label">
+								<Label>
 									License Plan <span className="text-danger">*</span>
-								</label>
+								</Label>
 								<Select
 									value={planId?.toString() || ""}
 									onChange={(value) => setPlanId(Number(value))}
@@ -245,7 +228,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 							</div>
 
 							<div className="mb-5">
-								<Label className="form-label">
+								<Label>
 									License Duration <span className="text-11px font-normal">(Optional)</span>
 								</Label>
 								<div className="relative">
@@ -261,15 +244,15 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 										days
 									</span>
 								</div>
-								<p className="text-12px text-text-tertiary mt-1.5">
+								<Text className="text-xs text-text-tertiary mt-1.5">
 									Leave empty for lifetime access. Set a number of days for time-limited licenses.
-								</p>
+								</Text>
 							</div>
 						</>
 					)}
 
-					<div className="mb-6">
-						<Label className="form-label">
+					<div className="mb-2">
+						<Label>
 							Custom Message <span className="text-11px font-normal">(Optional)</span>
 						</Label>
 						<Textarea
@@ -280,35 +263,37 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 							rows={3}
 						/>
 					</div>
-
-					<div className="flex gap-3 justify-end">
-						<Button
-							variant="secondary"
-							onClick={handleClose}
-							disabled={loading}
-						>
-							Cancel
-						</Button>
-						<Button
-							variant="primary"
-							type="submit"
-							disabled={loading || !email}
-						>
-							{loading ? (
-								<>
-									<Icon icon={IconType.Refresh} size={16} className="animate-spin" />
-									Sending...
-								</>
-							) : (
-								<>
-									<Icon icon={IconType.ArrowRight} size={16} />
-									Send Invitation
-								</>
-							)}
-						</Button>
-					</div>
 				</form>
-			</div>
-		</div>
+				</DialogBody>
+
+				<DialogFooter>
+					<Button
+						variant="secondary"
+						onClick={handleClose}
+						disabled={loading}
+					>
+						Cancel
+					</Button>
+					<Button
+						variant="primary"
+						type="submit"
+						form="invite-form"
+						disabled={loading || !email}
+					>
+						{loading ? (
+							<>
+								<Icon icon={IconType.Refresh} size={16} className="animate-spin" />
+								Sending...
+							</>
+						) : (
+							<>
+								<Icon icon={IconType.ArrowRight} size={16} />
+								Send Invitation
+							</>
+						)}
+					</Button>
+				</DialogFooter>
+			</DialogPopup>
+		</Dialog>
 	);
 }

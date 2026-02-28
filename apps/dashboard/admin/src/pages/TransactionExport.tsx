@@ -269,7 +269,7 @@ export function TransactionExportPage() {
 								end_date: "",
 							})
 						}
-						className="btn btn-secondary-outline btn-sm"
+						variant="outline" size="sm"
 					>
 						Clear Filters
 					</Button>
@@ -307,7 +307,7 @@ export function TransactionExportPage() {
 				<Button
 					onClick={handleExport}
 					disabled={isExporting || !transactionsQuery.data || transactionsQuery.data.data.length === 0}
-					className="btn btn-primary w-full"
+					variant="primary" className="w-full"
 				>
 					{isExporting ? "Exporting..." : `↓ Export ${transactionsQuery.data?.data?.length || 0} Transactions as ${exportFormat.toUpperCase()}`}
 				</Button>

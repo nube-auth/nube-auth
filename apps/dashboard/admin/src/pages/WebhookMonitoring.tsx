@@ -8,6 +8,7 @@ import {
 	CardBody,
 	Label,
 	Input,
+	Chip,
 	EmptyState,
 	Table,
 	TableContainer,
@@ -36,31 +37,28 @@ export function WebhookMonitoringPage() {
 	const detailQuery = useWebhookDetail(selectedWebhook || "");
 
 	const handleStatusBadge = (status: string) => {
-		const styles: Record<string, { bgClass: string; textClass: string; icon: string }> = {
-			success: { bgClass: "bg-success/10", textClass: "text-success", icon: "✓" },
-			failed: { bgClass: "bg-danger/10", textClass: "text-danger", icon: "✗" },
-			processing: { bgClass: "bg-info/10", textClass: "text-info", icon: "⟳" },
-			not_started: { bgClass: "bg-text-tertiary/10", textClass: "text-text-tertiary", icon: "○" },
+		const variants: Record<string, "success" | "danger" | "info" | "default"> = {
+			success: "success",
+			failed: "danger",
+			processing: "info",
+			not_started: "default",
 		};
-		const style = styles[status] || styles["not_started"];
 		return (
-			<span className={`inline-flex items-center gap-1 px-2.5 py-1 ${style!.bgClass} ${style!.textClass} rounded-xl text-12px font-medium`}>
-				<span>{style!.icon}</span>
-				<span className="capitalize">{status.replace("_", " ")}</span>
-			</span>
+			<Chip variant={variants[status] || "default"} size="sm" className="capitalize">
+				{status.replace("_", " ")}
+			</Chip>
 		);
 	};
 
 	const handleProviderBadge = (provider: string) => {
-		const colors: Record<string, { bgClass: string; textClass: string }> = {
-			lemon_squeezy: { bgClass: "bg-success/10", textClass: "text-success" },
-			paddle: { bgClass: "bg-info/10", textClass: "text-info" },
+		const variants: Record<string, "success" | "info" | "default"> = {
+			lemon_squeezy: "success",
+			paddle: "info",
 		};
-		const color = colors[provider] || { bgClass: "bg-bg-muted", textClass: "text-text-tertiary" };
 		return (
-			<span className={`inline-block px-2.5 py-1 ${color.bgClass} ${color.textClass} rounded-xl text-12px font-medium capitalize`}>
+			<Chip variant={variants[provider] || "default"} size="sm">
 				{provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
-			</span>
+			</Chip>
 		);
 	};
 

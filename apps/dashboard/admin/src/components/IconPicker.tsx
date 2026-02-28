@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Icon, IconType, type IconTypeName } from "@proofa/components";
+import { Icon, IconType, type IconTypeName, Label } from "@proofa/components";
 
 export interface IconOption {
 	id: string;
@@ -44,8 +44,8 @@ export function IconPicker({ selectedIconId = "application", onSelect, label = "
 	}
 
 	return (
-		<div className="form-group">
-			<label>{label}</label>
+		<div className="space-y-1.5">
+			<Label>{label}</Label>
 			<div className="relative">
 				<button
 					type="button"

@@ -230,7 +230,7 @@ export default function ProjectPaymentProvidersPage() {
 				const config = formData.config as LemonSqueezyConfig;
 				return (
 					<>
-						<div className="form-group">
+						<div className="space-y-1.5">
 							<Label>Store ID</Label>
 							<Input
 								type="text"
@@ -241,7 +241,7 @@ export default function ProjectPaymentProvidersPage() {
 								required
 							/>
 						</div>
-						<div className="form-group">
+						<div className="space-y-1.5">
 							<Label>API Key</Label>
 							<Input
 								type="password"
@@ -259,7 +259,7 @@ export default function ProjectPaymentProvidersPage() {
 				const config = formData.config as DodoConfig;
 				return (
 					<>
-						<div className="form-group">
+						<div className="space-y-1.5">
 							<Label>API Key</Label>
 							<Input
 								type="password"
@@ -270,7 +270,7 @@ export default function ProjectPaymentProvidersPage() {
 								required
 							/>
 						</div>
-						<div className="form-group">
+						<div className="space-y-1.5">
 							<Label>Webhook Secret</Label>
 							<Input
 								type="password"
@@ -281,7 +281,7 @@ export default function ProjectPaymentProvidersPage() {
 								required
 							/>
 						</div>
-						<div className="form-group">
+						<div className="space-y-1.5">
 							<Label>Public Key (optional)</Label>
 							<Input
 								type="text"
@@ -299,7 +299,7 @@ export default function ProjectPaymentProvidersPage() {
 				const config = formData.config as StripeConfig;
 				return (
 					<>
-						<div className="form-group">
+						<div className="space-y-1.5">
 							<Label>Publishable Key</Label>
 							<Input
 								type="text"
@@ -310,7 +310,7 @@ export default function ProjectPaymentProvidersPage() {
 								required
 							/>
 						</div>
-						<div className="form-group">
+						<div className="space-y-1.5">
 							<Label>Secret Key</Label>
 							<Input
 								type="password"
@@ -321,7 +321,7 @@ export default function ProjectPaymentProvidersPage() {
 								required
 							/>
 						</div>
-						<div className="form-group">
+						<div className="space-y-1.5">
 							<Label>Webhook Secret</Label>
 							<Input
 								type="password"
@@ -379,170 +379,165 @@ export default function ProjectPaymentProvidersPage() {
 			</div>
 
 			{/* Modal Form */}
-			{showForm && (
-				<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[10001] p-8 pl-[292px]" onClick={handleCancel}>
-					<div className="bg-card-bg border border-card-border rounded-xl w-full max-w-500px max-h-[calc(100vh-64px)] overflow-y-auto shadow-lg" onClick={(e) => e.stopPropagation()}>
-						<div className="flex items-center justify-between p-4 px-5 border-b border-card-border">
-							<h3 className="text-18px font-600 text-text-primary m-0">{editingProvider ? "Edit Payment Provider" : "Add Payment Provider"}</h3>
-							<Button variant="plain" size="sm" onClick={handleCancel}>
-								<Icon icon={IconType.Cancel} size={20} />
-							</Button>
-						</div>
-						<form onSubmit={handleSubmit}>
-							<div className="p-5 text-text-primary">
-								<div className="form-row">
-									<div className="form-group">
-										<Label>Provider</Label>
-										<Select
-											value={formData.provider}
-											onChange={(value) => {
-												const newProvider = value as Provider;
-												setFormData({
-													...formData,
-													provider: newProvider,
-													config: getEmptyConfig(newProvider),
-												});
-											}}
-											disabled={!!editingProvider}
-											options={[
-												{ value: "stripe", label: "Stripe" },
-												{ value: "lemonsqueezy", label: "Lemon Squeezy" },
-												{ value: "dodo", label: "Dodo Payments" },
-											]}
-										/>
-									</div>
-
-									<div className="form-group">
-										<Label>Environment</Label>
-										<Select
-											value={formData.environment}
-											onChange={(value) =>
-												setFormData({ ...formData, environment: value as Environment })
-											}
-											options={[
-												{ value: "test", label: "Test" },
-												{ value: "production", label: "Production" },
-											]}
-										/>
-									</div>
+			<Dialog open={showForm} onOpenChange={(open) => { if (!open) handleCancel(); }}>
+				<DialogPopup className="max-w-[500px] w-full">
+					<DialogHeader>
+						<DialogTitle>{editingProvider ? "Edit Payment Provider" : "Add Payment Provider"}</DialogTitle>
+					</DialogHeader>
+					<form id="provider-form" onSubmit={handleSubmit}>
+						<DialogBody>
+							<div className="grid grid-cols-2 gap-4">
+								<div className="space-y-1.5">
+									<Label>Provider</Label>
+									<Select
+										value={formData.provider}
+										onChange={(value) => {
+											const newProvider = value as Provider;
+											setFormData({
+												...formData,
+												provider: newProvider,
+												config: getEmptyConfig(newProvider),
+											});
+										}}
+										disabled={!!editingProvider}
+										options={[
+											{ value: "stripe", label: "Stripe" },
+											{ value: "lemonsqueezy", label: "Lemon Squeezy" },
+											{ value: "dodo", label: "Dodo Payments" },
+										]}
+									/>
 								</div>
 
-								{renderConfigFields()}
+								<div className="space-y-1.5">
+									<Label>Environment</Label>
+									<Select
+										value={formData.environment}
+										onChange={(value) =>
+											setFormData({ ...formData, environment: value as Environment })
+										}
+										options={[
+											{ value: "test", label: "Test" },
+											{ value: "production", label: "Production" },
+										]}
+									/>
+								</div>
+							</div>
 
-								{editingProvider && (
-									<Alert variant="warning">
-										<strong>Security Note:</strong> Credentials are encrypted and cannot be viewed.
-										You must re-enter them to update.
-									</Alert>
-								)}
-							</div>
-							<div className="flex items-center justify-end gap-3 p-4 px-5 border-t border-card-border">
-								<Button variant="secondary" onClick={handleCancel}>
-									Cancel
-								</Button>
-								<Button
-									variant="primary"
-									type="submit"
-									disabled={createMutation.isPending || updateMutation.isPending}
-								>
-									{editingProvider ? "Update Provider" : "Create Provider"}
-								</Button>
-							</div>
-						</form>
-					</div>
-				</div>
-			)}
+							{renderConfigFields()}
+
+							{editingProvider && (
+								<Alert variant="warning">
+									<strong>Security Note:</strong> Credentials are encrypted and cannot be viewed.
+									You must re-enter them to update.
+								</Alert>
+							)}
+						</DialogBody>
+						<DialogFooter>
+							<Button variant="secondary" onClick={handleCancel}>
+								Cancel
+							</Button>
+							<Button
+								variant="primary"
+								type="submit"
+								disabled={createMutation.isPending || updateMutation.isPending}
+							>
+								{editingProvider ? "Update Provider" : "Create Provider"}
+							</Button>
+						</DialogFooter>
+					</form>
+				</DialogPopup>
+			</Dialog>
 
 			{/* Detail Modal */}
-			{detailProvider && (
-				<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[10001] p-8 pl-[292px]" onClick={() => setDetailProvider(null)}>
-					<div className="bg-card-bg border border-card-border rounded-xl w-full max-w-600px max-h-[calc(100vh-64px)] overflow-y-auto shadow-lg" onClick={(e) => e.stopPropagation()}>
-						<div className="flex items-center justify-between p-4 px-5 border-b border-card-border">
-							<h3 className="text-18px font-600 text-text-primary m-0">Provider Details</h3>
-							<Button variant="plain" size="sm" onClick={() => setDetailProvider(null)}>
-							<Icon icon={IconType.Cancel} size={20} />
-							</Button>
-						</div>
-						<div className="p-6 text-text-primary">
-							{/* Provider Info */}
-							<div className="mb-6">
-								<h4 className="text-13px font-600 mb-3 uppercase text-text-tertiary">Provider Info</h4>
-								<div className="grid grid-cols-2 gap-4">
-									<div>
-										<div className="text-12px text-text-tertiary mb-1">Provider</div>
-										<div className="text-14px font-500 capitalize">{detailProvider.provider}</div>
-									</div>
-									<div>
-										<div className="text-12px text-text-tertiary mb-1">Environment</div>
+			<Dialog open={!!detailProvider} onOpenChange={(open) => { if (!open) setDetailProvider(null); }}>
+				<DialogPopup className="max-w-[600px] w-full">
+					<DialogHeader>
+						<DialogTitle>Provider Details</DialogTitle>
+					</DialogHeader>
+					{detailProvider && (
+						<>
+							<DialogBody>
+								{/* Provider Info */}
+								<div className="mb-6">
+									<Text className="text-13px font-600 mb-3 uppercase text-text-tertiary">Provider Info</Text>
+									<div className="grid grid-cols-2 gap-4">
 										<div>
-											<Chip
-												variant={detailProvider.environment === "production" ? "success" : "warning"}
-												size="sm"
-											>
-												{detailProvider.environment}
-											</Chip>
+											<div className="text-12px text-text-tertiary mb-1">Provider</div>
+											<div className="text-14px font-500 capitalize">{detailProvider.provider}</div>
+										</div>
+										<div>
+											<div className="text-12px text-text-tertiary mb-1">Environment</div>
+											<div>
+												<Chip
+													variant={detailProvider.environment === "production" ? "success" : "warning"}
+													size="sm"
+												>
+													{detailProvider.environment}
+												</Chip>
+											</div>
 										</div>
 									</div>
 								</div>
-							</div>
 
-							{/* Webhook URLs */}
-							<div className="mb-6">
-								<h4 className="text-13px font-600 mb-3 uppercase text-text-tertiary">Webhook Configuration</h4>
-								<div className="bg-bg-secondary p-3 rounded-2 border border-border mb-3">
-									<div className="text-12px text-text-tertiary mb-1.5">Webhook URL</div>
-									<code className="block text-12px font-mono text-text-primary overflow-x-auto p-2 bg-bg-primary rounded-1">
-										{`${window.location.origin.replace(/\/$/, '')}/v1/webhooks/${detailProvider.provider}/${detailProvider.id}`}
-									</code>
-									<div className="text-11px text-text-tertiary mt-2">
-										Configure this URL in your {detailProvider.provider === "dodo" ? "Paddle" : detailProvider.provider} dashboard
+								{/* Webhook URLs */}
+								<div className="mb-6">
+									<Text className="text-13px font-600 mb-3 uppercase text-text-tertiary">Webhook Configuration</Text>
+									<div className="bg-bg-secondary p-3 rounded-2 border border-border mb-3">
+										<div className="text-12px text-text-tertiary mb-1.5">Webhook URL</div>
+										<code className="block text-12px font-mono text-text-primary overflow-x-auto p-2 bg-bg-primary rounded-1">
+											{`${window.location.origin.replace(/\/$/, '')}/v1/webhooks/${detailProvider.provider}/${detailProvider.id}`}
+										</code>
+										<div className="text-11px text-text-tertiary mt-2">
+											Configure this URL in your {detailProvider.provider === "dodo" ? "Paddle" : detailProvider.provider} dashboard
+										</div>
 									</div>
 								</div>
-							</div>
 
-							{/* Status Info */}
-							<div className="mb-6">
-								<h4 className="text-13px font-600 mb-3 uppercase text-text-tertiary">Status</h4>
-								<div className="grid grid-cols-2 gap-4">
-									<div>
-										<div className="text-12px text-text-tertiary mb-1">Status</div>
-										<Chip
-											variant={detailProvider.isActive ? "success" : "default"}
-											size="sm"
-										>
-											{detailProvider.isActive ? "Active" : "Inactive"}
-										</Chip>
-									</div>
-									<div>
-										<div className="text-12px text-text-tertiary mb-1">Created</div>
-										<div className="text-14px font-500">{new Date(detailProvider.createdAt).toLocaleDateString()}</div>
+								{/* Status Info */}
+								<div className="mb-6">
+									<Text className="text-13px font-600 mb-3 uppercase text-text-tertiary">Status</Text>
+									<div className="grid grid-cols-2 gap-4">
+										<div>
+											<div className="text-12px text-text-tertiary mb-1">Status</div>
+											<Chip
+												variant={detailProvider.isActive ? "success" : "default"}
+												size="sm"
+											>
+												{detailProvider.isActive ? "Active" : "Inactive"}
+											</Chip>
+										</div>
+										<div>
+											<div className="text-12px text-text-tertiary mb-1">Created</div>
+											<div className="text-14px font-500">{new Date(detailProvider.createdAt).toLocaleDateString()}</div>
+										</div>
 									</div>
 								</div>
-							</div>
 
-							{/* Help Text */}
-							<div className="p-3 rounded-2 border-l-3 bg-info-bg border-l-info">
-								<div className="text-13px font-500 mb-1 text-info">💡 Tip</div>
-								<div className="text-12px text-text-secondary">
-									Keep your API keys and webhook secrets secure. Never share them publicly or commit them to version control.
+								{/* Help Text */}
+								<div className="p-3 rounded-2 border-l-3 bg-info-bg border-l-info">
+									<div className="text-13px font-500 mb-1 text-info">💡 Tip</div>
+									<div className="text-12px text-text-secondary">
+										Keep your API keys and webhook secrets secure. Never share them publicly or commit them to version control.
+									</div>
 								</div>
-							</div>
-						</div>
-						<div className="flex items-center justify-end gap-3 p-4 px-5 border-t border-card-border">
-							<Button variant="secondary" onClick={() => setDetailProvider(null)}>
-								Close
-							</Button>
-							<Button variant="primary" onClick={() => { handleEdit(detailProvider); setDetailProvider(null); }}>
-								Edit Provider
-							</Button>
-						</div>
-					</div>
-				</div>
-			)}
+							</DialogBody>
+							<DialogFooter>
+								<Button variant="secondary" onClick={() => setDetailProvider(null)}>
+									Close
+								</Button>
+								<Button variant="primary" onClick={() => { handleEdit(detailProvider); setDetailProvider(null); }}>
+									Edit Provider
+								</Button>
+							</DialogFooter>
+						</>
+					)}
+				</DialogPopup>
+			</Dialog>
 
 			{/* Table Content */}
 			{!providers || providers.length === 0 ? (
-				<div className="card py-16 px-6 text-center">
+				<Card>
+					<CardBody className="py-16 px-6 text-center">
 					<div className="text-64px mb-4">💳</div>
 					<h2 className="text-20px font-600 mb-3 text-text-primary">
 						No payment providers yet
@@ -553,9 +548,10 @@ export default function ProjectPaymentProvidersPage() {
 					<Button variant="primary" onClick={handleCreate}>
 						Add Your First Provider
 					</Button>
-				</div>
+					</CardBody>
+				</Card>
 			) : (
-				<div className="card p-0 overflow-hidden">
+				<Card className="overflow-hidden">
 					<TableContainer>
 						<Table>
 							<TableHeader>
@@ -653,7 +649,7 @@ export default function ProjectPaymentProvidersPage() {
 							</TableBody>
 						</Table>
 					</TableContainer>
-				</div>
+				</Card>
 			)}
 		</div>
 	);
