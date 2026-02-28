@@ -16,6 +16,7 @@ import {
 	BreadcrumbItem,
 	BreadcrumbButton,
 	BreadcrumbSeparator,
+	Badge,
 	Table,
 	TableContainer,
 	TableHeader,
@@ -70,40 +71,37 @@ export function ProjectAppsPage() {
 			<div className="flex justify-between items-center mb-8">
 				<div>
 					<Heading level={1} size="lg" className="mb-2">Applications</Heading>
-					<Text className="text-text-tertiary">
+					<Text className="text-muted">
 						{apps?.length || 0} {apps?.length === 1 ? "app" : "apps"} in {project.name}
 					</Text>
 				</div>
 				<div className="flex gap-3 items-center">
 					{/* View Mode Toggle */}
-					<div className="flex gap-1 p-1 bg-card-bg border border-card-border rounded-lg">
-						<button
-							type="button"
+					<div className="flex bg-surface-secondary/50 border border-border rounded-lg p-1 gap-1">
+						<Button
+							variant={viewMode === "grid" ? "primary" : "plain"}
+							size="sm"
 							onClick={() => setViewMode("grid")}
-							className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
-								viewMode === "grid" ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:text-text-primary"
-							}`}
 						>
 							<Icon icon={IconType.LayoutGrid} size={14} bold={viewMode === "grid"} />
 							Grid
-						</button>
-						<button
-							type="button"
+						</Button>
+						<Button
+							variant={viewMode === "table" ? "primary" : "plain"}
+							size="sm"
 							onClick={() => setViewMode("table")}
-							className={`px-3 py-1.5 border-none rounded-md cursor-pointer transition-all flex items-center gap-1.5 text-13px font-medium ${
-								viewMode === "table" ? "bg-primary text-white" : "bg-transparent text-text-secondary hover:text-text-primary"
-							}`}
 						>
 							<Icon icon={IconType.Menu} size={14} bold={viewMode === "table"} />
 							Table
-						</button>
+						</Button>
 					</div>
 
 					<Button
 						variant="primary"
 						onClick={() => navigate(`/projects/${projectId}/apps/new`)}
 					>
-						+ New App
+						<Icon icon={IconType.Add} size={16} bold />
+						New App
 					</Button>
 				</div>
 			</div>
@@ -123,43 +121,61 @@ export function ProjectAppsPage() {
 					</Button>
 				</EmptyState>
 			) : viewMode === "grid" ? (
-				<div className="grid gap-5 grid-cols-auto-fill-320">
+				<div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-5">
 					{apps.map((app) => (
 						<Card
 							key={app.id}
-							className="cursor-pointer transition-all border border-border hover:border-primary hover:-translate-y-0.5"
+							className="transition-all hover:border-primary hover:-translate-y-0.5 hover:shadow-lg cursor-pointer"
 							onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
 						>
 							<CardBody>
-								<div className="flex items-start gap-4 mb-4">
-									<div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary-light to-purple-200">
-										<Icon icon={IconType.Key} size={24} className="text-primary" />
+								{/* Header */}
+								<div className="flex items-center justify-between mb-3">
+									<div className="flex items-center gap-2.5">
+										<div className="w-9 h-9 bg-surface-secondary rounded-lg flex items-center justify-center">
+											<Icon icon={IconType.Key} size={20} className="text-primary" />
+										</div>
+										<div>
+											<Heading level={3} size="sm" className="font-semibold">
+												{app.name}
+											</Heading>
+											{app.slug && (
+												<Text className="text-xs text-muted">
+													{app.slug}
+												</Text>
+											)}
+										</div>
 									</div>
-									<div className="flex-1 min-w-0">
-										<Heading level={3} size="md" className="mb-1 overflow-hidden text-ellipsis whitespace-nowrap">
-											{app.name}
-										</Heading>
-										<Text className="text-text-tertiary overflow-hidden text-ellipsis whitespace-nowrap">
-											{app.slug}
-										</Text>
+									<div className="flex items-center justify-center">
+										<Icon icon={IconType.Check} size={18} className="text-success" bold />
 									</div>
 								</div>
 
+								{/* Description */}
 								{app.description && (
-									<Text className="text-text-secondary mb-4 leading-1.5 line-clamp-2">
+									<Text className="text-sm text-muted leading-relaxed line-clamp-2">
 										{app.description}
 									</Text>
 								)}
 
-								<div className="flex gap-4 pt-4 border-t border-border">
-									<Text>
-										<span className="text-text-tertiary">Users: </span>
-										<span className="text-text-primary font-semibold">0</span>
+								{/* Stats Grid */}
+								<div className="grid grid-cols-2 gap-3 mt-4 p-3 bg-surface-secondary rounded-lg">
+									<div className="text-center">
+										<div className="text-xl font-bold text-foreground mb-0.5">0</div>
+										<Text className="text-xs text-muted">Users</Text>
+									</div>
+									<div className="text-center">
+										<div className="text-xl font-bold text-foreground mb-0.5">0</div>
+										<Text className="text-xs text-muted">Licenses</Text>
+									</div>
+								</div>
+
+								{/* Footer */}
+								<div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+									<Text className="text-xs text-muted">
+										{new Date(app.createdAt).toLocaleDateString()}
 									</Text>
-									<Text>
-										<span className="text-text-tertiary">Licenses: </span>
-										<span className="text-text-primary font-semibold">0</span>
-									</Text>
+									<Badge variant="info">{app.id}</Badge>
 								</div>
 							</CardBody>
 						</Card>
@@ -188,27 +204,27 @@ export function ProjectAppsPage() {
 										>
 											<TableCell>
 												<div className="flex items-center gap-3">
-													<div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary-light to-purple-200">
-														<Icon icon={IconType.Key} size={20} className="text-primary" />
+													<div className="w-8 h-8 bg-surface-secondary rounded-md flex items-center justify-center flex-shrink-0">
+														<Icon icon={IconType.Key} size={18} className="text-primary" />
 													</div>
 													<div>
-														<Text className="font-medium text-text-primary">
+														<Text className="font-medium mb-0.5">
 															{app.name}
 														</Text>
-														<Text className="text-text-secondary">
+														<Text className="text-xs text-muted">
 															{app.slug}
 														</Text>
 													</div>
 												</div>
 											</TableCell>
 											<TableCell>
-												<Text className="text-text-secondary">0</Text>
+												<Text className="font-semibold">0</Text>
 											</TableCell>
 											<TableCell>
-												<Text className="text-text-secondary">0</Text>
+												<Text className="font-semibold">0</Text>
 											</TableCell>
 											<TableCell>
-												<Text className="text-text-secondary">
+												<Text className="text-muted">
 													{new Date(app.createdAt).toLocaleDateString()}
 												</Text>
 											</TableCell>

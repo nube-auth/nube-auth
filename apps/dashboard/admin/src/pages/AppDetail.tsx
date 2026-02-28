@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useApp, useAppStats, useProject } from "../hooks/api";
 import {
@@ -11,6 +10,7 @@ import {
 	Heading,
 	Text,
 	Button,
+	Badge,
 	IconBox,
 	Breadcrumb,
 	BreadcrumbList,
@@ -24,16 +24,6 @@ export function AppDetailPage() {
 	const { data: project, isLoading: projectLoading } = useProject(projectId || "");
 	const { data: app, isLoading: appLoading } = useApp(projectId || "", appId || "");
 	const { data: stats, isLoading: statsLoading } = useAppStats(projectId || "", appId || "");
-
-	const [copied, setCopied] = useState(false);
-
-	const copyPublicId = () => {
-		if (app?.id) {
-			navigator.clipboard.writeText(app.id);
-			setCopied(true);
-			setTimeout(() => setCopied(false), 2000);
-		}
-	};
 
 	if (projectLoading || appLoading) {
 		return (
@@ -143,40 +133,40 @@ export function AppDetailPage() {
 			{/* App Header */}
 			<Card>
 				<CardBody>
-					<div className="flex justify-between items-start">
-						<div className="flex-1">
-							<Heading level={1} size="lg" className="mb-1">{app.name}</Heading>
-							<Text className="text-muted-foreground">
-								{app.description || "No description provided"}
-							</Text>
+					<div className="flex items-start justify-between gap-8">
+						{/* Left: Main Info */}
+						<div className="flex items-start gap-5 flex-1">
+							<IconBox size="lg" variant="primary-subtle">
+								<Icon icon={IconType.Key} size={28} />
+							</IconBox>
+							<div className="flex-1">
+								<div className="flex items-center gap-3 mb-2">
+									<Heading size="lg" className="mb-0">
+										{app.name}
+									</Heading>
+									<Badge variant="success">Active</Badge>
+								</div>
+								{(app.description) && (
+									<Text className="text-muted-foreground mb-4 max-w-2xl">
+										{app.description}
+									</Text>
+								)}
+								<div className="flex items-start gap-6">
+									<div>
+										<Text className="text-muted-foreground mb-1 uppercase font-medium text-xs">
+											Slug
+										</Text>
+										<Badge variant="info">{app.slug}</Badge>
+									</div>
+									<div>
+										<Text className="text-muted-foreground mb-1 uppercase font-medium text-xs">
+											App ID
+										</Text>
+										<Badge variant="info">{app.id}</Badge>
+									</div>
+								</div>
+							</div>
 						</div>
-						<Button
-							onClick={() => navigate(`/projects/${projectId}/apps/${appId}/settings`)}
-							variant="secondary"
-							className="shrink-0"
-						>
-							<Icon icon={IconType.Settings} size={14} />
-							Settings
-						</Button>
-					</div>
-
-					{/* App ID */}
-					<div className="mt-5 pt-5 border-t border-card-border flex items-center gap-3">
-						<Text className="text-muted-foreground text-xs font-medium uppercase tracking-wider shrink-0">App ID</Text>
-						<button
-							type="button"
-							onClick={copyPublicId}
-							className="group inline-flex items-center gap-2.5 bg-surface ring-1 ring-border rounded-lg px-3 py-1.5 transition-colors cursor-pointer border-none hover:ring-primary/40"
-							title={copied ? "Copied!" : "Click to copy"}
-						>
-							<code className="font-mono text-sm text-foreground/90 tracking-wide">{app.id}</code>
-							<span className="text-muted-foreground group-hover:text-foreground transition-colors">
-								{copied
-									? <Icon icon={IconType.CheckCircle} size={14} className="text-success" />
-									: <Icon icon={IconType.Copy} size={14} />
-								}
-							</span>
-						</button>
 					</div>
 				</CardBody>
 			</Card>

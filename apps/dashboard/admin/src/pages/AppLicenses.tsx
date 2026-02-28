@@ -762,7 +762,7 @@ export function AppLicensesPage() {
 			{/* Plan Create/Edit Modal */}
 			{showPlanModal && (
 				<Dialog open={showPlanModal} onOpenChange={(open: boolean) => !open && !isUpdating && setShowPlanModal(false)}>
-					<DialogPopup className="max-w-[600px] max-h-[90vh] overflow-y-auto">
+					<DialogPopup className="!w-[800px] max-h-[90vh] overflow-y-auto">
 						<DialogHeader>
 							<DialogTitle>{editingPlan ? "Edit Plan" : "Create Plan"}</DialogTitle>
 							<Text className="text-muted-foreground mt-2">
