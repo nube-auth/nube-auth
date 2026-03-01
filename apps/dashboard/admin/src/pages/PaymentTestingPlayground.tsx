@@ -373,6 +373,30 @@ export default function PaymentTestingPlayground() {
 								</CardBody>
 							</Card>
                                                         )}
+							{/* Transactions */}
+							{sessionStatus?.transactions && sessionStatus.transactions.length > 0 && (
+							<Card>
+								<CardBody className="p-6">
+									<Heading level={3} size="md" className="mb-3">💳 Transactions</Heading>
+									<div className="space-y-2">
+										{sessionStatus.transactions.map((txn: any) => (
+											<div key={txn.public_id} className="flex items-center justify-between p-2 bg-bg-muted rounded border border-border text-sm">
+												<div>
+													<Text className="font-mono text-xs">{txn.public_id}</Text>
+													<Text className="text-text-secondary text-xs">{txn.type} · {txn.provider}</Text>
+												</div>
+												<div className="text-right">
+													<Text className="font-semibold">${(txn.amount_cents / 100).toFixed(2)} {txn.currency.toUpperCase()}</Text>
+													<Text className={`text-xs font-medium ${
+														txn.status === "success" ? "text-success" : txn.status === "failed" ? "text-danger" : "text-text-secondary"
+													}`}>{txn.status}</Text>
+												</div>
+											</div>
+										))}
+									</div>
+								</CardBody>
+							</Card>
+							)}
 							{/* Auto-refresh indicator */}
 							<div className="text-center text-xs text-text-tertiary">
 								⏱️ Auto-refreshing every 2 seconds

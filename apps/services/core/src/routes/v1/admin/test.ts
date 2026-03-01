@@ -3,12 +3,14 @@
  * Admin-only endpoints for testing payment flows without manual setup
  */
 
-import { getDb, testSessionQueries, userQueries, appQueries, planQueries, projectQueries, projectMemberQueries } from "@proofa/db";
+import { getDb, eq, and, desc, inArray, testSessionQueries, userQueries, appQueries, planQueries, priceQueries, projectQueries, projectMemberQueries, paymentProviderConfigQueries, purchases, payment_transactions, webhook_logs } from "@proofa/db";
 import { createId, createLogger, serializeError, publicId } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { env } from "../../../config/env.js";
-import { generateMockWebhook, normalizeEventType } from "../../../billing/services/webhook-simulator.js";
+import { normalizeEventType } from "../../../billing/services/webhook-simulator.js";
+import type { PaymentDetails } from "../../../billing/adapters/types.js";
+import { processWebhookEvent } from "../../../billing/services/webhook-processor.js";
 import { rateLimitMiddleware } from "../../../middleware/rateLimit.js";
 
 const log = createLogger("admin-test-routes");
@@ -103,7 +105,7 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 		// Create test user
 		const testUserEmail = `test+${provider}+${Date.now()}@proofa.internal`;
 		const testUser = await userQueries.create(db, {
-			public_id: publicId("user"),
+			public_id: publicId(createId("user")),
 			primary_email: testUserEmail,
 			primary_email_verified: true,
 			name: `Test User (${provider})`,
@@ -125,7 +127,7 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 
 		if (!testProject) {
 			testProject = await projectQueries.create(db, {
-				public_id: publicId("project"),
+				public_id: publicId(createId("project")),
 				name: "Test Playground",
 				slug: "test-playground",
 				description: "Auto-generated project for payment testing",
@@ -135,7 +137,7 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 
 		// Create test app
 		const testApp = await appQueries.create(db, {
-			public_id: publicId("app"),
+			public_id: publicId(createId("app")),
 			project_id: testProject.id,
 			name: `Test App - ${provider}`,
 			slug: `test-app-${provider}-${Date.now()}`,
@@ -179,7 +181,7 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 		// If still no plan, create a default test plan
 		if (!selectedPlan) {
 			selectedPlan = await planQueries.create(db, {
-				public_id: publicId("plan"),
+				public_id: publicId(createId("plan")),
 				app_id: testApp.id,
 				name: "Pro Plan",
 				slug: "pro",
@@ -190,6 +192,50 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 			});
 			
 			log.info({ planId: selectedPlan.public_id }, "Created default test plan");
+		}
+
+		// Create or find a test payment provider config for this project + provider
+		let providerConfig = await paymentProviderConfigQueries.findByProjectAndProvider(
+			db,
+			testProject.id,
+			provider,
+			"test",
+		);
+
+		if (!providerConfig) {
+			providerConfig = await paymentProviderConfigQueries.create(db, {
+				public_id: publicId(createId("paymentConfig")),
+				project_id: testProject.id,
+				provider,
+				environment: "test",
+				is_default: true,
+				credentials: "test-playground-no-real-credentials",
+				webhook_secret: "test-playground-no-real-webhook-secret",
+			});
+
+			log.info({ configId: providerConfig.public_id, provider }, "Created test provider config");
+		}
+
+		// Create a test price for the plan if none exists for this provider
+		const existingPrices = await priceQueries.findActiveByPlanId(db, selectedPlan.id);
+		let testPrice = existingPrices.find((p) => p.external_provider === provider);
+
+		if (!testPrice) {
+			testPrice = await priceQueries.create(db, {
+				public_id: publicId(createId("price")),
+				plan_id: selectedPlan.id,
+				app_id: testApp.id,
+				billing_type: "recurring",
+				interval: "month",
+				amount_cents: 2900,
+				currency: "usd",
+				duration_days: 30,
+				external_provider: provider,
+				external_price_id: `test_price_${provider}_${Date.now()}`,
+				is_active: true,
+			});
+
+			log.info({ priceId: testPrice.public_id, provider }, "Created test price");
 		}
 
 		// Create checkout URL if mode is "live"
@@ -213,7 +259,7 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 		// Create test session
 		const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 		const testSession = await testSessionQueries.create(db, {
-			public_id: publicId("testSession"),
+			public_id: publicId(createId("state")),
 			admin_id: adminUser.id,
 			provider,
 			mode,
@@ -248,6 +294,8 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 				plan: {
 					id: selectedPlan.slug,
 					name: selectedPlan.name,
+					amount: testPrice.amount_cents,
+					interval: testPrice.interval || "one_time",
 				},
 			},
 			checkoutUrl,
@@ -307,21 +355,25 @@ router.post("/simulate-webhook", testRateLimit, async (c: Context) => {
 		const provider = session.provider as "stripe" | "lemonsqueezy" | "dodo";
 		const normalizedEventType = normalizeEventType(provider, eventType);
 
-		// Generate mock webhook payload
-		const _webhookPayload = generateMockWebhook({
-			provider,
-			eventType: normalizedEventType,
-			amount: metadata?.amount || 2900,
-			userId: testUser.public_id,
-			appId: testApp.public_id,
-			planId: session.plan_id || "",
-			metadata: {
-				userId: testUser.public_id,
-				appId: testApp.public_id,
-				planId: session.plan_id || "",
-				testSessionId: session.public_id,
-			},
+		// Find the provider config for this test session
+		const project = await db.query.projects.findFirst({
+			where: (projects, { eq: eqCol }) => eqCol(projects.id, testApp.project_id),
 		});
+
+		if (!project) {
+			return c.json({ error: "Test project not found" }, 400);
+		}
+
+		const providerConfig = await paymentProviderConfigQueries.findByProjectAndProvider(
+			db,
+			project.id,
+			provider,
+			"test",
+		);
+
+		if (!providerConfig) {
+			return c.json({ error: "Provider config not found. Re-initialize test session." }, 400);
+		}
 
 		log.info({
 			sessionId: session.public_id,
@@ -329,39 +381,62 @@ router.post("/simulate-webhook", testRateLimit, async (c: Context) => {
 			eventType: normalizedEventType,
 		}, "Simulating webhook event");
 
-		// Process the webhook through the actual webhook processor
-		// This will create transactions, licenses, etc.
-		try {
-			// We need to extract payment details from the mock webhook
-			// For now, we'll create a simple payment details object
-			const paymentDetails = {
-				transactionId: `txn_mock_${Date.now()}`,
-				amount: (metadata?.amount || 2900) / 100,
-				currency: "usd",
-				status: eventType.includes("failed") ? "failed" : 
-				        eventType.includes("cancel") ? "canceled" :
-				        eventType.includes("refund") ? "refunded" : "succeeded",
-				customerId: `cus_mock_${Date.now()}`,
-				customerEmail: testUser.primary_email || "test@proofa.internal",
-				subscriptionId: eventType.includes("subscription") ? `sub_mock_${Date.now()}` : undefined,
-				metadata: {
-					userId: testUser.public_id,
-					appId: testApp.public_id,
-					planId: session.plan_id || "",
-					testSessionId: session.public_id,
-				},
-			};
+		// Map event type to PaymentDetails status
+		const statusMap: Record<string, "succeeded" | "failed" | "canceled" | "refunded"> = {
+			"payment.succeeded": "succeeded",
+			"payment.failed": "failed",
+			"subscription.canceled": "canceled",
+			"charge.refunded": "refunded",
+		};
+		const paymentStatus = statusMap[eventType] || "succeeded";
 
-			// TODO: Process through webhook-processor
-			// const result = await processWebhookEvent(db, session.provider, paymentDetails);
+		// Build PaymentDetails matching the real webhook processor interface
+		const hasSubscription = eventType.includes("subscription") || paymentStatus === "succeeded";
+		const paymentDetails: PaymentDetails = {
+			transactionId: `txn_test_${createId("paymentTransaction")}`,
+			amount: (metadata?.amount || 2900) / 100,
+			currency: "usd",
+			status: paymentStatus,
+			customerId: `cus_test_${Date.now()}`,
+			customerEmail: testUser.primary_email || "test@proofa.internal",
+			...(hasSubscription ? { subscriptionId: `sub_test_${Date.now()}` } : {}),
+			metadata: {
+				userId: testUser.public_id,
+				appId: testApp.public_id,
+				planId: session.plan_id || "",
+				testSessionId: session.public_id,
+			},
+		};
+
+		// Process through the real webhook processor
+		try {
+			await processWebhookEvent({
+				paymentDetails,
+				providerConfigId: providerConfig.id,
+				provider,
+				eventType: normalizedEventType,
+			});
 
 			log.info({
 				sessionId: session.public_id,
 				eventType,
-				status: paymentDetails.status,
-			}, "Webhook event processed");
+				status: paymentStatus,
+			}, "Webhook event processed successfully");
 
-			// For now, return mock result
+			// Query the actual results from the database
+			const license = await db.query.licenses.findFirst({
+				where: (licenses, { and: andOp, eq: eqCol }) => andOp(
+					eqCol(licenses.user_id, testUser.id),
+					eqCol(licenses.app_id, testApp.id),
+				),
+				orderBy: (licenses, { desc: descOp }) => [descOp(licenses.created_at)],
+			});
+
+			const latestPurchase = await db.query.purchases.findFirst({
+				where: (p, { eq: eqCol }) => eqCol(p.app_id, testApp.id),
+				orderBy: (p, { desc: descOp }) => [descOp(p.created_at)],
+			});
+
 			return c.json({
 				success: true,
 				webhookEvent: {
@@ -371,17 +446,14 @@ router.post("/simulate-webhook", testRateLimit, async (c: Context) => {
 					timestamp: new Date().toISOString(),
 				},
 				result: {
-					transaction: {
-						id: `TXN0test${Date.now()}`,
-						amount: metadata?.amount || 2900,
-						status: paymentDetails.status,
-						publicId: `TXN0test${Date.now()}`,
-					},
-					license: paymentDetails.status === "succeeded" ? {
-						id: `LIC0test${Date.now()}`,
-						status: "active",
-						validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-						publicId: `LIC0test${Date.now()}`,
+					purchase: latestPurchase ? {
+						id: latestPurchase.public_id,
+						status: latestPurchase.status,
+					} : null,
+					license: license ? {
+						id: license.public_id,
+						status: license.status,
+						validUntil: license.valid_until?.toISOString() ?? null,
 					} : null,
 				},
 			});
@@ -433,22 +505,60 @@ router.get("/status/:sessionId", async (c: Context) => {
 			? await userQueries.findById(db, session.test_user_id)
 			: null;
 
-		// Get transactions for test user/app (if they exist)
-		const transactions: any[] = []; // TODO: Query actual transactions
+		// Get transactions for test user/app
+		let transactions: { public_id: string; status: string; amount_cents: number; currency: string; type: string; provider: string; created_at: Date }[] = [];
+		if (testApp) {
+			const appPurchases = await db
+				.select({ id: purchases.id, public_id: purchases.public_id })
+				.from(purchases)
+				.where(eq(purchases.app_id, testApp.id));
+
+			if (appPurchases.length > 0) {
+				const purchaseIds = appPurchases.map((p) => p.id);
+				transactions = await db
+					.select({
+						public_id: payment_transactions.public_id,
+						status: payment_transactions.status,
+						amount_cents: payment_transactions.amount_cents,
+						currency: payment_transactions.currency,
+						type: payment_transactions.type,
+						provider: payment_transactions.provider,
+						created_at: payment_transactions.created_at,
+					})
+					.from(payment_transactions)
+					.where(inArray(payment_transactions.purchase_id, purchaseIds))
+					.orderBy(desc(payment_transactions.created_at));
+			}
+		}
 		
 		// Get license for test user/app (if exists)
 		let license = null;
 		if (testUser && testApp) {
 			license = await db.query.licenses.findFirst({
-				where: (licenses, { and, eq }) => and(
-					eq(licenses.user_id, testUser.id),
-					eq(licenses.app_id, testApp.id)
-				)
+				where: (licenses, { and: andOp, eq: eqCol }) => andOp(
+					eqCol(licenses.user_id, testUser.id),
+					eqCol(licenses.app_id, testApp.id)
+				),
+				orderBy: (licenses, { desc: descOp }) => [descOp(licenses.created_at)],
 			});
 		}
 
-		// Get webhook events (simulated events would be stored separately)
-		const webhookEvents: any[] = []; // TODO: Query actual webhook events
+		// Get webhook events related to this test app
+		let webhookEvents: { public_id: string; event_type: string; status: string; provider: string; received_at: Date }[] = [];
+		if (testApp) {
+			webhookEvents = await db
+				.select({
+					public_id: webhook_logs.public_id,
+					event_type: webhook_logs.event_type,
+					status: webhook_logs.status,
+					provider: webhook_logs.provider,
+					received_at: webhook_logs.received_at,
+				})
+				.from(webhook_logs)
+				.where(eq(webhook_logs.provider, session.provider))
+				.orderBy(desc(webhook_logs.received_at))
+				.limit(20);
+		}
 
 		return c.json({
 			sessionId: session.public_id,
@@ -475,7 +585,7 @@ router.get("/status/:sessionId", async (c: Context) => {
 			license: license ? {
 				id: license.public_id,
 				status: license.status,
-				validUntil: license.valid_until,
+				validUntil: license.valid_until?.toISOString() ?? null,
 			} : null,
 			webhookEvents,
 			expiresAt: session.expires_at.toISOString(),

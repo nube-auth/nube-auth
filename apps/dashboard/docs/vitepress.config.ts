@@ -3,6 +3,11 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'Proofa',
   description: 'Authentication, session management, and licensing for modern applications',
+  head: [
+    ['link', { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon.png' }],
+    ['meta', { name: 'theme-color', content: '#09090B' }],
+  ],
   themeConfig: {
     logo: '/logo.png',
     nav: [
