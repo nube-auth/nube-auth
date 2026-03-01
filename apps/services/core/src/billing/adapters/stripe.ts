@@ -10,8 +10,10 @@ import { createLogger, serializeError } from "@proofa/shared";
 import type {
 	CheckoutSession,
 	CreateCheckoutParams,
+	CreateRefundParams,
 	PaymentDetails,
 	PaymentProviderAdapter,
+	RefundResult,
 	StripeCredentials,
 	SubscriptionDetails,
 	WebhookEvent,
@@ -487,6 +489,29 @@ export class StripeAdapter implements PaymentProviderAdapter {
 					amount: params.amountCents,
 				},
 				"Failed to create Stripe price"
+			);
+			throw error;
+		}
+	}
+
+	async createRefund(params: CreateRefundParams): Promise<RefundResult> {
+		try {
+			const refund = await this.stripe.refunds.create({
+				payment_intent: params.paymentId,
+				...(params.amount ? { amount: params.amount } : {}),
+				...(params.reason ? { reason: "requested_by_customer" as const } : {}),
+			});
+
+			return {
+				refundId: refund.id,
+				status: refund.status === "succeeded" ? "succeeded" : refund.status === "failed" ? "failed" : "pending",
+				amount: refund.amount,
+				currency: refund.currency,
+			};
+		} catch (error) {
+			this.log.error(
+				{ err: serializeError(error as Error), paymentId: params.paymentId },
+				"Failed to create Stripe refund"
 			);
 			throw error;
 		}

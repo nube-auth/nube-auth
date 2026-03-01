@@ -1,19 +1,110 @@
 /**
  * Payment Routes
- * Phase 2 Implementation Pending
+ * Proxy to Core service for billing operations.
+ * Webhook route is unauthenticated (providers send webhooks directly).
+ * Checkout and other routes require authentication.
  */
 
 import { Hono } from "hono";
-import { createLogger } from "@proofa/shared";
+import { pingpong } from "@proofa/auth";
+import { createLogger, serializeError } from "@proofa/shared";
+import type { Context } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
+import { env } from "../config/env";
+import { getAuth } from "../middleware/auth";
 
 const log = createLogger("payment-routes");
 
 export const paymentsRoutes = new Hono();
 
-// All payment routes return 501 Not Implemented
-paymentsRoutes.all("/*", (c) => {
-	log.debug("Payment route (Phase 2 implementation pending)");
-	return c.json({
-		error: "Payment functionality pending Phase 2 implementation",
-	}, 501);
+/**
+ * POST /v1/payment/webhooks/:provider
+ * Webhook endpoint — no auth required. Forward raw body + headers to core.
+ */
+paymentsRoutes.post("/webhooks/:provider", async (c: Context) => {
+	try {
+		const provider = c.req.param("provider");
+		const rawBody = await c.req.text();
+		const coreUrl = `${env.CORE_URL}/v1/billing/webhooks/${encodeURIComponent(provider)}`;
+
+		// Forward all relevant headers for signature verification
+		const forwardHeaders: Record<string, string> = {
+			"Content-Type": c.req.header("content-type") || "application/json",
+			"X-Proofa-S2S-Token": env.S2S_SECRET,
+		};
+
+		// Forward provider-specific signature headers
+		const signatureHeaders = [
+			"webhook-id", "webhook-signature", "webhook-timestamp", // Dodo / Standard Webhooks
+			"stripe-signature",
+			"x-signature",
+			"x-webhook-signature",
+			"paddle-signature",
+		];
+		for (const header of signatureHeaders) {
+			const value = c.req.header(header);
+			if (value) {
+				forwardHeaders[header] = value;
+			}
+		}
+
+		const response = await pingpong(coreUrl, {
+			method: "POST",
+			headers: forwardHeaders,
+			body: rawBody,
+		});
+
+		return c.json(response.data, response.status as ContentfulStatusCode);
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Webhook proxy error");
+		return c.json({ success: true, message: "Webhook received" }, 200);
+	}
+});
+
+/**
+ * Proxy all other payment routes to Core service with authentication.
+ */
+paymentsRoutes.all("/*", async (c: Context) => {
+	try {
+		const auth = getAuth(c);
+		const method = c.req.method;
+		const path = c.req.path;
+
+		// Map /v1/payment/* → /v1/billing/*
+		const corePath = path.replace("/v1/payment", "/v1/billing");
+		const coreUrl = `${env.CORE_URL}${corePath}`;
+
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+			"X-Proofa-S2S-Token": env.S2S_SECRET,
+			"X-Proofa-User-Id": auth.userId,
+			"X-Proofa-Session-Id": auth.coreSessionId || "",
+		};
+
+		let body: unknown;
+		if (["POST", "PUT", "PATCH"].includes(method)) {
+			try {
+				body = await c.req.json();
+			} catch {
+				// No body or invalid JSON
+			}
+		}
+
+		const url = new URL(coreUrl);
+		const queryString = c.req.url.split("?")[1];
+		if (queryString) {
+			url.search = `?${queryString}`;
+		}
+
+		const response = await pingpong(url.toString(), {
+			method,
+			headers,
+			...(body ? { body } : {}),
+		});
+
+		return c.json(response.data, response.status as ContentfulStatusCode);
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Payment proxy error");
+		return c.json({ error: "Payment service unavailable" }, 502);
+	}
 });

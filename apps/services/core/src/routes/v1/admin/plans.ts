@@ -13,6 +13,7 @@ import { eq } from "@proofa/db";
 import type { Context } from "hono";
 import { createLogger, serializeError, id } from "@proofa/shared";
 import { pricesRouter } from "./prices.js";
+import { enqueuePlanSync } from "../../../billing/queue.js";
 
 const log = createLogger("admin-plans");
 const plansRouter = new Hono();
@@ -123,6 +124,11 @@ plansRouter.post("/", async (c: Context) => {
 			entity_id: plan.public_id,
 			changes: { name: plan.name, slug: plan.slug },
 			ip_address: c.req.header("X-Forwarded-For") || c.req.header("X-Real-IP") || null,
+		});
+
+		// Trigger async sync to payment providers
+		enqueuePlanSync({ planId: plan.public_id }).catch((error) => {
+			log.error({ err: serializeError(error as Error), planId: plan.public_id }, "Failed to enqueue plan sync");
 		});
 
 		return c.json({ plan: formatPlan(plan, app.public_id) }, 201);

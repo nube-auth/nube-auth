@@ -19,6 +19,9 @@ import {
 import { createLogger, idPatterns, serializeError } from "@proofa/shared";
 import { Hono } from "hono";
 import { z } from "zod";
+import { checkoutRoutes } from "./checkout.js";
+import { webhookRoutes } from "./webhooks.js";
+import { refundRoutes } from "./refunds-clean.js";
 
 const log = createLogger("billing-routes");
 
@@ -180,27 +183,9 @@ billingRoutes.post("/validate-promo", async (c) => {
 	});
 });
 
-// Stub endpoints for future billing implementation
-billingRoutes.post("/checkout", (c) => {
-	return c.json({
-		success: false,
-		error: "Checkout pending full billing implementation",
-	}, 501);
-});
-
-billingRoutes.post("/webhooks/:provider", (c) => {
-	log.debug(
-		{ provider: c.req.param("provider") },
-		"Webhook placeholder - pending implementation",
-	);
-	return c.json({ success: true }, 200);
-});
-
-billingRoutes.post("/refunds", (c) => {
-	return c.json({
-		success: false,
-		error: "Refunds pending implementation",
-	}, 501);
-});
+// Mount real billing sub-routes
+billingRoutes.route("/checkout", checkoutRoutes);
+billingRoutes.route("/webhooks", webhookRoutes);
+billingRoutes.route("/refunds", refundRoutes);
 
 export { billingRoutes as default };

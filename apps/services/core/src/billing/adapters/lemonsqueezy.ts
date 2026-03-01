@@ -14,9 +14,11 @@ import type {
 	CreatePriceResult,
 	CreateProductParams,
 	CreateProductResult,
+	CreateRefundParams,
 	LemonSqueezyCredentials,
 	PaymentDetails,
 	PaymentProviderAdapter,
+	RefundResult,
 	SubscriptionDetails,
 	WebhookEvent,
 } from "./types.js";
@@ -507,6 +509,12 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 			);
 			throw error;
 		}
+	}
+
+	async createRefund(_params: CreateRefundParams): Promise<RefundResult> {
+		// LemonSqueezy handles refunds through their dashboard.
+		// API-initiated refunds are not supported in their current API.
+		throw new Error("LemonSqueezy does not support API-initiated refunds");
 	}
 
 	/**

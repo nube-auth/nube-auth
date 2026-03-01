@@ -14,6 +14,7 @@ import { prices } from "@proofa/db/schema";
 import { eq } from "@proofa/db";
 import type { Context } from "hono";
 import { createLogger, serializeError, id, BILLING_TYPES, BILLING_INTERVALS } from "@proofa/shared";
+import { enqueuePlanSync } from "../../../billing/queue.js";
 
 const log = createLogger("admin-prices");
 const pricesRouter = new Hono();
@@ -138,6 +139,11 @@ pricesRouter.post("/", async (c: Context) => {
 				currency: price.currency,
 			},
 			ip_address: c.req.header("X-Forwarded-For") || c.req.header("X-Real-IP") || null,
+		});
+
+		// Trigger async sync of parent plan to payment providers
+		enqueuePlanSync({ planId: plan.public_id }).catch((error) => {
+			log.error({ err: serializeError(error as Error), planId: plan.public_id }, "Failed to enqueue plan sync");
 		});
 
 		return c.json({ price: formatPrice(price, plan.public_id) }, 201);

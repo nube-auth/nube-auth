@@ -1027,6 +1027,18 @@ export const paymentProviderConfigQueries = {
 			.returning();
 	},
 
+	async findActiveByProvider(db: DbClient, provider: string) {
+		return db
+			.select()
+			.from(payment_provider_configs)
+			.where(
+				and(
+					eq(payment_provider_configs.provider, provider),
+					eq(payment_provider_configs.is_active, true),
+				),
+			);
+	},
+
 	async setAsDefault(db: DbClient, projectId: number, configId: number) {
 		// First, unset any existing defaults for this project
 		await db

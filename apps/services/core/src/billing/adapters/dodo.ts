@@ -1,12 +1,13 @@
 /**
  * Dodo Payment Provider Adapter
  *
- * Implements payment provider interface for Dodo Payments
+ * Implements payment provider interface for Dodo Payments using the official SDK.
  * Documentation: https://docs.dodopayments.com/
  */
 
 import { createLogger, serializeError } from "@proofa/shared";
-import crypto from "node:crypto";
+import DodoPayments from "dodopayments";
+import type { UnwrapWebhookEvent } from "dodopayments/resources/webhooks/webhooks.js";
 import type {
 	CheckoutSession,
 	CreateCheckoutParams,
@@ -14,450 +15,348 @@ import type {
 	CreatePriceResult,
 	CreateProductParams,
 	CreateProductResult,
+	CreateRefundParams,
 	DodoCredentials,
 	PaymentDetails,
 	PaymentProviderAdapter,
+	RefundResult,
 	SubscriptionDetails,
 	WebhookEvent,
 } from "./types.js";
 
 const log = createLogger("dodo-adapter");
 
-interface DodoProduct {
-	id: string;
-	name: string;
-	description: string;
-	created_at: string;
-}
-
-interface DodoPrice {
-	id: string;
-	product_id: string;
-	amount: number;
-	currency: string;
-	interval: string | null;
-	interval_count: number;
-	type: "recurring" | "one_time";
-}
-
-interface DodoCheckoutSession {
-	id: string;
-	url: string;
-	expires_at: string | null;
-	customer_email: string;
-	status: string;
-}
-
-interface DodoWebhookPayload {
-	id: string;
-	type: string;
-	data: {
-		object: Record<string, unknown>;
-	};
-	created_at: string;
-}
-
 export class DodoAdapter implements PaymentProviderAdapter {
-	private apiKey: string;
+	private client: DodoPayments;
 	private webhookSecret: string;
-	private baseUrl = "https://api.dodopayments.com/v1";
 	private log = log;
 
 	constructor(credentials: DodoCredentials) {
-		this.apiKey = credentials.apiKey;
 		this.webhookSecret = credentials.webhookSecret;
+		this.client = new DodoPayments({
+			bearerToken: credentials.apiKey,
+			environment: credentials.environment,
+		});
 	}
 
 	/**
-	 * Create checkout session
+	 * Create checkout session using Dodo's hosted checkout page.
+	 * params.productId should be the Dodo product_id (stored as external_price_id in our prices table).
 	 */
 	async createCheckout(params: CreateCheckoutParams): Promise<CheckoutSession> {
 		try {
-			const checkoutData = {
-				price_id: params.productId,
-				customer_email: params.customerEmail,
-				quantity: params.quantity || 1,
-				success_url: params.successUrl,
-				cancel_url: params.cancelUrl,
-				metadata: params.metadata || {},
-				mode: params.mode || "subscription",
-				trial_period_days: params.trialPeriodDays,
-				promo_code: params.promoCode,
-			};
-
-			const response = await fetch(`${this.baseUrl}/checkout/sessions`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${this.apiKey}`,
+			const session = await this.client.checkoutSessions.create({
+				product_cart: [
+					{
+						product_id: params.productId,
+						quantity: params.quantity ?? 1,
+					},
+				],
+				customer: {
+					email: params.customerEmail,
+					...(params.customerId ? { customer_id: params.customerId } : {}),
 				},
-				body: JSON.stringify(checkoutData),
+				return_url: params.successUrl,
+				metadata: params.metadata ?? null,
+				...(params.trialPeriodDays
+					? { subscription_data: { trial_period_days: params.trialPeriodDays } }
+					: {}),
+				...(params.promoCode ? { discount_code: params.promoCode } : {}),
 			});
 
-			if (!response.ok) {
-				const errorText = await response.text();
-				throw new Error(`Dodo API error: ${response.status} ${errorText}`);
-			}
-
-			const session: DodoCheckoutSession = await response.json();
-
 			this.log.info(
-				{
-					sessionId: session.id,
-					priceId: params.productId,
-				},
-				"Dodo checkout session created"
+				{ sessionId: session.session_id, productId: params.productId },
+				"Dodo checkout session created",
 			);
 
 			return {
-				checkoutUrl: session.url,
-				sessionId: session.id,
-				...(session.expires_at && { expiresAt: new Date(session.expires_at) }),
+				checkoutUrl: session.checkout_url ?? "",
+				sessionId: session.session_id,
 			};
 		} catch (error) {
 			this.log.error(
-				{
-					err: serializeError(error as Error),
-					priceId: params.productId,
-				},
-				"Failed to create Dodo checkout"
+				{ err: serializeError(error as Error), productId: params.productId },
+				"Failed to create Dodo checkout",
 			);
 			throw error;
 		}
 	}
 
 	/**
-	 * Verify webhook signature
+	 * Verify webhook using Standard Webhooks spec (webhook-id, webhook-signature, webhook-timestamp).
+	 * The `signature` param is a JSON-encoded object of the three Standard Webhooks headers,
+	 * packed by the webhook route handler.
 	 */
 	async verifyWebhook(signature: string, rawBody: string): Promise<WebhookEvent | null> {
 		try {
-			// Dodo uses HMAC SHA256 for webhook verification
-			const hmac = crypto.createHmac("sha256", this.webhookSecret);
-			hmac.update(rawBody);
-			const digest = hmac.digest("hex");
-
-			// Dodo sends signature as "t=timestamp,v1=signature"
-			const signatureParts = signature.split(",");
-			const v1Signature = signatureParts.find((part) => part.startsWith("v1="));
-			const actualSignature = v1Signature ? v1Signature.split("=")[1] : "";
-
-			if (actualSignature !== digest) {
-				this.log.warn("Dodo webhook signature verification failed");
+			let headers: Record<string, string>;
+			try {
+				headers = JSON.parse(signature) as Record<string, string>;
+			} catch {
+				this.log.warn("Dodo webhook: signature is not valid JSON headers object");
 				return null;
 			}
 
-			const payload: DodoWebhookPayload = JSON.parse(rawBody);
+			const event: UnwrapWebhookEvent = this.client.webhooks.unwrap(rawBody, {
+				headers,
+				key: this.webhookSecret,
+			});
 
 			return {
-				id: payload.id,
-				type: payload.type,
-				data: payload.data.object,
+				id: `${event.type}-${event.timestamp}`,
+				type: event.type,
+				data: event.data,
 				rawBody,
 			};
 		} catch (error) {
 			this.log.error(
-				{
-					err: serializeError(error as Error),
-				},
-				"Failed to verify Dodo webhook"
+				{ err: serializeError(error as Error) },
+				"Dodo webhook verification failed",
 			);
 			return null;
 		}
 	}
 
 	/**
-	 * Extract payment details from webhook event
+	 * Extract payment details from a verified Dodo webhook event.
 	 */
 	async extractPaymentDetails(event: WebhookEvent): Promise<PaymentDetails | null> {
 		try {
 			const data = event.data as Record<string, unknown>;
 
-			// Handle checkout.session.completed event (successful payment)
-			if (event.type === "checkout.session.completed") {
-				return {
-					transactionId: String(data["payment_intent"] || data["id"]),
-					amount: Number((data["amount_total"] || 0) as number) / 100,
-					currency: String(data["currency"] || "usd"),
-					status: String(data["payment_status"]) === "paid" ? "succeeded" : "pending",
-					customerId: String(data["customer"] || ""),
-					customerEmail: String(data["customer_email"] || ""),
-					...(data["subscription"] ? { subscriptionId: String(data["subscription"]) } : {}),
-					metadata: (data["metadata"] as Record<string, string>) || {},
-				};
-			}
-
-			// Handle payment.succeeded event
+			// Payment events — data is a Dodo Payment object
 			if (event.type === "payment.succeeded") {
-				return {
-					transactionId: String(data["id"]),
-					amount: Number((data["amount"] || 0) as number) / 100,
-					currency: String(data["currency"] || "usd"),
-					status: "succeeded",
-					customerId: String(data["customer"] || ""),
-					customerEmail: String(data["customer_email"] || ""),
-					...(data["subscription"] ? { subscriptionId: String(data["subscription"]) } : {}),
-					metadata: (data["metadata"] as Record<string, string>) || {},
-				};
+				return this.extractFromPayment(data, "succeeded");
 			}
-
-			// Handle subscription.created event
-			if (event.type === "subscription.created") {
-				return {
-					transactionId: String(data["id"]),
-					amount: 0,
-					currency: "usd",
-					status: "succeeded",
-					customerId: String(data["customer"] || ""),
-					customerEmail: String(data["customer_email"] || ""),
-					subscriptionId: String(data["id"]),
-					metadata: (data["metadata"] as Record<string, string>) || {},
-				};
-			}
-
-			// Handle subscription.updated event
-			if (event.type === "subscription.updated") {
-				const status = String(data["status"]);
-				return {
-					transactionId: String(data["id"]),
-					amount: 0,
-					currency: "usd",
-					status: status === "active" ? "succeeded" : "pending",
-					customerId: String(data["customer"] || ""),
-					customerEmail: String(data["customer_email"] || ""),
-					subscriptionId: String(data["id"]),
-					metadata: (data["metadata"] as Record<string, string>) || {},
-				};
-			}
-
-			// Handle subscription.canceled event
-			if (event.type === "subscription.canceled") {
-				return {
-					transactionId: String(data["id"]),
-					amount: 0,
-					currency: "usd",
-					status: "canceled",
-					customerId: String(data["customer"] || ""),
-					customerEmail: String(data["customer_email"] || ""),
-					subscriptionId: String(data["id"]),
-					metadata: (data["metadata"] as Record<string, string>) || {},
-				};
-			}
-
-			// Handle payment.failed event
 			if (event.type === "payment.failed") {
-				return {
-					transactionId: String(data["id"]),
-					amount: Number((data["amount"] || 0) as number) / 100,
-					currency: String(data["currency"] || "usd"),
-					status: "failed",
-					customerId: String(data["customer"] || ""),
-					customerEmail: String(data["customer_email"] || ""),
-					...(data["subscription"] ? { subscriptionId: String(data["subscription"]) } : {}),
-					metadata: (data["metadata"] as Record<string, string>) || {},
-				};
+				return this.extractFromPayment(data, "failed");
+			}
+			if (event.type === "payment.cancelled") {
+				return this.extractFromPayment(data, "canceled");
+			}
+			if (event.type === "payment.processing") {
+				return this.extractFromPayment(data, "pending");
 			}
 
-			// Handle payment.refunded event
-			if (event.type === "payment.refunded") {
-				return {
-					transactionId: String(data["id"]),
-					amount: Number((data["amount_refunded"] || 0) as number) / 100,
-					currency: String(data["currency"] || "usd"),
-					status: "refunded" as const,
-					customerId: String(data["customer"] || ""),
-					customerEmail: String(data["customer_email"] || ""),
-					...(data["metadata"] ? { metadata: data["metadata"] as Record<string, string> } : {}),
-				};
+			// Subscription events — data is a Dodo Subscription object
+			if (event.type === "subscription.active" || event.type === "subscription.renewed") {
+				return this.extractFromSubscription(data, "succeeded");
+			}
+			if (event.type === "subscription.updated" || event.type === "subscription.plan_changed") {
+				return this.extractFromSubscription(data, "succeeded");
+			}
+			if (event.type === "subscription.cancelled" || event.type === "subscription.expired") {
+				return this.extractFromSubscription(data, "canceled");
+			}
+			if (event.type === "subscription.on_hold" || event.type === "subscription.failed") {
+				return this.extractFromSubscription(data, "failed");
+			}
+
+			// Refund events — data is a Dodo Refund object
+			if (event.type === "refund.succeeded") {
+				return this.extractFromRefund(data);
 			}
 
 			this.log.debug({ eventType: event.type }, "Dodo event type not handled");
 			return null;
 		} catch (error) {
 			this.log.error(
-				{
-					err: serializeError(error as Error),
-					eventType: event.type,
-				},
-				"Failed to extract Dodo payment details"
+				{ err: serializeError(error as Error), eventType: event.type },
+				"Failed to extract Dodo payment details",
 			);
 			return null;
 		}
 	}
 
+	private extractFromPayment(
+		data: Record<string, unknown>,
+		status: PaymentDetails["status"],
+	): PaymentDetails {
+		const customer = data["customer"] as { customer_id?: string; email?: string } | undefined;
+		const metadata = (data["metadata"] as Record<string, string>) ?? {};
+		return {
+			transactionId: String(data["payment_id"] ?? ""),
+			amount: Number(data["total_amount"] ?? 0),
+			currency: String(data["currency"] ?? "USD"),
+			status,
+			customerId: customer?.customer_id ?? "",
+			customerEmail: customer?.email ?? "",
+			...(data["subscription_id"] ? { subscriptionId: String(data["subscription_id"]) } : {}),
+			metadata,
+		};
+	}
+
+	private extractFromSubscription(
+		data: Record<string, unknown>,
+		status: PaymentDetails["status"],
+	): PaymentDetails {
+		const customer = data["customer"] as { customer_id?: string; email?: string } | undefined;
+		const metadata = (data["metadata"] as Record<string, string>) ?? {};
+		return {
+			transactionId: String(data["subscription_id"] ?? ""),
+			amount: Number(data["recurring_pre_tax_amount"] ?? 0),
+			currency: String(data["currency"] ?? "USD"),
+			status,
+			customerId: customer?.customer_id ?? "",
+			customerEmail: customer?.email ?? "",
+			subscriptionId: String(data["subscription_id"] ?? ""),
+			productId: String(data["product_id"] ?? ""),
+			metadata,
+		};
+	}
+
+	private extractFromRefund(data: Record<string, unknown>): PaymentDetails {
+		const customer = data["customer"] as { customer_id?: string; email?: string } | undefined;
+		const metadata = (data["metadata"] as Record<string, string>) ?? {};
+		return {
+			transactionId: String(data["refund_id"] ?? ""),
+			amount: Number(data["amount"] ?? 0),
+			currency: String(data["currency"] ?? "USD"),
+			status: "refunded",
+			customerId: customer?.customer_id ?? "",
+			customerEmail: customer?.email ?? "",
+			metadata,
+		};
+	}
 	/**
-	 * Cancel subscription
+	 * Cancel a subscription via Dodo SDK.
+	 * If immediate=true, sets status to cancelled. Otherwise cancels at next billing date.
 	 */
 	async cancelSubscription(subscriptionId: string, immediate = false): Promise<void> {
 		try {
-			const cancelData = {
-				cancel_at_period_end: !immediate,
-			};
-
-			const response = await fetch(`${this.baseUrl}/subscriptions/${subscriptionId}/cancel`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${this.apiKey}`,
-				},
-				body: JSON.stringify(cancelData),
-			});
-
-			if (!response.ok) {
-				const errorText = await response.text();
-				throw new Error(`Dodo API error: ${response.status} ${errorText}`);
+			if (immediate) {
+				await this.client.subscriptions.update(subscriptionId, { status: "cancelled" });
+			} else {
+				await this.client.subscriptions.update(subscriptionId, {
+					cancel_at_next_billing_date: true,
+				});
 			}
-
 			this.log.info({ subscriptionId, immediate }, "Dodo subscription canceled");
 		} catch (error) {
 			this.log.error(
-				{
-					err: serializeError(error as Error),
-					subscriptionId,
-				},
-				"Failed to cancel Dodo subscription"
+				{ err: serializeError(error as Error), subscriptionId },
+				"Failed to cancel Dodo subscription",
 			);
 			throw error;
 		}
 	}
 
 	/**
-	 * Get subscription details
+	 * Retrieve subscription details from Dodo.
 	 */
 	async getSubscription(subscriptionId: string): Promise<SubscriptionDetails | null> {
 		try {
-			const response = await fetch(`${this.baseUrl}/subscriptions/${subscriptionId}`, {
-				method: "GET",
-				headers: {
-					Authorization: `Bearer ${this.apiKey}`,
-				},
-			});
-
-			if (!response.ok) {
-				if (response.status === 404) {
-					return null;
-				}
-				const errorText = await response.text();
-				throw new Error(`Dodo API error: ${response.status} ${errorText}`);
-			}
-
-			const subscription = await response.json();
-
+			const sub = await this.client.subscriptions.retrieve(subscriptionId);
 			return {
-				subscriptionId: subscription.id,
-				status: this.mapDodoStatus(subscription.status),
-				currentPeriodStart: new Date(subscription.current_period_start * 1000),
-				currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-				cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
+				subscriptionId: sub.subscription_id,
+				status: this.mapDodoStatus(sub.status),
+				currentPeriodStart: new Date(sub.previous_billing_date),
+				currentPeriodEnd: new Date(sub.next_billing_date),
+				cancelAtPeriodEnd: sub.cancel_at_next_billing_date,
 			};
 		} catch (error) {
+			const err = error as { status?: number };
+			if (err.status === 404) {
+				return null;
+			}
 			this.log.error(
-				{
-					err: serializeError(error as Error),
-					subscriptionId,
-				},
-				"Failed to get Dodo subscription"
+				{ err: serializeError(error as Error), subscriptionId },
+				"Failed to get Dodo subscription",
 			);
 			return null;
 		}
 	}
 
 	/**
-	 * Create product in Dodo
+	 * Create a product in Dodo.
+	 * In Dodo, products contain pricing directly. We create a placeholder one-time product here;
+	 * the actual pricing is set via createPrice which creates a separate product per price point.
 	 */
 	async createProduct(params: CreateProductParams): Promise<CreateProductResult> {
 		try {
-			const productData = {
+			const product = await this.client.products.create({
 				name: params.name,
-				description: params.description || "",
-			};
-
-			const response = await fetch(`${this.baseUrl}/products`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${this.apiKey}`,
+				description: params.description ?? null,
+				price: {
+					currency: "USD",
+					discount: 0,
+					price: 0,
+					purchasing_power_parity: false,
+					type: "one_time_price",
 				},
-				body: JSON.stringify(productData),
+				tax_category: "saas",
 			});
 
-			if (!response.ok) {
-				const errorText = await response.text();
-				throw new Error(`Dodo API error: ${response.status} ${errorText}`);
-			}
-
-			const product: DodoProduct = await response.json();
-
 			this.log.info(
-				{
-					productId: product.id,
-					name: params.name,
-				},
-				"Dodo product created"
+				{ productId: product.product_id, name: params.name },
+				"Dodo product created",
 			);
 
 			return {
-				productId: product.id,
-				name: product.name,
+				productId: product.product_id,
+				name: params.name,
 			};
 		} catch (error) {
 			this.log.error(
-				{
-					err: serializeError(error as Error),
-					name: params.name,
-				},
-				"Failed to create Dodo product"
+				{ err: serializeError(error as Error), name: params.name },
+				"Failed to create Dodo product",
 			);
 			throw error;
 		}
 	}
 
 	/**
-	 * Create price in Dodo
+	 * Create a price in Dodo.
+	 * In Dodo, pricing is embedded in products. Each "price" creates a new product
+	 * with the appropriate pricing configuration. The returned priceId IS the product_id
+	 * which is used in checkout's product_cart.
 	 */
 	async createPrice(params: CreatePriceParams): Promise<CreatePriceResult> {
 		try {
-			const priceData = {
-				product_id: params.productId,
-				amount: params.amountCents,
-				currency: params.currency.toLowerCase(),
-				type: params.interval === "one_time" ? "one_time" : "recurring",
-				recurring: params.interval !== "one_time" ? {
-					interval: params.interval,
-					interval_count: 1,
-				} : undefined,
+			const isRecurring = params.interval !== "one_time";
+			const intervalMap: Record<string, "Month" | "Year"> = {
+				month: "Month",
+				year: "Year",
 			};
 
-			const response = await fetch(`${this.baseUrl}/prices`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${this.apiKey}`,
-				},
-				body: JSON.stringify(priceData),
+			const product = await this.client.products.create({
+				name: `Price ${params.amountCents} ${params.currency} ${params.interval}`,
+				price: isRecurring
+					? {
+							currency: params.currency.toUpperCase() as "USD",
+							discount: 0,
+							price: params.amountCents,
+							purchasing_power_parity: false,
+							type: "recurring_price",
+							payment_frequency_count: 1,
+							payment_frequency_interval: intervalMap[params.interval] ?? "Month",
+							subscription_period_count: 1,
+							subscription_period_interval: intervalMap[params.interval] ?? "Month",
+						}
+					: {
+							currency: params.currency.toUpperCase() as "USD",
+							discount: 0,
+							price: params.amountCents,
+							purchasing_power_parity: false,
+							type: "one_time_price",
+						},
+				tax_category: "saas",
 			});
-
-			if (!response.ok) {
-				const errorText = await response.text();
-				throw new Error(`Dodo API error: ${response.status} ${errorText}`);
-			}
-
-			const price: DodoPrice = await response.json();
 
 			this.log.info(
 				{
-					priceId: price.id,
-					productId: params.productId,
-					amount: params.amountCents,
+					productId: product.product_id,
+					amountCents: params.amountCents,
 					interval: params.interval,
 				},
-				"Dodo price created"
+				"Dodo price (product) created",
 			);
 
 			return {
-				priceId: price.id,
+				priceId: product.product_id,
 				productId: params.productId,
-				amountCents: price.amount,
-				currency: price.currency,
+				amountCents: params.amountCents,
+				currency: params.currency,
 				interval: params.interval,
 			};
 		} catch (error) {
@@ -467,25 +366,53 @@ export class DodoAdapter implements PaymentProviderAdapter {
 					productId: params.productId,
 					amountCents: params.amountCents,
 				},
-				"Failed to create Dodo price"
+				"Failed to create Dodo price",
 			);
 			throw error;
 		}
 	}
 
 	/**
-	 * Map Dodo status to our standard status
+	 * Create a refund for a payment via Dodo SDK.
 	 */
+	async createRefund(params: CreateRefundParams): Promise<RefundResult> {
+		try {
+			const refund = await this.client.refunds.create({
+				payment_id: params.paymentId,
+				...(params.reason ? { reason: params.reason } : {}),
+			});
+
+			this.log.info(
+				{ refundId: refund.refund_id, paymentId: params.paymentId },
+				"Dodo refund created",
+			);
+
+			return {
+				refundId: refund.refund_id,
+				status: refund.status === "review" ? "pending" : refund.status,
+				amount: refund.amount ?? 0,
+				currency: (refund.currency as string) ?? "USD",
+			};
+		} catch (error) {
+			this.log.error(
+				{ err: serializeError(error as Error), paymentId: params.paymentId },
+				"Failed to create Dodo refund",
+			);
+			throw error;
+		}
+	}
+
 	private mapDodoStatus(status: string): "active" | "canceled" | "past_due" | "trialing" {
 		switch (status) {
 			case "active":
 				return "active";
-			case "canceled":
 			case "cancelled":
+			case "canceled":
 				return "canceled";
-			case "past_due":
+			case "on_hold":
+			case "failed":
 				return "past_due";
-			case "trialing":
+			case "pending":
 				return "trialing";
 			default:
 				return "active";

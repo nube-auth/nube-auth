@@ -19,6 +19,7 @@ export const checkoutRoutes = new Hono();
 
 const CheckoutRequestSchema = z.object({
 	appId: z.string(),
+	userId: z.string(), // Proofa user public_id (USER0...)
 	planId: z.string(), // Proofa plan public_id (PLAN0...)
 	interval: z.enum(["month", "year"]), // Billing interval
 	customerId: z.string().optional(),
@@ -123,8 +124,10 @@ checkoutRoutes.post("/", async (c: Context) => {
 			cancelUrl: validated.cancelUrl,
 			metadata: {
 				...validated.metadata,
-				proofa_plan_id: plan.public_id,
-				proofa_interval: validated.interval,
+				appId: validated.appId,
+				userId: validated.userId,
+				planId: plan.public_id,
+				interval: validated.interval,
 			},
 			...(validated.trialPeriodDays && { trialPeriodDays: validated.trialPeriodDays }),
 			mode: priceMapping.billing_type === "recurring" ? "subscription" : "payment",

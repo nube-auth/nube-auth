@@ -14,7 +14,7 @@ export interface ProcessWebhookJobData {
 	provider: string;
 	rawBody: string;
 	signature: string;
-	providerConfigId: number;
+	providerConfigId?: number;
 	ipAddress: string;
 }
 
@@ -47,7 +47,7 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 					provider: job.data.provider,
 					rawBody: job.data.rawBody,
 					signature: job.data.signature,
-					providerConfigId: job.data.providerConfigId,
+					...(job.data.providerConfigId != null ? { providerConfigId: job.data.providerConfigId } : {}),
 				});
 
 				if (!success) {

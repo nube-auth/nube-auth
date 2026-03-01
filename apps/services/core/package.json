@@ -21,6 +21,7 @@
 		"@proofa/queue": "workspace:*",
 		"@proofa/shared": "workspace:*",
 		"bullmq": "^5.8.0",
+		"dodopayments": "^2.21.0",
 		"hono": "^4.0.0",
 		"ioredis": "^5.3.2",
 		"resend": "^2.0.0",

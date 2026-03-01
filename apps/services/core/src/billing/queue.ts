@@ -32,6 +32,10 @@ export interface ProcessRefundJobData {
 	reason: string;
 }
 
+export interface SyncPlanJobData {
+	planId: string;
+}
+
 /**
  * Enqueue payment processing
  */
@@ -54,15 +58,13 @@ export async function enqueueWebhookProcessing(
 	provider: string,
 	rawBody: string,
 	signature: string,
-	providerConfigId: number,
-	ipAddress: string
+	ipAddress: string,
 ): Promise<void> {
 	const queue = getQueue<any>("billing");
 	const jobData: ProcessWebhookJobData = {
 		provider,
 		rawBody,
 		signature,
-		providerConfigId,
 		ipAddress,
 	};
 
@@ -105,4 +107,19 @@ export async function enqueueRefundProcessing(data: ProcessRefundJobData): Promi
 		},
 	});
 	log.info({ transactionId: data.transactionId }, "Refund processing job enqueued");
+}
+
+/**
+ * Enqueue plan sync to payment providers
+ */
+export async function enqueuePlanSync(data: SyncPlanJobData): Promise<void> {
+	const queue = getQueue<any>("billing");
+	await queue.add("sync-plan-to-providers", data as any, {
+		attempts: 5,
+		backoff: {
+			type: "exponential",
+			delay: 5000,
+		},
+	});
+	log.info({ planId: data.planId }, "Plan sync job enqueued");
 }

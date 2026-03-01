@@ -74,6 +74,19 @@ export interface CreatePriceResult {
   interval: 'month' | 'year' | 'one_time';
 }
 
+export interface CreateRefundParams {
+  paymentId: string; // Provider transaction/payment ID
+  amount?: number; // Partial refund amount in cents; omit for full refund
+  reason?: string;
+}
+
+export interface RefundResult {
+  refundId: string;
+  status: 'succeeded' | 'pending' | 'failed';
+  amount: number;
+  currency: string;
+}
+
 export interface PaymentProviderAdapter {
   createCheckout(params: CreateCheckoutParams): Promise<CheckoutSession>;
   verifyWebhook(signature: string, rawBody: string): Promise<WebhookEvent | null>;
@@ -82,6 +95,7 @@ export interface PaymentProviderAdapter {
   getSubscription(subscriptionId: string): Promise<SubscriptionDetails | null>;
   createProduct(params: CreateProductParams): Promise<CreateProductResult>;
   createPrice(params: CreatePriceParams): Promise<CreatePriceResult>;
+  createRefund(params: CreateRefundParams): Promise<RefundResult>;
 }
 
 export interface StripeCredentials {
@@ -98,6 +112,7 @@ export interface LemonSqueezyCredentials {
 export interface DodoCredentials {
   apiKey: string;
   webhookSecret: string;
+  environment: 'test_mode' | 'live_mode';
 }
 
 export type PaymentProviderCredentials = 

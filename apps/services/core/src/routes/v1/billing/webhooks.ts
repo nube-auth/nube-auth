@@ -35,13 +35,23 @@ webhookRoutes.post("/:provider", async (c: Context) => {
 		const provider = c.req.param("provider");
 		
 		// Get signature from various header formats used by different providers
-		const signature = c.req.header("stripe-signature") || // Stripe
-			c.req.header("x-signature") || // LemonSqueezy
-			c.req.header("x-webhook-signature") || // Generic
-			c.req.header("paddle-signature") || // Paddle
-			"";
+		// For Dodo: pack Standard Webhooks headers (webhook-id, webhook-signature, webhook-timestamp) as JSON
+		let signature: string;
+		if (provider === "dodo") {
+			signature = JSON.stringify({
+				"webhook-id": c.req.header("webhook-id") ?? "",
+				"webhook-signature": c.req.header("webhook-signature") ?? "",
+				"webhook-timestamp": c.req.header("webhook-timestamp") ?? "",
+			});
+		} else {
+			signature = c.req.header("stripe-signature") || // Stripe
+				c.req.header("x-signature") || // LemonSqueezy
+				c.req.header("x-webhook-signature") || // Generic
+				c.req.header("paddle-signature") || // Paddle
+				"";
+		}
 
-		if (!signature) {
+		if (!signature || signature === '{"webhook-id":"","webhook-signature":"","webhook-timestamp":""}') {
 			log.warn({ provider }, "Webhook received without signature");
 			return c.json({ error: "Missing signature" }, 400);
 		}
@@ -67,12 +77,10 @@ webhookRoutes.post("/:provider", async (c: Context) => {
 		}
 
 		// Enqueue webhook processing (async)
-		// Use providerConfigId = 0 as placeholder; webhook handler will verify and route
 		await enqueueWebhookProcessing(
 			normalizedProvider,
 			rawBody,
 			signature,
-			0, // Will be determined during webhook processing
 			ipAddress,
 		);
 
