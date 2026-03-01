@@ -26,12 +26,12 @@ export {
 } from "./session.js";
 // OAuth state management (CSRF protection)
 export {
-	cleanupExpiredStates,
+	configureStateStore,
 	consumeOAuthState,
 	createOAuthState,
-	getPendingStateCount,
 	validateOAuthState,
 } from "./state.js";
+export type { StateStore } from "./state.js";
 
 // HTTP client helpers
 export { pingpong } from "./pingpong.js";

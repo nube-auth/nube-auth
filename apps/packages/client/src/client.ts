@@ -1,14 +1,27 @@
 import pingpong from "@pingpong-js/fetch";
-import type { ApiError, AuthStatus, ProofaClientConfig, Session, UpdateProfileData, User } from "./types";
+import type { ApiError, AuthStatus, License, ProofaClientConfig, Session, Subscription, UpdateProfileData, User } from "./types";
 
 export class ProofaClient {
 	private baseUrl: string;
 	private s2sToken?: string | undefined;
+	private appId?: string | undefined;
 	private httpClient = pingpong;
 
 	constructor(config: ProofaClientConfig) {
 		this.baseUrl = config.gatewayUrl.replace(/\/$/, "");
 		this.s2sToken = config.s2sToken;
+		this.appId = config.appId;
+	}
+
+	private requireAppId(): string {
+		if (!this.appId) {
+			throw new ProofaError(
+				"appId is required for this operation. Pass appId in ProofaClientConfig.",
+				"APP_ID_REQUIRED",
+				400,
+			);
+		}
+		return this.appId;
 	}
 
 	private async request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -91,6 +104,47 @@ export class ProofaClient {
 
 		deleteAll: async (): Promise<void> => {
 			await this.request("/v1/me/sessions", { method: "DELETE" });
+		},
+	};
+
+	// License (requires appId)
+	public license = {
+		getDetails: async (): Promise<License> => {
+			const appId = this.requireAppId();
+			return this.request<License>(`/v1/license/${appId}`);
+		},
+
+		isActive: async (): Promise<boolean> => {
+			const appId = this.requireAppId();
+			try {
+				const license = await this.request<License>(`/v1/license/${appId}`);
+				return license.status === "active";
+			} catch {
+				return false;
+			}
+		},
+	};
+
+	// Subscription (requires appId)
+	public subscription = {
+		getDetails: async (): Promise<Subscription> => {
+			const appId = this.requireAppId();
+			return this.request<Subscription>(`/v1/subscription/${appId}`);
+		},
+
+		cancel: async (reason?: string): Promise<void> => {
+			const appId = this.requireAppId();
+			await this.request(`/v1/subscription/${appId}/cancel`, {
+				method: "POST",
+				body: JSON.stringify(reason !== undefined ? { reason } : {}),
+			});
+		},
+
+		resume: async (): Promise<void> => {
+			const appId = this.requireAppId();
+			await this.request(`/v1/subscription/${appId}/resume`, {
+				method: "POST",
+			});
 		},
 	};
 }

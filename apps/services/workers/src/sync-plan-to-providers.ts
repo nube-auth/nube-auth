@@ -12,6 +12,7 @@ import { getDb, planQueries, appQueries, priceQueries } from "@proofa/db";
 import { prices, payment_provider_configs } from "@proofa/db/schema";
 import { eq } from "@proofa/db";
 import { createLogger, serializeError } from "@proofa/shared";
+import { QueueClient } from "@proofa/queue";
 import { createProviderAdapter } from "../../core/src/billing/adapters/index.js";
 import { decryptString } from "../../core/src/utils/encryption.js";
 
@@ -234,15 +235,20 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 		// Retry logic with exponential backoff
 		if (retryCount < 5) {
 			const delays = [0, 5, 30, 120, 1440]; // minutes: 0, 5min, 30min, 2hr, 24hr
-			const delayMinutes = delays[retryCount];
+			const delayMinutes = delays[retryCount] ?? 0;
 
 			log.info(
 				{ planId, retryCount: retryCount + 1, delayMinutes },
 				"Scheduling retry for failed providers",
 			);
 
-			// TODO(@devendra): Queue a new job with increased retry count
-			// await queueJob('sync-plan-to-providers', { planId, retryCount: retryCount + 1 }, delayMinutes * 60 * 1000);
+			const queueClient = new QueueClient();
+			const queue = queueClient.getQueue("billing");
+			await queue.add(
+				"sync-plan-to-providers",
+				{ planId, retryCount: retryCount + 1 } as any,
+				{ delay: delayMinutes * 60 * 1000 },
+			);
 		} else {
 			log.error({ planId }, "Max retries reached, giving up on plan sync");
 			await sendSyncFailureNotification(plan.public_id, failedProviders);

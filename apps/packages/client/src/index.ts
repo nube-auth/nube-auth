@@ -4,6 +4,7 @@ export type {
 	License,
 	ProofaClientConfig,
 	Session,
+	Subscription,
 	UpdateProfileData,
 	User,
 } from "./types";

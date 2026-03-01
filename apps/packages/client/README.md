@@ -12,23 +12,26 @@ pnpm add @proofa/client
 
 ### Frontend (Cookie-based Authentication)
 
-For frontend applications (user/admin dashboards), the client uses cookies automatically:
+For frontend applications, the client uses cookies automatically:
 
 ```typescript
 import { ProofaClient } from '@proofa/client';
 
-// Initialize without S2S token - uses cookies
 const client = new ProofaClient({
   gatewayUrl: 'https://api.proofa.sh',
-  // or for local dev:
-  // gatewayUrl: 'http://localhost:3004'
+  appId: 'APP0abc123', // Required for license/subscription APIs
 });
 
 // Get current user
 const user = await client.me.get();
 
-// Update profile
-await client.me.update({ name: 'John Doe' });
+// Check license
+const isActive = await client.license.isActive();
+const license = await client.license.getDetails();
+
+// Subscription management
+const sub = await client.subscription.getDetails();
+await client.subscription.cancel('switching_plans');
 
 // Logout
 await client.auth.logout();
@@ -36,25 +39,19 @@ await client.auth.logout();
 
 ### Backend (S2S Token Authentication)
 
-For backend services (Core, Gateway), provide an S2S token for service-to-service authentication:
+For backend services, provide an S2S token for service-to-service authentication:
 
 ```typescript
 import { ProofaClient } from '@proofa/client';
 
-// Initialize with S2S token for backend
 const client = new ProofaClient({
   gatewayUrl: process.env.GATEWAY_URL,
-  s2sToken: process.env.X_PROOFA_SERVICE_TOKEN
+  s2sToken: process.env.X_PROOFA_SERVICE_TOKEN,
+  appId: 'APP0abc123',
 });
 
 // All requests will include X-Proofa-Service-Token header
 const user = await client.me.get();
-
-// Admin: Create project
-const project = await client.admin.projects.create({
-  name: 'My Project',
-  slug: 'my-project'
-});
 ```
 
 ## API
@@ -72,14 +69,16 @@ const project = await client.admin.projects.create({
 ### Sessions
 
 - `client.sessions.list()` - List all active sessions
+- `client.sessions.delete(sessionId)` - Delete a specific session
 - `client.sessions.deleteAll()` - Logout all sessions
 
-### Admin
+### License (requires `appId`)
 
-- `client.admin.projects.list()` - List all projects
-- `client.admin.projects.create(data)` - Create new project
-- `client.admin.projects.get(id)` - Get project details
-- `client.admin.projects.apps(projectId)` - List apps in project
-- `client.admin.projects.createApp(projectId, data)` - Create app
-- `client.admin.projects.members(projectId)` - List project members
-- `client.admin.licenses.list()` - List all licenses
+- `client.license.isActive()` - Check if user has an active license
+- `client.license.getDetails()` - Get full license details
+
+### Subscription (requires `appId`)
+
+- `client.subscription.getDetails()` - Get subscription details
+- `client.subscription.cancel(reason?)` - Cancel subscription
+- `client.subscription.resume()` - Resume canceled subscription

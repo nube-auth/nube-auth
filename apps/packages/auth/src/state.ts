@@ -1,15 +1,16 @@
 /**
  * OAuth State Management
- * Provides CSRF protection for OAuth flows by managing state tokens
+ * Provides CSRF protection for OAuth flows by managing state tokens.
+ *
+ * Supports pluggable backends:
+ * - In-memory Map (default, suitable for single-instance or development)
+ * - Custom store (e.g., Redis) via configureStateStore()
  */
 
 import { id, validateId } from "@proofa/shared";
 
 /** Default state token expiration (10 minutes) */
 const DEFAULT_STATE_TTL_MS = 10 * 60 * 1000;
-
-/** In-memory state store for development (use Redis in production) */
-const stateStore = new Map<string, StateData>();
 
 interface StateData {
 	createdAt: number;
@@ -32,10 +33,58 @@ interface ValidateStateResult {
 }
 
 /**
- * Generate a new OAuth state token
- * In production, this should be stored in Redis with TTL
+ * Pluggable state store interface.
+ * Implement this to back OAuth state with Redis or another store.
  */
-export function createOAuthState(options: CreateStateOptions): string {
+export interface StateStore {
+	get(key: string): Promise<StateData | null>;
+	set(key: string, value: StateData, ttlMs: number): Promise<void>;
+	delete(key: string): Promise<void>;
+}
+
+// --- In-memory default store ---
+class InMemoryStateStore implements StateStore {
+	private store = new Map<string, StateData>();
+	private timers = new Map<string, ReturnType<typeof setTimeout>>();
+
+	async get(key: string): Promise<StateData | null> {
+		return this.store.get(key) ?? null;
+	}
+
+	async set(key: string, value: StateData, ttlMs: number): Promise<void> {
+		this.store.set(key, value);
+		// Auto-cleanup after TTL
+		const timer = setTimeout(() => {
+			this.store.delete(key);
+			this.timers.delete(key);
+		}, ttlMs);
+		this.timers.set(key, timer);
+	}
+
+	async delete(key: string): Promise<void> {
+		this.store.delete(key);
+		const timer = this.timers.get(key);
+		if (timer) {
+			clearTimeout(timer);
+			this.timers.delete(key);
+		}
+	}
+}
+
+let stateStore: StateStore = new InMemoryStateStore();
+
+/**
+ * Configure a custom state store (e.g., Redis).
+ * Call this at application startup before any OAuth flows.
+ */
+export function configureStateStore(store: StateStore): void {
+	stateStore = store;
+}
+
+/**
+ * Generate a new OAuth state token
+ */
+export async function createOAuthState(options: CreateStateOptions): Promise<string> {
 	const { provider, redirectUri, metadata, ttlMs = DEFAULT_STATE_TTL_MS } = options;
 
 	const state = id.state();
@@ -46,92 +95,55 @@ export function createOAuthState(options: CreateStateOptions): string {
 		metadata,
 	};
 
-	stateStore.set(state, data);
-
-	// Auto-cleanup after TTL
-	setTimeout(() => {
-		stateStore.delete(state);
-	}, ttlMs);
+	await stateStore.set(state, data, ttlMs);
 
 	return state;
 }
 
 /**
  * Validate an OAuth state token
- * @param state The state token received from the OAuth callback
- * @param expectedProvider The OAuth provider that should match
- * @returns Validation result with data if valid
  */
-export function validateOAuthState(state: string | undefined | null, expectedProvider: string): ValidateStateResult {
+export async function validateOAuthState(state: string | undefined | null, expectedProvider: string): Promise<ValidateStateResult> {
 	if (!state) {
 		return { valid: false, error: "Missing state parameter" };
 	}
 
-	// Validate format
 	if (!validateId("state", state)) {
 		return { valid: false, error: "Invalid state format" };
 	}
 
-	// Check if state exists
-	const data = stateStore.get(state);
+	const data = await stateStore.get(state);
 	if (!data) {
 		return { valid: false, error: "State token not found or expired" };
 	}
 
-	// Verify provider matches
 	if (data.provider !== expectedProvider) {
-		// Delete to prevent reuse attempts
-		stateStore.delete(state);
+		await stateStore.delete(state);
 		return { valid: false, error: "Provider mismatch" };
 	}
 
-	// Check expiration (default 10 min)
 	const age = Date.now() - data.createdAt;
 	if (age > DEFAULT_STATE_TTL_MS) {
-		stateStore.delete(state);
+		await stateStore.delete(state);
 		return { valid: false, error: "State token expired" };
 	}
 
 	// Delete state to prevent reuse (one-time use)
-	stateStore.delete(state);
+	await stateStore.delete(state);
 
 	return { valid: true, data };
 }
 
 /**
- * Consume and validate OAuth state in one operation
- * Throws on invalid state for easy error handling
+ * Consume and validate OAuth state in one operation.
+ * Throws on invalid state for easy error handling.
  */
-export function consumeOAuthState(state: string | undefined | null, expectedProvider: string): StateData {
-	const result = validateOAuthState(state, expectedProvider);
+export async function consumeOAuthState(state: string | undefined | null, expectedProvider: string): Promise<StateData> {
+	const result = await validateOAuthState(state, expectedProvider);
 
 	if (!result.valid) {
 		throw new Error(`OAuth state validation failed: ${result.error}`);
 	}
 
 	return result.data!;
-}
-
-/**
- * Clean up expired state tokens (call periodically)
- */
-export function cleanupExpiredStates(): number {
-	const now = Date.now();
-	let cleaned = 0;
-
-	for (const [key, data] of stateStore.entries()) {
-		if (now - data.createdAt > DEFAULT_STATE_TTL_MS) {
-			stateStore.delete(key);
-			cleaned++;
-		}
-	}
-
-	return cleaned;
-}
-
-/**
- * Get number of pending state tokens (for monitoring)
- */
-export function getPendingStateCount(): number {
-	return stateStore.size;
 }

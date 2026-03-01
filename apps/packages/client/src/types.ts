@@ -1,6 +1,11 @@
 export interface ProofaClientConfig {
 	gatewayUrl: string;
 	/**
+	 * App public ID for license and subscription queries.
+	 * Required for client.license and client.subscription modules.
+	 */
+	appId?: string | undefined;
+	/**
 	 * S2S token for backend service-to-service authentication.
 	 * If provided, it will be sent as X-Proofa-Service-Token header.
 	 * Leave undefined for frontend cookie-based authentication.
@@ -41,6 +46,17 @@ export interface License {
 	valid_from: number;
 	valid_until: number | null;
 	entitlements?: Record<string, unknown>;
+}
+
+export interface Subscription {
+	public_id: string;
+	status: "active" | "canceled" | "past_due" | "trialing";
+	billing_interval: string;
+	current_period_start: string;
+	current_period_end: string | null;
+	cancel_at_period_end: boolean;
+	amount_cents: number;
+	currency: string;
 }
 
 export interface UpdateProfileData {

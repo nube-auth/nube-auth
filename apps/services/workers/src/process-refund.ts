@@ -10,8 +10,11 @@
 
 import { Worker, type Job } from "bullmq";
 import { QueueClient } from "@proofa/queue";
-import { createLogger } from "@proofa/shared";
+import { createLogger, serializeError } from "@proofa/shared";
 import { getDb, eq, and, purchases, payment_transactions } from "@proofa/db";
+import { payment_provider_configs } from "@proofa/db/schema";
+import { createProviderAdapter } from "../../core/src/billing/adapters/index.js";
+import { decryptString } from "../../core/src/utils/encryption.js";
 
 const log = createLogger("process-refund-worker");
 
@@ -112,7 +115,51 @@ async function processRefundJob(job: Job<ProcessRefundJobData>): Promise<void> {
 			"Refund validated, processing with provider",
 		);
 
-		// 6. Update purchase status if full refund
+		// 6. Call payment provider to issue refund
+		const providerConfig = await db
+			.select()
+			.from(payment_provider_configs)
+			.where(eq(payment_provider_configs.id, originalTx.provider_config_id))
+			.then((rows) => rows[0]);
+
+		if (!providerConfig) {
+			throw new Error(
+				`Provider config not found: ${originalTx.provider_config_id}`,
+			);
+		}
+
+		let credentials: unknown;
+		try {
+			const credentialsJson = decryptString(providerConfig.credentials);
+			credentials = JSON.parse(credentialsJson);
+		} catch (error) {
+			log.error(
+				{ err: serializeError(error as Error), providerConfigId: providerConfig.id },
+				"Failed to decrypt provider credentials",
+			);
+			throw new Error("Failed to decrypt provider credentials");
+		}
+
+		const adapter = createProviderAdapter(providerConfig.provider, credentials);
+
+		const isPartialRefund = finalRefundAmount !== originalTx.amount_cents;
+		const refundResult = await adapter.createRefund({
+			paymentId: originalTx.provider_transaction_id,
+			...(isPartialRefund ? { amount: finalRefundAmount } : {}),
+			reason: "customer_request",
+		});
+
+		log.info(
+			{
+				purchaseId,
+				providerRefundId: refundResult.refundId,
+				refundStatus: refundResult.status,
+				refundAmount: refundResult.amount,
+			},
+			"Provider refund issued",
+		);
+
+		// 7. Update purchase status if full refund
 		if (finalRefundAmount === originalTx.amount_cents) {
 			await db
 				.update(purchases)
@@ -135,7 +182,7 @@ async function processRefundJob(job: Job<ProcessRefundJobData>): Promise<void> {
 	} catch (error) {
 		log.error(
 			{
-				err: error as Error,
+				err: serializeError(error as Error),
 				jobId: job.id,
 				purchaseId,
 			},

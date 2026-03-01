@@ -1,17 +1,20 @@
 /**
  * License Sync Worker
  *
- * Handles async license synchronization after purchase completion
- * - Updates user's app license based on purchased plan
- * - Sets license expiration date
- * - Notifies user of license activation
- *
- * Note: This is a placeholder for Phase 2 integration with license system
+ * Ensures a license record exists for a completed purchase.
+ * This is an idempotent fallback — the webhook flow (createPurchaseRecords)
+ * already creates licenses on payment success. This worker handles:
+ * - Retry after transient failures
+ * - Manual re-sync from admin actions
+ * - Edge cases where webhook processing partially succeeded
  */
 
 import { createLogger, serializeError } from "@proofa/shared";
 import type { Worker } from "bullmq";
 import { QueueClient } from "@proofa/queue";
+import { getDb, eq, purchases, plans, licenses } from "@proofa/db";
+import { prices as pricesTable } from "@proofa/db/schema";
+import { licenseQueries } from "@proofa/db";
 
 const log = createLogger("sync-license-worker");
 
@@ -28,58 +31,92 @@ export async function setupSyncLicenseWorker(): Promise<Worker<SyncLicenseJobDat
 	const { Worker: BullWorker } = await import("bullmq");
 	const queueClient = new QueueClient();
 	const queue = queueClient.getQueue("SYNC_LICENSE");
+
+	// Dynamically import licenseManager to avoid circular dependencies
+	const { licenseManager } = await import(
+		"../../core/src/billing/services/license-manager.js"
+	);
+
 	return new BullWorker<SyncLicenseJobData>(
 		"SYNC_LICENSE",
 		async (job) => {
-			try {
-				log.info(
-					{
-						jobId: job.id,
-						purchaseId: job.data.purchaseId,
-						appId: job.data.appId,
-					},
-					"Syncing license",
-				);
+			const { purchaseId, appId, subjectType, subjectId } = job.data;
 
-				const { purchaseId, appId, subjectType, subjectId } = job.data;
+			log.info(
+				{ jobId: job.id, purchaseId, appId, subjectType, subjectId },
+				"Syncing license for purchase",
+			);
 
-				// TODO: Phase 2 - Integrate with actual license system
-				// This is a placeholder that just logs the sync
-				// When implemented, this should:
-				// 1. Query the plan_provider_prices to get plan details
-				// 2. Query the plans table to get plan duration/tier
-				// 3. Calculate license expiration date
-				// 4. Update or create user license record
-				// 5. Notify user via email/webhook of license activation
+			const db = getDb();
 
-				log.info(
-					{
-						purchaseId,
-						appId,
-						subjectType,
-						subjectId,
-					},
-					"License sync (Phase 2 integration pending)",
-				);
+			// 1. Look up the purchase
+			const purchase = await db.query.purchases.findFirst({
+				where: eq(purchases.id, purchaseId),
+				columns: { id: true, price_id: true, status: true },
+			});
 
-				// For now, just return success
-				// Real implementation will interact with license system
-				return {
-					success: true,
-					purchaseId,
-					message: "License sync scheduled for Phase 2 implementation",
-				};
-			} catch (error) {
-				log.error(
-					{
-						err: serializeError(error as Error),
-						jobId: job.id,
-						purchaseId: job.data.purchaseId,
-					},
-					"License sync failed",
-				);
-				throw error;
+			if (!purchase) {
+				log.error({ purchaseId }, "Purchase not found for license sync");
+				throw new Error(`Purchase not found: ${purchaseId}`);
 			}
+
+			if (purchase.status !== "completed") {
+				log.warn(
+					{ purchaseId, status: purchase.status },
+					"Skipping license sync — purchase not completed",
+				);
+				return { success: true, skipped: true, reason: "purchase_not_completed" };
+			}
+
+			// 2. Get the price to find the plan and duration
+			const price = purchase.price_id
+				? await db.query.prices.findFirst({
+						where: eq(pricesTable.id, purchase.price_id),
+						columns: { id: true, plan_id: true, duration_days: true },
+					})
+				: null;
+
+			if (!price) {
+				log.error({ purchaseId, priceId: purchase.price_id }, "Price not found for purchase");
+				throw new Error(`Price not found for purchase: ${purchaseId}`);
+			}
+
+			// 3. Calculate expiry
+			const validUntil = price.duration_days
+				? new Date(Date.now() + price.duration_days * 24 * 60 * 60 * 1000)
+				: null; // null = lifetime license
+
+			// 4. Check if license already exists (idempotent)
+			const existingLicense = await licenseQueries.findByUserAndApp(db, subjectId, appId);
+
+			if (existingLicense && existingLicense.status === "active" && existingLicense.plan_id === price.plan_id) {
+				log.info(
+					{ purchaseId, licenseId: existingLicense.public_id },
+					"License already active and up-to-date, skipping",
+				);
+				return { success: true, skipped: true, reason: "already_synced" };
+			}
+
+			// 5. Create or update license via licenseManager
+			const license = await licenseManager.createLicense({
+				userId: subjectId,
+				appId,
+				planId: price.plan_id,
+				validUntil,
+				metadata: { purchaseId, syncedAt: new Date().toISOString() },
+			});
+
+			log.info(
+				{
+					purchaseId,
+					licenseId: license.public_id,
+					planId: price.plan_id,
+					validUntil,
+				},
+				"License synced successfully",
+			);
+
+			return { success: true, licenseId: license.public_id };
 		},
 		{
 			connection: queue.client as any,

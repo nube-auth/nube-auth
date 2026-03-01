@@ -1,14 +1,15 @@
 /**
- * Payment Processing Worker
+ * Payment Processing Worker (No-op)
  *
- * Handles async payment processing for checkout sessions
- * - Confirms payment with provider
- * - Creates payment transaction record
- * - Completes purchase
- * - Enqueues license sync job
+ * Webhooks are the source of truth for payment confirmation.
+ * The webhook handler (process-webhook → webhook-processor → createPurchaseRecords)
+ * handles all purchase/license/transaction creation when a payment succeeds.
+ *
+ * This worker exists only as a dead-letter consumer to prevent unprocessed
+ * jobs from accumulating in the PROCESS_PAYMENT queue.
  */
 
-import { createLogger, serializeError } from "@proofa/shared";
+import { createLogger } from "@proofa/shared";
 import type { Worker } from "bullmq";
 import { QueueClient } from "@proofa/queue";
 
@@ -28,41 +29,13 @@ export async function setupProcessPaymentWorker(): Promise<Worker<ProcessPayment
 	return new BullWorker<ProcessPaymentJobData>(
 		"PROCESS_PAYMENT",
 		async (job) => {
-			try {
-				log.info(
-					{ jobId: job.id, data: job.data },
-					"Processing payment",
-				);
-
-				const { purchaseId, providerSessionId } = job.data;
-				
-				// TODO: Phase 2 - Implement actual payment processing
-				// This is a placeholder for the payment processing logic
-				// When implemented, this should:
-				// 1. Get purchase details from PurchasesService
-				// 2. Get provider configuration
-				// 3. Initialize payment adapter for the provider
-				// 4. Get session from provider
-				// 5. Verify transaction is completed
-				// 6. Complete the purchase record
-				// 7. Enqueue license sync job
-
-				log.info(
-					{
-						purchaseId,
-						providerSessionId,
-					},
-					"Payment processing (Phase 2 implementation pending)",
-				);
-
-				return { success: true, purchaseId };
-			} catch (error) {
-				log.error(
-					{ err: serializeError(error as Error), jobId: job.id },
-					"Payment processing failed",
-				);
-				throw error;
-			}
+			// No-op: Webhooks handle payment confirmation and license creation.
+			// See webhook-processor.ts → createPurchaseRecords() for the real flow.
+			log.info(
+				{ jobId: job.id, purchaseId: job.data.purchaseId },
+				"Payment job acknowledged (no-op — webhooks are source of truth)",
+			);
+			return { success: true, purchaseId: job.data.purchaseId };
 		},
 		{
 			connection: queue.client as any,
