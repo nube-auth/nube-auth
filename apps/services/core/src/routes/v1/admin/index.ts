@@ -18,9 +18,9 @@ const _log = createLogger("admin-routes");
 const router = new Hono();
 
 // Mount subrouters with appropriate prefixes
+router.route("/projects", statsRouter);
 router.route("/projects", projectsRouter);
 router.route("/projects", appsRouter);
-router.route("/projects", statsRouter);
 router.route("/projects", membersRouter);
 router.route("/providers", providersRouter);
 router.route("/routing-rules", routingRulesRouter);

@@ -4,6 +4,7 @@ import {
 	licenseQueries,
 	planQueries,
 	projectQueries,
+	userQueries,
 } from "@proofa/db";
 import { createLogger, idPatterns, serializeError } from "@proofa/shared";
 import type { Context } from "hono";
@@ -12,6 +13,77 @@ import { Hono } from "hono";
 const log = createLogger("admin-stats-routes");
 
 export const statsRouter = new Hono();
+
+/**
+ * GET /stats
+ * Get aggregated stats for all projects accessible by the current user
+ */
+statsRouter.get("/stats", async (c: Context) => {
+	try {
+		const userId = c.req.header("X-Proofa-User-Id");
+		if (!userId) {
+			return c.json({ error: "Unauthorized" }, 401);
+		}
+
+		const db = getDb();
+
+		const user = await userQueries.findByPublicId(db, userId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Get all projects the user has access to
+		const ownedProjects = await projectQueries.findByOwnerId(db, user.id);
+		const memberProjects = await projectQueries.findByUserId(db, user.id);
+
+		const seenIds = new Set<number>();
+		const allProjects = [];
+		for (const p of [...ownedProjects, ...memberProjects]) {
+			if (!seenIds.has(p.id)) {
+				seenIds.add(p.id);
+				allProjects.push(p);
+			}
+		}
+
+		const stats: Record<string, {
+			totalApps: number;
+			totalUsers: number;
+			totalLicenses: number;
+			activeLicenses: number;
+			totalRevenue: number;
+		}> = {};
+
+		for (const project of allProjects) {
+			const apps = await appQueries.findByProjectId(db, project.id);
+
+			let totalLicenses = 0;
+			let activeLicenses = 0;
+			const uniqueUsers = new Set<number>();
+
+			for (const app of apps) {
+				const appLicenses = await licenseQueries.findByAppId(db, app.id);
+				totalLicenses += appLicenses.length;
+				for (const license of appLicenses) {
+					if (license.status === "active") activeLicenses++;
+					uniqueUsers.add(license.user_id);
+				}
+			}
+
+			stats[project.public_id] = {
+				totalApps: apps.length,
+				totalUsers: uniqueUsers.size,
+				totalLicenses,
+				activeLicenses,
+				totalRevenue: 0,
+			};
+		}
+
+		return c.json({ stats });
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Get batch project stats error");
+		return c.json({ error: "Failed to get project stats" }, 500);
+	}
+});
 
 /**
  * GET /:projectId/stats

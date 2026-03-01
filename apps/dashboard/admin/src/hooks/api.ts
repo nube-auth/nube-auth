@@ -141,6 +141,27 @@ export function useProjects() {
 	});
 }
 
+export function useProjectsStats() {
+	return useQuery({
+		queryKey: ["projects-stats"],
+		queryFn: async () => {
+			const data = await fetchAPI<{
+				stats: Record<string, {
+					totalApps: number;
+					totalUsers: number;
+					totalLicenses: number;
+					activeLicenses: number;
+					totalRevenue: number;
+				}>;
+			}>("/v1/admin/projects/stats");
+			return data.stats;
+		},
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
+	});
+}
+
 export function useCreateProject() {
 	const queryClient = useQueryClient();
 	return useMutation({

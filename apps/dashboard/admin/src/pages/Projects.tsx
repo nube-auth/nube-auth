@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useProjects } from "../hooks/api";
+import { useProjects, useProjectsStats } from "../hooks/api";
 import { 
 	Icon, 
 	IconType,
@@ -27,6 +27,7 @@ type ViewMode = "grid" | "table";
 
 export default function Projects() {
 	const { data: projects, isLoading, error } = useProjects();
+	const { data: statsMap } = useProjectsStats();
 	const navigate = useNavigate();
 	const [viewMode, setViewMode] = useState<ViewMode>("table");
 
@@ -161,19 +162,19 @@ export default function Projects() {
 								<div className="grid grid-cols-3 gap-3 mt-4 p-3 bg-surface-secondary rounded-lg">
 									<div className="text-center">
 										<div className="text-xl font-bold text-foreground mb-0.5">
-											{project.totalApps || 0}
+											{statsMap?.[project.id]?.totalApps ?? 0}
 										</div>
 										<Text className="text-xs text-muted">Apps</Text>
 									</div>
 									<div className="text-center">
 										<div className="text-xl font-bold text-foreground mb-0.5">
-											{project.totalUsers || 0}
+											{statsMap?.[project.id]?.totalUsers ?? 0}
 										</div>
 										<Text className="text-xs text-muted">Users</Text>
 									</div>
 									<div className="text-center">
 										<div className="text-xl font-bold text-foreground mb-0.5">
-											{project.activeLicenses || 0}
+											{statsMap?.[project.id]?.activeLicenses ?? 0}
 										</div>
 										<Text className="text-xs text-muted">Licenses</Text>
 									</div>
@@ -184,7 +185,7 @@ export default function Projects() {
 									<div className="flex items-center gap-1.5">
 										<Icon icon={IconType.DollarCircle} size={14} className="text-success" />
 										<span className="text-sm font-semibold text-success">
-											${(project.totalRevenue || 0).toFixed(2)}
+											${(statsMap?.[project.id]?.totalRevenue ?? 0).toFixed(2)}
 										</span>
 									</div>
 									<Chip variant="info" size="sm"> {project.id} </Chip>
@@ -238,25 +239,25 @@ export default function Projects() {
 										</TableCell>
 										<TableCell className="text-center">
 											<Text className="font-semibold">
-												{project.totalApps || 0}
+												{statsMap?.[project.id]?.totalApps ?? 0}
 											</Text>
 										</TableCell>
 										<TableCell className="text-center">
 											<Text className="font-semibold">
-												{project.totalUsers || 0}
+												{statsMap?.[project.id]?.totalUsers ?? 0}
 											</Text>
 										</TableCell>
 										<TableCell className="text-center">
 											<Text className="font-semibold">
-												{project.activeLicenses || 0}
+												{statsMap?.[project.id]?.activeLicenses ?? 0}
 												<span className="text-sm text-muted font-normal ml-0.5">
-													/ {project.totalLicenses || 0}
+													/ {statsMap?.[project.id]?.totalLicenses ?? 0}
 												</span>
 											</Text>
 										</TableCell>
 										<TableCell className="text-right">
 											<Text className="font-semibold text-success">
-												${(project.totalRevenue || 0).toFixed(2)}
+												${(statsMap?.[project.id]?.totalRevenue ?? 0).toFixed(2)}
 											</Text>
 										</TableCell>
 										<TableCell>
