@@ -10,7 +10,9 @@ import { Hono } from "hono";
 import { env } from "../../../config/env.js";
 import { normalizeEventType } from "../../../billing/services/webhook-simulator.js";
 import type { PaymentDetails } from "../../../billing/adapters/types.js";
+import { createProviderAdapter } from "../../../billing/adapters/factory.js";
 import { processWebhookEvent } from "../../../billing/services/webhook-processor.js";
+import { decryptString } from "../../../utils/encryption.js";
 import { rateLimitMiddleware } from "../../../middleware/rateLimit.js";
 
 const log = createLogger("admin-test-routes");
@@ -33,21 +35,23 @@ const testRateLimit = rateLimitMiddleware({
  * Validate test mode credentials
  * CRITICAL: Only allow sandbox/test credentials in playground
  */
-async function validateTestModeCredentials(provider: string): Promise<boolean> {
-	// For now, we'll check environment variables
-	// In production, this should check actual provider configs
+async function validateTestModeCredentials(provider: string, mode: string): Promise<boolean> {
+	// In simulate mode, no real credentials are needed — we mock the payment flow
+	if (mode === "simulate") {
+		return true;
+	}
+
+	// Live test mode: verify provider has test/sandbox credentials configured
 	if (provider === "stripe") {
 		const apiKey = env.STRIPE_SECRET_KEY;
 		return apiKey?.startsWith("sk_test_") || false;
 	}
 	
 	if (provider === "lemonsqueezy" || provider === "lemon_squeezy") {
-		// LemonSqueezy test mode check - would need to verify with actual config
 		return true; // Placeholder - implement proper check
 	}
 	
 	if (provider === "dodo") {
-		// Dodo test mode check
 		return true; // Placeholder - implement proper check
 	}
 	
@@ -62,15 +66,22 @@ async function validateTestModeCredentials(provider: string): Promise<boolean> {
 router.post("/initialize", testRateLimit, async (c: Context) => {
 	try {
 		const body = await c.req.json();
-		const { provider, planId, mode = "simulate" } = body as {
+		const { provider, mode = "simulate", projectId, appId, userId, planId } = body as {
 			provider?: "stripe" | "lemonsqueezy" | "dodo";
-			planId?: string;
 			mode?: "simulate" | "live";
+			projectId?: string;
+			appId?: string;
+			userId?: string;
+			planId?: string;
 		};
 
 		// Validate provider
 		if (!provider || !["stripe", "lemonsqueezy", "dodo"].includes(provider)) {
 			return c.json({ error: "Invalid provider. Must be stripe, lemonsqueezy, or dodo" }, 400);
+		}
+
+		if (!projectId) {
+			return c.json({ error: "projectId is required" }, 400);
 		}
 
 		// Get admin user ID from header
@@ -94,7 +105,7 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 		}
 
 		// SECURITY: Validate test mode credentials
-		const isTestMode = await validateTestModeCredentials(provider);
+		const isTestMode = await validateTestModeCredentials(provider, mode);
 		if (!isTestMode) {
 			log.error({ provider }, "Production credentials not allowed in test playground");
 			return c.json({ 
@@ -102,96 +113,98 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 			}, 403);
 		}
 
-		// Create test user
-		const testUserEmail = `test+${provider}+${Date.now()}@proofa.internal`;
-		const testUser = await userQueries.create(db, {
-			public_id: publicId(createId("user")),
-			primary_email: testUserEmail,
-			primary_email_verified: true,
-			name: `Test User (${provider})`,
-			is_test: true,
-		});
-
-		log.info({ 
-			testUserId: testUser.public_id, 
-			email: testUserEmail 
-		}, "Created test user");
-
-		// Create or find a test project for this admin
-		let testProject = await db.query.projects.findFirst({
-			where: (projects, { and, eq }) => and(
-				eq(projects.owner_user_id, adminUser.id),
-				eq(projects.slug, "test-playground")
-			)
-		});
-
+		// Look up the selected project
+		const testProject = await projectQueries.findByPublicId(db, projectId);
 		if (!testProject) {
-			testProject = await projectQueries.create(db, {
-				public_id: publicId(createId("project")),
-				name: "Test Playground",
-				slug: "test-playground",
-				description: "Auto-generated project for payment testing",
-				owner_user_id: adminUser.id,
-			});
+			return c.json({ error: "Project not found" }, 404);
 		}
 
-		// Create test app
-		const testApp = await appQueries.create(db, {
-			public_id: publicId(createId("app")),
-			project_id: testProject.id,
-			name: `Test App - ${provider}`,
-			slug: `test-app-${provider}-${Date.now()}`,
-			description: `Auto-generated app for ${provider} testing`,
-			enabled_providers: JSON.stringify(["google"]),
-			app_tokens: JSON.stringify({
-				currentKey: {
-					value: `test_${createId("app")}`,
-					createdAt: new Date().toISOString(),
-				},
-			}),
-			security_settings: JSON.stringify({
-				sessionTtlDays: 30,
-				maxSessions: 5,
-				redirectUris: ["http://localhost:3000/callback"],
-			}),
-			plan_settings: JSON.stringify({
-				allowPlanSelection: true,
-				defaultPlanSlug: "pro",
-			}),
-			is_test: true,
-		});
+		// Use existing app or create a test app
+		let testApp;
+		if (appId) {
+			testApp = await appQueries.findByPublicId(db, appId);
+			if (!testApp || testApp.project_id !== testProject.id) {
+				return c.json({ error: "App not found or does not belong to the selected project" }, 404);
+			}
+			log.info({ appId: testApp.public_id }, "Using existing app for test");
+		} else {
+			testApp = await appQueries.create(db, {
+				public_id: publicId(createId("app")),
+				project_id: testProject.id,
+				name: `Test App - ${provider}`,
+				slug: `test-app-${provider}-${Date.now()}`,
+				description: `Auto-generated app for ${provider} testing`,
+				enabled_providers: JSON.stringify(["google"]),
+				app_tokens: JSON.stringify({
+					currentKey: {
+						value: `test_${createId("app")}`,
+						createdAt: new Date().toISOString(),
+					},
+				}),
+				security_settings: JSON.stringify({
+					sessionTtlDays: 30,
+					maxSessions: 5,
+					redirectUris: ["http://localhost:3000/callback"],
+				}),
+				plan_settings: JSON.stringify({
+					allowPlanSelection: true,
+					defaultPlanSlug: "pro",
+				}),
+				is_test: true,
+			});
+			log.info({ testAppId: testApp.public_id, projectId: testProject.public_id }, "Created test app");
+		}
 
-		log.info({ 
-			testAppId: testApp.public_id, 
-			projectId: testProject.public_id 
-		}, "Created test app");
+		// Use existing user or create a test user
+		let testUser;
+		if (userId) {
+			testUser = await userQueries.findByPublicId(db, userId);
+			if (!testUser) {
+				return c.json({ error: "User not found" }, 404);
+			}
+			log.info({ userId: testUser.public_id }, "Using existing user for test");
+		} else {
+			const testUserEmail = `test+${provider}+${Date.now()}@proofa.internal`;
+			testUser = await userQueries.create(db, {
+				public_id: publicId(createId("user")),
+				primary_email: testUserEmail,
+				primary_email_verified: true,
+				name: `Test User (${provider})`,
+				is_test: true,
+			});
+			log.info({ testUserId: testUser.public_id, email: testUserEmail }, "Created test user");
+		}
 
-		// Find or use provided plan
+		// Use existing plan or create a test plan
 		let selectedPlan;
 		if (planId) {
-			selectedPlan = await planQueries.findByAppAndSlug(db, testApp.id, planId);
-		}
-		
-		if (!selectedPlan) {
+			selectedPlan = await planQueries.findByPublicId(db, planId);
+			if (!selectedPlan) {
+				// Also try by slug on this app
+				selectedPlan = await planQueries.findByAppAndSlug(db, testApp.id, planId);
+			}
+			if (!selectedPlan) {
+				return c.json({ error: "Plan not found" }, 404);
+			}
+			log.info({ planId: selectedPlan.public_id }, "Using existing plan for test");
+		} else {
 			// Get first active plan for the app
 			const activePlans = await planQueries.findActiveByAppId(db, testApp.id);
 			selectedPlan = activePlans[0];
-		}
 
-		// If still no plan, create a default test plan
-		if (!selectedPlan) {
-			selectedPlan = await planQueries.create(db, {
-				public_id: publicId(createId("plan")),
-				app_id: testApp.id,
-				name: "Pro Plan",
-				slug: "pro",
-				description: "Test Pro Plan",
-				features: ["Test feature"],
-				status: "active",
-				display_order: 0,
-			});
-			
-			log.info({ planId: selectedPlan.public_id }, "Created default test plan");
+			if (!selectedPlan) {
+				selectedPlan = await planQueries.create(db, {
+					public_id: publicId(createId("plan")),
+					app_id: testApp.id,
+					name: "Pro Plan",
+					slug: "pro",
+					description: "Test Pro Plan",
+					features: ["Test feature"],
+					status: "active",
+					display_order: 0,
+				});
+				log.info({ planId: selectedPlan.public_id }, "Created default test plan");
+			}
 		}
 
 		// Create or find a test payment provider config for this project + provider
@@ -238,21 +251,57 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 			log.info({ priceId: testPrice.public_id, provider }, "Created test price");
 		}
 
-		// Create checkout URL if mode is "live"
+		// Create checkout URL if mode is "live" using real provider adapter
 		let checkoutUrl: string | undefined;
 		if (mode === "live") {
 			try {
-				// This would use the actual payment provider adapter
-				// For now, we'll generate a placeholder URL
-				checkoutUrl = `https://checkout.${provider}.com/test-session-${Date.now()}`;
-				
-				log.info({ checkoutUrl, provider }, "Generated checkout URL");
+				// Need a real provider config with encrypted credentials
+				// First try to find any config for this project/provider with real credentials
+				const liveConfigs = await paymentProviderConfigQueries.findByProjectAndProvider(
+					db,
+					testProject.id,
+					provider,
+					"test",
+				);
+
+				const configToUse = liveConfigs ?? providerConfig;
+
+				if (!configToUse || configToUse.credentials === "test-playground-no-real-credentials") {
+					return c.json({
+						error: "Live mode requires a configured payment provider with real test credentials. Add provider credentials in Project → Payment Providers first.",
+					}, 400);
+				}
+
+				const credentialsJson = decryptString(configToUse.credentials);
+				const decryptedCredentials = JSON.parse(credentialsJson);
+				const adapter = createProviderAdapter(provider, decryptedCredentials);
+
+				const baseUrl = env.ADMIN_DASHBOARD_URL || "http://localhost:5174";
+				const checkoutSession = await adapter.createCheckout({
+					customerId: testUser.public_id,
+					customerEmail: testUser.primary_email || "test@proofa.internal",
+					productId: testPrice.external_price_id || "",
+					successUrl: `${baseUrl}/playground/payments?status=success`,
+					cancelUrl: `${baseUrl}/playground/payments?status=cancel`,
+					metadata: {
+						userId: testUser.public_id,
+						appId: testApp.public_id,
+						planId: selectedPlan.public_id,
+						testSession: "true",
+					},
+					mode: testPrice.billing_type === "recurring" ? "subscription" : "payment",
+				});
+
+				checkoutUrl = checkoutSession.checkoutUrl;
+				log.info({ checkoutUrl, provider, sessionId: checkoutSession.sessionId }, "Created real checkout session");
 			} catch (error) {
 				log.error({ 
 					err: serializeError(error as Error),
 					provider 
-				}, "Failed to create checkout URL");
-				// Continue without checkout URL
+				}, "Failed to create checkout session");
+				return c.json({
+					error: `Failed to create checkout session with ${provider}. Check that your test credentials are configured correctly.`,
+				}, 500);
 			}
 		}
 
@@ -266,7 +315,7 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 			status: "active",
 			test_app_id: testApp.id,
 			test_user_id: testUser.id,
-			plan_id: selectedPlan.slug,
+			plan_id: selectedPlan.public_id,
 			checkout_url: checkoutUrl,
 			expires_at: expiresAt,
 		});
@@ -560,6 +609,16 @@ router.get("/status/:sessionId", async (c: Context) => {
 				.limit(20);
 		}
 
+		// Look up actual plan name
+		let planName = session.plan_id || "Unknown";
+		if (session.plan_id) {
+			const plan = await db.query.plans.findFirst({
+				where: (plans, { eq: eqCol }) => eqCol(plans.public_id, session.plan_id!),
+				columns: { name: true },
+			});
+			if (plan) planName = plan.name;
+		}
+
 		return c.json({
 			sessionId: session.public_id,
 			status: session.status,
@@ -578,7 +637,7 @@ router.get("/status/:sessionId", async (c: Context) => {
 				} : null,
 				plan: {
 					id: session.plan_id,
-					name: session.plan_id, // TODO: Get actual plan name
+					name: planName,
 				},
 			},
 			transactions,

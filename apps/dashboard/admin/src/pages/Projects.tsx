@@ -9,12 +9,11 @@ import {
 	Alert,
 	Card,
 	CardBody,
-	Table,
-	TableContainer,
+	DataTable,
+	DataTableRow,
 	TableHeader,
 	TableHead,
 	TableBody,
-	TableRow,
 	TableCell,
 	Heading,
 	Text,
@@ -199,27 +198,24 @@ export default function Projects() {
 
 			{/* Table View */}
 			{hasProjects && viewMode === "table" && (
-				<Card className="overflow-hidden">
-					<TableContainer>
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Name</TableHead>
-									<TableHead className="text-center">Apps</TableHead>
-									<TableHead className="text-center">Users</TableHead>
-									<TableHead className="text-center">Licenses</TableHead>
-									<TableHead className="text-right">Revenue</TableHead>
-									<TableHead className="text-center">Status</TableHead>
-									<TableHead className="w-12"></TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{projects.map((project: Project) => (
-									<TableRow
-										key={project.id}
-										className="cursor-pointer hover:bg-accent transition-colors"
-										onClick={() => navigate(`/projects/${project.id}`)}
-									>
+				<DataTable>
+						<TableHeader>
+							<tr>
+								<TableHead>Name</TableHead>
+								<TableHead className="text-center">Apps</TableHead>
+								<TableHead className="text-center">Users</TableHead>
+								<TableHead className="text-center">Licenses</TableHead>
+								<TableHead className="text-right">Revenue</TableHead>
+								<TableHead className="text-center">Status</TableHead>
+								<TableHead className="w-12"></TableHead>
+							</tr>
+						</TableHeader>
+						<TableBody>
+							{projects.map((project: Project) => (
+								<DataTableRow
+									key={project.id}
+									onClick={() => navigate(`/projects/${project.id}`)}
+								>
 										<TableCell>
 											<div className="flex items-center gap-3">
 												<div className="w-8 h-8 bg-surface-secondary rounded-md flex items-center justify-center flex-shrink-0">
@@ -268,12 +264,10 @@ export default function Projects() {
 										<TableCell className="text-center">
 											<Icon icon={IconType.ArrowRight} size={16} className="text-muted" />
 										</TableCell>
-									</TableRow>
+									</DataTableRow>
 								))}
 							</TableBody>
-						</Table>
-					</TableContainer>
-				</Card>
+				</DataTable>
 			)}
 		</div>
 	);

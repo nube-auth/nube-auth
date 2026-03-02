@@ -17,12 +17,11 @@ import {
 	BreadcrumbButton,
 	BreadcrumbSeparator,
 	Chip,
-	Table,
-	TableContainer,
+	DataTable,
+	DataTableRow,
 	TableHeader,
 	TableHead,
 	TableBody,
-	TableRow,
 	TableCell
 } from "@proofa/components";
 import { useProject, useProjectApps } from "../hooks/api";
@@ -182,26 +181,22 @@ export function ProjectAppsPage() {
 					))}
 				</div>
 			) : (
-				<Card className="overflow-hidden">
-					<CardBody className="p-0">
-						<TableContainer>
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>Application</TableHead>
-										<TableHead>Users</TableHead>
-										<TableHead>Licenses</TableHead>
-										<TableHead>Created</TableHead>
-										<TableHead align="right">Actions</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{apps.map((app) => (
-										<TableRow
-											key={app.id}
-											className="cursor-pointer hover:bg-accent transition-colors"
-											onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
-										>
+				<DataTable>
+						<TableHeader>
+							<tr>
+								<TableHead>Application</TableHead>
+								<TableHead>Users</TableHead>
+								<TableHead>Licenses</TableHead>
+								<TableHead>Created</TableHead>
+								<TableHead align="right">Actions</TableHead>
+							</tr>
+						</TableHeader>
+						<TableBody>
+							{apps.map((app) => (
+								<DataTableRow
+									key={app.id}
+									onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
+								>
 											<TableCell>
 												<div className="flex items-center gap-3">
 													<div className="w-8 h-8 bg-surface-secondary rounded-md flex items-center justify-center flex-shrink-0">
@@ -240,13 +235,10 @@ export function ProjectAppsPage() {
 													Settings
 												</Button>
 											</TableCell>
-										</TableRow>
+										</DataTableRow>
 									))}
 								</TableBody>
-							</Table>
-						</TableContainer>
-					</CardBody>
-				</Card>
+				</DataTable>
 			)}
 		</div>
 	);

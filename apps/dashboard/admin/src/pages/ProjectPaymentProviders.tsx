@@ -22,12 +22,11 @@ import {
 	DialogTitle,
 	DialogBody,
 	DialogFooter,
-	Table,
-	TableContainer,
+	DataTable,
+	DataTableRow,
 	TableHeader,
 	TableHead,
 	TableBody,
-	TableRow,
 	TableCell,
 	Breadcrumb,
 	BreadcrumbSeparator,
@@ -549,22 +548,20 @@ export default function ProjectPaymentProvidersPage() {
 					</CardBody>
 				</Card>
 			) : (
-				<Card className="overflow-hidden">
-					<TableContainer>
-						<Table>
+				<DataTable>
 							<TableHeader>
-								<TableRow>
+								<tr>
 									<TableHead>Provider</TableHead>
 									<TableHead>Environment</TableHead>
 									<TableHead>Status</TableHead>
 									<TableHead>Default</TableHead>
 									<TableHead>Created</TableHead>
 									<TableHead className="text-right">Actions</TableHead>
-								</TableRow>
+								</tr>
 							</TableHeader>
 							<TableBody>
 							{providers.map((provider) => (
-								<TableRow key={provider.id}>
+								<DataTableRow key={provider.id}>
 									<TableCell>
 										<Chip variant="primary" size="sm">
 											{provider.provider}
@@ -642,12 +639,10 @@ export default function ProjectPaymentProvidersPage() {
 											</Button>
 										</div>
 									</TableCell>
-								</TableRow>
+								</DataTableRow>
 							))}
 							</TableBody>
-						</Table>
-					</TableContainer>
-				</Card>
+				</DataTable>
 			)}
 
 			<ConfirmModal

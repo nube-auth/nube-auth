@@ -14,12 +14,11 @@ import {
 	Avatar,
 	Card,
 	CardBody,
-	Table,
-	TableContainer,
+	DataTable,
+	DataTableRow,
 	TableHeader,
 	TableHead,
 	TableBody,
-	TableRow,
 	TableCell,
 	Dialog,
 	DialogPopup,
@@ -303,38 +302,35 @@ export function AppUsersPage() {
 
 			{/* Users Table */}
 			{!usersLoading && filteredUsers.length > 0 && (
-				<Card className="overflow-hidden">
-					<CardBody className="p-0">
-						<TableContainer>
-							<Table>
+			<DataTable>
 								<TableHeader>
-									<TableRow>
+									<tr>
 										<TableHead>User</TableHead>
 										<TableHead align="center">Plan</TableHead>
 										<TableHead align="center">Status</TableHead>
 										<TableHead align="center">Joined</TableHead>
 										<TableHead align="center">License Valid Until</TableHead>
 										<TableHead align="right">Actions</TableHead>
-									</TableRow>
+									</tr>
 								</TableHeader>
 								<TableBody>
 									{filteredUsers.map((user) => (
-										<TableRow key={user.id}>
+										<DataTableRow key={user.id}>
 											<TableCell>
 												<div className="flex items-center gap-3">
-													<div className="w-40px h-40px bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center text-white text-14px font-semibold shrink-0">
+													<div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0">
 														{(user.name || user.email).charAt(0).toUpperCase()}
 													</div>
 													<div>
-														<div className="text-14px font-medium text-text-primary mb-2px">
+														<Text className="font-medium mb-0.5">
 															{user.name || "Anonymous"}
 															{user.primaryEmailVerified && (
-																<Icon icon={IconType.Check} size={14} className="text-primary ml-4px inline" />
+																<Icon icon={IconType.Check} size={14} className="text-primary ml-1 inline" />
 															)}
-														</div>
-														<div className="text-12px text-text-tertiary">
+														</Text>
+														<Text className="text-xs text-muted">
 															{user.email}
-														</div>
+														</Text>
 													</div>
 												</div>
 											</TableCell>
@@ -357,22 +353,22 @@ export function AppUsersPage() {
 												</Chip>
 											</TableCell>
 											<TableCell align="center">
-												<Text className="text-text-secondary">{new Date(user.createdAt).toLocaleDateString()}</Text>
-											</TableCell>
-											<TableCell align="center">
-												{user.licenseValidUntil ? (
-													(() => {
-														const now = Math.floor(Date.now() / 1000);
-														const daysUntilExpiry = Math.floor(
-															(user.licenseValidUntil - now) / (24 * 60 * 60),
-														);
-														const isExpired = daysUntilExpiry < 0;
-														const isExpiringSoon = daysUntilExpiry >= 0 && daysUntilExpiry <= 7;
+											<Text className="text-text-secondary">{new Date(user.createdAt * 1000).toLocaleDateString()}</Text>
+										</TableCell>
+										<TableCell align="center">
+											{user.licenseValidUntil ? (
+												(() => {
+													const now = Math.floor(Date.now() / 1000);
+													const daysUntilExpiry = Math.floor(
+														(user.licenseValidUntil - now) / (24 * 60 * 60),
+													);
+													const isExpired = daysUntilExpiry < 0;
+													const isExpiringSoon = daysUntilExpiry >= 0 && daysUntilExpiry <= 7;
 
-														return (
-															<div className="flex items-center justify-center gap-1.5">
-																<Text className={isExpired ? "text-danger" : isExpiringSoon ? "text-warning" : "text-text-secondary"}>
-																	{new Date(user.licenseValidUntil).toLocaleDateString()}
+													return (
+														<div className="flex items-center justify-center gap-1.5">
+															<Text className={isExpired ? "text-danger" : isExpiringSoon ? "text-warning" : "text-text-secondary"}>
+																{new Date(user.licenseValidUntil * 1000).toLocaleDateString()}
 																</Text>
 																{isExpired && (
 																	<Chip variant="danger" size="sm">EXPIRED</Chip>
@@ -433,13 +429,10 @@ export function AppUsersPage() {
 													</Button>
 												</div>
 											</TableCell>
-										</TableRow>
+										</DataTableRow>
 									))}
 								</TableBody>
-							</Table>
-						</TableContainer>
-					</CardBody>
-				</Card>
+			</DataTable>
 			)}
 
 			{/* Invite User Modal */}

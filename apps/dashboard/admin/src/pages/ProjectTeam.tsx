@@ -21,14 +21,11 @@ import {
 	BreadcrumbItem,
 	BreadcrumbButton,
 	BreadcrumbSeparator,
-	Card,
-	CardBody,
-	TableContainer,
-	Table,
+	DataTable,
+	DataTableRow,
 	TableHeader,
 	TableHead,
 	TableBody,
-	TableRow,
 	TableCell
 } from "@proofa/components";
 import { ConfirmModal } from "../components/ConfirmModal";
@@ -123,22 +120,32 @@ export function ProjectTeamPage() {
 			</div>
 
 			{/* Team Members Table */}
-			<Card className="overflow-hidden">
-				<CardBody>
-					<TableContainer>
-						<Table>
+			<DataTable
+				isEmpty={!members || members.length === 0}
+				emptyState={
+					<EmptyState
+						icon={IconType.UserMultiple}
+						title="No team members yet"
+						description="Invite team members to collaborate on this project"
+					>
+						<Button onClick={() => setShowInviteModal(true)} className="mt-4">
+							<Icon icon={IconType.UserMultiple} size={16} />
+							Invite First Member
+						</Button>
+					</EmptyState>
+				}
+			>
 							<TableHeader>
-								<TableRow>
+								<tr>
 									<TableHead>Member</TableHead>
 									<TableHead>Role</TableHead>
 									<TableHead>Joined</TableHead>
 									<TableHead align="right">Actions</TableHead>
-								</TableRow>
+								</tr>
 							</TableHeader>
 							<TableBody>
-								{members && members.length > 0 ? (
-									members.map((member) => (
-								<TableRow key={member.id} className="hover:bg-accent transition-colors">
+								{(members || []).map((member) => (
+							<DataTableRow key={member.id}>
 										<TableCell>
 										<div className="flex items-center gap-3">
 											<div className="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center text-sm font-semibold text-primary uppercase">
@@ -213,51 +220,29 @@ export function ProjectTeamPage() {
 														)}
 													</div>
 												</TableCell>
-											</TableRow>
-									))
-								) : (
-									<TableRow>
-										<TableCell colSpan={4} className="p-12">
-									<EmptyState
-										icon={IconType.UserMultiple}
-										title="No team members yet"
-										description="Invite team members to collaborate on this project"
-									>
-										<Button onClick={() => setShowInviteModal(true)} className="mt-4">
-											<Icon icon={IconType.UserMultiple} size={16} />
-											Invite First Member
-										</Button>
-											</EmptyState>
-										</TableCell>
-									</TableRow>
-								)}
+											</DataTableRow>
+									))}
 							</TableBody>
-						</Table>
-					</TableContainer>
-				</CardBody>
-			</Card>
+			</DataTable>
 			{/* Pending Invitations */}
 			{invitations.length > 0 && (
 				<div className="mt-8">
 					<Heading level={2} size="lg" className="mb-4">
 						Pending Invitations ({invitations.length})
 					</Heading>
-					<Card className="overflow-hidden">
-						<CardBody>
-							<TableContainer>
-								<Table>
+					<DataTable>
 									<TableHeader>
-										<TableRow>
+										<tr>
 											<TableHead>Email</TableHead>
 											<TableHead>Role</TableHead>
 											<TableHead>Invited</TableHead>
 											<TableHead>Expires</TableHead>
 											<TableHead align="right">Actions</TableHead>
-										</TableRow>
+										</tr>
 									</TableHeader>
 									<TableBody>
 									{invitations.map((invitation) => (
-									<TableRow key={invitation.id} className="hover:bg-accent transition-colors">
+									<DataTableRow key={invitation.id}>
 										<TableCell>
 											<div className="flex items-center gap-3">
 												<div className="w-10 h-10 rounded-full bg-primary-light border-2 border-dashed border-primary/30 flex items-center justify-center text-lg">
@@ -299,13 +284,10 @@ export function ProjectTeamPage() {
 													Cancel
 												</Button>
 											</TableCell>
-										</TableRow>
+										</DataTableRow>
 									))}
 								</TableBody>
-							</Table>
-						</TableContainer>
-					</CardBody>
-				</Card>
+					</DataTable>
 				</div>
 			)}
 			{/* Invite Modal */}

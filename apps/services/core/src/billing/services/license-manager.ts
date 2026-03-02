@@ -345,19 +345,23 @@ export const licenseManager = {
 		const db = getDb();
 
 		try {
-			const result = await db.query.users.findFirst({
-				where: (users, { eq }) => eq(users.primary_email, userEmail.toLowerCase()),
+			const user = await db.query.users.findFirst({
+				where: (u, { eq: eqCol }) => eqCol(u.primary_email, userEmail.toLowerCase()),
 				columns: { id: true },
-				with: {
-					licenses: {
-						where: (licenses: any, { eq, and, isNull }: any) =>
-							and(eq(licenses.app_id, appId), isNull(licenses.deleted_at)),
-						limit: 1,
-					},
-				},
 			});
 
-			return result?.licenses[0] || null;
+			if (!user) return null;
+
+			const license = await db.query.licenses.findFirst({
+				where: (l, { and: andOp, eq: eqCol, isNull: isNullOp }) =>
+					andOp(
+						eqCol(l.user_id, user.id),
+						eqCol(l.app_id, appId),
+						isNullOp(l.deleted_at),
+					),
+			});
+
+			return license || null;
 		} catch (error) {
 			log.error(
 				{

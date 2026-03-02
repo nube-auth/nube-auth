@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useBillingPurchases, useBillingRefunds, useCreateRefund } from "../hooks/api";
 import { useToast } from "../components/Toast";
-import { Heading, Text, Card, CardBody, Button, Alert, Chip, Label, Input, EmptyState, Table, TableContainer, TableHeader, TableHead, TableBody, TableRow, TableCell } from "@proofa/components";
+import { Heading, Text, Card, CardBody, Button, Alert, Chip, Label, Input, EmptyState, DataTable, DataTableRow, TableHeader, TableHead, TableBody, TableCell } from "@proofa/components";
 import { Select } from "../components/Select";
 
 export function RefundProcessingPage() {
@@ -305,22 +305,20 @@ export function RefundProcessingPage() {
 					</Button>
 				</CardBody></Card>
 			) : (
-				<Card><CardBody className="p-0 overflow-hidden">
-					<TableContainer>
-						<Table>
+				<DataTable>
 							<TableHeader>
-								<TableRow>
+								<tr>
 									<TableHead>Status</TableHead>
 									<TableHead>Amount</TableHead>
 									<TableHead>Provider</TableHead>
 									<TableHead>Reason</TableHead>
 									<TableHead>Created</TableHead>
 									<TableHead>App</TableHead>
-								</TableRow>
+								</tr>
 							</TableHeader>
 							<TableBody>
 								{refundsQuery.data.refunds.map((refund) => (
-									<TableRow key={refund.id}>
+										<DataTableRow key={refund.id}>
 										<TableCell>{handleStatusBadge(refund.status)}</TableCell>
 										<TableCell className="text-sm font-semibold text-text-primary">
 											{formatCurrency(refund.amount, refund.currency)}
@@ -335,12 +333,10 @@ export function RefundProcessingPage() {
 										<TableCell className="text-sm text-text-secondary">
 											{refund.purchase?.app?.name || "—"}
 										</TableCell>
-									</TableRow>
+									</DataTableRow>
 								))}
 							</TableBody>
-						</Table>
-					</TableContainer>
-				</CardBody></Card>
+				</DataTable>
 			)}
 
 			{/* Pagination */}

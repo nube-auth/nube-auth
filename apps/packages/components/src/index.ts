@@ -75,6 +75,9 @@ export type { InfoListProps, InfoListItemProps } from './components/display/info
 export { SessionCard } from './components/display/session-card';
 export type { SessionCardProps } from './components/display/session-card';
 
+export { DataTable, DataTableHeader, DataTableRow } from './components/display/data-table';
+export type { DataTableProps, DataTableHeaderProps, DataTableRowProps } from './components/display/data-table';
+
 export { ThemeToggle } from './components/display/ThemeToggle';
 export type { ThemeToggleProps } from './components/display/ThemeToggle';
 

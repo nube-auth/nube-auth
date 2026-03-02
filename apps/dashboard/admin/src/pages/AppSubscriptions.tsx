@@ -10,6 +10,8 @@ import {
 	Button,
 	Card,
 	CardBody,
+	DataTable,
+	DataTableRow,
 	EmptyState,
 	Dialog,
 	DialogPopup,
@@ -25,10 +27,8 @@ import {
 	BreadcrumbList,
 	BreadcrumbItem,
 	BreadcrumbButton,
-	Table,
 	TableHeader,
 	TableBody,
-	TableRow,
 	TableHead,
 	TableCell,
 } from "@proofa/components";
@@ -204,21 +204,20 @@ export function AppSubscriptionsPage() {
 					description="No subscriptions match the current filters"
 				/>
 			) : (
-				<Card>
-					<Table>
-						<TableHeader>
-							<TableRow>
+				<DataTable>
+					<TableHeader>
+						<tr>
 								<TableHead>User</TableHead>
 								<TableHead>Plan</TableHead>
 								<TableHead>Price</TableHead>
 								<TableHead>Status</TableHead>
 								<TableHead>Current Period</TableHead>
 								<TableHead>Actions</TableHead>
-							</TableRow>
-						</TableHeader>
+						</tr>
+					</TableHeader>
 						<TableBody>
 							{subscriptions.map((sub) => (
-								<TableRow key={sub.subscriptionId}>
+								<DataTableRow key={sub.subscriptionId}>
 									<TableCell>
 										<div>
 											<Text className="text-sm font-medium">{sub.userName || sub.userEmail || "—"}</Text>
@@ -270,11 +269,10 @@ export function AppSubscriptionsPage() {
 											))}
 										</div>
 									</TableCell>
-								</TableRow>
+								</DataTableRow>
 							))}
 						</TableBody>
-					</Table>
-				</Card>
+			</DataTable>
 			)}
 
 			{/* Action Confirmation Modal */}

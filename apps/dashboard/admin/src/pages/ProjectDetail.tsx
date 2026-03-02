@@ -9,19 +9,19 @@ import {
 	CardBody,
 	CardHeader,
 	CardTitle,
+	DataTable,
+	DataTableHeader,
+	DataTableRow,
 	EmptyState,
 	Heading,
 	Icon,
 	IconBox,
 	IconType,
 	Spinner,
-	Table,
 	TableBody,
 	TableCell,
-	TableContainer,
 	TableHead,
 	TableHeader,
-	TableRow,
 	Text,
 } from "@proofa/components";
 import { getIconById } from "../components/IconPicker";
@@ -152,74 +152,25 @@ export function ProjectDetailPage() {
 			</div>
 
 			{/* Applications Section */}
-			<Card>
-				<CardHeader>
-					<div className="flex-1">
-						<CardTitle>Applications</CardTitle>
-						<Text className="text-text-muted">Apps registered under this project</Text>
-					</div>
-				</CardHeader>
-
-				{appsLoading ? (
+			{appsLoading ? (
+				<Card>
+					<CardHeader>
+						<div className="flex-1">
+							<CardTitle>Applications</CardTitle>
+							<Text className="text-text-muted">Apps registered under this project</Text>
+						</div>
+					</CardHeader>
 					<CardBody>
 						<div className="flex items-center justify-center py-8">
 							<Spinner />
 						</div>
 					</CardBody>
-				) : apps && apps.length > 0 ? (
-					<CardBody>
-						<TableContainer>
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>Name</TableHead>
-										<TableHead>App ID</TableHead>
-										<TableHead>Session TTL</TableHead>
-										<TableHead>Status</TableHead>
-										<TableHead className="w-8"></TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{apps.map((app) => (
-										<TableRow
-											key={app.id}
-											className="cursor-pointer hover:bg-surface-hover transition-colors"
-											onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
-										>
-											<TableCell>
-												<div className="flex items-center gap-3">
-												<IconBox size="sm" variant="secondary-subtle">
-														<Icon icon={getIconById(app.icon || "application")} size={18} />
-													</IconBox>
-													<Text className="font-medium">
-														{app.name}
-													</Text>
-												</div>
-											</TableCell>
-											<TableCell>
-												<code className="px-2 py-1 bg-surface-secondary rounded text-xs font-mono">
-													{app.id}
-												</code>
-											</TableCell>
-											<TableCell>
-												<Text className="text-text-secondary">
-													{app.sessionTtlDays || 30} days
-												</Text>
-											</TableCell>
-											<TableCell>
-												<Chip variant="success" size="sm">Active</Chip>
-											</TableCell>
-											<TableCell className="text-right pr-4">
-												<Icon icon={IconType.ArrowRight} size={18} className="text-primary" />
-											</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-						</TableContainer>
-					</CardBody>
-				) : (
-					<CardBody>
+				</Card>
+			) : (
+				<DataTable
+					header={<DataTableHeader title="Applications" description="Apps registered under this project" />}
+					isEmpty={!apps || apps.length === 0}
+					emptyState={
 						<EmptyState
 							icon={IconType.Dashboard}
 							title="No applications yet"
@@ -234,77 +185,117 @@ export function ProjectDetailPage() {
 								</Button>
 							}
 						/>
-					</CardBody>
-				)}
-			</Card>
+					}
+				>
+					<TableHeader>
+						<tr>
+							<TableHead>Name</TableHead>
+							<TableHead>App ID</TableHead>
+							<TableHead>Session TTL</TableHead>
+							<TableHead>Status</TableHead>
+							<TableHead className="w-8"></TableHead>
+						</tr>
+					</TableHeader>
+					<TableBody>
+						{(apps || []).map((app) => (
+							<DataTableRow
+								key={app.id}
+								onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
+							>
+								<TableCell>
+									<div className="flex items-center gap-3">
+									<IconBox size="sm" variant="secondary-subtle">
+											<Icon icon={getIconById(app.icon || "application")} size={18} />
+										</IconBox>
+										<Text className="font-medium">
+											{app.name}
+										</Text>
+									</div>
+								</TableCell>
+								<TableCell>
+									<code className="px-2 py-1 bg-surface-secondary rounded text-xs font-mono">
+										{app.id}
+									</code>
+								</TableCell>
+								<TableCell>
+									<Text className="text-text-secondary">
+										{app.sessionTtlDays || 30} days
+									</Text>
+								</TableCell>
+								<TableCell>
+									<Chip variant="success" size="sm">Active</Chip>
+								</TableCell>
+								<TableCell className="text-right pr-4">
+									<Icon icon={IconType.ArrowRight} size={18} className="text-primary" />
+								</TableCell>
+							</DataTableRow>
+						))}
+					</TableBody>
+				</DataTable>
+			)}
 
 			{/* Members Section */}
-			<Card>
-				<CardHeader>
-					<div>
-						<CardTitle>Team Members</CardTitle>
-						<Text className="text-text-muted">People with access to this project</Text>
-					</div>
-				</CardHeader>
-
-				{membersLoading ? (
+			{membersLoading ? (
+				<Card>
+					<CardHeader>
+						<div>
+							<CardTitle>Team Members</CardTitle>
+							<Text className="text-text-muted">People with access to this project</Text>
+						</div>
+					</CardHeader>
 					<CardBody>
 						<div className="flex items-center justify-center py-8">
 							<Spinner />
 						</div>
 					</CardBody>
-				) : members && members.length > 0 ? (
-					<CardBody>
-						<TableContainer>
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>User</TableHead>
-										<TableHead>User Id</TableHead>
-										<TableHead>Role</TableHead>
-										<TableHead>Joined</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{members.map((member) => (
-										<TableRow key={member.id} className="hover:bg-surface-hover transition-colors">
-											<TableCell>
-												<div className="flex items-center gap-3">
-													<Avatar size="sm">
-														{member.name?.charAt(0).toUpperCase() || "?"}
-													</Avatar>
-													<Text className="font-medium">
-														{member.name}
-													</Text>
-												</div>
-											</TableCell>
-											<TableCell>
-												<code className="px-2 py-1 bg-surface-secondary rounded text-xs font-mono">
-													{member.userId}
-												</code>
-											</TableCell>
-											<TableCell>
-												<Chip variant={member.role === "owner" ? "info" : "default"} size="sm">
-													{member.role}
-												</Chip>
-											</TableCell>
-											<TableCell>
-												<Text className="text-text-secondary">
-													{new Date(member.createdAt).toLocaleDateString()}
-												</Text>
-											</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-						</TableContainer>
-					</CardBody>
-				) : (
-					<CardBody>
-						<Text className="text-center py-8 text-text-muted">No team members found</Text>
-					</CardBody>
-				)}
-			</Card>
+				</Card>
+			) : (
+				<DataTable
+					header={<DataTableHeader title="Team Members" description="People with access to this project" />}
+					isEmpty={!members || members.length === 0}
+					emptyState={<Text className="text-center py-8 text-text-muted">No team members found</Text>}
+				>
+					<TableHeader>
+						<tr>
+							<TableHead>User</TableHead>
+							<TableHead>User Id</TableHead>
+							<TableHead>Role</TableHead>
+							<TableHead>Joined</TableHead>
+						</tr>
+					</TableHeader>
+					<TableBody>
+						{(members || []).map((member) => (
+							<DataTableRow key={member.id}>
+								<TableCell>
+									<div className="flex items-center gap-3">
+										<Avatar size="sm">
+											{member.name?.charAt(0).toUpperCase() || "?"}
+										</Avatar>
+										<Text className="font-medium">
+											{member.name}
+										</Text>
+									</div>
+								</TableCell>
+								<TableCell>
+									<code className="px-2 py-1 bg-surface-secondary rounded text-xs font-mono">
+										{member.userId}
+									</code>
+								</TableCell>
+								<TableCell>
+									<Chip variant={member.role === "owner" ? "info" : "default"} size="sm">
+										{member.role}
+									</Chip>
+								</TableCell>
+								<TableCell>
+									<Text className="text-text-secondary">
+										{new Date(member.createdAt).toLocaleDateString()}
+									</Text>
+								</TableCell>
+							</DataTableRow>
+						))}
+					</TableBody>
+				</DataTable>
+			)}
 		</div>
 	);
 }

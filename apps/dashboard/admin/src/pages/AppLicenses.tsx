@@ -11,6 +11,8 @@ import {
 	Button,
 	Card,
 	CardBody,
+	DataTable,
+	DataTableRow,
 	EmptyState,
 	Dialog,
 	DialogPopup,
@@ -27,10 +29,8 @@ import {
 	BreadcrumbList,
 	BreadcrumbItem,
 	BreadcrumbButton,
-	Table,
 	TableHeader,
 	TableBody,
-	TableRow,
 	TableHead,
 	TableCell,
 	Checkbox,
@@ -722,10 +722,9 @@ function LicensesTab({ appId, showToast }: { appId: string; showToast: (msg: str
 					description="No licenses match the current filters"
 				/>
 			) : (
-				<Card>
-					<Table>
+				<DataTable>
 						<TableHeader>
-							<TableRow>
+							<tr>
 								<TableHead>User</TableHead>
 								<TableHead>Plan</TableHead>
 								<TableHead>Status</TableHead>
@@ -733,11 +732,11 @@ function LicensesTab({ appId, showToast }: { appId: string; showToast: (msg: str
 								<TableHead>Valid Until</TableHead>
 								<TableHead>Activations</TableHead>
 								<TableHead>Actions</TableHead>
-							</TableRow>
+							</tr>
 						</TableHeader>
 						<TableBody>
 							{licenses.map((lic) => (
-								<TableRow key={lic.licenseId}>
+								<DataTableRow key={lic.licenseId}>
 									<TableCell>
 										<div>
 											<Text className="text-sm font-medium">{lic.userName || lic.userEmail || "—"}</Text>
@@ -780,11 +779,10 @@ function LicensesTab({ appId, showToast }: { appId: string; showToast: (msg: str
 											</Button>
 										</div>
 									</TableCell>
-								</TableRow>
+								</DataTableRow>
 							))}
 						</TableBody>
-					</Table>
-				</Card>
+				</DataTable>
 			)}
 
 			{/* Grant License Modal */}
@@ -892,10 +890,10 @@ function LicenseHistoryModal({ appId, licenseId, onClose }: { appId: string; lic
 										</Text>
 									</div>
 									{entry.oldValue && (
-										<Text className="text-xs text-muted-foreground">From: {entry.oldValue}</Text>
+										<Text className="text-xs text-muted-foreground">From: {typeof entry.oldValue === "object" ? JSON.stringify(entry.oldValue) : entry.oldValue}</Text>
 									)}
 									{entry.newValue && (
-										<Text className="text-xs text-muted-foreground">To: {entry.newValue}</Text>
+										<Text className="text-xs text-muted-foreground">To: {typeof entry.newValue === "object" ? JSON.stringify(entry.newValue) : entry.newValue}</Text>
 									)}
 									{entry.reason && (
 										<Text className="text-xs text-muted-foreground mt-1">{entry.reason}</Text>

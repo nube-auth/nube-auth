@@ -5,16 +5,17 @@ import {
 	Button,
 	Card,
 	CardBody,
+	CardHeader,
+	DataTable,
+	DataTableHeader,
+	DataTableRow,
 	Heading,
 	Input,
 	Spinner,
-	Table,
 	TableBody,
 	TableCell,
-	TableContainer,
 	TableHead,
 	TableHeader,
-	TableRow,
 	Tabs,
 	TabsItem,
 	TabsList,
@@ -239,27 +240,29 @@ export function BillingDashboardPage() {
 						{/* Purchases Table */}
 						<TabsPanel value="purchases">
 							{purchasesData && (
-								<Card>
-									<CardBody>
-										<Heading size="sm" className="mb-5">Recent Purchases</Heading>
-										{purchasesData.data.length === 0 ? (
-											<Text className="text-center py-10 text-text-muted">No purchases found</Text>
-										) : (
-											<>
-												<TableContainer>
-													<Table>
+								<DataTable
+									header={<DataTableHeader title="Recent Purchases" />}
+									isEmpty={purchasesData.data.length === 0}
+									emptyState={<Text className="text-center py-10 text-text-muted">No purchases found</Text>}
+									footer={purchasesData.pagination && (
+										<Text className="text-text-muted">
+											Showing {purchasesData.data.length} of {purchasesData.pagination.total} purchases
+											{purchasesData.pagination.hasMore && " (more available)"}
+										</Text>
+									)}
+								>
 														<TableHeader>
-															<TableRow>
+															<tr>
 																<TableHead>Date</TableHead>
 																<TableHead>Provider</TableHead>
 																<TableHead>Amount</TableHead>
 																<TableHead>Status</TableHead>
 																<TableHead>App</TableHead>
-															</TableRow>
+															</tr>
 														</TableHeader>
 														<TableBody>
 															{purchasesData.data.map((purchase) => (
-																<TableRow key={purchase.id}>
+																<DataTableRow key={purchase.id}>
 																	<TableCell>{formatDate(purchase.created_at)}</TableCell>
 																	<TableCell className="capitalize">
 																		{purchase.provider === "lemon_squeezy"
@@ -284,48 +287,39 @@ export function BillingDashboardPage() {
 																	</Chip>
 																	</TableCell>
 																	<TableCell>{purchase.app?.name || "—"}</TableCell>
-																</TableRow>
+																</DataTableRow>
 															))}
 														</TableBody>
-													</Table>
-												</TableContainer>
-												{purchasesData.pagination && (
-													<Text className="mt-4 text-text-muted">
-														Showing {purchasesData.data.length} of {purchasesData.pagination.total} purchases
-														{purchasesData.pagination.hasMore && " (more available)"}
-													</Text>
-												)}
-											</>
-										)}
-									</CardBody>
-								</Card>
+								</DataTable>
 							)}
 						</TabsPanel>
 
 						{/* Transactions Table */}
 						<TabsPanel value="transactions">
 							{transactionsData && (
-								<Card>
-									<CardBody>
-										<Heading size="sm" className="mb-5">Recent Transactions</Heading>
-										{transactionsData.data.length === 0 ? (
-											<Text className="text-center py-10 text-text-muted">No transactions found</Text>
-										) : (
-											<>
-												<TableContainer>
-													<Table>
+								<DataTable
+									header={<DataTableHeader title="Recent Transactions" />}
+									isEmpty={transactionsData.data.length === 0}
+									emptyState={<Text className="text-center py-10 text-text-muted">No transactions found</Text>}
+									footer={transactionsData.pagination && (
+										<Text className="text-text-muted">
+											Showing {transactionsData.data.length} of {transactionsData.pagination.total} transactions
+											{transactionsData.pagination.hasMore && " (more available)"}
+										</Text>
+									)}
+								>
 														<TableHeader>
-															<TableRow>
+															<tr>
 																<TableHead>Date</TableHead>
 																<TableHead>Type</TableHead>
 																<TableHead>Provider</TableHead>
 																<TableHead>Amount</TableHead>
 																<TableHead>Status</TableHead>
-															</TableRow>
+															</tr>
 														</TableHeader>
 														<TableBody>
 															{transactionsData.data.map((txn) => (
-																<TableRow key={txn.id}>
+																<DataTableRow key={txn.id}>
 																	<TableCell>{formatDate(txn.created_at)}</TableCell>
 																	<TableCell className="capitalize">{txn.type}</TableCell>
 																	<TableCell className="capitalize">
@@ -349,21 +343,10 @@ export function BillingDashboardPage() {
 																		{txn.status}
 																	</Chip>
 																	</TableCell>
-																</TableRow>
+																</DataTableRow>
 															))}
 														</TableBody>
-													</Table>
-												</TableContainer>
-												{transactionsData.pagination && (
-													<Text className="mt-4 text-text-muted">
-														Showing {transactionsData.data.length} of {transactionsData.pagination.total} transactions
-														{transactionsData.pagination.hasMore && " (more available)"}
-													</Text>
-												)}
-											</>
-										)}
-									</CardBody>
-								</Card>
+								</DataTable>
 							)}
 						</TabsPanel>
 

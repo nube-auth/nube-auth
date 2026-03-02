@@ -8,12 +8,12 @@ import {
 	Chip,
 	Label,
 	Input,
-	Table,
-	TableContainer,
+	DataTable,
+	DataTableHeader,
+	DataTableRow,
 	TableHeader,
 	TableHead,
 	TableBody,
-	TableRow,
 	TableCell,
 } from "@proofa/components";
 import { Select } from "../components/Select";
@@ -314,12 +314,10 @@ export function TransactionExportPage() {
 			</CardBody></Card>
 
 			{/* Preview Table */}
-			<Card>
-				<CardBody className="p-6 border-b border-border-primary">
-					<Heading level={3} size="sm">Preview ({transactionsQuery.data?.data?.length || 0} transactions)</Heading>
-				</CardBody>
-
-				{!transactionsQuery.data || transactionsQuery.data.data.length === 0 ? (
+			<DataTable
+				header={<DataTableHeader title={`Preview (${transactionsQuery.data?.data?.length || 0} transactions)`} />}
+				isEmpty={!transactionsQuery.data || transactionsQuery.data.data.length === 0}
+				emptyState={
 					<div className="py-16 px-6 text-center">
 						<div className="text-5xl mb-4">📊</div>
 						<Heading level={2} size="md" className="mb-2">
@@ -329,62 +327,55 @@ export function TransactionExportPage() {
 							Adjust your filters to find transactions to export
 						</Text>
 					</div>
-				) : (
-					<CardBody className="p-0">
-						<TableContainer>
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>Date</TableHead>
-										<TableHead>Type</TableHead>
-										<TableHead>Status</TableHead>
-										<TableHead align="right">Amount</TableHead>
-										<TableHead>Provider</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{transactionsQuery.data.data.slice(0, 10).map((txn) => (
-										<TableRow key={txn.id}>
-											<TableCell>
-												<Text className="text-text-secondary whitespace-nowrap">{formatDate(txn.created_at)}</Text>
-											</TableCell>
-											<TableCell>
-												<Chip variant="primary" size="sm" pill>{txn.type}</Chip>
-											</TableCell>
-											<TableCell>
-												<Chip
-													variant={txn.status === "completed" ? "success" : txn.status === "pending" ? "warning" : "danger"}
-													size="sm"
-													pill
-												>
-													{txn.status === "completed" && "✓ "}
-													{txn.status === "pending" && "⏱ "}
-													{txn.status === "failed" && "✗ "}
-													{txn.status}
-												</Chip>
-											</TableCell>
-											<TableCell align="right">
-												<Text className="font-semibold text-text-primary">{formatCurrency(txn.amount, txn.currency)}</Text>
-											</TableCell>
-											<TableCell>
-												<Chip variant={txn.provider === "lemon_squeezy" ? "success" : "info"} size="sm" pill>
-													{txn.provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
-												</Chip>
-											</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-						</TableContainer>
-					</CardBody>
-				)}
-
-				{transactionsQuery.data && transactionsQuery.data.data.length > 10 && (
-					<div className="p-4 border-t border-border-primary bg-surface-secondary text-text-tertiary text-sm text-center">
+				}
+				footer={transactionsQuery.data && transactionsQuery.data.data.length > 10 && (
+					<Text className="text-text-tertiary text-sm text-center">
 						Showing 10 of {transactionsQuery.data.data.length} transactions. Download to see all records.
-					</div>
+					</Text>
 				)}
-			</Card>
+			>
+						<TableHeader>
+							<tr>
+								<TableHead>Date</TableHead>
+								<TableHead>Type</TableHead>
+								<TableHead>Status</TableHead>
+								<TableHead align="right">Amount</TableHead>
+								<TableHead>Provider</TableHead>
+							</tr>
+						</TableHeader>
+						<TableBody>
+							{(transactionsQuery.data?.data || []).slice(0, 10).map((txn) => (
+									<DataTableRow key={txn.id}>
+									<TableCell>
+										<Text className="text-text-secondary whitespace-nowrap">{formatDate(txn.created_at)}</Text>
+									</TableCell>
+									<TableCell>
+										<Chip variant="primary" size="sm" pill>{txn.type}</Chip>
+									</TableCell>
+									<TableCell>
+										<Chip
+											variant={txn.status === "completed" ? "success" : txn.status === "pending" ? "warning" : "danger"}
+											size="sm"
+											pill
+										>
+											{txn.status === "completed" && "✓ "}
+											{txn.status === "pending" && "⏱ "}
+											{txn.status === "failed" && "✗ "}
+											{txn.status}
+										</Chip>
+									</TableCell>
+									<TableCell align="right">
+										<Text className="font-semibold text-text-primary">{formatCurrency(txn.amount, txn.currency)}</Text>
+									</TableCell>
+									<TableCell>
+										<Chip variant={txn.provider === "lemon_squeezy" ? "success" : "info"} size="sm" pill>
+											{txn.provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
+										</Chip>
+									</TableCell>
+								</DataTableRow>
+							))}
+						</TableBody>
+			</DataTable>
 		</div>
 	);
 }

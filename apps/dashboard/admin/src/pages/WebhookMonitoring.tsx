@@ -10,12 +10,11 @@ import {
 	Input,
 	Chip,
 	EmptyState,
-	Table,
-	TableContainer,
+	DataTable,
+	DataTableRow,
 	TableHeader,
 	TableHead,
 	TableBody,
-	TableRow,
 	TableCell,
 } from "@proofa/components";
 import { Select } from "../components/Select";
@@ -308,12 +307,9 @@ export function WebhookMonitoringPage() {
 					description="Webhooks will appear here as payment providers send events to your webhook endpoints"
 				/>
 			) : (
-				<Card className="overflow-hidden">
-					<CardBody className="p-0">
-						<TableContainer>
-							<Table>
+				<DataTable>
 						<TableHeader>
-							<TableRow>
+							<tr>
 								<TableHead>
 									Status
 								</TableHead>
@@ -336,11 +332,11 @@ export function WebhookMonitoringPage() {
 									Actions
 								</TableHead>
 							
-						</TableRow>
+						</tr>
 							</TableHeader>
 							<TableBody>
 								{webhooksQuery.data.webhooks.map((webhook) => (
-									<TableRow key={webhook.id} className="hover:bg-accent transition-colors">
+								<DataTableRow key={webhook.id}>
 										<TableCell>{handleStatusBadge(webhook.status)}</TableCell>
 										<TableCell>
 											<Text className="font-mono text-sm text-text-secondary">
@@ -375,13 +371,10 @@ export function WebhookMonitoringPage() {
 												View
 											</Button>
 										</TableCell>
-									</TableRow>
+									</DataTableRow>
 								))}
 							</TableBody>
-						</Table>
-					</TableContainer>
-				</CardBody>
-			</Card>
+			</DataTable>
 			)}
 
 			{/* Pagination */}

@@ -1,6 +1,6 @@
 /**
  * Payment Testing Playground
- * Admin-only page for testing payment flows without manual setup
+ * Admin-only page for testing payment flows with customizable entity selection
  */
 
 import { useState, useEffect } from "react";
@@ -8,6 +8,19 @@ import { pingpong } from "@proofa/auth/pingpong";
 import config from "../config";
 import { Select } from "../components/Select";
 import { Heading, Text, Card, CardBody, Button, Alert } from "@proofa/components";
+import { useProjects, useProjectApps, useAppUsers, useAppPlans } from "../hooks/api";
+
+function getCsrfToken(): string | null {
+	const match = document.cookie.match(/proofa_csrf_token=([^;]+)/);
+	return match?.[1] ? match[1] : null;
+}
+
+function csrfHeaders(): Record<string, string> {
+	const token = getCsrfToken();
+	return token ? { "X-Proofa-CSRF-Token": token } : {};
+}
+
+const CREATE_NEW = "__create_new__";
 
 interface TestSession {
 	sessionId: string;
@@ -41,12 +54,31 @@ interface SessionStatus {
 }
 
 export default function PaymentTestingPlayground() {
+	// Entity selection
+	const [projectId, setProjectId] = useState("");
+	const [appId, setAppId] = useState("");
+	const [userId, setUserId] = useState("");
+	const [planId, setPlanId] = useState("");
+
+	// Provider configuration
 	const [provider, setProvider] = useState<"stripe" | "lemonsqueezy" | "dodo">("stripe");
 	const [mode, setMode] = useState<"simulate" | "live">("simulate");
+
+	// Session state
 	const [session, setSession] = useState<TestSession | null>(null);
 	const [sessionStatus, setSessionStatus] = useState<SessionStatus | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+
+	// Fetch entities with cascading dependencies
+	const { data: projects, isLoading: projectsLoading } = useProjects();
+	const { data: apps, isLoading: appsLoading } = useProjectApps(projectId);
+	const { data: appUsers, isLoading: usersLoading } = useAppUsers(projectId, appId && appId !== CREATE_NEW ? appId : "");
+	const { data: plans, isLoading: plansLoading } = useAppPlans(projectId, appId && appId !== CREATE_NEW ? appId : "");
+
+	// Reset downstream selections when parent changes
+	useEffect(() => { setAppId(""); setUserId(""); setPlanId(""); }, [projectId]);
+	useEffect(() => { setUserId(""); setPlanId(""); }, [appId]);
 
 	// Auto-refresh session status every 2 seconds when session is active
 	useEffect(() => {
@@ -54,31 +86,41 @@ export default function PaymentTestingPlayground() {
 
 		const interval = setInterval(async () => {
 			try {
-				const response = await pingpong(`${config.coreUrl}/v1/admin/test/status/${session.sessionId}`, {
+				const response = await pingpong(`${config.gatewayUrl}/v1/admin/test/status/${session.sessionId}`, {
 					method: "GET",
+					credentials: "include",
 				});
 
 				if (response.ok()) {
 					setSessionStatus(response.data);
 				}
-			} catch (err) {
-				console.error("Failed to fetch session status:", err);
+			} catch (_err) {
+				// Status poll failed, will retry
 			}
 		}, 2000);
 
 		return () => clearInterval(interval);
 	}, [session]);
 
+	const canStart = projectId && (appId === CREATE_NEW || appId) && (userId === CREATE_NEW || userId) && (planId === CREATE_NEW || planId);
+
 	const handleInitialize = async () => {
+		if (!canStart) return;
 		setLoading(true);
 		setError(null);
 
 		try {
-			const response = await pingpong(`${config.coreUrl}/v1/admin/test/initialize`, {
+			const response = await pingpong(`${config.gatewayUrl}/v1/admin/test/initialize`, {
 				method: "POST",
+				credentials: "include",
+				headers: csrfHeaders(),
 				body: {
 					provider,
 					mode,
+					projectId,
+					appId: appId === CREATE_NEW ? undefined : appId,
+					userId: userId === CREATE_NEW ? undefined : userId,
+					planId: planId === CREATE_NEW ? undefined : planId,
 				},
 			});
 
@@ -88,9 +130,8 @@ export default function PaymentTestingPlayground() {
 			} else {
 				setError(response.data?.error || "Failed to initialize test session");
 			}
-		} catch (err) {
+		} catch (_err) {
 			setError("Failed to initialize test session");
-			console.error(err);
 		} finally {
 			setLoading(false);
 		}
@@ -103,8 +144,10 @@ export default function PaymentTestingPlayground() {
 		setError(null);
 
 		try {
-			const response = await pingpong(`${config.coreUrl}/v1/admin/test/simulate-webhook`, {
+			const response = await pingpong(`${config.gatewayUrl}/v1/admin/test/simulate-webhook`, {
 				method: "POST",
+				credentials: "include",
+				headers: csrfHeaders(),
 				body: {
 					sessionId: session.sessionId,
 					eventType,
@@ -112,9 +155,9 @@ export default function PaymentTestingPlayground() {
 			});
 
 			if (response.ok()) {
-				// Refresh session status immediately
-				const statusResponse = await pingpong(`${config.coreUrl}/v1/admin/test/status/${session.sessionId}`, {
+				const statusResponse = await pingpong(`${config.gatewayUrl}/v1/admin/test/status/${session.sessionId}`, {
 					method: "GET",
+					credentials: "include",
 				});
 
 				if (statusResponse.ok()) {
@@ -123,9 +166,8 @@ export default function PaymentTestingPlayground() {
 			} else {
 				setError(response.data?.error || "Failed to simulate webhook");
 			}
-		} catch (err) {
+		} catch (_err) {
 			setError("Failed to simulate webhook");
-			console.error(err);
 		} finally {
 			setLoading(false);
 		}
@@ -135,16 +177,36 @@ export default function PaymentTestingPlayground() {
 		if (!session) return;
 
 		try {
-			await pingpong(`${config.coreUrl}/v1/admin/test/cleanup?sessionId=${session.sessionId}`, {
+			await pingpong(`${config.gatewayUrl}/v1/admin/test/cleanup?sessionId=${session.sessionId}`, {
 				method: "DELETE",
+				credentials: "include",
+				headers: csrfHeaders(),
 			});
 
 			setSession(null);
 			setSessionStatus(null);
-		} catch (err) {
-			console.error("Failed to cleanup:", err);
+		} catch (_err) {
+			// Cleanup failed silently
 		}
 	};
+
+	// Build dropdown options
+	const projectOptions = (projects ?? []).map((p) => ({ value: p.id, label: p.name }));
+
+	const appOptions = [
+		...(apps ?? []).map((a) => ({ value: a.id, label: a.name })),
+		{ value: CREATE_NEW, label: "+ Create test app" },
+	];
+
+	const userOptions = [
+		...(appUsers?.users ?? []).map((u) => ({ value: u.id, label: `${u.name || u.email} (${u.email})` })),
+		{ value: CREATE_NEW, label: "+ Create test user" },
+	];
+
+	const planOptions = [
+		...(plans ?? []).map((p) => ({ value: p.id, label: `${p.name} (${p.slug})` })),
+		{ value: CREATE_NEW, label: "+ Create test plan" },
+	];
 
 	return (
 		<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -152,13 +214,13 @@ export default function PaymentTestingPlayground() {
 			<div className="mb-8">
 				<Heading level={1} size="lg">Payment Testing Playground</Heading>
 				<Text className="mt-2 text-text-secondary">
-					Test payment flows for all providers without manual setup
+					Test payment flows against your existing projects, apps, users, and plans
 				</Text>
-				<div className="flex items-center">
+				<div className="flex items-center mt-3 p-3 bg-orange-50 dark:bg-orange-900/10 rounded-lg border border-orange-200 dark:border-orange-800">
 					<Text className="text-2xl mr-3">⚠️</Text>
 					<div>
-						<Text className="font-semibold text-orange-900">TEST MODE ONLY</Text>
-						<Text className="text-sm text-orange-700">
+						<Text className="font-semibold text-orange-900 dark:text-orange-300">TEST MODE ONLY</Text>
+						<Text className="text-sm text-orange-700 dark:text-orange-400">
 							Using sandbox credentials. No real charges will be made.
 						</Text>
 					</div>
@@ -168,42 +230,119 @@ export default function PaymentTestingPlayground() {
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 				{/* Left Column - Configuration */}
 				<div className="space-y-6">
+					{/* Entity Selection */}
+					<Card>
+						<CardBody className="p-6">
+							<Heading level={2} size="lg" className="mb-4">📋 Select Entities</Heading>
+							<Text className="text-sm text-text-secondary mb-4">
+								Choose which project, app, user, and plan to test with. Select "+ Create test..." to auto-generate one.
+							</Text>
+
+							<div className="space-y-4">
+								{/* Project */}
+								<div>
+									<label className="block text-sm font-medium text-text-primary mb-1">
+										Project
+									</label>
+									<Select
+										value={projectId}
+										onChange={setProjectId}
+										options={projectOptions}
+										disabled={!!session || projectsLoading}
+										placeholder={projectsLoading ? "Loading projects..." : "Select a project"}
+									/>
+								</div>
+
+								{/* App */}
+								<div>
+									<label className="block text-sm font-medium text-text-primary mb-1">
+										App
+									</label>
+									<Select
+										value={appId}
+										onChange={setAppId}
+										options={appOptions}
+										disabled={!!session || !projectId || appsLoading}
+										placeholder={!projectId ? "Select a project first" : appsLoading ? "Loading apps..." : "Select an app or create test app"}
+									/>
+									{appId === CREATE_NEW && (
+										<Text className="mt-1 text-xs text-info">A test app will be created in the selected project.</Text>
+									)}
+								</div>
+
+								{/* User */}
+								<div>
+									<label className="block text-sm font-medium text-text-primary mb-1">
+										User
+									</label>
+									<Select
+										value={userId}
+										onChange={setUserId}
+										options={userOptions}
+										disabled={!!session || !appId || appId === CREATE_NEW || usersLoading}
+										placeholder={!appId ? "Select an app first" : appId === CREATE_NEW ? "Test user will be created" : usersLoading ? "Loading users..." : "Select a user or create test user"}
+									/>
+									{(userId === CREATE_NEW || appId === CREATE_NEW) && (
+										<Text className="mt-1 text-xs text-info">A test user will be created for this session.</Text>
+									)}
+								</div>
+
+								{/* Plan */}
+								<div>
+									<label className="block text-sm font-medium text-text-primary mb-1">
+										Plan
+									</label>
+									<Select
+										value={planId}
+										onChange={setPlanId}
+										options={planOptions}
+										disabled={!!session || !appId || appId === CREATE_NEW || plansLoading}
+										placeholder={!appId ? "Select an app first" : appId === CREATE_NEW ? "Test plan will be created" : plansLoading ? "Loading plans..." : "Select a plan or create test plan"}
+									/>
+									{(planId === CREATE_NEW || appId === CREATE_NEW) && (
+										<Text className="mt-1 text-xs text-info">A test plan ($29/month) will be created.</Text>
+									)}
+								</div>
+							</div>
+						</CardBody>
+					</Card>
+
 					{/* Provider Configuration */}
 					<Card>
 						<CardBody className="p-6">
-							<Heading level={2} size="lg" className="mb-4">🔧 Provider Configuration</Heading>
+							<Heading level={2} size="lg" className="mb-4">🔧 Provider & Mode</Heading>
 							
 							<div className="space-y-4">
-							<div>
-								<label className="block text-sm font-medium text-text-primary mb-2">
-									Provider
-								</label>
-								<Select
-									value={provider}
-									onChange={(value) => setProvider(value as "stripe" | "lemonsqueezy" | "dodo")}
-									options={[
-										{ value: "stripe", label: "Stripe" },
-										{ value: "lemonsqueezy", label: "LemonSqueezy" },
-										{ value: "dodo", label: "Dodo Payments" }
-									]}
-									disabled={!!session}
-								/>
-							</div>
+								<div>
+									<label className="block text-sm font-medium text-text-primary mb-1">
+										Provider
+									</label>
+									<Select
+										value={provider}
+										onChange={(value) => setProvider(value as "stripe" | "lemonsqueezy" | "dodo")}
+										options={[
+											{ value: "stripe", label: "Stripe" },
+											{ value: "lemonsqueezy", label: "LemonSqueezy" },
+											{ value: "dodo", label: "Dodo Payments" }
+										]}
+										disabled={!!session}
+									/>
+								</div>
 
-							<div>
-								<label className="block text-sm font-medium text-text-primary mb-2">
-									Mode
-								</label>
-								<Select
-									value={mode}
-									onChange={(value) => setMode(value as "simulate" | "live")}
-									options={[
-										{ value: "simulate", label: "Simulate (Instant)" },
-										{ value: "live", label: "Live Checkout" }
-									]}
-									disabled={!!session}
-								/>
-<Text className="mt-1 text-xs text-text-tertiary">
+								<div>
+									<label className="block text-sm font-medium text-text-primary mb-1">
+										Mode
+									</label>
+									<Select
+										value={mode}
+										onChange={(value) => setMode(value as "simulate" | "live")}
+										options={[
+											{ value: "simulate", label: "Simulate (Instant)" },
+											{ value: "live", label: "Live Checkout" }
+										]}
+										disabled={!!session}
+									/>
+									<Text className="mt-1 text-xs text-text-tertiary">
 										{mode === "simulate" 
 											? "Instantly simulate webhook events without real payment provider" 
 											: "Create real checkout session with provider sandbox"}
@@ -213,23 +352,23 @@ export default function PaymentTestingPlayground() {
 						</CardBody>
 					</Card>
 
-					{/* Quick Test Setup */}
+					{/* Start / Cleanup */}
 					<Card>
 						<CardBody className="p-6">
-							<Heading level={2} size="lg" className="mb-4">⚡ Quick Test Setup</Heading>
-							
-							<Text className="text-sm text-text-secondary mb-4">
-								Auto-creates test app, user, and session in one click
-							</Text>
-
 							<Button
 								variant="primary"
 								onClick={handleInitialize}
-								disabled={loading || !!session}
+								disabled={loading || !!session || !canStart}
 								className="w-full"
 							>
 								{loading ? "Creating..." : session ? "✓ Test Session Active" : "🚀 Start Test Flow"}
 							</Button>
+
+							{!canStart && !session && (
+								<Text className="mt-2 text-xs text-text-tertiary text-center">
+									Select a project, app, user, and plan to start
+								</Text>
+							)}
 
 							{session && (
 								<Button
@@ -237,7 +376,7 @@ export default function PaymentTestingPlayground() {
 									onClick={handleCleanup}
 									className="w-full mt-2"
 								>
-									Clear Test Data
+									🗑️ End Session & Cleanup
 								</Button>
 							)}
 						</CardBody>
@@ -296,107 +435,118 @@ export default function PaymentTestingPlayground() {
 						<>
 							{/* Checkout URL */}
 							{session.checkoutUrl && (
+								<Card>
+									<CardBody className="p-6">
+										<Heading level={3} size="md" className="mb-3">💳 Checkout Session</Heading>
+										<div className="bg-bg-muted p-3 rounded border border-border">
+											<Text className="text-xs text-text-tertiary mb-1">Checkout URL</Text>
+											<Text className="text-sm font-mono break-all">{session.checkoutUrl}</Text>
+										</div>
+										<div className="mt-3 flex gap-2">
+											<Button
+												variant="secondary"
+												onClick={() => navigator.clipboard.writeText(session.checkoutUrl!)}
+												className="flex-1"
+											>
+												📋 Copy
+											</Button>
+											<a
+												href={session.checkoutUrl}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="flex-1"
+											>
+												<Button variant="primary" className="w-full">
+													🔗 Open
+												</Button>
+											</a>
+										</div>
+									</CardBody>
+								</Card>
+							)}
+
+							{/* Test Data */}
 							<Card>
 								<CardBody className="p-6">
-									<Heading level={3} size="md" className="mb-3">💳 Checkout Session</Heading>
-									<div className="bg-bg-muted p-3 rounded border border-border">
-										<Text className="text-xs text-text-tertiary mb-1">Checkout URL</Text>
-										<Text className="text-sm font-mono break-all">{session.checkoutUrl}</Text>
-									</div>
-									<div className="mt-3 flex gap-2">
-										<Button
-											variant="secondary"
-											onClick={() => navigator.clipboard.writeText(session.checkoutUrl!)}
-											className="flex-1"
-										>
-											📋 Copy
-										</Button>
-										<a
-											href={session.checkoutUrl}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="flex-1"
-										>
-											<Button variant="primary" className="w-full">
-												🔗 Open
-											</Button>
-										</a>
+									<Heading level={3} size="md" className="mb-3">📊 Session Data</Heading>
+									<div className="space-y-3 text-sm">
+										<div className="flex justify-between items-start">
+											<Text className="text-text-secondary">App</Text>
+											<div className="text-right">
+												<Text className="font-medium">{session.testData.app.name}</Text>
+												<Text className="text-xs text-text-tertiary font-mono">{session.testData.app.publicId}</Text>
+											</div>
+										</div>
+										<div className="flex justify-between items-start">
+											<Text className="text-text-secondary">User</Text>
+											<div className="text-right">
+												<Text className="font-medium">{session.testData.user.email}</Text>
+												<Text className="text-xs text-text-tertiary font-mono">{session.testData.user.publicId}</Text>
+											</div>
+										</div>
+										<div className="flex justify-between items-start">
+											<Text className="text-text-secondary">Plan</Text>
+											<div className="text-right">
+												<Text className="font-medium">{session.testData.plan.name}</Text>
+												<Text className="text-xs text-text-tertiary">${session.testData.plan.amount / 100}/{session.testData.plan.interval}</Text>
+											</div>
+										</div>
 									</div>
 								</CardBody>
 							</Card>
-                                                        )}
-							{/* Test Data */}
-						<Card>
-							<CardBody className="p-6">
-								<Heading level={3} size="md" className="mb-3">📊 Test Data</Heading>
-								<div className="space-y-3 text-sm">
-									<div>
-										<Text className="text-text-secondary">App</Text>
-										<Text className="font-mono">{session.testData.app.name}</Text>
-										<Text className="text-xs text-text-tertiary">{session.testData.app.id}</Text>
-									</div>
-									<div>
-										<Text className="text-text-secondary">User</Text>
-										<Text className="font-mono">{session.testData.user.email}</Text>
-										<Text className="text-xs text-text-tertiary">{session.testData.user.id}</Text>
-									</div>
-									<div>
-										<Text className="text-text-secondary">Plan</Text>
-										<Text className="font-mono">{session.testData.plan.name} - ${session.testData.plan.amount / 100}/{session.testData.plan.interval}</Text>
-									</div>
-								</div>
-							</CardBody>
-						</Card>
+
 							{/* License Status */}
 							{sessionStatus?.license && (
-							<Card>
-								<CardBody className="p-6">
-									<Heading level={3} size="md" className="mb-3">📜 License Status</Heading>
-									<div className="space-y-2 text-sm">
-										<div className="flex justify-between">
-											<Text className="text-text-secondary">Status</Text>
-											<Text className={`font-semibold ${
-												sessionStatus.license.status === "active" ? "text-success" : "text-text-secondary"
-											}`}>
-												{sessionStatus.license.status === "active" ? "✓ Active" : sessionStatus.license.status}
-											</Text>
-										</div>
-										{sessionStatus.license.validUntil && (
+								<Card>
+									<CardBody className="p-6">
+										<Heading level={3} size="md" className="mb-3">📜 License Status</Heading>
+										<div className="space-y-2 text-sm">
 											<div className="flex justify-between">
-												<Text className="text-text-secondary">Expires</Text>
-												<Text className="font-mono text-xs">
-													{new Date(sessionStatus.license.validUntil).toLocaleDateString()}
+												<Text className="text-text-secondary">Status</Text>
+												<Text className={`font-semibold ${
+													sessionStatus.license.status === "active" ? "text-success" : "text-text-secondary"
+												}`}>
+													{sessionStatus.license.status === "active" ? "✓ Active" : sessionStatus.license.status}
 												</Text>
 											</div>
-										)}
-									</div>
-								</CardBody>
-							</Card>
-                                                        )}
+											{sessionStatus.license.validUntil && (
+												<div className="flex justify-between">
+													<Text className="text-text-secondary">Expires</Text>
+													<Text className="font-mono text-xs">
+														{new Date(sessionStatus.license.validUntil).toLocaleDateString()}
+													</Text>
+												</div>
+											)}
+										</div>
+									</CardBody>
+								</Card>
+							)}
+
 							{/* Transactions */}
 							{sessionStatus?.transactions && sessionStatus.transactions.length > 0 && (
-							<Card>
-								<CardBody className="p-6">
-									<Heading level={3} size="md" className="mb-3">💳 Transactions</Heading>
-									<div className="space-y-2">
-										{sessionStatus.transactions.map((txn: any) => (
-											<div key={txn.public_id} className="flex items-center justify-between p-2 bg-bg-muted rounded border border-border text-sm">
-												<div>
-													<Text className="font-mono text-xs">{txn.public_id}</Text>
-													<Text className="text-text-secondary text-xs">{txn.type} · {txn.provider}</Text>
+								<Card>
+									<CardBody className="p-6">
+										<Heading level={3} size="md" className="mb-3">💳 Transactions</Heading>
+										<div className="space-y-2">
+											{sessionStatus.transactions.map((txn: any) => (
+												<div key={txn.public_id} className="flex items-center justify-between p-2 bg-bg-muted rounded border border-border text-sm">
+													<div>
+														<Text className="font-mono text-xs">{txn.public_id}</Text>
+														<Text className="text-text-secondary text-xs">{txn.type} · {txn.provider}</Text>
+													</div>
+													<div className="text-right">
+														<Text className="font-semibold">${(txn.amount_cents / 100).toFixed(2)} {txn.currency.toUpperCase()}</Text>
+														<Text className={`text-xs font-medium ${
+															txn.status === "success" ? "text-success" : txn.status === "failed" ? "text-danger" : "text-text-secondary"
+														}`}>{txn.status}</Text>
+													</div>
 												</div>
-												<div className="text-right">
-													<Text className="font-semibold">${(txn.amount_cents / 100).toFixed(2)} {txn.currency.toUpperCase()}</Text>
-													<Text className={`text-xs font-medium ${
-														txn.status === "success" ? "text-success" : txn.status === "failed" ? "text-danger" : "text-text-secondary"
-													}`}>{txn.status}</Text>
-												</div>
-											</div>
-										))}
-									</div>
-								</CardBody>
-							</Card>
+											))}
+										</div>
+									</CardBody>
+								</Card>
 							)}
+
 							{/* Auto-refresh indicator */}
 							<div className="text-center text-xs text-text-tertiary">
 								⏱️ Auto-refreshing every 2 seconds
@@ -406,9 +556,15 @@ export default function PaymentTestingPlayground() {
 
 					{!session && (
 						<div className="bg-bg-muted rounded-lg border-2 border-dashed border-border p-12 text-center">
-							<Text className="text-text-secondary">
-								Click "Start Test Flow" to begin testing
-							</Text>
+							<div className="space-y-3">
+								<Text className="text-4xl">🧪</Text>
+								<Text className="text-text-secondary font-medium">
+									Configure your test entities and click "Start Test Flow"
+								</Text>
+								<Text className="text-xs text-text-tertiary">
+									Choose existing entities to test real flows, or create test ones
+								</Text>
+							</div>
 						</div>
 					)}
 				</div>
