@@ -17,19 +17,16 @@ import type {
 	ProjectMember,
 	UpdateAppRequest,
 } from "../types/admin";
+import config from "../config";
 import { pingpong } from "../lib/pingpong";
 
 const client = new ProofaClient({
-	gatewayUrl: import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004",
+	gatewayUrl: config.gatewayUrl,
 });
 
-const GATEWAY_URL = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
+const GATEWAY_URL = config.gatewayUrl;
 
-// Helper to get CSRF token from cookie
-function getCsrfToken(): string | null {
-	const match = document.cookie.match(/proofa_csrf_token=([^;]+)/);
-	return match?.[1] ? match[1] : null;
-}
+import { csrfHeaders } from "../lib/csrf";
 
 // Helper to make authenticated API calls
 async function fetchAPI<T>(path: string, options?: RequestInit, schema?: any): Promise<T> {
@@ -45,10 +42,7 @@ async function fetchAPI<T>(path: string, options?: RequestInit, schema?: any): P
 
 	// Add CSRF token for state-changing requests
 	if (options?.method && !["GET", "HEAD", "OPTIONS"].includes(options.method.toUpperCase())) {
-		const csrfToken = getCsrfToken();
-		if (csrfToken) {
-			headers["X-Proofa-CSRF-Token"] = csrfToken;
-		}
+		Object.assign(headers, csrfHeaders());
 	}
 
 	const response = await pingpong(`${GATEWAY_URL}${path}`, {
@@ -57,12 +51,12 @@ async function fetchAPI<T>(path: string, options?: RequestInit, schema?: any): P
 		headers,
 	});
 
-	if (!response.ok) {
-		const error = await response.json().catch(() => ({ message: response.statusText }));
+	if (!response.ok()) {
+		const error = response.data ?? { message: "Request failed" };
 		throw new Error(error.message || "Request failed");
 	}
 
-	const json = await response.json();
+	const json = response.data;
 
 	// Validate response with schema if provided
 	if (schema) {

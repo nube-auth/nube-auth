@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { useToast } from "../components/Toast";
+import config from "../config";
+import { csrfHeaders } from "../lib/csrf";
 import { useApp, useProject, useUpdateApp } from "../hooks/api";
 import { pingpong } from "../lib/pingpong";
 import type { App } from "../types/admin";
@@ -27,6 +29,7 @@ import {
 	BreadcrumbItem,
 	BreadcrumbButton,
 } from "@proofa/components";
+import { PageLoader } from "../components/PageLoader";
 
 export function AppSettingsPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -145,11 +148,7 @@ export function AppSettingsPage() {
 	};
 
 	if (projectLoading || appLoading) {
-		return (
-			<div className="flex items-center justify-center min-h-screen">
-				<Spinner />
-			</div>
-		);
+		return <PageLoader />;
 	}
 
 	if (!project || !app || !formData) {
@@ -468,16 +467,11 @@ export function AppSettingsPage() {
 				onConfirm={async () => {
 					try {
 						const response = await pingpong(
-							`${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/admin/projects/${projectId}/apps/${appId}`,
+							`${config.gatewayUrl}/v1/admin/projects/${projectId}/apps/${appId}`,
 							{
 								method: "DELETE",
 								credentials: "include",
-							},
-						);
-
-						if (!response.ok) {
-							const data = await response.json();
-							throw new Error(data.error || "Failed to delete app");
+							headers: csrfHeaders(),
 						}
 
 						showToast("App deleted successfully", "success");

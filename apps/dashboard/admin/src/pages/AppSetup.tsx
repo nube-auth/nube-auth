@@ -29,6 +29,7 @@ import {
 	SelectPopup,
 	SelectItem
 } from "@proofa/components";
+import { PageLoader } from "../components/PageLoader";
 import { IconPicker } from "../components/IconPicker";
 import { useCreateApp, useProject } from "../hooks/api";
 
@@ -179,11 +180,7 @@ export function AppSetupPage() {
 	};
 
 	if (projectLoading) {
-		return (
-			<div className="flex items-center justify-center min-h-screen">
-				<Spinner />
-			</div>
-		);
+		return <PageLoader />;
 	}
 
 	if (!project) {

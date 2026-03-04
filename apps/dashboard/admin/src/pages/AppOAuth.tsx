@@ -15,6 +15,7 @@ import {
 	BreadcrumbItem,
 	BreadcrumbButton,
 } from "@proofa/components";
+import { PageLoader } from "../components/PageLoader";
 import { useToast } from "../components/Toast";
 import { useApp, useProject, useUpdateApp } from "../hooks/api";
 
@@ -53,7 +54,6 @@ export default function AppOAuthPage() {
 			showToast("OAuth providers updated successfully", "success");
 			setIsEditing(false);
 		} catch (error) {
-			console.error("Failed to update OAuth providers:", error);
 			showToast("Failed to update OAuth providers", "error");
 		}
 	};
@@ -75,11 +75,7 @@ export default function AppOAuthPage() {
 	};
 
 	if (appLoading || projectLoading) {
-		return (
-			<div className="flex justify-center items-center py-12">
-				<Spinner />
-			</div>
-		);
+		return <PageLoader />;
 	}
 
 	if (appError || !app) {

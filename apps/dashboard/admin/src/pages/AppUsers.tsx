@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { csrfHeaders } from "../lib/csrf";
 import {
 	Icon,
 	IconType,
@@ -27,12 +28,18 @@ import {
 	DialogBody,
 	DialogFooter,
 	EmptyState,
+	Breadcrumb,
+	BreadcrumbList,
+	BreadcrumbItem,
+	BreadcrumbButton,
 } from "@proofa/components";
 
+import { PageLoader } from "../components/PageLoader";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { InviteUserModal } from "../components/InviteUserModal";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
+import config from "../config";
 import { useApp, useAppUsers, useProject, useRenewLicense } from "../hooks/api";
 import { pingpong } from "../lib/pingpong";
 
@@ -63,21 +70,20 @@ export function AppUsersPage() {
 		setPlansLoading(true);
 		try {
 			const response = await pingpong(
-				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/plans`,
+				`${config.gatewayUrl}/v1/admin/projects/${projectId}/apps/${appId}/plans`,
 				{
 					method: "GET",
 					credentials: "include",
 				},
 			);
 
-			if (!response.ok) {
+			if (!response.ok()) {
 				throw new Error("Failed to fetch plans");
 			}
 
-			const data = await response.json();
-			setPlans(data.plans || []);
+			setPlans(response.data?.plans || []);
 		} catch (err) {
-			console.error("Failed to fetch plans:", err);
+			showToast("Failed to fetch plans", "error");
 		} finally {
 			setPlansLoading(false);
 		}
@@ -107,11 +113,12 @@ export function AppUsersPage() {
 
 		try {
 			const response = await pingpong(
-				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/users/${userId}`,
+				`${config.gatewayUrl}/v1/admin/projects/${projectId}/apps/${appId}/users/${userId}`,
 				{
 					method: "PATCH",
 					headers: {
 						"Content-Type": "application/json",
+						...csrfHeaders(),
 					},
 					credentials: "include",
 					body: JSON.stringify({
@@ -120,15 +127,13 @@ export function AppUsersPage() {
 				},
 			);
 
-			if (!response.ok) {
-				const data = await response.json();
-				throw new Error(data.error || "Failed to update user status");
+			if (!response.ok()) {
+				throw new Error(response.data?.error || "Failed to update user status");
 			}
 
 			// Refresh users list
 			queryClient.invalidateQueries({ queryKey: ["appUsers", projectId, appId] });
 		} catch (err) {
-			console.error("Failed to update user status:", err);
 			showToast(err instanceof Error ? err.message : "Failed to update user status", "error");
 		}
 	};
@@ -142,11 +147,12 @@ export function AppUsersPage() {
 
 		try {
 			const response = await pingpong(
-				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/users/${editingUser.id}`,
+				`${config.gatewayUrl}/v1/admin/projects/${projectId}/apps/${appId}/users/${editingUser.id}`,
 				{
 					method: "PATCH",
 					headers: {
 						"Content-Type": "application/json",
+						...csrfHeaders(),
 					},
 					credentials: "include",
 					body: JSON.stringify({
@@ -156,9 +162,8 @@ export function AppUsersPage() {
 				},
 			);
 
-			if (!response.ok) {
-				const data = await response.json();
-				throw new Error(data.error || "Failed to update user");
+			if (!response.ok()) {
+				throw new Error(response.data?.error || "Failed to update user");
 			}
 
 			// Refresh users list
@@ -169,19 +174,10 @@ export function AppUsersPage() {
 			setEditLicensePlan(null);
 			setEditLicenseStatus("");
 		} catch (err) {
-			console.error("Failed to update user:", err);
 			setUpdateError(err instanceof Error ? err.message : "Failed to update user");
 		} finally {
 			setIsUpdating(false);
 		}
-	};
-
-	// Handler for opening Edit modal (initialize form values)
-	const _handleOpenEditModal = (user: any) => {
-		setEditingUser(user);
-		setEditLicensePlan(user.plan_id || null);
-		setEditLicenseStatus(user.status || "active");
-		setUpdateError(null);
 	};
 
 	const handleRenewLicense = async () => {
@@ -201,12 +197,7 @@ export function AppUsersPage() {
 	};
 
 	if (projectLoading || appLoading) {
-		return (
-			<div className="flex flex-col items-center justify-center py-20">
-				<Spinner className="mb-4" />
-				<Text className="text-muted">Loading...</Text>
-			</div>
-		);
+		return <PageLoader />;
 	}
 
 	if (!project || !app) {
@@ -221,21 +212,25 @@ export function AppUsersPage() {
 	return (
 		<div className="space-y-6">
 			{/* Breadcrumb */}
-			<nav className="flex items-center gap-2 text-[13px]">
-				<Link to="/projects" className="no-underline text-text-secondary">
-					Projects
-				</Link>
-			<Icon icon={IconType.ArrowRight} size={14} className="text-text-tertiary" />
-			<Link to={`/projects/${projectId}`} className="no-underline text-text-secondary">
-				{project.name}
-			</Link>
-			<Icon icon={IconType.ArrowRight} size={14} className="text-text-tertiary" />
-			<Link to={`/projects/${projectId}/apps/${appId}`} className="no-underline text-text-secondary">
-				{app.name}
-			</Link>
-			<Icon icon={IconType.ArrowRight} size={14} className="text-text-tertiary" />
-			<span className="font-medium text-text-primary">Users</span>
-		</nav>
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
+					</BreadcrumbItem>
+					/
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+					/
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>{app.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+					/
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Users</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
 
 		{/* Page Header */}
 			<div className="flex items-start justify-between gap-4">

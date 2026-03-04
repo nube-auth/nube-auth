@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { pingpong } from "../lib/pingpong";
 import { useMe } from "../hooks/api";
 import { AuthLoginCard } from "@proofa/components";
+import config from "../config";
 
 type AuthStatus = "idle" | "checking" | "redirecting" | "processing" | "error";
 
@@ -22,7 +23,13 @@ export function LoginPage() {
 				
 				if (error) {
 					setStatus("error");
-					setErrorMessage(`Authentication failed: ${error}`);
+					// Only show known error codes to prevent reflected content injection
+					const errorMessages: Record<string, string> = {
+						access_denied: "Access denied",
+						invalid_invite: "Invalid or expired invite",
+						unauthorized: "You are not authorized to access this dashboard",
+					};
+					setErrorMessage(errorMessages[error] || "Authentication failed");
 					return;
 				}
 
@@ -68,7 +75,7 @@ export function LoginPage() {
 		const inviteCode = searchParams.get("invite") || "";
 		// After successful auth, redirect to projects (or handle invite flow)
 		const returnTo = inviteCode ? `/login?invite=${inviteCode}` : "/projects";
-		const gatewayAuthUrl = `${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/auth/start?provider=google&audience=admin&return_to=${encodeURIComponent(returnTo)}&invite=${encodeURIComponent(inviteCode)}`;
+		const gatewayAuthUrl = `${config.gatewayUrl}/v1/auth/start?provider=google&audience=admin&return_to=${encodeURIComponent(returnTo)}&invite=${encodeURIComponent(inviteCode)}`;
 		window.location.href = gatewayAuthUrl;
 	};
 

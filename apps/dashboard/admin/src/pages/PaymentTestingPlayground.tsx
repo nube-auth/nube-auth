@@ -6,19 +6,10 @@
 import { useState, useEffect } from "react";
 import { pingpong } from "@proofa/auth/pingpong";
 import config from "../config";
+import { csrfHeaders } from "../lib/csrf";
 import { Select } from "../components/Select";
 import { Heading, Text, Card, CardBody, Button, Alert } from "@proofa/components";
 import { useProjects, useProjectApps, useAppUsers, useAppPlans } from "../hooks/api";
-
-function getCsrfToken(): string | null {
-	const match = document.cookie.match(/proofa_csrf_token=([^;]+)/);
-	return match?.[1] ? match[1] : null;
-}
-
-function csrfHeaders(): Record<string, string> {
-	const token = getCsrfToken();
-	return token ? { "X-Proofa-CSRF-Token": token } : {};
-}
 
 const CREATE_NEW = "__create_new__";
 
@@ -110,8 +101,6 @@ export default function PaymentTestingPlayground() {
 		setError(null);
 
 		try {
-			console.log("🚀 Initializing test session:", { provider, mode, projectId, appId, userId, planId });
-			
 			const response = await pingpong(`${config.gatewayUrl}/v1/admin/test/initialize`, {
 				method: "POST",
 				credentials: "include",
@@ -126,18 +115,14 @@ export default function PaymentTestingPlayground() {
 				},
 			});
 
-			console.log("📡 Initialize response:", { status: response.status, ok: response.ok(), data: response.data });
-
 			if (response.ok()) {
 				setSession(response.data);
 				setSessionStatus(null);
 			} else {
 				const errorMsg = response.data?.error || "Failed to initialize test session";
-				console.error("❌ Initialize failed:", errorMsg, response.data?.details);
 				setError(errorMsg);
 			}
 		} catch (err) {
-			console.error("❌ Initialize error:", err);
 			setError("Failed to initialize test session");
 		} finally {
 			setLoading(false);

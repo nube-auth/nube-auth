@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { csrfHeaders } from "../lib/csrf";
 import {
 	Icon,
 	IconType,
@@ -16,8 +17,10 @@ import {
 	BreadcrumbItem,
 	BreadcrumbButton,
 } from "@proofa/components";
+import { PageLoader } from "../components/PageLoader";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { useToast } from "../components/Toast";
+import config from "../config";
 import { useApp, useProject } from "../hooks/api";
 import { pingpong } from "../lib/pingpong";
 
@@ -42,7 +45,7 @@ export function AppApiKeysPage() {
 	const handleRevealKeys = async () => {
 		try {
 			const response = await pingpong(
-				`${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/admin/projects/${projectId}/apps/${appId}/api-keys`,
+				`${config.gatewayUrl}/v1/admin/projects/${projectId}/apps/${appId}/api-keys`,
 				{
 					credentials: "include",
 				},
@@ -53,6 +56,12 @@ export function AppApiKeysPage() {
 				setRevealedKeys(keys);
 				setShowSecret(true);
 				setShowToken(true);
+				// Auto-hide secrets after 60 seconds to limit exposure
+				setTimeout(() => {
+					setRevealedKeys({});
+					setShowSecret(false);
+					setShowToken(false);
+				}, 60_000);
 			} else {
 				showToast("Failed to retrieve keys", "error");
 			}
@@ -81,10 +90,11 @@ export function AppApiKeysPage() {
 		setIsRegenerating(true);
 		try {
 			const response = await pingpong(
-				`${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/admin/projects/${projectId}/apps/${appId}/regenerate-secret`,
+				`${config.gatewayUrl}/v1/admin/projects/${projectId}/apps/${appId}/regenerate-secret`,
 				{
 					method: "POST",
 					credentials: "include",
+					headers: csrfHeaders(),
 				},
 			);
 
@@ -111,10 +121,11 @@ export function AppApiKeysPage() {
 		setIsRegenerating(true);
 		try {
 			const response = await pingpong(
-				`${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/admin/projects/${projectId}/apps/${appId}/regenerate-token`,
+				`${config.gatewayUrl}/v1/admin/projects/${projectId}/apps/${appId}/regenerate-token`,
 				{
 					method: "POST",
 					credentials: "include",
+					headers: csrfHeaders(),
 				},
 			);
 
@@ -138,11 +149,7 @@ export function AppApiKeysPage() {
 	};
 
 	if (projectLoading || appLoading) {
-		return (
-			<div className="flex justify-center items-center py-12">
-				<Spinner />
-			</div>
-		);
+		return <PageLoader />;
 	}
 
 	if (!project || !app) {

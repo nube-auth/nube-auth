@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Icon, IconType, Input, Textarea, Button, Checkbox, Label, Dialog, DialogPopup, DialogHeader, DialogTitle, DialogBody, DialogFooter, Alert, Heading, Text } from "@proofa/components";
 
 import { Select } from "./Select";
+import config from "../config";
+import { csrfHeaders } from "../lib/csrf";
 import { pingpong } from "../lib/pingpong";
 
 interface InviteUserModalProps {
@@ -37,28 +39,26 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 		setPlansLoading(true);
 		try {
 			const response = await pingpong(
-				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/plans`,
+				`${config.gatewayUrl}/v1/admin/projects/${projectId}/apps/${appId}/plans`,
 				{
 					method: "GET",
 					credentials: "include",
 				},
 			);
 
-			if (!response.ok) {
+			if (!response.ok()) {
 				throw new Error("Failed to fetch plans");
 			}
 
-			const data = await response.json();
-			setPlans(data.plans || []);
+			setPlans(response.data?.plans || []);
 
-			if (data.plans && data.plans.length > 0) {
-				const firstPlan = data.plans[0];
+			if (response.data?.plans && response.data.plans.length > 0) {
+				const firstPlan = response.data.plans[0];
 				if (firstPlan) {
 					setPlanId(firstPlan.id);
 				}
 			}
 		} catch (err) {
-			console.error("Failed to fetch plans:", err);
 			setError("Failed to load plans. Please try again.");
 		} finally {
 			setPlansLoading(false);
@@ -81,11 +81,12 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 
 		try {
 			const response = await pingpong(
-				`${import.meta.env.VITE_GATEWAY_URL}/v1/admin/projects/${projectId}/apps/${appId}/users/invite`,
+				`${config.gatewayUrl}/v1/admin/projects/${projectId}/apps/${appId}/users/invite`,
 				{
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
+						...csrfHeaders(),
 					},
 					credentials: "include",
 					body: JSON.stringify({
@@ -98,16 +99,13 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 				},
 			);
 
-			if (!response.ok) {
-				const data = await response.json();
-				throw new Error(data.error || "Failed to invite user");
+			if (!response.ok()) {
+				throw new Error(response.data?.error || "Failed to invite user");
 			}
 
-			const data = await response.json();
-
 			setSuccess({
-				message: data.message,
-				action: data.action,
+				message: response.data?.message,
+				action: response.data?.action,
 			});
 
 			setEmail("");

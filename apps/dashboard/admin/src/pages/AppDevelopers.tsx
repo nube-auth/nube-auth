@@ -17,6 +17,7 @@ import {
 	BreadcrumbItem,
 	BreadcrumbButton,
 } from "@proofa/components";
+import { PageLoader } from "../components/PageLoader";
 
 export function AppDevelopersPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -31,16 +32,12 @@ export function AppDevelopersPage() {
 			setCopied(true);
 			setTimeout(() => setCopied(false), 2000);
 		} catch (error) {
-			console.error("Copy failed:", error);
+			// Clipboard API may fail silently in some browsers
 		}
 	};
 
 	if (projectLoading || appLoading) {
-		return (
-			<div className="flex items-center justify-center min-h-[400px]">
-				<Spinner />
-			</div>
-		);
+		return <PageLoader />;
 	}
 
 	if (!project || !app) {

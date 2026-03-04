@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { pingpong } from "../lib/pingpong";
+import config from "../config";
 import { useMe } from "../hooks/api";
 import {
 	Icon,
@@ -15,8 +16,7 @@ import {
 	Input,
 	Button
 } from "@proofa/components";
-
-const GATEWAY_URL = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
+import { PageLoader } from "../components/PageLoader";
 
 // Helper to normalize headers to Record<string, string>
 function normalizeHeaders(headers?: HeadersInit): Record<string, string> {
@@ -31,7 +31,7 @@ function normalizeHeaders(headers?: HeadersInit): Record<string, string> {
 }
 
 async function fetchAPI<T>(path: string, options?: RequestInit): Promise<T> {
-	const response = await pingpong(`${GATEWAY_URL}${path}`, {
+	const response = await pingpong(`${config.gatewayUrl}${path}`, {
 		method: options?.method,
 		credentials: "include",
 		body: options?.body,
@@ -41,12 +41,12 @@ async function fetchAPI<T>(path: string, options?: RequestInit): Promise<T> {
 		},
 	});
 
-	if (!response.ok) {
-		const error = await response.json().catch(() => ({ message: response.statusText }));
+	if (!response.ok()) {
+		const error = response.data ?? { message: "Request failed" };
 		throw new Error(error.message || "Request failed");
 	}
 
-	return response.json();
+	return response.data as T;
 }
 
 export function ProfilePage() {
@@ -94,14 +94,7 @@ export function ProfilePage() {
 	};
 
 	if (isLoading) {
-		return (
-			<div>
-				<Heading level={1} size="lg">Profile</Heading>
-				<div className="mt-6 flex justify-center">
-					<Spinner />
-				</div>
-			</div>
-		);
+		return <PageLoader />;
 	}
 
 	if (!profile) {

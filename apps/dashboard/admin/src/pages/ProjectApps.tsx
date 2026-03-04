@@ -24,6 +24,7 @@ import {
 	TableBody,
 	TableCell
 } from "@proofa/components";
+import { PageLoader } from "../components/PageLoader";
 import { useProject, useProjectApps } from "../hooks/api";
 
 type ViewMode = "grid" | "table";
@@ -36,11 +37,7 @@ export function ProjectAppsPage() {
 	const [viewMode, setViewMode] = useState<ViewMode>("table");
 
 	if (projectLoading || appsLoading) {
-		return (
-			<div className="flex items-center justify-center min-h-screen">
-				<Spinner />
-			</div>
-		);
+		return <PageLoader />;
 	}
 
 	if (!project) {

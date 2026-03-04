@@ -33,6 +33,7 @@ import {
 	TableCell,
 } from "@proofa/components";
 
+import { PageLoader } from "../components/PageLoader";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
 import { useApp, useProject } from "../hooks/api";
@@ -61,11 +62,7 @@ export function AppSubscriptionsPage() {
 	const subscriptions = data?.subscriptions ?? [];
 
 	if (projectLoading || appLoading) {
-		return (
-			<div className="flex items-center justify-center min-h-[50vh]">
-				<Spinner />
-			</div>
-		);
+		return <PageLoader />;
 	}
 
 	if (!project || !app) {

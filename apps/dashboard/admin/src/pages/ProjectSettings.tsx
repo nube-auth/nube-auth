@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { useToast } from "../components/Toast";
+import config from "../config";
+import { csrfHeaders } from "../lib/csrf";
 import { useProject, useUpdateProject } from "../hooks/api";
 import { pingpong } from "../lib/pingpong";
 import {
@@ -16,8 +18,11 @@ import {
 	Input,
 	Textarea,
 	Breadcrumb,
-	BreadcrumbSeparator,
+	BreadcrumbList,
+	BreadcrumbItem,
+	BreadcrumbButton,
 } from "@proofa/components";
+import { PageLoader } from "../components/PageLoader";
 
 export function ProjectSettingsPage() {
 	const { projectId } = useParams<{ projectId: string }>();
@@ -49,19 +54,14 @@ export function ProjectSettingsPage() {
 		try {
 			await updateProjectMutation.mutateAsync(formData);
 			setIsEditing(false);
-			// Success feedback
+			showToast("Project updated successfully", "success");
 		} catch (error) {
-			console.error("Failed to update project:", error);
-			// Error feedback
+			showToast(error instanceof Error ? error.message : "Failed to update project", "error");
 		}
 	};
 
 	if (projectLoading) {
-		return (
-			<div className="flex justify-center items-center py-12">
-				<Spinner />
-			</div>
-		);
+		return <PageLoader />;
 	}
 
 	if (!project || !formData) {
@@ -73,15 +73,19 @@ export function ProjectSettingsPage() {
 			{/* Breadcrumb */}
 			<div className="mb-6">
 				<Breadcrumb>
-					<Link to="/projects">
-						Projects
-					</Link>
-					/
-					<Link to={`/projects/${projectId}`}>
-						{project.name}
-					</Link>
-					/
-					<Text>Settings</Text>
+					<BreadcrumbList>
+						<BreadcrumbItem>
+							<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
+						</BreadcrumbItem>
+						/
+						<BreadcrumbItem>
+							<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+						</BreadcrumbItem>
+						/
+						<BreadcrumbItem>
+							<BreadcrumbButton active>Settings</BreadcrumbButton>
+						</BreadcrumbItem>
+					</BreadcrumbList>
 				</Breadcrumb>
 			</div>
 
@@ -283,16 +287,11 @@ export function ProjectSettingsPage() {
 				onConfirm={async () => {
 					try {
 						const response = await pingpong(
-							`${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/admin/projects/${projectId}`,
+							`${config.gatewayUrl}/v1/admin/projects/${projectId}`,
 							{
 								method: "DELETE",
 								credentials: "include",
-							},
-						);
-
-						if (!response.ok) {
-							const data = await response.json();
-							throw new Error(data.error || "Failed to delete project");
+							headers: csrfHeaders(),
 						}
 
 						showToast("Project deleted successfully", "success");
