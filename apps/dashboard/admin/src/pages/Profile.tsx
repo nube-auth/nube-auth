@@ -140,7 +140,7 @@ export function ProfilePage() {
 				<CardBody>
 					{/* Profile Header */}
 					<div className="flex items-center gap-5 pb-6 border-b border-border-color mb-6">
-						<div className="w-20 h-20 rounded-full flex items-center justify-center text-32px font-semibold text-white flex-shrink-0 shadow-lg bg-gradient-to-br from-primary to-purple-600">
+						<div className="w-20 h-20 rounded-full flex items-center justify-center text-32px font-semibold text-white shrink-0 shadow-lg bg-linear-to-br from-primary to-purple-600">
 							{initials}
 						</div>
 						<div className="flex-1">
@@ -197,7 +197,7 @@ export function ProfilePage() {
 								<Label htmlFor="email">Email Address</Label>
 								<div className="px-3.5 py-2.5 bg-input-bg border border-input-border rounded-6px max-w-500px text-text-secondary flex items-center gap-2.5">
 									<span className="flex-1">{profile.email || profile.primary_email}</span>
-									<Icon icon={IconType.Lock} size={16} className="opacity-40 flex-shrink-0" />
+									<Icon icon={IconType.Lock} size={16} className="opacity-40 shrink-0" />
 								</div>
 								<Text className="text-text-tertiary mt-1.5">
 									Email address is managed by your authentication provider and cannot be changed here.
@@ -277,7 +277,7 @@ export function ProfilePage() {
 									Your theme preference is managed in the header
 								</Text>
 							</div>
-							<Icon icon={IconType.Moon} size={20} className="text-text-tertiary flex-shrink-0" />
+							<Icon icon={IconType.Moon} size={20} className="text-text-tertiary shrink-0" />
 						</div>
 
 						{/* Sessions */}
@@ -290,7 +290,7 @@ export function ProfilePage() {
 									You are currently signed in
 								</Text>
 							</div>
-							<Icon icon={IconType.CheckBadge} size={20} bold className="text-success flex-shrink-0" />
+							<Icon icon={IconType.CheckBadge} size={20} bold className="text-success shrink-0" />
 						</div>
 					</div>
 				</CardBody>

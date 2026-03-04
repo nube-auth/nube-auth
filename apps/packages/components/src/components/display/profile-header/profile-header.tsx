@@ -15,7 +15,7 @@ export const ProfileHeader = React.forwardRef<HTMLDivElement, ProfileHeaderProps
         className={`flex items-start gap-4 ${className}`}
         {...props}
       >
-        {avatar && <div className="flex-shrink-0">{avatar}</div>}
+        {avatar && <div className="shrink-0">{avatar}</div>}
         <div className="flex-1">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white m-0">{name}</h2>
           <p className="text-gray-600 dark:text-gray-400 mt-1 mb-0">{email}</p>

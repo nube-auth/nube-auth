@@ -107,7 +107,7 @@ export default function AppPaymentSettingsPage() {
 			{/* Info Banner */}
 			<Alert variant="info" className="mb-6">
 				<div className="flex gap-3">
-					<Icon icon={IconType.AlertCircle} size={20} className="text-primary flex-shrink-0" />
+					<Icon icon={IconType.AlertCircle} size={20} className="text-primary shrink-0" />
 					<div>
 						<Text className="mb-1 font-semibold text-primary">Project-Level Configuration</Text>
 						<Text className="text-text-secondary">
@@ -148,13 +148,13 @@ export default function AppPaymentSettingsPage() {
 								<div className="flex items-center gap-5">
 									{/* Checkbox at the start */}
 									<div
-										className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[4px] border-2 transition-all duration-200 ${isSelected ? "border-primary bg-primary" : "border-card-border bg-transparent"}`}
+										className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] border-2 transition-all duration-200 ${isSelected ? "border-primary bg-primary" : "border-card-border bg-transparent"}`}
 									>
 										{isSelected && <Icon icon={IconType.Check} size={14} className="text-white" />}
 									</div>
 
 									{/* Provider Icon */}
-									<div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-content-bg">
+									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-content-bg">
 										{getProviderIcon(provider.provider)}
 									</div>
 

@@ -261,7 +261,7 @@ export function AppUsersPage() {
 				</div>
 
 				{/* Status Filter */}
-				<div className="min-w-[160px]">
+				<div className="min-w-40">
 					<Select
 						value={filterStatus}
 						onChange={(value) => setFilterStatus(value)}
@@ -318,7 +318,7 @@ export function AppUsersPage() {
 										<DataTableRow key={user.id}>
 											<TableCell>
 												<div className="flex items-center gap-3">
-													<div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0">
+													<div className="w-8 h-8 bg-linear-to-br from-primary to-primary/70 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0">
 														{(user.name || user.email).charAt(0).toUpperCase()}
 													</div>
 													<div>

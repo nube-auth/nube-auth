@@ -151,7 +151,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 				{/* Success Message */}
 				{success && (
 					<Alert variant="success" className="mb-5">
-						<Icon icon={IconType.Check} size={20} className="text-success flex-shrink-0" />
+						<Icon icon={IconType.Check} size={20} className="text-success shrink-0" />
 						{success.message}
 					</Alert>
 				)}
@@ -159,7 +159,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 				{/* Error Message */}
 				{error && (
 					<Alert variant="danger" className="mb-5">
-						<Icon icon={IconType.AlertCircle} size={20} className="text-danger flex-shrink-0" />
+						<Icon icon={IconType.AlertCircle} size={20} className="text-danger shrink-0" />
 						{error}
 					</Alert>
 				)}
