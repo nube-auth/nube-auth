@@ -1,0 +1,53 @@
+apps/dashboard/admin/src/components/PageLoader.tsx
+  ca0797480df5063e 1-9
+apps/dashboard/admin/src/pages/ProjectSettings.tsx
+  ca0797480df5063e 5,21-23,57,59,76-79,81-83,85-88,290
+apps/dashboard/admin/src/pages/AppSetup.tsx
+  ca0797480df5063e 32,183
+apps/dashboard/admin/src/pages/AppApiKeys.tsx
+  ca0797480df5063e 23,48,93,124
+apps/dashboard/admin/src/components/InviteUserModal.tsx
+  351020bd6da3ac9f 5,42,49,53,55-56,84,102-103,107-108
+apps/dashboard/admin/src/pages/AppSubscriptions.tsx
+  ca0797480df5063e 36,65
+ADMIN_DASHBOARD_AUDIT.md
+  ca0797480df5063e 1-532
+apps/dashboard/admin/src/lib/csrf.ts
+  ca0797480df5063e 1-15
+apps/dashboard/admin/src/pages/AppDevelopers.tsx
+  ca0797480df5063e 20,35,40
+apps/dashboard/admin/src/pages/AppSettings.tsx
+  351020bd6da3ac9f 5,470
+apps/dashboard/admin/src/pages/AppUsers.tsx
+  ca0797480df5063e 31-34,42,73,80,84,86,116,130-131,150,165-166,215-223,225-227,229-233
+apps/dashboard/admin/src/pages/Profile.tsx
+  ca0797480df5063e 4,19,34,44-45,49,97
+apps/dashboard/admin/src/pages/Login.tsx
+  ca0797480df5063e 6,78
+apps/dashboard/admin/src/hooks/api.ts
+  ca0797480df5063e 20,24,27
+apps/dashboard/admin/src/pages/AppOAuth.tsx
+  ca0797480df5063e 18,78
+apps/dashboard/admin/src/pages/ProjectApps.tsx
+  ca0797480df5063e 27,40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.8",
+  "base_commit_sha": "95b318db0f09a7b6bbeb8925890e49097f09f03e",
+  "prompts": {
+    "ca0797480df5063e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6a3cebda-12e4-4b70-bcc0-c715a02f1d6b",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 576,
+      "total_deletions": 48,
+      "accepted_lines": 633,
+      "overriden_lines": 1
+    }
+  }
+}
