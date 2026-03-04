@@ -1,0 +1,73 @@
+apps/services/core/src/routes/v1/billing/checkout.ts
+  ca0797480df5063e 114-116,118-119
+apps/services/workers/src/sync-plan-to-providers.ts
+  ca0797480df5063e 123-125,127-128
+  351020bd6da3ac9f 81,126
+apps/services/core/src/billing/queue.ts
+  351020bd6da3ac9f 22,63,71
+apps/services/core/src/routes/v1/billing/webhooks.ts
+  351020bd6da3ac9f 12,61-62,66,83-96,103,110,145-172
+apps/services/workers/src/process-webhook.ts
+  351020bd6da3ac9f 19,29,39-42,48,57
+apps/services/workers/src/webhook-rescue-cron.ts
+  ca0797480df5063e 1-11,13-22,25-112,114-126,128-144,146-184
+  351020bd6da3ac9f 23-24,127
+apps/services/core/src/billing/services/webhook-logging.ts
+  351020bd6da3ac9f 30-35,37-49,97,102,106-107,111-138,153,159,179-180,185-186,189,198-242
+apps/services/core/src/routes/v1/admin/billing.ts
+  351020bd6da3ac9f 11,17,385-447
+apps/services/core/src/billing/adapters/factory.ts
+  ca0797480df5063e 16-23,25,38-39,49-57
+  351020bd6da3ac9f 24,40-48
+apps/services/core/src/billing/services/webhook-handler.ts
+  ca0797480df5063e 73-75,77-78
+apps/dashboard/admin/src/pages/WebhookMonitoring.tsx
+  351020bd6da3ac9f 2,37-38,42,44,46,48,59-60,66,71-73,76,79,83-101,106,108-111,113-114,119-125,128-135,140-143,145,147-154,156-159,162-168,170-173,177,180,183-186,191-200,204,207,212-217,219-227,230-231,274,276,278-279,384-402,411-412
+apps/services/gateway/src/middleware/auth.ts
+  351020bd6da3ac9f 37-38
+apps/services/workers/src/process-refund.ts
+  351020bd6da3ac9f 143-147
+apps/dashboard/admin/src/pages/PaymentTestingPlayground.tsx
+  ca0797480df5063e 113-114,129-130,135-137,139-140
+apps/dashboard/admin/src/hooks/api.ts
+  351020bd6da3ac9f 392-394,401-404
+apps/services/workers/src/index.ts
+  351020bd6da3ac9f 19,24,41,88-90,108-136
+apps/services/core/src/routes/v1/admin/test.ts
+  ca0797480df5063e 6,258-259,269-274,282,285-288,290-293,296-333,335,338-339,357,359-362,364-370,372-373
+apps/services/core/src/routes/v1/admin/index.ts
+  ca0797480df5063e 38-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.8",
+  "base_commit_sha": "c063bedc171a39e5928b2c34600a3d765d925254",
+  "prompts": {
+    "351020bd6da3ac9f": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "bb71da80-1907-4c7f-85c6-f3afd893b747",
+        "model": "copilot/auto"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 754,
+      "total_deletions": 180,
+      "accepted_lines": 679,
+      "overriden_lines": 0
+    },
+    "ca0797480df5063e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6a3cebda-12e4-4b70-bcc0-c715a02f1d6b",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 577,
+      "total_deletions": 53,
+      "accepted_lines": 533,
+      "overriden_lines": 2
+    }
+  }
+}
