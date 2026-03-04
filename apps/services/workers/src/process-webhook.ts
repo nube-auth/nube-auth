@@ -25,8 +25,8 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 	const queue = queueClient.getQueue("billing");
 
 	// Dynamically import webhook handler to avoid circular dependencies
-	const { processWebhook } = await import("../../core/src/billing/services/webhook-handler.js");
-	const { WebhookLoggingService } = await import("../../core/src/billing/services/webhook-logging.js");
+	const { processWebhook } = await import("@proofa/core/billing/services/webhook-handler");  
+	const { WebhookLoggingService } = await import("@proofa/core/billing/services/webhook-logging");
 
 	return new BullWorker<ProcessWebhookJobData>(
 		"billing",

@@ -170,7 +170,7 @@
   --tertiary: #A1A1AA;
   --tertiary-foreground: #18181B;
   --tertiary-border: #71717A;
-  --danger-foreground: #18181B;
+  --danger-foreground: #FEFEFE;
   --danger-border: #F87171;
   --accent: #27272A;
   --input-bg: #18181B;
@@ -244,7 +244,7 @@
     --tertiary: #A1A1AA;
     --tertiary-foreground: #18181B;
     --tertiary-border: #71717A;
-    --danger-foreground: #18181B;
+    --danger-foreground: #FEFEFE;
     --danger-border: #F87171;
     --accent: #27272A;
     --input-bg: #18181B;

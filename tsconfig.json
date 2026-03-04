@@ -23,7 +23,9 @@
 			"@proofa/react": ["./apps/packages/react/src"],
 			"@proofa/react/*": ["./apps/packages/react/src/*"],
 			"@proofa/shared": ["./apps/packages/shared/src"],
-			"@proofa/shared/*": ["./apps/packages/shared/src/*"]
+			"@proofa/shared/*": ["./apps/packages/shared/src/*"],
+			"@proofa/core": ["./apps/services/core/src"],
+			"@proofa/core/*": ["./apps/services/core/src/*"]
 		},
 
 		/* Strict mode (enables strict null checks and type checking) */

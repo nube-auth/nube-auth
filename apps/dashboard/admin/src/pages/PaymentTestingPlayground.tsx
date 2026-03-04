@@ -329,16 +329,26 @@ export default function PaymentTestingPlayground() {
 										value={mode}
 										onChange={(value) => setMode(value as "simulate" | "live")}
 										options={[
-											{ value: "simulate", label: "Simulate (Instant)" },
-											{ value: "live", label: "Live Checkout" }
-										]}
-										disabled={!!session}
-									/>
-									<Text className="mt-1 text-xs text-text-tertiary">
-										{mode === "simulate" 
-											? "Instantly simulate webhook events without real payment provider" 
-											: "Create real checkout session with provider sandbox"}
-									</Text>
+										{ value: "simulate", label: "Simulate (Instant) ✨" },
+										{ value: "live", label: "Live Checkout (Requires Webhooks)" }
+									]}
+									disabled={!!session}
+								/>
+								{mode === "simulate" ? (
+									<div className="mt-2 p-2 bg-success/10 border border-success/30 rounded text-xs">
+										<Text className="text-success font-semibold">✓ Recommended for local testing</Text>
+										<Text className="text-text-secondary mt-1">
+											Instantly simulates webhook events without needing real provider integration or ngrok.
+										</Text>
+									</div>
+								) : (
+									<div className="mt-2 p-2 bg-warning/10 border border-warning/30 rounded text-xs">
+										<Text className="text-warning font-semibold">⚠️ Requires webhook configuration</Text>
+										<Text className="text-text-secondary mt-1">
+											Provider must send webhooks to complete payments. In local development, use ngrok or tunnel service to expose localhost. Payment will stay "Processing" until webhook is received.
+										</Text>
+									</div>
+								)}
 								</div>
 							</div>
 						</CardBody>
@@ -378,7 +388,18 @@ export default function PaymentTestingPlayground() {
 					{session && (
 						<Card>
 							<CardBody className="p-6">
-								<Heading level={2} size="lg" className="mb-4">🎭 Simulate Events</Heading>
+								<Heading level={2} size="lg" className="mb-4">
+									{mode === "simulate" ? "🎭 Simulate Events" : "🔧 Manual Webhook Trigger"}
+								</Heading>
+								
+								{mode === "live" && (
+									<div className="mb-4 p-2 bg-info/10 border border-info/30 rounded text-xs">
+										<Text className="text-info">
+											Use these buttons if the real webhook from the provider fails to arrive (e.g., localhost not accessible). 
+											Only works after payment is completed on provider's checkout page.
+										</Text>
+									</div>
+								)}
 								
 								<div className="grid grid-cols-2 gap-2">
 									<Button
@@ -426,6 +447,22 @@ export default function PaymentTestingPlayground() {
 
 					{session && (
 						<>
+							{/* Live Mode Webhook Warning */}
+							{mode === "live" && !sessionStatus?.license && (
+								<Alert variant="warning">
+									<div className="space-y-2">
+										<Text className="font-semibold">⏳ Waiting for Webhook</Text>
+										<Text className="text-sm">
+											Payment will remain in "Processing" until the provider sends a webhook to Proofa. 
+											In local development, make sure your webhook URL is accessible via ngrok or similar tunnel.
+										</Text>
+										<Text className="text-xs text-text-tertiary mt-2">
+											💡 Tip: Use "Simulate" mode for instant local testing without webhook setup.
+										</Text>
+									</div>
+								</Alert>
+							)}
+
 							{/* Checkout URL */}
 							{session.checkoutUrl && (
 								<Card>
@@ -530,12 +567,21 @@ export default function PaymentTestingPlayground() {
 													<div className="text-right">
 														<Text className="font-semibold">${(txn.amount_cents / 100).toFixed(2)} {txn.currency.toUpperCase()}</Text>
 														<Text className={`text-xs font-medium ${
-															txn.status === "success" ? "text-success" : txn.status === "failed" ? "text-danger" : "text-text-secondary"
-														}`}>{txn.status}</Text>
+															txn.status === "success" ? "text-success" : txn.status === "failed" ? "text-danger" : "text-warning"
+														}`}>
+															{txn.status === "processing" ? "⏳ Processing (Webhook Pending)" : txn.status}
+														</Text>
 													</div>
 												</div>
 											))}
 										</div>
+										{sessionStatus.transactions.some((t: any) => t.status === "processing") && mode === "live" && (
+											<div className="mt-3 p-2 bg-warning/10 border border-warning/30 rounded text-xs">
+												<Text className="text-warning">
+													Payment is waiting for webhook from provider. If using localhost, you need ngrok to receive webhooks.
+												</Text>
+											</div>
+										)}
 									</CardBody>
 								</Card>
 							)}

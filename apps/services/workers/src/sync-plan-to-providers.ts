@@ -13,8 +13,8 @@ import { prices, payment_provider_configs } from "@proofa/db/schema";
 import { eq } from "@proofa/db";
 import { createLogger, serializeError } from "@proofa/shared";
 import { QueueClient } from "@proofa/queue";
-import { createProviderAdapter } from "../../core/src/billing/adapters/index.js";
-import { decryptString } from "../../core/src/utils/encryption.js";
+import { createProviderAdapter } from "@proofa/core/billing/adapters/index";
+import { decryptString } from "@proofa/core/utils/encryption";
 
 const log = createLogger("sync-plan-worker");
 

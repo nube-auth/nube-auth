@@ -161,18 +161,19 @@ export async function createPurchaseRecords(
 			"License updated via purchase"
 		);
 		} else {
-			// Create new license
-			const [newLicense] = await db
-				.insert(licenses)
-				.values({
-					public_id: id.license(),
-					user_id: user.id,
-					app_id: app.id,
-					plan_id: plan.id,
-					status: "active",
-					valid_until: validUntil,
-				})
-				.returning();
+			// Create new license - handle race condition where another webhook creates it first
+			try {
+				const [newLicense] = await db
+					.insert(licenses)
+					.values({
+						public_id: id.license(),
+						user_id: user.id,
+						app_id: app.id,
+						plan_id: plan.id,
+						status: "active",
+						valid_until: validUntil,
+					})
+					.returning();
 
 				if (!newLicense) {
 					throw new Error("Failed to create license");
@@ -186,6 +187,50 @@ export async function createPurchaseRecords(
 				);
 
 				createdLicense = true;
+			} catch (error) {
+				// Handle unique constraint violation (race condition with parallel webhooks)
+				if ((error as any)?.code === "23505" && (error as any)?.constraint === "licenses_user_app_unique") {
+					log.info(
+						{ userId: userPublicId, appId: appPublicId },
+						"License already exists (created by parallel webhook), fetching existing license"
+					);
+
+					// Fetch the license that was created by the other webhook
+					const raceLicense = await db.query.licenses.findFirst({
+						where: sql`${licenses.user_id} = ${user.id} AND ${licenses.app_id} = ${app.id}`,
+					});
+
+					if (!raceLicense) {
+						throw new Error("License not found after race condition");
+					}
+
+					// Update it with the current plan/validity
+					const [updatedRaceLicense] = await db
+						.update(licenses)
+						.set({
+							plan_id: plan.id,
+							status: "active",
+							valid_until: validUntil,
+							updated_at: new Date(),
+						})
+						.where(eq(licenses.id, raceLicense.id))
+						.returning();
+
+					if (!updatedRaceLicense) {
+						throw new Error("Failed to update license after race condition");
+					}
+
+					license = updatedRaceLicense;
+
+					log.info(
+						{ licenseId: license.public_id, userId: userPublicId, appId: appPublicId },
+						"License updated after race condition"
+					);
+				} else {
+					// Re-throw if it's a different error
+					throw error;
+				}
+			}
 		}
 
 		const [paymentTransaction] = await db
