@@ -111,6 +111,12 @@ checkoutRoutes.post("/", async (c: Context) => {
 			return c.json({ error: "Provider configuration error" }, 500);
 		}
 
+		// Add environment field for Dodo (convert "test"/"production" to "test_mode"/"live_mode")
+		if (providerConfig.provider === "dodo" && providerConfig.environment) {
+			(decryptedCredentials as any).environment = providerConfig.environment === "production" ? "live_mode" : "test_mode";
+			(decryptedCredentials as any).webhookSecret = providerConfig.webhook_secret || (decryptedCredentials as any).webhookSecret;
+		}
+
 		// Create adapter
 		const adapter = createProviderAdapter(providerConfig.provider, decryptedCredentials);
 

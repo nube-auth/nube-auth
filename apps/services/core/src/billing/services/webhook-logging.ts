@@ -27,7 +27,26 @@ interface MarkCompletedParams {
 	responseBody?: unknown;
 }
 
+interface MarkProcessingStartedParams {
+	eventType?: string;
+	eventId?: string;
+	metadata?: Record<string, unknown>;
+}
+
 export class WebhookLoggingService {
+	private static async getProcessingDurationMs(webhookLogId: number, completedAt: Date): Promise<number | null> {
+		const db = getDb();
+		const existing = await db.query.webhook_logs.findFirst({
+			where: and(eq(webhook_logs.id, webhookLogId)),
+			columns: { processing_started_at: true },
+		});
+
+		const startedAt = existing?.processing_started_at;
+		if (!startedAt) return null;
+
+		return Math.max(0, completedAt.getTime() - startedAt.getTime());
+	}
+
 	static async createWebhookLog(params: CreateWebhookLogParams): Promise<number> {
 		try {
 			const db = getDb();
@@ -75,18 +94,48 @@ export class WebhookLoggingService {
 		}
 	}
 
-	static async markProcessingStarted(webhookLogId: number): Promise<boolean> {
+	static async markPicked(webhookLogId: number): Promise<boolean> {
 		if (!webhookLogId) return true;
 
 		try {
 			const db = getDb();
+			const now = new Date();
 			await db
 				.update(webhook_logs)
 				.set({
-					status: "processing",
-					processing_started_at: new Date(),
-					updated_at: new Date(),
+					status: "picked",
+					updated_at: now,
 				})
+				.where(eq(webhook_logs.id, webhookLogId));
+			return true;
+		} catch (error) {
+			log.error({ err: serializeError(error as Error) }, "Failed to mark webhook as picked");
+			return false;
+		}
+	}
+
+	static async markProcessingStarted(
+		webhookLogId: number,
+		params?: MarkProcessingStartedParams,
+	): Promise<boolean> {
+		if (!webhookLogId) return true;
+
+		try {
+			const db = getDb();
+			const now = new Date();
+			const updateData: Record<string, unknown> = {
+					status: "processing",
+					processing_started_at: now,
+					updated_at: now,
+			};
+
+			if (params?.eventType) updateData["event_type"] = params.eventType;
+			if (params?.eventId) updateData["event_id"] = params.eventId;
+			if (params?.metadata) updateData["metadata"] = params.metadata;
+
+			await db
+				.update(webhook_logs)
+				.set(updateData as any)
 				.where(eq(webhook_logs.id, webhookLogId));
 			return true;
 		} catch (error) {
@@ -101,11 +150,13 @@ export class WebhookLoggingService {
 		try {
 			const db = getDb();
 			const now = new Date();
+			const processingDurationMs = await this.getProcessingDurationMs(webhookLogId, now);
 			await db
 				.update(webhook_logs)
 				.set({
 					status: "completed",
 					processing_completed_at: now,
+					processing_duration_ms: processingDurationMs,
 					payment_transaction_id: params?.paymentTransactionId ?? null,
 					license_id: params?.licenseId ?? null,
 					response_status: params?.responseStatus ?? null,
@@ -125,19 +176,70 @@ export class WebhookLoggingService {
 
 		try {
 			const db = getDb();
+			const now = new Date();
+			const processingDurationMs = await this.getProcessingDurationMs(webhookLogId, now);
 			await db
 				.update(webhook_logs)
 				.set({
 					status: "failed",
-					processing_completed_at: new Date(),
+					processing_completed_at: now,
+					processing_duration_ms: processingDurationMs,
 					error_message: errorMessage,
 					error_stack: errorStack ?? null,
-					updated_at: new Date(),
+					updated_at: now,
 				})
 				.where(eq(webhook_logs.id, webhookLogId));
 			return true;
 		} catch (error) {
 			log.error({ err: serializeError(error as Error) }, "Failed to mark processing failed");
+			return false;
+		}
+	}
+
+	static async markSignatureFailed(webhookLogId: number, errorMessage: string): Promise<boolean> {
+		if (!webhookLogId) return true;
+
+		try {
+			const db = getDb();
+			const now = new Date();
+			const processingDurationMs = await this.getProcessingDurationMs(webhookLogId, now);
+			await db
+				.update(webhook_logs)
+				.set({
+					status: "signature_failed",
+					processing_completed_at: now,
+					processing_duration_ms: processingDurationMs,
+					error_message: errorMessage,
+					updated_at: now,
+				})
+				.where(eq(webhook_logs.id, webhookLogId));
+			return true;
+		} catch (error) {
+			log.error({ err: serializeError(error as Error) }, "Failed to mark signature failed");
+			return false;
+		}
+	}
+
+	static async markSkipped(webhookLogId: number, note: string): Promise<boolean> {
+		if (!webhookLogId) return true;
+
+		try {
+			const db = getDb();
+			const now = new Date();
+			const processingDurationMs = await this.getProcessingDurationMs(webhookLogId, now);
+			await db
+				.update(webhook_logs)
+				.set({
+					status: "skipped",
+					processing_completed_at: now,
+					processing_duration_ms: processingDurationMs,
+					notes: note,
+					updated_at: now,
+				})
+				.where(eq(webhook_logs.id, webhookLogId));
+			return true;
+		} catch (error) {
+			log.error({ err: serializeError(error as Error) }, "Failed to mark webhook skipped");
 			return false;
 		}
 	}

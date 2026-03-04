@@ -21,6 +21,7 @@ interface WebhookProcessingParams {
 	signature: string;
 	providerConfigId?: number;
 	ipAddress?: string;
+	webhookLogId?: number;
 }
 
 /**
@@ -32,6 +33,7 @@ interface WebhookProcessingParams {
 export async function processWebhook(params: WebhookProcessingParams): Promise<boolean> {
 	try {
 		const db = getDb();
+		const webhookLogId = params.webhookLogId;
 
 		// Collect candidate configs to try
 		let configs: Awaited<ReturnType<typeof paymentProviderConfigQueries.findActiveByProvider>>;
@@ -47,6 +49,10 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 
 		if (configs.length === 0) {
 			log.error({ provider: params.provider }, "No active provider configurations found");
+			await WebhookLoggingService.markProcessingFailed(
+				webhookLogId ?? 0,
+				"No active provider configurations found",
+			);
 			return false;
 		}
 
@@ -62,6 +68,12 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 					"Failed to decrypt credentials, skipping config"
 				);
 				continue;
+			}
+
+			// Add environment field for Dodo
+			if (providerConfig.provider === "dodo" && providerConfig.environment) {
+				(decryptedCredentials as any).environment = providerConfig.environment === "production" ? "live_mode" : "test_mode";
+				(decryptedCredentials as any).webhookSecret = providerConfig.webhook_secret || (decryptedCredentials as any).webhookSecret;
 			}
 
 			const adapter = createProviderAdapter(providerConfig.provider, decryptedCredentials);
@@ -81,32 +93,36 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 
 			log.info({ eventType: event.type, eventId: event.id, configId: providerConfig.public_id }, "Webhook verified");
 
+			await WebhookLoggingService.markProcessingStarted(webhookLogId ?? 0, {
+				eventType: event.type,
+				eventId: event.id,
+				metadata: {
+					stage: "verified",
+					providerConfigId: providerConfig.public_id,
+				},
+			});
+
 			// Idempotency check — skip if already processed
 			if (event.id) {
 				const alreadyProcessed = await WebhookLoggingService.isEventProcessed(params.provider, event.id);
 				if (alreadyProcessed) {
 					log.info({ eventId: event.id, provider: params.provider }, "Webhook event already processed, skipping");
+					await WebhookLoggingService.markSkipped(
+						webhookLogId ?? 0,
+						`Duplicate event skipped: ${event.id}`,
+					);
 					return true;
 				}
 			}
-
-			// Create webhook log entry
-			const webhookLogId = await WebhookLoggingService.createWebhookLog({
-				provider: params.provider,
-				eventType: event.type,
-				eventId: event.id,
-				requestBody: params.rawBody,
-				signature: params.signature,
-				...(params.ipAddress != null ? { ipAddress: params.ipAddress } : {}),
-			});
-
-			await WebhookLoggingService.markProcessingStarted(webhookLogId);
 
 			// Extract payment details
 			const paymentDetails = await adapter.extractPaymentDetails(event);
 			if (!paymentDetails) {
 				log.debug({ eventType: event.type }, "No payment details to extract");
-				await WebhookLoggingService.markProcessingCompleted(webhookLogId);
+				await WebhookLoggingService.markSkipped(
+					webhookLogId ?? 0,
+					`No payment details extracted for event type: ${event.type}`,
+				);
 				return true; // Not an error, just not a payment event
 			}
 
@@ -119,10 +135,10 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 					eventType: event.type,
 				});
 
-				await WebhookLoggingService.markProcessingCompleted(webhookLogId);
+				await WebhookLoggingService.markProcessingCompleted(webhookLogId ?? 0);
 			} catch (error) {
 				await WebhookLoggingService.markProcessingFailed(
-					webhookLogId,
+					webhookLogId ?? 0,
 					(error as Error).message,
 					(error as Error).stack,
 				);
@@ -146,9 +162,18 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 			{ provider: params.provider, configCount: configs.length },
 			"Webhook verification failed for all provider configs"
 		);
+		await WebhookLoggingService.markSignatureFailed(
+			webhookLogId ?? 0,
+			"Webhook verification failed for all provider configs",
+		);
 		return false;
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Webhook processing failed");
+		await WebhookLoggingService.markProcessingFailed(
+			params.webhookLogId ?? 0,
+			(error as Error).message,
+			(error as Error).stack,
+		);
 		return false;
 	}
 }

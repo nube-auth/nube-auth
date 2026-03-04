@@ -31,7 +31,12 @@ export interface AuthContext {
 export const authMiddleware = createMiddleware(async (c: Context, next) => {
 	// Skip auth for public routes
 	const publicRoutes = ["/health", "/v1/auth/login", "/v1/auth/logout", "/v1/debug"];
-	if (publicRoutes.includes(c.req.path) || c.req.path.startsWith("/v1/auth") || c.req.path.startsWith("/v1/debug")) {
+	if (
+		publicRoutes.includes(c.req.path) ||
+		c.req.path.startsWith("/v1/auth") ||
+		c.req.path.startsWith("/v1/debug") ||
+		c.req.path.startsWith("/v1/payment/webhooks/")
+	) {
 		return next();
 	}
 

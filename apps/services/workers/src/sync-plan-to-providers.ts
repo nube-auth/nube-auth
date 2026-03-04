@@ -77,6 +77,8 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 			public_id: true,
 			provider: true,
 			credentials: true,
+			environment: true,
+			webhook_secret: true,
 			is_active: true,
 		},
 	});
@@ -116,6 +118,12 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 					error: "Failed to decrypt credentials",
 				});
 				continue;
+			}
+
+			// Add environment field for Dodo
+			if (provider.provider === "dodo" && provider.environment) {
+				(credentials as any).environment = provider.environment === "production" ? "live_mode" : "test_mode";
+				(credentials as any).webhookSecret = provider.webhook_secret || (credentials as any).webhookSecret;
 			}
 
 			// Create adapter

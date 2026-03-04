@@ -16,6 +16,7 @@ export interface ProcessWebhookJobData {
 	signature: string;
 	providerConfigId?: number;
 	ipAddress: string;
+	webhookLogId?: number;
 }
 
 export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhookJobData>> {
@@ -25,6 +26,7 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 
 	// Dynamically import webhook handler to avoid circular dependencies
 	const { processWebhook } = await import("../../core/src/billing/services/webhook-handler.js");
+	const { WebhookLoggingService } = await import("../../core/src/billing/services/webhook-logging.js");
 
 	return new BullWorker<ProcessWebhookJobData>(
 		"billing",
@@ -34,11 +36,16 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 			}
 
 			try {
+				if (job.data.webhookLogId != null) {
+					await WebhookLoggingService.markPicked(job.data.webhookLogId);
+				}
+
 				log.info(
 					{
 						jobId: job.id,
 						provider: job.data.provider,
 						ipAddress: job.data.ipAddress,
+						webhookLogId: job.data.webhookLogId,
 					},
 					"Processing webhook"
 				);
@@ -47,6 +54,7 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 					provider: job.data.provider,
 					rawBody: job.data.rawBody,
 					signature: job.data.signature,
+					...(job.data.webhookLogId != null ? { webhookLogId: job.data.webhookLogId } : {}),
 					...(job.data.providerConfigId != null ? { providerConfigId: job.data.providerConfigId } : {}),
 				});
 

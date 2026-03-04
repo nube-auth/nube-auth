@@ -8,11 +8,13 @@ import {
 	sql,
 	subscriptions,
 	userQueries,
+	webhook_logs,
 	webhookLogQueries,
 } from "@proofa/db";
 import { createId, createLogger, serializeError } from "@proofa/shared";
 import { Hono } from "hono";
 import { z } from "zod";
+import { enqueueWebhookProcessing } from "../../../billing/queue.js";
 
 const log = createLogger("admin-billing-routes");
 
@@ -377,6 +379,72 @@ billingRouter.get("/webhooks/:webhookId", async (c) => {
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Failed to fetch webhook detail");
 		return c.json({ error: "Failed to fetch webhook log" }, 500);
+	}
+});
+
+// ---------------------------------------------------------------------------
+// POST /webhooks/:webhookId/retry
+// ---------------------------------------------------------------------------
+billingRouter.post("/webhooks/:webhookId/retry", async (c) => {
+	try {
+		const db = getDb();
+		const webhookId = c.req.param("webhookId");
+
+		const webhook = await webhookLogQueries.findByPublicId(db, webhookId);
+		if (!webhook) {
+			return c.json({ error: "Webhook log not found" }, 404);
+		}
+
+		if (!["failed", "signature_failed", "skipped"].includes(webhook.status)) {
+			return c.json(
+				{ error: `Webhook retry allowed only for failed/signature_failed/skipped. Current status: ${webhook.status}` },
+				400,
+			);
+		}
+
+		if (!webhook.signature) {
+			return c.json({ error: "Cannot retry webhook: missing stored signature" }, 400);
+		}
+
+		const rawBody =
+			typeof webhook.request_body === "string"
+				? webhook.request_body
+				: typeof (webhook.request_body as Record<string, unknown> | null)?.["rawBody"] === "string"
+					? String((webhook.request_body as Record<string, unknown>)["rawBody"])
+					: JSON.stringify(webhook.request_body ?? {});
+
+		await db
+			.update(webhook_logs)
+			.set({
+				status: "not_started",
+				processing_started_at: null,
+				processing_completed_at: null,
+				processing_duration_ms: null,
+				error_message: null,
+				error_stack: null,
+				retry_count: sql`${webhook_logs.retry_count} + 1`,
+				last_retry_at: new Date(),
+				notes: "Manual retry requested from admin dashboard",
+				updated_at: new Date(),
+			})
+			.where(sql`${webhook_logs.id} = ${webhook.id}`);
+
+		await enqueueWebhookProcessing(
+			webhook.provider,
+			rawBody,
+			webhook.signature,
+			webhook.ip_address || "unknown",
+			webhook.id,
+		);
+
+		return c.json({
+			success: true,
+			webhookId: webhook.public_id,
+			status: "queued",
+		});
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Failed to retry webhook");
+		return c.json({ error: "Failed to retry webhook" }, 500);
 	}
 });
 

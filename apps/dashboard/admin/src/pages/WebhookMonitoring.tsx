@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useWebhookLogs, useWebhookDetail } from "../hooks/api";
+import { useWebhookLogs, useWebhookDetail, useRetryWebhook } from "../hooks/api";
 import {
 	Heading,
 	Text,
@@ -34,13 +34,18 @@ export function WebhookMonitoringPage() {
 
 	const webhooksQuery = useWebhookLogs(filters);
 	const detailQuery = useWebhookDetail(selectedWebhook || "");
+	const retryWebhook = useRetryWebhook();
+	const [retryingWebhookId, setRetryingWebhookId] = useState<string | null>(null);
 
 	const handleStatusBadge = (status: string) => {
 		const variants: Record<string, "success" | "danger" | "info" | "default"> = {
-			success: "success",
+			completed: "success",
 			failed: "danger",
+			signature_failed: "danger",
 			processing: "info",
+			picked: "info",
 			not_started: "default",
+			skipped: "default",
 		};
 		return (
 			<Chip variant={variants[status] || "default"} size="sm" className="capitalize">
@@ -51,166 +56,179 @@ export function WebhookMonitoringPage() {
 
 	const handleProviderBadge = (provider: string) => {
 		const variants: Record<string, "success" | "info" | "default"> = {
+			dodo: "info",
+			stripe: "info",
 			lemon_squeezy: "success",
 			paddle: "info",
 		};
 		return (
 			<Chip variant={variants[provider] || "default"} size="sm">
-				{provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
+				{provider === "lemon_squeezy" ? "LemonSqueezy" : provider === "dodo" ? "Dodo" : provider === "stripe" ? "Stripe" : "Paddle"}
 			</Chip>
 		);
 	};
 
+	const canRetryWebhook = (status: string) =>
+		status === "failed" || status === "signature_failed" || status === "skipped";
+
 	if (activeTab === "detail" && selectedWebhook && detailQuery.data) {
 		const webhook = detailQuery.data;
+		const isRetryable = canRetryWebhook(webhook.status);
 		return (
 			<div>
-				<div className="mb-6">
+				<div className="mb-4 flex items-center justify-between gap-3">
 					<Button variant="plain" onClick={() => setActiveTab("logs")} className="text-primary">
 						← Back to Logs
 					</Button>
+					<div className="flex items-center gap-2">
+						{isRetryable && (
+							<Button
+								variant="secondary"
+								size="sm"
+								disabled={retryWebhook.isPending && retryingWebhookId === webhook.id}
+								onClick={async () => {
+									setRetryingWebhookId(webhook.id);
+									try {
+										await retryWebhook.mutateAsync(webhook.id);
+									} finally {
+										setRetryingWebhookId(null);
+									}
+								}}
+							>
+								{retryWebhook.isPending && retryingWebhookId === webhook.id ? "Retrying..." : "Retry Webhook"}
+							</Button>
+						)}
+					</div>
 				</div>
 
 				<Card>
 					<CardBody>
-						<Heading level={2} size="lg" className="mb-6">Webhook Details</Heading>
-
-						{/* Header Info */}
-						<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-8">
+						<div className="mb-5 flex items-center justify-between gap-3">
 							<div>
-								<div className="text-12px text-text-tertiary mb-1">ID</div>
+								<Heading level={2} size="lg">Webhook Event</Heading>
+								<Text className="text-text-secondary mt-1">
+									Complete delivery trace and payload diagnostics
+								</Text>
+							</div>
+							<div className="flex items-center gap-2">
+								{handleProviderBadge(webhook.provider)}
+								{handleStatusBadge(webhook.status)}
+							</div>
+						</div>
+
+						<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+							<div className="rounded-lg bg-surface-secondary p-3">
+								<div className="text-11px uppercase tracking-wide text-text-tertiary mb-1">Webhook ID</div>
 								<code className="text-13px text-text-primary font-mono">{webhook.id}</code>
 							</div>
-							<div>
-								<div className="text-12px text-text-tertiary mb-1">Provider</div>
-								<div>{handleProviderBadge(webhook.provider)}</div>
+							<div className="rounded-lg bg-surface-secondary p-3">
+								<div className="text-11px uppercase tracking-wide text-text-tertiary mb-1">Event Type</div>
+								<code className="text-13px text-text-primary font-mono uppercase">{webhook.event_type}</code>
 							</div>
-							<div>
-								<div className="text-12px text-text-tertiary mb-1">Status</div>
-								<div>{handleStatusBadge(webhook.status)}</div>
+							<div className="rounded-lg bg-surface-secondary p-3">
+								<div className="text-11px uppercase tracking-wide text-text-tertiary mb-1">Received</div>
+								<div className="text-13px text-text-primary">{new Date(webhook.received_at).toLocaleString()}</div>
 							</div>
-						</div>
-
-						{/* Event Info */}
-						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
-							<Heading level={4} size="sm" className="mb-3">Event Information</Heading>
-							<div className="grid grid-cols-2 gap-4">
-								<div>
-									<div className="text-12px text-text-tertiary mb-1">Event Type</div>
-									<code className="text-13px text-text-primary font-mono uppercase">{webhook.event_type}</code>
-								</div>
-								<div>
-									<div className="text-12px text-text-tertiary mb-1">Event ID</div>
-									<code className="text-13px text-text-primary font-mono">{webhook.event_id}</code>
+							<div className="rounded-lg bg-surface-secondary p-3">
+								<div className="text-11px uppercase tracking-wide text-text-tertiary mb-1">Duration</div>
+								<div className="text-13px font-semibold text-text-primary">
+									{webhook.processing_duration_ms ? `${webhook.processing_duration_ms}ms` : "—"}
 								</div>
 							</div>
 						</div>
 
-						{/* Timing Info */}
-						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
-							<Heading level={4} size="sm" className="mb-3">Processing Timeline</Heading>
-							<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
-								<div>
-									<div className="text-12px text-text-tertiary mb-1">Received At</div>
-									<div className="text-13px text-text-primary">{new Date(webhook.received_at).toLocaleString()}</div>
-								</div>
-								<div>
-									<div className="text-12px text-text-tertiary mb-1">Processing Started</div>
-									<div className="text-13px text-text-primary">
-										{webhook.processing_started_at ? new Date(webhook.processing_started_at).toLocaleString() : "—"}
-									</div>
-								</div>
-								<div>
-									<div className="text-12px text-text-tertiary mb-1">Completed</div>
-									<div className="text-13px text-text-primary">
-										{webhook.processing_completed_at ? new Date(webhook.processing_completed_at).toLocaleString() : "—"}
-									</div>
-								</div>
-								<div>
-									<div className="text-12px text-text-tertiary mb-1">Duration</div>
-									<div className="text-13px text-text-primary font-semibold">
-										{webhook.processing_duration_ms ? `${webhook.processing_duration_ms}ms` : "—"}
-									</div>
-								</div>
+						{webhook.error_message && (webhook.status === "failed" || webhook.status === "signature_failed") && (
+							<div className="mb-5 rounded-lg border border-danger/30 bg-danger/10 p-3">
+								<div className="text-12px text-danger font-semibold mb-1">Failure Reason</div>
+								<code className="text-12px text-danger font-mono wrap-break-word">{webhook.error_message}</code>
 							</div>
-						</div>
+						)}
 
-						{/* Retry Info */}
-						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
-							<Heading level={4} size="sm" className="mb-3">Retry Information</Heading>
-							<div className="grid grid-cols-2 gap-4">
-								<div>
-									<div className="text-12px text-text-tertiary mb-1">Retry Count</div>
-									<div className="text-13px text-text-primary font-semibold">{webhook.retry_count}</div>
-								</div>
-								<div>
-									<div className="text-12px text-text-tertiary mb-1">Last Retry</div>
-									<div className="text-13px text-text-primary">
-										{webhook.last_retry_at ? new Date(webhook.last_retry_at).toLocaleString() : "Never"}
-									</div>
-								</div>
-							</div>
-						</div>
-
-						{/* Network Info */}
-						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
-							<Heading level={4} size="sm" className="mb-3">Network Information</Heading>
-							<div>
-								<div className="text-12px text-text-tertiary mb-1">IP Address</div>
-								<code className="text-13px text-text-primary font-mono">{webhook.ip_address}</code>
-							</div>
-						</div>
-
-						{/* Request Headers */}
-						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
-							<Heading level={4} size="sm" className="mb-3">Request Headers</Heading>
-							<div className="max-h-75 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-12px text-text-secondary">
-								{Object.entries(webhook.request_headers || {}).map(([key, value]) => (
-									<div key={key} className="mb-1">
-										<span className="text-primary font-semibold">{key}:</span> <span className="text-text-secondary">{String(value)}</span>
-									</div>
-								))}
-							</div>
-						</div>
-
-						{/* Request Body */}
-						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
-							<Heading level={4} size="sm" className="mb-3">Request Body</Heading>
-							<div className="max-h-100 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-12px text-text-secondary">
-								<pre className="m-0 whitespace-pre-wrap break-words">
-									{JSON.stringify(webhook.request_body, null, 2)}
-								</pre>
-							</div>
-						</div>
-
-						{/* Signature */}
-						<div className="p-4 bg-surface-secondary rounded-lg mb-6">
-							<Heading level={4} size="sm" className="mb-3">Signature</Heading>
-							<div className="max-h-50 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-12px text-text-secondary break-all">
-								{webhook.signature}
-							</div>
-						</div>
-
-						{/* Error Section (if failed) */}
-						{webhook.status === "failed" && webhook.error_message && (
-							<div className="p-4 bg-danger/10 border-l-3 border-danger rounded-lg mb-6">
-								<Heading level={4} size="sm" className="mb-3 text-danger">Error Information</Heading>
-								<div className="mb-3">
-									<div className="text-12px text-danger mb-1 font-semibold">Error Message</div>
-									<code className="text-13px text-danger block bg-danger/5 p-2 rounded">
-										{webhook.error_message}
-									</code>
-								</div>
-								{webhook.error_stack && (
-									<div>
-										<div className="text-12px text-danger mb-1 font-semibold">Stack Trace</div>
-										<div className="max-h-50 overflow-y-auto bg-danger/5 rounded p-3 font-mono text-11px text-danger">
-											<pre className="m-0 whitespace-pre-wrap break-words">{webhook.error_stack}</pre>
+						<div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+							<div className="xl:col-span-4 space-y-4">
+								<div className="rounded-lg bg-surface-secondary p-4">
+									<Heading level={4} size="sm" className="mb-3">Processing Timeline</Heading>
+									<div className="space-y-2 text-13px">
+										<div className="flex justify-between gap-2">
+											<span className="text-text-tertiary">Started</span>
+											<span className="text-text-primary text-right">{webhook.processing_started_at ? new Date(webhook.processing_started_at).toLocaleString() : "—"}</span>
+										</div>
+										<div className="flex justify-between gap-2">
+											<span className="text-text-tertiary">Completed</span>
+											<span className="text-text-primary text-right">{webhook.processing_completed_at ? new Date(webhook.processing_completed_at).toLocaleString() : "—"}</span>
 										</div>
 									</div>
-								)}
 								</div>
-							)}
+
+								<div className="rounded-lg bg-surface-secondary p-4">
+									<Heading level={4} size="sm" className="mb-3">Retry State</Heading>
+									<div className="space-y-2 text-13px">
+										<div className="flex justify-between gap-2">
+											<span className="text-text-tertiary">Retry Count</span>
+											<span className="text-text-primary font-semibold">{webhook.retry_count}</span>
+										</div>
+										<div className="flex justify-between gap-2">
+											<span className="text-text-tertiary">Last Retry</span>
+											<span className="text-text-primary text-right">{webhook.last_retry_at ? new Date(webhook.last_retry_at).toLocaleString() : "Never"}</span>
+										</div>
+									</div>
+								</div>
+
+								<div className="rounded-lg bg-surface-secondary p-4">
+									<Heading level={4} size="sm" className="mb-3">Network</Heading>
+									<div className="text-12px text-text-tertiary mb-1">IP Address</div>
+									<code className="text-13px text-text-primary font-mono">{webhook.ip_address || "unknown"}</code>
+								</div>
+
+								{webhook.event_id && (
+									<div className="rounded-lg bg-surface-secondary p-4">
+										<Heading level={4} size="sm" className="mb-3">Provider Event ID</Heading>
+										<code className="text-12px text-text-primary font-mono wrap-break-word">{webhook.event_id}</code>
+									</div>
+								)}
+							</div>
+
+							<div className="xl:col-span-8 space-y-4">
+								<div className="rounded-lg bg-surface-secondary p-4">
+									<Heading level={4} size="sm" className="mb-3">Request Headers</Heading>
+									<div className="max-h-64 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-12px text-text-secondary">
+										{Object.entries(webhook.request_headers || {}).map(([key, value]) => (
+											<div key={key} className="mb-1">
+												<span className="text-primary font-semibold">{key}:</span>{" "}
+												<span className="text-text-secondary wrap-break-word">{String(value)}</span>
+											</div>
+										))}
+									</div>
+								</div>
+
+								<div className="grid grid-cols-1 gap-4 w-full">
+									<div className="rounded-lg bg-surface-secondary p-4">
+										<Heading level={4} size="sm" className="mb-3">Signature</Heading>
+										<div className="max-h-56 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-11px text-text-secondary wrap-break-word">
+											{webhook.signature}
+										</div>
+									</div>
+
+									{webhook.error_stack && (
+										<div className="rounded-lg bg-danger/10 border border-danger/30 p-4">
+											<Heading level={4} size="sm" className="mb-3 text-danger">Stack Trace</Heading>
+											<div className="max-h-56 overflow-y-auto bg-danger/5 rounded p-3 font-mono text-11px text-danger">
+												<pre className="m-0 whitespace-pre-wrap wrap-break-word">{webhook.error_stack}</pre>
+											</div>
+										</div>
+									)}
+								</div>
+
+								<div className="rounded-lg bg-surface-secondary p-4 w-full">
+									<Heading level={4} size="sm" className="mb-3">Request Body</Heading>
+									<div className="max-h-130 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-12px text-text-secondary">
+										<pre className="m-0 whitespace-pre-wrap wrap-break-word">
+											{JSON.stringify(webhook.request_body, null, 2)}
+										</pre>
+									</div>
+								</div>
+							</div>
+						</div>
 					</CardBody>
 				</Card>
 			</div>
@@ -253,9 +271,12 @@ export function WebhookMonitoringPage() {
 								placeholder="All Statuses"
 								options={[
 									{ value: "", label: "All Statuses" },
-									{ value: "success", label: "Success" },
+									{ value: "completed", label: "Completed" },
 									{ value: "failed", label: "Failed" },
+									{ value: "signature_failed", label: "Signature Failed" },
 									{ value: "processing", label: "Processing" },
+									{ value: "picked", label: "Picked" },
+									{ value: "skipped", label: "Skipped" },
 									{ value: "not_started", label: "Not Started" },
 								]}
 							/>
@@ -360,16 +381,35 @@ export function WebhookMonitoringPage() {
 											</Text>
 										</TableCell>
 										<TableCell align="right">
-											<Button
-												variant="secondary"
-												size="sm"
-												onClick={() => {
-													setSelectedWebhook(webhook.id);
-													setActiveTab("detail");
-												}}
-											>
-												View
-											</Button>
+											<div className="flex justify-end gap-2">
+												{canRetryWebhook(webhook.status) && (
+													<Button
+														variant="secondary"
+														size="sm"
+														disabled={retryWebhook.isPending && retryingWebhookId === webhook.id}
+														onClick={async () => {
+															setRetryingWebhookId(webhook.id);
+															try {
+																await retryWebhook.mutateAsync(webhook.id);
+															} finally {
+																setRetryingWebhookId(null);
+															}
+														}}
+													>
+														{retryWebhook.isPending && retryingWebhookId === webhook.id ? "Retrying..." : "Retry"}
+													</Button>
+												)}
+												<Button
+													variant="secondary"
+													size="sm"
+													onClick={() => {
+														setSelectedWebhook(webhook.id);
+														setActiveTab("detail");
+													}}
+												>
+													View
+												</Button>
+											</div>
 										</TableCell>
 									</DataTableRow>
 								))}

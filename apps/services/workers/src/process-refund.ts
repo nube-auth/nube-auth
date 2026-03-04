@@ -140,6 +140,11 @@ async function processRefundJob(job: Job<ProcessRefundJobData>): Promise<void> {
 			throw new Error("Failed to decrypt provider credentials");
 		}
 
+		if (providerConfig.provider === "dodo" && providerConfig.environment) {
+			(credentials as any).environment = providerConfig.environment === "production" ? "live_mode" : "test_mode";
+			(credentials as any).webhookSecret = providerConfig.webhook_secret || (credentials as any).webhookSecret;
+		}
+
 		const adapter = createProviderAdapter(providerConfig.provider, credentials);
 
 		const isPartialRefund = finalRefundAmount !== originalTx.amount_cents;

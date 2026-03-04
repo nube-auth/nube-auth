@@ -86,6 +86,10 @@ refundRoutes.post("/", async (c: Context) => {
 		// Decrypt credentials and create adapter
 		const credentialsJson = decryptString(providerConfig.credentials);
 		const decryptedCredentials = JSON.parse(credentialsJson);
+		if (providerConfig.provider === "dodo" && providerConfig.environment) {
+			decryptedCredentials.environment = providerConfig.environment === "production" ? "live_mode" : "test_mode";
+			decryptedCredentials.webhookSecret = providerConfig.webhook_secret || decryptedCredentials.webhookSecret;
+		}
 		const adapter = createProviderAdapter(providerConfig.provider, decryptedCredentials);
 
 		// Create refund via provider

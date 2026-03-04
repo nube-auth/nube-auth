@@ -16,10 +16,12 @@ import { setupProcessWebhookWorker } from "./process-webhook.js";
 import { setupSyncLicenseWorker } from "./sync-license.js";
 import { startProcessRefundWorker } from "./process-refund.js";
 import { setupSyncPlanWorker } from "./sync-plan-worker.js";
+import { startWebhookRescueCron } from "./webhook-rescue-cron.js";
 
 const log = createLogger("worker-manager");
 
 let workers: Worker<any>[] = [];
+let webhookRescueTimer: NodeJS.Timeout | null = null;
 
 /**
  * Initialize all workers
@@ -36,6 +38,7 @@ export async function initializeWorkers(): Promise<void> {
 		const syncPlanWorker = await setupSyncPlanWorker();
 
 		workers = [paymentWorker, webhookWorker, licenseWorker, refundWorker, syncPlanWorker];
+		webhookRescueTimer = startWebhookRescueCron();
 
 		log.info(
 			{ workerCount: workers.length },
@@ -82,6 +85,11 @@ export async function shutdownWorkers(): Promise<void> {
 			await worker.close();
 		}
 
+		if (webhookRescueTimer) {
+			clearInterval(webhookRescueTimer);
+			webhookRescueTimer = null;
+		}
+
 		log.info("Workers shut down successfully");
 	} catch (error) {
 		log.error(
@@ -97,3 +105,32 @@ export async function shutdownWorkers(): Promise<void> {
 export function getWorkers(): Worker[] {
 	return workers;
 }
+
+/**
+ * Service bootstrap
+ * Starts all workers when this entrypoint runs.
+ */
+async function main(): Promise<void> {
+	try {
+		await initializeWorkers();
+		log.info("Workers service is running");
+	} catch (error) {
+		log.error(
+			{ error: (error as Error).message },
+			"Workers service failed to start",
+		);
+		process.exit(1);
+	}
+}
+
+void main();
+
+process.on("SIGINT", async () => {
+	await shutdownWorkers();
+	process.exit(0);
+});
+
+process.on("SIGTERM", async () => {
+	await shutdownWorkers();
+	process.exit(0);
+});

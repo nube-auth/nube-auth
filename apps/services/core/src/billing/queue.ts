@@ -19,6 +19,7 @@ export interface ProcessWebhookJobData {
 	signature: string;
 	providerConfigId?: number;
 	ipAddress: string;
+	webhookLogId?: number;
 }
 
 export interface SyncLicenseJobData {
@@ -59,6 +60,7 @@ export async function enqueueWebhookProcessing(
 	rawBody: string,
 	signature: string,
 	ipAddress: string,
+	webhookLogId?: number,
 ): Promise<void> {
 	const queue = getQueue<any>("billing");
 	const jobData: ProcessWebhookJobData = {
@@ -66,9 +68,11 @@ export async function enqueueWebhookProcessing(
 		rawBody,
 		signature,
 		ipAddress,
+		...(webhookLogId != null ? { webhookLogId } : {}),
 	};
 
 	await queue.add("process-webhook", jobData as any, {
+		...(webhookLogId != null ? { jobId: `process-webhook-log-${webhookLogId}` } : {}),
 		attempts: 3,
 		backoff: {
 			type: "exponential",

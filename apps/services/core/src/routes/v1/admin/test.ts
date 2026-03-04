@@ -3,7 +3,7 @@
  * Admin-only endpoints for testing payment flows without manual setup
  */
 
-import { getDb, eq, and, desc, inArray, testSessionQueries, userQueries, appQueries, planQueries, priceQueries, projectQueries, projectMemberQueries, paymentProviderConfigQueries, purchases, payment_transactions, webhook_logs } from "@proofa/db";
+import { getDb, eq, and, desc, inArray, testSessionQueries, userQueries, appQueries, planQueries, priceQueries, projectQueries, projectMemberQueries, paymentProviderConfigQueries, purchases, payment_transactions, webhook_logs, prices } from "@proofa/db";
 import { createId, createLogger, serializeError, publicId } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -255,8 +255,9 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 		let checkoutUrl: string | undefined;
 		if (mode === "live") {
 			try {
+				log.info({ provider, projectId: testProject.public_id, planId: selectedPlan.public_id }, "Starting live mode checkout creation");
+				
 				// Need a real provider config with encrypted credentials
-				// First try to find any config for this project/provider with real credentials
 				const liveConfigs = await paymentProviderConfigQueries.findByProjectAndProvider(
 					db,
 					testProject.id,
@@ -265,6 +266,12 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 				);
 
 				const configToUse = liveConfigs ?? providerConfig;
+				
+				log.info({ 
+					hasConfig: !!configToUse, 
+					isPlaceholder: configToUse?.credentials === "test-playground-no-real-credentials",
+					configId: configToUse?.public_id 
+				}, "Provider config lookup result");
 
 				if (!configToUse || configToUse.credentials === "test-playground-no-real-credentials") {
 					return c.json({
@@ -272,13 +279,65 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 					}, 400);
 				}
 
+				log.info({ provider }, "Decrypting credentials");
 				const credentialsJson = decryptString(configToUse.credentials);
 				const decryptedCredentials = JSON.parse(credentialsJson);
+				
+				// Add environment field for Dodo adapter (convert "test"/"production" to "test_mode"/"live_mode")
+				if (provider === "dodo" && configToUse.environment) {
+					decryptedCredentials.environment = configToUse.environment === "production" ? "live_mode" : "test_mode";
+					decryptedCredentials.webhookSecret = configToUse.webhook_secret || decryptedCredentials.webhookSecret;
+					log.info({ environment: decryptedCredentials.environment }, "Added environment to Dodo credentials");
+				}
+				
+				log.info({ provider, hasApiKey: !!decryptedCredentials.apiKey }, "Creating provider adapter");
 				const adapter = createProviderAdapter(provider, decryptedCredentials);
 
+				// If the price has a fake/test external_price_id, create a real product on the provider
+				if (!testPrice.external_price_id || testPrice.external_price_id.startsWith("test_price_")) {
+					log.info({ 
+						provider, 
+						planName: selectedPlan.name, 
+						priceId: testPrice.public_id,
+						currentExternalId: testPrice.external_price_id 
+					}, "Creating real product on provider for live mode");
+
+					const product = await adapter.createProduct({
+						name: selectedPlan.name,
+						description: selectedPlan.description ?? `Test plan: ${selectedPlan.name}`,
+					});
+					
+					log.info({ productId: product.productId, provider }, "Product created, now creating price");
+
+					const providerPrice = await adapter.createPrice({
+						productId: product.productId,
+						amountCents: testPrice.amount_cents,
+						currency: testPrice.currency,
+						interval: testPrice.billing_type === "one_time" || testPrice.billing_type === "lifetime"
+							? "one_time"
+							: (testPrice.interval as "month" | "year") ?? "month",
+					});
+					
+					log.info({ priceId: providerPrice.priceId, provider }, "Price created, updating DB");
+
+					// Update the price record with the real external ID
+					await db.update(prices).set({
+						external_price_id: providerPrice.priceId,
+						updated_at: new Date(),
+					}).where(eq(prices.id, testPrice.id));
+
+					testPrice = { ...testPrice, external_price_id: providerPrice.priceId };
+					log.info({ productId: product.productId, priceId: providerPrice.priceId, provider }, "Created real product and price on provider");
+				} else {
+					log.info({ externalPriceId: testPrice.external_price_id, provider }, "Using existing external price ID");
+				}
+
+				log.info({ provider, productId: testPrice.external_price_id }, "Creating checkout session");
 				const baseUrl = env.ADMIN_DASHBOARD_URL || "http://localhost:5174";
 				const checkoutSession = await adapter.createCheckout({
-					customerId: testUser.public_id,
+					// Don't pass customerId - let provider create/find customer by email
+					// (Proofa user IDs don't exist in provider's system yet)
+					customerId: "",
 					customerEmail: testUser.primary_email || "test@proofa.internal",
 					productId: testPrice.external_price_id || "",
 					successUrl: `${baseUrl}/playground/payments?status=success`,
@@ -295,12 +354,23 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 				checkoutUrl = checkoutSession.checkoutUrl;
 				log.info({ checkoutUrl, provider, sessionId: checkoutSession.sessionId }, "Created real checkout session");
 			} catch (error) {
+				const serializedError = serializeError(error as Error);
 				log.error({ 
-					err: serializeError(error as Error),
-					provider 
+					err: serializedError,
+					provider,
+					projectId: testProject.public_id,
+					planId: selectedPlan.public_id,
 				}, "Failed to create checkout session");
+				
+				// Also log to console for immediate visibility during dev
+				console.error("=== Live Mode Checkout Failed ===");
+				console.error("Provider:", provider);
+				console.error("Error:", error);
+				console.error("Serialized:", serializedError);
+				
 				return c.json({
-					error: `Failed to create checkout session with ${provider}. Check that your test credentials are configured correctly.`,
+					error: `Failed to create checkout session with ${provider}: ${(error as Error).message || "Unknown error"}. Check that your test credentials are configured correctly.`,
+					details: env.IS_DEVELOPMENT ? serializedError : undefined,
 				}, 500);
 			}
 		}
@@ -721,7 +791,7 @@ router.get("/providers", async (c: Context) => {
 				name: "stripe",
 				status: "available",
 				testMode: true,
-				webhookUrl: `${env.API_BASE_URL || "https://api.proofa.com"}/v1/billing/webhooks/stripe`,
+				webhookUrl: `${env.API_BASE_URL || "https://api.proofa.com"}/v1/payment/webhooks/stripe`,
 				credentials: {
 					publicKey: `${env.STRIPE_PUBLISHABLE_KEY?.substring(0, 20)}****`,
 					hasSecretKey: !!env.STRIPE_SECRET_KEY,
@@ -731,7 +801,7 @@ router.get("/providers", async (c: Context) => {
 				name: "lemonsqueezy",
 				status: "available",
 				testMode: true,
-				webhookUrl: `${env.API_BASE_URL || "https://api.proofa.com"}/v1/billing/webhooks/lemonsqueezy`,
+				webhookUrl: `${env.API_BASE_URL || "https://api.proofa.com"}/v1/payment/webhooks/lemonsqueezy`,
 				credentials: {
 					hasApiKey: !!env.LEMONSQUEEZY_API_KEY,
 				},
@@ -740,7 +810,7 @@ router.get("/providers", async (c: Context) => {
 				name: "dodo",
 				status: "available",
 				testMode: true,
-				webhookUrl: `${env.API_BASE_URL || "https://api.proofa.com"}/v1/billing/webhooks/dodo`,
+				webhookUrl: `${env.API_BASE_URL || "https://api.proofa.com"}/v1/payment/webhooks/dodo`,
 				credentials: {
 					hasApiKey: !!env.DODO_API_KEY,
 				},

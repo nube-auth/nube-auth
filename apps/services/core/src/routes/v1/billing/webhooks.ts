@@ -9,6 +9,7 @@ import { createLogger, serializeError } from "@proofa/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { enqueueWebhookProcessing } from "../../../billing/queue.js";
+import { WebhookLoggingService } from "../../../billing/services/webhook-logging.js";
 import { rateLimitMiddleware } from "../../../middleware/rateLimit.js";
 
 const log = createLogger("webhook-routes");
@@ -57,9 +58,12 @@ webhookRoutes.post("/:provider", async (c: Context) => {
 		}
 
 		const rawBody = await c.req.text();
+		const parsedBody = safeParseWebhookBody(rawBody);
+		const eventType = extractEventType(provider, parsedBody);
 
 		// Get client IP address for logging and fraud detection
 		const ipAddress = getClientIp(c);
+		const requestHeaders = Object.fromEntries(c.req.raw.headers.entries());
 
 		// Validate provider
 		const validProviders = ["stripe", "lemon_squeezy", "lemon-squeezy", "lemonsqueezy", "dodo", "paddle"];
@@ -76,18 +80,34 @@ webhookRoutes.post("/:provider", async (c: Context) => {
 			normalizedProvider = provider as "stripe" | "lemon_squeezy" | "dodo" | "paddle";
 		}
 
+		// Store every incoming webhook first for full ingress audit trail.
+		const webhookLogId = await WebhookLoggingService.createWebhookLog({
+			provider: normalizedProvider,
+			eventType,
+			requestBody: parsedBody,
+			requestHeaders,
+			signature,
+			ipAddress,
+			metadata: {
+				stage: "ingress",
+				routeProvider: provider,
+			},
+		});
+
 		// Enqueue webhook processing (async)
 		await enqueueWebhookProcessing(
 			normalizedProvider,
 			rawBody,
 			signature,
 			ipAddress,
+			webhookLogId > 0 ? webhookLogId : undefined,
 		);
 
 		log.info(
 			{
 				provider: normalizedProvider,
 				ipAddress,
+				webhookLogId,
 			},
 			"Webhook queued for processing",
 		);
@@ -121,4 +141,33 @@ function getClientIp(c: Context): string {
 	if (xRealIp) return xRealIp;
 
 	return "unknown";
+}
+
+function safeParseWebhookBody(rawBody: string): unknown {
+	try {
+		return JSON.parse(rawBody);
+	} catch {
+		return { rawBody };
+	}
+}
+
+function extractEventType(provider: string, payload: unknown): string {
+	if (!payload || typeof payload !== "object") {
+		return `${provider}.incoming`;
+	}
+
+	const body = payload as Record<string, unknown>;
+
+	if (provider === "dodo" || provider === "stripe" || provider === "paddle") {
+		if (typeof body["type"] === "string") return body["type"];
+	}
+
+	if (provider === "lemon_squeezy" || provider === "lemon-squeezy" || provider === "lemonsqueezy") {
+		if (typeof body["meta"] === "object" && body["meta"] != null) {
+			const meta = body["meta"] as Record<string, unknown>;
+			if (typeof meta["event_name"] === "string") return meta["event_name"];
+		}
+	}
+
+	return `${provider}.incoming`;
 }

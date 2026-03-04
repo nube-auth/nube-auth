@@ -35,6 +35,11 @@ router.route("/apps/:appId/licenses", licenseManagementRouter);
 router.route("/apps/:appId/subscriptions", subscriptionsRouter);
 router.route("/apps/:appId/promotions", promotionsRouter);
 
+// Project-scoped app routes (for frontend compatibility)
+router.route("/projects/:projectId/apps/:appId/plans", plansRouter);
+router.route("/projects/:projectId/apps/:appId/licenses", licenseManagementRouter);
+router.route("/projects/:projectId/apps/:appId/subscriptions", subscriptionsRouter);
+
 router.route("/test", testRouter);
 
 export const adminRoutes = router;

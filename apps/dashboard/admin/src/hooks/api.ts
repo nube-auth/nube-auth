@@ -389,22 +389,19 @@ export function useAppPlans(projectId: string, appId: string) {
 	return useQuery({
 		queryKey: ["app-plans", projectId, appId],
 		queryFn: async () => {
-			return fetchAPI<
-				Array<{
-					id: string;
+			const response = await fetchAPI<{
+				plans: Array<{
+					planId: string;
 					name: string;
 					slug: string;
 					description: string | null;
-					monthlyPrice: number | null;
-					yearlyPrice: number | null;
-					oneTimePrice: number | null;
-					trialEnabled: boolean;
-					trialDays: number | null;
 					features: string[];
 					status: string;
 					displayOrder: number;
-				}>
-			>(`/v1/admin/projects/${projectId}/apps/${appId}/plans`);
+				}>;
+				total: number;
+			}>(`/v1/admin/projects/${projectId}/apps/${appId}/plans`);
+			return response.plans;
 		},
 		enabled: !!projectId && !!appId,
 		staleTime: 5 * 60 * 1000,
@@ -985,10 +982,10 @@ export function useProviderHealth(providerId: string) {
 
 interface WebhookLog {
 	id: string;
-	provider: "lemon_squeezy" | "paddle";
+	provider: "lemon_squeezy" | "paddle" | "stripe" | "dodo";
 	event_type: string;
 	event_id: string;
-	status: "not_started" | "processing" | "success" | "failed";
+	status: "not_started" | "picked" | "processing" | "completed" | "failed" | "signature_failed" | "skipped";
 	ip_address: string;
 	processing_duration_ms: number;
 	error_message?: string;
@@ -1048,6 +1045,26 @@ export function useWebhookDetail(webhookId: string) {
 		enabled: !!webhookId,
 		staleTime: 2 * 60 * 1000,
 		refetchOnWindowFocus: false,
+	});
+}
+
+export function useRetryWebhook() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (webhookId: string) => {
+			return fetchAPI<{ success: boolean; webhookId: string; status: string }>(
+				`/v1/admin/billing/webhooks/${webhookId}/retry`,
+				{
+					method: "POST",
+				},
+			);
+		},
+		onSuccess: (_data, webhookId) => {
+			queryClient.invalidateQueries({ queryKey: ["webhooks"] });
+			queryClient.invalidateQueries({ queryKey: ["webhook", webhookId] });
+			queryClient.invalidateQueries({ queryKey: ["billing", "stats"] });
+		},
 	});
 }
 

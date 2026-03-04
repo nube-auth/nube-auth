@@ -110,6 +110,8 @@ export default function PaymentTestingPlayground() {
 		setError(null);
 
 		try {
+			console.log("🚀 Initializing test session:", { provider, mode, projectId, appId, userId, planId });
+			
 			const response = await pingpong(`${config.gatewayUrl}/v1/admin/test/initialize`, {
 				method: "POST",
 				credentials: "include",
@@ -124,13 +126,18 @@ export default function PaymentTestingPlayground() {
 				},
 			});
 
+			console.log("📡 Initialize response:", { status: response.status, ok: response.ok(), data: response.data });
+
 			if (response.ok()) {
 				setSession(response.data);
 				setSessionStatus(null);
 			} else {
-				setError(response.data?.error || "Failed to initialize test session");
+				const errorMsg = response.data?.error || "Failed to initialize test session";
+				console.error("❌ Initialize failed:", errorMsg, response.data?.details);
+				setError(errorMsg);
 			}
-		} catch (_err) {
+		} catch (err) {
+			console.error("❌ Initialize error:", err);
 			setError("Failed to initialize test session");
 		} finally {
 			setLoading(false);
@@ -204,7 +211,7 @@ export default function PaymentTestingPlayground() {
 	];
 
 	const planOptions = [
-		...(plans ?? []).map((p) => ({ value: p.id, label: `${p.name} (${p.slug})` })),
+		...(plans ?? []).map((p) => ({ value: p.planId, label: `${p.name} (${p.slug})` })),
 		{ value: CREATE_NEW, label: "+ Create test plan" },
 	];
 
