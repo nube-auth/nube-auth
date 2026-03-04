@@ -1,0 +1,51 @@
+tsconfig.json
+  351020bd6da3ac9f 26-28
+apps/services/workers/src/sync-plan-to-providers.ts
+  351020bd6da3ac9f 16-17
+apps/services/workers/src/process-webhook.ts
+  351020bd6da3ac9f 28-29
+apps/services/workers/src/process-refund.ts
+  351020bd6da3ac9f 16-17
+apps/dashboard/admin/src/styles.css
+  351020bd6da3ac9f 27,29,31,33,35-36
+  ca0797480df5063e 38,40
+apps/services/workers/test-webhook-enqueue.ts
+  ca0797480df5063e 1-38
+apps/services/core/src/billing/services/purchases.ts
+  351020bd6da3ac9f 164-165,190-233
+apps/packages/components/src/styles/theme.css
+  351020bd6da3ac9f 173,247
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.8",
+  "base_commit_sha": "2dc473275af5974d7199a5accb07d9643536c6e8",
+  "prompts": {
+    "351020bd6da3ac9f": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "bb71da80-1907-4c7f-85c6-f3afd893b747",
+        "model": "copilot/auto"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 88,
+      "total_deletions": 33,
+      "accepted_lines": 63,
+      "overriden_lines": 0
+    },
+    "ca0797480df5063e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6a3cebda-12e4-4b70-bcc0-c715a02f1d6b",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 103,
+      "total_deletions": 12,
+      "accepted_lines": 40,
+      "overriden_lines": 0
+    }
+  }
+}
