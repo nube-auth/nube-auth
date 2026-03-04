@@ -12,7 +12,7 @@ export const chipVariants = cva('inline-flex items-center ring font-medium', {
       success: 'bg-success/15 ring-success/40 text-success',
       warning: 'bg-warning/15 ring-warning/40 text-warning',
       info: 'bg-info/15 ring-info/40 text-info',
-      danger: 'bg-danger/15 ring-danger/40 text-danger',
+      danger: 'bg-danger/22 ring-danger/50 text-danger dark:text-danger-foreground',
       outline: 'ring-chip-border text-foreground',
       plain: 'bg-transparent ring-transparent text-foreground',
     },

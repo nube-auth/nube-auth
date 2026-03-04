@@ -47,8 +47,13 @@ export function WebhookMonitoringPage() {
 			not_started: "default",
 			skipped: "default",
 		};
+		const isFailure = status === "failed" || status === "signature_failed";
 		return (
-			<Chip variant={variants[status] || "default"} size="sm" className="capitalize">
+			<Chip
+				variant={variants[status] || "default"}
+				size="sm"
+				className={isFailure ? "capitalize bg-danger/25 ring-danger/60 text-danger-foreground" : "capitalize"}
+			>
 				{status.replace("_", " ")}
 			</Chip>
 		);

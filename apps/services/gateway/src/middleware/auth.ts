@@ -97,8 +97,8 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 			return c.json({ error: "Core session not found" }, 401);
 		}
 
-		// Admin-specific security: Check inactivity timeout (15 minutes)
-		if (isAdminRoute && sessionType === "admin" && lastActivityAt) {
+		// Admin-specific security: Check inactivity timeout (disabled in development)
+		if (isAdminRoute && sessionType === "admin" && lastActivityAt && !env.IS_DEVELOPMENT) {
 			const inactiveSeconds = (Date.now() - lastActivityAt) / 1000;
 			if (inactiveSeconds > ADMIN_INACTIVITY_TIMEOUT) {
 				loggers.auth.warn(

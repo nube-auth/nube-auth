@@ -11,6 +11,7 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
+		"@proofa/auth": "workspace:*",
 		"@proofa/client": "workspace:*",
 		"@proofa/components": "workspace:*",
 		"@proofa/react": "workspace:*",

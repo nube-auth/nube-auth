@@ -3,8 +3,18 @@ import { env } from "./env";
 // Session & Token TTLs (in seconds)
 // Override with environment variables for production
 export const SESSION_TTL = env.SESSION_TTL_SECONDS ?? 365 * 24 * 60 * 60; // Default: 365 days (user sessions)
-export const ADMIN_SESSION_TTL = env.ADMIN_SESSION_TTL_SECONDS ?? 2 * 60 * 60; // Default: 2 hours (admin sessions)
-export const ADMIN_INACTIVITY_TIMEOUT = env.ADMIN_INACTIVITY_TIMEOUT_SECONDS ?? 15 * 60; // Default: 15 minutes
+
+// Admin sessions: Use longer TTL in development for better DX
+// Production: 2 hours | Development: 7 days
+export const ADMIN_SESSION_TTL = env.IS_DEVELOPMENT 
+	? (7 * 24 * 60 * 60) // Dev: 7 days
+	: (env.ADMIN_SESSION_TTL_SECONDS ?? 2 * 60 * 60); // Prod: 2 hours
+
+// Admin inactivity: Disabled in development
+// Production: 15 minutes | Development: 7 days (effectively disabled)
+export const ADMIN_INACTIVITY_TIMEOUT = env.IS_DEVELOPMENT
+	? (7 * 24 * 60 * 60) // Dev: 7 days (no interruptions)
+	: (env.ADMIN_INACTIVITY_TIMEOUT_SECONDS ?? 15 * 60); // Prod: 15 minutes
 export const CACHE_TTL = env.CACHE_TTL_SECONDS ?? 2 * 60; // Default: 2 minutes
 export const REFRESH_TOKEN_TTL = env.REFRESH_TOKEN_TTL_SECONDS ?? 365 * 24 * 60 * 60; // Default: 365 days
 export const TOKEN_EXPIRY_BUFFER = env.TOKEN_EXPIRY_BUFFER_SECONDS ?? 60; // Default: 1 minute

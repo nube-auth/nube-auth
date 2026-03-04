@@ -368,7 +368,6 @@ authRoutes.post("/login", async (c: Context) => {
 		const csrfToken = crypto.randomBytes(CSRF_TOKEN_BYTES).toString("hex"); // Generate CSRF token
 		const resolvedAudience = audience === "admin" ? "admin" : "user";
 		const ttlSeconds = resolvedAudience === "admin" ? ADMIN_SESSION_TTL : SESSION_TTL;
-
 		// Capture IP address and user-agent for session tracking
 		const ipAddress = c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || 
 			c.req.header("x-real-ip") || 

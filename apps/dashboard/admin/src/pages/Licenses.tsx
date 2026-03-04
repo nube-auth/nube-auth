@@ -10,6 +10,8 @@ import {
 	DataTableHeader,
 	DataTableRow,
 	Chip,
+	Card,
+	CardBody,
 	TableHeader,
 	TableHead,
 	TableBody,
@@ -49,22 +51,28 @@ export function LicensesPage() {
 
 			{/* Stats */}
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-				<div className="stat-card">
-					<p className="stat-label">Total Licenses</p>
-					<p className="stat-value">{licenses?.length || 0}</p>
-				</div>
-				<div className="stat-card">
-					<p className="stat-label">Active</p>
-					<p className="stat-value text-success">
-						{licenses?.filter((l) => l.status === "active").length || 0}
-					</p>
-				</div>
-				<div className="stat-card">
-					<p className="stat-label">Expired</p>
-					<p className="stat-value text-text-tertiary">
-						{licenses?.filter((l) => l.status !== "active").length || 0}
-					</p>
-				</div>
+				<Card>
+					<CardBody className="p-4">
+						<Text className="text-xs uppercase tracking-wide text-text-tertiary">Total Licenses</Text>
+						<Heading level={3} size="lg" className="mt-2 mb-0">{licenses?.length || 0}</Heading>
+					</CardBody>
+				</Card>
+				<Card>
+					<CardBody className="p-4">
+						<Text className="text-xs uppercase tracking-wide text-text-tertiary">Active</Text>
+						<Heading level={3} size="lg" className="mt-2 mb-0 text-success">
+							{licenses?.filter((l) => l.status === "active").length || 0}
+						</Heading>
+					</CardBody>
+				</Card>
+				<Card>
+					<CardBody className="p-4">
+						<Text className="text-xs uppercase tracking-wide text-text-tertiary">Expired</Text>
+						<Heading level={3} size="lg" className="mt-2 mb-0 text-text-secondary">
+							{licenses?.filter((l) => l.status !== "active").length || 0}
+						</Heading>
+					</CardBody>
+				</Card>
 			</div>
 
 			{/* Licenses Table */}

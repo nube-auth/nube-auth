@@ -2,46 +2,47 @@
    Proofa Design System - Shared Theme
    Single source of truth for all dashboard theming
    
-   Color Philosophy: Tech Minimal - Refined monochrome with single blue accent
+   Color Philosophy: Neutral canvas with indigo brand accent
    
    Light Theme:
    - Sidebar: Clean neutral frame (#FAFAFA)
    - Main: Light neutral canvas (#FAFAFA)
    - Topbar: Neutral bridge (#FAFAFA)
    - Text: Black monochrome hierarchy (#18181B → #A1A1AA)
-   - Accent: Blue for interactive elements (#3B82F6)
+   - Brand: Indigo for interactive elements (#6366F1)
    
    Dark Theme:
    - Sidebar: Deep black frame (#09090B)
    - Main: Near-black canvas (#09090B)
    - Topbar: Dark bridge (#09090B)
    - Text: White monochrome hierarchy (#FAFAFA → #A1A1AA)
-   - Accent: Light blue for interactive elements (#60A5FA)
+   - Brand: Light indigo for interactive elements (#818CF8)
    
-   Monochrome lives everywhere, blue accent for maximum focus
+   Neutral grays everywhere, indigo brand accent for maximum focus
+   Consistent brand color across Home, Docs, Admin, and User dashboards
    Dividers: subtle borders that adapt to theme
    
    Usage:
-   Import in each dashboard's main.tsx:
-   import '@proofa/components/styles/theme.css';
+   Import in each dashboard's styles.css:
+   @import "@proofa/components/theme.css";
    
    NOTE: Custom utilities imported in tailwind.css to avoid duplicates
    ========================================================================== */
 
 /* CSS Variables - Light Theme (Default) */
 :root {
-  /* Primary Colors - Tech Minimal (Monochrome with blue accent) */
-  --primary: #18181B;
-  --primary-hover: #09090B;
-  --primary-light: #F4F4F5;
+  /* Primary Colors - Indigo Brand */
+  --primary: #6366F1;
+  --primary-hover: #4F46E5;
+  --primary-light: #EEF2FF;
   
   /* Sidebar (Frame) - Light theme matches content bg */
   --sidebar-bg: #FAFAFA;
   --sidebar-border: #E4E4E7;
   --sidebar-text: #52525B;
   --sidebar-text-hover: #18181B;
-  --sidebar-active-bg: rgba(59, 130, 246, 0.08);
-  --sidebar-active-text: #3B82F6;
+  --sidebar-active-bg: rgba(99, 102, 241, 0.08);
+  --sidebar-active-text: #6366F1;
   --sidebar-section-text: #A1A1AA;
   
   /* Topbar (Bridge) - Light theme */
@@ -61,7 +62,7 @@
   --text-secondary: #52525B;
   --text-muted: #52525B;
   --text-tertiary: #A1A1AA;
-  --text-link: #3B82F6;
+  --text-link: #6366F1;
   
   /* Status Colors */
   --success: #16A34A;
@@ -73,9 +74,9 @@
   --danger: #DC2626;
   --danger-bg: #FEE2E2;
   --danger-text: #991B1B;
-  --info: #3B82F6;
-  --info-bg: #DBEAFE;
-  --info-text: #1E40AF;
+  --info: #6366F1;
+  --info-bg: #E0E7FF;
+  --info-text: #3730A3;
   
   /* Selia Component Colors (mapped to our system) */
   --foreground: #18181B;
@@ -85,7 +86,7 @@
   --muted: #52525B;
   --dimmed: #A1A1AA;
   --primary-foreground: #FEFEFE;
-  --primary-border: #71717A;
+  --primary-border: #4F46E5;
   --tertiary: #52525B;
   --tertiary-foreground: #FEFEFE;
   --tertiary-border: #D4D4D8;
@@ -124,18 +125,18 @@
 
 /* Dark Theme - Manual Override (Selia uses .dark class) */
 .dark {
-  /* Primary Colors - Tech Minimal Dark (Inverted monochrome) */
-  --primary: #FAFAFA;
-  --primary-hover: #E4E4E7;
-  --primary-light: #27272A;
+  /* Primary Colors - Indigo Brand Dark */
+  --primary: #818CF8;
+  --primary-hover: #A5B4FC;
+  --primary-light: #312E81;
   
   /* Sidebar (Frame) - Matches content bg */
   --sidebar-bg: #09090B;
   --sidebar-border: rgba(212, 212, 216, 0.15);
   --sidebar-text: #A1A1AA;
   --sidebar-text-hover: #FAFAFA;
-  --sidebar-active-bg: rgba(59, 130, 246, 0.15);
-  --sidebar-active-text: #60A5FA;
+  --sidebar-active-bg: rgba(129, 140, 248, 0.15);
+  --sidebar-active-text: #818CF8;
   --sidebar-section-text: #71717A;
   
   /* Topbar (Bridge) */
@@ -155,7 +156,7 @@
   --text-secondary: #D4D4D8;
   --text-muted: #D4D4D8;
   --text-tertiary: #A1A1AA;
-  --text-link: #60A5FA;
+  --text-link: #818CF8;
   
   /* Selia Component Colors (mapped to dark system) */
   --foreground: #FAFAFA;
@@ -164,8 +165,8 @@
   --card-border: rgba(212, 212, 216, 0.15);
   --muted: #A1A1AA;
   --dimmed: #71717A;
-  --primary-foreground: #18181B;
-  --primary-border: #A1A1AA;
+  --primary-foreground: #FAFAFA;
+  --primary-border: #6366F1;
   --tertiary: #A1A1AA;
   --tertiary-foreground: #18181B;
   --tertiary-border: #71717A;
@@ -187,8 +188,8 @@
   --warning-text: #FCD34D;
   --danger-bg: rgba(220, 38, 38, 0.12);
   --danger-text: #FCA5A5;
-  --info-bg: rgba(59, 130, 246, 0.12);
-  --info-text: #93C5FD;
+  --info-bg: rgba(99, 102, 241, 0.12);
+  --info-text: #A5B4FC;
   
   /* Surface colors for elevation */
   --surface-secondary: #27272A;
@@ -198,18 +199,18 @@
 /* Auto Dark Theme Detection */
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    /* Primary Colors - Tech Minimal Dark (Inverted monochrome) */
-    --primary: #FAFAFA;
-    --primary-hover: #E4E4E7;
-    --primary-light: #27272A;
+    /* Primary Colors - Indigo Brand Dark */
+    --primary: #818CF8;
+    --primary-hover: #A5B4FC;
+    --primary-light: #312E81;
     
     /* Sidebar (Frame) - Matches content bg */
     --sidebar-bg: #09090B;
     --sidebar-border: rgba(212, 212, 216, 0.15);
     --sidebar-text: #A1A1AA;
     --sidebar-text-hover: #FAFAFA;
-    --sidebar-active-bg: rgba(59, 130, 246, 0.15);
-    --sidebar-active-text: #60A5FA;
+    --sidebar-active-bg: rgba(129, 140, 248, 0.15);
+    --sidebar-active-text: #818CF8;
     --sidebar-section-text: #71717A;
     
     /* Topbar (Bridge) */
@@ -229,7 +230,7 @@
     --text-secondary: #D4D4D8;
     --text-muted: #D4D4D8;
     --text-tertiary: #A1A1AA;
-    --text-link: #60A5FA;
+    --text-link: #818CF8;
     
     /* Selia Component Colors (mapped to dark system) */
     --foreground: #FAFAFA;
@@ -238,8 +239,8 @@
     --card-border: rgba(212, 212, 216, 0.15);
     --muted: #A1A1AA;
     --dimmed: #71717A;
-    --primary-foreground: #18181B;
-    --primary-border: #A1A1AA;
+    --primary-foreground: #FAFAFA;
+    --primary-border: #6366F1;
     --tertiary: #A1A1AA;
     --tertiary-foreground: #18181B;
     --tertiary-border: #71717A;
@@ -261,8 +262,8 @@
     --warning-text: #FCD34D;
     --danger-bg: rgba(220, 38, 38, 0.12);
     --danger-text: #FCA5A5;
-    --info-bg: rgba(59, 130, 246, 0.12);
-    --info-text: #93C5FD;
+    --info-bg: rgba(99, 102, 241, 0.12);
+    --info-text: #A5B4FC;
     
     /* Surface colors for elevation */
     --surface-secondary: #27272A;

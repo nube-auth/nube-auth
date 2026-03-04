@@ -160,33 +160,44 @@ export function TransactionExportPage() {
 			</div>
 
 			{/* Export Controls */}
-			<Card><CardBody className="mb-6 p-6">
-				<Heading level={3} size="md" className="mb-5">Export Settings</Heading>
+			<Card className="mb-6">
+				<CardBody className="p-5 space-y-5">
+					<Heading level={3} size="md" className="mb-0">Export Settings</Heading>
 
-				{/* Format Selection */}
-				<div className="mb-6">
-					<Label className="text-sm font-medium mb-3 block">
-						Export Format
-					</Label>
-					<div className="flex gap-2">
-						<Button
-							variant={exportFormat === "csv" ? "primary" : "secondary"}
-							size="sm"
-							onClick={() => setExportFormat("csv")}
-						>
-							CSV (Spreadsheet)
-						</Button>
-						<Button
-							variant={exportFormat === "json" ? "primary" : "secondary"}
-							size="sm"
-							onClick={() => setExportFormat("json")}
-						>
-							JSON (Data)
-						</Button>
+					{/* Format Selection */}
+					<div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+						<div className="lg:col-span-2 rounded-md border border-border bg-surface-secondary p-4">
+							<Label className="text-sm font-medium mb-3 block">Export Format</Label>
+							<div className="flex gap-2 flex-wrap">
+								<Button
+									variant={exportFormat === "csv" ? "primary" : "secondary"}
+									size="sm"
+									onClick={() => setExportFormat("csv")}
+								>
+									CSV (Spreadsheet)
+								</Button>
+								<Button
+									variant={exportFormat === "json" ? "primary" : "secondary"}
+									size="sm"
+									onClick={() => setExportFormat("json")}
+								>
+									JSON (Data)
+								</Button>
+							</div>
+							<Text className="mt-3 text-xs text-text-tertiary">
+								Use CSV for spreadsheets and JSON for integrations or audits.
+							</Text>
+						</div>
+						<div className="rounded-md border border-border bg-surface-secondary p-4 flex flex-col justify-center">
+							<div className="text-xs text-text-tertiary mb-1">Current Format</div>
+							<div className="text-2xl font-semibold text-text-primary">{exportFormat.toUpperCase()}</div>
+							<div className="text-xs text-text-tertiary mt-2">
+								{transactionsQuery.data?.data?.length || 0} rows selected for export
+							</div>
+						</div>
 					</div>
-				</div>
 
-				<div className="h-px bg-border-primary mb-6" />
+					<div className="h-px bg-border-primary" />
 
 				{/* Filters */}
 				<Heading level={4} size="sm" className="mt-0 mb-4">Filters</Heading>
@@ -256,7 +267,7 @@ export function TransactionExportPage() {
 					</div>
 				</div>
 
-				<div className="flex gap-2 mb-5">
+				<div className="flex gap-2">
 					<Button
 						onClick={() =>
 							setFilters({
@@ -275,11 +286,11 @@ export function TransactionExportPage() {
 					</Button>
 				</div>
 
-				<div className="h-px bg-border-primary mb-5" />
+				<div className="h-px bg-border-primary" />
 
 				{/* Export Summary */}
 				{transactionsQuery.data && (
-					<div className="mb-5 p-3 bg-surface-secondary rounded-md">
+					<div className="p-3 bg-surface-secondary rounded-md">
 						<div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4">
 							<div>
 								<div className="text-xs text-text-tertiary mb-1">Total Transactions</div>
@@ -311,7 +322,8 @@ export function TransactionExportPage() {
 				>
 					{isExporting ? "Exporting..." : `↓ Export ${transactionsQuery.data?.data?.length || 0} Transactions as ${exportFormat.toUpperCase()}`}
 				</Button>
-			</CardBody></Card>
+				</CardBody>
+			</Card>
 
 			{/* Preview Table */}
 			<DataTable

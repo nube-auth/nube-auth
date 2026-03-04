@@ -56,9 +56,9 @@
   --danger: #ef4444;
   --danger-bg: #fee2e2;
   --danger-text: #991b1b;
-  --info: #3b82f6;
-  --info-bg: #dbeafe;
-  --info-text: #1e40af;
+  --info: #6366f1;
+  --info-bg: #e0e7ff;
+  --info-text: #3730a3;
   
   /* Code Block */
   --code-bg: #1e293b;
@@ -157,8 +157,8 @@
   --warning-text: #fcd34d;
   --danger-bg: rgba(239, 68, 68, 0.15);
   --danger-text: #fca5a5;
-  --info-bg: rgba(59, 130, 246, 0.15);
-  --info-text: #93c5fd;
+  --info-bg: rgba(99, 102, 241, 0.15);
+  --info-text: #a5b4fc;
   
   /* Code Block */
   --code-bg: #0f172a;

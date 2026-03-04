@@ -205,7 +205,10 @@ export function AppSettingsPage() {
 								<Heading level={3} size="sm">Basic Information</Heading>
 
 								<div className="space-y-1.5">
-									<Label htmlFor="name">App Name *</Label>
+									<Label htmlFor="name" className="inline-flex items-center gap-1">
+										<span>App Name</span>
+										<span className="text-danger">*</span>
+									</Label>
 									<Input
 										id="name"
 										name="name"
@@ -218,7 +221,10 @@ export function AppSettingsPage() {
 								</div>
 
 								<div className="space-y-1.5">
-									<Label htmlFor="slug">App Slug *</Label>
+									<Label htmlFor="slug" className="inline-flex items-center gap-1">
+										<span>App Slug</span>
+										<span className="text-danger">*</span>
+									</Label>
 									<Input
 										id="slug"
 										name="slug"
@@ -429,7 +435,7 @@ export function AppSettingsPage() {
 
 				{/* Danger Zone Tab */}
 				<TabsPanel value="danger">
-					<Card className="ring-danger/30">
+					<Card className="border-danger/30 bg-danger/5">
 						<CardBody className="space-y-5">
 							<div>
 								<Heading level={3} size="sm" className="text-danger">Danger Zone</Heading>
@@ -438,7 +444,7 @@ export function AppSettingsPage() {
 								</Text>
 							</div>
 
-							<div className="rounded-lg border border-danger/20 bg-danger/5 p-5 space-y-4">
+							<div className="rounded-lg border border-danger/25 bg-danger/10 p-5 space-y-4">
 								<div>
 									<Text className="font-semibold text-danger text-sm">Delete This App</Text>
 									<Text className="text-muted-foreground text-sm mt-1">
@@ -471,8 +477,9 @@ export function AppSettingsPage() {
 							{
 								method: "DELETE",
 								credentials: "include",
-							headers: csrfHeaders(),
-						}
+								headers: csrfHeaders(),
+							},
+						);
 
 						showToast("App deleted successfully", "success");
 						setShowDeleteModal(false);

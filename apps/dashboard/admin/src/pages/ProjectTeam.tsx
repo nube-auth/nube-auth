@@ -148,7 +148,7 @@ export function ProjectTeamPage() {
 							<DataTableRow key={member.id}>
 										<TableCell>
 										<div className="flex items-center gap-3">
-											<div className="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center text-sm font-semibold text-primary uppercase">
+											<div className="w-10 h-10 rounded-full bg-primary/20 ring-1 ring-primary/40 shadow-sm flex items-center justify-center text-sm font-semibold text-primary uppercase">
 												{member.name?.charAt(0) || "U"}
 											</div>
 											<div>
@@ -245,7 +245,7 @@ export function ProjectTeamPage() {
 									<DataTableRow key={invitation.id}>
 										<TableCell>
 											<div className="flex items-center gap-3">
-												<div className="w-10 h-10 rounded-full bg-primary-light border-2 border-dashed border-primary/30 flex items-center justify-center text-lg">
+												<div className="w-10 h-10 rounded-full bg-primary/15 ring-1 ring-primary/35 border border-dashed border-primary/40 flex items-center justify-center text-lg">
 													📧
 												</div>
 												<div>

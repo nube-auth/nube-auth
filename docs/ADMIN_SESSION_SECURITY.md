@@ -49,11 +49,23 @@ ADMIN_SESSION_TTL_SECONDS=7200
 ADMIN_INACTIVITY_TIMEOUT_SECONDS=900
 ```
 
+**Development Mode Override**:
+
+For better developer experience, admin sessions are automatically extended in development:
+- Admin session TTL: **7 days** (vs 2 hours in production)
+- Inactivity timeout: **Disabled** (vs 15 minutes in production)
+
+This is automatically enabled when `NODE_ENV=development`. No configuration needed.
+
 **Constants** (`config/constants.ts`):
 ```typescript
 export const SESSION_TTL = 365 * 24 * 60 * 60; // 365 days (user)
-export const ADMIN_SESSION_TTL = 2 * 60 * 60; // 2 hours (admin)
-export const ADMIN_INACTIVITY_TIMEOUT = 15 * 60; // 15 minutes (admin)
+export const ADMIN_SESSION_TTL = env.IS_DEVELOPMENT 
+  ? (7 * 24 * 60 * 60)  // Dev: 7 days
+  : (env.ADMIN_SESSION_TTL_SECONDS ?? 2 * 60 * 60); // Prod: 2 hours
+export const ADMIN_INACTIVITY_TIMEOUT = env.IS_DEVELOPMENT
+  ? (7 * 24 * 60 * 60)  // Dev: 7 days (effectively disabled)
+  : (env.ADMIN_INACTIVITY_TIMEOUT_SECONDS ?? 15 * 60); // Prod: 15 minutes
 ```
 
 ---

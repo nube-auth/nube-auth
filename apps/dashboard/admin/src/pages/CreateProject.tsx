@@ -67,7 +67,10 @@ export function CreateProjectPage() {
 					<form onSubmit={handleSubmit} className="space-y-6">
 						{/* Project Name */}
 					<Field>
-						<Label htmlFor="projectName">Project Name *</Label>
+						<Label htmlFor="projectName" className="inline-flex items-center gap-1">
+							<span>Project Name</span>
+							<span className="text-danger">*</span>
+						</Label>
 						<Input
 							type="text"
 							id="projectName"
@@ -82,7 +85,10 @@ export function CreateProjectPage() {
 					</Field>
 						{/* Project Slug */}
 					<Field>
-						<Label htmlFor="projectSlug">Project Slug *</Label>
+						<Label htmlFor="projectSlug" className="inline-flex items-center gap-1">
+							<span>Project Slug</span>
+							<span className="text-danger">*</span>
+						</Label>
 						<Input
 							type="text"
 							id="projectSlug"

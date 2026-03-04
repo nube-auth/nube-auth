@@ -222,6 +222,9 @@ importers:
 
   apps/dashboard/user:
     dependencies:
+      '@proofa/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@proofa/client':
         specifier: workspace:*
         version: link:../../packages/client

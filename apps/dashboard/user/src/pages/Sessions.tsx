@@ -125,7 +125,7 @@ export function SessionsPage() {
 				name={user?.name || "User"}
 				email={user?.email || ""}
 				meta="Active sessions across your devices"
-				avatar={<div className="size-16 rounded-full bg-primary text-white grid place-items-center font-semibold">{initials}</div>}
+				avatar={<div className="size-16 rounded-full bg-primary text-white grid place-items-center font-semibold ring-2 ring-card-border/80 shadow-sm">{initials}</div>}
 			/>
 
 			{/* Stats */}

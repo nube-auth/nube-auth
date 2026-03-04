@@ -88,7 +88,7 @@ export default function Projects() {
 
 			{/* Empty State */}
 			{!hasProjects && (
-				<div className="flex flex-col items-center justify-center py-20 px-5 text-center">
+				<div className="flex flex-col items-center justify-center py-14 px-5 text-center">
 					<div className="relative mb-6">
 						<div className="w-25 h-25 rounded-full flex items-center justify-center border border-primary/25">
 							<Icon icon={IconType.Layers} size={44} className="text-primary" />
@@ -113,7 +113,7 @@ export default function Projects() {
 					</Button>
 					<div className="mt-10 flex gap-8 text-muted text-sm">
 						<div className="flex items-center gap-2">
-							<Icon icon={IconType.Flash} size={16} className="text-blue-400" />
+							<Icon icon={IconType.Flash} size={16} className="text-primary" />
 							<span>Quick Setup</span>
 						</div>
 						<div className="flex items-center gap-2">

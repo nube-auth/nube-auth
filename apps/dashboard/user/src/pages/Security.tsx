@@ -51,7 +51,7 @@ export function SecurityPage() {
 				name={user.name || user.email || "User"}
 				email={user.email || ""}
 				meta={`Member since ${new Date(user.createdAt).toLocaleDateString()}`}
-				avatar={<div className="size-16 rounded-full bg-primary text-white grid place-items-center font-semibold">{initials}</div>}
+				avatar={<div className="size-16 rounded-full bg-primary text-white grid place-items-center font-semibold ring-2 ring-card-border/80 shadow-sm">{initials}</div>}
 			/>
 
 			{/* Security Stats */}

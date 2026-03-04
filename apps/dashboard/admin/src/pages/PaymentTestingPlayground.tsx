@@ -398,7 +398,8 @@ export default function PaymentTestingPlayground() {
 									<Button
 										onClick={() => handleSimulateEvent("subscription.canceled")}
 										disabled={loading}
-										className="bg-danger-bg text-danger hover:opacity-80 disabled:opacity-50"
+										variant="danger"
+										className="disabled:opacity-50"
 									>
 										❌ Cancel
 									</Button>

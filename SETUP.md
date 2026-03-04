@@ -92,7 +92,7 @@ X_PROOFA_SERVICE_TOKEN="<32+ char token>"
 # Session Configuration
 # Users: 365 days rolling
 CORE_SESSION_TTL_SECONDS=31536000
-# Admins: 2 hours + 15-min inactivity timeout
+# Admins: 2 hours + 15-min inactivity timeout (Auto extended to 7 days in dev mode)
 CORE_ADMIN_SESSION_TTL_SECONDS=7200
 CORE_ADMIN_INACTIVITY_TIMEOUT_SECONDS=900
 # Gateway: 30 days default (1-365 days configurable per-app)

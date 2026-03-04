@@ -534,7 +534,7 @@ export default function ProjectPaymentProvidersPage() {
 			{/* Table Content */}
 			{!providers || providers.length === 0 ? (
 				<Card>
-					<CardBody className="py-16 px-6 text-center">
+					<CardBody className="py-12 px-6 text-center">
 					<div className="text-64px mb-4">💳</div>
 					<h2 className="text-20px font-600 mb-3 text-text-primary">
 						No payment providers yet
@@ -632,6 +632,7 @@ export default function ProjectPaymentProvidersPage() {
 											<Button
 												variant="danger"
 												size="sm"
+												className="text-danger-foreground"
 												onClick={() => setDeleteTargetId(provider.id)}
 												disabled={deleteMutation.isPending}
 											>

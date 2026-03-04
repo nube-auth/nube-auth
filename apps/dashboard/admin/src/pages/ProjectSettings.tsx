@@ -7,7 +7,6 @@ import { csrfHeaders } from "../lib/csrf";
 import { useProject, useUpdateProject } from "../hooks/api";
 import { pingpong } from "../lib/pingpong";
 import {
-	Spinner,
 	Alert,
 	Text,
 	Heading,
@@ -108,7 +107,7 @@ export function ProjectSettingsPage() {
 								</Button>
 							</div>
 
-							<div className="grid gap-6">
+							<div className="grid gap-6 md:grid-cols-2">
 								<div>
 									<Text className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
 										Project Name
@@ -142,7 +141,7 @@ export function ProjectSettingsPage() {
 									<Text className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
 										Project ID
 									</Text>
-									<code className="inline-block py-2.5 px-3.5 rounded-lg text-13px font-mono text-primary font-semibold tracking-wider bg-primary bg-opacity-10 border border-primary border-opacity-30">
+									<code className="inline-block py-2.5 px-3.5 rounded-lg text-13px font-mono text-text-primary font-semibold tracking-wider bg-surface-secondary border border-border">
 										{project.id}
 									</code>
 								</div>
@@ -166,14 +165,14 @@ export function ProjectSettingsPage() {
 					</Card>
 
 					{/* Danger Zone */}
-					<Card className="border-2 border-danger">
+					<Card className="border border-danger/35 bg-danger/5">
 						<CardBody className="p-6">
 							<Heading level={3} size="sm" className="mb-3 text-danger">⚠️ Danger Zone</Heading>
 							<Text className="text-text-secondary mb-5">
 								These actions are permanent and cannot be undone.
 							</Text>
 
-							<div className="p-5 bg-danger-bg bg-opacity-5 rounded-lg border border-danger border-opacity-20">
+							<div className="p-5 bg-danger-bg/20 rounded-lg border border-border">
 								<Heading level={4} size="sm" className="mb-2 text-danger">Delete This Project</Heading>
 								<Text className="text-13px text-text-secondary mb-4">
 									Once you delete a project, there is no going back. This will:
@@ -201,50 +200,53 @@ export function ProjectSettingsPage() {
 
 								<div className="grid gap-5 mb-8">
 									<div>
-										<Label>
-											Project Name *
-											<Input
-												type="text"
-												name="name"
-												value={formData.name}
-												onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-												required
-												placeholder="My Project"
-											/>
+										<Label htmlFor="project-name">
+											Project Name <span className="text-danger">*</span>
 										</Label>
+										<Input
+											id="project-name"
+											type="text"
+											name="name"
+											value={formData.name}
+											onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+											required
+											placeholder="My Project"
+										/>
 										<Text className="text-12px text-text-tertiary mt-1.5">The display name for your project</Text>
 									</div>
 
 									<div>
-										<Label>
-											Project Slug *
-											<Input
-												type="text"
-												name="slug"
-												value={formData.slug}
-												onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-												required
-												pattern="[a-z0-9-]+"
-												placeholder="my-project"
-											/>
+										<Label htmlFor="project-slug">
+											Project Slug <span className="text-danger">*</span>
 										</Label>
+										<Input
+											id="project-slug"
+											type="text"
+											name="slug"
+											value={formData.slug}
+											onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+											required
+											pattern="[a-z0-9-]+"
+											placeholder="my-project"
+										/>
 										<Text className="text-12px text-text-tertiary mt-1.5">
 											URL-friendly identifier (lowercase, hyphens only)
 										</Text>
 									</div>
 
 									<div>
-										<Label>
+										<Label htmlFor="project-description">
 											Description
-											<Textarea
-												name="description"
-												className="resize-y"
-												value={formData.description || ""}
-												onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-												rows={3}
-												placeholder="A brief description of your project..."
-											/>
 										</Label>
+										<Textarea
+											id="project-description"
+											name="description"
+											className="resize-y"
+											value={formData.description || ""}
+											onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+											rows={3}
+											placeholder="A brief description of your project..."
+										/>
 										<Text className="text-12px text-text-tertiary mt-1.5">
 											Optional description for internal reference
 										</Text>
@@ -291,8 +293,9 @@ export function ProjectSettingsPage() {
 							{
 								method: "DELETE",
 								credentials: "include",
-							headers: csrfHeaders(),
-						}
+								headers: csrfHeaders(),
+							},
+						);
 
 						showToast("Project deleted successfully", "success");
 						setShowDeleteModal(false);

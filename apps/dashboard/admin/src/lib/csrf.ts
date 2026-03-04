@@ -5,11 +5,12 @@
 
 function getCsrfToken(): string | null {
 	const match = document.cookie.match(/proofa_csrf_token=([^;]+)/);
-	return match?.[1] ?? null;
+	const token = match?.[1] ?? null;
+	return token;
 }
 
 /** Returns CSRF header object for use in pingpong/fetch calls. */
 export function csrfHeaders(): Record<string, string> {
 	const token = getCsrfToken();
-	return token ? { "X-Proofa-CSRF-Token": token } : {};
+	return (token ? { "X-Proofa-CSRF-Token": token } : {}) as Record<string, string>;
 }

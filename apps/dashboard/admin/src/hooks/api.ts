@@ -42,7 +42,8 @@ async function fetchAPI<T>(path: string, options?: RequestInit, schema?: any): P
 
 	// Add CSRF token for state-changing requests
 	if (options?.method && !["GET", "HEAD", "OPTIONS"].includes(options.method.toUpperCase())) {
-		Object.assign(headers, csrfHeaders());
+		const csrf = csrfHeaders();
+		Object.assign(headers, csrf);
 	}
 
 	const response = await pingpong(`${GATEWAY_URL}${path}`, {
