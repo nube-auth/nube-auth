@@ -4,13 +4,11 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./styles.css";
 import "./index.css";
-
-// Use direct Gateway URL for API calls (with CORS + credentials)
-const gatewayUrl = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
+import { config } from "./config";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
 	<React.StrictMode>
-		<ProofaProvider config={{ gatewayUrl }}>
+		<ProofaProvider config={{ gatewayUrl: config.gatewayUrl }}>
 			<App />
 		</ProofaProvider>
 	</React.StrictMode>,

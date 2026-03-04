@@ -9,23 +9,18 @@ import {
 	Button,
 	Alert,
 	Chip,
+	Spinner,
 } from "@proofa/components";
 import { ProfileHeader, InfoGrid } from "@proofa/components";
 import { TabNavigation } from "../components/TabNavigation";
 import { useMe } from "../hooks/api";
+import { PageLoader } from "../components/PageLoader";
 
 export function SecurityPage() {
 	const { user, isLoading } = useMe();
 
 	if (isLoading) {
-		return (
-			<div className="flex flex-col items-center justify-center min-h-[300px] gap-3">
-				<div className="animate-spin">
-					<Icon icon={IconType.Refresh} size={24} />
-				</div>
-				<span className="text-sm text-muted">Loading security settings...</span>
-			</div>
-		);
+		return <PageLoader message="Loading security settings..." />;
 	}
 
 	if (!user) {

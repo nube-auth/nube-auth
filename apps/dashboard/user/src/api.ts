@@ -1,45 +1,46 @@
 import { pingpong } from "./lib/pingpong";
-
-const API_URL = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
+import { config } from "./config";
+import { csrfHeaders } from "./lib/csrf";
 
 const apiClient = {
 	async get<T>(url: string): Promise<T> {
-		const res = await pingpong(`${API_URL}${url}`, {
+		const res = await pingpong(`${config.gatewayUrl}${url}`, {
 			credentials: "include",
 		});
-		if (!res.ok) throw new Error(`API error: ${res.status}`);
-		return res.json();
+		if (!res.ok()) throw new Error(`API error: ${res.status}`);
+		return res.data;
 	},
 
 	async post<T>(url: string, data?: unknown): Promise<T> {
-		const res = await pingpong(`${API_URL}${url}`, {
+		const res = await pingpong(`${config.gatewayUrl}${url}`, {
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...csrfHeaders() },
 			body: JSON.stringify(data),
 			credentials: "include",
 		});
-		if (!res.ok) throw new Error(`API error: ${res.status}`);
-		return res.json();
+		if (!res.ok()) throw new Error(`API error: ${res.status}`);
+		return res.data;
 	},
 
 	async patch<T>(url: string, data?: unknown): Promise<T> {
-		const res = await pingpong(`${API_URL}${url}`, {
+		const res = await pingpong(`${config.gatewayUrl}${url}`, {
 			method: "PATCH",
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json", ...csrfHeaders() },
 			body: JSON.stringify(data),
 			credentials: "include",
 		});
-		if (!res.ok) throw new Error(`API error: ${res.status}`);
-		return res.json();
+		if (!res.ok()) throw new Error(`API error: ${res.status}`);
+		return res.data;
 	},
 
 	async delete<T>(url: string): Promise<T> {
-		const res = await pingpong(`${API_URL}${url}`, {
+		const res = await pingpong(`${config.gatewayUrl}${url}`, {
 			method: "DELETE",
+			headers: csrfHeaders(),
 			credentials: "include",
 		});
-		if (!res.ok) throw new Error(`API error: ${res.status}`);
-		return res.json();
+		if (!res.ok()) throw new Error(`API error: ${res.status}`);
+		return res.data;
 	},
 };
 

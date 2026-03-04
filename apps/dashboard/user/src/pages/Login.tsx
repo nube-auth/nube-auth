@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AuthLoginCard } from "@proofa/components";
 import { pingpong } from "../lib/pingpong";
+import { config } from "../config";
 
 export function LoginPage() {
 	const [searchParams] = useSearchParams();
 	const navigate = useNavigate();
 	const [status, setStatus] = useState<"idle" | "checking" | "redirecting" | "error">("checking");
-	const homeUrl = import.meta.env.VITE_HOME_URL || "http://localhost:4321";
 
 	useEffect(() => {
 		const error = searchParams.get("error");
@@ -20,11 +20,9 @@ export function LoginPage() {
 		// Check if already authenticated
 		const checkAuth = async () => {
 			try {
-				const gatewayUrl = import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004";
-				const res = await pingpong(`${gatewayUrl}/v1/auth/status`, { credentials: "include" });
-				if (res.ok) {
-					const data = await res.json();
-					if (data.loggedIn) {
+				const res = await pingpong(`${config.gatewayUrl}/v1/auth/status`, { credentials: "include" });
+				if (res.ok()) {
+					if (res.data.loggedIn) {
 						navigate("/profile", { replace: true });
 						return;
 					}
@@ -40,23 +38,19 @@ export function LoginPage() {
 
 	const handleGoogleLogin = () => {
 		setStatus("redirecting");
-		const gatewayAuthUrl = `${import.meta.env.VITE_GATEWAY_URL || "http://localhost:3004"}/v1/auth/start?provider=google&return_to=/profile`;
+		const gatewayAuthUrl = `${config.gatewayUrl}/v1/auth/start?provider=google&return_to=/profile`;
 		window.location.href = gatewayAuthUrl;
 	};
 
 	const error = searchParams.get("error");
 
 	const getErrorMessage = (errorCode: string) => {
-		switch (errorCode) {
-			case "missing_code":
-				return "Authentication code was missing from the response.";
-			case "exchange_failed":
-				return "Failed to complete the authentication process.";
-			case "internal_error":
-				return "An internal server error occurred.";
-			default:
-				return `Error: ${errorCode}`;
-		}
+		const errorMessages: Record<string, string> = {
+			missing_code: "Authentication code was missing from the response.",
+			exchange_failed: "Failed to complete the authentication process.",
+			internal_error: "An internal server error occurred.",
+		};
+		return errorMessages[errorCode] || "Authentication failed";
 	};
 
 	const isBusy = status === "checking" || status === "redirecting";
@@ -70,8 +64,8 @@ export function LoginPage() {
 			buttonVariant="secondary"
 			onContinue={handleGoogleLogin}
 			busy={isBusy}
-			termsUrl={`${homeUrl}/terms`}
-			privacyUrl={`${homeUrl}/privacy`}
+			termsUrl={`${config.homeUrl}/terms`}
+			privacyUrl={`${config.homeUrl}/privacy`}
 		/>
 	);
 }

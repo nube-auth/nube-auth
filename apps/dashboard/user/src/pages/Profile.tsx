@@ -18,6 +18,7 @@ import {
 // Proofa composites
 import { ProfileHeader, InfoGrid } from "@proofa/components";
 import { TabNavigation } from "../components/TabNavigation";
+import { PageLoader } from "../components/PageLoader";
 
 export function ProfilePage() {
 	const { user, isLoading, update, isUpdating, updateError } = useMe();
@@ -43,12 +44,7 @@ export function ProfilePage() {
   }, [user]);
 
   if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[300px] gap-3">
-        <Spinner />
-        <span className="text-sm text-muted">Loading profile...</span>
-      </div>
-    );
+    return <PageLoader message="Loading profile..." />;
   }
 
   if (!user) {

@@ -20,6 +20,7 @@ import {
 } from "@proofa/components";
 import { ProfileHeader, InfoGrid, SessionCard } from "@proofa/components";
 import { TabNavigation } from "../components/TabNavigation";
+import { PageLoader } from "../components/PageLoader";
 
 const COUNTRY_NAMES: Record<string, string> = {
 	US: "United States", GB: "United Kingdom", CA: "Canada", AU: "Australia",
@@ -93,12 +94,7 @@ export function SessionsPage() {
 	const { logout, isLoggingOut } = useAuth();
 
 	if (isLoading) {
-		return (
-			<div className="flex flex-col items-center justify-center min-h-[300px] gap-3">
-				<Spinner />
-				<span className="text-sm text-muted">Loading sessions...</span>
-			</div>
-		);
+		return <PageLoader message="Loading sessions..." />;
 	}
 
 	const activeSessions = sessions?.filter((s) => new Date(s.expiresAt) > new Date()) || [];
