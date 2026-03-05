@@ -109,9 +109,9 @@ export default function PaymentTestingPlayground() {
 					provider,
 					mode,
 					projectId,
-					appId: appId === CREATE_NEW ? undefined : appId,
-					userId: userId === CREATE_NEW ? undefined : userId,
-					planId: planId === CREATE_NEW ? undefined : planId,
+					appId: appId === CREATE_NEW ? null : appId,
+					userId: userId === CREATE_NEW ? null : userId,
+					planId: planId === CREATE_NEW ? null : planId,
 				},
 			});
 

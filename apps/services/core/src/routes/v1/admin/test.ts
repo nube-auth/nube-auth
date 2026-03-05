@@ -121,7 +121,7 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 
 		// Use existing app or create a test app
 		let testApp;
-		if (appId) {
+		if (appId && appId !== null) {
 			testApp = await appQueries.findByPublicId(db, appId);
 			if (!testApp || testApp.project_id !== testProject.id) {
 				return c.json({ error: "App not found or does not belong to the selected project" }, 404);
@@ -157,7 +157,7 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 
 		// Use existing user or create a test user
 		let testUser;
-		if (userId) {
+		if (userId && userId !== null) {
 			testUser = await userQueries.findByPublicId(db, userId);
 			if (!testUser) {
 				return c.json({ error: "User not found" }, 404);
@@ -177,7 +177,7 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 
 		// Use existing plan or create a test plan
 		let selectedPlan;
-		if (planId) {
+		if (planId && planId !== null) {
 			selectedPlan = await planQueries.findByPublicId(db, planId);
 			if (!selectedPlan) {
 				// Also try by slug on this app
@@ -188,23 +188,18 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 			}
 			log.info({ planId: selectedPlan.public_id }, "Using existing plan for test");
 		} else {
-			// Get first active plan for the app
-			const activePlans = await planQueries.findActiveByAppId(db, testApp.id);
-			selectedPlan = activePlans[0];
-
-			if (!selectedPlan) {
-				selectedPlan = await planQueries.create(db, {
-					public_id: publicId(createId("plan")),
-					app_id: testApp.id,
-					name: "Pro Plan",
-					slug: "pro",
-					description: "Test Pro Plan",
-					features: ["Test feature"],
-					status: "active",
-					display_order: 0,
-				});
-				log.info({ planId: selectedPlan.public_id }, "Created default test plan");
-			}
+			// Create a new test plan (not reuse existing)
+			selectedPlan = await planQueries.create(db, {
+				public_id: publicId(createId("plan")),
+				app_id: testApp.id,
+				name: `Test Plan (${provider})`,
+				slug: `test-plan-${provider}-${Date.now()}`,
+				description: `Auto-generated plan for ${provider} testing`,
+				features: ["Test feature"],
+				status: "active",
+				display_order: 0,
+			});
+			log.info({ planId: selectedPlan.public_id }, "Created test plan");
 		}
 
 		// Create or find a test payment provider config for this project + provider
