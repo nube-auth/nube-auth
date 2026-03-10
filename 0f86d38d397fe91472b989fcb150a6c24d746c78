@@ -1,0 +1,62 @@
+apps/dashboard/user/src/components/ErrorBoundary.tsx
+  c121032fb7aa01cb 1-17,19-21,23-27,29-51
+apps/dashboard/user/src/App.tsx
+  88eda398c2ceb706 6,11,82,110,112
+apps/dashboard/admin/src/pages/NotFound.tsx
+  88eda398c2ceb706 1-21
+docs/V1_RELEASE_AUDIT_MAR6.md
+  88eda398c2ceb706 1-216
+apps/dashboard/admin/src/pages/ProjectSettings.tsx
+  88eda398c2ceb706 2
+apps/services/core/src/billing/adapters/lemonsqueezy.ts
+  88eda398c2ceb706 175
+apps/dashboard/admin/src/components/ErrorBoundary.tsx
+  c121032fb7aa01cb 1-23,25-29,31-59
+apps/dashboard/user/src/pages/NotFound.tsx
+  88eda398c2ceb706 1-18
+apps/dashboard/admin/src/components/Toast.tsx
+  88eda398c2ceb706 2,20
+apps/dashboard/admin/src/App.tsx
+  c121032fb7aa01cb 5-6,29,337
+docs/TODO_V1_ACTION_PLAN.md
+  c121032fb7aa01cb 1-11,13-28,30-42,44-60,62-78,80-90,92-103,105-117,119-233
+apps/packages/db/src/queries.ts
+  88eda398c2ceb706 2016-2048
+apps/dashboard/admin/src/pages/AppPaymentSettings.tsx
+  88eda398c2ceb706 1
+apps/services/core/src/routes/v1/admin/stats.ts
+  c121032fb7aa01cb 5,73-74,80,139-140,148,197,205
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.8",
+  "base_commit_sha": "0f86d38d397fe91472b989fcb150a6c24d746c78",
+  "prompts": {
+    "88eda398c2ceb706": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "13a1c7d5-a85e-4ca9-9cc3-bb0db55277ef",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 313,
+      "total_deletions": 18,
+      "accepted_lines": 298,
+      "overriden_lines": 0
+    },
+    "c121032fb7aa01cb": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "c22c69d7-61b4-4970-bf43-da9bcdab7f28",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 402,
+      "total_deletions": 19,
+      "accepted_lines": 344,
+      "overriden_lines": 13
+    }
+  }
+}
