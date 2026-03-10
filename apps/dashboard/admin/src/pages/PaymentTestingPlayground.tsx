@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { pingpong } from "@proofa/auth/pingpong";
+import { pingpong } from "@proofa/auth";
 import config from "../config";
 import { csrfHeaders } from "../lib/csrf";
 import { Select } from "../components/Select";
