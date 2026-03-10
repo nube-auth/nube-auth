@@ -2,7 +2,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { ToastProvider } from "./components/Toast";
-import { Icon, IconType, Button, Heading, useTheme, ThemeToggle } from "@proofa/components";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { Icon, IconType, Button, Heading, useTheme, ThemeToggle, Toast } from "@proofa/components";
 import config from "./config";
 import { useLogout, useMe } from "./hooks/api";
 import { DashboardLayout } from "./layouts/DashboardLayout";
@@ -25,6 +26,7 @@ import TransactionExportPage from "./pages/TransactionExport";
 import { LicensesPage } from "./pages/Licenses";
 import PaymentTestingPlayground from "./pages/PaymentTestingPlayground";
 import { LoginPage } from "./pages/Login";
+import { NotFoundPage } from "./pages/NotFound";
 import { OnboardingPage } from "./pages/Onboarding";
 import { ProfilePage } from "./pages/Profile";
 import { ProjectAppsPage } from "./pages/ProjectApps";
@@ -109,7 +111,9 @@ function App() {
 	return (
 		<QueryClientProvider client={queryClient}>
 			<ToastProvider>
+				<Toast />
 				<BrowserRouter>
+					<ErrorBoundary>
 					<ThemeWrapper>
 						<Routes>
 							<Route path="/login" element={<LoginPage />} />
@@ -330,8 +334,10 @@ function App() {
 								}
 							/>
 							<Route path="/" element={<Navigate to="/projects" replace />} />
+							<Route path="*" element={<NotFoundPage />} />
 						</Routes>
 					</ThemeWrapper>
+					</ErrorBoundary>
 				</BrowserRouter>
 			</ToastProvider>
 		</QueryClientProvider>

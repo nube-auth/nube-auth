@@ -2013,6 +2013,39 @@ export const paymentTransactionQueries = {
 			.where(gte(payment_transactions.created_at, since));
 		return result[0]?.count ?? 0;
 	},
+
+	/** Sum completed revenue (in cents) for a specific app */
+	async getTotalRevenueByAppId(db: DbClient, appId: number): Promise<number> {
+		const result = await db
+			.select({ total: sql<number>`coalesce(sum(${payment_transactions.amount_cents}), 0)` })
+			.from(payment_transactions)
+			.innerJoin(licenses, eq(licenses.id, payment_transactions.license_id))
+			.where(
+				and(
+					eq(licenses.app_id, appId),
+					eq(payment_transactions.status, "success"),
+					inArray(payment_transactions.type, ["purchase", "renewal"]),
+				),
+			);
+		return Number(result[0]?.total ?? 0);
+	},
+
+	/** Sum completed revenue (in cents) for all apps in a project */
+	async getTotalRevenueByProjectId(db: DbClient, projectId: number): Promise<number> {
+		const result = await db
+			.select({ total: sql<number>`coalesce(sum(${payment_transactions.amount_cents}), 0)` })
+			.from(payment_transactions)
+			.innerJoin(licenses, eq(licenses.id, payment_transactions.license_id))
+			.innerJoin(apps, eq(apps.id, licenses.app_id))
+			.where(
+				and(
+					eq(apps.project_id, projectId),
+					eq(payment_transactions.status, "success"),
+					inArray(payment_transactions.type, ["purchase", "renewal"]),
+				),
+			);
+		return Number(result[0]?.total ?? 0);
+	},
 };
 
 /**

@@ -3,10 +3,12 @@ import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
 import { Spinner, useTheme, ThemeToggle, Button, Icon, IconType } from "@proofa/components";
 import { config } from "./config";
 import { useAuth } from "./hooks/api";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LoginPage } from "./pages/Login";
 import { ProfilePage } from "./pages/Profile";
 import { SessionsPage } from "./pages/Sessions";
 import { SecurityPage } from "./pages/Security";
+import { NotFoundPage } from "./pages/NotFound";
 
 function ProtectedLayout({ 
 	children, 
@@ -77,6 +79,7 @@ function App() {
 	
 	return (
 		<BrowserRouter>
+			<ErrorBoundary>
 			<Routes>
 				<Route path="/login" element={<LoginPage />} />
 				<Route
@@ -104,7 +107,9 @@ function App() {
 					}
 				/>
 				<Route path="/" element={<Navigate to="/profile" replace />} />
+				<Route path="*" element={<NotFoundPage />} />
 			</Routes>
+			</ErrorBoundary>
 		</BrowserRouter>
 	);
 }

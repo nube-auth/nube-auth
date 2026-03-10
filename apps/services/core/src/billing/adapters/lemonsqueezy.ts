@@ -172,7 +172,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 			hmac.update(rawBody);
 			const digest = hmac.digest("hex");
 
-			if (signature !== digest) {
+			if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest))) {
 				this.log.warn("LemonSqueezy webhook signature verification failed");
 				return null;
 			}

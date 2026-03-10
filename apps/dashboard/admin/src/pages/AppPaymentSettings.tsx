@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
 	Icon,
 	IconType,
@@ -19,6 +19,7 @@ import { useApp, useProject, useProjectPaymentProviders, useSelectPaymentProvide
 
 export default function AppPaymentSettingsPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
+	const navigate = useNavigate();
 	const { showToast } = useToast();
 
 	const { data: app, isLoading: appLoading, error: appError } = useApp(projectId!, appId!);
@@ -128,7 +129,7 @@ export default function AppPaymentSettingsPage() {
 					title="No payment providers configured"
 					description="Configure payment providers at the project level to enable payments for this app."
 				>
-					<Button variant="primary" onClick={() => window.location.href = `/projects/${projectId}/payment-providers`}>
+					<Button variant="primary" onClick={() => navigate(`/projects/${projectId}/payment-providers`)}>
 						<Icon icon={IconType.Add} size={16} />
 						Configure Payment Providers
 					</Button>
@@ -194,7 +195,7 @@ export default function AppPaymentSettingsPage() {
 						<Text className="mb-4 text-text-secondary">
 							Payment providers are managed at the project level. Visit the Payment Providers page to add new providers or update existing ones.
 						</Text>
-						<Button variant="secondary" onClick={() => window.location.href = `/projects/${projectId}/payment-providers`}>
+						<Button variant="secondary" onClick={() => navigate(`/projects/${projectId}/payment-providers`)}>
 							<Icon icon={IconType.Settings01} size={16} />
 							Manage Payment Providers
 						</Button>

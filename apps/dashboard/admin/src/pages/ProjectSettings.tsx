@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { useToast } from "../components/Toast";
 import config from "../config";
@@ -25,6 +25,7 @@ import { PageLoader } from "../components/PageLoader";
 
 export function ProjectSettingsPage() {
 	const { projectId } = useParams<{ projectId: string }>();
+	const navigate = useNavigate();
 	const { data: project, isLoading: projectLoading } = useProject(projectId || "");
 	const updateProjectMutation = useUpdateProject(projectId || "");
 
@@ -301,7 +302,7 @@ export function ProjectSettingsPage() {
 						setShowDeleteModal(false);
 
 						// Redirect to projects list
-						window.location.href = "/projects";
+					navigate("/projects");
 					} catch (error) {
 						showToast(error instanceof Error ? error.message : "Failed to delete project", "error");
 					}

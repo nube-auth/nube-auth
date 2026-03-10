@@ -2,6 +2,7 @@ import {
 	appQueries,
 	getDb,
 	licenseQueries,
+	paymentTransactionQueries,
 	planQueries,
 	projectQueries,
 	userQueries,
@@ -69,12 +70,14 @@ statsRouter.get("/stats", async (c: Context) => {
 				}
 			}
 
+			const totalRevenue = await paymentTransactionQueries.getTotalRevenueByProjectId(db, project.id);
+
 			stats[project.public_id] = {
 				totalApps: apps.length,
 				totalUsers: uniqueUsers.size,
 				totalLicenses,
 				activeLicenses,
-				totalRevenue: 0,
+				totalRevenue,
 			};
 		}
 
@@ -133,6 +136,8 @@ statsRouter.get("/:projectId/stats", async (c: Context) => {
 			}
 		}
 
+		const totalRevenue = await paymentTransactionQueries.getTotalRevenueByProjectId(db, project.id);
+
 		return c.json({
 			projectId,
 			totalApps: apps.length,
@@ -140,7 +145,7 @@ statsRouter.get("/:projectId/stats", async (c: Context) => {
 			totalLicenses,
 			activeLicenses,
 			licenseCounts,
-			totalRevenue: 0, // Stub for now
+			totalRevenue,
 		});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get project stats error");
@@ -189,13 +194,15 @@ statsRouter.get("/:projectId/apps/:appId/stats", async (c: Context) => {
 			}
 		}
 
+		const totalRevenue = await paymentTransactionQueries.getTotalRevenueByAppId(db, app.id);
+
 		return c.json({
 			appId,
 			totalLicenses: licenses.length,
 			activeLicenses: activeLicenses.length,
 			totalUsers: uniqueUsers.size,
 			licenseCounts,
-			totalRevenue: 0, // Stub for now
+			totalRevenue,
 		});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get app stats error");
