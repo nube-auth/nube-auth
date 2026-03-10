@@ -1,0 +1,36 @@
+apps/dashboard/admin/src/pages/PaymentTestingPlayground.tsx
+  88eda398c2ceb706 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.10",
+  "base_commit_sha": "0e6534e5ae790f542b35a25460ef69a8aec74e21",
+  "prompts": {
+    "88eda398c2ceb706": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "13a1c7d5-a85e-4ca9-9cc3-bb0db55277ef",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 2,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    },
+    "c121032fb7aa01cb": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "c22c69d7-61b4-4970-bf43-da9bcdab7f28",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 2,
+      "accepted_lines": 0,
+      "overriden_lines": 0
+    }
+  }
+}
