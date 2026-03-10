@@ -1,0 +1,46 @@
+# syntax=docker/dockerfile:1
+# ─────────────────────────────────────────────────────────────────────────────
+# Proofa – Workers Service
+# Build from REPO ROOT:  docker build -f Dockerfile.workers -t proofa-workers .
+# Railway config: Root Directory = /,  Dockerfile Path = Dockerfile.workers
+# Note: Workers has no HTTP port – deploy as a Railway "worker" service (no
+#       public networking needed).
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Stage 1: install deps ─────────────────────────────────────────────────────
+FROM node:22-alpine AS installer
+WORKDIR /app
+
+RUN npm install -g pnpm@9
+
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+
+COPY apps/packages/shared/package.json   ./apps/packages/shared/
+COPY apps/packages/db/package.json       ./apps/packages/db/
+COPY apps/packages/queue/package.json    ./apps/packages/queue/
+COPY apps/services/workers/package.json  ./apps/services/workers/
+
+RUN pnpm install --frozen-lockfile
+
+# ── Stage 2: build ────────────────────────────────────────────────────────────
+FROM installer AS builder
+
+COPY apps/packages/ ./apps/packages/
+COPY apps/services/workers/ ./apps/services/workers/
+
+RUN pnpm --filter @proofa/shared build \
+ && pnpm --filter @proofa/db build \
+ && pnpm --filter @proofa/queue build \
+ && pnpm --filter @proofa/workers build
+
+RUN pnpm --filter @proofa/workers deploy --prod /deploy
+
+# ── Stage 3: production image ─────────────────────────────────────────────────
+FROM node:22-alpine AS runner
+WORKDIR /app
+
+COPY --from=builder /deploy .
+
+ENV NODE_ENV=production
+
+CMD ["node", "dist/index.js"]

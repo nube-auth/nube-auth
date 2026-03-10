@@ -1,48 +1,51 @@
 {
-	"name": "@proofa/db",
-	"version": "0.1.0",
-	"type": "module",
-	"main": "./dist/index.js",
-	"types": "./dist/index.d.ts",
-	"exports": {
-		".": {
-			"import": "./dist/index.js",
-			"types": "./dist/index.d.ts"
-		},
-		"./schema": {
-			"import": "./dist/schema.js",
-			"types": "./dist/schema.d.ts"
-		},
-		"./queries": {
-			"import": "./dist/queries.js",
-			"types": "./dist/queries.d.ts"
-		}
-	},
-	"scripts": {
-		"build": "tsc",
-		"typecheck": "tsc --noEmit",
-		"dev": "tsc --watch",
-		"clean": "rm -rf dist",
-		"db:generate": "drizzle-kit generate",
-		"db:push": "drizzle-kit push",
-		"db:migrate": "drizzle-kit push",
-		"db:studio": "drizzle-kit studio",
-		"db:drop": "tsx scripts/drop-tables.ts",
-		"db:reset": "pnpm run db:drop && pnpm run db:push",
-		"db:fresh": "rm -rf drizzle && pnpm run db:generate && pnpm run db:drop && pnpm run db:push",
-		"seed:project": "tsx scripts/seed-project-app.ts"
-	},
-	"dependencies": {
-		"@proofa/shared": "workspace:*",
-		"drizzle-orm": "^0.45.1",
-		"pg": "^8.13.1",
-		"zod": "^4.3.4"
-	},
-	"devDependencies": {
-		"@types/pg": "^8.11.10",
-		"dotenv": "^16.3.1",
-		"drizzle-kit": "^0.31.8",
-		"tsx": "^4.7.0",
-		"typescript": "^5.3.3"
-	}
+  "name": "@proofa/db",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./schema": {
+      "import": "./dist/schema.js",
+      "types": "./dist/schema.d.ts"
+    },
+    "./queries": {
+      "import": "./dist/queries.js",
+      "types": "./dist/queries.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:drop": "tsx scripts/drop-tables.ts",
+    "db:reset": "pnpm run db:drop && pnpm run db:push",
+    "db:fresh": "rm -rf drizzle && pnpm run db:generate && pnpm run db:drop && pnpm run db:push",
+    "seed:project": "tsx scripts/seed-project-app.ts"
+  },
+  "dependencies": {
+    "@proofa/shared": "workspace:*",
+    "drizzle-orm": "^0.45.1",
+    "pg": "^8.13.1",
+    "zod": "^4.3.4"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.10",
+    "dotenv": "^16.3.1",
+    "drizzle-kit": "^0.31.8",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  },
+  "files": [
+    "dist"
+  ]
 }

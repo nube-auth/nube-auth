@@ -21,9 +21,7 @@ cd proofa-core
 pnpm install
 
 # 2. Start infrastructure (PostgreSQL + Redis)
-docker-compose up -d
-
-# 3. Setup database
+docker compose -f deployment/docker-compose.yml up -d
 cd packages/db && pnpm db:push && cd ../..
 
 # 4. Build packages
@@ -115,10 +113,10 @@ GITHUB_CLIENT_SECRET="your-client-secret"
 
 ```bash
 # Start PostgreSQL and Redis
-docker-compose up -d postgres redis
+docker compose -f deployment/docker-compose.yml up -d postgres redis
 
 # Verify services
-docker-compose ps
+docker compose -f deployment/docker-compose.yml ps
 ```
 
 ### 3. Database Setup
@@ -323,29 +321,29 @@ log.debug({ data }, 'Debug message');
 
 ```bash
 # Start all services
-docker-compose up -d
+docker compose -f deployment/docker-compose.yml up -d
 
 # Start specific service
-docker-compose up -d postgres
+docker compose -f deployment/docker-compose.yml up -d postgres
 
 # Stop all services
-docker-compose down
+docker compose -f deployment/docker-compose.yml down
 
 # View logs
-docker-compose logs -f postgres
+docker compose -f deployment/docker-compose.yml logs -f postgres
 
 # Restart service
-docker-compose restart redis
+docker compose -f deployment/docker-compose.yml restart redis
 
 # Remove all data (CAUTION)
-docker-compose down -v
+docker compose -f deployment/docker-compose.yml down -v
 ```
 
 ### Database Access
 
 ```bash
 # Using psql
-docker-compose exec postgres psql -U postgres -d proofa
+docker compose -f deployment/docker-compose.yml exec postgres psql -U postgres -d proofa
 
 # Connection details for external client:
 # Host: localhost
@@ -359,7 +357,7 @@ docker-compose exec postgres psql -U postgres -d proofa
 
 ```bash
 # Using redis-cli
-docker-compose exec redis redis-cli
+docker compose -f deployment/docker-compose.yml exec redis redis-cli
 
 # Common commands:
 > KEYS *
@@ -385,13 +383,13 @@ kill -9 <PID>
 
 ```bash
 # Check if PostgreSQL is running
-docker-compose ps
+docker compose -f deployment/docker-compose.yml ps
 
 # Restart PostgreSQL
-docker-compose restart postgres
+docker compose -f deployment/docker-compose.yml restart postgres
 
 # Check logs
-docker-compose logs postgres
+docker compose -f deployment/docker-compose.yml logs postgres
 ```
 
 ### Build Failures

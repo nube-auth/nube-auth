@@ -1,0 +1,56 @@
+# syntax=docker/dockerfile:1
+# ─────────────────────────────────────────────────────────────────────────────
+# Proofa – Gateway Service
+# Build from REPO ROOT:  docker build -f Dockerfile.gateway -t proofa-gateway .
+# Railway config: Root Directory = /,  Dockerfile Path = Dockerfile.gateway
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Stage 1: install deps (layer-cached until lockfile changes) ──────────────
+FROM node:22-alpine AS installer
+WORKDIR /app
+
+RUN npm install -g pnpm@9
+
+# Copy workspace manifests first – only these affect the install layer
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+
+# Copy package.json for every workspace package pnpm needs to resolve
+COPY apps/packages/shared/package.json   ./apps/packages/shared/
+COPY apps/packages/auth/package.json     ./apps/packages/auth/
+COPY apps/packages/cache/package.json    ./apps/packages/cache/
+COPY apps/packages/db/package.json       ./apps/packages/db/
+COPY apps/packages/queue/package.json    ./apps/packages/queue/
+COPY apps/services/gateway/package.json  ./apps/services/gateway/
+
+RUN pnpm install --frozen-lockfile
+
+# ── Stage 2: build ────────────────────────────────────────────────────────────
+FROM installer AS builder
+
+# Copy all source (invalidates only when code changes, not deps)
+COPY apps/packages/ ./apps/packages/
+COPY apps/services/gateway/ ./apps/services/gateway/
+
+# Build shared packages in dependency order, then the service
+RUN pnpm --filter @proofa/shared build \
+ && pnpm --filter @proofa/auth build \
+ && pnpm --filter @proofa/cache build \
+ && pnpm --filter @proofa/db build \
+ && pnpm --filter @proofa/queue build \
+ && pnpm --filter @proofa/gateway build
+
+# Extract minimal production bundle (respects "files" in each package.json)
+RUN pnpm --filter @proofa/gateway deploy --prod /deploy
+
+# ── Stage 3: production image ─────────────────────────────────────────────────
+FROM node:22-alpine AS runner
+WORKDIR /app
+
+COPY --from=builder /deploy .
+
+ENV NODE_ENV=production
+# Railway injects PORT; gateway reads GATEWAY_PORT (defaults to 8080)
+ENV GATEWAY_PORT=8080
+EXPOSE 8080
+
+CMD ["node", "dist/index.js"]

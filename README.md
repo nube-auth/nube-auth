@@ -66,16 +66,15 @@ Proofa is a comprehensive authentication and licensing platform that provides se
 │  • CSRF Protection        • Request Routing                 │
 │  • Security Headers       • Audit Logging                   │
 └──────────────┬──────────────┬──────────────┬────────────────┘
-               │              │              │
-               ▼              ▼              ▼
-┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
-│  Core Service    │ │  Auth Service    │ │  License Service │
-│  (User/Projects) │ │  (OAuth/Magic)   │ │  (Plans/Subs)    │
-└──────────────────┘ └──────────────────┘ └──────────────────┘
-         │                     │                     │
-         └─────────────────────┴─────────────────────┘
-                               │
-                               ▼
+               │                             │
+               ▼                             ▼
+┌────────────────────────────────┐ ┌──────────────────────┐
+│        Core Service            │ │    Workers Service   │
+│  Auth · Licensing · Sessions   │ │  (Background Jobs)   │
+│  Projects · Apps · Payments    │ │                      │
+└────────────────────────────────┘ └──────────────────────┘
+                │
+                ▼
          ┌──────────────────────────────────────────┐
          │         Data & Cache Layer               │
          ├──────────────────┬───────────────────────┤
@@ -108,10 +107,10 @@ pnpm install
 
 ```bash
 # Start PostgreSQL and Redis with Docker
-docker-compose up -d postgres redis
+docker compose -f deployment/docker-compose.yml up -d postgres redis
 
 # Verify services are running
-docker-compose ps
+docker compose -f deployment/docker-compose.yml ps
 ```
 
 ### 3. Configure Environment
@@ -178,7 +177,7 @@ proofa-core/
 ├── docs/
 │   ├── security/         # Security Documentation
 │   └── guides/           # Development Guides
-└── docker-compose.yml    # Local Infrastructure
+└── deployment/           # Dockerfiles + docker-compose for local infra & Railway
 ```
 
 ## 🛠️ Development
@@ -249,16 +248,16 @@ pnpm typecheck            # Type check all packages
 
 ### Getting Started
 - **[Setup Guide](./SETUP.md)** - Complete installation and development setup
-- **[Turbo Guide](./TURBO_GUIDE.md)** - Monorepo build system and commands
+- **[Deployment Guide](./docs/DEPLOYMENT.md)** - Railway + Vercel deployment
 
 ### Core Documentation
 - **[Architecture](./docs/ARCHITECTURE.md)** - System design, ID management, security patterns
 - **[Product Spec](./docs/PRODUCT_SPEC.md)** - Complete product specification
 - **[Payments](./docs/PAYMENTS.md)** - Payment integration and subscription management
-- **[Tailwind CSS Guide](./docs/CSS_STYLING_STANDARDS.md)** - Styling patterns and Tailwind architecture
 - **[JSONB Patterns](./docs/JSONB.md)** - Atomic database update patterns
 - **[Security](./docs/ADMIN_SESSION_SECURITY.md)** - Admin session security
-- **[Phase 2 Roadmap](./docs/PHASE_2_ROADMAP.md)** - Planned features
+- **[Dashboard Guide](./docs/DASHBOARDS_COMPLETE_GUIDE.md)** - Admin and user dashboard reference
+- **[Browser Extension Integration](./docs/BROWSER_EXTENSION_INTEGRATION.md)** - SDK usage in extensions
 
 ### API References
 - **[Admin API](./docs/ADMIN_API_QUICK_REFERENCE.md)** - Admin endpoints reference
@@ -293,14 +292,12 @@ For detailed security information, see [Security Documentation](./docs/security/
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
-
 ### Development Workflow
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Run tests and linting (`pnpm test && pnpm lint`)
+4. Run linting and type checks (`pnpm lint && pnpm typecheck`)
 5. Commit your changes (`git commit -m 'Add amazing feature'`)
 6. Push to the branch (`git push origin feature/amazing-feature`)
 7. Open a Pull Request
@@ -318,29 +315,25 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🗺️ Roadmap
 
-See [PHASE_2_ROADMAP.md](./docs/PHASE_2_ROADMAP.md) for detailed upcoming features.
+### Post-V1
+- Multi-factor authentication (MFA/2FA)
+- SAML/SSO integration
+- Advanced analytics dashboard
+- Mobile SDKs (React Native)
+- Advanced RBAC
+- Custom branding per project
+- GraphQL API option
 
-### Near Term
-- [ ] Multi-factor authentication (MFA/2FA)
-- [ ] Enhanced payment provider features
-- [ ] Advanced analytics dashboard
-- [ ] GraphQL API option
-
-### Future
-- [ ] SAML/SSO integration
-- [ ] Mobile SDKs (React Native)
-- [ ] Advanced RBAC
-- [ ] Custom branding per project
-
-## 🎯 Project Status
+## 🎯 Project Status: V1 Released
 
 - ✅ **Core Features**: Complete and production-ready
-- ✅ **Security**: A+ rating, enterprise-grade
+- ✅ **Security**: A+ rating (94/100), enterprise-grade
 - ✅ **Documentation**: Comprehensive guides available
-- ✅ **API**: Stable and versioned
-- ✅ **Admin Dashboard**: Full-featured UI
-- ✅ **Testing**: Unit and E2E tests in place
-- 🚧 **Advanced Features**: In active development
+- ✅ **API**: Stable and versioned (v1)
+- ✅ **Admin Dashboard**: Full-featured UI with real-time data
+- ✅ **User Dashboard**: Account and license management
+- ✅ **Payments**: Stripe, LemonSqueezy, and DodoPay integrated
+- ✅ **Workers**: Background job processing fully operational
 
 ## 🙏 Acknowledgments
 

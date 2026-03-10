@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-COMPOSE_FILE="docker-compose.yml"
+COMPOSE_FILE="deployment/docker-compose.yml"
 CORE_SERVICES="postgres redis"
 
 # Load env file for docker compose

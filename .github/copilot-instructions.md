@@ -671,10 +671,12 @@ See [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) for detailed guidelines on:
 - App ID: `APP0def...` (public) vs `789` (internal)
 
 ### Service Ports (Development)
-- Gateway: `3001`
+- Gateway: `3004`
 - Core: `3003`
-- Admin Dashboard: `3004`
-- User Dashboard: `3005`
+- Admin Dashboard: `5174`
+- User Dashboard: `5173`
+- Marketing Site: `4321`
+- Documentation: `4322`
 
 ### Database Schema
 - All main tables have `id` (internal, autoincrement) and `public_id` (external, unique string)

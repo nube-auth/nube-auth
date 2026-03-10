@@ -10,6 +10,7 @@
 	"scripts": {
 		"dev": "dotenv -e ../../../.env.local -- tsx watch src/index.ts",
 		"build": "tsup src/index.ts --format esm --target node22 --clean",
+		"start": "node dist/index.js",
 		"typecheck": "tsc --noEmit",
 		"test": "vitest"
 	},

@@ -1,0 +1,50 @@
+# syntax=docker/dockerfile:1
+# ─────────────────────────────────────────────────────────────────────────────
+# Proofa – Core Service
+# Build from REPO ROOT:  docker build -f Dockerfile.core -t proofa-core .
+# Railway config: Root Directory = /,  Dockerfile Path = Dockerfile.core
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Stage 1: install deps ─────────────────────────────────────────────────────
+FROM node:22-alpine AS installer
+WORKDIR /app
+
+RUN npm install -g pnpm@9
+
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+
+COPY apps/packages/shared/package.json   ./apps/packages/shared/
+COPY apps/packages/auth/package.json     ./apps/packages/auth/
+COPY apps/packages/cache/package.json    ./apps/packages/cache/
+COPY apps/packages/db/package.json       ./apps/packages/db/
+COPY apps/packages/queue/package.json    ./apps/packages/queue/
+COPY apps/services/core/package.json     ./apps/services/core/
+
+RUN pnpm install --frozen-lockfile
+
+# ── Stage 2: build ────────────────────────────────────────────────────────────
+FROM installer AS builder
+
+COPY apps/packages/ ./apps/packages/
+COPY apps/services/core/ ./apps/services/core/
+
+RUN pnpm --filter @proofa/shared build \
+ && pnpm --filter @proofa/auth build \
+ && pnpm --filter @proofa/cache build \
+ && pnpm --filter @proofa/db build \
+ && pnpm --filter @proofa/queue build \
+ && pnpm --filter @proofa/core build
+
+RUN pnpm --filter @proofa/core deploy --prod /deploy
+
+# ── Stage 3: production image ─────────────────────────────────────────────────
+FROM node:22-alpine AS runner
+WORKDIR /app
+
+COPY --from=builder /deploy .
+
+ENV NODE_ENV=production
+ENV CORE_PORT=3003
+EXPOSE 3003
+
+CMD ["node", "dist/index.js"]

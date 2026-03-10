@@ -47,5 +47,8 @@
     "background-jobs"
   ],
   "author": "Proofa",
-  "license": "MIT"
+  "license": "MIT",
+  "files": [
+    "dist"
+  ]
 }

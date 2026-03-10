@@ -1,26 +1,29 @@
 {
-	"name": "@proofa/cache",
-	"version": "1.0.0",
-	"type": "module",
-	"private": true,
-	"description": "Redis client and helpers for Proofa",
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
-	"exports": {
-		".": {
-			"import": "./dist/index.js",
-			"types": "./dist/index.d.ts"
-		}
-	},
-	"scripts": {
-		"build": "tsc",
-		"typecheck": "tsc --noEmit",
-		"dev": "tsc --watch"
-	},
-	"dependencies": {
-		"redis": "^4.7.0"
-	},
-	"devDependencies": {
-		"typescript": "^5.3.3"
-	}
+  "name": "@proofa/cache",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Redis client and helpers for Proofa",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "redis": "^4.7.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "files": [
+    "dist"
+  ]
 }

@@ -7,6 +7,9 @@
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System architecture, ID management, security patterns  
   *When to use: Understanding service boundaries, ID types, auth flows*
 
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Railway (backend) and Vercel (frontend) deployment guide  
+  *When to use: Deploying services, configuring environment variables, Railway setup*
+
 - **[PRODUCT_SPEC.md](./PRODUCT_SPEC.md)** - Product requirements and feature specifications  
   *When to use: Understanding product vision and complete feature set*
 
@@ -25,10 +28,13 @@
 - **[PAYMENT_SYSTEM_DESIGN.md](./PAYMENT_SYSTEM_DESIGN.md)** - Complete billing/payment architecture  
   *When to use: Understanding payment flows, provider integrations*
 
-### Roadmap
+### Dashboards & Integration
 
-- **[PHASE_2_ROADMAP.md](./PHASE_2_ROADMAP.md)** - Future enhancements and planned features  
-  *When to use: Planning next phases, understanding priorities*
+- **[DASHBOARDS_COMPLETE_GUIDE.md](./DASHBOARDS_COMPLETE_GUIDE.md)** - Admin and user dashboard reference  
+  *When to use: Working on dashboard features, understanding available pages*
+
+- **[BROWSER_EXTENSION_INTEGRATION.md](./BROWSER_EXTENSION_INTEGRATION.md)** - SDK usage in browser extensions  
+  *When to use: Building or integrating browser extensions*
 
 ## Key Coding Standards
 
@@ -46,8 +52,7 @@
 
 - GitHub Copilot Instructions: `.github/copilot-instructions.md`
 - Pull Request Template: `.github/pull_request_template.md`
-- Development Setup: `DEVELOPMENT.md`
-- Quick Start: `QUICKSTART.md`
+- Development Setup: `SETUP.md`
 
 ## Documentation Philosophy
 
@@ -56,5 +61,5 @@ We maintain **lean, actionable documentation**:
 - ❌ Remove: Historical changelogs, completed work, redundant guides
 - 🔄 Consolidate: Multiple docs on same topic into one authoritative source
 
-**Version**: 1.1.0  
-**Last Updated**: January 11, 2026
+**Version**: 1.0.0  
+**Last Updated**: March 10, 2026

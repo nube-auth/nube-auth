@@ -385,9 +385,8 @@ curl -X POST http://localhost:3003/v1/billing/checkout \
 
 - [Payment System Design (Full)](./PAYMENT_SYSTEM_DESIGN.md) - Complete technical specification
 - [Admin API Reference](./ADMIN_API_QUICK_REFERENCE.md) - API endpoints
-- [Plan & License Testing](./PLAN_LICENSE_TESTING_GUIDE.md) - Testing guide
 
 ---
 
-**Last Updated**: January 22, 2026  
-**Status**: Stripe Integration Complete
+**Last Updated**: March 10, 2026  
+**Status**: Stripe, LemonSqueezy, and DodoPay integrations complete

@@ -124,7 +124,6 @@ docs/design-system/
 
 - **[Product Spec](../PRODUCT_SPEC.md)** - Complete product specification
 - **[Architecture](../ARCHITECTURE.md)** - System design patterns
-- **[CSS Styling Standards](../CSS_STYLING_STANDARDS.md)** - Tailwind CSS guide
 - **[Component Library](../../apps/packages/components/COMPONENT_LIBRARY.md)** - UI components
 
 ## 🛠️ Development

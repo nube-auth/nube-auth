@@ -27,10 +27,6 @@ out
 .git
 .gitignore
 
-# Documentation
-*.md
-!README.md
-
 # Test files
 coverage
 *.test.ts
