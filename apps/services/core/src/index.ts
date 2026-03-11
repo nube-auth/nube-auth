@@ -40,8 +40,7 @@ app.use("*", httpLogger(log));
 app.use("*", requestIdMiddleware);
 
 // S2S authentication — protect all service-to-service routes
-// Auth /start and /callback are browser-facing (OAuth redirects), exempt from S2S
-app.use("/v1/auth/exchange", s2sMiddleware);
+app.use("/v1/auth/*", s2sMiddleware);
 app.use("/v1/billing/*", s2sMiddleware);
 app.use("/v1/email/*", s2sMiddleware);
 app.use("/v1/license/*", s2sMiddleware);

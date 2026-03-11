@@ -71,7 +71,8 @@ function inferAudience(c: Context): "user" | "admin" {
 
 /**
  * GET /v1/auth/start
- * Start OAuth flow - redirects to Core which then redirects to OAuth provider
+ * Start OAuth flow - proxies to Core (S2S), which redirects to the OAuth provider.
+ * Core registers Gateway's callback URL with the provider so Core never needs to be public.
  */
 authRoutes.get("/start", async (c: Context) => {
 	const provider = c.req.query("provider") || "google";
@@ -81,27 +82,54 @@ authRoutes.get("/start", async (c: Context) => {
 	const invite = c.req.query("invite"); // Project team invitation code
 	const audience = c.req.query("audience") || inferAudience(c);
 
-	// Gateway's callback URL - Core will redirect here after OAuth
-	const gatewayCallbackUrl = `${env.GATEWAY_PUBLIC_URL ?? "http://localhost:3004"}/v1/auth/callback`;
+	// OAuth provider will redirect back to Gateway (not Core directly)
+	const gatewayCallbackUrl = `${env.GATEWAY_PUBLIC_URL}/v1/auth/callback`;
 
 	// Encode state as JSON to preserve both returnTo and audience
 	const stateData = JSON.stringify({ returnTo, audience });
-	// Use URL-safe base64 encoding (replace +/= with -_. to avoid URL encoding issues)
 	const encodedState = Buffer.from(stateData).toString("base64")
 		.replace(/\+/g, "-")
 		.replace(/\//g, "_")
 		.replace(/=/g, ".");
 
-	// Build Core auth start URL
+	// Build Core auth start URL - called S2S, Core returns a redirect to the OAuth provider
 	const coreAuthUrl = new URL(`${env.CORE_URL}/v1/auth/start`);
 	coreAuthUrl.searchParams.set("provider", provider);
 	coreAuthUrl.searchParams.set("redirect_uri", gatewayCallbackUrl);
 	coreAuthUrl.searchParams.set("state", encodedState);
+	// Tell core to use Gateway's public URL as the OAuth provider callback (so core stays internal)
+	coreAuthUrl.searchParams.set("oauth_callback_base", env.GATEWAY_PUBLIC_URL);
 	if (appId) coreAuthUrl.searchParams.set("app_id", appId);
 	if (inviteCode) coreAuthUrl.searchParams.set("invite_code", inviteCode);
-	if (invite) coreAuthUrl.searchParams.set("invite", invite); // Pass project team invitation code
+	if (invite) coreAuthUrl.searchParams.set("invite", invite);
 
-	return c.redirect(coreAuthUrl.toString());
+	try {
+		// Forward to Core S2S - do NOT follow the redirect; extract the Location header
+		// and redirect the browser there directly (OAuth provider URL).
+		const response = await fetch(coreAuthUrl.toString(), {
+			method: "GET",
+			redirect: "manual",
+			headers: {
+				"X-Proofa-S2S-Token": env.S2S_SECRET,
+				"X-Forwarded-For": c.req.header("x-forwarded-for") || c.req.header("cf-connecting-ip") || "",
+				"CF-Connecting-IP": c.req.header("cf-connecting-ip") || "",
+				"CF-IPCountry": c.req.header("cf-ipcountry") || "",
+			},
+		});
+
+		const location = response.headers.get("location");
+		if ((response.status === 301 || response.status === 302 || response.status === 307 || response.status === 308) && location) {
+			return c.redirect(location, response.status as 301 | 302 | 307 | 308);
+		}
+
+		// Core returned an error response
+		const body = await response.text();
+		log.error({ status: response.status, body }, "Core auth start returned non-redirect");
+		return c.json({ error: "Failed to start auth" }, 500);
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Auth start proxy error");
+		return c.json({ error: "Failed to start auth" }, 500);
+	}
 });
 
 /**
@@ -141,6 +169,46 @@ async function buildEntitlements(userPublicId: string, audience: "user" | "admin
 
 	return entitlements;
 }
+
+/**
+ * GET /v1/auth/callback/:provider
+ * OAuth provider redirects the browser here (not to Core directly).
+ * Gateway proxies the request to Core S2S, which processes the OAuth code,
+ * creates a session, and redirects back through Gateway's /callback.
+ */
+authRoutes.get("/callback/:provider", async (c: Context) => {
+	const provider = c.req.param("provider");
+	const queryString = new URL(c.req.url).search;
+
+	const coreCallbackUrl = `${env.CORE_URL}/v1/auth/callback/${provider}${queryString}`;
+
+	try {
+		const response = await fetch(coreCallbackUrl, {
+			method: "GET",
+			redirect: "manual",
+			headers: {
+				"X-Proofa-S2S-Token": env.S2S_SECRET,
+				"X-Forwarded-For": c.req.header("x-forwarded-for") || c.req.header("cf-connecting-ip") || "",
+				"CF-Connecting-IP": c.req.header("cf-connecting-ip") || "",
+				"CF-IPCountry": c.req.header("cf-ipcountry") || "",
+				"User-Agent": c.req.header("user-agent") || "",
+			},
+		});
+
+		const location = response.headers.get("location");
+		if ((response.status === 301 || response.status === 302 || response.status === 307 || response.status === 308) && location) {
+			return c.redirect(location, response.status as 301 | 302 | 307 | 308);
+		}
+
+		// Core returned an error
+		const body = await response.text();
+		log.error({ status: response.status, body, provider }, "Core auth callback returned non-redirect");
+		return c.json({ error: "Auth callback failed" }, 500);
+	} catch (error) {
+		log.error({ err: serializeError(error as Error), provider }, "Auth callback proxy error");
+		return c.json({ error: "Auth callback failed" }, 500);
+	}
+});
 
 /**
  * GET /v1/auth/callback

@@ -33,6 +33,7 @@ interface OAuthStateData {
 	inviteCode?: string;
 	invite?: string; // Project team invitation code
 	gatewayState?: string; // Preserve Gateway's original state
+	oauthCallbackBase?: string; // Base URL used for the OAuth provider redirect_uri
 }
 
 async function setOAuthState(state: string, data: OAuthStateData): Promise<void> {
@@ -116,6 +117,7 @@ router.get("/start", async (c: Context) => {
 	const inviteCode = c.req.query("invite_code") as string | undefined;
 	const invite = c.req.query("invite") as string | undefined; // Project team invitation code
 	const gatewayState = c.req.query("state") as string | undefined; // Gateway's state
+	const oauthCallbackBase = c.req.query("oauth_callback_base") as string | undefined; // Gateway public URL for provider redirect
 
 	if (!provider || !["google", "github"].includes(provider)) {
 		return c.json({ error: "Invalid provider" }, 400);
@@ -175,10 +177,12 @@ router.get("/start", async (c: Context) => {
 			...(inviteCode && { inviteCode }),
 			...(invite && { invite }),
 			...(gatewayState && { gatewayState }),
+			...(oauthCallbackBase && { oauthCallbackBase }),
 		});
 
-		// Core's own callback URL - Google will redirect here
-		const coreCallbackUrl = `${env.CORE_PUBLIC_URL}/v1/auth/callback/${provider}`;
+		// Use the gateway's public URL if provided (so core stays internal), otherwise fall back to CORE_PUBLIC_URL
+		const callbackBase = oauthCallbackBase ?? env.CORE_PUBLIC_URL;
+		const coreCallbackUrl = `${callbackBase}/v1/auth/callback/${provider}`;
 
 		const authUrl = adapter.getAuthorizationUrl(oauthState, coreCallbackUrl);
 
@@ -256,8 +260,9 @@ router.get("/callback/:provider", async (c: Context) => {
 			});
 		}
 
-		// Core's callback URL that was used for OAuth
-		const coreCallbackUrl = `${env.CORE_PUBLIC_URL}/v1/auth/callback/${provider}`;
+			// Reconstruct the callback URL that was registered with the OAuth provider
+		const storedCallbackBase = storedState.oauthCallbackBase ?? env.CORE_PUBLIC_URL;
+		const coreCallbackUrl = `${storedCallbackBase}/v1/auth/callback/${provider}`;
 
 		log.debug({ provider, codePreview: code?.substring(0, 8) }, "Exchanging OAuth code for tokens");
 		const token = await adapter.exchangeCodeForTokens(code, coreCallbackUrl);

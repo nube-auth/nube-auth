@@ -7,7 +7,7 @@ export interface Environment {
 	NODE_ENV: "development" | "staging" | "production";
 	IS_DEVELOPMENT: boolean;
 	CORE_PORT: number;
-	CORE_PUBLIC_URL: string;
+	CORE_PUBLIC_URL: string; // Optional — only needed if core is called directly (no gateway proxy)
 	API_BASE_URL: string;
 	DATABASE_URL: string;
 	GOOGLE_CLIENT_ID: string;
@@ -51,7 +51,6 @@ export interface Environment {
 
 function getEnvironment(): Environment {
 	const requiredVars = [
-		"CORE_PUBLIC_URL",
 		"DATABASE_URL",
 		"GOOGLE_CLIENT_ID",
 		"GOOGLE_CLIENT_SECRET",
@@ -74,7 +73,7 @@ function getEnvironment(): Environment {
 		NODE_ENV: nodeEnv,
 		IS_DEVELOPMENT: nodeEnv === "development",
 		CORE_PORT: parseInt(process.env["CORE_PORT"] ?? "3003", 10),
-		CORE_PUBLIC_URL: process.env["CORE_PUBLIC_URL"]!,
+		CORE_PUBLIC_URL: process.env["CORE_PUBLIC_URL"] ?? "",
 		API_BASE_URL: process.env["API_BASE_URL"] ?? (process.env["CORE_PUBLIC_URL"] || "http://localhost:3003"),
 		DATABASE_URL: process.env["DATABASE_URL"]!,
 		GOOGLE_CLIENT_ID: process.env["GOOGLE_CLIENT_ID"]!,
