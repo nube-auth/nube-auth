@@ -99,16 +99,16 @@ importers:
       '@hugeicons/react':
         specifier: ^1.1.4
         version: 1.1.4(react@18.3.1)
-      '@proofa/auth':
+      '@nube-auth/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@proofa/client':
+      '@nube-auth/client':
         specifier: workspace:*
         version: link:../../packages/client
-      '@proofa/components':
+      '@nube-auth/components':
         specifier: workspace:*
         version: link:../../packages/components
-      '@proofa/shared':
+      '@nube-auth/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@tanstack/react-query':
@@ -175,7 +175,7 @@ importers:
 
   apps/dashboard/docs:
     dependencies:
-      '@proofa/components':
+      '@nube-auth/components':
         specifier: workspace:*
         version: link:../../packages/components
     devDependencies:
@@ -200,7 +200,7 @@ importers:
       '@astrojs/vercel':
         specifier: ^7.0.0
         version: 7.8.2(astro@4.16.19(@types/node@20.19.27)(lightningcss@1.30.2)(rollup@4.55.1)(typescript@5.9.3))(react@19.2.3)(rollup@4.55.1)(vue@3.5.26(typescript@5.9.3))
-      '@proofa/components':
+      '@nube-auth/components':
         specifier: workspace:*
         version: link:../../packages/components
       astro:
@@ -225,19 +225,19 @@ importers:
 
   apps/dashboard/user:
     dependencies:
-      '@proofa/auth':
+      '@nube-auth/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@proofa/client':
+      '@nube-auth/client':
         specifier: workspace:*
         version: link:../../packages/client
-      '@proofa/components':
+      '@nube-auth/components':
         specifier: workspace:*
         version: link:../../packages/components
-      '@proofa/react':
+      '@nube-auth/react':
         specifier: workspace:*
         version: link:../../packages/react
-      '@proofa/shared':
+      '@nube-auth/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       react:
@@ -274,12 +274,12 @@ importers:
 
   apps/packages/auth:
     dependencies:
+      '@nube-auth/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@pingpong-js/fetch':
         specifier: ^1.0.2
         version: 1.0.2
-      '@proofa/shared':
-        specifier: workspace:*
-        version: link:../shared
       jose:
         specifier: ^6.1.3
         version: 6.1.3
@@ -366,7 +366,7 @@ importers:
 
   apps/packages/db:
     dependencies:
-      '@proofa/shared':
+      '@nube-auth/shared':
         specifier: workspace:*
         version: link:../shared
       drizzle-orm:
@@ -416,7 +416,7 @@ importers:
 
   apps/packages/react:
     dependencies:
-      '@proofa/client':
+      '@nube-auth/client':
         specifier: workspace:*
         version: link:../client
       '@tanstack/react-query':
@@ -438,7 +438,7 @@ importers:
 
   apps/packages/shared:
     dependencies:
-      '@proofa/cache':
+      '@nube-auth/cache':
         specifier: workspace:*
         version: link:../cache
       hono:
@@ -497,19 +497,19 @@ importers:
       '@hono/node-server':
         specifier: ^1.19.7
         version: 1.19.7(hono@4.11.3)
-      '@proofa/auth':
+      '@nube-auth/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@proofa/cache':
+      '@nube-auth/cache':
         specifier: workspace:*
         version: link:../../packages/cache
-      '@proofa/db':
+      '@nube-auth/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@proofa/queue':
+      '@nube-auth/queue':
         specifier: workspace:*
         version: link:../../packages/queue
-      '@proofa/shared':
+      '@nube-auth/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       bullmq:
@@ -558,16 +558,16 @@ importers:
       '@hono/node-server':
         specifier: ^1.19.7
         version: 1.19.7(hono@4.11.3)
-      '@proofa/auth':
+      '@nube-auth/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@proofa/cache':
+      '@nube-auth/cache':
         specifier: workspace:*
         version: link:../../packages/cache
-      '@proofa/db':
+      '@nube-auth/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@proofa/shared':
+      '@nube-auth/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@stripe/stripe-js':
@@ -604,13 +604,13 @@ importers:
 
   apps/services/workers:
     dependencies:
-      '@proofa/db':
+      '@nube-auth/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@proofa/queue':
+      '@nube-auth/queue':
         specifier: workspace:*
         version: link:../../packages/queue
-      '@proofa/shared':
+      '@nube-auth/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       bullmq:

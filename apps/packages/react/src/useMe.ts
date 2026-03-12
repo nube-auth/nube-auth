@@ -1,6 +1,6 @@
 import type { UpdateProfileData, User } from "@nube-auth/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNubeAuthContext } from "./NubeAuthProvider";
+import { useNubeAuthContext } from "./ProofaProvider";
 
 export function useMe() {
 	const { client } = useNubeAuthContext();

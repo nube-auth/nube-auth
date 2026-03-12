@@ -8,7 +8,7 @@ export type {
 	UpdateProfileData,
 	User,
 } from "@nube-auth/client";
-export { NubeAuthProvider, useNubeAuthContext } from "./NubeAuthProvider";
+export { NubeAuthProvider, useNubeAuthContext } from "./ProofaProvider";
 export { useAuth } from "./useAuth";
 export { useLicense } from "./useLicense";
 export { useMe } from "./useMe";

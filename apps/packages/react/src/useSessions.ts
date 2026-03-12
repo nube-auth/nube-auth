@@ -1,6 +1,6 @@
 import type { Session } from "@nube-auth/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNubeAuthContext } from "./NubeAuthProvider";
+import { useNubeAuthContext } from "./ProofaProvider";
 
 export function useSessions() {
 	const { client } = useNubeAuthContext();

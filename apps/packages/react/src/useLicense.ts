@@ -1,6 +1,6 @@
 import type { License } from "@nube-auth/client";
 import { useQuery } from "@tanstack/react-query";
-import { useNubeAuthContext } from "./NubeAuthProvider";
+import { useNubeAuthContext } from "./ProofaProvider";
 
 export function useLicense() {
 	const { client } = useNubeAuthContext();
