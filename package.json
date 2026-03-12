@@ -5,7 +5,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"setup": "./scripts/setup-dev.sh",
+		"setup": "./nube-scripts/scripts/setup-dev.sh",
 		"dev": "turbo run dev",
 		"dev:gateway": "pnpm --filter @nube-auth/gateway dev",
 		"dev:core": "pnpm --filter @nube-auth/core dev",
@@ -30,12 +30,12 @@
 		"db:generate": "pnpm --filter @nube-auth/db run db:generate",
 		"db:fresh": "pnpm --filter @nube-auth/db run db:fresh",
 		"seed:project": "pnpm --filter @nube-auth/db run seed:project",
-		"docker:up": "./scripts/docker-local.sh up",
-		"docker:up:all": "./scripts/docker-local.sh up:all",
-		"docker:down": "./scripts/docker-local.sh down",
-		"docker:logs": "./scripts/docker-local.sh logs",
-		"docker:status": "./scripts/docker-local.sh status",
-		"docker:clean": "./scripts/docker-local.sh clean",
+		"docker:up": "./nube-scripts/scripts/deploy-local.sh up",
+		"docker:up:all": "./nube-scripts/scripts/deploy-local.sh up:all",
+		"docker:down": "./nube-scripts/scripts/deploy-local.sh down",
+		"docker:logs": "./nube-scripts/scripts/deploy-local.sh logs",
+		"docker:status": "./nube-scripts/scripts/deploy-local.sh status",
+		"docker:clean": "./nube-scripts/scripts/deploy-local.sh clean",
 		"prepare": "husky"
 	},
 	"devDependencies": {
