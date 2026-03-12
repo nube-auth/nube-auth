@@ -38,7 +38,6 @@ cp .env.example .env
 2. Configure your environment variables:
 ```env
 DATABASE_URL=your-database-url
-DATABASE_AUTH_TOKEN=optional-auth-token
 GOOGLE_CLIENT_ID=your-google-oauth-id
 GOOGLE_CLIENT_SECRET=your-google-oauth-secret
 JWT_SECRET=your-jwt-secret-min-32-chars
@@ -180,7 +179,6 @@ pnpm build
 ### Environment Variables for Production
 Ensure all required environment variables are set in your production environment:
 - `DATABASE_URL` - Production database connection string
-- `DATABASE_AUTH_TOKEN` - Auth token if using LibSQL
 - OAuth credentials (Google, GitHub)
 - Secure secret keys (JWT, SESSION, S2S)
 - `REDIS_URL` - Production Redis instance

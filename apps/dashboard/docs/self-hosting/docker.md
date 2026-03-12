@@ -49,7 +49,6 @@ services:
       - NODE_ENV=production
       - PORT=3001
       - DATABASE_URL=${DATABASE_URL}
-      - DATABASE_AUTH_TOKEN=${DATABASE_AUTH_TOKEN}
       - REDIS_URL=${REDIS_URL}
       - JWT_SECRET=${JWT_SECRET}
     depends_on:

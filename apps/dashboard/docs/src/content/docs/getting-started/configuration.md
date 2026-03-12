@@ -36,9 +36,8 @@ For self-hosted deployments, configure these environment variables:
 NODE_ENV=production
 PORT=3001
 
-# Database (Turso)
+# Database
 DATABASE_URL=libsql://your-db.turso.io
-DATABASE_AUTH_TOKEN=your-token
 
 # Redis (Upstash)
 REDIS_URL=redis://your-redis-url

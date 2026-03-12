@@ -18,14 +18,6 @@ All environment variables for Nube Auth services.
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `DATABASE_URL` | Yes | - | Database connection URL |
-| `DATABASE_AUTH_TOKEN` | Yes* | - | Auth token (required for Turso) |
-
-### Turso Example
-
-```bash
-DATABASE_URL=libsql://your-db.turso.io
-DATABASE_AUTH_TOKEN=your-token
-```
 
 ### PostgreSQL Example
 
@@ -120,9 +112,8 @@ GITHUB_CLIENT_SECRET=xxx
 NODE_ENV=production
 PORT=3001
 
-# Database (Turso)
+# Database
 DATABASE_URL=libsql://your-db.turso.io
-DATABASE_AUTH_TOKEN=your-token
 
 # Redis (Upstash)
 REDIS_URL=redis://default:token@host.upstash.io:6379
