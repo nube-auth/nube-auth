@@ -72,7 +72,7 @@ function getEnvironment(): Environment {
 	const environment: Environment = {
 		NODE_ENV: nodeEnv,
 		IS_DEVELOPMENT: nodeEnv === "development",
-		CORE_PORT: parseInt(process.env["CORE_PORT"] ?? "3003", 10),
+		CORE_PORT: parseInt(process.env["CORE_PORT"] ?? process.env["PORT"] ?? "8080", 10),
 		CORE_PUBLIC_URL: process.env["CORE_PUBLIC_URL"] ?? "",
 		API_BASE_URL: process.env["API_BASE_URL"] ?? (process.env["CORE_PUBLIC_URL"] || "http://localhost:3003"),
 		DATABASE_URL: process.env["DATABASE_URL"]!,
