@@ -179,7 +179,7 @@ await db.update(apps)
 ```
 
 **References:**
-- [docs/JSONB.md](../docs/JSONB.md) - Complete guide with quick reference and RFC
+- [docs/JSONB.md](../nube-scripts/docs/JSONB.md) - Complete guide with quick reference and RFC
 
 ## Development Experience
 
@@ -643,7 +643,7 @@ Check the PR template checklist:
 - [ ] Rate limiting respects development mode
 
 ### Architecture Reference
-See [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) for detailed guidelines on:
+See [docs/ARCHITECTURE.md](../nube-scripts/docs/ARCHITECTURE.md) for detailed guidelines on:
 - ID management patterns
 - Service communication
 - Error logging

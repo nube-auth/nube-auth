@@ -1,0 +1,3 @@
+[submodule "nube-scripts"]
+	path = nube-scripts
+	url = https://github.com/nube-auth/nube-scripts.git
