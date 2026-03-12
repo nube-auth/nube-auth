@@ -1,5 +1,5 @@
 {
-	"buildCommand": "cd ../../../ && pnpm build --filter=@proofa/dashboard-home",
+	"buildCommand": "cd ../../../ && pnpm build --filter=@nube-auth/dashboard-home",
 	"devCommand": "pnpm dev",
 	"installCommand": "cd ../../../ && pnpm install",
 	"framework": "astro",

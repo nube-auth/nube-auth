@@ -1,7 +1,7 @@
 {
-  "name": "@proofa/ui",
+  "name": "@nube-auth/ui",
   "version": "0.1.0",
-  "description": "Shared UI component library for Proofa dashboards",
+  "description": "Shared UI component library for Nube Auth dashboards",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

@@ -5,9 +5,9 @@
  * and delegates to the sync-plan handler.
  */
 
-import { createLogger, serializeError } from "@proofa/shared";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Worker } from "bullmq";
-import { QueueClient } from "@proofa/queue";
+import { QueueClient } from "@nube-auth/queue";
 
 const log = createLogger("sync-plan-worker-setup");
 

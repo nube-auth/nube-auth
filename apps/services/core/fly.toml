@@ -1,7 +1,7 @@
-# Fly.io configuration for Proofa Core API
+# Fly.io configuration for Nube Auth API
 # Deploy from monorepo root: fly deploy . --dockerfile apps/core/Dockerfile --config apps/core/fly.toml
 
-app = "proofa-core"
+app = "nube-auth"
 primary_region = "bom"
 
 [build]
@@ -10,7 +10,7 @@ primary_region = "bom"
 [env]
   NODE_ENV = "production"
   PORT = "8080"
-  CORE_PUBLIC_URL = "https://auth.proofa.sh"
+  CORE_PUBLIC_URL = "https://auth.nubeauth.com"
 
 [http_service]
   internal_port = 8080

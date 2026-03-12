@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Button, Heading, Text } from "@proofa/components";
+import { Button, Heading, Text } from "@nube-auth/components";
 
 export function NotFoundPage() {
 	return (

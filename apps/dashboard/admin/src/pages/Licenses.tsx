@@ -17,7 +17,7 @@ import {
 	TableBody,
 	TableCell,
 	EmptyState,
-} from "@proofa/components";
+} from "@nube-auth/components";
 
 export function LicensesPage() {
 	const { data: licenses, isLoading, error } = useLicenses();

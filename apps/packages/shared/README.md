@@ -1,6 +1,6 @@
-# @proofa/shared
+# @nube-auth/shared
 
-Core shared types, utilities, and constants for the Proofa platform.
+Core shared types, utilities, and constants for the Nube Auth platform.
 
 ## Contents
 
@@ -12,7 +12,7 @@ Core shared types, utilities, and constants for the Proofa platform.
 ## Installation
 
 ```bash
-pnpm install @proofa/shared
+pnpm install @nube-auth/shared
 ```
 
 ## Usage
@@ -20,7 +20,7 @@ pnpm install @proofa/shared
 ### ID Generation
 
 ```typescript
-import { id } from '@proofa/shared';
+import { id } from '@nube-auth/shared';
 
 // Core entities
 const userId = id.user();                    // U0...
@@ -41,7 +41,7 @@ const transactionId = id.transaction();      // TX0...
 ### Types
 
 ```typescript
-import type { User, Session, Project, License } from '@proofa/shared';
+import type { User, Session, Project, License } from '@nube-auth/shared';
 ```
 
 ### Constants
@@ -53,7 +53,7 @@ import {
   GATEWAY_SESSION_DEFAULT_TTL_SECONDS, // 2592000 (30 days)
   PROVIDERS, 
   LICENSE_PLANS 
-} from '@proofa/shared';
+} from '@nube-auth/shared';
 
 // All time values are in seconds for consistency
 ```
@@ -61,7 +61,7 @@ import {
 ### Utilities
 
 ```typescript
-import { getCurrentEpoch, addDays, isExpired, formatEpoch } from '@proofa/shared';
+import { getCurrentEpoch, addDays, isExpired, formatEpoch } from '@nube-auth/shared';
 
 const now = getCurrentEpoch();
 const expiryDate = addDays(30);

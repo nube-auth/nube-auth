@@ -7,11 +7,11 @@
 
 import { Hono } from "hono";
 import { z } from "zod";
-import { getDb, appQueries, planQueries, priceQueries, userQueries, auditLogQueries } from "@proofa/db";
-import { plans } from "@proofa/db/schema";
-import { eq } from "@proofa/db";
+import { getDb, appQueries, planQueries, priceQueries, userQueries, auditLogQueries } from "@nube-auth/db";
+import { plans } from "@nube-auth/db/schema";
+import { eq } from "@nube-auth/db";
 import type { Context } from "hono";
-import { createLogger, serializeError, id } from "@proofa/shared";
+import { createLogger, serializeError, id } from "@nube-auth/shared";
 import { pricesRouter } from "./prices.js";
 import { enqueuePlanSync } from "../../../billing/queue.js";
 
@@ -19,7 +19,7 @@ const log = createLogger("admin-plans");
 const plansRouter = new Hono();
 
 function getUserIdHeader(c: Context): string | null {
-	const header = c.req.header("X-Proofa-User-Id");
+	const header = c.req.header("X-Nube-User-Id");
 	return header || null;
 }
 

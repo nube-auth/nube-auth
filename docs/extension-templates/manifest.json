@@ -12,7 +12,7 @@
   "host_permissions": [
     "https://pinboardgpt.app/*",
     "https://www.pinboardgpt.app/*",
-    "https://api.proofa.sh/*"
+    "https://api.nubeauth.com/*"
   ],
   "background": {
     "service_worker": "background.js"

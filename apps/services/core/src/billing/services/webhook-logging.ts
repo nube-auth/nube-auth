@@ -4,8 +4,8 @@
  * Logs webhook events for debugging, idempotency, and audit trail.
  */
 
-import { getDb, eq, and, webhook_logs } from "@proofa/db";
-import { createLogger, serializeError, id } from "@proofa/shared";
+import { getDb, eq, and, webhook_logs } from "@nube-auth/db";
+import { createLogger, serializeError, id } from "@nube-auth/shared";
 
 const log = createLogger("webhook-logging");
 

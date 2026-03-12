@@ -12,8 +12,8 @@ const appHostMap: AppHostMapping = {
 	"app1.localhost": "app1",
 	"app2.localhost": "app2",
 	// Add production mappings here
-	// 'dashboard.proofa.io': 'main-app',
-	// 'app.proofa.io': 'main-app',
+	// 'dashboard.nubeauth.com': 'main-app',
+	// 'app.nubeauth.com': 'main-app',
 };
 
 /**

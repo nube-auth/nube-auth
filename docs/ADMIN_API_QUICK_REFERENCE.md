@@ -12,9 +12,9 @@
 
 ```bash
 # Individual services
-pnpm -F @proofa/core dev
-pnpm -F @proofa/gateway dev
-pnpm -F @proofa/db dev
+pnpm -F @nube-auth/core dev
+pnpm -F @nube-auth/gateway dev
+pnpm -F @nube-auth/db dev
 
 # Or use TUI
 pnpm dev --ui=tui
@@ -162,7 +162,7 @@ POST   /v1/admin/apps/:appId/providers/:providerId/select
 
 ### Query Payment Providers
 ```typescript
-import { getDb, paymentProviderConfigQueries } from "@proofa/db";
+import { getDb, paymentProviderConfigQueries } from "@nube-auth/db";
 
 const db = getDb();
 
@@ -192,8 +192,8 @@ const default = await paymentProviderConfigQueries.findDefaultByApp(db, appId);
 pnpm build
 
 # Build specific service
-pnpm build --filter="@proofa/core"
-pnpm build --filter="@proofa/gateway"
+pnpm build --filter="@nube-auth/core"
+pnpm build --filter="@nube-auth/gateway"
 
 # Build with watch
 pnpm dev
@@ -219,8 +219,8 @@ pnpm dev
 
 ### Enable Verbose Logging
 ```bash
-DEBUG=* pnpm -F @proofa/core dev
-DEBUG=admin* pnpm -F @proofa/core dev
+DEBUG=* pnpm -F @nube-auth/core dev
+DEBUG=admin* pnpm -F @nube-auth/core dev
 ```
 
 ### Check Service Logs

@@ -9,18 +9,18 @@
 
 import { Hono } from "hono";
 import { z } from "zod";
-import { getDb, appQueries, planQueries, priceQueries, userQueries, auditLogQueries } from "@proofa/db";
-import { prices } from "@proofa/db/schema";
-import { eq } from "@proofa/db";
+import { getDb, appQueries, planQueries, priceQueries, userQueries, auditLogQueries } from "@nube-auth/db";
+import { prices } from "@nube-auth/db/schema";
+import { eq } from "@nube-auth/db";
 import type { Context } from "hono";
-import { createLogger, serializeError, id, BILLING_TYPES, BILLING_INTERVALS } from "@proofa/shared";
+import { createLogger, serializeError, id, BILLING_TYPES, BILLING_INTERVALS } from "@nube-auth/shared";
 import { enqueuePlanSync } from "../../../billing/queue.js";
 
 const log = createLogger("admin-prices");
 const pricesRouter = new Hono();
 
 function getUserIdHeader(c: Context): string | null {
-	return c.req.header("X-Proofa-User-Id") || null;
+	return c.req.header("X-Nube-User-Id") || null;
 }
 
 const billingTypeValues = Object.values(BILLING_TYPES) as [string, ...string[]];

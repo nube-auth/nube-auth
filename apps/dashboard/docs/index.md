@@ -2,19 +2,19 @@
 layout: home
 
 hero:
-  name: Proofa
+  name: Nube Auth
   text: Production-ready authentication
   tagline: Complete authentication, licensing, and user management platform with enterprise-grade security
   image:
     src: /logo.png
-    alt: Proofa Logo
+    alt: Nube Auth Logo
   actions:
     - theme: brand
       text: Quick Start →
       link: /getting-started/quickstart
     - theme: alt
       text: View on GitHub
-      link: https://github.com/0xdps/proofa-core
+      link: https://github.com/0xdps/nube-auth
 
 features:
   - icon: 🔐
@@ -37,23 +37,23 @@ features:
     details: Built on Hono, PostgreSQL, and Redis for blazing fast response times and reliable scaling
 ---
 
-## 🚀 What is Proofa?
+## 🚀 What is Nube Auth?
 
-Proofa is a comprehensive authentication and licensing platform that provides secure user management, OAuth integration, session handling, and subscription licensing out of the box.
+Nube Auth is a comprehensive authentication and licensing platform that provides secure user management, OAuth integration, session handling, and subscription licensing out of the box.
 
 ### Security Rating: A+ (94/100)
 
-Proofa has achieved an **A+ security rating** through comprehensive security measures including session hijacking protection, rate limiting, CSRF protection, and more.
+Nube Auth has achieved an **A+ security rating** through comprehensive security measures including session hijacking protection, rate limiting, CSRF protection, and more.
 
 ## ⚡ Quick Start
 
-Integrate Proofa authentication into your app in 5 minutes:
+Integrate Nube Auth authentication into your app in 5 minutes:
 
 ```bash
 # 1. Install the SDK
-npm install @proofa/client @proofa/react
+npm install @nube-auth/client @nube-auth/react
 
-# 2. Get your credentials from admin.proofa.com
+# 2. Get your credentials from admin.nubeauth.com
 # - Create a project
 # - Add an app
 # - Copy your App ID
@@ -61,22 +61,22 @@ npm install @proofa/client @proofa/react
 
 ```tsx
 // 3. Add to your React app
-import { ProofaProvider, useProofa } from '@proofa/react';
+import { NubeAuthProvider, useNube Auth } from '@nube-auth/react';
 
 function App() {
   return (
-    <ProofaProvider
+    <NubeAuthProvider
       appId="APP0abc123..."
-      gatewayUrl="https://api.proofa.sh"
+      gatewayUrl="https://api.nubeauth.com"
     >
       <YourApp />
-    </ProofaProvider>
+    </NubeAuthProvider>
   );
 }
 
 // 4. Use authentication
 function LoginButton() {
-  const { login } = useProofa();
+  const { login } = useNube Auth();
   return <button onClick={() => login({ provider: 'google' })}>Login</button>;
 }
 ```
@@ -118,7 +118,7 @@ Visit [Integration Quick Start](/integration/quickstart) for detailed instructio
 ### Monorepo Structure
 
 ```
-proofa-core/
+nube-auth/
 ├── apps/
 │   ├── gateway/          # API Gateway
 │   ├── core/             # Core Service
@@ -137,9 +137,9 @@ proofa-core/
 
 ## 🚀 Get Started
 
-### For Developers (Integrate Proofa)
+### For Developers (Integrate Nube Auth)
 
-1. **Sign up** at [admin.proofa.com](https://admin.proofa.com)
+1. **Sign up** at [admin.nubeauth.com](https://admin.nubeauth.com)
 2. **Create a project** and add your app
 3. **Configure OAuth** providers (Google, GitHub)
 4. **Install SDK** in your application
@@ -149,17 +149,17 @@ proofa-core/
 
 ### For Self-Hosting (Advanced)
 
-Want to run Proofa on your own infrastructure? See our [Self-Hosting Guide](/self-hosting/docker) for Docker and Kubernetes deployment.
+Want to run Nube Auth on your own infrastructure? See our [Self-Hosting Guide](/self-hosting/docker) for Docker and Kubernetes deployment.
 
 ## 🤝 Support & Community
 
-Need help integrating Proofa?
+Need help integrating Nube Auth?
 
-- 📧 **Email**: support@proofa.io
+- 📧 **Email**: support@nubeauth.com
 - 📖 **Documentation**: You're here!
-- 💬 **GitHub Issues**: [Report bugs or request features](https://github.com/0xdps/proofa-core/issues)
-- 🌟 **Star us on GitHub**: [github.com/0xdps/proofa-core](https://github.com/0xdps/proofa-core)
+- 💬 **GitHub Issues**: [Report bugs or request features](https://github.com/0xdps/nube-auth/issues)
+- 🌟 **Star us on GitHub**: [github.com/0xdps/nube-auth](https://github.com/0xdps/nube-auth)
 
 ---
 
-**Ready to integrate Proofa?** [Start with the Integration Guide →](/integration/quickstart)
+**Ready to integrate Nube Auth?** [Start with the Integration Guide →](/integration/quickstart)

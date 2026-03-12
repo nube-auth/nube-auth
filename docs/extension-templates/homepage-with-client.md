@@ -1,4 +1,4 @@
-# Using @proofa/client in Vanilla JS Homepage
+# Using @nube-auth/client in Vanilla JS Homepage
 
 ## Option A: Bundle with esbuild (Recommended)
 
@@ -6,34 +6,34 @@
 ```bash
 cd pinboardgpt-homepage
 npm init -y
-npm install @proofa/client esbuild --save-dev
+npm install @nube-auth/client esbuild --save-dev
 ```
 
-### 2. Create source file (`src/proofa-auth.js`)
+### 2. Create source file (`src/nube-auth.js`)
 ```javascript
-import { ProofaClient } from '@proofa/client';
+import { NubeAuthClient } from '@nube-auth/client';
 
 // Initialize client
-export const proofaClient = new ProofaClient({
-  gatewayUrl: 'https://api.proofa.sh',
+export const nubeAuthClient = new NubeAuthClient({
+  gatewayUrl: 'https://api.nubeauth.com',
   appId: 'pinboardgpt',
 });
 
 // Export helper functions
 export async function checkAuth() {
   try {
-    return await proofaClient.auth.checkStatus();
+    return await nube-authClient.auth.checkStatus();
   } catch (error) {
     return { loggedIn: false };
   }
 }
 
 export async function getMe() {
-  return await proofaClient.me.get();
+  return await nube-authClient.me.get();
 }
 
 export async function logout() {
-  return await proofaClient.auth.logout();
+  return await nube-authClient.auth.logout();
 }
 
 export function getLoginUrl(returnTo = window.location.href) {
@@ -42,7 +42,7 @@ export function getLoginUrl(returnTo = window.location.href) {
     redirect_uri: `${window.location.origin}/auth/callback`,
     state: btoa(returnTo),
   });
-  return `https://api.proofa.sh/v1/auth/start?${params}`;
+  return `https://api.nubeauth.com/v1/auth/start?${params}`;
 }
 ```
 
@@ -50,8 +50,8 @@ export function getLoginUrl(returnTo = window.location.href) {
 ```json
 {
   "scripts": {
-    "build": "esbuild src/proofa-auth.js --bundle --outfile=dist/proofa.js --format=esm",
-    "watch": "esbuild src/proofa-auth.js --bundle --outfile=dist/proofa.js --format=esm --watch"
+    "build": "esbuild src/nube-auth.js --bundle --outfile=dist/nube-auth.js --format=esm",
+    "watch": "esbuild src/nube-auth.js --bundle --outfile=dist/nube-auth.js --format=esm --watch"
   }
 }
 ```
@@ -67,7 +67,7 @@ export function getLoginUrl(returnTo = window.location.href) {
   <div id="auth-status"></div>
 
   <script type="module">
-    import { checkAuth, getLoginUrl, logout } from './dist/proofa.js';
+    import { checkAuth, getLoginUrl, logout } from './dist/nube-auth.js';
 
     // Check auth on load
     (async function() {
@@ -111,12 +111,12 @@ Keep the simple wrapper from the integration guide - it's actually better for a 
 <body>
   <div id="auth-status"></div>
 
-  <script src="/js/proofa-simple.js"></script>
+  <script src="/js/nube-auth-simple.js"></script>
   <script>
-    const proofa = new ProofaAuth('https://api.proofa.sh', 'pinboardgpt');
+    const nubeAuth = new Nube AuthAuth('https://api.nubeauth.com', 'pinboardgpt');
 
     (async function() {
-      const auth = await proofa.checkAuth();
+      const auth = await nubeAuth.checkAuth();
       const container = document.getElementById('auth-status');
       
       if (auth.loggedIn) {
@@ -126,13 +126,13 @@ Keep the simple wrapper from the integration guide - it's actually better for a 
         `;
       } else {
         container.innerHTML = `
-          <a href="${proofa.getLoginUrl()}">Login</a>
+          <a href="${nube-auth.getLoginUrl()}">Login</a>
         `;
       }
     })();
 
     async function handleLogout() {
-      await proofa.logout();
+      await nubeAuth.logout();
       window.location.reload();
     }
   </script>
@@ -140,10 +140,10 @@ Keep the simple wrapper from the integration guide - it's actually better for a 
 </html>
 ```
 
-Where `proofa-simple.js` is:
+Where `nube-auth-simple.js` is:
 
 ```javascript
-class ProofaAuth {
+class Nube AuthAuth {
   constructor(gatewayUrl, appId) {
     this.gatewayUrl = gatewayUrl;
     this.appId = appId;
@@ -204,7 +204,7 @@ class ProofaAuth {
 - ✅ Extensions can't use npm packages directly anyway
 - ✅ Chrome extensions have their own packaging
 
-**When to use @proofa/client with bundler**:
+**When to use @nube-auth/client with bundler**:
 - ❌ Complex admin dashboard with many API calls
 - ❌ Need TypeScript type safety
 - ❌ Using a framework (React/Vue/Svelte)
@@ -221,7 +221,7 @@ pinboardgpt-homepage/
 │   ├── login.html         # Login page
 │   └── callback.html      # OAuth callback
 ├── js/
-│   └── proofa-simple.js   # Simple auth wrapper (~2KB)
+│   └── nube-auth-simple.js   # Simple auth wrapper (~2KB)
 └── css/
     └── styles.css
 
@@ -235,4 +235,4 @@ pinboard-gpt-extension/
 └── icons/
 ```
 
-**Verdict**: Keep the vanilla JS wrapper for the homepage. No need for `@proofa/client` bundling.
+**Verdict**: Keep the vanilla JS wrapper for the homepage. No need for `@nube-auth/client` bundling.

@@ -3,7 +3,7 @@ title: OAuth Providers
 description: Configure OAuth authentication providers
 ---
 
-Proofa supports popular OAuth providers out of the box.
+Nube Auth supports popular OAuth providers out of the box.
 
 ## Supported Providers
 
@@ -33,7 +33,7 @@ GOOGLE_CLIENT_SECRET=your-client-secret
 ### 3. Use in Your App
 
 ```typescript
-await proofa.login({ provider: 'google' });
+await nubeAuth.login({ provider: 'google' });
 ```
 
 ## GitHub Setup
@@ -56,7 +56,7 @@ GITHUB_CLIENT_SECRET=your-client-secret
 ### 3. Use in Your App
 
 ```typescript
-await proofa.login({ provider: 'github' });
+await nubeAuth.login({ provider: 'github' });
 ```
 
 ## Multiple Providers
@@ -65,10 +65,10 @@ Users can link multiple providers to one account:
 
 ```typescript
 // Link additional provider to existing account
-await proofa.linkProvider({ provider: 'github' });
+await nube-auth.linkProvider({ provider: 'github' });
 
 // Get linked providers
-const user = await proofa.getUser();
+const user = await nubeAuth.getUser();
 console.log(user.linkedProviders); // ['google', 'github']
 ```
 
@@ -77,7 +77,7 @@ console.log(user.linkedProviders); // ['google', 'github']
 Request additional OAuth scopes:
 
 ```typescript
-await proofa.login({ 
+await nubeAuth.login({ 
   provider: 'google',
   scopes: ['email', 'profile', 'calendar.readonly']
 });
@@ -87,7 +87,7 @@ await proofa.login({
 
 ```typescript
 try {
-  await proofa.login({ provider: 'google' });
+  await nubeAuth.login({ provider: 'google' });
 } catch (error) {
   if (error.code === 'OAUTH_DENIED') {
     console.log('User cancelled login');

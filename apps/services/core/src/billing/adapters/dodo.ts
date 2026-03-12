@@ -5,7 +5,7 @@
  * Documentation: https://docs.dodopayments.com/
  */
 
-import { createLogger, serializeError } from "@proofa/shared";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import DodoPayments from "dodopayments";
 import type { UnwrapWebhookEvent } from "dodopayments/resources/webhooks/webhooks.js";
 import type {

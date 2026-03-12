@@ -15,7 +15,7 @@ import {
 	TableHead,
 	TableBody,
 	TableCell,
-} from "@proofa/components";
+} from "@nube-auth/components";
 import { Select } from "../components/Select";
 import { useState } from "react";
 import { useBillingTransactions } from "../hooks/api";

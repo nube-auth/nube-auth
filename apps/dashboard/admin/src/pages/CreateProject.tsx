@@ -14,7 +14,7 @@ import {
 	Label, 
 	Text, 
 	Textarea 
-} from "@proofa/components";
+} from "@nube-auth/components";
 
 export function CreateProjectPage() {
 	const navigate = useNavigate();

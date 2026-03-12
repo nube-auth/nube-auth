@@ -14,7 +14,7 @@ import {
 	BreadcrumbList,
 	BreadcrumbItem,
 	BreadcrumbButton,
-} from "@proofa/components";
+} from "@nube-auth/components";
 import { PageLoader } from "../components/PageLoader";
 import { useToast } from "../components/Toast";
 import { useApp, useProject, useUpdateApp } from "../hooks/api";
@@ -183,7 +183,7 @@ export default function AppOAuthPage() {
 											</Chip>
 										</div>
 										<p className="text-sm text-muted-foreground m-0">
-											Managed by Proofa
+											Managed by Nube Auth
 										</p>
 									</div>
 								</div>

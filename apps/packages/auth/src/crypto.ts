@@ -1,5 +1,5 @@
 import * as crypto from "node:crypto";
-import { OTP_LENGTH } from "@proofa/shared";
+import { OTP_LENGTH } from "@nube-auth/shared";
 
 /**
  * Generate a cryptographically secure random 6-digit OTP

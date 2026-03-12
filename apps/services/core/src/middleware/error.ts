@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { env } from "../config/env";
-import { createLogger } from "@proofa/shared";
+import { createLogger } from "@nube-auth/shared";
 
 const log = createLogger("error-middleware");
 

@@ -35,12 +35,12 @@
     </section>
   </main>
 
-  <!-- Include Proofa Auth -->
-  <script src="/js/proofa-auth.js"></script>
+  <!-- Include Nube Auth -->
+  <script src="/js/nube-auth.js"></script>
   
   <script>
-    // Initialize Proofa client
-    const proofa = new ProofaAuth('https://api.proofa.sh', 'pinboardgpt');
+    // Initialize Nube Auth client
+    const nubeAuth = new Nube AuthAuth('https://api.nubeauth.com', 'pinboardgpt');
 
     // Check authentication status on page load
     async function initAuth() {
@@ -48,7 +48,7 @@
       const getStartedBtn = document.getElementById('get-started-btn');
 
       try {
-        const auth = await proofa.checkAuth();
+        const auth = await nubeAuth.checkAuth();
 
         if (auth.loggedIn) {
           // User is logged in
@@ -94,7 +94,7 @@
     // Logout handler
     async function handleLogout() {
       try {
-        await proofa.logout();
+        await nubeAuth.logout();
         window.location.href = '/';
       } catch (error) {
         console.error('Logout failed:', error);

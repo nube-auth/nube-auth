@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Fly.io Deployment Script for Proofa
+# Fly.io Deployment Script for Nube Auth
 # Usage: ./scripts/deploy-fly.sh [command]
 # Commands: setup, secrets, deploy, deploy-core, deploy-gateway, status, logs
 
@@ -14,16 +14,16 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # App names
-CORE_APP="proofa-core"
-GATEWAY_APP="proofa-gateway"
+CORE_APP="nube-auth"
+GATEWAY_APP="nube-auth-gateway"
 
 # Production URLs
 # Core handles OAuth with providers, Gateway handles app-facing API
-CORE_PUBLIC_URL="https://auth.proofa.sh"
-GATEWAY_PUBLIC_URL="https://api.proofa.sh"
-USER_DASHBOARD_URL="https://user.proofa.sh"
-ADMIN_DASHBOARD_URL="https://manage.proofa.sh"
-COOKIE_DOMAIN=".proofa.sh"
+CORE_PUBLIC_URL="https://auth.nubeauth.com"
+GATEWAY_PUBLIC_URL="https://api.nubeauth.com"
+USER_DASHBOARD_URL="https://user.nubeauth.com"
+ADMIN_DASHBOARD_URL="https://manage.nubeauth.com"
+COOKIE_DOMAIN=".nubeauth.com"
 
 # Load secrets from .env file if it exists
 load_env() {
@@ -92,7 +92,7 @@ set_core_secrets() {
         UPSTASH_REDIS_REST_URL="$UPSTASH_REDIS_REST_URL" \
         UPSTASH_REDIS_REST_TOKEN="$UPSTASH_REDIS_REST_TOKEN" \
         RESEND_API_KEY="$RESEND_API_KEY" \
-        EMAIL_FROM="${EMAIL_FROM:-noreply@proofa.sh}" \
+        EMAIL_FROM="${EMAIL_FROM:-noreply@nubeauth.com}" \
         SEND_EMAILS="true" \
         GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" \
         GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" \
@@ -117,7 +117,7 @@ set_gateway_secrets() {
         UPSTASH_REDIS_REST_URL="$UPSTASH_REDIS_REST_URL" \
         UPSTASH_REDIS_REST_TOKEN="$UPSTASH_REDIS_REST_TOKEN" \
         RESEND_API_KEY="$RESEND_API_KEY" \
-        EMAIL_FROM="${EMAIL_FROM:-noreply@proofa.sh}" \
+        EMAIL_FROM="${EMAIL_FROM:-noreply@nubeauth.com}" \
         SEND_EMAILS="true" \
         CORE_URL="$CORE_PUBLIC_URL" \
         CORE_S2S_TOKEN="$CORE_S2S_TOKEN" \
@@ -149,15 +149,15 @@ deploy_gateway() {
 add_domains() {
     echo -e "${BLUE}Adding custom domains...${NC}"
     
-    echo "Adding auth.proofa.sh to $CORE_APP..."
-    fly certs add auth.proofa.sh --app "$CORE_APP" || true
+    echo "Adding auth.nubeauth.com to $CORE_APP..."
+    fly certs add auth.nubeauth.com --app "$CORE_APP" || true
     
-    echo "Adding api.proofa.sh to $GATEWAY_APP..."
-    fly certs add api.proofa.sh --app "$GATEWAY_APP" || true
+    echo "Adding api.nubeauth.com to $GATEWAY_APP..."
+    fly certs add api.nubeauth.com --app "$GATEWAY_APP" || true
     
     echo -e "${GREEN}Domains added. Configure DNS:${NC}"
-    echo "  auth.proofa.sh -> CNAME to $CORE_APP.fly.dev"
-    echo "  api.proofa.sh  -> CNAME to $GATEWAY_APP.fly.dev"
+    echo "  auth.nubeauth.com -> CNAME to $CORE_APP.fly.dev"
+    echo "  api.nubeauth.com  -> CNAME to $GATEWAY_APP.fly.dev"
 }
 
 # Show status
@@ -180,7 +180,7 @@ show_logs() {
 
 # Full setup (first time)
 full_setup() {
-    echo -e "${GREEN}=== Proofa Fly.io Full Setup ===${NC}"
+    echo -e "${GREEN}=== Nube Auth Fly.io Full Setup ===${NC}"
     check_fly
     create_apps
     set_core_secrets
@@ -212,7 +212,7 @@ deploy_all() {
 
 # Print usage
 usage() {
-    echo "Proofa Fly.io Deployment Script"
+    echo "Nube Auth Fly.io Deployment Script"
     echo ""
     echo "Usage: $0 [command]"
     echo ""
@@ -226,7 +226,7 @@ usage() {
     echo "  deploy-gw      Deploy Gateway only"
     echo "  domains        Add custom domains"
     echo "  status         Show app status"
-    echo "  logs [app]     Show logs (default: proofa-core)"
+    echo "  logs [app]     Show logs (default: nube-auth)"
     echo "  logs-core      Show Core logs"
     echo "  logs-gw        Show Gateway logs"
     echo ""

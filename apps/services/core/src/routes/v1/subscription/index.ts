@@ -7,8 +7,8 @@ import {
 	priceQueries,
 	subscriptionQueries,
 	userQueries,
-} from "@proofa/db";
-import { createId, createLogger, serializeError } from "@proofa/shared";
+} from "@nube-auth/db";
+import { createId, createLogger, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -22,7 +22,7 @@ const router = new Hono();
 
 router.get("/", async (c: Context) => {
 	try {
-		const userPublicId = c.req.header("X-Proofa-User-Id");
+		const userPublicId = c.req.header("X-Nube-User-Id");
 		if (!userPublicId)
 			return c.json({ error: "Unauthorized" }, 401);
 
@@ -107,7 +107,7 @@ const CancelSchema = z.object({
 
 router.post("/cancel", async (c: Context) => {
 	try {
-		const userPublicId = c.req.header("X-Proofa-User-Id");
+		const userPublicId = c.req.header("X-Nube-User-Id");
 		if (!userPublicId)
 			return c.json({ error: "Unauthorized" }, 401);
 
@@ -231,7 +231,7 @@ const ResumeSchema = z.object({
 
 router.post("/resume", async (c: Context) => {
 	try {
-		const userPublicId = c.req.header("X-Proofa-User-Id");
+		const userPublicId = c.req.header("X-Nube-User-Id");
 		if (!userPublicId)
 			return c.json({ error: "Unauthorized" }, 401);
 

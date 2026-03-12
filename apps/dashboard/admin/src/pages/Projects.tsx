@@ -18,7 +18,7 @@ import {
 	Heading,
 	Text,
 	Chip,
-} from "@proofa/components";
+} from "@nube-auth/components";
 import { getIconById } from "../components/IconPicker";
 import type { Project } from "../types/admin";
 

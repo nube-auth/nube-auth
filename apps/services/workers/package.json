@@ -1,7 +1,7 @@
 {
-	"name": "@proofa/workers",
+	"name": "@nube-auth/workers",
 	"version": "1.0.0",
-	"description": "Background job workers service for Proofa",
+	"description": "Background job workers service for Nube Auth",
 	"type": "module",
 	"main": "dist/index.js",
 	"exports": {
@@ -15,9 +15,9 @@
 		"test": "vitest"
 	},
 	"dependencies": {
-		"@proofa/db": "workspace:*",
-		"@proofa/queue": "workspace:*",
-		"@proofa/shared": "workspace:*",
+		"@nube-auth/db": "workspace:*",
+		"@nube-auth/queue": "workspace:*",
+		"@nube-auth/shared": "workspace:*",
 		"bullmq": "^5.8.0",
 		"ioredis": "^5.3.2"
 	},

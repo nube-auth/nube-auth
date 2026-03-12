@@ -66,7 +66,7 @@ pnpm docker:clean
 
 ```bash
 # PostgreSQL shell
-docker compose exec postgres psql -U proofa -d proofa
+docker compose exec postgres psql -U nube-auth -d nube-auth
 
 # Redis CLI
 docker compose exec redis redis-cli

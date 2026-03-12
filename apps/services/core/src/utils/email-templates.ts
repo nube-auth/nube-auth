@@ -74,7 +74,7 @@ export function generateProjectTeamInvitationEmail(data: ProjectTeamInvitationEm
 					<tr>
 						<td style="padding: 30px 40px; text-align: center; border-top: 1px solid #e5e5e5; background-color: #f9fafb; border-radius: 0 0 8px 8px;">
 							<p style="margin: 0 0 10px; color: #6b7280; font-size: 13px;">
-								Powered by <strong style="color: #8b5cf6;">Proofa</strong>
+								Powered by <strong style="color: #8b5cf6;">Nube Auth</strong>
 							</p>
 							<p style="margin: 0; color: #9ca3af; font-size: 12px;">
 								If you didn't expect this invitation, you can safely ignore this email.
@@ -105,7 +105,7 @@ export function generateOTPEmail(data: OTPEmailData): string {
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Your Proofa OTP Code</title>
+	<title>Your Nube Auth OTP Code</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
 	<table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
@@ -123,7 +123,7 @@ export function generateOTPEmail(data: OTPEmailData): string {
 					<tr>
 						<td style="padding: 40px;">
 							<p style="margin: 0 0 20px; color: #374151; font-size: 16px; line-height: 1.6;">
-								Your Proofa verification code is:
+								Your Nube Auth verification code is:
 							</p>
 							<table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
 								<tr>
@@ -149,7 +149,7 @@ export function generateOTPEmail(data: OTPEmailData): string {
 					<tr>
 						<td style="padding: 30px 40px; text-align: center; border-top: 1px solid #e5e5e5; background-color: #f9fafb; border-radius: 0 0 8px 8px;">
 							<p style="margin: 0; color: #6b7280; font-size: 13px;">
-								Powered by <strong style="color: #8b5cf6;">Proofa</strong>
+								Powered by <strong style="color: #8b5cf6;">Nube Auth</strong>
 							</p>
 						</td>
 					</tr>

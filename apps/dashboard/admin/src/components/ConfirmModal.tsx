@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Input, Label, Spinner, Icon, IconType } from "@proofa/components";
+import { Button, Input, Label, Spinner, Icon, IconType } from "@nube-auth/components";
 import { Modal, ModalBody, ModalFooter, ModalHeader } from "./Modal";
 
 interface ConfirmModalProps {

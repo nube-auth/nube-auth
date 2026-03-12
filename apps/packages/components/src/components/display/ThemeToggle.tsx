@@ -30,7 +30,7 @@ export interface ThemeToggleProps {
  * 
  * @example
  * ```tsx
- * import { useTheme, ThemeToggle } from '@proofa/components';
+ * import { useTheme, ThemeToggle } from '@nube-auth/components';
  * 
  * function App() {
  *   const { theme, setTheme } = useTheme();

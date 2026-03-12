@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { AuthLoginCard } from "@proofa/components";
+import { AuthLoginCard } from "@nube-auth/components";
 import { pingpong } from "../lib/pingpong";
 import { config } from "../config";
 

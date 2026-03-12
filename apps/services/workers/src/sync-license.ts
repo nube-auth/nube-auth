@@ -9,12 +9,12 @@
  * - Edge cases where webhook processing partially succeeded
  */
 
-import { createLogger, serializeError } from "@proofa/shared";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Worker } from "bullmq";
-import { QueueClient } from "@proofa/queue";
-import { getDb, eq, purchases, plans, licenses } from "@proofa/db";
-import { prices as pricesTable } from "@proofa/db/schema";
-import { licenseQueries } from "@proofa/db";
+import { QueueClient } from "@nube-auth/queue";
+import { getDb, eq, purchases, plans, licenses } from "@nube-auth/db";
+import { prices as pricesTable } from "@nube-auth/db/schema";
+import { licenseQueries } from "@nube-auth/db";
 
 const log = createLogger("sync-license-worker");
 

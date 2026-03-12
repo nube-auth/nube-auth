@@ -7,7 +7,7 @@
  * - Custom store (e.g., Redis) via configureStateStore()
  */
 
-import { id, validateId } from "@proofa/shared";
+import { id, validateId } from "@nube-auth/shared";
 
 /** Default state token expiration (10 minutes) */
 const DEFAULT_STATE_TTL_MS = 10 * 60 * 1000;

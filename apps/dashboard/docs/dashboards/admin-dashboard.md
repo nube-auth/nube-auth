@@ -1,6 +1,6 @@
 ---
 title: Admin Dashboard
-description: Complete guide to the Proofa Admin Dashboard
+description: Complete guide to the Nube Auth Admin Dashboard
 ---
 
 
@@ -8,7 +8,7 @@ The Admin Dashboard is your control center for managing projects, apps, users, a
 
 ## Overview
 
-Access the Admin Dashboard at **[admin.proofa.com](https://admin.proofa.com)**
+Access the Admin Dashboard at **[admin.nubeauth.com](https://admin.nubeauth.com)**
 
 The dashboard features a contextual sidebar that adapts to your current location:
 - **Global View** - Projects, billing, webhooks
@@ -183,15 +183,15 @@ Configure OAuth providers for your app:
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
 2. Create OAuth 2.0 credentials
-3. Add redirect URI: `https://api.proofa.sh/v1/auth/callback/google`
-4. Copy Client ID and Secret to Proofa
+3. Add redirect URI: `https://api.nubeauth.com/v1/auth/callback/google`
+4. Copy Client ID and Secret to Nube Auth
 
 #### GitHub OAuth
 
 1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
 2. Create OAuth App
-3. Set callback URL: `https://api.proofa.sh/v1/auth/callback/github`
-4. Copy Client ID and Secret to Proofa
+3. Set callback URL: `https://api.nubeauth.com/v1/auth/callback/github`
+4. Copy Client ID and Secret to Nube Auth
 
 <Aside type="note">
   OAuth credentials are encrypted at rest using AES-256-GCM.
@@ -226,20 +226,20 @@ Configure payment providers at the project level:
 ### Stripe Setup
 
 1. Get API keys from [Stripe Dashboard](https://dashboard.stripe.com)
-2. Add to Proofa:
+2. Add to Nube Auth:
    - **Publishable Key** - Public key for frontend
    - **Secret Key** - Private key for backend
    - **Webhook Secret** - For webhook verification
-3. Configure webhook endpoint: `https://api.proofa.sh/v1/webhooks/stripe`
+3. Configure webhook endpoint: `https://api.nubeauth.com/v1/webhooks/stripe`
 
 ### LemonSqueezy Setup
 
 1. Get API key from [LemonSqueezy Dashboard](https://app.lemonsqueezy.com)
-2. Add to Proofa:
+2. Add to Nube Auth:
    - **API Key**
    - **Store ID**
    - **Webhook Secret**
-3. Configure webhook: `https://api.proofa.sh/v1/webhooks/lemonsqueezy`
+3. Configure webhook: `https://api.nubeauth.com/v1/webhooks/lemonsqueezy`
 
 ### App Payment Settings
 
@@ -265,21 +265,21 @@ Create API keys for backend integration:
 
 API Key Format:
 ```
-proofa_sk_live_abc123...  (64 characters)
+nube_sk_live_abc123...  (64 characters)
 ```
 
 ### Using API Keys
 
-Include in requests to Proofa API:
+Include in requests to Nube Auth API:
 
 ```bash
-curl -H "Authorization: Bearer proofa_sk_live_abc123..." \
-  https://api.proofa.sh/v1/users
+curl -H "Authorization: Bearer nube_sk_live_abc123..." \
+  https://api.nubeauth.com/v1/users
 ```
 
 ### Key Management
 
-- **View Current Key** - Masked for security (e.g., `proofa_sk_...abc`)
+- **View Current Key** - Masked for security (e.g., `nube-auth_sk_...abc`)
 - **Rotate Key** - Generate new key with grace period
 - **Revoke Key** - Immediately invalidate key
 
@@ -378,11 +378,11 @@ Click a webhook to view:
 If a webhook fails (e.g., server downtime):
 
 1. Click **"Retry"** on failed webhook
-2. Proofa resends event to your endpoint
+2. Nube Auth resends event to your endpoint
 3. View new response status
 
 <Aside type="tip">
-  Set up webhook endpoints at: `https://api.proofa.sh/v1/webhooks/{provider}`
+  Set up webhook endpoints at: `https://api.nubeauth.com/v1/webhooks/{provider}`
 </Aside>
 
 ## Refunds
@@ -412,7 +412,7 @@ Track all processed refunds:
 
 ### Quick Integration
 
-Get your app running with Proofa:
+Get your app running with Nube Auth:
 
 1. Navigate to **App → Integration Guide**
 2. Follow step-by-step instructions:
@@ -428,16 +428,16 @@ Get your app running with Proofa:
 The integration guide provides ready-to-use code:
 
 ```typescript
-// Initialize Proofa client
-import { ProofaClient } from '@proofa/client';
+// Initialize Nube Auth client
+import { NubeAuthClient } from '@nube-auth/client';
 
-const proofa = new ProofaClient({
+const nubeAuth = new NubeAuthClient({
   appId: 'APP0abc123...',
-  appToken: 'proofa_sk_live_...',
+  appToken: 'nube_sk_live_...',
 });
 
 // Start OAuth login
-await proofa.auth.login({ provider: 'google' });
+await nube-auth.auth.login({ provider: 'google' });
 ```
 
 ### Testing Your Integration
@@ -545,5 +545,5 @@ Toggle between light and dark themes:
 ## Next Steps
 
 - [User Dashboard](/dashboards/user-dashboard) - End user features
-- [Integration Guide](/integration/quickstart) - Add Proofa to your app
+- [Integration Guide](/integration/quickstart) - Add Nube Auth to your app
 - [API Reference](/api/admin-api) - Complete API documentation

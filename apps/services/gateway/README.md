@@ -1,8 +1,8 @@
-# @proofa/gateway
+# @nube-auth/gateway
 
-**REST API Gateway for Proofa Platform**
+**REST API Gateway for Nube Auth Platform**
 
-The Proofa Gateway is a high-performance API server built with Hono.js that handles all backend operations for the Proofa platform.
+The Nube Auth Gateway is a high-performance API server built with Hono.js that handles all backend operations for the Nube Auth platform.
 
 ---
 
@@ -128,7 +128,7 @@ src/
 
 ```bash
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/proofa
+DATABASE_URL=postgresql://user:password@localhost:5432/nube-auth
 
 # Redis
 REDIS_URL=redis://localhost:6379
@@ -150,8 +150,8 @@ GATEWAY_URL=http://localhost:3000
 DASHBOARD_URL=http://localhost:5173
 
 # Service-to-Service (Core <-> Gateway)
-# Must match Core's X_PROOFA_SERVICE_TOKEN
-X_PROOFA_SERVICE_TOKEN=your-service-token-here
+# Must match Core's X_NUBE_AUTH_SERVICE_TOKEN
+X_NUBE_AUTH_SERVICE_TOKEN=your-service-token-here
 
 # Session Configuration (all values in seconds)
 # Core sessions: 31536000 = 365 days (users), 7200 = 2 hours (admins)
@@ -225,13 +225,13 @@ pnpm lint
 ### Docker
 ```bash
 # Build image
-docker build -t proofa-gateway .
+docker build -t nube-auth-gateway .
 
 # Run container
 docker run -p 3000:3000 \
   -e DATABASE_URL="..." \
   -e REDIS_URL="..." \
-  proofa-gateway
+  nube-auth-gateway
 ```
 
 ### Fly.io

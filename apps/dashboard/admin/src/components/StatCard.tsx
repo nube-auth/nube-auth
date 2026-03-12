@@ -7,7 +7,7 @@ import {
   Chip,
   Icon,
   type IconType,
-} from '@proofa/components';
+} from '@nube-auth/components';
 
 export interface StatCardProps {
   icon: typeof IconType[keyof typeof IconType];

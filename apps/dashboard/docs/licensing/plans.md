@@ -3,7 +3,7 @@ title: Plans & Tiers
 description: Configure pricing plans and tiers
 ---
 
-Define plans in your Proofa dashboard or via the API.
+Define plans in your Nube Auth dashboard or via the API.
 
 ## Creating Plans
 
@@ -16,7 +16,7 @@ Define plans in your Proofa dashboard or via the API.
 ### Via API
 
 ```typescript
-await proofa.admin.createPlan({
+await nube-auth.admin.createPlan({
   id: 'pro',
   name: 'Pro',
   description: 'For growing teams',
@@ -84,13 +84,13 @@ interface Plan {
 
 ```typescript
 // Upgrade user to Pro
-await proofa.admin.updateLicense({
+await nube-auth.admin.updateLicense({
   userId: 'user-id',
   plan: 'pro'
 });
 
 // With proration
-await proofa.admin.updateLicense({
+await nube-auth.admin.updateLicense({
   userId: 'user-id',
   plan: 'enterprise',
   prorate: true
@@ -99,17 +99,17 @@ await proofa.admin.updateLicense({
 
 ## Stripe Integration
 
-Connect Proofa to Stripe for payments:
+Connect Nube Auth to Stripe for payments:
 
 ```bash
 STRIPE_SECRET_KEY=sk_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
-Map Proofa plans to Stripe prices:
+Map Nube Auth plans to Stripe prices:
 
 ```typescript
-await proofa.admin.updatePlan({
+await nube-auth.admin.updatePlan({
   id: 'pro',
   stripeProductId: 'prod_xxx',
   stripePriceId: 'price_xxx'
@@ -122,14 +122,14 @@ Add custom entitlements per user:
 
 ```typescript
 // Add entitlement not in their plan
-await proofa.admin.addEntitlement({
+await nube-auth.admin.addEntitlement({
   userId: 'user-id',
   entitlement: 'beta_feature',
   reason: 'Beta tester program'
 });
 
 // Remove custom entitlement
-await proofa.admin.removeEntitlement({
+await nube-auth.admin.removeEntitlement({
   userId: 'user-id',
   entitlement: 'beta_feature'
 });
@@ -140,7 +140,7 @@ await proofa.admin.removeEntitlement({
 Override plan limits for specific users:
 
 ```typescript
-await proofa.admin.setLimit({
+await nube-auth.admin.setLimit({
   userId: 'user-id',
   limit: 'api_calls',
   value: 50000,  // Override plan's 10000

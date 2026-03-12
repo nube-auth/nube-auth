@@ -1,4 +1,4 @@
-# GitHub Copilot Instructions for Proofa Core
+# GitHub Copilot Instructions for Nube Auth
 
 ## Critical Security Patterns
 
@@ -26,9 +26,9 @@ const user = await userQueries.findByPublicId(userPublicId);
 ```
 
 ### Type System
-Use branded types from `@proofa/shared`:
+Use branded types from `@nube-auth/shared`:
 ```typescript
-import { InternalId, PublicId, publicId, internalId } from '@proofa/shared';
+import { InternalId, PublicId, publicId, internalId } from '@nube-auth/shared';
 
 // Database operations
 function getUserById(id: InternalId): Promise<User>
@@ -63,9 +63,9 @@ const apiKey = env.API_KEY;
 ### Database Connections
 **NEVER import or use database clients directly in routes or business logic.**
 
-- ✅ Use `@proofa/db` package with connection wrapper
+- ✅ Use `@nube-auth/db` package with connection wrapper
 - ✅ Access via `getDb()` or similar connection getter
-- ✅ Use query helpers from `@proofa/db/queries`
+- ✅ Use query helpers from `@nube-auth/db/queries`
 - ❌ Never import `drizzle`, `pg`, or raw clients in application code
 - ❌ Never create new database connections in routes
 
@@ -76,8 +76,8 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 const db = drizzle(connection);
 
 // ✅ CORRECT - Use wrapper
-import { getDb } from '@proofa/db';
-import { userQueries } from '@proofa/db/queries';
+import { getDb } from '@nube-auth/db';
+import { userQueries } from '@nube-auth/db/queries';
 
 const db = getDb();
 const user = await userQueries.findByPublicId(db, userId);
@@ -86,7 +86,7 @@ const user = await userQueries.findByPublicId(db, userId);
 ### Cache/Redis Access
 **NEVER access Redis clients directly in application code.**
 
-- ✅ Use `@proofa/cache` package with connection wrapper
+- ✅ Use `@nube-auth/cache` package with connection wrapper
 - ✅ Access via `getCache()` or similar getter
 - ✅ Use typed cache helpers for common operations
 - ❌ Never import `redis` or `ioredis` directly
@@ -99,7 +99,7 @@ import Redis from 'ioredis';
 const redis = new Redis(url);
 
 // ✅ CORRECT - Use wrapper
-import { getCache } from '@proofa/cache';
+import { getCache } from '@nube-auth/cache';
 
 const cache = getCache();
 await cache.set('key', value, ttl);
@@ -197,12 +197,12 @@ if (env.IS_DEVELOPMENT) {
 
 ### Selia Design System (Base Layer)
 
-**@proofa/components includes Selia UI components** - a complete design system with 50+ components.
+**@nube-auth/components includes Selia UI components** - a complete design system with 50+ components.
 
-**ALWAYS use Selia components from `@proofa/components for new UI:**
+**ALWAYS use Selia components from `@nube-auth/components for new UI:**
 
 ```typescript
-// ✅ CORRECT - Use Selia components from @proofa/components
+// ✅ CORRECT - Use Selia components from @nube-auth/components
 import { 
   Button, 
   Dialog, 
@@ -214,7 +214,7 @@ import {
   Checkbox,
   Alert,
   Spinner
-} from '@proofa/components';
+} from '@nube-auth/components';
 ```
 
 **Available Selia Components:**
@@ -237,11 +237,11 @@ import {
 
 **NEVER import components from dashboard-specific folders like `admin/src/components/selia`.**
 
-- ✅ Always import from `@proofa/components`
-- ✅ Selia components are vendored inside `@proofa/components/src/components/selia/`
+- ✅ Always import from `@nube-auth/components`
+- ✅ Selia components are vendored inside `@nube-auth/components/src/components/selia/`
 - ✅ All dashboards (admin, user, home) import from same source
 - ❌ Never create local component copies in dashboard folders
-- ❌ Never bypass the `@proofa/components` package
+- ❌ Never bypass the `@nube-auth/components` package
 
 **Old Custom Components (Deprecated):**
 The following legacy components exist but should be migrated to Selia:
@@ -251,12 +251,12 @@ The following legacy components exist but should be migrated to Selia:
 
 ### Selia Component Usage
 
-**Direct re-exports from `@proofa/components`:**
+**Direct re-exports from `@nube-auth/components`:**
 
-Selia components are now directly exported from `@proofa/components`. No wrapper layer needed - import and use them as-is:
+Selia components are now directly exported from `@nube-auth/components`. No wrapper layer needed - import and use them as-is:
 
 ```typescript
-// ✅ CORRECT - Import Selia components from @proofa/components
+// ✅ CORRECT - Import Selia components from @nube-auth/components
 import { 
   Button, 
   Dialog, 
@@ -270,7 +270,7 @@ import {
   Checkbox,
   Alert,
   Chip
-} from '@proofa/components';
+} from '@nube-auth/components';
 
 export function MyPage() {
   return (
@@ -301,19 +301,19 @@ import { Button } from '@/components/selia/ui/button'; // NO!
 
 **Adding new Selia components:**
 
-If you need a component not yet in `@proofa/components`:
+If you need a component not yet in `@nube-auth/components`:
 
 1. **Check Selia documentation**: https://github.com/nauvalazhar/selia
-2. **Add to @proofa/components**: `cd apps/packages/components && npx selia@latest add [component-name]`
-3. **Export from index.ts**: Add exports in `@proofa/components/src/index.ts`
-4. **Use in dashboards**: Import from `@proofa/components`
+2. **Add to @nube-auth/components**: `cd apps/packages/components && npx selia@latest add [component-name]`
+3. **Export from index.ts**: Add exports in `@nube-auth/components/src/index.ts`
+4. **Use in dashboards**: Import from `@nube-auth/components`
 
-**Specialized Proofa Components:**
+**Specialized Nube Auth Components:**
 
-For Proofa-specific composite components (built using Selia primitives):
+For Nube Auth-specific composite components (built using Selia primitives):
 - LoginCard, SessionCard, EmptyState, ProfileHeader, InfoGrid, InfoList, StatusDot
 
-These remain in `@proofa/components/src/components/ui/` and are exported alongside Selia components.
+These remain in `@nube-auth/components/src/components/ui/` and are exported alongside Selia components.
 
 ---
 
@@ -464,7 +464,7 @@ apps/dashboard/admin/src/
 ### Fetch Library
 **NEVER use native `fetch()` API.**
 
-- ✅ Use `pingpong` from `@proofa/auth` for all HTTP requests
+- ✅ Use `pingpong` from `@nube-auth/auth` for all HTTP requests
 - ✅ Works in both frontend (dashboards) and backend (services)
 - ✅ Auto-parsed JSON responses via `response.data` (v1.4.0+)
 - ✅ Convenience methods: `.ok()`, `.isError()`, `.redirected()`
@@ -481,7 +481,7 @@ const response = await fetch('/api/endpoint', {
 const json = await response.json();
 
 // ✅ CORRECT - pingpong with auto-parsed response.data
-import { pingpong } from '@proofa/auth';
+import { pingpong } from '@nube-auth/auth';
 
 const response = await pingpong('/api/endpoint', {
   method: 'POST',
@@ -535,7 +535,7 @@ headers: {
 ### Logging Standards
 **NEVER use `console.log`, `console.error`, or `console.warn`.**
 
-- ✅ Use structured logger from `@proofa/shared` (`createLogger()`)
+- ✅ Use structured logger from `@nube-auth/shared` (`createLogger()`)
 - ✅ Include context objects with error details
 - ✅ Use appropriate log levels (debug, info, warn, error)
 - ✅ Use `serializeError()` for Error objects
@@ -550,7 +550,7 @@ console.error("Failed to process payment:", error);
 console.log('Provider config:', config);
 
 // ✅ CORRECT
-import { createLogger, serializeError } from '@proofa/shared';
+import { createLogger, serializeError } from '@nube-auth/shared';
 const log = createLogger('payment-service');
 
 log.error({ 
@@ -614,7 +614,7 @@ try {
 
 // ✅ CORRECT
 // TODO(@devendra): Implement JWT validation with RS256
-// Tracking: https://github.com/0xdps/proofa-core/issues/42
+// Tracking: https://github.com/0xdps/nube-auth/issues/42
 // Security: Must verify signature and check expiry
 ```
 
@@ -652,7 +652,7 @@ See [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) for detailed guidelines on:
 
 1. **Exposing internal IDs**: Always use public_id in responses
 2. **Direct process.env access**: Always use config/env.ts
-3. **Direct database/Redis access**: Use @proofa/db and @proofa/cache wrappers
+3. **Direct database/Redis access**: Use @nube-auth/db and @nube-auth/cache wrappers
 4. **Read-modify-write JSONB**: Use atomic operations (buildJsonbMergeClause, etc.)
 5. **Logging credentials**: Always redact sensitive data
 6. **Forgetting dev mode**: Rate limits should be disabled in development

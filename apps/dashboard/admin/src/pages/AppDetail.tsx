@@ -16,7 +16,7 @@ import {
 	BreadcrumbList,
 	BreadcrumbItem,
 	BreadcrumbButton,
-} from "@proofa/components";
+} from "@nube-auth/components";
 
 export function AppDetailPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();

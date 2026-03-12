@@ -6,8 +6,8 @@ import {
 	planQueries,
 	priceQueries,
 	userQueries,
-} from "@proofa/db";
-import { createId, createLogger, idPatterns, serializeError } from "@proofa/shared";
+} from "@nube-auth/db";
+import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -21,7 +21,7 @@ const router = new Hono();
 
 router.get("/validate", async (c: Context) => {
 	const appId = c.req.query("appId");
-	const userPublicId = c.req.header("X-Proofa-User-Id");
+	const userPublicId = c.req.header("X-Nube-User-Id");
 
 	if (!userPublicId) {
 		return c.json({ error: "Unauthorized — missing user ID" }, 401);
@@ -151,7 +151,7 @@ const ActivateSchema = z.object({
 
 router.post("/activate", async (c: Context) => {
 	try {
-		const userPublicId = c.req.header("X-Proofa-User-Id");
+		const userPublicId = c.req.header("X-Nube-User-Id");
 		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
 
 		const body = await c.req.json();
@@ -266,7 +266,7 @@ const DeactivateSchema = z.object({
 
 router.post("/deactivate", async (c: Context) => {
 	try {
-		const userPublicId = c.req.header("X-Proofa-User-Id");
+		const userPublicId = c.req.header("X-Nube-User-Id");
 		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
 
 		const body = await c.req.json();

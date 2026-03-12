@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Icon, IconType, type IconTypeName, Label } from "@proofa/components";
+import { Icon, IconType, type IconTypeName, Label } from "@nube-auth/components";
 
 export interface IconOption {
 	id: string;

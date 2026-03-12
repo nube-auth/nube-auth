@@ -8,13 +8,13 @@
  * 4. Implements retry logic with exponential backoff
  */
 
-import { getDb, planQueries, appQueries, priceQueries } from "@proofa/db";
-import { prices, payment_provider_configs } from "@proofa/db/schema";
-import { eq } from "@proofa/db";
-import { createLogger, serializeError } from "@proofa/shared";
-import { QueueClient } from "@proofa/queue";
-import { createProviderAdapter } from "@proofa/core/billing/adapters/index";
-import { decryptString } from "@proofa/core/utils/encryption";
+import { getDb, planQueries, appQueries, priceQueries } from "@nube-auth/db";
+import { prices, payment_provider_configs } from "@nube-auth/db/schema";
+import { eq } from "@nube-auth/db";
+import { createLogger, serializeError } from "@nube-auth/shared";
+import { QueueClient } from "@nube-auth/queue";
+import { createProviderAdapter } from "@nube-auth/core/billing/adapters/index";
+import { decryptString } from "@nube-auth/core/utils/encryption";
 
 const log = createLogger("sync-plan-worker");
 

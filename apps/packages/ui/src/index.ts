@@ -1,7 +1,7 @@
 /**
- * @proofa/ui - Shared UI Component Library
+ * @nube-auth/ui - Shared UI Component Library
  * 
- * This package contains all reusable UI components used across Proofa dashboards.
+ * This package contains all reusable UI components used across Nube Auth dashboards.
  * Components are built with React and styled with Tailwind CSS.
  * 
  * Components will be added during Phase 2 (after Tailwind Plus subscription).

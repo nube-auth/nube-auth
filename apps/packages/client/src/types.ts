@@ -1,4 +1,4 @@
-export interface ProofaClientConfig {
+export interface NubeAuthClientConfig {
 	gatewayUrl: string;
 	/**
 	 * App public ID for license and subscription queries.
@@ -7,7 +7,7 @@ export interface ProofaClientConfig {
 	appId?: string | undefined;
 	/**
 	 * S2S token for backend service-to-service authentication.
-	 * If provided, it will be sent as X-Proofa-Service-Token header.
+	 * If provided, it will be sent as X-Nube-Service-Token header.
 	 * Leave undefined for frontend cookie-based authentication.
 	 */
 	s2sToken?: string | undefined;

@@ -1,5 +1,5 @@
-import { cache } from "@proofa/cache";
-import { createLogger } from "@proofa/shared";
+import { cache } from "@nube-auth/cache";
+import { createLogger } from "@nube-auth/shared";
 import type { Context, Next } from "hono";
 import { createMiddleware } from "hono/factory";
 import { env } from "../config/env";
@@ -64,9 +64,9 @@ export function rateLimitMiddleware(options: RateLimitOptions) {
 			const resetTime = Date.now() + ttl * 1000;
 
 			// Set rate limit headers
-			c.header("X-Proofa-RateLimit-Limit", maxRequests.toString());
-			c.header("X-Proofa-RateLimit-Remaining", Math.max(0, maxRequests - current).toString());
-			c.header("X-Proofa-RateLimit-Reset", resetTime.toString());
+			c.header("X-Nube-RateLimit-Limit", maxRequests.toString());
+			c.header("X-Nube-RateLimit-Remaining", Math.max(0, maxRequests - current).toString());
+			c.header("X-Nube-RateLimit-Reset", resetTime.toString());
 
 			// Check if limit exceeded
 			if (current > maxRequests) {

@@ -4,8 +4,8 @@
  * Handles all license state transitions with automatic license_history tracking
  */
 
-import { getDb, license_history, licenses, licenseQueries, eq } from "@proofa/db";
-import { id, createLogger, serializeError } from "@proofa/shared";
+import { getDb, license_history, licenses, licenseQueries, eq } from "@nube-auth/db";
+import { id, createLogger, serializeError } from "@nube-auth/shared";
 
 const log = createLogger("license-manager");
 

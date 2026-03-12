@@ -9,12 +9,12 @@
  */
 
 import { Worker, type Job } from "bullmq";
-import { QueueClient } from "@proofa/queue";
-import { createLogger, serializeError } from "@proofa/shared";
-import { getDb, eq, and, purchases, payment_transactions } from "@proofa/db";
-import { payment_provider_configs } from "@proofa/db/schema";
-import { createProviderAdapter } from "@proofa/core/billing/adapters/index";
-import { decryptString } from "@proofa/core/utils/encryption";
+import { QueueClient } from "@nube-auth/queue";
+import { createLogger, serializeError } from "@nube-auth/shared";
+import { getDb, eq, and, purchases, payment_transactions } from "@nube-auth/db";
+import { payment_provider_configs } from "@nube-auth/db/schema";
+import { createProviderAdapter } from "@nube-auth/core/billing/adapters/index";
+import { decryptString } from "@nube-auth/core/utils/encryption";
 
 const log = createLogger("process-refund-worker");
 

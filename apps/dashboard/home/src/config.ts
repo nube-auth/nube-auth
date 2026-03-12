@@ -2,7 +2,7 @@
 // For local development, set PUBLIC_DOCS_URL to localhost value
 
 export const config = {
-	docsUrl: import.meta.env.PUBLIC_DOCS_URL || "https://docs.proofa.com",
+	docsUrl: import.meta.env.PUBLIC_DOCS_URL || "https://docs.nubeauth.com",
 };
 
 export default config;

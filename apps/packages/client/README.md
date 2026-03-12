@@ -1,11 +1,11 @@
-# @proofa/client
+# @nube-auth/client
 
-Proofa API client for TypeScript/JavaScript applications.
+Nube Auth API client for TypeScript/JavaScript applications.
 
 ## Installation
 
 ```bash
-pnpm add @proofa/client
+pnpm add @nube-auth/client
 ```
 
 ## Usage
@@ -15,10 +15,10 @@ pnpm add @proofa/client
 For frontend applications, the client uses cookies automatically:
 
 ```typescript
-import { ProofaClient } from '@proofa/client';
+import { NubeAuthClient } from '@nube-auth/client';
 
-const client = new ProofaClient({
-  gatewayUrl: 'https://api.proofa.sh',
+const client = new NubeAuthClient({
+  gatewayUrl: 'https://api.nubeauth.com',
   appId: 'APP0abc123', // Required for license/subscription APIs
 });
 
@@ -42,15 +42,15 @@ await client.auth.logout();
 For backend services, provide an S2S token for service-to-service authentication:
 
 ```typescript
-import { ProofaClient } from '@proofa/client';
+import { NubeAuthClient } from '@nube-auth/client';
 
-const client = new ProofaClient({
+const client = new NubeAuthClient({
   gatewayUrl: process.env.GATEWAY_URL,
-  s2sToken: process.env.X_PROOFA_SERVICE_TOKEN,
+  s2sToken: process.env.X_NUBE_AUTH_SERVICE_TOKEN,
   appId: 'APP0abc123',
 });
 
-// All requests will include X-Proofa-Service-Token header
+// All requests will include X-Nube-Service-Token header
 const user = await client.me.get();
 ```
 

@@ -5,7 +5,7 @@
  * re-enqueues them to the billing queue for processing.
  */
 
-import { QueueClient } from "@proofa/queue";
+import { QueueClient } from "@nube-auth/queue";
 import {
 	and,
 	asc,
@@ -15,8 +15,8 @@ import {
 	lte,
 	sql,
 	webhook_logs,
-} from "@proofa/db";
-import { createLogger, serializeError } from "@proofa/shared";
+} from "@nube-auth/db";
+import { createLogger, serializeError } from "@nube-auth/shared";
 
 const log = createLogger("webhook-rescue-cron");
 

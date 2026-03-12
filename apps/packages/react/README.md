@@ -1,29 +1,29 @@
-# @proofa/react
+# @nube-auth/react
 
-React hooks and components for Proofa authentication and user management.
+React hooks and components for Nube Auth authentication and user management.
 
 ## Installation
 
 ```bash
-pnpm add @proofa/react
+pnpm add @nube-auth/react
 ```
 
 ## Setup
 
-Wrap your app with `ProofaProvider`:
+Wrap your app with `NubeAuthProvider`:
 
 ```tsx
-import { ProofaProvider } from '@proofa/react';
+import { NubeAuthProvider } from '@nube-auth/react';
 
 function App() {
   return (
-    <ProofaProvider
+    <NubeAuthProvider
       config={{
-        gatewayUrl: 'https://api.proofa.sh'
+        gatewayUrl: 'https://api.nubeauth.com'
       }}
     >
       <YourApp />
-    </ProofaProvider>
+    </NubeAuthProvider>
   );
 }
 ```
@@ -35,7 +35,7 @@ function App() {
 Check authentication status and logout:
 
 ```tsx
-import { useAuth } from '@proofa/react';
+import { useAuth } from '@nube-auth/react';
 
 function Header() {
   const { isAuthenticated, user, logout, isLoading } = useAuth();
@@ -62,7 +62,7 @@ function Header() {
 Get and update current user profile:
 
 ```tsx
-import { useMe } from '@proofa/react';
+import { useMe } from '@nube-auth/react';
 
 function Profile() {
   const { user, isLoading, update, isUpdating } = useMe();
@@ -90,7 +90,7 @@ function Profile() {
 Manage user sessions:
 
 ```tsx
-import { useSessions } from '@proofa/react';
+import { useSessions } from '@nube-auth/react';
 
 function Sessions() {
   const { sessions, isLoading, deleteSession, deleteAll } = useSessions();
@@ -120,7 +120,7 @@ If you want to provide your own React Query client:
 
 ```tsx
 import { QueryClient } from '@tanstack/react-query';
-import { ProofaProvider } from '@proofa/react';
+import { NubeAuthProvider } from '@nube-auth/react';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -132,12 +132,12 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <ProofaProvider
-      config={{ gatewayUrl: 'https://api.proofa.sh' }}
+    <NubeAuthProvider
+      config={{ gatewayUrl: 'https://api.nubeauth.com' }}
       queryClient={queryClient}
     >
       <YourApp />
-    </ProofaProvider>
+    </NubeAuthProvider>
   );
 }
 ```
@@ -147,18 +147,18 @@ function App() {
 For backend/SSR usage with S2S token:
 
 ```tsx
-import { ProofaProvider } from '@proofa/react';
+import { NubeAuthProvider } from '@nube-auth/react';
 
 function App() {
   return (
-    <ProofaProvider
+    <NubeAuthProvider
       config={{
         gatewayUrl: process.env.GATEWAY_URL,
-        s2sToken: process.env.X_PROOFA_SERVICE_TOKEN
+        s2sToken: process.env.X_NUBE_AUTH_SERVICE_TOKEN
       }}
     >
       <YourApp />
-    </ProofaProvider>
+    </NubeAuthProvider>
   );
 }
 ```
@@ -178,7 +178,7 @@ import {
   FlutterLogo,
   NodeJsLogo,
   TailwindLogo,
-} from '@proofa/react';
+} from '@nube-auth/react';
 
 function LoginButtons() {
   return (

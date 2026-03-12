@@ -1,7 +1,7 @@
 /**
  * Test Dodo API Credentials
  * 
- * Run with: cd /Users/devendrapratapsingh/personal/proofa-core && node --no-warnings --loader ./node_modules/.pnpm/@esbuild-kit+esm-loader@2.6.5/node_modules/@esbuild-kit/esm-loader/loader.js scripts/test-dodo-api.mjs
+ * Run with: cd /Users/devendrapratapsingh/personal/nube-auth && node --no-warnings --loader ./node_modules/.pnpm/@esbuild-kit+esm-loader@2.6.5/node_modules/@esbuild-kit/esm-loader/loader.js scripts/test-dodo-api.mjs
  * Or simpler: cd apps/services/core && node ../../../scripts/test-dodo-api.mjs
  */
 
@@ -67,8 +67,8 @@ async function testDodoAPI() {
 		console.log('----------------------------');
 		try {
 			const testProduct = await client.products.create({
-				name: 'Test Plan - Proofa',
-				description: 'Test product for Proofa integration',
+				name: 'Test Plan - Nube Auth',
+				description: 'Test product for Nube Auth integration',
 				price: {
 					currency: 'USD',
 					discount: 0,

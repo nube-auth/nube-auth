@@ -6,11 +6,11 @@
  */
 
 import { Hono } from "hono";
-import { createId } from "@proofa/shared";
-import { getDb, routingRuleQueries, paymentProviderConfigQueries } from "@proofa/db";
+import { createId } from "@nube-auth/shared";
+import { getDb, routingRuleQueries, paymentProviderConfigQueries } from "@nube-auth/db";
 import { z } from "zod";
 import { selectProvider, type SelectionContext } from "../../../billing/services/provider-selector.js";
-import { createLogger, serializeError } from "@proofa/shared";
+import { createLogger, serializeError } from "@nube-auth/shared";
 
 const log = createLogger("routing-rules-admin");
 

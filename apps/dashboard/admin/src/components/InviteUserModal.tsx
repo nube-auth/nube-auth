@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Icon, IconType, Input, Textarea, Button, Checkbox, Label, Dialog, DialogPopup, DialogHeader, DialogTitle, DialogBody, DialogFooter, Alert, Heading, Text } from "@proofa/components";
+import { Icon, IconType, Input, Textarea, Button, Checkbox, Label, Dialog, DialogPopup, DialogHeader, DialogTitle, DialogBody, DialogFooter, Alert, Heading, Text } from "@nube-auth/components";
 
 import { Select } from "./Select";
 import config from "../config";

@@ -1,6 +1,6 @@
-# @proofa/cache
+# @nube-auth/cache
 
-**Redis Client & Utilities for Proofa Platform**
+**Redis Client & Utilities for Nube Auth Platform**
 
 Type-safe Redis client with helpers for caching, rate limiting, and session storage.
 
@@ -21,7 +21,7 @@ Type-safe Redis client with helpers for caching, rate limiting, and session stor
 ## Installation
 
 ```bash
-pnpm add @proofa/cache
+pnpm add @nube-auth/cache
 ```
 
 ---
@@ -31,7 +31,7 @@ pnpm add @proofa/cache
 ### Basic Operations
 
 ```typescript
-import { cache, rateLimit, sessionStore } from "@proofa/cache";
+import { cache, rateLimit, sessionStore } from "@nube-auth/cache";
 
 // Cache operations
 await cache.set("user:123", userData, 300); // 5 minutes TTL
@@ -277,7 +277,7 @@ pnpm typecheck
 ## Testing
 
 ```typescript
-import { cache, rateLimit } from "@proofa/cache";
+import { cache, rateLimit } from "@nube-auth/cache";
 
 describe("Cache Operations", () => {
   it("sets and gets values", async () => {

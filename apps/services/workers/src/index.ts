@@ -9,7 +9,7 @@
  * - Sets up SYNC_PLAN worker
  */
 
-import { createLogger } from "@proofa/shared";
+import { createLogger } from "@nube-auth/shared";
 import type { Worker } from "bullmq";
 import { setupProcessPaymentWorker } from "./process-payment.js";
 import { setupProcessWebhookWorker } from "./process-webhook.js";

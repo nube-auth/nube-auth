@@ -1,5 +1,5 @@
 /**
- * Environment loader for Proofa
+ * Environment loader for Nube Auth
  * Loads .env first, then .env.local to allow local overrides
  */
 

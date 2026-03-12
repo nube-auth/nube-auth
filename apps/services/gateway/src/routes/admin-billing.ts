@@ -4,7 +4,7 @@
  */
 
 import { Hono } from "hono";
-import { createLogger } from "@proofa/shared";
+import { createLogger } from "@nube-auth/shared";
 
 const log = createLogger("admin-billing-routes");
 

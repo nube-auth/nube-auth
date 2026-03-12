@@ -1,22 +1,22 @@
 /**
- * Example usage of @proofa/client
+ * Example usage of @nube-auth/client
  *
- * This file demonstrates how to use the Proofa client in your applications.
+ * This file demonstrates how to use the Nube Auth client in your applications.
  */
 
-import { ProofaClient } from "./src/index";
+import { NubeAuthClient } from "./src/index";
 
 // Frontend usage (cookie-based authentication)
-const client = new ProofaClient({
-	gatewayUrl: "https://api.proofa.sh",
+const client = new NubeAuthClient({
+	gatewayUrl: "https://api.nubeauth.com",
 	// For local development:
 	// gatewayUrl: 'http://localhost:3004'
 });
 
 // Backend usage (S2S token authentication)
-const _backendClient = new ProofaClient({
-	gatewayUrl: process.env.GATEWAY_URL || "https://api.proofa.sh",
-	s2sToken: process.env.X_PROOFA_SERVICE_TOKEN,
+const _backendClient = new NubeAuthClient({
+	gatewayUrl: process.env.GATEWAY_URL || "https://api.nubeauth.com",
+	s2sToken: process.env.X_NUBE_AUTH_SERVICE_TOKEN,
 });
 
 // ============================================
@@ -117,14 +117,14 @@ async function _logoutAllSessions() {
 // ERROR HANDLING
 // ============================================
 
-import { ProofaError } from "./src/index";
+import { NubeAuthError } from "./src/index";
 
 async function _handleErrors() {
 	try {
 		await client.me.get();
 	} catch (error) {
-		if (error instanceof ProofaError) {
-			console.error("Proofa API Error:", {
+		if (error instanceof NubeAuthError) {
+			console.error("Nube Auth API Error:", {
 				code: error.code,
 				message: error.message,
 				status: error.status,
@@ -149,14 +149,14 @@ async function _handleErrors() {
 // ============================================
 
 /**
- * Example React hooks using @proofa/client with TanStack Query
+ * Example React hooks using @nube-auth/client with TanStack Query
  */
 
 /*
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ProofaClient } from '@proofa/client';
+import { NubeAuthClient } from '@nube-auth/client';
 
-const client = new ProofaClient({
+const client = new NubeAuthClient({
   gatewayUrl: import.meta.env.VITE_GATEWAY_URL || 'http://localhost:3004'
 });
 
@@ -215,23 +215,23 @@ export function useCreateProject() {
 // ============================================
 
 /**
- * For React applications, use the @proofa/react package instead!
+ * For React applications, use the @nube-auth/react package instead!
  * It provides ready-to-use hooks with built-in React Query integration.
  *
- * Install: pnpm add @proofa/react
+ * Install: pnpm add @nube-auth/react
  *
  * Example usage:
  */
 
 /*
-import { ProofaProvider, useAuth, useMe, useSessions } from '@proofa/react';
+import { NubeAuthProvider, useAuth, useMe, useSessions } from '@nube-auth/react';
 
-// 1. Wrap your app with ProofaProvider
+// 1. Wrap your app with NubeAuthProvider
 function App() {
   return (
-    <ProofaProvider config={{ gatewayUrl: 'https://api.proofa.sh' }}>
+    <NubeAuthProvider config={{ gatewayUrl: 'https://api.nubeauth.com' }}>
       <YourApp />
-    </ProofaProvider>
+    </NubeAuthProvider>
   );
 }
 
@@ -293,7 +293,7 @@ function Header() {
 // ============================================
 
 /**
- * Admin operations (projects, apps, licenses) are not included in @proofa/client.
+ * Admin operations (projects, apps, licenses) are not included in @nube-auth/client.
  * Admin dashboards should call the Gateway API directly using fetch or your HTTP client.
  *
  * Example:
@@ -302,7 +302,7 @@ function Header() {
 /*
 // Create project (admin only)
 async function createProject(data: { name: string; slug: string }) {
-  const response = await fetch('https://api.proofa.sh/v1/admin/projects', {
+  const response = await fetch('https://api.nubeauth.com/v1/admin/projects', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -318,7 +318,7 @@ async function createProject(data: { name: string; slug: string }) {
 
 // List projects (admin only)
 async function listProjects() {
-  const response = await fetch('https://api.proofa.sh/v1/admin/projects', {
+  const response = await fetch('https://api.nubeauth.com/v1/admin/projects', {
     credentials: 'include',
   });
   

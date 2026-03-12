@@ -21,7 +21,7 @@ import {
 	TabsList,
 	TabsPanel,
 	Text,
-} from "@proofa/components";
+} from "@nube-auth/components";
 
 export function BillingDashboardPage() {
 	const [dateRange, setDateRange] = useState<{ start?: string; end?: string }>({});

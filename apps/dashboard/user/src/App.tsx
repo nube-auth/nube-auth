@@ -1,6 +1,6 @@
 import type React from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
-import { Spinner, useTheme, ThemeToggle, Button, Icon, IconType } from "@proofa/components";
+import { Spinner, useTheme, ThemeToggle, Button, Icon, IconType } from "@nube-auth/components";
 import { config } from "./config";
 import { useAuth } from "./hooks/api";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -48,8 +48,8 @@ function ProtectedLayout({
 			<header className="top-header">
 				<div className="header-left">
 					<Link to="/profile" className="header-logo">
-						<img src="/favicon.png" alt="Proofa" className="header-logo-img" />
-						<span className="header-logo-text">Proofa</span>
+						<img src="/favicon.png" alt="Nube Auth" className="header-logo-img" />
+						<span className="header-logo-text">Nube Auth</span>
 						<span className="header-beta-badge">Beta</span>
 					</Link>
 				</div>

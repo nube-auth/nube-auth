@@ -1,7 +1,7 @@
 {
-  "name": "@proofa/components",
+  "name": "@nube-auth/components",
   "version": "0.1.0",
-  "description": "Shared components, styles, and design system for Proofa dashboards and applications",
+  "description": "Shared components, styles, and design system for Nube Auth dashboards and applications",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -1,14 +1,14 @@
-/* Proofa VitePress Theme - Custom Styles */
+/* Nube Auth VitePress Theme - Custom Styles */
 
-/* Import existing Proofa theme variables */
-@import '@proofa/components/styles/theme.css';
+/* Import existing Nube Auth theme variables */
+@import '@nube-auth/components/styles/theme.css';
 
 /* ==========================================================================
-   VitePress Variable Overrides - Map to Proofa theme
+   VitePress Variable Overrides - Map to Nube Auth theme
    ========================================================================== */
 
 :root {
-	/* Brand colors - Indigo theme matching Proofa dashboards */
+	/* Brand colors - Indigo theme matching Nube Auth dashboards */
 	--vp-c-brand-1: #6366f1;
 	--vp-c-brand-2: #818cf8;
 	--vp-c-brand-3: #4f46e5;
@@ -46,7 +46,7 @@
 	--vp-button-brand-hover-bg: linear-gradient(135deg, #4f46e5, #4338ca);
 	--vp-button-brand-text: #ffffff;
 	
-	/* Fonts - Match Proofa dashboards */
+	/* Fonts - Match Nube Auth dashboards */
 	--vp-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 	--vp-font-family-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
 	

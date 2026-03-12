@@ -1,4 +1,4 @@
-import { createLogger as createSharedLogger, serializeError } from "@proofa/shared";
+import { createLogger as createSharedLogger, serializeError } from "@nube-auth/shared";
 
 /**
  * Create a logger instance for a specific module
@@ -39,5 +39,5 @@ export const loggers = {
 /**
  * Audit logger for security-sensitive operations
  */
-import { createAuditLogger } from "@proofa/shared";
+import { createAuditLogger } from "@nube-auth/shared";
 export const auditLogger = createAuditLogger(createSharedLogger("audit"));

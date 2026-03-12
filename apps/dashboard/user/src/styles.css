@@ -5,13 +5,13 @@
 @source "../../../packages/components/src";
 
 /* Import Selia utilities */
-@import "@proofa/components/styles/selia.css";
+@import "@nube-auth/components/styles/selia.css";
 
 /* Import Selia theme defaults */
-/* @import "@proofa/components/selia-theme.css"; */
+/* @import "@nube-auth/components/selia-theme.css"; */
 
-/* Import Proofa brand theme overrides */
-@import "@proofa/components/theme.css";
+/* Import Nube Auth brand theme overrides */
+@import "@nube-auth/components/theme.css";
 
 /* Tailwind v4 - Map CSS variables to utility classes using @theme */
 @theme {

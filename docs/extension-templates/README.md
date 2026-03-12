@@ -6,7 +6,7 @@ These files are ready to use in your `pinboard-gpt-extension` project.
 
 1. **Copy these files to your extension folder**:
    ```bash
-   # From proofa-core/docs/extension-templates/
+   # From nube-auth/docs/extension-templates/
    cp manifest.json ../../../pinboard-gpt-extension/
    cp background.js ../../../pinboard-gpt-extension/
    cp popup.html ../../../pinboard-gpt-extension/popup/
@@ -24,8 +24,8 @@ These files are ready to use in your `pinboard-gpt-extension` project.
    - `icon48.png` (48x48)
    - `icon128.png` (128x128)
 
-4. **Update Proofa app configuration**:
-   - Go to Proofa Admin Dashboard
+4. **Update Nube Auth app configuration**:
+   - Go to Nube Auth Admin Dashboard
    - Update allowed_hosts: `["pinboardgpt.app", "www.pinboardgpt.app"]`
    - Update redirect_uris: `["https://pinboardgpt.app/auth/callback"]`
 
@@ -46,14 +46,14 @@ Update `manifest.json` to include localhost:
 "host_permissions": [
   "https://pinboardgpt.app/*",
   "http://localhost:3000/*",
-  "https://api.proofa.sh/*"
+  "https://api.nubeauth.com/*"
 ]
 ```
 
 And in `background.js`:
 ```javascript
 const CONFIG = {
-  GATEWAY_URL: 'https://api.proofa.sh',
+  GATEWAY_URL: 'https://api.nubeauth.com',
   HOMEPAGE_URL: 'http://localhost:3000', // For testing
   // ...
 };
@@ -80,7 +80,7 @@ pinboard-gpt-extension/
 ## Key Features Implemented
 
 ### Background Script (`background.js`)
-- ✅ Fetches user data from Proofa Gateway
+- ✅ Fetches user data from Nube Auth Gateway
 - ✅ Caches data for 5 minutes
 - ✅ Monitors auth callback URLs
 - ✅ Handles login/logout
@@ -100,7 +100,7 @@ All configuration is in `background.js`:
 
 ```javascript
 const CONFIG = {
-  GATEWAY_URL: 'https://api.proofa.sh',
+  GATEWAY_URL: 'https://api.nubeauth.com',
   HOMEPAGE_URL: 'https://pinboardgpt.app',
   APP_ID: 'pinboardgpt',
   COOKIE_NAME: 'pp_app_session',
@@ -113,14 +113,14 @@ const CONFIG = {
 1. **Homepage Integration**: Implement auth pages on pinboardgpt.app
    - See `BROWSER_EXTENSION_INTEGRATION.md` for homepage code
 
-2. **Create Proofa App**: Set up app in Proofa Admin Dashboard
+2. **Create Nube Auth App**: Set up app in Nube Auth Admin Dashboard
    - Get App ID and configure domains
 
 3. **Test Flow**:
    - Install extension → Click Login
    - Opens pinboardgpt.app/auth/login
    - Select OAuth provider (Google/GitHub)
-   - Redirect to Proofa → Authenticate
+   - Redirect to Nube Auth → Authenticate
    - Callback to pinboardgpt.app/auth/callback
    - Extension popup shows user profile
 
@@ -142,7 +142,7 @@ const CONFIG = {
 3. Check console logs in background script (chrome://extensions → Details → Inspect service worker)
 
 ### Login doesn't work
-**Solution**: Verify redirect_uri is allowlisted in Proofa app config
+**Solution**: Verify redirect_uri is allowlisted in Nube Auth app config
 
 ### Popup shows error
 **Solution**: Open DevTools for popup (right-click popup → Inspect) and check console
@@ -151,5 +151,5 @@ const CONFIG = {
 
 For questions or issues:
 - Check `BROWSER_EXTENSION_INTEGRATION.md` for full guide
-- Review Proofa documentation
+- Review Nube Auth documentation
 - Contact dev@pinboardgpt.app

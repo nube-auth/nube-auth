@@ -1,9 +1,9 @@
-import type { UpdateProfileData, User } from "@proofa/client";
+import type { UpdateProfileData, User } from "@nube-auth/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useProofaContext } from "./ProofaProvider";
+import { useNubeAuthContext } from "./NubeAuthProvider";
 
 export function useMe() {
-	const { client } = useProofaContext();
+	const { client } = useNubeAuthContext();
 	const queryClient = useQueryClient();
 
 	const {

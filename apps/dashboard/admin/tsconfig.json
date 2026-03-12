@@ -15,21 +15,21 @@
 			// Utilities
 			"@/lib": ["./src/lib"],
 			"@/lib/*": ["./src/lib/*"],
-			// Proofa packages
-			"@proofa/auth": ["../../packages/auth/src"],
-			"@proofa/auth/*": ["../../packages/auth/src/*"],
-			"@proofa/cache": ["../../packages/cache/src"],
-			"@proofa/cache/*": ["../../packages/cache/src/*"],
-			"@proofa/client": ["../../packages/client/src"],
-			"@proofa/client/*": ["../../packages/client/src/*"],
-			"@proofa/db": ["../../packages/db/src"],
-			"@proofa/db/*": ["../../packages/db/src/*"],
-			"@proofa/queue": ["../../packages/queue/src"],
-			"@proofa/queue/*": ["../../packages/queue/src/*"],
-			"@proofa/react": ["../../packages/react/src"],
-			"@proofa/react/*": ["../../packages/react/src/*"],
-			"@proofa/shared": ["../../packages/shared/src"],
-			"@proofa/shared/*": ["../../packages/shared/src/*"]
+			// Nube Auth packages
+			"@nube-auth/auth": ["../../packages/auth/src"],
+			"@nube-auth/auth/*": ["../../packages/auth/src/*"],
+			"@nube-auth/cache": ["../../packages/cache/src"],
+			"@nube-auth/cache/*": ["../../packages/cache/src/*"],
+			"@nube-auth/client": ["../../packages/client/src"],
+			"@nube-auth/client/*": ["../../packages/client/src/*"],
+			"@nube-auth/db": ["../../packages/db/src"],
+			"@nube-auth/db/*": ["../../packages/db/src/*"],
+			"@nube-auth/queue": ["../../packages/queue/src"],
+			"@nube-auth/queue/*": ["../../packages/queue/src/*"],
+			"@nube-auth/react": ["../../packages/react/src"],
+			"@nube-auth/react/*": ["../../packages/react/src/*"],
+			"@nube-auth/shared": ["../../packages/shared/src"],
+			"@nube-auth/shared/*": ["../../packages/shared/src/*"]
 		},
 
 		/* Strict mode */

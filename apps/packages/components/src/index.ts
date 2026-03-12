@@ -1,10 +1,10 @@
 /**
- * @proofa/components - Shared Design System and Component Library
+ * @nube-auth/components - Shared Design System and Component Library
  *
  * This package contains:
  * - Selia UI components (base design system)
  * - Unified icon system (single IconType registry for all icons)
- * - Reusable React components used across Proofa dashboards
+ * - Reusable React components used across Nube Auth dashboards
  * - Style configuration (Tailwind, CSS files)
  * - Design tokens and theming
  */
@@ -44,9 +44,9 @@ export type { Theme } from './hooks/useTheme';
 export { cn } from './lib/cn';
 
 // ============================================================================
-// PROOFA COMPOSITE COMPONENTS (Built on Selia)
+// NUBE_AUTH COMPOSITE COMPONENTS (Built on Selia)
 // ============================================================================
-// These are Proofa-specific components built using Selia primitives
+// These are Nube Auth-specific components built using Selia primitives
 
 // Forms
 export { FormGroup, FormLabel, FormInput, FormHint } from './components/forms/form-group';

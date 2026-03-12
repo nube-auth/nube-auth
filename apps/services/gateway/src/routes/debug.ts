@@ -3,12 +3,12 @@
  * Only for development - helps troubleshoot authentication issues
  */
 
-import { createLogger } from "@proofa/shared";
+import { createLogger } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { getCookie } from "hono/cookie";
-import { sessionStore } from "@proofa/cache";
-import { parseSessionCookie } from "@proofa/auth";
+import { sessionStore } from "@nube-auth/cache";
+import { parseSessionCookie } from "@nube-auth/auth";
 
 const log = createLogger("debug-routes");
 
@@ -31,9 +31,9 @@ debugRoutes.get("/cookies", (c: Context) => {
 	});
 
 	// Also try to get specific cookies with getCookie
-	const adminSession = getCookie(c, "proofa_admin_session");
-	const userSession = getCookie(c, "proofa_user_session");
-	const csrfToken = getCookie(c, "proofa_csrf_token");
+	const adminSession = getCookie(c, "nube_admin_session");
+	const userSession = getCookie(c, "nube_user_session");
+	const csrfToken = getCookie(c, "nube_csrf_token");
 
 	return c.json({
 		"Cookie header": cookieHeader,
@@ -190,8 +190,8 @@ debugRoutes.get("/test-getcookie", (c: Context) => {
 	const rawCookieHeader = c.req.header("cookie") || "";
 	
 	// Try to get with getCookie
-	const adminSessionFromGetCookie = getCookie(c, "proofa_admin_session");
-	const userSessionFromGetCookie = getCookie(c, "proofa_user_session");
+	const adminSessionFromGetCookie = getCookie(c, "nube_admin_session");
+	const userSessionFromGetCookie = getCookie(c, "nube_user_session");
 	
 	// Manual parsing
 	const cookies: Record<string, string> = {};
@@ -209,8 +209,8 @@ debugRoutes.get("/test-getcookie", (c: Context) => {
 			userSession: userSessionFromGetCookie ? `${userSessionFromGetCookie.substring(0, 20)}...` : null,
 		},
 		manualParsing: {
-			proofa_admin_session: cookies["proofa_admin_session"] ? `${cookies["proofa_admin_session"].substring(0, 20)}...` : null,
-			proofa_user_session: cookies["proofa_user_session"] ? `${cookies["proofa_user_session"].substring(0, 20)}...` : null,
+			nube_admin_session: cookies["nube_admin_session"] ? `${cookies["nube_admin_session"].substring(0, 20)}...` : null,
+			nube_user_session: cookies["nube_user_session"] ? `${cookies["nube_user_session"].substring(0, 20)}...` : null,
 		},
 	});
 });

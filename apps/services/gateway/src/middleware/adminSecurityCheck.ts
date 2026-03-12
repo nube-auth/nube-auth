@@ -1,4 +1,4 @@
-import { createLogger, serializeError } from "@proofa/shared";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Context, Next } from "hono";
 import { createMiddleware } from "hono/factory";
 
@@ -53,8 +53,8 @@ export const adminSecurityCheck = createMiddleware(async (c: Context, next: Next
 		// 2. Validate Origin/Referer matches expected admin domains
 		const allowedDomains = [
 			"http://localhost:5174", // Local admin dashboard
-			"https://manage.proofa.sh", // Production admin dashboard
-			"https://admin.proofa.sh", // Alternative admin domain
+			"https://manage.nubeauth.com", // Production admin dashboard
+			"https://admin.nubeauth.com", // Alternative admin domain
 		];
 
 		const requestOrigin = origin || referer || "";

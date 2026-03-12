@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: 'Proofa',
+  title: 'Nube Auth',
   description: 'Authentication, session management, and licensing for modern applications',
   head: [
     ['link', { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],

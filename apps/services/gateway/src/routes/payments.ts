@@ -6,8 +6,8 @@
  */
 
 import { Hono } from "hono";
-import { pingpong } from "@proofa/auth";
-import { createLogger, serializeError } from "@proofa/shared";
+import { pingpong } from "@nube-auth/auth";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { env } from "../config/env";
@@ -30,7 +30,7 @@ paymentsRoutes.post("/webhooks/:provider", async (c: Context) => {
 		// Forward all relevant headers for signature verification
 		const forwardHeaders: Record<string, string> = {
 			"Content-Type": c.req.header("content-type") || "application/json",
-			"X-Proofa-S2S-Token": env.S2S_SECRET,
+			"X-Nube-S2S-Token": env.S2S_SECRET,
 		};
 
 		// Forward provider-specific signature headers
@@ -76,9 +76,9 @@ paymentsRoutes.all("/*", async (c: Context) => {
 
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
-			"X-Proofa-S2S-Token": env.S2S_SECRET,
-			"X-Proofa-User-Id": auth.userId,
-			"X-Proofa-Session-Id": auth.coreSessionId || "",
+			"X-Nube-S2S-Token": env.S2S_SECRET,
+			"X-Nube-User-Id": auth.userId,
+			"X-Nube-Session-Id": auth.coreSessionId || "",
 		};
 
 		let body: unknown;

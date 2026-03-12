@@ -1,12 +1,12 @@
 # Payment System Guide
 
-Complete guide for payment integration and subscription management in Proofa.
+Complete guide for payment integration and subscription management in Nube Auth.
 
 ---
 
 ## Overview
 
-The Proofa payment system handles subscription management and one-time payments across multiple payment providers using a routing-first architecture.
+The Nube Auth payment system handles subscription management and one-time payments across multiple payment providers using a routing-first architecture.
 
 ### Supported Providers
 
@@ -20,7 +20,7 @@ The Proofa payment system handles subscription management and one-time payments 
 2. **Routing-First**: Context-aware provider selection
 3. **Multi-Provider**: Apps can use different providers
 4. **Webhook-Driven**: Automatic license updates on payment events
-5. **Single Source of Truth**: Proofa controls access, providers control payment state
+5. **Single Source of Truth**: Nube Auth controls access, providers control payment state
 
 ---
 

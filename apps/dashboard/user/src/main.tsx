@@ -1,4 +1,4 @@
-import { ProofaProvider } from "@proofa/react";
+import { NubeAuthProvider } from "@nube-auth/react";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
@@ -8,8 +8,8 @@ import { config } from "./config";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
 	<React.StrictMode>
-		<ProofaProvider config={{ gatewayUrl: config.gatewayUrl }}>
+		<NubeAuthProvider config={{ gatewayUrl: config.gatewayUrl }}>
 			<App />
-		</ProofaProvider>
+		</NubeAuthProvider>
 	</React.StrictMode>,
 );

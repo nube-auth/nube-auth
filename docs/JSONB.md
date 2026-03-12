@@ -2,7 +2,7 @@
 
 **Status**: FINAL  
 **Last Updated**: January 2026  
-**Scope**: All JSONB column updates in Proofa Core
+**Scope**: All JSONB column updates in Nube Auth
 
 > **Quick Start**: Jump to [Quick Reference](#quick-reference) for copy-paste patterns
 
@@ -111,10 +111,10 @@ import {
   buildJsonbSetClause,
   createJsonbUpdateChain,
   jsonbField,
-} from "@proofa/db";
+} from "@nube-auth/db";
 
 // Or use pre-built query helpers (recommended)
-import { appQueries } from "@proofa/db";
+import { appQueries } from "@nube-auth/db";
 await appQueries.updateSecuritySettings(db, appId, updates);
 await appQueries.updateAppTokens(db, appId, updates);
 ```
@@ -644,7 +644,7 @@ A: 9.5+ (basic), 14+ recommended.
 
 ## Sign-Off
 
-This document represents a committed approach to JSONB updates across Proofa Core.
+This document represents a committed approach to JSONB updates across Nube Auth.
 
 - **Approved**: Engineering Leadership
 - **Implementation**: All teams

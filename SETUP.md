@@ -1,6 +1,6 @@
 # Setup & Development Guide
 
-Complete guide for setting up and running Proofa locally.
+Complete guide for setting up and running Nube Auth locally.
 
 ---
 
@@ -16,8 +16,8 @@ Complete guide for setting up and running Proofa locally.
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/0xdps/proofa-core.git
-cd proofa-core
+git clone https://github.com/0xdps/nube-auth.git
+cd nube-auth
 pnpm install
 
 # 2. Start infrastructure (PostgreSQL + Redis)
@@ -71,7 +71,7 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 
 ```bash
 # Database
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/proofa"
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/nube-auth"
 
 # Redis
 REDIS_URL="redis://localhost:6379"
@@ -85,7 +85,7 @@ CORE_API_URL="http://localhost:3003"
 GATEWAY_API_URL="http://localhost:3004"
 
 # Service-to-Service Authentication
-X_PROOFA_SERVICE_TOKEN="<32+ char token>"
+X_NUBE_AUTH_SERVICE_TOKEN="<32+ char token>"
 
 # Session Configuration
 # Users: 365 days rolling
@@ -142,10 +142,10 @@ cd ../..
 pnpm build:packages
 
 # Or build individually
-pnpm --filter @proofa/db build
-pnpm --filter @proofa/cache build
-pnpm --filter @proofa/shared build
-pnpm --filter @proofa/auth build
+pnpm --filter @nube-auth/db build
+pnpm --filter @nube-auth/cache build
+pnpm --filter @nube-auth/shared build
+pnpm --filter @nube-auth/auth build
 ```
 
 ### 5. Start Development
@@ -172,10 +172,10 @@ pnpm dev:user        # User dashboard only
 pnpm dev
 
 # Specific service
-pnpm --filter @proofa/gateway dev
-pnpm --filter @proofa/core dev
-pnpm --filter @proofa/dashboard-admin dev
-pnpm --filter @proofa/dashboard-user dev
+pnpm --filter @nube-auth/gateway dev
+pnpm --filter @nube-auth/core dev
+pnpm --filter @nube-auth/dashboard-admin dev
+pnpm --filter @nube-auth/dashboard-user dev
 ```
 
 ### Database Operations
@@ -208,7 +208,7 @@ pnpm build
 pnpm build:packages
 
 # Build specific package
-pnpm --filter @proofa/db build
+pnpm --filter @nube-auth/db build
 ```
 
 ### Testing
@@ -245,7 +245,7 @@ pnpm typecheck
 ## Project Structure
 
 ```
-proofa-core/
+nube-auth/
 ├── apps/
 │   ├── services/
 │   │   ├── gateway/          # API Gateway (Hono)
@@ -280,7 +280,7 @@ proofa-core/
 3. Export from `packages/db/src/index.ts`
 4. Generate migration: `pnpm drizzle-kit generate`
 5. Run migration: `pnpm db:push`
-6. Rebuild: `pnpm --filter @proofa/db build`
+6. Rebuild: `pnpm --filter @nube-auth/db build`
 
 ### Adding an API Route
 
@@ -304,7 +304,7 @@ proofa-core/
 #### Structured Logging
 
 ```typescript
-import { createLogger } from '@proofa/shared';
+import { createLogger } from '@nube-auth/shared';
 
 const log = createLogger('my-module');
 
@@ -343,12 +343,12 @@ docker compose -f deployment/docker-compose.yml down -v
 
 ```bash
 # Using psql
-docker compose -f deployment/docker-compose.yml exec postgres psql -U postgres -d proofa
+docker compose -f deployment/docker-compose.yml exec postgres psql -U postgres -d nube-auth
 
 # Connection details for external client:
 # Host: localhost
 # Port: 5432
-# Database: proofa
+# Database: nube-auth
 # User: postgres
 # Password: postgres
 ```
@@ -452,7 +452,7 @@ Production limits:
 - **Documentation**: See `/docs` directory
 - **Architecture**: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
 - **Security**: [docs/ADMIN_SESSION_SECURITY.md](./docs/ADMIN_SESSION_SECURITY.md)
-- **GitHub Issues**: https://github.com/0xdps/proofa-core/issues
+- **GitHub Issues**: https://github.com/0xdps/nube-auth/issues
 
 ---
 

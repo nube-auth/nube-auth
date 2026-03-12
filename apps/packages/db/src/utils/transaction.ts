@@ -1,4 +1,4 @@
-import { createLogger } from "@proofa/shared";
+import { createLogger } from "@nube-auth/shared";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 
 const log = createLogger("transaction");

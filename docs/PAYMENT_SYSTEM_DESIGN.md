@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-The Proofa payment system handles subscription management and one-time payments across multiple payment providers. This document defines the **canonical** payment architecture for Proofa.
+The Nube Auth payment system handles subscription management and one-time payments across multiple payment providers. This document defines the **canonical** payment architecture for Nube Auth.
 
 ### Supported Providers
 - **Stripe** - Primary payment processor
@@ -11,9 +11,9 @@ The Proofa payment system handles subscription management and one-time payments 
 
 ### Core Design Principle (Strong Opinion)
 
-**Payment providers handle money. Proofa handles plans, licenses, entitlements, and access.**
+**Payment providers handle money. Nube Auth handles plans, licenses, entitlements, and access.**
 
-This separation is what makes Proofa valuable and future-proof. Providers are replaceable; Proofa is the authority on access control.
+This separation is what makes Nube Auth valuable and future-proof. Providers are replaceable; Nube Auth is the authority on access control.
 
 ---
 
@@ -23,7 +23,7 @@ This separation is what makes Proofa valuable and future-proof. Providers are re
 ✅ Support subscriptions + one-time payments  
 ✅ Keep pricing logic centralized (no duplication)  
 ✅ Allow provider swap later (Stripe → Dodo → Paddle, etc.)  
-✅ Ensure license & entitlement checks stay inside Proofa  
+✅ Ensure license & entitlement checks stay inside Nube Auth  
 ✅ Provider-agnostic licenses independent of payment provider  
 ✅ Complete transaction history for audit and reconciliation  
 
@@ -40,7 +40,7 @@ This separation is what makes Proofa valuable and future-proof. Providers are re
 - **Transaction history**: Every payment tracked for audit and reconciliation
 - **Flexible billing**: Monthly, yearly, and one-time payment options
 - **Webhook-driven**: Automatic license updates on payment events
-- **Single source of truth**: Proofa controls access, providers control payment state
+- **Single source of truth**: Nube Auth controls access, providers control payment state
 
 ---
 
@@ -52,7 +52,7 @@ This separation is what makes Proofa valuable and future-proof. Providers are re
 ┌─────────────────────────────────────────────────────────────┐
 │                    User/Admin Dashboard                     │
 ├─────────────────────────────────────────────────────────────┤
-│                  Gateway API (Proofa)                       │
+│                  Gateway API (Nube Auth)                       │
 ├─────────────────────────────────────────────────────────────┤
 │                    Payment Routes                           │
 │  - GET /plans/:appId                                        │
@@ -79,11 +79,11 @@ This separation is what makes Proofa valuable and future-proof. Providers are re
 
 ## 3. Core Concepts (Canonical)
 
-### 3.1 Plan (Proofa-Owned)
+### 3.1 Plan (Nube Auth-Owned)
 
 **A Plan defines what the user gets, not how they pay.**
 
-Plans are the central entitlement unit in Proofa. They define:
+Plans are the central entitlement unit in Nube Auth. They define:
 - **Features**: What functionality is accessible
 - **Limits**: Rate limits, quotas, usage caps
 - **Duration**: How long the license lasts
@@ -168,7 +168,7 @@ Logs enable:
 | PREMIUM | Yearly | $30 (3000¢) | 365 days |
 
 **Each row maps to**:
-- One plan record in Proofa
+- One plan record in Nube Auth
 - One price field (monthly_price, yearly_price, one_time_price)
 - One provider price ID (in Stripe/Lemonsqueezy/Dodo)
 
@@ -262,7 +262,7 @@ INDEX(billing_interval)
 ```
 
 **Purpose**:
-- Map Proofa plans to provider-specific prices
+- Map Nube Auth plans to provider-specific prices
 - Support multiple pricing options per plan (monthly/yearly/lifetime)
 - Enable price versioning (new provider_price_id when provider pricing changes)
 - Enable multi-provider routing (same plan, different prices per provider)
@@ -749,7 +749,7 @@ Update license status based on outcome
 
 ```typescript
 // Request flow
-Request → Proofa Gateway
+Request → Nube Auth Gateway
   → Cache lookup (license + plan)
   → Fallback to DB if cache miss
   → Feature + limit evaluation
@@ -835,16 +835,16 @@ async function getLicenseWithPlan(userId: string, appId: string) {
 }
 ```
 
-**Why Proofa is Still Needed (vs. Just Using Provider)**:
+**Why Nube Auth is Still Needed (vs. Just Using Provider)**:
 
-Without Proofa:
+Without Nube Auth:
 - ❌ Payment provider = pricing + logic + auth coupling
 - ❌ Hard to migrate providers
 - ❌ No cross-provider abstraction
 - ❌ No centralized entitlement system
 - ❌ Features tied to payment state
 
-With Proofa:
+With Nube Auth:
 - ✅ One auth + licensing brain
 - ✅ Providers are replaceable
 - ✅ Clean audit trail
@@ -937,7 +937,7 @@ async function getCheckoutTotal(
 Like `plan_provider_prices`, each promotion maps to provider-specific coupon objects:
 
 ```
-Proofa Promotion "First Year 50%"
+Nube Auth Promotion "First Year 50%"
 ├─ Stripe: coupon_50_percent_off_first_year
 ├─ Lemonsqueezy: discount_xyz_code_promo_001
 └─ Dodo: FIRSTYEAR50
@@ -951,7 +951,7 @@ promotion_provider_refs table:
 }
 ```
 
-Provider refs are **immutable**: if Stripe coupon terms change, create a new Proofa promotion rather than updating the existing one.
+Provider refs are **immutable**: if Stripe coupon terms change, create a new Nube Auth promotion rather than updating the existing one.
 
 **5. Transaction Audit Trail**
 
@@ -2243,7 +2243,7 @@ Log these events for monitoring:
 - Modify prices for existing subscriptions
 - Remove features from active plans
 
-**Why?** Provider is source of truth for payment state. Proofa reads, never writes to provider.
+**Why?** Provider is source of truth for payment state. Nube Auth reads, never writes to provider.
 
 ---
 
@@ -2473,7 +2473,7 @@ UPDATE plans SET is_active = false WHERE slug = 'pro';
 ✅ **Start with one provider** (reduce complexity)  
 ✅ **Keep plans static** (features rarely change)  
 ✅ **Treat prices as immutable** (create new versions)  
-✅ **Let Proofa be the authority on access, not payments**  
+✅ **Let Nube Auth be the authority on access, not payments**  
 ✅ **Always process webhooks, never trust client redirects**  
 ✅ **Cache licenses aggressively** (5-minute TTL minimum)  
 ✅ **Log everything** (webhooks, transactions, license changes)  
@@ -2663,7 +2663,7 @@ AND processing_started_at < NOW() - INTERVAL '5 minutes';
 
 1. **Separation of Concerns**
    - **Payment providers handle money** (charging, refunds, subscriptions)
-   - **Proofa handles access** (licenses, features, limits, entitlements)
+   - **Nube Auth handles access** (licenses, features, limits, entitlements)
    - Never mix these responsibilities
 
 2. **Provider Independence**
@@ -2683,7 +2683,7 @@ AND processing_started_at < NOW() - INTERVAL '5 minutes';
 
 5. **Single Source of Truth**
    - Provider: payment state (active, canceled, past_due)
-   - Proofa: access state (can user use feature X?)
+   - Nube Auth: access state (can user use feature X?)
    - Never duplicate state management
 
 ### Implementation Checklist
@@ -2747,7 +2747,7 @@ Track these to ensure the system is healthy:
 3. **Price immutably** (always version, never modify)
 4. **Cache aggressively** (5-minute TTL minimum)
 5. **Log everything** (webhooks, transactions, license changes)
-6. Let **Proofa control access**, not payment providers
+6. Let **Nube Auth control access**, not payment providers
 7. **Trust webhooks**, not client redirects
 
 This architecture is battle-tested, provider-agnostic, and future-proof.
@@ -2757,4 +2757,4 @@ This architecture is battle-tested, provider-agnostic, and future-proof.
 **Document Version**: 2.0 (Merged Canonical Spec)  
 **Last Updated**: January 4, 2026  
 **Status**: Production Ready  
-**Canonical Authority**: This document defines Proofa payment architecture
+**Canonical Authority**: This document defines Nube Auth payment architecture

@@ -14,17 +14,17 @@
 
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, eq, getDb, paymentProviderConfigQueries, projectQueries, userQueries, } from "@proofa/db";
-import { payment_provider_configs } from "@proofa/db";
+import { and, eq, getDb, paymentProviderConfigQueries, projectQueries, userQueries, } from "@nube-auth/db";
+import { payment_provider_configs } from "@nube-auth/db";
 import type { Context } from "hono";
-import { createLogger, createId } from "@proofa/shared";
+import { createLogger, createId } from "@nube-auth/shared";
 import { encryptCredentials, decryptCredentials } from "../../../utils";
 
 const log = createLogger("admin-providers");
 const providersRouter = new Hono();
 
 function getUserIdHeader(c: Context): string | null {
-	const header = c.req.header("X-Proofa-User-Id");
+	const header = c.req.header("X-Nube-User-Id");
 	return header || null;
 }
 

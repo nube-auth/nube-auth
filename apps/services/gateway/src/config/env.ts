@@ -1,5 +1,5 @@
 // Import Node.js-only utilities from dedicated export to avoid browser bundling issues
-import { validateEnv as validateEnvVars } from "@proofa/shared/env-loader";
+import { validateEnv as validateEnvVars } from "@nube-auth/shared/env-loader";
 
 export interface Env {
 	NODE_ENV: string;
@@ -10,7 +10,7 @@ export interface Env {
 	RESEND_API_KEY: string;
 	CORE_URL: string;
 	S2S_SECRET: string;
-	X_PROOFA_SERVICE_TOKEN: string;
+	X_NUBE_AUTH_SERVICE_TOKEN: string;
 	SESSION_SECRET: string;
 	GATEWAY_PUBLIC_URL: string;
 	USER_DASHBOARD_URL: string;
@@ -51,7 +51,7 @@ const requiredEnvVars = [
 	"ENCRYPTION_KEY",
 	"CORE_URL",
 	"S2S_SECRET",
-	"X_PROOFA_SERVICE_TOKEN",
+	"X_NUBE_AUTH_SERVICE_TOKEN",
 	"SESSION_SECRET",
 ] as const;
 
@@ -68,15 +68,15 @@ function validateEnv(): Env {
 		RESEND_API_KEY: process.env["RESEND_API_KEY"]!,
 		CORE_URL: process.env["CORE_URL"]!,
 		S2S_SECRET: process.env["S2S_SECRET"]!,
-		X_PROOFA_SERVICE_TOKEN: process.env["X_PROOFA_SERVICE_TOKEN"]!,
+		X_NUBE_AUTH_SERVICE_TOKEN: process.env["X_NUBE_AUTH_SERVICE_TOKEN"]!,
 		SESSION_SECRET: process.env["SESSION_SECRET"]!,
-		GATEWAY_PUBLIC_URL: process.env["GATEWAY_PUBLIC_URL"] || "https://api.proofa.sh",
-		USER_DASHBOARD_URL: process.env["USER_DASHBOARD_URL"] || "https://user.proofa.sh",
-		ADMIN_DASHBOARD_URL: process.env["ADMIN_DASHBOARD_URL"] || "https://manage.proofa.sh",
-		FRONTEND_URL: process.env["FRONTEND_URL"] || "https://user.proofa.sh",
-		COOKIE_DOMAIN: process.env["COOKIE_DOMAIN"] || "proofa.sh",
+		GATEWAY_PUBLIC_URL: process.env["GATEWAY_PUBLIC_URL"] || "https://api.nubeauth.com",
+		USER_DASHBOARD_URL: process.env["USER_DASHBOARD_URL"] || "https://user.nubeauth.com",
+		ADMIN_DASHBOARD_URL: process.env["ADMIN_DASHBOARD_URL"] || "https://manage.nubeauth.com",
+		FRONTEND_URL: process.env["FRONTEND_URL"] || "https://user.nubeauth.com",
+		COOKIE_DOMAIN: process.env["COOKIE_DOMAIN"] || "nubeauth.com",
 		SEND_EMAILS: process.env["SEND_EMAILS"] === "true",
-		EMAIL_FROM: process.env["EMAIL_FROM"] || "noreply@proofa.sh",
+		EMAIL_FROM: process.env["EMAIL_FROM"] || "noreply@nubeauth.com",
 		STRIPE_SECRET_KEY: process.env["STRIPE_SECRET_KEY"] || "",
 		STRIPE_WEBHOOK_SECRET: process.env["STRIPE_WEBHOOK_SECRET"] || "",
 		SMTP_HOST: process.env["SMTP_HOST"] ?? "localhost",

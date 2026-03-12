@@ -1,9 +1,9 @@
 {
-  "name": "@proofa/cache",
+  "name": "@nube-auth/cache",
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "Redis client and helpers for Proofa",
+  "description": "Redis client and helpers for Nube Auth",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {

@@ -18,7 +18,7 @@ import {
 	Label,
 	Input,
 	Textarea,
-} from "@proofa/components";
+} from "@nube-auth/components";
 import { useCreateProject } from "../hooks/api";
 
 export function OnboardingPage() {
@@ -59,7 +59,7 @@ export function OnboardingPage() {
 			{/* Welcome Header */}
 			<div className="page-header">
 				<div>
-					<Heading level={1} size="lg">Welcome to Proofa</Heading>
+					<Heading level={1} size="lg">Welcome to Nube Auth</Heading>
 					<Text className="text-text-secondary mt-2">Get started by creating your first project</Text>
 				</div>
 			</div>
@@ -76,7 +76,7 @@ export function OnboardingPage() {
 								Create your first project
 							</Heading>
 							<Text className="text-text-secondary mb-6 leading-relaxed">
-								Set up authentication for your application in minutes. Proofa handles user management, OAuth
+								Set up authentication for your application in minutes. Nube Auth handles user management, OAuth
 								providers, sessions, and more so you can focus on building your product.
 							</Text>
 							<Button variant="primary" onClick={() => setShowForm(true)}>
@@ -92,9 +92,9 @@ export function OnboardingPage() {
 							<span className="code-preview-dot bg-[#28c840]" />
 							</div>
 							<pre className="code-preview-content">
-								{`import { ProofaAuth } from '@proofa/auth';
+								{`import { Nube AuthAuth } from '@nube-auth/auth';
 
-const auth = new ProofaAuth({
+const auth = new Nube AuthAuth({
   projectId: 'your-project-id',
   redirectUrl: '/dashboard'
 });
@@ -199,7 +199,7 @@ const user = await auth.getUser();`}
 							<div className="quickstart-step-number">3</div>
 							<div className="quickstart-step-content">
 								<Heading level={4} size="sm" className="quickstart-step-title">Install the SDK</Heading>
-								<Text className="quickstart-step-desc">Add Proofa to your application</Text>
+								<Text className="quickstart-step-desc">Add Nube Auth to your application</Text>
 							</div>
 						</div>
 						<div className="quickstart-step">

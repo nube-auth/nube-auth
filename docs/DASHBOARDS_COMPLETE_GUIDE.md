@@ -1,4 +1,4 @@
-# Proofa Dashboards - Complete Implementation Guide
+# Nube Auth Dashboards - Complete Implementation Guide
 
 **Last Updated**: January 11, 2026  
 **Status**: Production Ready  
@@ -21,12 +21,12 @@
 
 ## Overview
 
-Proofa provides two separate dashboards:
+Nube Auth provides two separate dashboards:
 
 | Dashboard | URL | Audience | Purpose |
 |-----------|-----|----------|---------|
-| **Admin Dashboard** | `admin.proofa.com` | Project owners, team members | Manage projects, apps, licenses, billing |
-| **User Dashboard** | `account.proofa.com` | End users | View profile, manage sessions |
+| **Admin Dashboard** | `admin.nubeauth.com` | Project owners, team members | Manage projects, apps, licenses, billing |
+| **User Dashboard** | `account.nubeauth.com` | End users | View profile, manage sessions |
 
 ### Technology Stack
 
@@ -34,7 +34,7 @@ Proofa provides two separate dashboards:
 - **Build Tool**: Vite
 - **Routing**: React Router v6
 - **State Management**: TanStack Query (React Query)
-- **HTTP Client**: `pingpong` from `@proofa/auth`
+- **HTTP Client**: `pingpong` from `@nube-auth/auth`
 - **Styling**: Custom CSS with CSS variables
 - **Icons**: Inline SVG
 
@@ -228,8 +228,8 @@ The Admin Dashboard allows project owners and team members to:
 
 **Key Format**: 
 ```
-proofa_sk_live_abc123xyz...  (64 chars)
-proofa_sk_test_abc123xyz...  (for testing)
+nube_sk_live_abc123xyz...  (64 chars)
+nube_sk_test_abc123xyz...  (for testing)
 ```
 
 #### 7. Integration Guide
@@ -241,7 +241,7 @@ proofa_sk_test_abc123xyz...  (for testing)
   - Callback handling
   - Session verification
 - SDK links:
-  - `@proofa/client` (JavaScript/TypeScript)
+  - `@nube-auth/client` (JavaScript/TypeScript)
   - Browser extension integration
 - API documentation links
 - Webhook setup
@@ -336,32 +336,32 @@ The sidebar adapts to three contexts:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│ [Proofa Logo] [Beta]     [Theme] [Docs] [Profile] │
+│ [Nube Auth Logo] [Beta]     [Theme] [Docs] [Profile] │
 └─────────────────────────────────────────────────────┘
 ```
 
 - **Project Dropdown**: Switch between projects
 - **Theme Toggle**: Light/Dark/System
-- **Documentation**: Opens docs.proofa.com
+- **Documentation**: Opens docs.nubeauth.com
 - **Profile**: User avatar and name
 
 ### Authentication
 
 #### Login Flow
 
-1. User navigates to `admin.proofa.com`
+1. User navigates to `admin.nubeauth.com`
 2. Redirected to `/login` if not authenticated
 3. Login page shows OAuth options (Google, GitHub)
 4. User clicks provider button
-5. Redirects to Gateway: `api.proofa.sh/v1/auth/start?audience=admin`
+5. Redirects to Gateway: `api.nubeauth.com/v1/auth/start?audience=admin`
 6. Gateway proxies to Core OAuth flow
 7. After authentication, redirects back to admin dashboard
-8. Admin session cookie set: `proofa_admin_session`
+8. Admin session cookie set: `nube_admin_session`
 9. Session TTL: 2 hours absolute + 15 minutes inactivity
 
 #### Session Management
 
-- **Cookie Name**: `proofa_admin_session`
+- **Cookie Name**: `nube_admin_session`
 - **HttpOnly**: Yes
 - **Secure**: Yes (production)
 - **SameSite**: Lax
@@ -379,14 +379,14 @@ Admin endpoints check:
 
 ### API Integration
 
-All API calls go through Gateway (`api.proofa.sh`), which proxies to Core with S2S authentication.
+All API calls go through Gateway (`api.nubeauth.com`), which proxies to Core with S2S authentication.
 
 #### Request Pattern
 
 ```typescript
-import { pingpong } from '@proofa/auth';
+import { pingpong } from '@nube-auth/auth';
 
-const gatewayUrl = 'https://api.proofa.sh';
+const gatewayUrl = 'https://api.nubeauth.com';
 
 // GET request
 const response = await pingpong(`${gatewayUrl}/v1/admin/projects`, {
@@ -538,19 +538,19 @@ Simple, focused navigation:
 
 #### Login Flow
 
-1. User navigates to `account.proofa.com`
+1. User navigates to `account.nubeauth.com`
 2. Redirected to `/login` if not authenticated
 3. Login page shows OAuth options
 4. User clicks provider button
-5. Redirects to Gateway: `api.proofa.sh/v1/auth/start?audience=user`
+5. Redirects to Gateway: `api.nubeauth.com/v1/auth/start?audience=user`
 6. Gateway proxies to Core OAuth flow
 7. After authentication, redirects back to user dashboard
-8. User session cookie set: `proofa_user_session`
+8. User session cookie set: `nube_user_session`
 9. Session TTL: 365 days rolling
 
 #### Session Management
 
-- **Cookie Name**: `proofa_user_session`
+- **Cookie Name**: `nube_user_session`
 - **HttpOnly**: Yes
 - **Secure**: Yes (production)
 - **SameSite**: Lax
@@ -563,9 +563,9 @@ Simple, focused navigation:
 Uses Gateway endpoints:
 
 ```typescript
-import { pingpong } from '@proofa/auth';
+import { pingpong } from '@nube-auth/auth';
 
-const gatewayUrl = 'https://api.proofa.sh';
+const gatewayUrl = 'https://api.nubeauth.com';
 
 // Get current user
 const response = await pingpong(`${gatewayUrl}/v1/me`, {
@@ -605,7 +605,7 @@ The User Dashboard intentionally has a **minimal scope**:
 - ❌ No license purchasing (handled by app integration)
 - ❌ No billing (managed by apps/projects)
 
-**Rationale**: End users interact with Proofa through their apps. The User Dashboard is for account management only.
+**Rationale**: End users interact with Nube Auth through their apps. The User Dashboard is for account management only.
 
 ---
 
@@ -618,18 +618,18 @@ User Browser
     ↓ (HTTPS)
 ┌──────────────────────────────────────┐
 │     Dashboard (Static Site)          │
-│  admin.proofa.com / account.proofa.com│
+│  admin.nubeauth.com / account.nubeauth.com│
 └──────────────────────────────────────┘
     ↓ (API calls with cookie)
 ┌──────────────────────────────────────┐
-│       Gateway (api.proofa.sh)        │
+│       Gateway (api.nubeauth.com)        │
 │  - Session validation                │
 │  - Rate limiting                     │
 │  - Request proxying                  │
 └──────────────────────────────────────┘
     ↓ (S2S with X-S2S-Token)
 ┌──────────────────────────────────────┐
-│       Core (auth.proofa.com)         │
+│       Core (auth.nubeauth.com)         │
 │  - Database operations               │
 │  - Business logic                    │
 │  - OAuth handling                    │
@@ -667,8 +667,8 @@ User Browser
 
 ```mermaid
 sequenceDiagram
-    User->>Admin Dashboard: Navigate to admin.proofa.com
-    Admin Dashboard->>Admin Dashboard: Check for proofa_admin_session cookie
+    User->>Admin Dashboard: Navigate to admin.nubeauth.com
+    Admin Dashboard->>Admin Dashboard: Check for nube_admin_session cookie
     Admin Dashboard->>Gateway: GET /v1/auth/status?audience=admin
     Gateway->>Gateway: Validate session in Redis
     Gateway-->>Admin Dashboard: 401 Unauthorized
@@ -685,7 +685,7 @@ sequenceDiagram
     Core->>Database: Create/update user & identity
     Core->>Database: Create admin session
     Core->>Gateway: Return to /auth/callback
-    Gateway->>Gateway: Set proofa_admin_session cookie
+    Gateway->>Gateway: Set nube_admin_session cookie
     Gateway->>Admin Dashboard: Redirect to /projects
     Admin Dashboard->>Gateway: GET /v1/admin/me
     Gateway->>Core: Proxy request with S2S token
@@ -698,7 +698,7 @@ sequenceDiagram
 ### User Login (Detailed)
 
 Similar flow but:
-- Cookie: `proofa_user_session`
+- Cookie: `nube_user_session`
 - Audience: `user`
 - TTL: 365 days rolling
 - Endpoints: `/v1/me`, `/v1/sessions`
@@ -936,29 +936,29 @@ Response: { ok: true }
 pnpm install
 
 # Build for production
-pnpm --filter=@proofa/admin build
+pnpm --filter=@nube-auth/admin build
 
 # Output: apps/dashboard/admin/dist/
 ```
 
 **Environment Variables**:
 ```env
-VITE_GATEWAY_URL=https://api.proofa.sh
-VITE_DOCS_URL=https://docs.proofa.com
+VITE_GATEWAY_URL=https://api.nubeauth.com
+VITE_DOCS_URL=https://docs.nubeauth.com
 ```
 
 #### User Dashboard
 
 ```bash
 # Build for production
-pnpm --filter=@proofa/user build
+pnpm --filter=@nube-auth/user build
 
 # Output: apps/dashboard/user/dist/
 ```
 
 **Environment Variables**:
 ```env
-VITE_GATEWAY_URL=https://api.proofa.sh
+VITE_GATEWAY_URL=https://api.nubeauth.com
 ```
 
 ### Hosting Options
@@ -1034,7 +1034,7 @@ netlify deploy --prod --dir=dist
 
 ```bash
 # Deploy
-wrangler pages deploy dist --project-name=proofa-admin
+wrangler pages deploy dist --project-name=nube-auth-admin
 ```
 
 #### Option 4: Self-Hosted (Nginx)
@@ -1042,9 +1042,9 @@ wrangler pages deploy dist --project-name=proofa-admin
 ```nginx
 server {
     listen 443 ssl http2;
-    server_name admin.proofa.com;
+    server_name admin.nubeauth.com;
 
-    root /var/www/proofa-admin;
+    root /var/www/nube-auth-admin;
     index index.html;
 
     location / {
@@ -1065,14 +1065,14 @@ server {
 ### DNS Configuration
 
 ```
-admin.proofa.com    CNAME    cname.vercel-dns.com
-account.proofa.com  CNAME    cname.vercel-dns.com
+admin.nubeauth.com    CNAME    cname.vercel-dns.com
+account.nubeauth.com  CNAME    cname.vercel-dns.com
 ```
 
 Or:
 ```
-admin.proofa.com    A    76.76.21.21  (Vercel IP)
-account.proofa.com  A    76.76.21.21
+admin.nubeauth.com    A    76.76.21.21  (Vercel IP)
+account.nubeauth.com  A    76.76.21.21
 ```
 
 ### SSL/TLS
@@ -1091,17 +1091,17 @@ Use Let's Encrypt or your hosting provider's SSL:
 
 ```bash
 # Clone repository
-git clone https://github.com/0xdps/proofa-core.git
-cd proofa-core
+git clone https://github.com/0xdps/nube-auth.git
+cd nube-auth
 
 # Install dependencies
 pnpm install
 
 # Start admin dashboard
-pnpm --filter=@proofa/admin dev
+pnpm --filter=@nube-auth/admin dev
 
 # Start user dashboard
-pnpm --filter=@proofa/user dev
+pnpm --filter=@nube-auth/user dev
 ```
 
 ### Environment Variables
@@ -1206,13 +1206,13 @@ export function useNewFeature() {
 
 ```bash
 # Run type check
-pnpm --filter=@proofa/admin typecheck
+pnpm --filter=@nube-auth/admin typecheck
 
 # Run linter
-pnpm --filter=@proofa/admin lint
+pnpm --filter=@nube-auth/admin lint
 
 # Build (catches errors)
-pnpm --filter=@proofa/admin build
+pnpm --filter=@nube-auth/admin build
 ```
 
 ### Common Issues
@@ -1323,9 +1323,9 @@ This is intentional for security:
 
 ### Contact
 
-- **Email**: dev@proofa.io
-- **Issues**: https://github.com/0xdps/proofa-core/issues
-- **Docs**: https://docs.proofa.com
+- **Email**: dev@nubeauth.com
+- **Issues**: https://github.com/0xdps/nube-auth/issues
+- **Docs**: https://docs.nubeauth.com
 
 ---
 

@@ -1,6 +1,6 @@
 # Payment Testing Guide
 
-## Testing Payment Flows in Proofa
+## Testing Payment Flows in Nube Auth
 
 There are two modes for testing payments in the admin playground:
 
@@ -42,12 +42,12 @@ There are two modes for testing payments in the admin playground:
 **How it works**:
 - Creates real checkout sessions with payment providers
 - Users complete actual test payments on provider's hosted page
-- Provider sends real webhooks to Proofa
+- Provider sends real webhooks to Nube Auth
 - Full end-to-end flow testing
 
 **Requirements**:
 1. **Provider Configuration**: Add real test API keys in Project → Payment Providers
-2. **Webhook Setup**: Provider must be able to send webhooks to your Proofa instance
+2. **Webhook Setup**: Provider must be able to send webhooks to your Nube Auth instance
 
 #### Webhook Configuration
 
@@ -58,7 +58,7 @@ There are two modes for testing payments in the admin playground:
    - LemonSqueezy: `https://your-domain.com/v1/payment/webhooks/lemonsqueezy`
    - Dodo: `https://your-domain.com/v1/payment/webhooks/dodo`
 3. Copy the webhook secret
-4. Add to Proofa provider configuration
+4. Add to Nube Auth provider configuration
 
 **In Local Development** (localhost):
 
@@ -67,7 +67,7 @@ There are two modes for testing payments in the admin playground:
 
 **Option B: Use ngrok or similar tunnel**
 1. Install ngrok: `brew install ngrok` or download from https://ngrok.com
-2. Start your gateway: `pnpm --filter @proofa/gateway dev`
+2. Start your gateway: `pnpm --filter @nube-auth/gateway dev`
 3. Expose it: `ngrok http 3001`
 4. Copy the ngrok URL (e.g., `https://abc123.ngrok.io`)
 5. Configure provider webhook URL: `https://abc123.ngrok.io/v1/payment/webhooks/stripe`
@@ -88,7 +88,7 @@ If the webhook doesn't arrive after payment:
 
 **Symptom**: After completing payment on provider's page, license never gets created and payment shows "Processing" indefinitely.
 
-**Cause**: Webhook from provider never reached Proofa
+**Cause**: Webhook from provider never reached Nube Auth
 
 **Solutions**:
 1. **Switch to Simulate Mode** (easiest) - No webhooks needed
@@ -126,7 +126,7 @@ If the webhook doesn't arrive after payment:
 ## Testing Checklist
 
 **Before Testing**:
-- [ ] Payment provider configured in Proofa (for live mode)
+- [ ] Payment provider configured in Nube Auth (for live mode)
 - [ ] Webhook URL configured in provider dashboard (for live mode)
 - [ ] Test mode credentials used (never production keys)
 - [ ] At least one active plan exists for the app

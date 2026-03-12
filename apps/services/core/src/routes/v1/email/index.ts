@@ -1,8 +1,8 @@
-import { generateOTP, hashOTP, verifyOTP } from "@proofa/auth";
-import { rateLimit } from "@proofa/cache";
-import { emailVerificationQueries, getDb, identityQueries, sessionQueries, userQueries } from "@proofa/db";
-import { createId, createLogger, serializeError, OTP_LENGTH, OTP_LOCKOUT_MINUTES, OTP_MAX_ATTEMPTS } from "@proofa/shared";
-import { createEmailService } from "@proofa/shared/email";
+import { generateOTP, hashOTP, verifyOTP } from "@nube-auth/auth";
+import { rateLimit } from "@nube-auth/cache";
+import { emailVerificationQueries, getDb, identityQueries, sessionQueries, userQueries } from "@nube-auth/db";
+import { createId, createLogger, serializeError, OTP_LENGTH, OTP_LOCKOUT_MINUTES, OTP_MAX_ATTEMPTS } from "@nube-auth/shared";
+import { createEmailService } from "@nube-auth/shared/email";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { env } from "../../../config/env";
@@ -81,7 +81,7 @@ router.post("/start", async (c: Context) => {
 		// Send OTP email
 		await emailService.send({
 			to: email,
-			subject: "Your Proofa OTP Code",
+			subject: "Your Nube Auth OTP Code",
 			html: `<p>Your OTP code is: <strong>${otp}</strong></p><p>Valid for 10 minutes.</p>`,
 		});
 

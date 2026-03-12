@@ -1,24 +1,24 @@
 import crypto from "node:crypto";
-import { createSessionCookie, parseSessionCookie } from "@proofa/auth";
-import { sessionStore } from "@proofa/cache";
-import { getDb, sessionQueries, userQueries, projectMemberQueries, projectQueries, appQueries } from "@proofa/db";
-import { createLogger, GatewayLoginRequestSchema, serializeError, type SessionEntitlements } from "@proofa/shared";
+import { createSessionCookie, parseSessionCookie } from "@nube-auth/auth";
+import { sessionStore } from "@nube-auth/cache";
+import { getDb, sessionQueries, userQueries, projectMemberQueries, projectQueries, appQueries } from "@nube-auth/db";
+import { createLogger, GatewayLoginRequestSchema, serializeError, type SessionEntitlements } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { CSRF_TOKEN_BYTES, SESSION_ID_BYTES, SESSION_TTL, ADMIN_SESSION_TTL } from "../config/constants";
 import { env } from "../config/env";
 import { coreClient } from "../lib/core-client";
-import { pingpong } from "@proofa/auth";
+import { pingpong } from "@nube-auth/auth";
 import { sessionService } from "../services/sessionService";
 
 const log = createLogger("auth-routes");
 
 export const authRoutes = new Hono();
 
-const USER_SESSION_COOKIE = "proofa_user_session";
-const ADMIN_SESSION_COOKIE = "proofa_admin_session";
-const LEGACY_SESSION_COOKIE = "proofa_session";
+const USER_SESSION_COOKIE = "nube_user_session";
+const ADMIN_SESSION_COOKIE = "nube_admin_session";
+const LEGACY_SESSION_COOKIE = "nube_session";
 
 /**
  * Safely extract string values from cookie attributes
@@ -65,7 +65,7 @@ function inferAudience(c: Context): "user" | "admin" {
 	if (userHost && requestHost === userHost) return "user";
 
 	// Fallback heuristics for hosted environments
-	if (requestHost.includes("manage.proofa.") || requestHost.includes("admin.proofa.")) return "admin";
+	if (requestHost.includes("manage.nube-auth.") || requestHost.includes("admin.nube-auth.")) return "admin";
 	return "user";
 }
 
@@ -110,7 +110,7 @@ authRoutes.get("/start", async (c: Context) => {
 			method: "GET",
 			redirect: "manual",
 			headers: {
-				"X-Proofa-S2S-Token": env.S2S_SECRET,
+				"X-Nube-S2S-Token": env.S2S_SECRET,
 				"X-Forwarded-For": c.req.header("x-forwarded-for") || c.req.header("cf-connecting-ip") || "",
 				"CF-Connecting-IP": c.req.header("cf-connecting-ip") || "",
 				"CF-IPCountry": c.req.header("cf-ipcountry") || "",
@@ -187,7 +187,7 @@ authRoutes.get("/callback/:provider", async (c: Context) => {
 			method: "GET",
 			redirect: "manual",
 			headers: {
-				"X-Proofa-S2S-Token": env.S2S_SECRET,
+				"X-Nube-S2S-Token": env.S2S_SECRET,
 				"X-Forwarded-For": c.req.header("x-forwarded-for") || c.req.header("cf-connecting-ip") || "",
 				"CF-Connecting-IP": c.req.header("cf-connecting-ip") || "",
 				"CF-IPCountry": c.req.header("cf-ipcountry") || "",
@@ -276,7 +276,7 @@ authRoutes.get("/callback", async (c: Context) => {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
-				"X-Proofa-S2S-Token": env.S2S_SECRET,
+				"X-Nube-S2S-Token": env.S2S_SECRET,
 			},
 			body: {
 				sessionId: code, // Core passes session ID as "code" param
@@ -343,12 +343,12 @@ authRoutes.get("/callback", async (c: Context) => {
 		}, entitlements);
 
 		// Create signed cookie with domain for cross-subdomain access
-		const cookieDomain = env.COOKIE_DOMAIN; // e.g., ".proofa.sh" or "localhost"
+		const cookieDomain = env.COOKIE_DOMAIN; // e.g., ".nubeauth.com" or "localhost"
 		const secureCookies =
 			env.NODE_ENV === "production" || (env.GATEWAY_PUBLIC_URL ? env.GATEWAY_PUBLIC_URL.startsWith("https://") : false);
 		
 		// For localhost: DON'T set domain (host-only cookie works across ports)
-		// For production: set domain=.proofa.sh for subdomain sharing
+		// For production: set domain=.nubeauth.com for subdomain sharing
 		const cookieOptions = cookieDomain && cookieDomain !== "localhost"
 			? { domain: cookieDomain, secure: secureCookies, maxAge: ttlSeconds }
 			: { secure: secureCookies, maxAge: ttlSeconds };
@@ -377,7 +377,7 @@ authRoutes.get("/callback", async (c: Context) => {
 		});
 
 		// Set CSRF token cookie (NOT httpOnly so JavaScript can read it)
-		setCookie(c, "proofa_csrf_token", csrfToken, {
+		setCookie(c, "nube_csrf_token", csrfToken, {
 			httpOnly: false, // Must be readable by JavaScript
 			secure,
 			sameSite,
@@ -459,7 +459,7 @@ authRoutes.post("/login", async (c: Context) => {
 		);
 
 		// Create signed cookie with Gateway session ID
-		const cookieDomain = env.COOKIE_DOMAIN; // e.g., ".proofa.sh"
+		const cookieDomain = env.COOKIE_DOMAIN; // e.g., ".nubeauth.com"
 		const secureCookies =
 			env.NODE_ENV === "production" || (env.GATEWAY_PUBLIC_URL ? env.GATEWAY_PUBLIC_URL.startsWith("https://") : false);
 		const { value, attributes } = createSessionCookie(
@@ -486,7 +486,7 @@ authRoutes.post("/login", async (c: Context) => {
 		});
 
 		// Set CSRF token cookie (NOT httpOnly so JavaScript can read it)
-		setCookie(c, "proofa_csrf_token", csrfToken, {
+		setCookie(c, "nube_csrf_token", csrfToken, {
 			httpOnly: false, // Must be readable by JavaScript
 			secure,
 			sameSite,
@@ -643,7 +643,7 @@ authRoutes.post("/logout", async (c: Context) => {
 
 		// Clear CSRF token cookie
 		if (cookieDomain) {
-			setCookie(c, "proofa_csrf_token", "", {
+			setCookie(c, "nube_csrf_token", "", {
 				httpOnly: false,
 				secure: true,
 				sameSite: "Lax",
@@ -652,14 +652,14 @@ authRoutes.post("/logout", async (c: Context) => {
 				maxAge: 0,
 			});
 		}
-		setCookie(c, "proofa_csrf_token", "", {
+		setCookie(c, "nube_csrf_token", "", {
 			httpOnly: false,
 			secure: true,
 			sameSite: "Lax",
 			path: "/",
 			maxAge: 0,
 		});
-		setCookie(c, "proofa_csrf_token", "", {
+		setCookie(c, "nube_csrf_token", "", {
 			httpOnly: false,
 			secure: false,
 			sameSite: "Lax",

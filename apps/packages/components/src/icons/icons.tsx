@@ -145,7 +145,7 @@ const BRAND_LOGOS = {
 /**
  * Type-safe icon registry
  * Unified registry for all icons (brand logos + HugeIcons)
- * Users only need to import from @proofa/components - no need to know the source
+ * Users only need to import from @nube-auth/components - no need to know the source
  * 
  * Usage:
  * <Icon icon={IconType.Google} size={20} />
@@ -322,13 +322,13 @@ export type IconProps = Omit<HugeiconsIconProps, "icon"> & {
 };
 
 /**
- * Unified Icon component for all icon usage across Proofa
+ * Unified Icon component for all icon usage across Nube Auth
  * 
  * Single source of truth for all icons (brand logos + HugeIcons)
  * Users don't need to import from multiple places or know which icon pack is used
  * 
  * @example
- * import { Icon, IconType } from "@proofa/components";
+ * import { Icon, IconType } from "@nube-auth/components";
  * 
  * // Brand logos
  * <Icon icon={IconType.Google} size={20} />

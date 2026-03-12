@@ -93,12 +93,12 @@
     </a>
   </div>
 
-  <!-- Include Proofa Auth -->
-  <script src="/js/proofa-auth.js"></script>
+  <!-- Include Nube Auth -->
+  <script src="/js/nube-auth.js"></script>
   
   <script>
-    // Initialize Proofa client
-    const proofa = new ProofaAuth('https://api.proofa.sh', 'pinboardgpt');
+    // Initialize Nube Auth client
+    const nubeAuth = new Nube AuthAuth('https://api.nubeauth.com', 'pinboardgpt');
 
     // Get return URL from query parameter
     const urlParams = new URLSearchParams(window.location.search);
@@ -106,23 +106,23 @@
 
     // Login with Google
     function loginWithGoogle() {
-      window.location.href = proofa.getLoginUrl(returnTo, 'google');
+      window.location.href = nube-auth.getLoginUrl(returnTo, 'google');
     }
 
     // Login with GitHub
     function loginWithGitHub() {
-      window.location.href = proofa.getLoginUrl(returnTo, 'github');
+      window.location.href = nube-auth.getLoginUrl(returnTo, 'github');
     }
 
     // Generic login (let user choose provider)
     function loginGeneric() {
-      window.location.href = proofa.getLoginUrl(returnTo);
+      window.location.href = nube-auth.getLoginUrl(returnTo);
     }
 
     // Check if already logged in
     (async function() {
       try {
-        const auth = await proofa.checkAuth();
+        const auth = await nubeAuth.checkAuth();
         if (auth.loggedIn) {
           // Already logged in, redirect to return URL
           window.location.href = returnTo;

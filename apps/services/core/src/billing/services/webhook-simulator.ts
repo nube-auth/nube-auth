@@ -3,7 +3,7 @@
  * Generates mock webhook payloads for testing payment flows
  */
 
-import { createLogger } from "@proofa/shared";
+import { createLogger } from "@nube-auth/shared";
 
 const log = createLogger("webhook-simulator");
 
@@ -46,7 +46,7 @@ function generateStripeWebhook(options: MockWebhookOptions): any {
 						amount_total: amount,
 						currency: "usd",
 						customer: `cus_test_mock_${Date.now()}`,
-						customer_email: `test@proofa.internal`,
+						customer_email: `test@nube-auth.internal`,
 						payment_status: "paid",
 						status: "complete",
 						mode: "payment",
@@ -68,7 +68,7 @@ function generateStripeWebhook(options: MockWebhookOptions): any {
 						amount_paid: 0,
 						currency: "usd",
 						customer: `cus_test_mock_${Date.now()}`,
-						customer_email: `test@proofa.internal`,
+						customer_email: `test@nube-auth.internal`,
 						status: "open",
 						payment_intent: `pi_test_mock_${Date.now()}`,
 						subscription: `sub_test_mock_${Date.now()}`,
@@ -155,7 +155,7 @@ function generateLemonSqueezyWebhook(options: MockWebhookOptions): any {
 						total: amount,
 						total_usd: amount,
 						status: "paid",
-						user_email: "test@proofa.internal",
+						user_email: "test@nube-auth.internal",
 						created_at: new Date().toISOString(),
 						updated_at: new Date().toISOString(),
 					},
@@ -175,7 +175,7 @@ function generateLemonSqueezyWebhook(options: MockWebhookOptions): any {
 					type: "subscriptions",
 					attributes: {
 						status: "active",
-						user_email: "test@proofa.internal",
+						user_email: "test@nube-auth.internal",
 						created_at: new Date().toISOString(),
 						updated_at: new Date().toISOString(),
 					},
@@ -259,7 +259,7 @@ function generateDodoWebhook(options: MockWebhookOptions): any {
 					amount,
 					currency: "usd",
 					status: "succeeded",
-					customer_email: "test@proofa.internal",
+					customer_email: "test@nube-auth.internal",
 					metadata,
 				},
 			};
@@ -272,7 +272,7 @@ function generateDodoWebhook(options: MockWebhookOptions): any {
 				data: {
 					subscription_id: `sub_mock_${Date.now()}`,
 					status: "active",
-					customer_email: "test@proofa.internal",
+					customer_email: "test@nube-auth.internal",
 					metadata,
 				},
 			};

@@ -8,7 +8,7 @@ Magic links provide passwordless authentication via email.
 ## How It Works
 
 1. User enters their email
-2. Proofa sends a secure link to their inbox
+2. Nube Auth sends a secure link to their inbox
 3. User clicks the link
 4. User is authenticated
 
@@ -18,7 +18,7 @@ Magic links provide passwordless authentication via email.
 
 ```typescript
 // Request a magic link
-await proofa.sendMagicLink({ 
+await nube-auth.sendMagicLink({ 
   email: 'user@example.com' 
 });
 
@@ -34,11 +34,11 @@ On your callback page, verify the token:
 // In your /auth/magic route
 const token = new URLSearchParams(window.location.search).get('token');
 
-const result = await proofa.verifyMagicLink({ token });
+const result = await nube-auth.verifyMagicLink({ token });
 
 if (result.success) {
   // User is now authenticated
-  const user = await proofa.getUser();
+  const user = await nubeAuth.getUser();
   redirect('/dashboard');
 } else {
   // Link expired or invalid
@@ -70,7 +70,7 @@ SENDGRID_API_KEY=your-api-key
 Customize the magic link email in your dashboard or via API:
 
 ```typescript
-await proofa.admin.updateEmailTemplate({
+await nube-auth.admin.updateEmailTemplate({
   type: 'magic_link',
   subject: 'Sign in to {{appName}}',
   html: `

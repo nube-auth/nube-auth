@@ -13,7 +13,7 @@ export {
 } from "./types/ids.js";
 
 // Re-export email service (Node.js only - not for browser)
-// Backend services should import directly: import { createEmailService } from "@proofa/shared/email"
+// Backend services should import directly: import { createEmailService } from "@nube-auth/shared/email"
 // Type-only export to prevent bundling in browser builds
 export type { EmailConfig, EmailOptions } from "./email.js";
 // Re-export audit logging
@@ -74,7 +74,7 @@ export {
 } from "./constants/ports.js";
 // Re-export environment utilities (Node.js only - not for browser)
 // Note: These functions use Node.js APIs and should NOT be imported in browser code
-// Backend services should import directly: import { loadEnv } from "@proofa/shared/env-loader"
+// Backend services should import directly: import { loadEnv } from "@nube-auth/shared/env-loader"
 // Type-only export to prevent bundling in browser builds
 export type {} from "./env-loader.js";
 export type { IdType } from "./id.js";

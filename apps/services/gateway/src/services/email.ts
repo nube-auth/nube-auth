@@ -3,7 +3,7 @@
  * Uses shared email utility for Resend or Mailpit (local)
  */
 
-import { createEmailService } from "@proofa/shared/email";
+import { createEmailService } from "@nube-auth/shared/email";
 
 import { env } from "../config/env";
 
@@ -129,7 +129,7 @@ export function generateAppUserInvitationEmail(data: AppUserInvitationEmailData)
 					<tr>
 						<td style="padding: 30px 40px; text-align: center; border-top: 1px solid #e5e5e5; background-color: #f9fafb; border-radius: 0 0 8px 8px;">
 							<p style="margin: 0 0 10px; color: #6b7280; font-size: 13px;">
-								Powered by <strong style="color: #8b5cf6;">Proofa</strong>
+								Powered by <strong style="color: #8b5cf6;">Nube Auth</strong>
 							</p>
 							<p style="margin: 0; color: #9ca3af; font-size: 12px;">
 								If you didn't expect this invitation, you can safely ignore this email.
@@ -214,7 +214,7 @@ export function generateProjectTeamInvitationEmail(data: ProjectTeamInvitationEm
 					<tr>
 						<td style="padding: 30px 40px; text-align: center; border-top: 1px solid #e5e5e5; background-color: #f9fafb; border-radius: 0 0 8px 8px;">
 							<p style="margin: 0 0 10px; color: #6b7280; font-size: 13px;">
-								Powered by <strong style="color: #8b5cf6;">Proofa</strong>
+								Powered by <strong style="color: #8b5cf6;">Nube Auth</strong>
 							</p>
 							<p style="margin: 0; color: #9ca3af; font-size: 12px;">
 								If you didn't expect this invitation, you can safely ignore this email.
@@ -295,7 +295,7 @@ export function generateWelcomeEmail(data: WelcomeEmailData): string {
 					<tr>
 						<td style="padding: 30px 40px; text-align: center; border-top: 1px solid #e5e5e5; background-color: #f9fafb; border-radius: 0 0 8px 8px;">
 							<p style="margin: 0 0 10px; color: #6b7280; font-size: 13px;">
-								Powered by <strong style="color: #8b5cf6;">Proofa</strong>
+								Powered by <strong style="color: #8b5cf6;">Nube Auth</strong>
 							</p>
 						</td>
 					</tr>
@@ -374,7 +374,7 @@ export function generateLicenseGrantedEmail(data: LicenseGrantedEmailData): stri
 					<tr>
 						<td style="padding: 30px 40px; text-align: center; border-top: 1px solid #e5e5e5; background-color: #f9fafb; border-radius: 0 0 8px 8px;">
 							<p style="margin: 0 0 10px; color: #6b7280; font-size: 13px;">
-								Powered by <strong style="color: #8b5cf6;">Proofa</strong>
+								Powered by <strong style="color: #8b5cf6;">Nube Auth</strong>
 							</p>
 						</td>
 					</tr>

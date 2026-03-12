@@ -1,5 +1,5 @@
 import { serve } from "@hono/node-server";
-import { createLogger, serializeError } from "@proofa/shared";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { env } from "./config/env";
@@ -25,13 +25,13 @@ app.use(
 			if (!origin) return "*";
 			// Allow localhost for development
 			if (origin.startsWith("http://localhost:")) return origin;
-			// Allow proofa.sh domains
-			if (origin.endsWith(".proofa.sh")) return origin;
+			// Allow nubeauth.com domains
+			if (origin.endsWith(".nubeauth.com")) return origin;
 			return null;
 		},
 		credentials: true,
 		allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-		allowHeaders: ["Content-Type", "Authorization", "X-Proofa-Service-Token", "X-Proofa-S2S-Token", "X-Proofa-User-Id", "X-Proofa-Session-Id", "X-Proofa-Project-Id"],
+		allowHeaders: ["Content-Type", "Authorization", "X-Nube-Service-Token", "X-Nube-S2S-Token", "X-Nube-User-Id", "X-Nube-Session-Id", "X-Nube-Project-Id"],
 		exposeHeaders: ["Set-Cookie"],
 	}),
 );

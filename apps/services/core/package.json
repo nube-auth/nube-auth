@@ -1,7 +1,7 @@
 {
-	"name": "@proofa/core",
+	"name": "@nube-auth/core",
 	"version": "1.0.0",
-	"description": "Authoritative identity, session, and licensing service for Proofa",
+	"description": "Authoritative identity, session, and licensing service for Nube Auth",
 	"type": "module",
 	"main": "dist/index.js",
 	"exports": {
@@ -16,11 +16,11 @@
 	},
 	"dependencies": {
 		"@hono/node-server": "^1.19.7",
-		"@proofa/auth": "workspace:*",
-		"@proofa/cache": "workspace:*",
-		"@proofa/db": "workspace:*",
-		"@proofa/queue": "workspace:*",
-		"@proofa/shared": "workspace:*",
+		"@nube-auth/auth": "workspace:*",
+		"@nube-auth/cache": "workspace:*",
+		"@nube-auth/db": "workspace:*",
+		"@nube-auth/queue": "workspace:*",
+		"@nube-auth/shared": "workspace:*",
 		"bullmq": "^5.8.0",
 		"dodopayments": "^2.21.0",
 		"hono": "^4.0.0",

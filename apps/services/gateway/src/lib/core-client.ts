@@ -1,12 +1,12 @@
-import type { User } from "@proofa/shared";
-import { createLogger, serializeError } from "@proofa/shared";
+import type { User } from "@nube-auth/shared";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import { env } from "../config/env";
-import { pingpong } from "@proofa/auth";
+import { pingpong } from "@nube-auth/auth";
 
 const log = createLogger("core-client");
 
 /**
- * Client for calling Proofa Core API
+ * Client for calling Nube Auth API
  * Used by Gateway to make S2S requests to Core
  */
 export class CoreClient {
@@ -22,7 +22,7 @@ export class CoreClient {
 		const url = `${this.baseUrl}${path}`;
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
-			"X-Proofa-S2S-Token": this.s2sToken,
+			"X-Nube-S2S-Token": this.s2sToken,
 		};
 
 		try {

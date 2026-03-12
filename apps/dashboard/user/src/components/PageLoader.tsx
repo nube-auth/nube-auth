@@ -1,4 +1,4 @@
-import { Spinner } from "@proofa/components";
+import { Spinner } from "@nube-auth/components";
 
 export function PageLoader({ message }: { message?: string }) {
 	return (

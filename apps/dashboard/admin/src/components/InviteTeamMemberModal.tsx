@@ -12,7 +12,7 @@ import {
 	DialogTitle,
 	Input,
 	Label,
-} from "@proofa/components";
+} from "@nube-auth/components";
 
 interface InviteTeamMemberModalProps {
 	projectId: string;
@@ -58,7 +58,7 @@ export function InviteTeamMemberModal({ projectId, onClose }: InviteTeamMemberMo
 				</DialogHeader>
 				<DialogBody>
 					<p className="text-sm mb-6" style={{ color: "var(--muted)" }}>
-						Add a team member to this project. They must have a Proofa account.
+						Add a team member to this project. They must have a Nube Auth account.
 					</p>
 
 					<form id="invite-team-member" onSubmit={handleSubmit}>

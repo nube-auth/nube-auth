@@ -31,7 +31,7 @@ import {
 	TableBody,
 	TableHead,
 	TableCell,
-} from "@proofa/components";
+} from "@nube-auth/components";
 
 import { PageLoader } from "../components/PageLoader";
 import { Select } from "../components/Select";

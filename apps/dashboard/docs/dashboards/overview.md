@@ -1,10 +1,10 @@
 ---
 title: Dashboard Overview
-description: Learn about Proofa's admin and user dashboards
+description: Learn about Nube Auth's admin and user dashboards
 ---
 
 
-Proofa provides two powerful dashboards for managing your applications and user accounts.
+Nube Auth provides two powerful dashboards for managing your applications and user accounts.
 
 ## Dashboard Types
 
@@ -19,9 +19,9 @@ Proofa provides two powerful dashboards for managing your applications and user 
 
 ## Admin Dashboard
 
-**URL:** `admin.proofa.com`
+**URL:** `admin.nubeauth.com`
 
-The Admin Dashboard is your control center for managing all aspects of Proofa:
+The Admin Dashboard is your control center for managing all aspects of Nube Auth:
 
 ### Key Features
 
@@ -46,7 +46,7 @@ The Admin Dashboard is your control center for managing all aspects of Proofa:
 
 ## User Dashboard
 
-**URL:** `account.proofa.com`
+**URL:** `account.nubeauth.com`
 
 The User Dashboard provides a simple interface for end users to manage their accounts:
 
@@ -69,7 +69,7 @@ Both dashboards use secure OAuth-based authentication:
 
 ## Getting Started
 
-1. **Sign up** at [admin.proofa.com](https://admin.proofa.com)
+1. **Sign up** at [admin.nubeauth.com](https://admin.nubeauth.com)
 2. **Create a project** to organize your apps
 3. **Create an app** within your project
 4. **Configure OAuth** providers for your app
@@ -79,4 +79,4 @@ Both dashboards use secure OAuth-based authentication:
 
 - [Admin Dashboard Guide](/dashboards/admin-dashboard) - Complete feature walkthrough
 - [User Dashboard Guide](/dashboards/user-dashboard) - End user features
-- [Integration Guide](/integration/quickstart) - Add Proofa to your app
+- [Integration Guide](/integration/quickstart) - Add Nube Auth to your app

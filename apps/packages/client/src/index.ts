@@ -1,8 +1,8 @@
-export { ProofaClient, ProofaError } from "./client";
+export { NubeAuthClient, NubeAuthError } from "./client";
 export type {
 	AuthStatus,
 	License,
-	ProofaClientConfig,
+	NubeAuthClientConfig,
 	Session,
 	Subscription,
 	UpdateProfileData,

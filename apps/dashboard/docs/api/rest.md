@@ -1,14 +1,14 @@
 ---
 title: REST API
-description: Proofa REST API reference
+description: Nube Auth REST API reference
 ---
 
-The Proofa REST API provides full access to all functionality.
+The Nube Auth REST API provides full access to all functionality.
 
 ## Base URL
 
 ```
-Production: https://api.proofa.sh/v1
+Production: https://api.nubeauth.com/v1
 Self-hosted: https://your-domain/v1
 ```
 
@@ -17,14 +17,14 @@ Self-hosted: https://your-domain/v1
 All API requests require authentication via Bearer token:
 
 ```bash
-curl https://api.proofa.sh/v1/users/me \
+curl https://api.nubeauth.com/v1/users/me \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
 For server-to-server requests, use an API key:
 
 ```bash
-curl https://api.proofa.sh/v1/admin/users \
+curl https://api.nubeauth.com/v1/admin/users \
   -H "X-API-Key: YOUR_API_KEY"
 ```
 

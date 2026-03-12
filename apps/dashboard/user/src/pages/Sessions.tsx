@@ -17,8 +17,8 @@ import {
 	TableRow,
 	TableCell,
 	Chip,
-} from "@proofa/components";
-import { ProfileHeader, InfoGrid, SessionCard } from "@proofa/components";
+} from "@nube-auth/components";
+import { ProfileHeader, InfoGrid, SessionCard } from "@nube-auth/components";
 import { TabNavigation } from "../components/TabNavigation";
 import { PageLoader } from "../components/PageLoader";
 

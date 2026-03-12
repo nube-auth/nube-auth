@@ -19,7 +19,7 @@
 - [ ] No commented-out code
 - [ ] Code is DRY (no duplication)
 
-### Proofa-Specific Standards
+### Nube Auth-Specific Standards
 
 #### JSONB Updates (if applicable)
 - [ ] No read-modify-write patterns for JSONB

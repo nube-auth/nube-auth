@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { pingpong } from "../lib/pingpong";
 import { useMe } from "../hooks/api";
-import { AuthLoginCard } from "@proofa/components";
+import { AuthLoginCard } from "@nube-auth/components";
 import config from "../config";
 
 type AuthStatus = "idle" | "checking" | "redirecting" | "processing" | "error";
@@ -91,7 +91,7 @@ export function LoginPage() {
 			busy={isBusy}
 			termsUrl={`${homeUrl}/terms`}
 			privacyUrl={`${homeUrl}/privacy`}
-			footerText="Secure authentication powered by Proofa"
+			footerText="Secure authentication powered by Nube Auth"
 			securityBadge={true}
 		/>
 	);

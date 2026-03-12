@@ -28,7 +28,7 @@ import {
 	SelectValue,
 	SelectPopup,
 	SelectItem
-} from "@proofa/components";
+} from "@nube-auth/components";
 import { PageLoader } from "../components/PageLoader";
 import { IconPicker } from "../components/IconPicker";
 import { useCreateApp, useProject } from "../hooks/api";

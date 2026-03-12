@@ -1,4 +1,4 @@
-import { cache } from "@proofa/cache";
+import { cache } from "@nube-auth/cache";
 import { CACHE_TTL } from "../config/constants";
 import { coreService } from "./coreService";
 

@@ -1,6 +1,6 @@
-# Proofa Landing Page
+# Nube Auth Landing Page
 
-Deploy to Vercel: [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/0xdps/proofa-core&project-name=proofa-home&root-directory=apps/dashboard/home)
+Deploy to Vercel: [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/0xdps/nube-auth&project-name=nube-auth-home&root-directory=apps/dashboard/home)
 
 ## 🚀 Quick Deploy
 
@@ -34,4 +34,4 @@ The site uses:
 After deployment, you can add a custom domain in the Vercel dashboard:
 1. Go to your project settings
 2. Navigate to Domains
-3. Add your custom domain (e.g., `proofa.com` or `www.proofa.com`)
+3. Add your custom domain (e.g., `nubeauth.com` or `www.nubeauth.com`)

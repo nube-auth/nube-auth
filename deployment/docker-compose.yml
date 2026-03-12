@@ -2,17 +2,17 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:17-alpine
-    container_name: proofa-postgres
+    container_name: nube-auth-postgres
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-proofa}
-      POSTGRES_USER: ${POSTGRES_USER:-proofa}
+      POSTGRES_DB: ${POSTGRES_DB:-nube-auth}
+      POSTGRES_USER: ${POSTGRES_USER:-nube-auth}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Database password must be set in .env or .env.local}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U proofa"]
+      test: ["CMD-SHELL", "pg_isready -U nube-auth"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -21,7 +21,7 @@ services:
   # Redis for caching, rate limiting, and session storage
   redis:
     image: redis:7-alpine
-    container_name: proofa-redis
+    container_name: nube-auth-redis
     ports:
       - "6379:6379"
     volumes:
@@ -37,7 +37,7 @@ services:
   # Mailpit - Email Testing
   mailpit:
     image: axllent/mailpit:latest
-    container_name: proofa-mailpit
+    container_name: nube-auth-mailpit
     ports:
       - "1025:1025" # SMTP
       - "8025:8025" # Web UI
@@ -51,4 +51,4 @@ volumes:
 
 networks:
   default:
-    name: proofa-network
+    name: nube-auth-network

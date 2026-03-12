@@ -1,21 +1,21 @@
 /**
- * ProofaAuth - Lightweight vanilla JS client for Proofa authentication
+ * Nube AuthAuth - Lightweight vanilla JS client for Nube Auth authentication
  * 
  * Usage:
- *   const proofa = new ProofaAuth('https://api.proofa.sh', 'your-app-id');
- *   const auth = await proofa.checkAuth();
+ *   const nubeAuth = new Nube AuthAuth('https://api.nubeauth.com', 'your-app-id');
+ *   const auth = await nubeAuth.checkAuth();
  *   if (!auth.loggedIn) {
- *     window.location.href = proofa.getLoginUrl();
+ *     window.location.href = nube-auth.getLoginUrl();
  *   }
  * 
  * @version 1.0.0
  * @license MIT
  */
 
-class ProofaAuth {
+class Nube AuthAuth {
   /**
-   * Initialize Proofa authentication client
-   * @param {string} gatewayUrl - Proofa Gateway URL (e.g., 'https://api.proofa.sh')
+   * Initialize Nube Auth authentication client
+   * @param {string} gatewayUrl - Nube Auth Gateway URL (e.g., 'https://api.nubeauth.com')
    * @param {string} appId - Your app ID or slug
    */
   constructor(gatewayUrl, appId) {
@@ -40,7 +40,7 @@ class ProofaAuth {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new ProofaError(
+      throw new NubeAuthError(
         error.message || `HTTP ${response.status}`,
         response.status,
         error.code
@@ -144,12 +144,12 @@ class ProofaAuth {
 }
 
 /**
- * Custom error class for Proofa API errors
+ * Custom error class for Nube Auth API errors
  */
-class ProofaError extends Error {
+class NubeAuthError extends Error {
   constructor(message, status, code) {
     super(message);
-    this.name = 'ProofaError';
+    this.name = 'NubeAuthError';
     this.status = status;
     this.code = code;
   }
@@ -157,11 +157,11 @@ class ProofaError extends Error {
 
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { ProofaAuth, ProofaError };
+  module.exports = { Nube AuthAuth, NubeAuthError };
 }
 
 // Export for ES6 modules
 if (typeof window !== 'undefined') {
-  window.ProofaAuth = ProofaAuth;
-  window.ProofaError = ProofaError;
+  window.Nube AuthAuth = Nube AuthAuth;
+  window.NubeAuthError = NubeAuthError;
 }

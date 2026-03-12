@@ -1,21 +1,21 @@
 ---
 title: Configuration
-description: Configure Proofa for your environment
+description: Configure Nube Auth for your environment
 ---
 
-Proofa is configured through environment variables and SDK options.
+Nube Auth is configured through environment variables and SDK options.
 
 ## SDK Configuration
 
 ```typescript
-import { ProofaClient } from '@proofa/sdk';
+import { NubeAuthClient } from '@nube-auth/sdk';
 
-const proofa = new ProofaClient({
+const nubeAuth = new NubeAuthClient({
   // Required
   appId: 'your-app-id',
   
-  // API URL (defaults to hosted Proofa)
-  apiUrl: 'https://api.proofa.sh',
+  // API URL (defaults to hosted Nube Auth)
+  apiUrl: 'https://api.nubeauth.com',
   
   // Optional: Custom redirect URI
   redirectUri: 'https://yourapp.com/auth/callback',

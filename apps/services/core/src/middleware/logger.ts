@@ -1,4 +1,4 @@
-import { createId } from "@proofa/shared";
+import { createId } from "@nube-auth/shared";
 import type { Context, Next } from "hono";
 import type pino from "pino";
 

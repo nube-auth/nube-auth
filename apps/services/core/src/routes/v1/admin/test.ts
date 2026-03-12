@@ -3,8 +3,8 @@
  * Admin-only endpoints for testing payment flows without manual setup
  */
 
-import { getDb, eq, and, desc, inArray, testSessionQueries, userQueries, appQueries, planQueries, priceQueries, projectQueries, projectMemberQueries, paymentProviderConfigQueries, purchases, payment_transactions, webhook_logs, prices } from "@proofa/db";
-import { createId, createLogger, serializeError, publicId } from "@proofa/shared";
+import { getDb, eq, and, desc, inArray, testSessionQueries, userQueries, appQueries, planQueries, priceQueries, projectQueries, projectMemberQueries, paymentProviderConfigQueries, purchases, payment_transactions, webhook_logs, prices } from "@nube-auth/db";
+import { createId, createLogger, serializeError, publicId } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { env } from "../../../config/env.js";
@@ -26,7 +26,7 @@ const testRateLimit = rateLimitMiddleware({
 	keyPrefix: "rate-limit:admin-test",
 	identifier: async (c: Context) => {
 		// Use admin ID from header as identifier
-		const adminId = c.req.header("X-Proofa-User-Id");
+		const adminId = c.req.header("X-Nube-User-Id");
 		return adminId || "anonymous";
 	},
 });
@@ -85,7 +85,7 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 		}
 
 		// Get admin user ID from header
-		const adminPublicId = c.req.header("X-Proofa-User-Id");
+		const adminPublicId = c.req.header("X-Nube-User-Id");
 		if (!adminPublicId) {
 			return c.json({ error: "Unauthorized - no admin ID" }, 401);
 		}
@@ -164,7 +164,7 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 			}
 			log.info({ userId: testUser.public_id }, "Using existing user for test");
 		} else {
-			const testUserEmail = `test+${provider}+${Date.now()}@proofa.internal`;
+			const testUserEmail = `test+${provider}+${Date.now()}@nube-auth.internal`;
 			testUser = await userQueries.create(db, {
 				public_id: publicId(createId("user")),
 				primary_email: testUserEmail,
@@ -331,9 +331,9 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 				const baseUrl = env.ADMIN_DASHBOARD_URL || "http://localhost:5174";
 				const checkoutSession = await adapter.createCheckout({
 					// Don't pass customerId - let provider create/find customer by email
-					// (Proofa user IDs don't exist in provider's system yet)
+					// (Nube Auth user IDs don't exist in provider's system yet)
 					customerId: "",
-					customerEmail: testUser.primary_email || "test@proofa.internal",
+					customerEmail: testUser.primary_email || "test@nube-auth.internal",
 					productId: testPrice.external_price_id || "",
 					successUrl: `${baseUrl}/playground/payments?status=success`,
 					cancelUrl: `${baseUrl}/playground/payments?status=cancel`,
@@ -512,7 +512,7 @@ router.post("/simulate-webhook", testRateLimit, async (c: Context) => {
 			currency: "usd",
 			status: paymentStatus,
 			customerId: `cus_test_${Date.now()}`,
-			customerEmail: testUser.primary_email || "test@proofa.internal",
+			customerEmail: testUser.primary_email || "test@nube-auth.internal",
 			...(hasSubscription ? { subscriptionId: `sub_test_${Date.now()}` } : {}),
 			metadata: {
 				userId: testUser.public_id,
@@ -786,7 +786,7 @@ router.get("/providers", async (c: Context) => {
 				name: "stripe",
 				status: "available",
 				testMode: true,
-				webhookUrl: `${env.API_BASE_URL || "https://api.proofa.com"}/v1/payment/webhooks/stripe`,
+				webhookUrl: `${env.API_BASE_URL || "https://api.nubeauth.com"}/v1/payment/webhooks/stripe`,
 				credentials: {
 					publicKey: `${env.STRIPE_PUBLISHABLE_KEY?.substring(0, 20)}****`,
 					hasSecretKey: !!env.STRIPE_SECRET_KEY,
@@ -796,7 +796,7 @@ router.get("/providers", async (c: Context) => {
 				name: "lemonsqueezy",
 				status: "available",
 				testMode: true,
-				webhookUrl: `${env.API_BASE_URL || "https://api.proofa.com"}/v1/payment/webhooks/lemonsqueezy`,
+				webhookUrl: `${env.API_BASE_URL || "https://api.nubeauth.com"}/v1/payment/webhooks/lemonsqueezy`,
 				credentials: {
 					hasApiKey: !!env.LEMONSQUEEZY_API_KEY,
 				},
@@ -805,7 +805,7 @@ router.get("/providers", async (c: Context) => {
 				name: "dodo",
 				status: "available",
 				testMode: true,
-				webhookUrl: `${env.API_BASE_URL || "https://api.proofa.com"}/v1/payment/webhooks/dodo`,
+				webhookUrl: `${env.API_BASE_URL || "https://api.nubeauth.com"}/v1/payment/webhooks/dodo`,
 				credentials: {
 					hasApiKey: !!env.DODO_API_KEY,
 				},

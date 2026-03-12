@@ -1,6 +1,6 @@
 import { useState, useEffect, type ReactNode } from 'react';
-import { cn } from '@proofa/components';
-import { Button } from '@proofa/components';
+import { cn } from '@nube-auth/components';
+import { Button } from '@nube-auth/components';
 
 // Panel icons for sidebar toggle
 function PanelLeftClose() {

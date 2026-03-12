@@ -1,5 +1,5 @@
 /**
- * @proofa/queue
+ * @nube-auth/queue
  * BullMQ-based queue management for background jobs
  * Future-ready for RabbitMQ migration
  */

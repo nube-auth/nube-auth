@@ -1,7 +1,7 @@
 // background.js - Service Worker for PinboardGPT Extension
 
 const CONFIG = {
-  GATEWAY_URL: 'https://api.proofa.sh',
+  GATEWAY_URL: 'https://api.nubeauth.com',
   HOMEPAGE_URL: 'https://pinboardgpt.app',
   APP_ID: 'pinboardgpt',
   COOKIE_NAME: 'pp_app_session',
@@ -16,7 +16,7 @@ let userCache = {
 };
 
 /**
- * Fetch user data from Proofa Gateway
+ * Fetch user data from Nube Auth Gateway
  * @param {boolean} forceRefresh - Skip cache and fetch fresh data
  * @returns {Promise<{user: Object|null, license: Object|null}>}
  */

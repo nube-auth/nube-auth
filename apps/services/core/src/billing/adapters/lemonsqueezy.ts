@@ -5,7 +5,7 @@
  * Documentation: https://docs.lemonsqueezy.com/api
  */
 
-import { createLogger, serializeError } from "@proofa/shared";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import crypto from "node:crypto";
 import type {
 	CheckoutSession,

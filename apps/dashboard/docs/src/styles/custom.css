@@ -1,7 +1,7 @@
 /* Import theme variables */
-@import '@proofa/components/styles/theme.css';
+@import '@nube-auth/components/styles/theme.css';
 
-/* Proofa Docs - Custom Theme for VitePress */
+/* Nube Auth Docs - Custom Theme for VitePress */
 /* Note: VitePress uses its own theming system */
 
 /* Prevent flash of white background */

@@ -13,7 +13,7 @@
  * - Partial refunds with amount validation
  */
 
-import { createLogger } from "@proofa/shared";
+import { createLogger } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 

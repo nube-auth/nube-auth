@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Icon, IconType, Tabs, TabsList, TabsItem } from "@proofa/components";
+import { Icon, IconType, Tabs, TabsList, TabsItem } from "@nube-auth/components";
 
 export function TabNavigation() {
 	const location = useLocation();

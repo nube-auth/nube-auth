@@ -1,28 +1,28 @@
 ---
 title: Quick Start
-description: Get Proofa running in your application in under 5 minutes
+description: Get Nube Auth running in your application in under 5 minutes
 ---
 
-Get Proofa integrated into your application quickly.
+Get Nube Auth integrated into your application quickly.
 
 ## Install the SDK
 
 ```bash
-npm install @proofa/sdk
+npm install @nube-auth/sdk
 # or
-pnpm add @proofa/sdk
+pnpm add @nube-auth/sdk
 # or
-yarn add @proofa/sdk
+yarn add @nube-auth/sdk
 ```
 
 ## Initialize the Client
 
 ```typescript
-import { ProofaClient } from '@proofa/sdk';
+import { NubeAuthClient } from '@nube-auth/sdk';
 
-const proofa = new ProofaClient({
+const nubeAuth = new NubeAuthClient({
   appId: 'your-app-id',
-  apiUrl: 'https://api.proofa.sh' // or your self-hosted URL
+  apiUrl: 'https://api.nubeauth.com' // or your self-hosted URL
 });
 ```
 
@@ -31,22 +31,22 @@ const proofa = new ProofaClient({
 ```typescript
 // Start OAuth login
 async function handleLogin() {
-  await proofa.login({ provider: 'google' });
+  await nubeAuth.login({ provider: 'google' });
 }
 
 // Handle callback (in your callback page)
 async function handleCallback() {
-  const result = await proofa.handleCallback();
+  const result = await nube-auth.handleCallback();
   if (result.success) {
     // User is now authenticated
-    const user = await proofa.getUser();
+    const user = await nubeAuth.getUser();
     console.log('Welcome', user.name);
   }
 }
 
 // Logout
 async function handleLogout() {
-  await proofa.logout();
+  await nubeAuth.logout();
 }
 ```
 
@@ -54,7 +54,7 @@ async function handleLogout() {
 
 ```typescript
 // Get current user (returns null if not authenticated)
-const user = await proofa.getUser();
+const user = await nubeAuth.getUser();
 
 if (user) {
   console.log('Logged in as:', user.email);
@@ -68,7 +68,7 @@ if (user) {
 ```typescript
 // React example
 function ProtectedRoute({ children }) {
-  const { user, loading } = useProofa();
+  const { user, loading } = useNube Auth();
   
   if (loading) return <Loading />;
   if (!user) return <Navigate to="/login" />;

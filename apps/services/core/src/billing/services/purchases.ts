@@ -4,8 +4,8 @@
  * Handles creation of purchase, transaction, subscription, and license records
  */
 
-import type { Database } from "@proofa/db";
-import { eq, sql, } from "@proofa/db";
+import type { Database } from "@nube-auth/db";
+import { eq, sql, } from "@nube-auth/db";
 import {
 	apps,
 	licenses,
@@ -16,8 +16,8 @@ import {
 	users,
 	plans,
 	payment_transactions,
-} from "@proofa/db/schema";
-import { createLogger, serializeError, id } from "@proofa/shared";
+} from "@nube-auth/db/schema";
+import { createLogger, serializeError, id } from "@nube-auth/shared";
 import type { PaymentDetails } from "../adapters/types.js";
 
 const log = createLogger("purchases-service");

@@ -7,8 +7,8 @@ import {
 	planQueries,
 	priceQueries,
 	userQueries,
-} from "@proofa/db";
-import { createId, createLogger, idPatterns, serializeError } from "@proofa/shared";
+} from "@nube-auth/db";
+import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -82,7 +82,7 @@ licenseManagementRouter.post("/grant", async (c: Context) => {
 		const body = await c.req.json();
 		const validated = GrantLicenseSchema.parse(body);
 
-		const adminUserId = c.req.header("X-Proofa-User-Id");
+		const adminUserId = c.req.header("X-Nube-User-Id");
 		if (!adminUserId) return c.json({ error: "Unauthorized" }, 401);
 
 		const db = getDb();
@@ -335,7 +335,7 @@ licenseManagementRouter.patch("/:licenseId", async (c: Context) => {
 		if (!idPatterns.license.test(licenseId))
 			return c.json({ error: "Invalid licenseId" }, 400);
 
-		const adminUserId = c.req.header("X-Proofa-User-Id");
+		const adminUserId = c.req.header("X-Nube-User-Id");
 		if (!adminUserId) return c.json({ error: "Unauthorized" }, 401);
 
 		const db = getDb();
@@ -451,7 +451,7 @@ licenseManagementRouter.delete("/:licenseId", async (c: Context) => {
 		if (!idPatterns.license.test(licenseId))
 			return c.json({ error: "Invalid licenseId" }, 400);
 
-		const adminUserId = c.req.header("X-Proofa-User-Id");
+		const adminUserId = c.req.header("X-Nube-User-Id");
 		if (!adminUserId) return c.json({ error: "Unauthorized" }, 401);
 
 		const db = getDb();

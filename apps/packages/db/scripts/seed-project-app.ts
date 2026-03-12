@@ -12,7 +12,7 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
-import { createId, } from "@proofa/shared";
+import { createId, } from "@nube-auth/shared";
 import { getDb } from "../src/index.js";
 import { userQueries, projectQueries, appQueries, projectMemberQueries } from "../src/queries.js";
 import { users } from "../src/schema.js";

@@ -13,7 +13,7 @@ import {
 	EmptyState,
 	Breadcrumb,
 	BreadcrumbSeparator,
-} from "@proofa/components";
+} from "@nube-auth/components";
 import { useToast } from "../components/Toast";
 import { useApp, useProject, useProjectPaymentProviders, useSelectPaymentProvider, useSelectedPaymentProvider } from "../hooks/api";
 

@@ -640,7 +640,7 @@ export const promotion_plans = pgTable(
 
 /**
  * Promotion Provider Refs table (Provider Coupon Mapping)
- * Maps Proofa promotions to provider-specific coupons/discounts.
+ * Maps Nube Auth promotions to provider-specific coupons/discounts.
  * Immutable pattern — deactivate old ref, create new promotion if terms change.
  */
 export const promotion_provider_refs = pgTable(

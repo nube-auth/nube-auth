@@ -1,6 +1,6 @@
-# @proofa/db
+# @nube-auth/db
 
-**Database Package for Proofa Platform**
+**Database Package for Nube Auth Platform**
 
 PostgreSQL database with Drizzle ORM, providing type-safe database access and migrations.
 
@@ -60,7 +60,7 @@ PostgreSQL database with Drizzle ORM, providing type-safe database access and mi
 ## Installation
 
 ```bash
-pnpm add @proofa/db
+pnpm add @nube-auth/db
 ```
 
 ---
@@ -68,7 +68,7 @@ pnpm add @proofa/db
 ## Usage
 
 ```typescript
-import { getDb, userQueries, projectQueries } from "@proofa/db";
+import { getDb, userQueries, projectQueries } from "@nube-auth/db";
 
 // Get database instance
 const db = getDb();
@@ -78,7 +78,7 @@ const user = await userQueries.findByPublicId(db, "usr_123");
 const projects = await projectQueries.findByUserId(db, user.id);
 
 // Direct Drizzle queries
-import { users } from "@proofa/db";
+import { users } from "@nube-auth/db";
 import { eq } from "drizzle-orm";
 
 const user = await db.select().from(users).where(eq(users.public_id, "usr_123"));
@@ -147,7 +147,7 @@ settings.maxSessions = 10;  // Lost update possible!
 await db.update(apps).set({ security_settings: settings });
 
 // ✅ CORRECT - Atomic operation
-import { buildJsonbMergeClause, buildJsonbSetClause, createJsonbUpdateChain } from '@proofa/db';
+import { buildJsonbMergeClause, buildJsonbSetClause, createJsonbUpdateChain } from '@nube-auth/db';
 
 // Top-level field updates
 await db.update(apps)
@@ -213,7 +213,7 @@ pnpm run db:studio
 ### Environment
 ```bash
 # Required environment variable
-DATABASE_URL=postgresql://user:password@localhost:5432/proofa
+DATABASE_URL=postgresql://user:password@localhost:5432/nube-auth
 ```
 
 ---
@@ -326,7 +326,7 @@ All foreign keys have indexes. Additional indexes:
 ## Testing
 
 ```typescript
-import { createDbClient } from "@proofa/db";
+import { createDbClient } from "@nube-auth/db";
 
 // Create test database
 const testDb = createDbClient();

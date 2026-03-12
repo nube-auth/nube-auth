@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useBillingPurchases, useBillingRefunds, useCreateRefund } from "../hooks/api";
 import { useToast } from "../components/Toast";
-import { Heading, Text, Card, CardBody, Button, Alert, Chip, Label, Input, EmptyState, DataTable, DataTableRow, TableHeader, TableHead, TableBody, TableCell } from "@proofa/components";
+import { Heading, Text, Card, CardBody, Button, Alert, Chip, Label, Input, EmptyState, DataTable, DataTableRow, TableHeader, TableHead, TableBody, TableCell } from "@nube-auth/components";
 import { Select } from "../components/Select";
 
 export function RefundProcessingPage() {

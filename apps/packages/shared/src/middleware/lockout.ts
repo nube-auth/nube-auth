@@ -1,4 +1,4 @@
-import { cache } from "@proofa/cache";
+import { cache } from "@nube-auth/cache";
 import type { Context } from "hono";
 import { ErrorResponses } from "../utils/errors";
 import { createLogger } from "../utils/logger";

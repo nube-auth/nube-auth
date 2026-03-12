@@ -16,7 +16,7 @@ import {
 	BreadcrumbList,
 	BreadcrumbItem,
 	BreadcrumbButton,
-} from "@proofa/components";
+} from "@nube-auth/components";
 import { PageLoader } from "../components/PageLoader";
 
 export function AppDevelopersPage() {
@@ -72,7 +72,7 @@ export function AppDevelopersPage() {
 			<div>
 				<Heading level={1} size="lg">Integration Guide</Heading>
 				<Text className="text-muted-foreground">
-					Learn how to integrate Proofa authentication into your application
+					Learn how to integrate Nube Auth authentication into your application
 				</Text>
 			</div>
 
@@ -89,7 +89,7 @@ export function AppDevelopersPage() {
 				<TabsPanel value="quickstart">
 						<Heading level={2} size="lg" className="text-xl font-bold mb-4">Quick Start</Heading>
 						<Text className="text-sm text-muted-foreground mb-6 leading-relaxed">
-							Get started with Proofa in 5 minutes. This guide will walk you through the basic setup.
+							Get started with Nube Auth in 5 minutes. This guide will walk you through the basic setup.
 						</Text>
 
 						{/* Step 1 */}
@@ -101,19 +101,19 @@ export function AppDevelopersPage() {
 								>
 									1
 								</div>
-								<Heading level={3} size="md" className="text-base font-semibold">Install the Proofa SDK</Heading>
+								<Heading level={3} size="md" className="text-base font-semibold">Install the Nube Auth SDK</Heading>
 							</div>
 							<div className="relative">
 								<pre
 									className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0"
 								>
-									<code className="text-foreground">npm install @proofa/react</code>
+									<code className="text-foreground">npm install @nube-auth/react</code>
 								</pre>
 								<Button
 									type="button"
 									variant="secondary"
 									size="sm"
-									onClick={() => handleCopy("npm install @proofa/react")}
+									onClick={() => handleCopy("npm install @nube-auth/react")}
 									className="absolute top-3 right-3"
 								>
 									{copied ? "✓ Copied" : "Copy"}
@@ -154,20 +154,20 @@ export function AppDevelopersPage() {
 									3
 								</div>
 								<Heading level={3} size="md" className="text-base font-semibold">
-									Wrap your app with ProofaProvider
+									Wrap your app with NubeAuthProvider
 								</Heading>
 							</div>
 							<div className="relative">
 								<pre
 									className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 								>
-									<code className="text-foreground">{`import { ProofaProvider } from '@proofa/react';
+									<code className="text-foreground">{`import { NubeAuthProvider } from '@nube-auth/react';
 
 function App() {
   return (
-    <ProofaProvider appId="${app.id}">
+    <NubeAuthProvider appId="${app.id}">
       <YourApp />
-    </ProofaProvider>
+    </NubeAuthProvider>
   );
 }`}</code>
 								</pre>
@@ -190,7 +190,7 @@ function App() {
 								<pre
 									className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 								>
-									<code className="text-foreground">{`import { useAuth } from '@proofa/react';
+									<code className="text-foreground">{`import { useAuth } from '@nube-auth/react';
 
 function YourComponent() {
   const { user, isAuthenticated, login, logout } = useAuth();
@@ -240,7 +240,7 @@ function YourComponent() {
 						<Text
 							className="text-sm text-muted-foreground mb-6 leading-relaxed"
 						>
-							Complete guide for integrating Proofa into your React application.
+							Complete guide for integrating Nube Auth into your React application.
 						</Text>
 
 						<Card className="mb-4">
@@ -249,7 +249,7 @@ function YourComponent() {
 							<pre
 								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0"
 							>
-								<code className="text-foreground">npm install @proofa/react</code>
+								<code className="text-foreground">npm install @nube-auth/react</code>
 							</pre>
 							</CardBody>
 						</Card>
@@ -260,23 +260,23 @@ function YourComponent() {
 								Setup Provider
 							</Heading>
 							<Text className="text-sm text-muted-foreground mb-3">
-								Wrap your root component with the ProofaProvider:
+								Wrap your root component with the NubeAuthProvider:
 							</Text>
 							<pre
 								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
-								<code className="text-foreground">{`import { ProofaProvider } from '@proofa/react';
+								<code className="text-foreground">{`import { NubeAuthProvider } from '@nube-auth/react';
 import { BrowserRouter } from 'react-router-dom';
 
 function App() {
   return (
     <BrowserRouter>
-      <ProofaProvider 
+      <NubeAuthProvider 
         appId="${app.id}"
         redirectUrl="/dashboard"
       >
         <YourRoutes />
-      </ProofaProvider>
+      </NubeAuthProvider>
     </BrowserRouter>
   );
 }
@@ -295,7 +295,7 @@ export default App;`}</code>
 							<pre
 								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
-								<code className="text-foreground">{`import { useAuth } from '@proofa/react';
+								<code className="text-foreground">{`import { useAuth } from '@nube-auth/react';
 
 function Dashboard() {
   const { 
@@ -347,7 +347,7 @@ function Dashboard() {
 							<pre
 								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
-								<code className="text-foreground">{`import { useAuth } from '@proofa/react';
+								<code className="text-foreground">{`import { useAuth } from '@nube-auth/react';
 import { Navigate } from 'react-router-dom';
 
 function ProtectedRoute({ children }) {
@@ -382,7 +382,7 @@ function ProtectedRoute({ children }) {
 						<Text
 							className="text-sm text-muted-foreground mb-6 leading-relaxed"
 						>
-							Complete guide for integrating Proofa into your Next.js application (App Router).
+							Complete guide for integrating Nube Auth into your Next.js application (App Router).
 						</Text>
 
 						<Card className="mb-4">
@@ -391,7 +391,7 @@ function ProtectedRoute({ children }) {
 							<pre
 								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0"
 							>
-								<code className="text-foreground">npm install @proofa/react</code>
+								<code className="text-foreground">npm install @nube-auth/react</code>
 							</pre>
 							</CardBody>
 						</Card>
@@ -406,18 +406,18 @@ function ProtectedRoute({ children }) {
 							>
 								<code className="text-foreground">{`'use client';
 
-import { ProofaProvider } from '@proofa/react';
+import { NubeAuthProvider } from '@nube-auth/react';
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <ProofaProvider 
+        <NubeAuthProvider 
           appId="${app.id}"
           redirectUrl="/dashboard"
         >
           {children}
-        </ProofaProvider>
+        </NubeAuthProvider>
       </body>
     </html>
   );
@@ -436,7 +436,7 @@ export default function RootLayout({ children }) {
 							>
 								<code className="text-foreground">{`'use client';
 
-import { useAuth } from '@proofa/react';
+import { useAuth } from '@nube-auth/react';
 
 export default function Dashboard() {
   const { user, isAuthenticated, login, logout } = useAuth();
@@ -468,7 +468,7 @@ export default function Dashboard() {
 								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
 								<code className="text-foreground">{`// app/api/protected/route.ts
-import { verifySession } from '@proofa/next';
+import { verifySession } from '@nube-auth/next';
 
 export async function GET(request: Request) {
   const session = await verifySession(request);
@@ -494,7 +494,7 @@ export async function GET(request: Request) {
 						<Text
 							className="text-sm text-muted-foreground mb-6 leading-relaxed"
 						>
-							Use Proofa without any framework.
+							Use Nube Auth without any framework.
 						</Text>
 
 						<Card className="mb-4">
@@ -503,7 +503,7 @@ export async function GET(request: Request) {
 							<pre
 								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0"
 							>
-								<code className="text-foreground">npm install @proofa/client</code>
+								<code className="text-foreground">npm install @nube-auth/client</code>
 							</pre>
 							</CardBody>
 						</Card>
@@ -516,9 +516,9 @@ export async function GET(request: Request) {
 							<pre
 								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
-								<code className="text-foreground">{`import { ProofaClient } from '@proofa/client';
+								<code className="text-foreground">{`import { NubeAuthClient } from '@nube-auth/client';
 
-const client = new ProofaClient({
+const client = new NubeAuthClient({
   appId: '${app.id}',
   redirectUrl: '/dashboard'
 });
@@ -597,7 +597,7 @@ checkAuth();`}</code>
 							<pre
 								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
-								<code className="text-foreground">{`import { verifySession } from '@proofa/node';
+								<code className="text-foreground">{`import { verifySession } from '@nube-auth/node';
 
 // Middleware
 async function requireAuth(req, res, next) {
@@ -635,7 +635,7 @@ app.get('/api/protected', requireAuth, (req, res) => {
 								<code className="text-foreground">{`from functools import wraps
 import requests
 
-PROOFA_API = "https://api.proofa.com"
+NUBE_AUTH_API = "https://api.nubeauth.com"
 APP_ID = "${app.id}"
 
 def require_auth(f):
@@ -646,9 +646,9 @@ def require_auth(f):
         if not token:
             return {'error': 'Unauthorized'}, 401
         
-        # Verify with Proofa
+        # Verify with Nube Auth
         response = requests.get(
-            f"{PROOFA_API}/v1/verify",
+            f"{NUBE_AUTH_API}/v1/verify",
             headers={'Authorization': token, 'X-App-ID': APP_ID}
         )
         
@@ -681,10 +681,10 @@ def protected_route():
 								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
 							>
 								<code className="text-foreground">{`// Get user by email (admin operation)
-const response = await fetch('https://api.proofa.com/v1/users/by-email', {
+const response = await fetch('https://api.nubeauth.com/v1/users/by-email', {
   method: 'POST',
   headers: {
-    'Authorization': \`Bearer \${process.env.PROOFA_SERVICE_TOKEN}\`,
+    'Authorization': \`Bearer \${process.env.NUBE_AUTH_SERVICE_TOKEN}\`,
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({ email: 'user@example.com' })

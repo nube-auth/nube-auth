@@ -1,8 +1,8 @@
-# Browser Extension Integration Guide for Proofa
+# Browser Extension Integration Guide for Nube Auth
 
 **Project**: PinboardGPT Browser Extension  
 **Tech Stack**: Vanilla JS (no React)  
-**Authentication**: Proofa  
+**Authentication**: Nube Auth  
 **Last Updated**: January 11, 2026
 
 ---
@@ -21,17 +21,17 @@
    - **Background Script**: Manages auth state, API calls
    - **Content Scripts**: (Optional) Inject functionality into pages
 
-3. **Proofa Gateway** (`api.proofa.sh`)
+3. **Nube Auth Gateway** (`api.nubeauth.com`)
    - Authentication provider
    - User/license management
 
 ---
 
-## Setup: Create App in Proofa
+## Setup: Create App in Nube Auth
 
 ### 1. Admin Creates App
 
-In Proofa Admin Dashboard (`admin.proofa.com`):
+In Nube Auth Admin Dashboard (`admin.nubeauth.com`):
 
 ```json
 {
@@ -56,7 +56,7 @@ In Proofa Admin Dashboard (`admin.proofa.com`):
 
 After app creation, note these values:
 - **App ID**: `APP0xyz123...` (or slug: `pinboardgpt`)
-- **Gateway URL**: `https://api.proofa.sh`
+- **Gateway URL**: `https://api.nubeauth.com`
 - **API Key**: (Generated automatically in `app_tokens`)
 
 ---
@@ -73,19 +73,19 @@ pinboardgpt.app/
 │   ├── login.html         # Login page
 │   └── callback.html      # OAuth callback handler
 ├── js/
-│   ├── proofa.js          # Proofa client wrapper
+│   ├── nube-auth.js          # Nube Auth client wrapper
 │   └── auth.js            # Auth helper functions
 └── css/
     └── styles.css
 ```
 
-### 1. Proofa Client Wrapper (`js/proofa.js`)
+### 1. Nube Auth Client Wrapper (`js/nube-auth.js`)
 
 ```javascript
-// js/proofa.js
-class ProofaClient {
+// js/nube-auth.js
+class NubeAuthClient {
   constructor(config) {
-    this.gatewayUrl = config.gatewayUrl || 'https://api.proofa.sh';
+    this.gatewayUrl = config.gatewayUrl || 'https://api.nubeauth.com';
     this.appId = config.appId;
   }
 
@@ -145,11 +145,11 @@ class ProofaClient {
 }
 
 // Export for use in other scripts
-window.ProofaClient = ProofaClient;
+window.NubeAuthClient = NubeAuthClient;
 
 // Initialize global instance
-window.proofaClient = new ProofaClient({
-  gatewayUrl: 'https://api.proofa.sh',
+window.nube-authClient = new NubeAuthClient({
+  gatewayUrl: 'https://api.nubeauth.com',
   appId: 'pinboardgpt',
 });
 ```
@@ -183,21 +183,21 @@ window.proofaClient = new ProofaClient({
     </div>
   </div>
 
-  <script src="../js/proofa.js"></script>
+  <script src="../js/nube-auth.js"></script>
   <script>
     function loginWithGoogle() {
-      const loginUrl = window.proofaClient.getLoginUrl();
+      const loginUrl = window.nube-authClient.getLoginUrl();
       window.location.href = loginUrl + '&provider=google';
     }
 
     function loginWithGitHub() {
-      const loginUrl = window.proofaClient.getLoginUrl();
+      const loginUrl = window.nube-authClient.getLoginUrl();
       window.location.href = loginUrl + '&provider=github';
     }
 
     // Or generic login (user picks provider)
     function login() {
-      window.location.href = window.proofaClient.getLoginUrl();
+      window.location.href = window.nube-authClient.getLoginUrl();
     }
   </script>
 </body>
@@ -220,13 +220,13 @@ window.proofaClient = new ProofaClient({
     <p>Completing authentication...</p>
   </div>
 
-  <script src="../js/proofa.js"></script>
+  <script src="../js/nube-auth.js"></script>
   <script>
     (async function() {
       try {
-        // Proofa Gateway has already set pp_app_session cookie
+        // Nube Auth Gateway has already set pp_app_session cookie
         // Just verify it worked
-        const auth = await window.proofaClient.checkAuth();
+        const auth = await window.nube-authClient.checkAuth();
         
         if (auth.loggedIn) {
           // Get return URL from state parameter
@@ -236,7 +236,7 @@ window.proofaClient = new ProofaClient({
           
           // Send message to extension (if installed)
           window.postMessage({ 
-            type: 'PROOFA_AUTH_SUCCESS',
+            type: 'NUBE_AUTH_AUTH_SUCCESS',
             user: auth.user,
             license: auth.license,
           }, window.location.origin);
@@ -279,13 +279,13 @@ window.proofaClient = new ProofaClient({
     </div>
   </nav>
 
-  <script src="/js/proofa.js"></script>
+  <script src="/js/nube-auth.js"></script>
   <script>
     (async function() {
       const authContainer = document.getElementById('nav-auth');
       
       try {
-        const auth = await window.proofaClient.checkAuth();
+        const auth = await window.nube-authClient.checkAuth();
         
         if (auth.loggedIn) {
           // User is logged in
@@ -309,7 +309,7 @@ window.proofaClient = new ProofaClient({
 
     async function handleLogout() {
       try {
-        await window.proofaClient.logout();
+        await window.nube-authClient.logout();
         window.location.reload();
       } catch (error) {
         console.error('Logout failed:', error);
@@ -358,7 +358,7 @@ extension/
   ],
   "host_permissions": [
     "https://pinboardgpt.app/*",
-    "https://api.proofa.sh/*"
+    "https://api.nubeauth.com/*"
   ],
   "background": {
     "service_worker": "background/background.js"
@@ -384,7 +384,7 @@ extension/
 ```javascript
 // background/background.js
 
-const GATEWAY_URL = 'https://api.proofa.sh';
+const GATEWAY_URL = 'https://api.nubeauth.com';
 const HOMEPAGE_URL = 'https://pinboardgpt.app';
 
 // Cache user data in extension storage
@@ -918,12 +918,12 @@ body {
     </div>
   </div>
 
-  <script src="/js/proofa.js"></script>
+  <script src="/js/nube-auth.js"></script>
   <script>
     async function selectPlan(planSlug) {
       try {
         // Check if user is logged in
-        const auth = await window.proofaClient.checkAuth();
+        const auth = await window.nube-authClient.checkAuth();
         
         if (!auth.loggedIn) {
           // Redirect to login, return to pricing after
@@ -955,7 +955,7 @@ body {
     // Show user auth status in nav
     (async function() {
       const authContainer = document.getElementById('nav-auth');
-      const auth = await window.proofaClient.checkAuth();
+      const auth = await window.nube-authClient.checkAuth();
       
       if (auth.loggedIn) {
         authContainer.innerHTML = `
@@ -974,7 +974,7 @@ body {
 
 ### 2. Checkout Flow (Phase 2)
 
-**Note**: Full payment integration requires Proofa's payment system (Stripe/LemonSqueezy). For MVP, you can:
+**Note**: Full payment integration requires Nube Auth's payment system (Stripe/LemonSqueezy). For MVP, you can:
 
 **Option A: Manual License Grants**
 - User selects plan on pricing page
@@ -982,9 +982,9 @@ body {
 - User sees updated license in extension popup
 
 **Option B: Payment Provider Integration** (Full Implementation)
-1. User selects plan → Creates checkout session via Proofa Gateway
+1. User selects plan → Creates checkout session via Nube Auth Gateway
 2. Redirects to Stripe/LemonSqueezy hosted checkout
-3. After payment, webhook updates license in Proofa Core
+3. After payment, webhook updates license in Nube Auth
 4. Extension polls for license update
 
 ---
@@ -1002,13 +1002,13 @@ body {
    ↓
 4. Clicks "Continue with Google"
    ↓
-5. Redirects to api.proofa.sh/v1/auth/start
+5. Redirects to api.nubeauth.com/v1/auth/start
    ↓
-6. Proofa redirects to Google OAuth
+6. Nube Auth redirects to Google OAuth
    ↓
 7. User authenticates with Google
    ↓
-8. Proofa creates session, redirects to pinboardgpt.app/auth/callback
+8. Nube Auth creates session, redirects to pinboardgpt.app/auth/callback
    ↓
 9. Callback page sets pp_app_session cookie, closes tab
    ↓
@@ -1024,7 +1024,7 @@ body {
     ↓
 15. User selects plan and completes checkout
     ↓
-16. Webhook updates license in Proofa
+16. Webhook updates license in Nube Auth
     ↓
 17. Extension polls and refreshes license data
     ↓
@@ -1036,7 +1036,7 @@ body {
 ## Testing Checklist
 
 ### Homepage Testing
-- [ ] Login redirects to Proofa correctly
+- [ ] Login redirects to Nube Auth correctly
 - [ ] Callback sets pp_app_session cookie
 - [ ] checkAuth() returns user data after login
 - [ ] Logout clears session cookie
@@ -1088,7 +1088,7 @@ body {
 **Solution**: Ensure `host_permissions` includes `https://pinboardgpt.app/*`
 
 ### Issue: Auth callback doesn't set cookie
-**Solution**: Check redirect_uri is allowlisted in Proofa app config
+**Solution**: Check redirect_uri is allowlisted in Nube Auth app config
 
 ### Issue: User data not updating
 **Solution**: Clear cache by clicking "Refresh" or check cache TTL
@@ -1110,7 +1110,7 @@ body {
 ## Support
 
 For integration help:
-- **Proofa Docs**: https://docs.proofa.com
+- **Nube Auth Docs**: https://docs.nubeauth.com
 - **Contact**: dev@pinboardgpt.app
 
 **Last Updated**: January 11, 2026

@@ -4,8 +4,8 @@
  * Processes all webhook events and updates license states accordingly
  */
 
-import { getDb, } from "@proofa/db";
-import { createLogger, serializeError } from "@proofa/shared";
+import { getDb, } from "@nube-auth/db";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import type { PaymentDetails } from "../adapters/types.js";
 import { licenseManager } from "./license-manager.js";
 import { createPurchaseRecords } from "./purchases.js";

@@ -11,4 +11,4 @@ export type {
 	ProjectDTO as Project,
 	ProjectMemberDTO as ProjectMember,
 	UpdateAppRequest,
-} from "@proofa/shared";
+} from "@nube-auth/shared";

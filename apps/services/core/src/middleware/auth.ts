@@ -1,7 +1,7 @@
 import type { Context, Next } from "hono";
 import { getSignedCookie } from "hono/cookie";
-import { getDb, sessionQueries, userQueries } from "@proofa/db";
-import { createLogger, serializeError, idPatterns } from "@proofa/shared";
+import { getDb, sessionQueries, userQueries } from "@nube-auth/db";
+import { createLogger, serializeError, idPatterns } from "@nube-auth/shared";
 
 const log = createLogger("auth-middleware");
 
@@ -16,10 +16,10 @@ export interface AuthenticatedContext {
 
 /**
  * Core session validation middleware
- * Validates session from X-Proofa-Session-Id header (S2S calls) or signed cookie
+ * Validates session from X-Nube-Session-Id header (S2S calls) or signed cookie
  * 
  * Security: Session must exist, be unexpired, and belong to a valid user
- * Tracking: https://github.com/0xdps/proofa-core/issues/42
+ * Tracking: https://github.com/0xdps/nube-auth/issues/42
  */
 export async function authMiddleware(c: Context, next: Next): Promise<Response | undefined> {
 	try {
@@ -27,7 +27,7 @@ export async function authMiddleware(c: Context, next: Next): Promise<Response |
 		const now = new Date();
 
 		// Check for session in header (S2S) or signed cookie
-		const sessionHeader = c.req.header("x-proofa-session-id");
+		const sessionHeader = c.req.header("x-nube-session-id");
 		const sessionCookie = await getSignedCookie(c, "session_secret", "sessionId");
 		const sessionPublicId = sessionHeader || sessionCookie;
 

@@ -1,6 +1,6 @@
-# @proofa/auth
+# @nube-auth/auth
 
-OAuth authentication adapter framework for Proofa.
+OAuth authentication adapter framework for Nube Auth.
 
 ## Contents
 
@@ -10,7 +10,7 @@ OAuth authentication adapter framework for Proofa.
 ## Installation
 
 ```bash
-pnpm install @proofa/auth
+pnpm install @nube-auth/auth
 ```
 
 ## Adapter Interface
@@ -27,7 +27,7 @@ interface OAuthAdapter {
 ## Usage
 
 ```typescript
-import { GoogleOAuthAdapter, GitHubOAuthAdapter } from '@proofa/auth';
+import { GoogleOAuthAdapter, GitHubOAuthAdapter } from '@nube-auth/auth';
 
 // Google OAuth
 const googleAdapter = new GoogleOAuthAdapter({

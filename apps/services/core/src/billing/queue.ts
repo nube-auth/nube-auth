@@ -2,8 +2,8 @@
  * Queue Job Enqueuers for Billing Operations
  */
 
-import { getQueue } from "@proofa/queue";
-import { createLogger } from "@proofa/shared";
+import { getQueue } from "@nube-auth/queue";
+import { createLogger } from "@nube-auth/shared";
 
 const log = createLogger("billing-queue");
 

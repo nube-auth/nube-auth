@@ -3,7 +3,7 @@ title: Licensing Overview
 description: Implement flexible licensing for your SaaS
 ---
 
-Proofa's licensing system lets you implement any business model.
+Nube Auth's licensing system lets you implement any business model.
 
 ## Concepts
 
@@ -18,18 +18,18 @@ Proofa's licensing system lets you implement any business model.
 
 ```typescript
 // Check if user has a feature
-const canExport = await proofa.hasEntitlement('export');
+const canExport = await nube-auth.hasEntitlement('export');
 
 if (canExport) {
   // Show export button
 }
 
 // Get user's current plan
-const license = await proofa.getLicense();
+const license = await nube-auth.getLicense();
 console.log(license.plan); // 'pro'
 
 // Check usage limits
-const usage = await proofa.getUsage('api_calls');
+const usage = await nube-auth.getUsage('api_calls');
 console.log(usage.current, usage.limit); // 450, 1000
 ```
 
@@ -67,17 +67,17 @@ TRIAL_PLAN=pro
 
 ```typescript
 // Single entitlement
-if (await proofa.hasEntitlement('advanced_analytics')) {
+if (await nube-auth.hasEntitlement('advanced_analytics')) {
   showAnalyticsDashboard();
 }
 
 // Multiple entitlements (all required)
-if (await proofa.hasEntitlements(['export', 'api_access'])) {
+if (await nube-auth.hasEntitlements(['export', 'api_access'])) {
   enableAPIExport();
 }
 
 // Any of multiple entitlements
-if (await proofa.hasAnyEntitlement(['export_csv', 'export_pdf'])) {
+if (await nube-auth.hasAnyEntitlement(['export_csv', 'export_pdf'])) {
   showExportMenu();
 }
 ```
@@ -108,7 +108,7 @@ Get notified of license changes:
 
 ```typescript
 // In your webhook handler
-app.post('/webhooks/proofa', (req, res) => {
+app.post('/webhooks/nube-auth', (req, res) => {
   const { event, data } = req.body;
   
   switch (event) {

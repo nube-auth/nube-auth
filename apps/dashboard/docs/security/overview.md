@@ -1,11 +1,11 @@
 ---
 title: Security Overview
-description: Comprehensive security features and best practices for Proofa
+description: Comprehensive security features and best practices for Nube Auth
 ---
 
 # Security Overview
 
-Proofa has achieved an **A+ security rating (94/100)** through comprehensive security measures and independent audits.
+Nube Auth has achieved an **A+ security rating (94/100)** through comprehensive security measures and independent audits.
 
 ## 🏆 Security Rating
 
@@ -52,7 +52,7 @@ Proofa has achieved an **A+ security rating (94/100)** through comprehensive sec
 
 ### Multi-Layered Defense
 
-Proofa implements a comprehensive 4-layer protection strategy against session hijacking:
+Nube Auth implements a comprehensive 4-layer protection strategy against session hijacking:
 
 #### Layer 1: Session Fingerprinting
 
@@ -90,8 +90,8 @@ Additional middleware that blocks:
 
 ```typescript
 // Example blocked request
-curl -X POST https://api.proofa.sh/v1/admin/projects \
-  -H "Cookie: proofa_admin_session=<token>"
+curl -X POST https://api.nubeauth.com/v1/admin/projects \
+  -H "Cookie: nube_admin_session=<token>"
 
 // Response: 403 Forbidden
 // "Admin operations must be performed through the web interface"
@@ -119,7 +119,7 @@ Tracks:
 
 ### Redis-Based Protection
 
-Proofa uses a Redis-backed sliding window algorithm for rate limiting:
+Nube Auth uses a Redis-backed sliding window algorithm for rate limiting:
 
 **Auth Endpoints** (`/v1/auth/*`):
 - **Limit**: 10 requests per 5 minutes
@@ -152,23 +152,23 @@ All state-changing operations on admin routes require CSRF tokens:
 
 ```http
 POST /v1/admin/projects
-Origin: https://manage.proofa.sh
-Cookie: proofa_admin_session=...
-X-Proofa-CSRF-Token: ...
+Origin: https://manage.nubeauth.com
+Cookie: nube_admin_session=...
+X-Nube-CSRF-Token: ...
 ```
 
 ### Allowed Origins
 
 CSRF tokens are validated against:
 - `http://localhost:5174` (local admin dashboard)
-- `https://manage.proofa.sh` (production admin dashboard)
-- `*.proofa.sh` (any Proofa subdomain)
+- `https://manage.nubeauth.com` (production admin dashboard)
+- `*.nubeauth.com` (any Nube Auth subdomain)
 
 ## 📊 Audit Logging
 
 ### Event Types
 
-Proofa tracks 40+ audit event types:
+Nube Auth tracks 40+ audit event types:
 
 **Authentication Events**:
 - User login/logout
@@ -220,7 +220,7 @@ Proofa tracks 40+ audit event types:
 
 ### Drizzle ORM
 
-Proofa uses **Drizzle ORM** exclusively for all database operations:
+Nube Auth uses **Drizzle ORM** exclusively for all database operations:
 
 ✅ **Parameterized queries** - All user input is parameterized  
 ✅ **No raw SQL** - No string concatenation of queries  
@@ -259,7 +259,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 ### SOC 2 Type II
 
-Proofa is ready for SOC 2 Type II audits:
+Nube Auth is ready for SOC 2 Type II audits:
 - ✅ Audit logging for all sensitive operations
 - ✅ Access controls and authentication
 - ✅ Encryption at rest and in transit
@@ -324,7 +324,7 @@ Security management system:
 
 For security concerns or vulnerability reports:
 
-- **Email**: security@proofa.sh
+- **Email**: security@nubeauth.com
 - **Response Time**: 24-48 hours
 - **Disclosure Policy**: Responsible disclosure appreciated
 

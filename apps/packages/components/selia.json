@@ -8,6 +8,6 @@
   },
   "imports": {
     "utils": "../../../utils/cn",
-    "components": "@proofa/components/selia"
+    "components": "@nube-auth/components/selia"
   }
 }

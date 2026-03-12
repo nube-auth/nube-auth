@@ -3,9 +3,9 @@
  * Proxy to Core service with S2S authentication
  */
 
-import { getDb, userQueries } from "@proofa/db";
-import { createLogger, serializeError } from "@proofa/shared";
-import { pingpong } from "@proofa/auth";
+import { getDb, userQueries } from "@nube-auth/db";
+import { createLogger, serializeError } from "@nube-auth/shared";
+import { pingpong } from "@nube-auth/auth";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import type { StatusCode } from "hono/utils/http-status";
@@ -68,17 +68,17 @@ adminRoutes.all("/*", async (c: Context) => {
 		const coreUrl = `${env.CORE_URL}${corePath}`;
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
-			"X-Proofa-S2S-Token": env.S2S_SECRET,
-			"X-Proofa-User-Id": auth.userId, // Send public user ID
-			"X-Proofa-Session-Id": auth.coreSessionId || "",
+			"X-Nube-S2S-Token": env.S2S_SECRET,
+			"X-Nube-User-Id": auth.userId, // Send public user ID
+			"X-Nube-Session-Id": auth.coreSessionId || "",
 		};
 
 
 
-		// Pass through x-proofa-project-id header if present (needed for authorization checks)
-		const projectId = c.req.header("x-proofa-project-id");
+		// Pass through x-nube-project-id header if present (needed for authorization checks)
+		const projectId = c.req.header("x-nube-project-id");
 		if (projectId) {
-			headers["X-Proofa-Project-Id"] = projectId;
+			headers["X-Nube-Project-Id"] = projectId;
 		}
 
 		// Add query parameters if present

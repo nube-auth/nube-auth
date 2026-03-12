@@ -1,6 +1,6 @@
-# @proofa/queue
+# @nube-auth/queue
 
-BullMQ-based background job queue management for Proofa. Provides type-safe, scalable job processing with built-in support for payment processing, webhooks, emails, and notifications.
+BullMQ-based background job queue management for Nube Auth. Provides type-safe, scalable job processing with built-in support for payment processing, webhooks, emails, and notifications.
 
 ## Features
 
@@ -15,7 +15,7 @@ BullMQ-based background job queue management for Proofa. Provides type-safe, sca
 ## Installation
 
 ```bash
-pnpm add @proofa/queue
+pnpm add @nube-auth/queue
 ```
 
 ### Dependencies
@@ -28,7 +28,7 @@ pnpm add @proofa/queue
 ### Initialize Queue Manager
 
 ```typescript
-import { QueueManager } from "@proofa/queue";
+import { QueueManager } from "@nube-auth/queue";
 
 const manager = new QueueManager({
   host: "localhost",
@@ -42,7 +42,7 @@ const workerClient = manager.getWorkerClient();
 ### Add Jobs
 
 ```typescript
-import { QueueName, PaymentJobType } from "@proofa/queue";
+import { QueueName, PaymentJobType } from "@nube-auth/queue";
 
 // Add single job
 await queueClient.addJob(QueueName.PAYMENTS, {
@@ -81,7 +81,7 @@ await queueClient.addJobs(QueueName.WEBHOOKS, [
 ### Create Workers
 
 ```typescript
-import { JobUtils, PaymentJobType } from "@proofa/queue";
+import { JobUtils, PaymentJobType } from "@nube-auth/queue";
 
 workerClient.createWorker(
   QueueName.PAYMENTS,

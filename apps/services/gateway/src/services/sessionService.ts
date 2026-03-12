@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
-import { cache } from "@proofa/cache";
-import { createLogger, serializeError } from "@proofa/shared";
+import { cache } from "@nube-auth/cache";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import { SESSION_ID_BYTES, SESSION_TTL } from "../config/constants";
 
 const log = createLogger("session");

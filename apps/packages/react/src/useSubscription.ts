@@ -1,9 +1,9 @@
-import type { Subscription } from "@proofa/client";
+import type { Subscription } from "@nube-auth/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useProofaContext } from "./ProofaProvider";
+import { useNubeAuthContext } from "./NubeAuthProvider";
 
 export function useSubscription() {
-	const { client } = useProofaContext();
+	const { client } = useNubeAuthContext();
 	const queryClient = useQueryClient();
 
 	const {

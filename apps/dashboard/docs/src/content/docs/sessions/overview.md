@@ -1,9 +1,9 @@
 ---
 title: Sessions Overview
-description: Understanding session management in Proofa
+description: Understanding session management in Nube Auth
 ---
 
-Proofa handles session management automatically with secure, scalable sessions.
+Nube Auth handles session management automatically with secure, scalable sessions.
 
 ## How Sessions Work
 
@@ -58,7 +58,7 @@ With rolling sessions:
 ### Get Current Session
 
 ```typescript
-const session = await proofa.getSession();
+const session = await nube-auth.getSession();
 
 console.log(session.expiresAt);
 console.log(session.metadata.device);
@@ -68,7 +68,7 @@ console.log(session.metadata.device);
 
 ```typescript
 // Get all active sessions for the user
-const sessions = await proofa.getSessions();
+const sessions = await nube-auth.getSessions();
 
 sessions.forEach(session => {
   console.log(session.metadata.device, session.lastActiveAt);
@@ -79,13 +79,13 @@ sessions.forEach(session => {
 
 ```typescript
 // Revoke a specific session
-await proofa.revokeSession({ sessionId: 'session-id' });
+await nube-auth.revokeSession({ sessionId: 'session-id' });
 
 // Revoke all sessions except current
-await proofa.revokeAllSessions({ exceptCurrent: true });
+await nube-auth.revokeAllSessions({ exceptCurrent: true });
 
 // Revoke all sessions (logout everywhere)
-await proofa.revokeAllSessions();
+await nube-auth.revokeAllSessions();
 ```
 
 ## Session Storage

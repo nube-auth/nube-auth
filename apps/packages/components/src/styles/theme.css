@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Proofa Design System - Shared Theme
+   Nube Auth Design System - Shared Theme
    Single source of truth for all dashboard theming
    
    Color Philosophy: Neutral canvas with indigo brand accent
@@ -24,7 +24,7 @@
    
    Usage:
    Import in each dashboard's styles.css:
-   @import "@proofa/components/theme.css";
+   @import "@nube-auth/components/theme.css";
    
    NOTE: Custom utilities imported in tailwind.css to avoid duplicates
    ========================================================================== */

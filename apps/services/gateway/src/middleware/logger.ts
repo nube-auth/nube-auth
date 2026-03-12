@@ -1,4 +1,4 @@
-import { createId, serializeError } from "@proofa/shared";
+import { createId, serializeError } from "@nube-auth/shared";
 import type { Context, Next } from "hono";
 import type pino from "pino";
 
@@ -7,7 +7,7 @@ import type pino from "pino";
  */
 export function httpLogger(log: pino.Logger) {
 	return async (c: Context, next: Next) => {
-		const requestId = c.req.header("x-proofa-request-id") || createId("request");
+		const requestId = c.req.header("x-nube-request-id") || createId("request");
 		const method = c.req.method;
 		const path = c.req.path;
 		const startTime = Date.now();

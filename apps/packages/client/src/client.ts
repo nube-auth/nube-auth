@@ -1,13 +1,13 @@
 import pingpong from "@pingpong-js/fetch";
-import type { ApiError, AuthStatus, License, ProofaClientConfig, Session, Subscription, UpdateProfileData, User } from "./types";
+import type { ApiError, AuthStatus, License, NubeAuthClientConfig, Session, Subscription, UpdateProfileData, User } from "./types";
 
-export class ProofaClient {
+export class NubeAuthClient {
 	private baseUrl: string;
 	private s2sToken?: string | undefined;
 	private appId?: string | undefined;
 	private httpClient = pingpong;
 
-	constructor(config: ProofaClientConfig) {
+	constructor(config: NubeAuthClientConfig) {
 		this.baseUrl = config.gatewayUrl.replace(/\/$/, "");
 		this.s2sToken = config.s2sToken;
 		this.appId = config.appId;
@@ -15,8 +15,8 @@ export class ProofaClient {
 
 	private requireAppId(): string {
 		if (!this.appId) {
-			throw new ProofaError(
-				"appId is required for this operation. Pass appId in ProofaClientConfig.",
+			throw new NubeAuthError(
+				"appId is required for this operation. Pass appId in NubeAuthClientConfig.",
 				"APP_ID_REQUIRED",
 				400,
 			);
@@ -35,7 +35,7 @@ export class ProofaClient {
 
 		// Add S2S token if provided (backend authentication)
 		if (this.s2sToken) {
-			headers["X-Proofa-Service-Token"] = this.s2sToken;
+			headers["X-Nube-Service-Token"] = this.s2sToken;
 		}
 
 		const response = await this.httpClient.send({
@@ -59,7 +59,7 @@ export class ProofaClient {
 					},
 				};
 			}
-			throw new ProofaError(error.error.message, error.error.code, response.status);
+			throw new NubeAuthError(error.error.message, error.error.code, response.status);
 		}
 
 		return response.json();
@@ -149,13 +149,13 @@ export class ProofaClient {
 	};
 }
 
-export class ProofaError extends Error {
+export class NubeAuthError extends Error {
 	constructor(
 		message: string,
 		public code: string,
 		public status: number,
 	) {
 		super(message);
-		this.name = "ProofaError";
+		this.name = "NubeAuthError";
 	}
 }

@@ -1,7 +1,7 @@
 import { GoogleTokenResponseSchema, GoogleUserInfoSchema } from "../schemas/index.js";
 import type { OAuthAdapter, OAuthProfile } from "../types/index.js";
 import { pingpongFetch } from "../pingpong.js";
-import { createLogger } from "@proofa/shared";
+import { createLogger } from "@nube-auth/shared";
 import * as jose from "jose";
 
 const log = createLogger("google-oauth-adapter");

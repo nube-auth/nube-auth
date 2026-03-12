@@ -23,7 +23,7 @@ import {
 	TableHead,
 	TableBody,
 	TableCell
-} from "@proofa/components";
+} from "@nube-auth/components";
 import { PageLoader } from "../components/PageLoader";
 import { useProject, useProjectApps } from "../hooks/api";
 

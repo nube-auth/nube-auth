@@ -1,14 +1,14 @@
 ---
 title: Integration Quick Start
-description: Integrate Proofa authentication into your application in minutes
+description: Integrate Nube Auth authentication into your application in minutes
 ---
 
 
-Get Proofa authentication running in your app quickly. This guide covers the essential steps to integrate Proofa.
+Get Nube Auth authentication running in your app quickly. This guide covers the essential steps to integrate Nube Auth.
 
 ## Overview
 
-Integrating Proofa into your application involves:
+Integrating Nube Auth into your application involves:
 
 1. **Create an app** in the Admin Dashboard
 2. **Configure OAuth** providers
@@ -19,7 +19,7 @@ Integrating Proofa into your application involves:
 ## Prerequisites
 
 Before starting, you need:
-- A Proofa account at [admin.proofa.com](https://admin.proofa.com)
+- A Nube Auth account at [admin.nubeauth.com](https://admin.nubeauth.com)
 - A project and app created
 - OAuth providers configured (Google, GitHub)
 
@@ -28,19 +28,19 @@ Before starting, you need:
 ### For React Applications
 
 ```bash
-npm install @proofa/client @proofa/react
+npm install @nube-auth/client @nube-auth/react
 # or
-pnpm add @proofa/client @proofa/react
+pnpm add @nube-auth/client @nube-auth/react
 # or
-yarn add @proofa/client @proofa/react
+yarn add @nube-auth/client @nube-auth/react
 ```
 
 ### For Vanilla JavaScript
 
 ```bash
-npm install @proofa/client
+npm install @nube-auth/client
 # or
-pnpm add @proofa/client
+pnpm add @nube-auth/client
 ```
 
 ### For Browser Extensions
@@ -55,7 +55,7 @@ No npm package needed! Use vanilla JavaScript with fetch API.
 
 ### Get Your App Credentials
 
-1. Go to [Admin Dashboard](https://admin.proofa.com)
+1. Go to [Admin Dashboard](https://admin.nubeauth.com)
 2. Navigate to your **App**
 3. Go to **API Keys** or **Integration Guide**
 4. Copy your **App ID** and **App Token**
@@ -63,7 +63,7 @@ No npm package needed! Use vanilla JavaScript with fetch API.
 Example credentials:
 ```
 App ID: APP0abc123xyz...
-App Token: proofa_sk_live_...
+App Token: nube_sk_live_...
 ```
 
 <Aside type="caution">
@@ -75,34 +75,34 @@ App Token: proofa_sk_live_...
 Create a `.env` file:
 
 ```bash
-VITE_PROOFA_APP_ID=APP0abc123xyz...
-VITE_PROOFA_GATEWAY_URL=https://api.proofa.sh
+VITE_NUBE_AUTH_APP_ID=APP0abc123xyz...
+VITE_NUBE_AUTH_GATEWAY_URL=https://api.nubeauth.com
 ```
 
 For backend (Node.js):
 ```bash
-PROOFA_APP_TOKEN=proofa_sk_live_...
-PROOFA_GATEWAY_URL=https://api.proofa.sh
+NUBE_AUTH_APP_TOKEN=nube_sk_live_...
+NUBE_AUTH_GATEWAY_URL=https://api.nubeauth.com
 ```
 
 ## React Integration
 
 ### Setup Provider
 
-Wrap your app with `ProofaProvider`:
+Wrap your app with `NubeAuthProvider`:
 
 ```tsx
 // main.tsx or App.tsx
-import { ProofaProvider } from '@proofa/react';
+import { NubeAuthProvider } from '@nube-auth/react';
 
 function App() {
   return (
-    <ProofaProvider
-      appId={import.meta.env.VITE_PROOFA_APP_ID}
-      gatewayUrl={import.meta.env.VITE_PROOFA_GATEWAY_URL}
+    <NubeAuthProvider
+      appId={import.meta.env.VITE_NUBE_AUTH_APP_ID}
+      gatewayUrl={import.meta.env.VITE_NUBE_AUTH_GATEWAY_URL}
     >
       <YourApp />
-    </ProofaProvider>
+    </NubeAuthProvider>
   );
 }
 ```
@@ -110,10 +110,10 @@ function App() {
 ### Add Login Button
 
 ```tsx
-import { useProofa } from '@proofa/react';
+import { useNube Auth } from '@nube-auth/react';
 
 function LoginPage() {
-  const { login, isLoading } = useProofa();
+  const { login, isLoading } = useNube Auth();
 
   const handleGoogleLogin = () => {
     login({ provider: 'google' });
@@ -143,12 +143,12 @@ Create a callback page:
 
 ```tsx
 // pages/callback.tsx
-import { useProofa } from '@proofa/react';
+import { useNube Auth } from '@nube-auth/react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function CallbackPage() {
-  const { handleCallback } = useProofa();
+  const { handleCallback } = useNube Auth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -169,11 +169,11 @@ function CallbackPage() {
 ### Protect Routes
 
 ```tsx
-import { useProofa } from '@proofa/react';
+import { useNube Auth } from '@nube-auth/react';
 import { Navigate } from 'react-router-dom';
 
 function ProtectedRoute({ children }) {
-  const { user, isLoading } = useProofa();
+  const { user, isLoading } = useNube Auth();
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -200,10 +200,10 @@ function ProtectedRoute({ children }) {
 ### Display User Info
 
 ```tsx
-import { useProofa } from '@proofa/react';
+import { useNube Auth } from '@nube-auth/react';
 
 function UserProfile() {
-  const { user, logout } = useProofa();
+  const { user, logout } = useNube Auth();
 
   if (!user) return null;
 
@@ -223,11 +223,11 @@ function UserProfile() {
 ### Initialize Client
 
 ```typescript
-import { ProofaClient } from '@proofa/client';
+import { NubeAuthClient } from '@nube-auth/client';
 
-const proofa = new ProofaClient({
+const nubeAuth = new NubeAuthClient({
   appId: 'APP0abc123xyz...',
-  gatewayUrl: 'https://api.proofa.sh',
+  gatewayUrl: 'https://api.nubeauth.com',
 });
 ```
 
@@ -238,19 +238,19 @@ const proofa = new ProofaClient({
 <button id="github-login">Login with GitHub</button>
 
 <script type="module">
-  import { ProofaClient } from '@proofa/client';
+  import { NubeAuthClient } from '@nube-auth/client';
 
-  const proofa = new ProofaClient({
+  const nubeAuth = new NubeAuthClient({
     appId: 'APP0abc123xyz...',
-    gatewayUrl: 'https://api.proofa.sh',
+    gatewayUrl: 'https://api.nubeauth.com',
   });
 
   document.getElementById('google-login').addEventListener('click', () => {
-    proofa.login({ provider: 'google' });
+    nubeAuth.login({ provider: 'google' });
   });
 
   document.getElementById('github-login').addEventListener('click', () => {
-    proofa.login({ provider: 'github' });
+    nubeAuth.login({ provider: 'github' });
   });
 </script>
 ```
@@ -262,14 +262,14 @@ const proofa = new ProofaClient({
 <div id="status">Logging in...</div>
 
 <script type="module">
-  import { ProofaClient } from '@proofa/client';
+  import { NubeAuthClient } from '@nube-auth/client';
 
-  const proofa = new ProofaClient({
+  const nubeAuth = new NubeAuthClient({
     appId: 'APP0abc123xyz...',
-    gatewayUrl: 'https://api.proofa.sh',
+    gatewayUrl: 'https://api.nubeauth.com',
   });
 
-  proofa.handleCallback()
+  nube-auth.handleCallback()
     .then(() => {
       window.location.href = '/dashboard.html';
     })
@@ -284,7 +284,7 @@ const proofa = new ProofaClient({
 
 ```javascript
 // Get current user
-const user = await proofa.getUser();
+const user = await nubeAuth.getUser();
 
 if (user) {
   console.log('Logged in as:', user.email);
@@ -302,12 +302,12 @@ if (user) {
 On your backend, verify user sessions:
 
 ```typescript
-import { ProofaClient } from '@proofa/client';
+import { NubeAuthClient } from '@nube-auth/client';
 
-const proofa = new ProofaClient({
-  appId: process.env.PROOFA_APP_ID,
-  appToken: process.env.PROOFA_APP_TOKEN,
-  gatewayUrl: process.env.PROOFA_GATEWAY_URL,
+const nubeAuth = new NubeAuthClient({
+  appId: process.env.NUBE_AUTH_APP_ID,
+  appToken: process.env.NUBE_AUTH_APP_TOKEN,
+  gatewayUrl: process.env.NUBE_AUTH_GATEWAY_URL,
 });
 
 // Express middleware example
@@ -319,7 +319,7 @@ async function authenticateUser(req, res, next) {
   }
 
   try {
-    const session = await proofa.verifySession(sessionCookie);
+    const session = await nube-auth.verifySession(sessionCookie);
     req.user = session.user;
     next();
   } catch (error) {
@@ -342,7 +342,7 @@ async function requireLicense(req, res, next) {
   const user = req.user; // From authenticateUser middleware
 
   try {
-    const license = await proofa.getLicense(user.userId);
+    const license = await nube-auth.getLicense(user.userId);
 
     if (!license || license.status !== 'active') {
       return res.status(403).json({ error: 'No active license' });
@@ -369,7 +369,7 @@ For browser extensions, use vanilla JavaScript with fetch:
 // background.js (service worker)
 async function handleLogin(provider) {
   const appId = 'APP0abc123xyz...';
-  const gatewayUrl = 'https://api.proofa.sh';
+  const gatewayUrl = 'https://api.nubeauth.com';
   const redirectUri = chrome.identity.getRedirectURL('callback');
 
   const authUrl = `${gatewayUrl}/v1/auth/start?app_id=${appId}&provider=${provider}&redirect_uri=${encodeURIComponent(redirectUri)}`;
@@ -474,6 +474,6 @@ See the complete [Browser Extension Integration Guide](/integration/browser-exte
 
 Need help? 
 
-- 📧 Email: support@proofa.io
-- 📖 Docs: [docs.proofa.com](https://docs.proofa.com)
-- 💬 GitHub: [github.com/0xdps/proofa-core](https://github.com/0xdps/proofa-core)
+- 📧 Email: support@nubeauth.com
+- 📖 Docs: [docs.nubeauth.com](https://docs.nubeauth.com)
+- 💬 GitHub: [github.com/0xdps/nube-auth](https://github.com/0xdps/nube-auth)

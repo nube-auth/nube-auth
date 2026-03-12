@@ -1,6 +1,6 @@
-import { parseSessionCookie } from "@proofa/auth";
-import { cache, sessionStore } from "@proofa/cache";
-import type { SessionEntitlements } from "@proofa/shared";
+import { parseSessionCookie } from "@nube-auth/auth";
+import { cache, sessionStore } from "@nube-auth/cache";
+import type { SessionEntitlements } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
@@ -9,8 +9,8 @@ import { coreClient } from "../lib/core-client";
 import { loggers, serializeError } from "../utils/logger";
 import { SESSION_TTL, ADMIN_INACTIVITY_TIMEOUT } from "../config/constants";
 
-const USER_SESSION_COOKIE = "proofa_user_session";
-const ADMIN_SESSION_COOKIE = "proofa_admin_session";
+const USER_SESSION_COOKIE = "nube_user_session";
+const ADMIN_SESSION_COOKIE = "nube_admin_session";
 
 /**
  * Auth context with user and session info
@@ -174,8 +174,8 @@ export function getAuth(c: Context): AuthContext {
  * Uses constant-time comparison to prevent timing attacks
  */
 export const s2sAuthMiddleware = createMiddleware(async (c: Context, next) => {
-	const token = c.req.header("X-Proofa-S2S-Token");
-	const expectedToken = env.X_PROOFA_SERVICE_TOKEN;
+	const token = c.req.header("X-Nube-S2S-Token");
+	const expectedToken = env.X_NUBE_AUTH_SERVICE_TOKEN;
 
 	if (!token || !expectedToken || token.length !== expectedToken.length) {
 		return c.json({ error: "Unauthorized" }, 401);

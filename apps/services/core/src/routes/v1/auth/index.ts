@@ -1,5 +1,5 @@
-import { GitHubOAuthAdapter, GoogleOAuthAdapter } from "@proofa/auth";
-import { cache } from "@proofa/cache";
+import { GitHubOAuthAdapter, GoogleOAuthAdapter } from "@nube-auth/auth";
+import { cache } from "@nube-auth/cache";
 import {
 	appQueries,
 	getDb,
@@ -12,8 +12,8 @@ import {
 	projectMemberQueries,
 	sessionQueries,
 	userQueries,
-} from "@proofa/db";
-import { createId, createLogger, idPatterns, serializeError, type PlanSettings } from "@proofa/shared";
+} from "@nube-auth/db";
+import { createId, createLogger, idPatterns, serializeError, type PlanSettings } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { env } from "../../../config/env";

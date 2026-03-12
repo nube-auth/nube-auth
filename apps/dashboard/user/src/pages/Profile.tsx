@@ -14,9 +14,9 @@ import {
 	Alert,
 	Chip,
   Spinner,
-} from "@proofa/components";
-// Proofa composites
-import { ProfileHeader, InfoGrid } from "@proofa/components";
+} from "@nube-auth/components";
+// Nube Auth composites
+import { ProfileHeader, InfoGrid } from "@nube-auth/components";
 import { TabNavigation } from "../components/TabNavigation";
 import { PageLoader } from "../components/PageLoader";
 

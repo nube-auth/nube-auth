@@ -1,4 +1,4 @@
-# Proofa Design System
+# Nube Auth Design System
 
 > **Enterprise-grade design system** for authentication, licensing, and session management platform
 
@@ -184,10 +184,10 @@ When adding new colors:
 ## 💬 Feedback
 
 Have questions or suggestions?
-- **Issues**: [GitHub Issues](https://github.com/0xdps/proofa-core/issues)
-- **Discord**: [Community](https://discord.gg/proofa)
-- **Email**: design@proofa.sh
+- **Issues**: [GitHub Issues](https://github.com/0xdps/nube-auth/issues)
+- **Discord**: [Community](https://discord.gg/nube-auth)
+- **Email**: design@nubeauth.com
 
 ---
 
-**Made with ❤️ by the Proofa team**
+**Made with ❤️ by the Nube Auth team**

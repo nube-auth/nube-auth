@@ -1,18 +1,18 @@
 ---
 title: Introduction
-description: Learn what Proofa is and how it can help your application
+description: Learn what Nube Auth is and how it can help your application
 outline: deep
 ---
 
 ::: tip Beta
-Proofa is currently in beta. We're actively developing new features and improvements. Your feedback is valuable!
+Nube Auth is currently in beta. We're actively developing new features and improvements. Your feedback is valuable!
 :::
 
-Proofa is an authentication, session management, and licensing platform designed for modern SaaS applications.
+Nube Auth is an authentication, session management, and licensing platform designed for modern SaaS applications.
 
-## What is Proofa?
+## What is Nube Auth?
 
-Proofa provides everything you need to handle user authentication, manage sessions, and implement flexible licensing in your applications:
+Nube Auth provides everything you need to handle user authentication, manage sessions, and implement flexible licensing in your applications:
 
 - **Authentication** - OAuth providers (Google, GitHub), magic links, and more
 - **Sessions** - Rolling sessions with Redis caching and configurable TTLs
@@ -21,7 +21,7 @@ Proofa provides everything you need to handle user authentication, manage sessio
 
 ## Architecture
 
-Proofa consists of several components:
+Nube Auth consists of several components:
 
 | Component | Description |
 |-----------|-------------|
@@ -30,7 +30,7 @@ Proofa consists of several components:
 | **Dashboard** | Admin and user interfaces |
 | **SDK** | Client libraries for easy integration |
 
-## Why Proofa?
+## Why Nube Auth?
 
 - **Simple Integration** - Get authentication running in minutes
 - **Flexible** - Adapt to any business model with customizable licensing

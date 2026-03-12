@@ -1,11 +1,11 @@
 ---
 title: Browser Extension Integration
-description: Complete guide to integrating Proofa authentication into Chrome/Firefox extensions
+description: Complete guide to integrating Nube Auth authentication into Chrome/Firefox extensions
 ---
 
 import { Aside, Steps } from '@astrojs/starlight/components';
 
-Learn how to integrate Proofa authentication into your browser extension (Chrome, Firefox, Edge).
+Learn how to integrate Nube Auth authentication into your browser extension (Chrome, Firefox, Edge).
 
 ## Overview
 
@@ -24,7 +24,7 @@ This guide covers:
 
 - Chrome/Firefox browser
 - Basic understanding of browser extensions
-- Proofa app created in Admin Dashboard
+- Nube Auth app created in Admin Dashboard
 - OAuth providers configured
 
 ## Project Structure
@@ -60,7 +60,7 @@ Create `manifest.json`:
   ],
   
   "host_permissions": [
-    "https://api.proofa.sh/*",
+    "https://api.nubeauth.com/*",
     "https://your-app-domain.com/*"
   ],
   
@@ -98,7 +98,7 @@ Create `background.js` to handle authentication:
 
 const CONFIG = {
   appId: 'APP0abc123xyz...',
-  gatewayUrl: 'https://api.proofa.sh',
+  gatewayUrl: 'https://api.nubeauth.com',
   appDomain: 'https://your-app-domain.com',
 };
 
@@ -490,7 +490,7 @@ Add to `manifest.json`:
 
 ```javascript
 // ❌ DON'T: Hardcode app token
-const appToken = 'proofa_sk_live_abc123...';
+const appToken = 'nube_sk_live_abc123...';
 
 // ✅ DO: Only use public App ID
 const appId = 'APP0abc123...';
@@ -593,5 +593,5 @@ Chrome extensions work on Edge with no changes!
 
 Need help with your extension?
 
-- 📧 Email: support@proofa.io
-- 💬 GitHub Issues: [github.com/0xdps/proofa-core/issues](https://github.com/0xdps/proofa-core/issues)
+- 📧 Email: support@nubeauth.com
+- 💬 GitHub Issues: [github.com/0xdps/nube-auth/issues](https://github.com/0xdps/nube-auth/issues)

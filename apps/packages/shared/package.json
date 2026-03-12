@@ -1,9 +1,9 @@
 {
-  "name": "@proofa/shared",
+  "name": "@nube-auth/shared",
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "Shared types, utilities, and constants for Proofa",
+  "description": "Shared types, utilities, and constants for Nube Auth",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -30,7 +30,7 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "@proofa/cache": "workspace:*",
+    "@nube-auth/cache": "workspace:*",
     "hono": "^4.6.14",
     "nodemailer": "^7.0.12",
     "pino": "^10.1.0",

@@ -1,13 +1,13 @@
-import { parseSessionCookie } from "@proofa/auth";
-import { sessionStore } from "@proofa/cache";
+import { parseSessionCookie } from "@nube-auth/auth";
+import { sessionStore } from "@nube-auth/cache";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 import { loggers } from "../utils/logger";
 
-const ADMIN_SESSION_COOKIE = "proofa_admin_session";
-const USER_SESSION_COOKIE = "proofa_user_session";
-const CSRF_TOKEN_COOKIE = "proofa_csrf_token";
+const ADMIN_SESSION_COOKIE = "nube_admin_session";
+const USER_SESSION_COOKIE = "nube_user_session";
+const CSRF_TOKEN_COOKIE = "nube_csrf_token";
 
 /**
  * CSRF protection middleware
@@ -21,7 +21,7 @@ export const csrfProtection = createMiddleware(async (c: Context, next) => {
 	}
 
 	// Get CSRF token from header
-	const csrfTokenHeader = c.req.header("X-Proofa-CSRF-Token");
+	const csrfTokenHeader = c.req.header("X-Nube-CSRF-Token");
 
 	if (!csrfTokenHeader) {
 		loggers.auth.warn({ path: c.req.path, method }, "CSRF token missing from header");

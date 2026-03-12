@@ -1,18 +1,18 @@
-# @proofa/components - UI Component Library
+# @nube-auth/components - UI Component Library
 
 ## Overview
 
-The `@proofa/components` package is a centralized, reusable component library for Proofa dashboards. It exports:
+The `@nube-auth/components` package is a centralized, reusable component library for Nube Auth dashboards. It exports:
 
 - **Selia Design System**: 52 production-ready UI primitives (Button, Card, Badge, Input, Table, Dialog, etc.)
 - **Icon System**: 57+ icons from HugeIcons + brand logos (Google, GitHub, Stripe, NextJS, React, etc.)
-- **11 Proofa Composite Components**: Built on Selia for Proofa-specific use cases
+- **11 Nube Auth Composite Components**: Built on Selia for Nube Auth-specific use cases
 - **Type-Safe**: Full TypeScript support with proper interfaces
 - **Theme-Aware**: Supports light/dark modes using CSS variables
 - **Compound Components**: Support for complex component hierarchies (LoginCard, FormGroup)
 - **Well-Organized**: Categorized structure for easy navigation and scalability
 
-> **Note:** This package uses Selia as the base design system. All Selia components are re-exported from `@proofa/components` for convenience.
+> **Note:** This package uses Selia as the base design system. All Selia components are re-exported from `@nube-auth/components` for convenience.
 
 ## Package Structure
 
@@ -24,7 +24,7 @@ src/
 │   ├── display/           # Table, Tabs, Menu, etc. (11)
 │   ├── feedback/          # Button, Badge, Alert, etc. (13)
 │   └── typography/        # Heading, Text, Kbd (4)
-├── components/             # Proofa composites (11)
+├── components/             # Nube Auth composites (11)
 │   ├── auth/              # Authentication components
 │   ├── display/           # Display components
 │   ├── forms/             # Form components
@@ -39,7 +39,7 @@ src/
 ## Installation
 
 ```bash
-pnpm add @proofa/components
+pnpm add @nube-auth/components
 ```
 
 ---
@@ -48,14 +48,14 @@ pnpm add @proofa/components
 
 ### Selia UI Components (52 Components)
 
-For basic UI components, use Selia components directly. They're automatically available from `@proofa/components`:
+For basic UI components, use Selia components directly. They're automatically available from `@nube-auth/components`:
 
 ```tsx
 import {
   Button, Card, Badge, Input, Label, Textarea, Select,
   Table, Dialog, Alert, Spinner, Tabs, Menu, Avatar,
   // ... and 38 more components
-} from '@proofa/components';
+} from '@nube-auth/components';
 
 // Button - Multiple variants
 <Button variant="primary">Save</Button>
@@ -87,9 +87,9 @@ import {
 
 ---
 
-### Proofa Composite Components (11 Components)
+### Nube Auth Composite Components (11 Components)
 
-These are Proofa-specific components built on top of Selia primitives:
+These are Nube Auth-specific components built on top of Selia primitives:
 
 #### 1. **LoginCard** (Compound)
 - `Card` - Container
@@ -111,7 +111,7 @@ import {
   LoginCardBody, 
   LoginCardTerms, 
   LoginCardError 
-} from '@proofa/components';
+} from '@nube-auth/components';
 
 <LoginCard error="Invalid credentials" loading={isLoading}>
   <LoginCardLogo>
@@ -143,7 +143,7 @@ import {
 Form field wrapper with label, input, and hint text.
 
 ```tsx
-import { FormGroup, FormLabel, FormInput, FormHint } from '@proofa/components';
+import { FormGroup, FormLabel, FormInput, FormHint } from '@nube-auth/components';
 
 <FormGroup>
   <FormLabel required>Email</FormLabel>
@@ -170,7 +170,7 @@ import { FormGroup, FormLabel, FormInput, FormHint } from '@proofa/components';
 Loading spinner with optional text.
 
 ```tsx
-import { Loading } from '@proofa/components';
+import { Loading } from '@nube-auth/components';
 
 // Just spinner
 <Loading />
@@ -197,11 +197,11 @@ import { Loading } from '@proofa/components';
 Modern authentication card with OAuth support (built on LoginCard).
 
 ```tsx
-import { AuthLoginCard } from '@proofa/components';
+import { AuthLoginCard } from '@nube-auth/components';
 
 <AuthLoginCard
   logoSrc="/logo.png"
-  title="Welcome to Proofa"
+  title="Welcome to Nube Auth"
   subtitle="Sign in to continue"
   errorMessage={error}
   buttonLabel="Sign in with Google"
@@ -231,8 +231,8 @@ These components handle common data display patterns.
 Empty state display with icon, title, description, and optional action.
 
 ```tsx
-import { EmptyState } from '@proofa/components';
-import { Button } from '@proofa/components';
+import { EmptyState } from '@nube-auth/components';
+import { Button } from '@nube-auth/components';
 
 <EmptyState
   icon="InformationCircleIcon"
@@ -254,7 +254,7 @@ import { Button } from '@proofa/components';
 4-column key-value grid for displaying metadata.
 
 ```tsx
-import { InfoGrid } from '@proofa/components';
+import { InfoGrid } from '@nube-auth/components';
 
 <InfoGrid
   columns={4}
@@ -277,7 +277,7 @@ import { InfoGrid } from '@proofa/components';
 User profile header with name, email, and optional meta.
 
 ```tsx
-import { ProfileHeader } from '@proofa/components';
+import { ProfileHeader } from '@nube-auth/components';
 
 <ProfileHeader
   name="John Doe"
@@ -299,7 +299,7 @@ import { ProfileHeader } from '@proofa/components';
 Detailed information list with labels, descriptions, and values.
 
 ```tsx
-import { InfoList } from '@proofa/components';
+import { InfoList } from '@nube-auth/components';
 
 <InfoList
   items={[
@@ -330,8 +330,8 @@ These are purpose-built for specific dashboard features.
 Current session display with metadata and action buttons.
 
 ```tsx
-import { SessionCard } from '@proofa/components';
-import { Button } from '@proofa/components';
+import { SessionCard } from '@nube-auth/components';
+import { Button } from '@nube-auth/components';
 
 <SessionCard
   title="Current Session"
@@ -358,7 +358,7 @@ import { Button } from '@proofa/components';
 Small visual status indicator (colored dot + label).
 
 ```tsx
-import { StatusDot } from '@proofa/components';
+import { StatusDot } from '@nube-auth/components';
 
 <StatusDot variant="success" label="Active" />
 <StatusDot variant="danger" label="Inactive" />
@@ -376,7 +376,7 @@ import { StatusDot } from '@proofa/components';
 Access 57+ icons from HugeIcons or brand logos.
 
 ```tsx
-import { Icon } from '@proofa/components';
+import { Icon } from '@nube-auth/components';
 
 // HugeIcons (all have "Icon" suffix)
 <Icon icon="UserIcon" size={24} />
@@ -424,8 +424,8 @@ import {
   FormInput,
   FormHint,
   Button,
-} from '@proofa/components';
-import { Icon } from '@proofa/components';
+} from '@nube-auth/components';
+import { Icon } from '@nube-auth/components';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -450,7 +450,7 @@ export function LoginPage() {
         <LoginCardLogo>
           <Icon icon="Google" size={32} />
         </LoginCardLogo>
-        <LoginCardTitle>Sign In to Proofa</LoginCardTitle>
+        <LoginCardTitle>Sign In to Nube Auth</LoginCardTitle>
         <LoginCardSubtitle>Enter your email to continue</LoginCardSubtitle>
 
         <LoginCardBody>
@@ -500,7 +500,7 @@ import {
   SessionCard,
   Button,
   EmptyState,
-} from '@proofa/components';
+} from '@nube-auth/components';
 
 export function ProfilePage() {
   const user = {
@@ -584,7 +584,7 @@ export function ProfilePage() {
 
 ## Styling & Theming
 
-All components use CSS variables from `@proofa/components/styles/theme.css`:
+All components use CSS variables from `@nube-auth/components/styles/theme.css`:
 
 ### Light Theme (Default)
 ```css
@@ -627,7 +627,7 @@ export function Profile() {
 
 ### After (Component-based)
 ```tsx
-import { Card, CardHeader, CardTitle, CardBody } from '@proofa/components';
+import { Card, CardHeader, CardTitle, CardBody } from '@nube-auth/components';
 
 export function Profile() {
   return (
@@ -653,7 +653,7 @@ export function Profile() {
 ✅ Tree-shakeable exports  
 
 ```bash
-pnpm build --filter @proofa/components
+pnpm build --filter @nube-auth/components
 # ✓ 1 successful task
 ```
 
@@ -661,7 +661,7 @@ pnpm build --filter @proofa/components
 
 ## Next Steps
 
-1. **Migrate User Dashboard** → Import components from `@proofa/components`
+1. **Migrate User Dashboard** → Import components from `@nube-auth/components`
 2. **Migrate Admin Dashboard** → Use same component library
 3. **Remove Duplicate CSS** → Delete component styles from `dashboard/*/src/index.css`
 4. **Extract Shared Utilities** → Create reusable helper hooks/functions
@@ -701,4 +701,4 @@ apps/packages/components/
 
 **Status**: ✅ Complete  
 **Last Updated**: January 2025  
-**Maintainers**: Proofa Core Team
+**Maintainers**: Nube Auth Team

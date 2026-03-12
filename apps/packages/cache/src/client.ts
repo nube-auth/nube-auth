@@ -2,7 +2,7 @@ import { createClient, type RedisClientType } from "redis";
 
 /**
  * Session entitlements stored in Redis.
- * Canonical definition lives in @proofa/shared — this is a structural match.
+ * Canonical definition lives in @nube-auth/shared — this is a structural match.
  */
 type SessionEntitlements = Record<string, { role: string; resources?: string[]; metadata?: Record<string, unknown> }>;
 

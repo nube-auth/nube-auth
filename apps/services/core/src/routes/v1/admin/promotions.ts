@@ -8,8 +8,8 @@ import {
 	promotionQueries,
 	promotionRedemptionQueries,
 	paymentProviderConfigQueries,
-} from "@proofa/db";
-import { createId, createLogger, idPatterns, serializeError } from "@proofa/shared";
+} from "@nube-auth/db";
+import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { z } from "zod";
 

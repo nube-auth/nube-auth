@@ -10,8 +10,8 @@ import {
 	Alert,
 	Chip,
 	Spinner,
-} from "@proofa/components";
-import { ProfileHeader, InfoGrid } from "@proofa/components";
+} from "@nube-auth/components";
+import { ProfileHeader, InfoGrid } from "@nube-auth/components";
 import { TabNavigation } from "../components/TabNavigation";
 import { useMe } from "../hooks/api";
 import { PageLoader } from "../components/PageLoader";
@@ -121,7 +121,7 @@ export function SecurityPage() {
 				<CardBody className="space-y-4">
 					<Alert variant="info">
 						<Icon icon={IconType.Info} size={18} />
-						No connected applications yet. Connect apps to enhance your Proofa experience.
+						No connected applications yet. Connect apps to enhance your Nube Auth experience.
 					</Alert>
 				</CardBody>
 			</Card>

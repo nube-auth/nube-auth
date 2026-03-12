@@ -23,7 +23,7 @@ import {
 	TableHead,
 	TableHeader,
 	Text,
-} from "@proofa/components";
+} from "@nube-auth/components";
 import { getIconById } from "../components/IconPicker";
 import { useProject, useProjectApps, useProjectMembers, useProjectStats } from "../hooks/api";
 

@@ -1,24 +1,24 @@
-# Proofa Client Integration Guide
+# Nube Auth Client Integration Guide
 
-The `@proofa/client` package provides a type-safe TypeScript client for integrating with Proofa's authentication and licensing system.
+The `@nube-auth/client` package provides a type-safe TypeScript client for integrating with Nube Auth's authentication and licensing system.
 
 ## Installation
 
 ```bash
 # In your monorepo
-pnpm add @proofa/client --workspace
+pnpm add @nube-auth/client --workspace
 
 # Or in external project
-npm install @proofa/client
+npm install @nube-auth/client
 ```
 
 ## Quick Start
 
 ```typescript
-import { ProofaClient } from '@proofa/client';
+import { NubeAuthClient } from '@nube-auth/client';
 
-const client = new ProofaClient({
-  gatewayUrl: 'https://api.proofa.sh'
+const client = new NubeAuthClient({
+  gatewayUrl: 'https://api.nubeauth.com'
 });
 
 // Check if user is authenticated
@@ -36,8 +36,8 @@ if (status.loggedIn) {
 ### Initialize Client
 
 ```typescript
-const client = new ProofaClient({
-  gatewayUrl: process.env.GATEWAY_URL || 'https://api.proofa.sh'
+const client = new NubeAuthClient({
+  gatewayUrl: process.env.GATEWAY_URL || 'https://api.nubeauth.com'
 });
 ```
 
@@ -45,12 +45,12 @@ const client = new ProofaClient({
 
 For dashboards (Vite):
 ```env
-VITE_GATEWAY_URL=https://api.proofa.sh
+VITE_GATEWAY_URL=https://api.nubeauth.com
 ```
 
 For backend (Node.js):
 ```env
-GATEWAY_URL=https://api.proofa.sh
+GATEWAY_URL=https://api.nubeauth.com
 ```
 
 ## API Reference
@@ -160,10 +160,10 @@ const { licenses } = await client.admin.licenses.list();
 ### Basic Setup
 
 ```typescript
-// lib/proofa.ts
-import { ProofaClient } from '@proofa/client';
+// lib/nube-auth.ts
+import { NubeAuthClient } from '@nube-auth/client';
 
-export const proofaClient = new ProofaClient({
+export const nubeAuthClient = new NubeAuthClient({
   gatewayUrl: import.meta.env.VITE_GATEWAY_URL || 'http://localhost:3004'
 });
 ```
@@ -171,21 +171,21 @@ export const proofaClient = new ProofaClient({
 ### TanStack Query Hooks
 
 ```typescript
-// hooks/useProofa.ts
+// hooks/useNube Auth.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { proofaClient } from '@/lib/proofa';
+import { nube-authClient } from '@/lib/nube-auth';
 
 export function useAuthStatus() {
   return useQuery({
     queryKey: ['auth-status'],
-    queryFn: () => proofaClient.auth.checkStatus(),
+    queryFn: () => nube-authClient.auth.checkStatus(),
   });
 }
 
 export function useMe() {
   return useQuery({
     queryKey: ['me'],
-    queryFn: () => proofaClient.me.get(),
+    queryFn: () => nube-authClient.me.get(),
   });
 }
 
@@ -193,7 +193,7 @@ export function useUpdateProfile() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { name?: string }) => 
-      proofaClient.me.update(data),
+      nube-authClient.me.update(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['me'] });
     },
@@ -203,7 +203,7 @@ export function useUpdateProfile() {
 export function useLogout() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => proofaClient.auth.logout(),
+    mutationFn: () => nube-authClient.auth.logout(),
     onSuccess: () => {
       queryClient.clear();
       window.location.href = '/login';
@@ -215,7 +215,7 @@ export function useLogout() {
 ### Component Usage
 
 ```typescript
-import { useAuthStatus, useMe, useUpdateProfile } from '@/hooks/useProofa';
+import { useAuthStatus, useMe, useUpdateProfile } from '@/hooks/useNube Auth';
 
 export function ProfilePage() {
   const { data: status } = useAuthStatus();
@@ -243,12 +243,12 @@ export function ProfilePage() {
 ## Error Handling
 
 ```typescript
-import { ProofaError } from '@proofa/client';
+import { NubeAuthError } from '@nube-auth/client';
 
 try {
   await client.me.get();
 } catch (error) {
-  if (error instanceof ProofaError) {
+  if (error instanceof NubeAuthError) {
     console.error('Error:', error.code, error.message, error.status);
     
     if (error.status === 401) {
@@ -275,7 +275,7 @@ import type {
   CreateProjectData,
   CreateAppData,
   UpdateProfileData
-} from '@proofa/client';
+} from '@nube-auth/client';
 ```
 
 ## Examples
@@ -284,4 +284,4 @@ See `example.ts` in the package for comprehensive usage examples.
 
 ## Support
 
-For issues or questions, contact support@proofa.io or open an issue in the repository.
+For issues or questions, contact support@nubeauth.com or open an issue in the repository.

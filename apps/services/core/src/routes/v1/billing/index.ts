@@ -15,8 +15,8 @@ import {
 	promotionQueries,
 	promotionRedemptionQueries,
 	userQueries,
-} from "@proofa/db";
-import { createLogger, idPatterns, serializeError } from "@proofa/shared";
+} from "@nube-auth/db";
+import { createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { z } from "zod";
 import { checkoutRoutes } from "./checkout.js";
@@ -126,7 +126,7 @@ billingRoutes.post("/validate-promo", async (c) => {
 
 	// Step 8: Check is_new_customers_only → user has no existing license for this app
 	if (promo.is_new_customers_only) {
-		const userPublicId = c.req.header("X-Proofa-User-Id");
+		const userPublicId = c.req.header("X-Nube-User-Id");
 		if (!userPublicId) {
 			return c.json({ valid: false, reason: "user_required" });
 		}
@@ -141,7 +141,7 @@ billingRoutes.post("/validate-promo", async (c) => {
 	}
 
 	// Step 9: Check user hasn't already redeemed this promotion
-	const userPublicId = c.req.header("X-Proofa-User-Id");
+	const userPublicId = c.req.header("X-Nube-User-Id");
 	if (userPublicId) {
 		const user = await userQueries.findByPublicId(db, userPublicId);
 		if (user) {

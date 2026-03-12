@@ -30,7 +30,7 @@ import {
 	TableCell,
 	Breadcrumb,
 	BreadcrumbSeparator,
-} from "@proofa/components";
+} from "@nube-auth/components";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
 import {

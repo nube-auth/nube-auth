@@ -1,10 +1,10 @@
-# Proofa Implementation Specification (Final)
+# Nube Auth Implementation Specification (Final)
 
 **Version:** 1.1.0  
 **Last Updated:** January 1, 2026  
 **Status:** MVP Implementation Contract — Ready for Development
 
-> This is the **single source of truth** for building Proofa. It consolidates V0 (original flows) and V1 (structure decisions) with final architectural choices: multi-tenant projects, nanoid-based IDs, per-app configurable session TTLs + other settings, separate dashboards, OAuth-only auth (platform-level credentials), global API rate limiting, Zod validation, audit logging, and 7-day rolling core sessions.
+> This is the **single source of truth** for building Nube Auth. It consolidates V0 (original flows) and V1 (structure decisions) with final architectural choices: multi-tenant projects, nanoid-based IDs, per-app configurable session TTLs + other settings, separate dashboards, OAuth-only auth (platform-level credentials), global API rate limiting, Zod validation, audit logging, and 7-day rolling core sessions.
 
 ---
 
@@ -37,29 +37,29 @@
 - Call **Gateway** only
 - Examples: `pingpong.codes`, `mockly.codes`, etc.
 
-#### Gateway (`api.proofa.com`)
+#### Gateway (`api.nubeauth.com`)
 - Public BFF for external apps + user/admin dashboards
 - Stores **app sessions** in **Upstash Redis** (per-app configurable TTL)
 - Caches user+license data per app's `cache_ttl_minutes` (default 10 min)
-- Calls Core via **S2S token** (`X-Proofa-Service-Token`)
+- Calls Core via **S2S token** (`X-Nube-Service-Token`)
 - Routes:
   - `/auth/*` — authentication flows
   - `/me`, `/profile` — user profile
   - `/admin/*` — admin operations (for authorized users)
 
-#### Core (`auth.proofa.com`)
+#### Core (`auth.nubeauth.com`)
 - **Source of truth**: users, identities, core sessions, projects, apps, licenses
 - **Hosts user login UI** (core-hosted authentication pages)
 - OAuth provider integration (Google, GitHub, etc.)
 - Project/app/license management APIs
 
-#### User Dashboard (`account.proofa.com`)
+#### User Dashboard (`account.nubeauth.com`)
 - Account management: profile, linked identities, sessions
 - View licenses across projects/apps
 - **Simple, minimal scope** (no project/app creation)
 - Talks to Gateway only
 
-#### Admin Dashboard (`admin.proofa.com`)
+#### Admin Dashboard (`admin.nubeauth.com`)
 - Project/app/user/license management
 - Admin actions: create projects, manage members, grant licenses
 - Talks to Gateway only
@@ -76,7 +76,7 @@
 
 **Key constraints:**
 - Apps + dashboards never call Core directly
-- Gateway calls Core via S2S token (`X-Proofa-Service-Token`)
+- Gateway calls Core via S2S token (`X-Nube-Service-Token`)
 - Core owns identity & license truth
 - No secrets in dashboards or client apps
 
@@ -107,7 +107,7 @@
 ### Authentication
 - **OAuth**: Google, GitHub (extendable) - **Platform-level credentials only**
 - **Session Storage**: Cookie (Core) + Redis (Gateway)
-- **Email Verification**: OTP-only (6-digit, **Core/Proofa login only**, not app verification)
+- **Email Verification**: OTP-only (6-digit, **Core/Nube Auth login only**, not app verification)
 - **Provider Selection**: Apps select which OAuth providers to enable (google, github, etc.)
 
 ---
@@ -115,7 +115,7 @@
 ## 3. Monorepo Structure
 
 ```
-proofa/
+nube-auth/
 ├── apps/
 │   ├── core/                    # Identity, sessions, licenses (source of truth)
 │   ├── gateway/                 # BFF for apps + dashboards (user + admin)
@@ -136,10 +136,10 @@ proofa/
 ### Package Publishing
 
 - All packages export types via `package.json#exports`
-- `@proofa/shared` — types, constants, ID generator
-- `@proofa/db` — Drizzle schema (for Core only, initially)
-- `@proofa/auth` — Provider adapters
-- `@proofa/cache` — Cache helpers (Redis/Upstash)
+- `@nube-auth/shared` — types, constants, ID generator
+- `@nube-auth/db` — Drizzle schema (for Core only, initially)
+- `@nube-auth/auth` — Provider adapters
+- `@nube-auth/cache` — Cache helpers (Redis/Upstash)
 
 ---
 
@@ -201,8 +201,8 @@ Foreign keys reference internal `id`. Public IDs are for API responses and loggi
 **TTL**: 365 days rolling (user sessions), 2 hours + 15-min inactivity (admin sessions) (see §9.1)
 
 **Session Type Identification**: Session type is determined by **cookie name**, not a database field:
-- `proofa_user_session` → User session (365 days rolling)
-- `proofa_admin_session` → Admin session (2hr absolute + 15min inactivity)
+- `nube_user_session` → User session (365 days rolling)
+- `nube_admin_session` → Admin session (2hr absolute + 15min inactivity)
 
 **Session Metadata** (stored in Redis):
 - `sessionType`: "admin" or "user" (determines TTL enforcement)
@@ -383,7 +383,7 @@ await db.update(apps)
 ```
 
 **Implementation Details**:
-- Functions provided by `@proofa/db` package
+- Functions provided by `@nube-auth/db` package
 - Uses PostgreSQL `||` (merge) and `jsonb_set()` operators
 - Guarantees atomicity at database level
 - Zero race conditions even with high concurrency
@@ -823,7 +823,7 @@ export const idPatterns = {
 
 ### 6.1 User Login Decision
 
-Proofa always checks `proofa_session` cookie on entry.
+Nube Auth always checks `nube_session` cookie on entry.
 
 #### Case A: Core Session Valid
 
@@ -939,13 +939,13 @@ Core → OAuth provider
 Core → GET /v1/auth/callback/:provider (user-facing)
   ↓
 Core checks identity collision policy
-Core creates/refreshes core session (proofa_session)
+Core creates/refreshes core session (nube_session)
 Core ensures license exists for (user, app)
 Core issues auth_code (TTL 120s)
   ↓
 Core → 302 Redirect to Gateway /auth/callback?code=xxx
   ↓
-Gateway → POST /v1/auth/exchange (S2S with X-Proofa-Service-Token)
+Gateway → POST /v1/auth/exchange (S2S with X-Nube-Service-Token)
   ↓
 Core → Validates & consumes code, returns user + license
   ↓
@@ -966,7 +966,7 @@ App → User logged in
 
 ## 7. API Specifications (MVP)
 
-### 7.1 Core API (`auth.proofa.com`) — `/v1`
+### 7.1 Core API (`auth.nubeauth.com`) — `/v1`
 
 #### `GET /v1/auth/start`
 
@@ -1009,7 +1009,7 @@ Location: https://accounts.google.com/o/oauth2/v2/auth?...
 4. **If not exists**: Create new user + identity
    - Email collision handling with OTP step-up: Phase 2 (Q2 2026)
    - MVP: Email collisions prevented by OAuth provider uniqueness
-5. Create/refresh **core session** `proofa_session` (TTL 7 days rolling)
+5. Create/refresh **core session** `nube_session` (TTL 7 days rolling)
 6. Ensure license exists for `(user, app)`
 7. Issue **auth_code** (TTL 120s)
 8. Redirect to `redirect_uri?code=xxx&state=yyy`
@@ -1018,14 +1018,14 @@ Location: https://accounts.google.com/o/oauth2/v2/auth?...
 ```
 302 Found
 Location: http://app.local/auth/callback?code=abc123&state=xyz
-Set-Cookie: proofa_session=...; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2419200
+Set-Cookie: nube_session=...; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2419200
 ```
 
 ---
 
 #### `POST /v1/auth/exchange` (S2S)
 
-**Authentication**: `X-Proofa-Service-Token` header (required)
+**Authentication**: `X-Nube-Service-Token` header (required)
 
 **Request body:**
 ```json
@@ -1136,7 +1136,7 @@ Set-Cookie: proofa_session=...; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=
 
 #### `GET /v1/license?app_id=<app_id>`
 
-**Authentication**: Core session cookie (`proofa_session`)
+**Authentication**: Core session cookie (`nube_session`)
 
 **Query parameters:**
 
@@ -1209,7 +1209,7 @@ Set-Cookie: proofa_session=...; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=
 
 ---
 
-### 7.2 Gateway API (`api.proofa.com`)
+### 7.2 Gateway API (`api.nubeauth.com`)
 
 #### User Routes
 
@@ -1245,7 +1245,7 @@ Set-Cookie: proofa_session=...; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=
 
 **Behavior:**
 1. Receive `code` from Core
-2. S2S call to Core `POST /v1/auth/exchange` with `X-Proofa-Service-Token`
+2. S2S call to Core `POST /v1/auth/exchange` with `X-Nube-Service-Token`
 3. Core returns user + license
 4. Set gateway session cookie `pp_app_session`
 5. Store session in Redis (TTL from app config)
@@ -1542,13 +1542,13 @@ All admin endpoints require:
 
 ---
 
-### 7.3 User Dashboard API (`account.proofa.com`)
+### 7.3 User Dashboard API (`account.nubeauth.com`)
 
 **Simple, minimal scope.** Talks to Gateway `/me`, `/profile`, `/sessions` only.
 
 ---
 
-### 7.4 Admin Dashboard API (`admin.proofa.com`)
+### 7.4 Admin Dashboard API (`admin.nubeauth.com`)
 
 Talks to Gateway `/admin/*` routes only.
 
@@ -1558,7 +1558,7 @@ Talks to Gateway `/admin/*` routes only.
 
 ### Concepts
 
-- **Users** are global (shared across Proofa)
+- **Users** are global (shared across Nube Auth)
 - **Projects** are user-owned collections of apps
 - **Apps** belong to projects, define their own auth/licensing
 - **Licenses** are per (user, app)
@@ -1602,8 +1602,8 @@ Talks to Gateway `/admin/*` routes only.
 ### 9.1 Core Session (Global)
 
 **Cookies**: 
-- `proofa_user_session` (user sessions)
-- `proofa_admin_session` (admin sessions)
+- `nube_user_session` (user sessions)
+- `nube_admin_session` (admin sessions)
 
 **Stored**: Database `sessions` table + Redis metadata  
 **Scope**: Shared across all apps  
@@ -1767,10 +1767,10 @@ Optional for MVP, recommended for Phase 1.5:
 
 | Service | Domain | Notes |
 |---------|--------|-------|
-| **Core** | `auth.proofa.com` | User-facing login pages + API |
-| **Gateway** | `api.proofa.com` | Public BFF |
-| **User Dashboard** | `account.proofa.com` | Account management |
-| **Admin Dashboard** | `admin.proofa.com` | Project/app/license admin |
+| **Core** | `auth.nubeauth.com` | User-facing login pages + API |
+| **Gateway** | `api.nubeauth.com` | Public BFF |
+| **User Dashboard** | `account.nubeauth.com` | Account management |
+| **Admin Dashboard** | `admin.nubeauth.com` | Project/app/license admin |
 
 ### App Domains (Custom)
 
@@ -1919,9 +1919,9 @@ const appHostMap = {
 ### Secret Management
 
 - Never log secrets (tokens, passwords)
-- **S2S Token** (`X-Proofa-Service-Token`):
+- **S2S Token** (`X-Nube-Service-Token`):
   - Generate via script: `/scripts/generate-s2s-token.ts`
-  - Store as env var `X_PROOFA_SERVICE_TOKEN` (Core + Gateway must match)
+  - Store as env var `X_NUBE_AUTH_SERVICE_TOKEN` (Core + Gateway must match)
   - Manual rotation: regenerate and update env var
   - Format: High-entropy random string (32+ chars)
 - Hash OTPs + passwords (bcrypt)
@@ -2030,7 +2030,7 @@ Follow this sequence for implementation:
 
 | Cookie | Domain | TTL | Scope | Auth? |
 |--------|--------|-----|-------|-------|
-| `proofa_session` | Core | 365d rolling (users), 2hr + 15min inactivity (admins) | Global | User ID + Audience |
+| `nube_session` | Core | 365d rolling (users), 2hr + 15min inactivity (admins) | Global | User ID + Audience |
 | `pp_app_session` | Gateway | Per-app config (1-365d, default 30d) | Per-app | User ID + App ID |
 
 ### Key Endpoints (Cheat Sheet)
@@ -2049,7 +2049,7 @@ Follow this sequence for implementation:
 
 **Core**:
 ```env
-DATABASE_URL=libsql://proofa-dev-xxx.turso.io
+DATABASE_URL=libsql://nube-auth-dev-xxx.turso.io
 DATABASE_AUTH_TOKEN=<token>
 UPSTASH_REDIS_REST_URL=https://...
 UPSTASH_REDIS_REST_TOKEN=...
@@ -2059,7 +2059,7 @@ GITHUB_CLIENT_ID=...
 GITHUB_CLIENT_SECRET=...
 RESEND_API_KEY=...
 CORE_SESSION_SECRET=<32+ char>
-X_PROOFA_SERVICE_TOKEN=<32+ char>
+X_NUBE_AUTH_SERVICE_TOKEN=<32+ char>
 CORE_SESSION_TTL_SECONDS=31536000
 SESSION_REFRESH_THRESHOLD_SECONDS=2592000
 LOG_LEVEL=info
@@ -2068,7 +2068,7 @@ LOG_LEVEL=info
 **Gateway**:
 ```env
 CORE_URL=http://localhost:3000
-X_PROOFA_SERVICE_TOKEN=<same as core>
+X_NUBE_AUTH_SERVICE_TOKEN=<same as core>
 SESSION_SECRET=<32+ char>
 UPSTASH_REDIS_REST_URL=https://...
 UPSTASH_REDIS_REST_TOKEN=...

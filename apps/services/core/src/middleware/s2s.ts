@@ -1,5 +1,5 @@
 import type { Context, Next } from "hono";
-import { createLogger, serializeError } from "@proofa/shared";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import { env } from "../config/env";
 import { timingSafeEqual } from "node:crypto";
 
@@ -10,11 +10,11 @@ const log = createLogger("s2s-middleware");
  * Validates server-to-server authentication tokens for gateway communication
  * 
  * Security: Uses constant-time comparison to prevent timing attacks
- * Tracking: https://github.com/0xdps/proofa-core/issues/43
+ * Tracking: https://github.com/0xdps/nube-auth/issues/43
  */
 export async function s2sMiddleware(c: Context, next: Next): Promise<Response | undefined> {
 	try {
-		const s2sToken = c.req.header("x-proofa-s2s-token");
+		const s2sToken = c.req.header("x-nube-s2s-token");
 
 		if (!s2sToken) {
 			log.warn({ path: c.req.path }, "Missing S2S token");

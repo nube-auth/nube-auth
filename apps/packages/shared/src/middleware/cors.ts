@@ -1,4 +1,4 @@
-import { createLogger } from "@proofa/shared";
+import { createLogger } from "@nube-auth/shared";
 import type { Context, Next } from "hono";
 
 const log = createLogger("cors");
@@ -21,7 +21,7 @@ export function corsMiddleware(options: {
 		defaultOrigins = [],
 		credentials = true,
 		methods = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-		headers = ["Content-Type", "Authorization", "X-Proofa-Service-Token"],
+		headers = ["Content-Type", "Authorization", "X-Nube-Service-Token"],
 	} = options;
 
 	return async (c: Context, next: Next) => {

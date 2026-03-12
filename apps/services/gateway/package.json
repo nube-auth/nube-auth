@@ -1,7 +1,7 @@
 {
-	"name": "@proofa/gateway",
+	"name": "@nube-auth/gateway",
 	"version": "1.0.0",
-	"description": "Backend-for-Frontend gateway service for Proofa",
+	"description": "Backend-for-Frontend gateway service for Nube Auth",
 	"type": "module",
 	"main": "dist/index.js",
 	"scripts": {
@@ -12,10 +12,10 @@
 	},
 	"dependencies": {
 		"@hono/node-server": "^1.19.7",
-		"@proofa/auth": "workspace:*",
-		"@proofa/cache": "workspace:*",
-		"@proofa/db": "workspace:*",
-		"@proofa/shared": "workspace:*",
+		"@nube-auth/auth": "workspace:*",
+		"@nube-auth/cache": "workspace:*",
+		"@nube-auth/db": "workspace:*",
+		"@nube-auth/shared": "workspace:*",
 		"@stripe/stripe-js": "^5.5.0",
 		"hono": "^4.0.0",
 		"nanoid": "^5.0.0",

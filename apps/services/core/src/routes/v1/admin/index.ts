@@ -1,4 +1,4 @@
-import { createLogger } from "@proofa/shared";
+import { createLogger } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { billingRouter } from "./billing.js";
 import { globalLicensesRouter } from "./global-licenses.js";

@@ -3,7 +3,7 @@ title: Environment Variables
 description: Complete environment configuration reference
 ---
 
-All environment variables for Proofa services.
+All environment variables for Nube Auth services.
 
 ## Core Settings
 
@@ -30,7 +30,7 @@ DATABASE_AUTH_TOKEN=your-token
 ### PostgreSQL Example
 
 ```bash
-DATABASE_URL=postgresql://user:pass@host:5432/proofa
+DATABASE_URL=postgresql://user:pass@host:5432/nube-auth
 ```
 
 ## Redis
@@ -111,7 +111,7 @@ GITHUB_CLIENT_SECRET=xxx
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `X_PROOFA_SERVICE_TOKEN` | Yes* | - | Shared token for Core ↔ Gateway S2S calls (must match on both services) |
+| `X_NUBE_AUTH_SERVICE_TOKEN` | Yes* | - | Shared token for Core ↔ Gateway S2S calls (must match on both services) |
 
 ## Example .env
 
@@ -151,5 +151,5 @@ RESEND_API_KEY=re_xxx
 CORS_ORIGINS=https://yourdomain.com,https://app.yourdomain.com
 
 # Service-to-Service
-X_PROOFA_SERVICE_TOKEN=your-32-plus-char-token
+X_NUBE_AUTH_SERVICE_TOKEN=your-32-plus-char-token
 ```

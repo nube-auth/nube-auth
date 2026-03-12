@@ -1,16 +1,16 @@
 ---
 title: Docker Deployment
-description: Deploy Proofa with Docker
+description: Deploy Nube Auth with Docker
 ---
 
-Deploy Proofa using Docker Compose for a production-ready setup.
+Deploy Nube Auth using Docker Compose for a production-ready setup.
 
 ## Quick Start
 
 ```bash
 # Clone the repository
-git clone https://github.com/0xdps/proofa-core.git
-cd proofa-core
+git clone https://github.com/0xdps/nube-auth.git
+cd nube-auth
 
 # Copy environment template
 cp .env.example .env
@@ -30,7 +30,7 @@ version: '3.8'
 
 services:
   gateway:
-    image: ghcr.io/0xdps/proofa-gateway:latest
+    image: ghcr.io/0xdps/nube-auth-gateway:latest
     ports:
       - "3000:3000"
     environment:
@@ -42,7 +42,7 @@ services:
       - core
 
   core:
-    image: ghcr.io/0xdps/proofa-core:latest
+    image: ghcr.io/0xdps/nube-auth:latest
     ports:
       - "3001:3001"
     environment:

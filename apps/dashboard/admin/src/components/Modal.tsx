@@ -6,8 +6,8 @@ import {
 	DialogTitle,
 	DialogFooter,
 	Button,
-} from "@proofa/components";
-import { Icon, IconType } from "@proofa/components";
+} from "@nube-auth/components";
+import { Icon, IconType } from "@nube-auth/components";
 
 interface ModalProps {
 	isOpen: boolean;

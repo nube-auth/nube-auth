@@ -4,9 +4,9 @@
  * Handles async webhook event processing
  */
 
-import { createLogger, serializeError } from "@proofa/shared";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Worker } from "bullmq";
-import { QueueClient } from "@proofa/queue";
+import { QueueClient } from "@nube-auth/queue";
 
 const log = createLogger("process-webhook-worker");
 
@@ -25,8 +25,8 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 	const queue = queueClient.getQueue("billing");
 
 	// Dynamically import webhook handler to avoid circular dependencies
-	const { processWebhook } = await import("@proofa/core/billing/services/webhook-handler");  
-	const { WebhookLoggingService } = await import("@proofa/core/billing/services/webhook-logging");
+	const { processWebhook } = await import("@nube-auth/core/billing/services/webhook-handler");  
+	const { WebhookLoggingService } = await import("@nube-auth/core/billing/services/webhook-logging");
 
 	return new BullWorker<ProcessWebhookJobData>(
 		"billing",

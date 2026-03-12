@@ -1,23 +1,23 @@
-import { ProofaClient, type ProofaClientConfig } from "@proofa/client";
+import { NubeAuthClient, type NubeAuthClientConfig } from "@nube-auth/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createContext, type ReactNode, useContext, useMemo } from "react";
 
-interface ProofaContextValue {
-	client: ProofaClient;
+interface NubeAuthContextValue {
+	client: NubeAuthClient;
 	queryClient: QueryClient;
 }
 
-const ProofaContext = createContext<ProofaContextValue | null>(null);
+const NubeAuthContext = createContext<NubeAuthContextValue | null>(null);
 
-interface ProofaProviderProps {
-	config: ProofaClientConfig;
+interface NubeAuthProviderProps {
+	config: NubeAuthClientConfig;
 	queryClient?: QueryClient;
 	children: ReactNode;
 }
 
-export function ProofaProvider({ config, queryClient: externalQueryClient, children }: ProofaProviderProps) {
+export function NubeAuthProvider({ config, queryClient: externalQueryClient, children }: NubeAuthProviderProps) {
 	const value = useMemo(() => {
-		const client = new ProofaClient(config);
+		const client = new NubeAuthClient(config);
 		const queryClient =
 			externalQueryClient ||
 			new QueryClient({
@@ -34,16 +34,16 @@ export function ProofaProvider({ config, queryClient: externalQueryClient, child
 	}, [config.gatewayUrl, config.s2sToken, externalQueryClient, config]);
 
 	return (
-		<ProofaContext.Provider value={value}>
+		<NubeAuthContext.Provider value={value}>
 			<QueryClientProvider client={value.queryClient}>{children}</QueryClientProvider>
-		</ProofaContext.Provider>
+		</NubeAuthContext.Provider>
 	);
 }
 
-export function useProofaContext(): ProofaContextValue {
-	const context = useContext(ProofaContext);
+export function useNubeAuthContext(): NubeAuthContextValue {
+	const context = useContext(NubeAuthContext);
 	if (!context) {
-		throw new Error("useProofaContext must be used within ProofaProvider");
+		throw new Error("useNubeAuthContext must be used within NubeAuthProvider");
 	}
 	return context;
 }

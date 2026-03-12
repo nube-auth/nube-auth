@@ -1,7 +1,7 @@
 # Admin Dashboard Plan (Review First)
 
 ## Objectives
-- Ship a coherent admin dashboard aligned with Proofa design standards (Selia via `@proofa/components`).
+- Ship a coherent admin dashboard aligned with Nube Auth design standards (Selia via `@nube-auth/components`).
 - Enforce critical patterns: public IDs only, no direct `process.env`, no native `fetch`, no native `<select>`, no direct DB/Redis clients, no read-modify-write JSONB.
 - Keep UI consistent with user dashboard improvements (fixed-width theme toggle, chip variants, alerts, InfoGrid usage).
 - Use Selia dashboard block as layout inspiration: https://selia.earth/block/dashboard/
@@ -9,13 +9,13 @@
 ## Scope (initial pass)
 - Layout shell: header (theme toggle + profile menu placeholder), sidebar navigation, content area (Selia dashboard block inspired).
 - Core pages: Overview, Users, Projects/Apps, Sessions/Activity, Settings (feature flags/rate limits), Audit/Logs stub.
-- Component usage: Selia components from `@proofa/components`; leverage existing composites where helpful.
-- Data layer: use `pingpong` from `@proofa/auth` for HTTP; ensure public IDs in UI and routes.
+- Component usage: Selia components from `@nube-auth/components`; leverage existing composites where helpful.
+- Data layer: use `pingpong` from `@nube-auth/auth` for HTTP; ensure public IDs in UI and routes.
 - Styling: rely on shared theme/tailwind; avoid dashboard-local color variables.
 
 ## Selia Setup Checklist (baseline, match user dashboard)
-- [ ] Import shared styles: `@proofa/components/styles/theme.css` and tailwind pipeline in admin entry.
-- [ ] Ensure Selia components are imported from `@proofa/components` (no local copies).
+- [ ] Import shared styles: `@nube-auth/components/styles/theme.css` and tailwind pipeline in admin entry.
+- [ ] Ensure Selia components are imported from `@nube-auth/components` (no local copies).
 - [ ] Add fixed-width ThemeToggle in header (reuse user dashboard component + CSS pattern).
 - [ ] Verify Icon/IconType registry used everywhere (no ad-hoc icons).
 - [ ] Replace any legacy Button/Card/Input/Select/Badge/Alert with Selia counterparts.
@@ -55,7 +55,7 @@
 ## Work Breakdown
 1) Repo & dependency audit (admin app)
 - Inspect `apps/dashboard/admin` entrypoints, routing, hooks, current components.
-- Verify theme imports (`@proofa/components/styles/theme.css`) and tailwind pipeline.
+- Verify theme imports (`@nube-auth/components/styles/theme.css`) and tailwind pipeline.
 - Identify legacy components to replace (buttons, cards, selects, badges, alerts).
 
 2) Layout & navigation (Selia-inspired shell)

@@ -1,6 +1,6 @@
 ---
 title: User Dashboard
-description: Guide to the Proofa User Dashboard
+description: Guide to the Nube Auth User Dashboard
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -9,7 +9,7 @@ The User Dashboard provides a simple interface for end users to manage their acc
 
 ## Overview
 
-Access the User Dashboard at **[account.proofa.com](https://account.proofa.com)**
+Access the User Dashboard at **[account.nubeauth.com](https://account.nubeauth.com)**
 
 The dashboard focuses on essential account management features:
 - **Profile** - View and update your information
@@ -20,9 +20,9 @@ The dashboard focuses on essential account management features:
 
 ### OAuth Login
 
-1. Visit [account.proofa.com](https://account.proofa.com)
+1. Visit [account.nubeauth.com](https://account.nubeauth.com)
 2. Click **"Login with Google"** or **"Login with GitHub"**
-3. Authorize Proofa to access your profile
+3. Authorize Nube Auth to access your profile
 4. Redirected to dashboard after login
 
 ### Magic Link Login
@@ -162,7 +162,7 @@ User sessions automatically expire after **365 days** of inactivity:
 
 ### Session Hijacking Protection
 
-Proofa uses fingerprinting to detect session theft:
+Nube Auth uses fingerprinting to detect session theft:
 - **IP Address** - Monitors for changes
 - **User-Agent** - Tracks browser/device
 - **Automatic Invalidation** - Suspicious changes log you out
@@ -258,7 +258,7 @@ To change or cancel your subscription:
 **Solution:**
 1. Check you're not clearing cookies
 2. Disable privacy extensions temporarily
-3. Ensure browser allows cookies from `proofa.com`
+3. Ensure browser allows cookies from `nubeauth.com`
 
 ### Cannot Unlink Account
 
@@ -287,7 +287,7 @@ To change or cancel your subscription:
 ### Mobile Browser
 
 Access the User Dashboard from mobile:
-1. Visit [account.proofa.com](https://account.proofa.com)
+1. Visit [account.nubeauth.com](https://account.nubeauth.com)
 2. Responsive design adapts to screen size
 3. All features available on mobile
 
@@ -332,7 +332,7 @@ The User Dashboard collects:
 We never collect:
 - Passwords (OAuth-only)
 - Payment details (handled by providers)
-- Browsing history outside Proofa
+- Browsing history outside Nube Auth
 - Personal messages or content
 
 ### Data Retention
@@ -356,16 +356,16 @@ Your rights under GDPR:
 
 Need assistance?
 
-1. **Documentation** - Check [docs.proofa.com](https://docs.proofa.com)
+1. **Documentation** - Check [docs.nubeauth.com](https://docs.nubeauth.com)
 2. **FAQ** - Common questions answered
-3. **Email Support** - support@proofa.io
-4. **Status Page** - Check service status at status.proofa.com
+3. **Email Support** - support@nubeauth.com
+4. **Status Page** - Check service status at status.nubeauth.com
 
 ### Feature Requests
 
 Suggest new features:
-- Email: feedback@proofa.io
-- GitHub: [github.com/0xdps/proofa-core/issues](https://github.com/0xdps/proofa-core/issues)
+- Email: feedback@nubeauth.com
+- GitHub: [github.com/0xdps/nube-auth/issues](https://github.com/0xdps/nube-auth/issues)
 
 ## Best Practices
 

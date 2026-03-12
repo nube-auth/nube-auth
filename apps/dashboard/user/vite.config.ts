@@ -10,13 +10,13 @@ export default defineConfig({
 	],
 	resolve: {
 		alias: {
-			"@proofa/react": path.resolve(__dirname, "../../packages/react/dist/index.js"),
-			"@proofa/client": path.resolve(__dirname, "../../packages/client/dist/index.js"),
-			"@proofa/shared": path.resolve(__dirname, "../../packages/shared/dist/index.js"),
-			"@proofa/auth": path.resolve(__dirname, "../../packages/auth/dist/index.js"),
-			"@proofa/cache": path.resolve(__dirname, "../../packages/cache/dist/index.js"),
-			"@proofa/db": path.resolve(__dirname, "../../packages/db/dist/index.js"),
-			"@proofa/queue": path.resolve(__dirname, "../../packages/queue/dist/index.js"),
+			"@nube-auth/react": path.resolve(__dirname, "../../packages/react/dist/index.js"),
+			"@nube-auth/client": path.resolve(__dirname, "../../packages/client/dist/index.js"),
+			"@nube-auth/shared": path.resolve(__dirname, "../../packages/shared/dist/index.js"),
+			"@nube-auth/auth": path.resolve(__dirname, "../../packages/auth/dist/index.js"),
+			"@nube-auth/cache": path.resolve(__dirname, "../../packages/cache/dist/index.js"),
+			"@nube-auth/db": path.resolve(__dirname, "../../packages/db/dist/index.js"),
+			"@nube-auth/queue": path.resolve(__dirname, "../../packages/queue/dist/index.js"),
 		},
 	},
 	server: {

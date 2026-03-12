@@ -1,6 +1,6 @@
-# @proofa/core
+# @nube-auth/core
 
-The authoritative identity, session, and licensing service for Proofa.
+The authoritative identity, session, and licensing service for Nube Auth.
 
 ## Overview
 
@@ -137,10 +137,10 @@ src/
 1. **PostgreSQL** (using Docker):
 ```bash
 docker run -d \
-  --name proofa-db \
+  --name nube-auth-db \
   -e POSTGRES_USER=user \
   -e POSTGRES_PASSWORD=password \
-  -e POSTGRES_DB=proofa_core \
+  -e POSTGRES_DB=nube-auth_core \
   -p 5432:5432 \
   postgres:15
 ```
@@ -148,7 +148,7 @@ docker run -d \
 2. **Redis** (using Docker):
 ```bash
 docker run -d \
-  --name proofa-redis \
+  --name nube-auth-redis \
   -p 6379:6379 \
   redis:7
 ```
@@ -195,4 +195,4 @@ Ensure all required environment variables are set in your production environment
 
 ## License
 
-Proprietary - Proofa
+Proprietary - Nube Auth

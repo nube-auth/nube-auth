@@ -4,11 +4,11 @@
  */
 
 import { useState, useEffect } from "react";
-import { pingpong } from "@proofa/auth";
+import { pingpong } from "@nube-auth/auth";
 import config from "../config";
 import { csrfHeaders } from "../lib/csrf";
 import { Select } from "../components/Select";
-import { Heading, Text, Card, CardBody, Button, Alert } from "@proofa/components";
+import { Heading, Text, Card, CardBody, Button, Alert } from "@nube-auth/components";
 import { useProjects, useProjectApps, useAppUsers, useAppPlans } from "../hooks/api";
 
 const CREATE_NEW = "__create_new__";
@@ -453,7 +453,7 @@ export default function PaymentTestingPlayground() {
 									<div className="space-y-2">
 										<Text className="font-semibold">⏳ Waiting for Webhook</Text>
 										<Text className="text-sm">
-											Payment will remain in "Processing" until the provider sends a webhook to Proofa. 
+											Payment will remain in "Processing" until the provider sends a webhook to Nube Auth. 
 											In local development, make sure your webhook URL is accessible via ngrok or similar tunnel.
 										</Text>
 										<Text className="text-xs text-text-tertiary mt-2">

@@ -1,6 +1,6 @@
 import { getEnv } from "../config/env";
 import { addS2SAuthHeader } from "../middleware/s2s";
-import { pingpong } from "@proofa/auth";
+import { pingpong } from "@nube-auth/auth";
 
 interface CoreRequest {
 	method: "GET" | "POST" | "PATCH" | "DELETE";
@@ -10,7 +10,7 @@ interface CoreRequest {
 
 /**
  * Core service for making authenticated calls to Core API
- * All requests include X-Proofa-Service-Token header
+ * All requests include X-Nube-Service-Token header
  */
 export const coreService = {
 	/**

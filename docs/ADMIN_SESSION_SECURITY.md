@@ -131,8 +131,8 @@ Two separate cookies prevent session reuse attacks:
 
 | Cookie | Domain | TTL | Purpose |
 |--------|--------|-----|---------|
-| `proofa_admin_session` | `admin.proofa.com` | 2 hours | Admin dashboard access |
-| `proofa_user_session` | `account.proofa.com` | 365 days | User dashboard access |
+| `nube_admin_session` | `admin.nubeauth.com` | 2 hours | Admin dashboard access |
+| `nube_user_session` | `account.nubeauth.com` | 365 days | User dashboard access |
 
 **Security Benefits**:
 - Compromised user cookie ≠ admin access
@@ -310,5 +310,5 @@ ADMIN_INACTIVITY_TIMEOUT_SECONDS=1800 # 30 minutes
 ---
 
 **Last Updated**: January 10, 2026  
-**Maintainer**: Proofa Security Team  
+**Maintainer**: Nube Auth Security Team  
 **Review**: Required before any admin TTL changes

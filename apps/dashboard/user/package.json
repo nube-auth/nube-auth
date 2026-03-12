@@ -1,5 +1,5 @@
 {
-	"name": "@proofa/dashboard-user",
+	"name": "@nube-auth/dashboard-user",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -11,11 +11,11 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
-		"@proofa/auth": "workspace:*",
-		"@proofa/client": "workspace:*",
-		"@proofa/components": "workspace:*",
-		"@proofa/react": "workspace:*",
-		"@proofa/shared": "workspace:*",
+		"@nube-auth/auth": "workspace:*",
+		"@nube-auth/client": "workspace:*",
+		"@nube-auth/components": "workspace:*",
+		"@nube-auth/react": "workspace:*",
+		"@nube-auth/shared": "workspace:*",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"react-router-dom": "^6.20.0"

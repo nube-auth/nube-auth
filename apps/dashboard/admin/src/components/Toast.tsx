@@ -1,5 +1,5 @@
 import { createContext, type ReactNode, useContext } from "react";
-import { toastManager } from "@proofa/components";
+import { toastManager } from "@nube-auth/components";
 
 interface ToastContextType {
 	showToast: (message: string, type?: "success" | "error" | "info" | "warning") => void;

@@ -1,4 +1,4 @@
-import { ProofaClient } from "@proofa/client";
+import { NubeAuthClient } from "@nube-auth/client";
 import {
 	AppDTOSchema,
 	AppsListResponseSchema,
@@ -6,7 +6,7 @@ import {
 	ProjectDTOSchema,
 	ProjectMembersListResponseSchema,
 	ProjectsListResponseSchema,
-} from "@proofa/shared";
+} from "@nube-auth/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
 	App,
@@ -20,7 +20,7 @@ import type {
 import config from "../config";
 import { pingpong } from "../lib/pingpong";
 
-const client = new ProofaClient({
+const client = new NubeAuthClient({
 	gatewayUrl: config.gatewayUrl,
 });
 

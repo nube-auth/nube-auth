@@ -1,6 +1,6 @@
-import { getDb, sessionQueries, userQueries } from "@proofa/db";
-import { cache, sessionStore } from "@proofa/cache";
-import { createLogger, idPatterns, serializeError } from "@proofa/shared";
+import { getDb, sessionQueries, userQueries } from "@nube-auth/db";
+import { cache, sessionStore } from "@nube-auth/cache";
+import { createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 
 import { Hono } from "hono";

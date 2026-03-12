@@ -8,8 +8,8 @@
  * - GET /billing/purchases/:purchaseId/can-refund - Check refund eligibility
  */
 
-import { getDb, eq, and, payment_transactions, purchases, payment_provider_configs } from "@proofa/db";
-import { createLogger, serializeError, id } from "@proofa/shared";
+import { getDb, eq, and, payment_transactions, purchases, payment_provider_configs } from "@nube-auth/db";
+import { createLogger, serializeError, id } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";

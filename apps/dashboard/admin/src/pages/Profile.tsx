@@ -15,7 +15,7 @@ import {
 	Label,
 	Input,
 	Button
-} from "@proofa/components";
+} from "@nube-auth/components";
 import { PageLoader } from "../components/PageLoader";
 
 // Helper to normalize headers to Record<string, string>

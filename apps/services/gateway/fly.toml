@@ -1,7 +1,7 @@
-# Fly.io configuration for Proofa Gateway
+# Fly.io configuration for Nube Auth Gateway
 # Deploy from monorepo root: fly deploy . --dockerfile apps/gateway/Dockerfile --config apps/gateway/fly.toml
 
-app = "proofa-gateway"
+app = "nube-auth-gateway"
 primary_region = "bom"
 
 [build]

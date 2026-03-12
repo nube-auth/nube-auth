@@ -6,8 +6,8 @@ import {
 	planQueries,
 	projectQueries,
 	userQueries,
-} from "@proofa/db";
-import { createLogger, idPatterns, serializeError } from "@proofa/shared";
+} from "@nube-auth/db";
+import { createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 
@@ -21,7 +21,7 @@ export const statsRouter = new Hono();
  */
 statsRouter.get("/stats", async (c: Context) => {
 	try {
-		const userId = c.req.header("X-Proofa-User-Id");
+		const userId = c.req.header("X-Nube-User-Id");
 		if (!userId) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}

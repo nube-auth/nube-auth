@@ -1,5 +1,5 @@
-import { appQueries, getDb, licenseQueries, planQueries } from "@proofa/db";
-import { createLogger, serializeError } from "@proofa/shared";
+import { appQueries, getDb, licenseQueries, planQueries } from "@nube-auth/db";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 
 const log = createLogger("admin-global-licenses");

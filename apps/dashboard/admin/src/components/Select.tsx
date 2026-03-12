@@ -6,7 +6,7 @@ import {
 	SelectPopup,
 	SelectList,
 	SelectItem,
-} from "@proofa/components";
+} from "@nube-auth/components";
 
 interface SelectOption {
 	value: string;

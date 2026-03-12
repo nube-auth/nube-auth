@@ -1,5 +1,5 @@
 import { serve } from "@hono/node-server";
-import { createLogger, serializeError } from "@proofa/shared";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { env } from "./config/env";
@@ -21,9 +21,9 @@ const app = new Hono();
 const allowedOrigins = [
 	"http://localhost:5173",
 	"http://localhost:5174",
-	"https://user.proofa.sh",
-	"https://manage.proofa.sh",
-	"https://proofa.sh",
+	"https://user.nubeauth.com",
+	"https://manage.nubeauth.com",
+	"https://nubeauth.com",
 ];
 
 // Security headers middleware
@@ -35,7 +35,7 @@ app.use(
 			scriptSrc: ["'self'", "'unsafe-inline'"],
 			styleSrc: ["'self'", "'unsafe-inline'"],
 			imgSrc: ["'self'", "data:", "https:"],
-			connectSrc: ["'self'", "https://api.proofa.sh"],
+			connectSrc: ["'self'", "https://api.nubeauth.com"],
 			fontSrc: ["'self'"],
 			objectSrc: ["'none'"],
 			mediaSrc: ["'self'"],
@@ -62,13 +62,13 @@ app.use(
 			if (!origin) return "*";
 			// Check if origin is in allowed list
 			if (allowedOrigins.includes(origin)) return origin;
-			// Allow any *.proofa.sh subdomain
-			if (origin.endsWith(".proofa.sh")) return origin;
+			// Allow any *.nubeauth.com subdomain
+			if (origin.endsWith(".nubeauth.com")) return origin;
 			return null;
 		},
 		credentials: true,
 		allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-		allowHeaders: ["Content-Type", "Authorization", "X-Proofa-Service-Token", "X-Proofa-CSRF-Token", "X-Proofa-S2S-Token", "X-Proofa-Project-Id"],
+		allowHeaders: ["Content-Type", "Authorization", "X-Nube-Service-Token", "X-Nube-CSRF-Token", "X-Nube-S2S-Token", "X-Nube-Project-Id"],
 		exposeHeaders: ["Set-Cookie"],
 	}),
 );

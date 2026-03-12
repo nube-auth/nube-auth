@@ -1,6 +1,6 @@
-# @proofa/workers
+# @nube-auth/workers
 
-Background job worker service for Proofa. Handles async processing of payment confirmations, webhook events, and license synchronization.
+Background job worker service for Nube Auth. Handles async processing of payment confirmations, webhook events, and license synchronization.
 
 ## Workers
 
@@ -11,17 +11,17 @@ Background job worker service for Proofa. Handles async processing of payment co
 ## Development
 
 ```bash
-pnpm --filter @proofa/workers dev
+pnpm --filter @nube-auth/workers dev
 ```
 
 ## Building
 
 ```bash
-pnpm --filter @proofa/workers build
+pnpm --filter @nube-auth/workers build
 ```
 
 ## Architecture
 
 Workers communicate with the core service via dynamic imports to handle payment and webhook processing. All workers use BullMQ for job management with Redis as the message broker.
 
-Queue connections are managed via `@proofa/queue` package.
+Queue connections are managed via `@nube-auth/queue` package.

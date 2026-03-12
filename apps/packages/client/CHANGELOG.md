@@ -1,13 +1,13 @@
-# Proofa Client Package
+# Nube Auth Client Package
 
-Created a new `@proofa/client` package that provides a unified TypeScript client for interacting with the Proofa Gateway API.
+Created a new `@nube-auth/client` package that provides a unified TypeScript client for interacting with the Nube Auth Gateway API.
 
 ## What Was Created
 
 ### New Package: `packages/client/`
 
 **Files:**
-- `src/client.ts` - Main ProofaClient class with all API methods
+- `src/client.ts` - Main NubeAuthClient class with all API methods
 - `src/types.ts` - TypeScript interfaces for all API types
 - `src/index.ts` - Package exports
 - `README.md` - Basic package documentation
@@ -43,7 +43,7 @@ Created a new `@proofa/client` package that provides a unified TypeScript client
 
 ### Dashboard Updates
 
-Both `apps/dashboard/user` and `apps/dashboard/admin` now use `@proofa/client`:
+Both `apps/dashboard/user` and `apps/dashboard/admin` now use `@nube-auth/client`:
 
 **Before:**
 ```typescript
@@ -55,9 +55,9 @@ const user = await res.json();
 **After:**
 ```typescript
 // Using client
-import { ProofaClient } from '@proofa/client';
+import { NubeAuthClient } from '@nube-auth/client';
 
-const client = new ProofaClient({
+const client = new NubeAuthClient({
   gatewayUrl: import.meta.env.VITE_GATEWAY_URL
 });
 
@@ -86,17 +86,17 @@ Updated all field references to match the Gateway API schema:
 
 1. **Type Safety** - Full TypeScript support with proper interfaces
 2. **Code Reuse** - Eliminates duplicate API code between dashboards
-3. **Error Handling** - Centralized error handling with ProofaError class
+3. **Error Handling** - Centralized error handling with NubeAuthError class
 4. **Maintainability** - Single source of truth for API interactions
 5. **Third-Party Ready** - Can be published as a standalone package
 
 ## Usage Example
 
 ```typescript
-import { ProofaClient } from '@proofa/client';
+import { NubeAuthClient } from '@nube-auth/client';
 
-const client = new ProofaClient({
-  gatewayUrl: 'https://api.proofa.sh'
+const client = new NubeAuthClient({
+  gatewayUrl: 'https://api.nubeauth.com'
 });
 
 // Check authentication
@@ -122,8 +122,8 @@ if (status.loggedIn) {
 
 Both dashboards build successfully:
 ```bash
-pnpm --filter @proofa/dashboard-user build   # ✅ Success
-pnpm --filter @proofa/dashboard-admin build  # ✅ Success
+pnpm --filter @nube-auth/dashboard-user build   # ✅ Success
+pnpm --filter @nube-auth/dashboard-admin build  # ✅ Success
 ```
 
 ## Next Steps
@@ -132,27 +132,27 @@ pnpm --filter @proofa/dashboard-admin build  # ✅ Success
 2. **Add Tests** - Unit tests for client methods
 3. **Add Documentation** - JSDoc comments for better IDE support
 4. **SDK Features** - Add helper methods (e.g., `isAuthenticated()`, `requireAuth()`)
-5. **React Hooks Package** - Create `@proofa/react` with pre-built hooks
+5. **React Hooks Package** - Create `@nube-auth/react` with pre-built hooks
 
 ## For Third-Party Integration
 
-Third parties can now use `@proofa/client` directly:
+Third parties can now use `@nube-auth/client` directly:
 
 ```bash
-npm install @proofa/client
+npm install @nube-auth/client
 ```
 
 ```typescript
-import { ProofaClient } from '@proofa/client';
+import { NubeAuthClient } from '@nube-auth/client';
 
-const proofa = new ProofaClient({
-  gatewayUrl: process.env.PROOFA_GATEWAY_URL
+const nubeAuth = new NubeAuthClient({
+  gatewayUrl: process.env.NUBE_AUTH_GATEWAY_URL
 });
 
 // Use in your app
 app.get('/profile', async (req, res) => {
   try {
-    const user = await proofa.me.get();
+    const user = await nube-auth.me.get();
     res.json(user);
   } catch (error) {
     res.status(401).json({ error: 'Not authenticated' });

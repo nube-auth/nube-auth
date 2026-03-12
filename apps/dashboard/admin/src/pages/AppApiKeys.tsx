@@ -16,7 +16,7 @@ import {
 	BreadcrumbList,
 	BreadcrumbItem,
 	BreadcrumbButton,
-} from "@proofa/components";
+} from "@nube-auth/components";
 import { PageLoader } from "../components/PageLoader";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { useToast } from "../components/Toast";
@@ -317,7 +317,7 @@ export function AppApiKeysPage() {
 								Integration Guide
 							</Text>
 							<Text className="text-muted-foreground text-sm">
-								Learn how to integrate Proofa into your application with code examples
+								Learn how to integrate Nube Auth into your application with code examples
 							</Text>
 						</div>
 					</div>

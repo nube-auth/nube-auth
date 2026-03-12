@@ -23,7 +23,7 @@ export function createSessionCookie(
 	const signed = signSessionId(sessionId);
 
 	return {
-		name: "proofa_session",
+		name: "nube_session",
 		value: signed,
 		attributes: {
 			httpOnly: true,

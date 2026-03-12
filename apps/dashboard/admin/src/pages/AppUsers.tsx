@@ -32,7 +32,7 @@ import {
 	BreadcrumbList,
 	BreadcrumbItem,
 	BreadcrumbButton,
-} from "@proofa/components";
+} from "@nube-auth/components";
 
 import { PageLoader } from "../components/PageLoader";
 import { ConfirmModal } from "../components/ConfirmModal";

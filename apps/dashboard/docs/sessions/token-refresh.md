@@ -3,7 +3,7 @@ title: Token Refresh
 description: How access token refresh works
 ---
 
-Proofa uses a dual-token system for secure, seamless authentication.
+Nube Auth uses a dual-token system for secure, seamless authentication.
 
 ## Token Types
 
@@ -17,10 +17,10 @@ Proofa uses a dual-token system for secure, seamless authentication.
 The SDK handles token refresh automatically:
 
 ```typescript
-const proofa = new ProofaClient({ appId: 'your-app' });
+const nubeAuth = new NubeAuthClient({ appId: 'your-app' });
 
 // SDK automatically refreshes tokens before they expire
-const user = await proofa.getUser(); // Always works if session is valid
+const user = await nubeAuth.getUser(); // Always works if session is valid
 ```
 
 ## Manual Refresh
@@ -29,24 +29,24 @@ If needed, you can manually refresh tokens:
 
 ```typescript
 // Check if access token is expired
-if (proofa.isTokenExpired()) {
-  await proofa.refreshToken();
+if (nube-auth.isTokenExpired()) {
+  await nube-auth.refreshToken();
 }
 
 // Force refresh
-await proofa.refreshToken({ force: true });
+await nube-auth.refreshToken({ force: true });
 ```
 
 ## Refresh Flow
 
 ```mermaid
 sequenceDiagram
-    App->>Proofa: API request (expired access token)
-    Proofa->>App: 401 Unauthorized
-    App->>Proofa: Refresh request (refresh token)
-    Proofa->>App: New access token
-    App->>Proofa: Retry API request
-    Proofa->>App: Success
+    App->>Nube Auth: API request (expired access token)
+    Nube Auth->>App: 401 Unauthorized
+    App->>Nube Auth: Refresh request (refresh token)
+    Nube Auth->>App: New access token
+    App->>Nube Auth: Retry API request
+    Nube Auth->>App: Success
 ```
 
 ## Token Rotation
@@ -76,11 +76,11 @@ REFRESH_TOKEN_ROTATION=true
 
 ```typescript
 try {
-  await proofa.refreshToken();
+  await nube-auth.refreshToken();
 } catch (error) {
   if (error.code === 'REFRESH_TOKEN_EXPIRED') {
     // User needs to re-authenticate
-    await proofa.login({ provider: 'google' });
+    await nubeAuth.login({ provider: 'google' });
   } else if (error.code === 'REFRESH_TOKEN_REVOKED') {
     // Session was revoked (e.g., logout from another device)
     redirect('/login?reason=session_revoked');

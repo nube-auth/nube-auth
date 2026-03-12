@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ============================================================================
-# Proofa Development Setup Script
+# Nube Auth Development Setup Script
 # ============================================================================
 # This script sets up your local development environment in one command
 # ============================================================================
@@ -111,7 +111,7 @@ SESSION_SECRET=$(generate_secret 64)
 JWT_SECRET=$(generate_secret 32)
 PAYMENT_CONFIGS_KEY=$(generate_secret 32)
 S2S_SECRET=$(generate_secret 32)
-X_PROOFA_SERVICE_TOKEN=$(generate_secret 32)
+X_NUBE_AUTH_SERVICE_TOKEN=$(generate_secret 32)
 
 # Update .env.local with generated secrets
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -121,7 +121,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     sed -i '' "s/JWT_SECRET=.*/JWT_SECRET=$JWT_SECRET/" .env.local
     sed -i '' "s/PAYMENT_CONFIGS_KEY=.*/PAYMENT_CONFIGS_KEY=$PAYMENT_CONFIGS_KEY/" .env.local
     sed -i '' "s/S2S_SECRET=.*/S2S_SECRET=$S2S_SECRET/" .env.local
-    sed -i '' "s/X_PROOFA_SERVICE_TOKEN=.*/X_PROOFA_SERVICE_TOKEN=$X_PROOFA_SERVICE_TOKEN/" .env.local
+    sed -i '' "s/X_NUBE_AUTH_SERVICE_TOKEN=.*/X_NUBE_AUTH_SERVICE_TOKEN=$X_NUBE_AUTH_SERVICE_TOKEN/" .env.local
 else
     # Linux
     sed -i "s/ENCRYPTION_KEY=.*/ENCRYPTION_KEY=$ENCRYPTION_KEY/" .env.local
@@ -129,7 +129,7 @@ else
     sed -i "s/JWT_SECRET=.*/JWT_SECRET=$JWT_SECRET/" .env.local
     sed -i "s/PAYMENT_CONFIGS_KEY=.*/PAYMENT_CONFIGS_KEY=$PAYMENT_CONFIGS_KEY/" .env.local
     sed -i "s/S2S_SECRET=.*/S2S_SECRET=$S2S_SECRET/" .env.local
-    sed -i "s/X_PROOFA_SERVICE_TOKEN=.*/X_PROOFA_SERVICE_TOKEN=$X_PROOFA_SERVICE_TOKEN/" .env.local
+    sed -i "s/X_NUBE_AUTH_SERVICE_TOKEN=.*/X_NUBE_AUTH_SERVICE_TOKEN=$X_NUBE_AUTH_SERVICE_TOKEN/" .env.local
 fi
 
 print_success "Secrets generated and saved to .env.local"
@@ -157,7 +157,7 @@ print_info "Starting PostgreSQL and Redis..."
 # Wait for PostgreSQL to be ready
 print_info "Waiting for PostgreSQL to be ready..."
 for i in {1..30}; do
-    if docker compose exec -T postgres pg_isready -U proofa >/dev/null 2>&1; then
+    if docker compose exec -T postgres pg_isready -U nube-auth >/dev/null 2>&1; then
         print_success "PostgreSQL is ready"
         break
     fi
@@ -227,7 +227,7 @@ echo -e "  - Documentation:          ${GREEN}http://localhost:4322${NC}\n"
 
 echo -e "${BLUE}Database Tools:${NC}"
 echo -e "  - Drizzle Studio:         ${YELLOW}pnpm db:studio${NC}"
-echo -e "  - PostgreSQL (psql):      ${YELLOW}docker compose exec postgres psql -U proofa -d proofa${NC}"
+echo -e "  - PostgreSQL (psql):      ${YELLOW}docker compose exec postgres psql -U nube-auth -d nube-auth${NC}"
 echo -e "  - Redis CLI:              ${YELLOW}docker compose exec redis redis-cli${NC}\n"
 
 echo -e "${BLUE}Docker Commands:${NC}"

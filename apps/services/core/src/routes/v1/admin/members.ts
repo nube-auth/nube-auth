@@ -5,9 +5,9 @@ import {
 	projectMemberQueries,
 	projectQueries,
 	userQueries,
-} from "@proofa/db";
-import { createId, createLogger, idPatterns, serializeError } from "@proofa/shared";
-import { createEmailService } from "@proofa/shared/email";
+} from "@nube-auth/db";
+import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
+import { createEmailService } from "@nube-auth/shared/email";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { env } from "../../../config/env";
@@ -98,7 +98,7 @@ membersRouter.post("/:projectId/members", async (c: Context) => {
 			return c.json({ error: "Invalid role. Must be member, admin, or owner" }, 400);
 		}
 
-		const userId = c.req.header("X-Proofa-User-Id");
+		const userId = c.req.header("X-Nube-User-Id");
 		if (!userId) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}
@@ -266,7 +266,7 @@ membersRouter.patch("/:projectId/members/:memberId", async (c: Context) => {
 			return c.json({ error: "Invalid role. Must be member, admin, or owner" }, 400);
 		}
 
-		const userId = c.req.header("X-Proofa-User-Id");
+		const userId = c.req.header("X-Nube-User-Id");
 		if (!userId) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}
@@ -371,7 +371,7 @@ membersRouter.delete("/:projectId/members/:memberId", async (c: Context) => {
 			return c.json({ error: "Invalid memberId" }, 400);
 		}
 
-		const userId = c.req.header("X-Proofa-User-Id");
+		const userId = c.req.header("X-Nube-User-Id");
 		if (!userId) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}
@@ -502,7 +502,7 @@ membersRouter.delete("/:projectId/invitations/:invitationId", async (c: Context)
 			return c.json({ error: "Invalid invitationId" }, 400);
 		}
 
-		const userId = c.req.header("X-Proofa-User-Id");
+		const userId = c.req.header("X-Nube-User-Id");
 		if (!userId) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}

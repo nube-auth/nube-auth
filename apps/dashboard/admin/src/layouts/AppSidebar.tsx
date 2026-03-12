@@ -17,7 +17,7 @@ import {
   MenuItem,
   Icon,
   IconType,
-} from '@proofa/components';
+} from '@nube-auth/components';
 import { useProjects } from '../hooks/api';
 
 interface AppSidebarProps {
@@ -58,8 +58,8 @@ export function AppSidebar({ user, onLogout, isLoggingOut }: AppSidebarProps) {
         {/* Logo */}
         <Link to="/projects" className="flex items-center gap-2 no-underline">
           <SidebarLogo>
-            <img src="/favicon.png" alt="Proofa" className="size-8" />
-            <span className="font-semibold">Proofa</span>
+            <img src="/favicon.png" alt="Nube Auth" className="size-8" />
+            <span className="font-semibold">Nube Auth</span>
           </SidebarLogo>
           <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">Beta</span>
         </Link>

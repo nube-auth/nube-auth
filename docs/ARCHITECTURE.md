@@ -67,7 +67,7 @@ const internalId = user.id; // Use internal ID only for DB operations
 Use branded types to prevent accidental mixing:
 
 ```typescript
-import { type InternalId, type PublicId } from '@proofa/shared';
+import { type InternalId, type PublicId } from '@nube-auth/shared';
 
 interface User {
   id: InternalId;        // Database ID - internal only

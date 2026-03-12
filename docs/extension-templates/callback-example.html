@@ -66,14 +66,14 @@
     <div id="error-message" class="error" style="display: none;"></div>
   </div>
 
-  <!-- Include Proofa Auth -->
-  <script src="/js/proofa-auth.js"></script>
+  <!-- Include Nube Auth -->
+  <script src="/js/nube-auth.js"></script>
   
   <script>
     (async function handleCallback() {
       try {
-        // Initialize Proofa client
-        const proofa = new ProofaAuth('https://api.proofa.sh', 'pinboardgpt');
+        // Initialize Nube Auth client
+        const nubeAuth = new Nube AuthAuth('https://api.nubeauth.com', 'pinboardgpt');
 
         // Get return URL from state parameter
         const urlParams = new URLSearchParams(window.location.search);
@@ -84,7 +84,7 @@
         await new Promise(resolve => setTimeout(resolve, 500));
 
         // Verify authentication succeeded
-        const auth = await proofa.checkAuth();
+        const auth = await nubeAuth.checkAuth();
 
         if (auth.loggedIn) {
           // Authentication successful!
@@ -93,7 +93,7 @@
           // Send message to extension (if installed)
           try {
             window.postMessage({
-              type: 'PROOFA_AUTH_SUCCESS',
+              type: 'NUBE_AUTH_AUTH_SUCCESS',
               user: auth.user,
               license: auth.license,
             }, window.location.origin);

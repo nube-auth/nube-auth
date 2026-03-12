@@ -6,8 +6,8 @@
  * and attempts verification with each until one succeeds.
  */
 
-import { getDb, paymentProviderConfigQueries } from "@proofa/db";
-import { createLogger, serializeError } from "@proofa/shared";
+import { getDb, paymentProviderConfigQueries } from "@nube-auth/db";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import { createProviderAdapter } from "../adapters/index.js";
 import { decryptString } from "../../utils/encryption.js";
 import { processWebhookEvent } from "./webhook-processor.js";

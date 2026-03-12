@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitepress';
 
 export default defineConfig({
-	title: 'Proofa',
+	title: 'Nube Auth',
 	description: 'Authentication, session management, and licensing for modern applications',
 	
 	// Site config
@@ -16,7 +16,7 @@ export default defineConfig({
 		['meta', { name: 'theme-color', content: '#6366f1' }],
 		['meta', { property: 'og:type', content: 'website' }],
 		['meta', { property: 'og:locale', content: 'en' }],
-		['meta', { property: 'og:site_name', content: 'Proofa Documentation' }],
+		['meta', { property: 'og:site_name', content: 'Nube Auth Documentation' }],
 		// Google Fonts
 		['link', { rel: 'preconnect', href: 'https://fonts.googleapis.com' }],
 		['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],
@@ -26,7 +26,7 @@ export default defineConfig({
 	// Theme config
 	themeConfig: {
 		logo: '/logo.png',
-		siteTitle: 'Proofa',
+		siteTitle: 'Nube Auth',
 		
 		// Navigation
 		nav: [
@@ -35,9 +35,9 @@ export default defineConfig({
 			{ 
 				text: 'Links', 
 				items: [
-					{ text: 'Admin Dashboard', link: 'https://admin.proofa.sh' },
-					{ text: 'User Portal', link: 'https://app.proofa.sh' },
-					{ text: 'Website', link: 'https://proofa.sh' }
+					{ text: 'Admin Dashboard', link: 'https://admin.nubeauth.com' },
+					{ text: 'User Portal', link: 'https://app.nubeauth.com' },
+					{ text: 'Website', link: 'https://nubeauth.com' }
 				]
 			}
 		],
@@ -109,19 +109,19 @@ export default defineConfig({
 		
 		// Social links
 		socialLinks: [
-			{ icon: 'github', link: 'https://github.com/0xdps/proofa-core' }
+			{ icon: 'github', link: 'https://github.com/0xdps/nube-auth' }
 		],
 		
 		// Edit link
 		editLink: {
-			pattern: 'https://github.com/0xdps/proofa-core/edit/trunk/apps/dashboard/docs/:path',
+			pattern: 'https://github.com/0xdps/nube-auth/edit/trunk/apps/dashboard/docs/:path',
 			text: 'Edit this page on GitHub'
 		},
 		
 		// Footer
 		footer: {
 			message: 'Released under the MIT License.',
-			copyright: 'Copyright © 2026 Proofa'
+			copyright: 'Copyright © 2026 Nube Auth'
 		},
 		
 		// Search (local)

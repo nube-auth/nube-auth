@@ -1,5 +1,5 @@
-import { appQueries, auditLogQueries, getDb, planQueries, projectMemberQueries, projectQueries, userQueries, licenseQueries } from "@proofa/db";
-import { createId, createLogger, CreateAppRequestSchema, idPatterns, serializeError } from "@proofa/shared";
+import { appQueries, auditLogQueries, getDb, planQueries, projectMemberQueries, projectQueries, userQueries, licenseQueries } from "@nube-auth/db";
+import { createId, createLogger, CreateAppRequestSchema, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { randomBytes } from "node:crypto";
@@ -131,7 +131,7 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 			return c.json({ error: "Invalid projectId" }, 400);
 		}
 
-		const userId = c.req.header("X-Proofa-User-Id");
+		const userId = c.req.header("X-Nube-User-Id");
 		if (!userId) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}
@@ -342,7 +342,7 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 			return c.json({ error: "Invalid appId" }, 400);
 		}
 
-		const userId = c.req.header("X-Proofa-User-Id");
+		const userId = c.req.header("X-Nube-User-Id");
 		if (!userId) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}
@@ -441,7 +441,7 @@ appsRouter.delete("/:projectId/apps/:appId", async (c: Context) => {
 			return c.json({ error: "Invalid appId" }, 400);
 		}
 
-		const userId = c.req.header("X-Proofa-User-Id");
+		const userId = c.req.header("X-Nube-User-Id");
 		if (!userId) {
 			return c.json({ error: "Unauthorized" }, 401);
 		}

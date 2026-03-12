@@ -3,7 +3,7 @@ import React from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { ToastProvider } from "./components/Toast";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { Icon, IconType, Button, Heading, useTheme, ThemeToggle, Toast } from "@proofa/components";
+import { Icon, IconType, Button, Heading, useTheme, ThemeToggle, Toast } from "@nube-auth/components";
 import config from "./config";
 import { useLogout, useMe } from "./hooks/api";
 import { DashboardLayout } from "./layouts/DashboardLayout";

@@ -9,8 +9,8 @@
  * - Catch-all fallback (empty conditions)
  */
 
-import { getDb, paymentProviderConfigQueries, routingRuleQueries } from "@proofa/db";
-import { createLogger, serializeError } from "@proofa/shared";
+import { getDb, paymentProviderConfigQueries, routingRuleQueries } from "@nube-auth/db";
+import { createLogger, serializeError } from "@nube-auth/shared";
 
 const log = createLogger("provider-selector");
 
@@ -213,7 +213,7 @@ export async function createDefaultRoutingRule(
 ) {
 	const db = getDb();
 
-	const { createId } = await import("@proofa/shared");
+	const { createId } = await import("@nube-auth/shared");
 
 	const rule = await routingRuleQueries.create(db, {
 		public_id: createId("request"),

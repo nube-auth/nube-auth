@@ -5,7 +5,7 @@
  * - POST /v1/billing/webhooks/:provider - Receive webhook events
  */
 
-import { createLogger, serializeError } from "@proofa/shared";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { enqueueWebhookProcessing } from "../../../billing/queue.js";

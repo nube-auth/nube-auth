@@ -1,4 +1,4 @@
-# Proofa Core Documentation
+# Nube Auth Documentation
 
 ## Core Documentation
 
@@ -43,10 +43,10 @@
 1. **IDs**: Never expose internal database IDs - always use `public_id`
 2. **JSONB**: Use atomic operations (`buildJsonbMergeClause`, etc.) - never read-modify-write
 3. **Environment**: Access via `config/env.ts`, never `process.env` directly
-4. **Logging**: Use `createLogger()` from `@proofa/shared`, never `console.*`
-5. **HTTP Client**: Use `pingpong` from `@proofa/auth` for backend requests
-6. **Database**: Access via `@proofa/db` wrapper, never direct `drizzle` imports
-7. **Cache**: Access via `@proofa/cache` wrapper, never direct Redis imports
+4. **Logging**: Use `createLogger()` from `@nube-auth/shared`, never `console.*`
+5. **HTTP Client**: Use `pingpong` from `@nube-auth/auth` for backend requests
+6. **Database**: Access via `@nube-auth/db` wrapper, never direct `drizzle` imports
+7. **Cache**: Access via `@nube-auth/cache` wrapper, never direct Redis imports
 
 ### Quick Links
 

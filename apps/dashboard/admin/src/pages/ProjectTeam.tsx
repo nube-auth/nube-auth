@@ -27,7 +27,7 @@ import {
 	TableHead,
 	TableBody,
 	TableCell
-} from "@proofa/components";
+} from "@nube-auth/components";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { InviteTeamMemberModal } from "../components/InviteTeamMemberModal";
 import { Select } from "../components/Select";

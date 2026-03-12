@@ -9,7 +9,7 @@ import {
 	CardBody,
 	Breadcrumb,
 	BreadcrumbSeparator,
-} from "@proofa/components";
+} from "@nube-auth/components";
 
 export function ProjectStatsPage() {
 	const { projectId } = useParams<{ projectId: string }>();

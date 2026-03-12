@@ -4,8 +4,8 @@
  * Handles payment checkout session creation using provider routing
  */
 
-import { getDb, prices, plans, eq, and } from "@proofa/db";
-import { createLogger, serializeError } from "@proofa/shared";
+import { getDb, prices, plans, eq, and } from "@nube-auth/db";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -19,8 +19,8 @@ export const checkoutRoutes = new Hono();
 
 const CheckoutRequestSchema = z.object({
 	appId: z.string(),
-	userId: z.string(), // Proofa user public_id (USER0...)
-	planId: z.string(), // Proofa plan public_id (PLAN0...)
+	userId: z.string(), // Nube Auth user public_id (USER0...)
+	planId: z.string(), // Nube Auth plan public_id (PLAN0...)
 	interval: z.enum(["month", "year"]), // Billing interval
 	customerId: z.string().optional(),
 	customerEmail: z.string().email(),

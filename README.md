@@ -1,4 +1,4 @@
-# Proofa
+# Nube Auth
 
 > **Production-ready authentication, licensing, and session management platform**
 
@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)]()
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)](https://www.typescriptlang.org/)
 
-Proofa is a comprehensive authentication and licensing platform that provides secure user management, OAuth integration, session handling, and subscription licensing out of the box.
+Nube Auth is a comprehensive authentication and licensing platform that provides secure user management, OAuth integration, session handling, and subscription licensing out of the box.
 
 ## ✨ Key Features
 
@@ -96,8 +96,8 @@ Proofa is a comprehensive authentication and licensing platform that provides se
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourorg/proofa-core.git
-cd proofa-core
+git clone https://github.com/yourorg/nube-auth.git
+cd nube-auth
 
 # Install dependencies
 pnpm install
@@ -141,11 +141,11 @@ pnpm db:seed
 pnpm dev
 
 # Or start individually:
-pnpm --filter @proofa/gateway dev    # API Gateway (port 3004)
-pnpm --filter @proofa/core dev       # Core Service (port 3003)
-pnpm --filter @proofa/workers dev    # Workers Service (background jobs)
-pnpm --filter @proofa/dashboard-admin dev  # Admin UI (port 5174)
-pnpm --filter @proofa/dashboard-user dev   # User UI (port 5173)
+pnpm --filter @nube-auth/gateway dev    # API Gateway (port 3004)
+pnpm --filter @nube-auth/core dev       # Core Service (port 3003)
+pnpm --filter @nube-auth/workers dev    # Workers Service (background jobs)
+pnpm --filter @nube-auth/dashboard-admin dev  # Admin UI (port 5174)
+pnpm --filter @nube-auth/dashboard-user dev   # User UI (port 5173)
 ```
 
 ### 6. Access Applications
@@ -158,7 +158,7 @@ pnpm --filter @proofa/dashboard-user dev   # User UI (port 5173)
 ## 📦 Monorepo Structure
 
 ```
-proofa-core/
+nube-auth/
 ├── apps/
 │   ├── gateway/          # API Gateway (Hono)
 │   ├── core/             # Core Service (Hono)
@@ -265,7 +265,7 @@ pnpm typecheck            # Type check all packages
 
 ## 🔒 Security
 
-Proofa has achieved an **A+ security rating (94/100)** through comprehensive security measures:
+Nube Auth has achieved an **A+ security rating (94/100)** through comprehensive security measures:
 
 ### Implemented Protections
 
@@ -308,10 +308,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🆘 Support
 
-- **Documentation**: https://docs.proofa.sh
-- **Issues**: [GitHub Issues](https://github.com/yourorg/proofa-core/issues)
-- **Discord**: [Join our community](https://discord.gg/proofa)
-- **Email**: support@proofa.sh
+- **Documentation**: https://docs.nubeauth.com
+- **Issues**: [GitHub Issues](https://github.com/yourorg/nube-auth/issues)
+- **Discord**: [Join our community](https://discord.gg/nube-auth)
+- **Email**: support@nubeauth.com
 
 ## 🗺️ Roadmap
 
@@ -347,7 +347,7 @@ Built with:
 
 ---
 
-**Made with ❤️ by the Proofa team**
+**Made with ❤️ by the Nube Auth team**
 
 **Last Updated**: January 22, 2026  
 **Version**: 1.1.0  
