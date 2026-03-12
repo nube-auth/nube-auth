@@ -5,7 +5,6 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"setup": "./nube-scripts/scripts/setup-dev.sh",
 		"dev": "turbo run dev",
 		"dev:gateway": "pnpm --filter @nube-auth/gateway dev",
 		"dev:core": "pnpm --filter @nube-auth/core dev",
@@ -30,12 +29,6 @@
 		"db:generate": "pnpm --filter @nube-auth/db run db:generate",
 		"db:fresh": "pnpm --filter @nube-auth/db run db:fresh",
 		"seed:project": "pnpm --filter @nube-auth/db run seed:project",
-		"docker:up": "./nube-scripts/scripts/deploy-local.sh up",
-		"docker:up:all": "./nube-scripts/scripts/deploy-local.sh up:all",
-		"docker:down": "./nube-scripts/scripts/deploy-local.sh down",
-		"docker:logs": "./nube-scripts/scripts/deploy-local.sh logs",
-		"docker:status": "./nube-scripts/scripts/deploy-local.sh status",
-		"docker:clean": "./nube-scripts/scripts/deploy-local.sh clean",
 		"prepare": "husky"
 	},
 	"devDependencies": {
