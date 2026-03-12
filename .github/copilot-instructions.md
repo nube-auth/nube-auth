@@ -465,6 +465,7 @@ apps/dashboard/admin/src/
 **NEVER use native `fetch()` API.**
 
 - ✅ Use `pingpong` from `@nube-auth/auth` for all HTTP requests
+- ✅ `pingpong` is a re-export of `@pingpong-js/fetch`, a separate project
 - ✅ Works in both frontend (dashboards) and backend (services)
 - ✅ Auto-parsed JSON responses via `response.data` (v1.4.0+)
 - ✅ Convenience methods: `.ok()`, `.isError()`, `.redirected()`

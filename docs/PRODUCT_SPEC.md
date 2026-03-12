@@ -39,9 +39,10 @@
 
 #### Gateway (`api.nubeauth.com`)
 - Public BFF for external apps + user/admin dashboards
-- Stores **app sessions** in **Upstash Redis** (per-app configurable TTL)
+- Stores **app sessions** in **Redis** (per-app configurable TTL)
 - Caches user+license data per app's `cache_ttl_minutes` (default 10 min)
 - Calls Core via **S2S token** (`X-Nube-Service-Token`)
+- Has **direct read access to the database** for performance-critical lookups (e.g., session validation, user cache)
 - Routes:
   - `/auth/*` — authentication flows
   - `/me`, `/profile` — user profile
@@ -77,6 +78,7 @@
 **Key constraints:**
 - Apps + dashboards never call Core directly
 - Gateway calls Core via S2S token (`X-Nube-Service-Token`)
+- Gateway has direct read access to the database for performance (intentional design)
 - Core owns identity & license truth
 - No secrets in dashboards or client apps
 
@@ -89,7 +91,8 @@
 - **Framework**: Hono
 - **Database**: PostgreSQL (Neon/Supabase/self-hosted)
 - **ORM**: Drizzle
-- **Cache/KV**: Upstash Redis
+- **Cache/KV**: Redis (self-hosted)
+- **HTTP Client**: pingpong (`@pingpong-js/fetch`, re-exported via `@nube-auth/auth`)
 - **Email**: Resend (abstracted interface, swappable with Postmark later)
 
 ### Frontend
@@ -125,7 +128,7 @@ nube-auth/
 │   ├── shared/                  # Types, constants, ID generator
 │   ├── db/                      # Drizzle schema + migrations
 │   ├── auth/                    # Provider adapters (Google, GitHub)
-│   └── redis/                   # Upstash client + cache helpers
+│   └── cache/                   # Redis client + cache helpers
 ├── turbo.json                   # Turbo build config
 ├── pnpm-workspace.yaml          # pnpm workspace config
 ├── package.json                 # Root manifest
@@ -139,11 +142,11 @@ nube-auth/
 - `@nube-auth/shared` — types, constants, ID generator
 - `@nube-auth/db` — Drizzle schema (for Core only, initially)
 - `@nube-auth/auth` — Provider adapters
-- `@nube-auth/cache` — Cache helpers (Redis/Upstash)
+- `@nube-auth/cache` — Cache helpers (Redis)
 
 ---
 
-## 4. Data Model (Drizzle + Turso)
+## 4. Data Model (Drizzle + PostgreSQL)
 
 ### Global Conventions
 
@@ -1639,7 +1642,7 @@ Talks to Gateway `/admin/*` routes only.
 ### 9.2 Gateway App Session (Per-App)
 
 **Cookie**: `pp_app_session`  
-**Stored**: Upstash Redis  
+**Stored**: Redis  
 **Scope**: Per-app, per-user  
 **TTL Source**: `apps.app_session_ttl_days` (default 28 days)
 
@@ -1944,7 +1947,7 @@ Follow this sequence for implementation:
 | # | Task | Owner | Est. Days | Status |
 |---|------|-------|-----------|--------|
 | 1 | Monorepo scaffold (pnpm + turbo) | DevOps | 1 | ⬜ |
-| 2 | Drizzle schema + migrations (Turso) | Backend | 3 | ⬜ |
+| 2 | Drizzle schema + migrations (PostgreSQL) | Backend | 3 | ⬜ |
 | 3 | ID generator + shared types | Backend | 1 | ⬜ |
 | 4 | Core: app/project registry seed | Backend | 2 | ⬜ |
 | 5 | Core: OAuth adapters (Google, GitHub) | Backend | 2 | ⬜ |
@@ -1974,12 +1977,12 @@ Follow this sequence for implementation:
 |----------|--------|-----------|
 | Backend | Node.js + TypeScript | Type safety, ecosystem |
 | Framework | Hono | Lightweight, edge-ready, excellent TS support |
-| Database | Turso (SQLite) | Serverless, simple schema, easy migrations |
-| ORM | Drizzle | Type-safe, Turso native |
-| Cache | Upstash Redis | Serverless, rate-limiting, ephemeral state |
+| Database | PostgreSQL | Reliable, SQL-compliant, self-hostable |
+| ORM | Drizzle | Type-safe, PostgreSQL native |
+| Cache | Redis (self-hosted) | Fast, rate-limiting, ephemeral state |
 | Monorepo | pnpm + Turbo | Workspaces, fast builds |
 | Email | Resend | Simple API, abstracted (swappable) |
-| Deployment | Cloud-agnostic | Designed for Fly/VPS/etc. |
+| HTTP Client | pingpong (`@pingpong-js/fetch`) | Own project, consistent API, auto-parsed JSON |
 | **Sessions** | **365 days rolling (core users), 2 hours + 15-min inactivity (admins), 1-365 days per-app configurable** | Enhanced security; admin privilege separation |
 | **IDs** | **Nanoid prefixed (23 entity types)** | Human-readable, type-safe, compact |
 | **Multi-tenant** | **Yes (projects)** | Flexibility for future |
@@ -2049,9 +2052,8 @@ Follow this sequence for implementation:
 
 **Core**:
 ```env
-DATABASE_URL=libsql://nube-auth-dev-xxx.turso.io
-UPSTASH_REDIS_REST_URL=https://...
-UPSTASH_REDIS_REST_TOKEN=...
+DATABASE_URL=postgresql://user:password@localhost:5432/nube-auth
+REDIS_URL=redis://localhost:6379
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 GITHUB_CLIENT_ID=...
@@ -2066,11 +2068,10 @@ LOG_LEVEL=info
 
 **Gateway**:
 ```env
-CORE_URL=http://localhost:3000
+CORE_URL=http://localhost:3003
 X_NUBE_AUTH_SERVICE_TOKEN=<same as core>
 SESSION_SECRET=<32+ char>
-UPSTASH_REDIS_REST_URL=https://...
-UPSTASH_REDIS_REST_TOKEN=...
+REDIS_URL=redis://localhost:6379
 SESSION_TTL_SECONDS=31536000
 ADMIN_SESSION_TTL_SECONDS=7200
 ADMIN_INACTIVITY_TIMEOUT_SECONDS=900

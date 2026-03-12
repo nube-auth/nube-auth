@@ -45,6 +45,7 @@ export interface Env {
 }
 
 const requiredEnvVars = [
+	"GATEWAY_PORT",
 	"DATABASE_URL",
 	"REDIS_URL",
 	"RESEND_API_KEY",
@@ -62,7 +63,7 @@ function validateEnv(): Env {
 	return {
 		NODE_ENV: process.env["NODE_ENV"] || "production",
 		IS_DEVELOPMENT: (process.env["NODE_ENV"] || "production") === "development",
-		GATEWAY_PORT: parseInt(process.env["GATEWAY_PORT"] ?? "8080", 10),
+		GATEWAY_PORT: parseInt(process.env["GATEWAY_PORT"]!, 10),
 		DATABASE_URL: process.env["DATABASE_URL"]!,
 		REDIS_URL: process.env["REDIS_URL"]!,
 		RESEND_API_KEY: process.env["RESEND_API_KEY"]!,

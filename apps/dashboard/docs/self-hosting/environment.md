@@ -30,19 +30,11 @@ DATABASE_URL=postgresql://user:pass@host:5432/nube-auth
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `REDIS_URL` | Yes | - | Redis connection URL |
-| `REDIS_TOKEN` | No | - | Auth token (for Upstash) |
 
-### Local Redis
+### Example
 
 ```bash
 REDIS_URL=redis://localhost:6379
-```
-
-### Upstash
-
-```bash
-REDIS_URL=redis://default:token@host.upstash.io:6379
-REDIS_TOKEN=your-token
 ```
 
 ## Authentication
@@ -110,13 +102,13 @@ GITHUB_CLIENT_SECRET=xxx
 ```bash
 # Core
 NODE_ENV=production
-PORT=3001
+CORE_PORT=3003
 
-# Database
-DATABASE_URL=libsql://your-db.turso.io
+# Database (PostgreSQL)
+DATABASE_URL=postgresql://user:password@host:5432/nube-auth
 
-# Redis (Upstash)
-REDIS_URL=redis://default:token@host.upstash.io:6379
+# Redis
+REDIS_URL=redis://localhost:6379
 
 # Auth
 JWT_SECRET=your-32-byte-secret-here-minimum
@@ -129,8 +121,8 @@ GITHUB_CLIENT_ID=xxx
 GITHUB_CLIENT_SECRET=xxx
 
 # Sessions
-ACCESS_TOKEN_TTL=900
-REFRESH_TOKEN_TTL=604800
+SESSION_TTL_SECONDS=31536000
+ADMIN_SESSION_TTL_SECONDS=7200
 SESSION_ROLLING=true
 
 # Email

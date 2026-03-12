@@ -77,7 +77,7 @@ volumes:
 
 ### Database
 
-- [ ] Use managed database (Turso, PlanetScale)
+- [ ] Use managed database (Neon, Supabase, or self-hosted PostgreSQL)
 - [ ] Enable connection pooling
 - [ ] Set up backups
 - [ ] Run migrations

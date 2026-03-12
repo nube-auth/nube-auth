@@ -37,11 +37,10 @@ NODE_ENV=production
 PORT=3001
 
 # Database
-DATABASE_URL=libsql://your-db.turso.io
+DATABASE_URL=postgresql://user:password@localhost:5432/nube-auth
 
-# Redis (Upstash)
-REDIS_URL=redis://your-redis-url
-REDIS_TOKEN=your-token
+# Redis
+REDIS_URL=redis://localhost:6379
 ```
 
 ### Authentication

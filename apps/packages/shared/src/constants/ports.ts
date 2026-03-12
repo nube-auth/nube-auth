@@ -23,8 +23,6 @@ export const INFRA_PORTS = {
 	REDIS: 6379,
 	/** Redis REST API (serverless-redis-http) */
 	REDIS_REST: 8079,
-	/** LibSQL database */
-	LIBSQL: 8080,
 	/** Redis Commander UI */
 	REDIS_COMMANDER: 8081,
 	/** Mailpit SMTP */
@@ -59,7 +57,6 @@ export const ports = {
 	home: () => getPort("HOME_PORT", DEFAULT_PORTS.HOME),
 	redis: () => getPort("REDIS_PORT", INFRA_PORTS.REDIS),
 	redisRest: () => getPort("REDIS_REST_PORT", INFRA_PORTS.REDIS_REST),
-	libsql: () => getPort("LIBSQL_PORT", INFRA_PORTS.LIBSQL),
 } as const;
 
 /**

@@ -35,7 +35,7 @@ Nube Auth consists of several components:
 
 - **Simple Integration** - Get authentication running in minutes
 - **Flexible** - Adapt to any business model with customizable licensing
-- **Fast** - Built on Hono, Turso, and Upstash for performance
+- **Fast** - Built on Hono with PostgreSQL and Redis
 - **Modern** - Designed for SaaS applications with multi-tenant support
 
 ## Next Steps

@@ -19,7 +19,7 @@ This is the core authentication and authorization service built with [Hono](http
 
 - Node.js 18+
 - pnpm (workspace package manager)
-- PostgreSQL or LibSQL database
+- PostgreSQL database
 - Redis for session caching
 
 ### Installation

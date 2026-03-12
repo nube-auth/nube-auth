@@ -88,8 +88,7 @@ set_core_secrets() {
     
     fly secrets set \
         DATABASE_URL="$DATABASE_URL" \
-        UPSTASH_REDIS_REST_URL="$UPSTASH_REDIS_REST_URL" \
-        UPSTASH_REDIS_REST_TOKEN="$UPSTASH_REDIS_REST_TOKEN" \
+        REDIS_URL="$REDIS_URL" \
         RESEND_API_KEY="$RESEND_API_KEY" \
         EMAIL_FROM="${EMAIL_FROM:-noreply@nubeauth.com}" \
         SEND_EMAILS="true" \
@@ -112,8 +111,7 @@ set_gateway_secrets() {
     
     fly secrets set \
         DATABASE_URL="$DATABASE_URL" \
-        UPSTASH_REDIS_REST_URL="$UPSTASH_REDIS_REST_URL" \
-        UPSTASH_REDIS_REST_TOKEN="$UPSTASH_REDIS_REST_TOKEN" \
+        REDIS_URL="$REDIS_URL" \
         RESEND_API_KEY="$RESEND_API_KEY" \
         EMAIL_FROM="${EMAIL_FROM:-noreply@nubeauth.com}" \
         SEND_EMAILS="true" \

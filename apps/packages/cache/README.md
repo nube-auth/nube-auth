@@ -315,31 +315,6 @@ describe("Rate Limiting", () => {
 
 ---
 
-## Migration from Upstash
-
-This package now uses standard Redis instead of Upstash REST API.
-
-**Benefits:**
-- ✅ Lower latency (native protocol vs HTTP)
-- ✅ More features available
-- ✅ Better performance
-- ✅ Can still use Upstash (they support standard Redis protocol!)
-
-**Changes:**
-```typescript
-// Old (Upstash)
-UPSTASH_REDIS_REST_URL=https://...
-UPSTASH_REDIS_REST_TOKEN=...
-
-// New (Standard Redis)
-REDIS_URL=redis://localhost:6379
-
-// Upstash with standard protocol
-REDIS_URL=rediss://default:...@...upstash.io:6379
-```
-
----
-
 ## License
 
 MIT License - see [LICENSE](../../LICENSE)

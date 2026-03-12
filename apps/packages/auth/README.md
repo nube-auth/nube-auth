@@ -1,11 +1,13 @@
 # @nube-auth/auth
 
-OAuth authentication adapter framework for Nube Auth.
+OAuth authentication adapter framework and HTTP client for Nube Auth.
 
 ## Contents
 
 - **Adapters**: Pluggable OAuth provider implementations (Google, GitHub)
+- **pingpong**: HTTP client used throughout the codebase (re-exported from `@pingpong-js/fetch`)
 - **Types**: OAuth adapter interfaces and type definitions
+- **Crypto/Session utilities**: Session token generation, S2S token generation, OTP, etc.
 
 ## Installation
 
@@ -47,3 +49,30 @@ const githubAdapter = new GitHubOAuthAdapter({
 const authUrl = githubAdapter.getAuthorizationUrl(state, redirectUri);
 const profile = await githubAdapter.exchangeToken(code, redirectUri);
 ```
+
+## HTTP Client (pingpong)
+
+`pingpong` is the project's HTTP client, re-exported from `@pingpong-js/fetch`. Use it instead of native `fetch()` for all HTTP requests across the codebase:
+
+```typescript
+import { pingpong } from '@nube-auth/auth';
+
+const response = await pingpong('/api/endpoint', {
+  method: 'POST',
+  body: data,
+});
+
+// response.data is already parsed JSON
+if (response.ok()) {
+  console.log(response.data);
+} else if (response.isError()) {
+  console.error(response.status);
+}
+```
+
+Key features:
+- `response.data` — auto-parsed JSON, no `.json()` needed
+- `response.ok()` — true for 2xx status codes
+- `response.isError()` — true for 4xx/5xx
+- `response.status` — HTTP status code
+- `response.body` — raw response body string
