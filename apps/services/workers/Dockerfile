@@ -16,9 +16,9 @@ COPY apps/services/core ./apps/services/core
 RUN pnpm install --frozen-lockfile
 
 # Build packages and workers
+RUN pnpm --filter @nube-auth/cache build
 RUN pnpm --filter @nube-auth/shared build
 RUN pnpm --filter @nube-auth/db build
-RUN pnpm --filter @nube-auth/cache build
 RUN pnpm --filter @nube-auth/auth build
 RUN pnpm --filter @nube-auth/queue build
 RUN pnpm --filter @nube-auth/core build
