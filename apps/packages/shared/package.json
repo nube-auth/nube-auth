@@ -25,9 +25,9 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "typecheck": "tsc --noEmit",
-    "dev": "tsc --watch"
+    "dev": "tsup --watch"
   },
   "dependencies": {
     "@nube-auth/cache": "workspace:*",
@@ -39,8 +39,9 @@
   },
   "devDependencies": {
     "@types/nodemailer": "^7.0.4",
-    "typescript": "^5.3.3",
-    "nanoid": "^4.0.2"
+    "nanoid": "^4.0.2",
+    "tsup": "^8.0.0",
+    "typescript": "^5.3.3"
   },
   "files": [
     "dist"
