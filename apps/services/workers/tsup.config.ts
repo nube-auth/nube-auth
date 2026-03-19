@@ -1,20 +1,14 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: {
-    index: 'src/index.ts',
-    'types/schemas/index': 'src/types/schemas/index.ts',
-    'env-loader': 'src/env-loader.ts',
-    email: 'src/email.ts',
-  },
+  entry: ['src/index.ts'],
   format: ['esm'],
   platform: 'node',
+  target: 'node22',
   banner: {
     js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
   },
-  dts: true,
-  outDir: 'dist',
   clean: true,
   sourcemap: false,
-  splitting: false,
+  splitting: true,
 });
