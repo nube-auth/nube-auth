@@ -1,0 +1,30 @@
+apps/services/core/src/index.ts
+  9f96d675df0e1435 59,61-62
+apps/services/gateway/src/index.ts
+  9f96d675df0e1435 106,108-109
+deployment/docker-entrypoint.sh
+  9f96d675df0e1435 9-13
+apps/services/workers/src/index.ts
+  9f96d675df0e1435 13,117-128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.15",
+  "base_commit_sha": "6a77b35eb3bed9e2bc769b9670a8e2c6589ca070",
+  "prompts": {
+    "9f96d675df0e1435": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "0ee53b3d-dca0-4d50-add0-c1af1fa298d9",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 26,
+      "total_deletions": 2,
+      "accepted_lines": 24,
+      "overriden_lines": 2,
+      "messages_url": "https://usegitai.com/cas/6381f8babae8f8b3c6f7a77898a8dcacf8a716d8d35ca5691455ad43c5949a98"
+    }
+  }
+}
