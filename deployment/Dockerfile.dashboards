@@ -89,11 +89,10 @@ RUN VITE_GATEWAY_URL=${VITE_GATEWAY_URL} \
     pnpm --filter @nube-auth/dashboard-user build
 
 # ── Stage 5: build home (Astro) ───────────────────────────────────────────────
-FROM installer AS home_builder
+FROM shared_builder AS home_builder
 
 COPY apps/dashboard/home/ ./apps/dashboard/home/
 
-# Home has no @nube-auth/* deps so shared packages are not needed
 ARG PUBLIC_DOCS_URL
 ARG PUBLIC_ENV_TAG=Beta
 
