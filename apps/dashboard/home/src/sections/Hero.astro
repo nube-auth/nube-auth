@@ -1,5 +1,6 @@
 ---
 import Nav from '../components/Nav.astro';
+import config from '../config';
 ---
 
 <Nav />
@@ -8,7 +9,7 @@ import Nav from '../components/Nav.astro';
   <div class="hero-container">
     <div class="hero-badge animate-fade-in">
       <span class="hero-badge-dot"></span>
-      <span>Beta</span>
+      <span>{config.envTag}</span>
     </div>
     
     <h1 class="hero-title animate-fade-in animate-delay-100">

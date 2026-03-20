@@ -6,6 +6,7 @@ interface Props {
 }
 
 const { showActions = true } = Astro.props;
+const envTag = config.envTag;
 ---
 
 <nav class="nav">
@@ -16,7 +17,7 @@ const { showActions = true } = Astro.props;
         <img src="/favicon-32x32.png" alt="Proofa" class="nav-logo-img" width="32" height="32" />
       </picture>
       <span class="nav-logo-text">Proofa</span>
-      <span class="nav-beta-badge">Beta</span>
+      <span class="nav-beta-badge">{envTag}</span>
     </a>
     
     <div class="nav-links">

@@ -1,5 +1,7 @@
 import { defineConfig } from 'vitepress'
 
+const envTag = process.env.VITE_ENV_TAG || 'BETA';
+
 export default defineConfig({
   title: 'Nube Auth',
   description: 'Authentication, session management, and licensing for modern applications',
@@ -7,6 +9,7 @@ export default defineConfig({
     ['link', { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
     ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon.png' }],
     ['meta', { name: 'theme-color', content: '#09090B' }],
+    ['style', {}, `:root { --env-tag-label: '${envTag}'; }`],
   ],
   themeConfig: {
     logo: '/logo.png',

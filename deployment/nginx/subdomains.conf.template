@@ -1,0 +1,109 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Nube Auth – Subdomain-based routing
+#
+# Resolved at container startup via envsubst. Set DOMAIN in Railway Variables:
+#   DOMAIN=nubeauth.com
+#
+# Routes:
+#   ${DOMAIN}             → Home (Astro marketing site)
+#   manage.${DOMAIN}      → Admin Dashboard (React SPA)
+#   user.${DOMAIN}        → User Dashboard (React SPA)
+#   docs.${DOMAIN}        → Docs (VitePress)
+#   api.${DOMAIN}         → Gateway service (proxy)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Home ──────────────────────────────────────────────────────────────────────
+server {
+    listen 8080;
+    server_name ${DOMAIN} www.${DOMAIN};
+    root /var/www/home;
+
+    location / {
+        try_files $uri $uri/ $uri.html $uri/index.html =404;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
+}
+
+# ── Admin Dashboard (SPA) ─────────────────────────────────────────────────────
+server {
+    listen 8080;
+    server_name manage.${DOMAIN};
+    root /var/www/admin;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /assets {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+}
+
+# ── User Dashboard (SPA) ──────────────────────────────────────────────────────
+server {
+    listen 8080;
+    server_name user.${DOMAIN};
+    root /var/www/user;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /assets {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+}
+
+# ── Docs Site (VitePress) ─────────────────────────────────────────────────────
+server {
+    listen 8080;
+    server_name docs.${DOMAIN};
+    root /var/www/docs;
+
+    location / {
+        try_files $uri $uri/ $uri.html $uri/index.html =404;
+    }
+
+    location /assets {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+}
+
+# ── Gateway API Proxy ─────────────────────────────────────────────────────────
+# GATEWAY_INTERNAL_URL: Railway private network URL, e.g.
+#   http://nubeauth-gateway.railway.internal:8080
+# Both services must be in the same Railway environment for .railway.internal to resolve.
+server {
+    listen 8080;
+    server_name api.${DOMAIN};
+
+    location / {
+        proxy_pass ${GATEWAY_INTERNAL_URL};
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+        proxy_read_timeout 60s;
+    }
+}

@@ -96,7 +96,7 @@ a, button, .sl-link-card, nav.sidebar a {
 
 /* Beta badge for site title */
 .site-title::after {
-	content: 'BETA';
+	content: var(--env-tag-label, 'BETA');
 	font-size: 10px;
 	font-weight: 600;
 	padding: 2px 8px;

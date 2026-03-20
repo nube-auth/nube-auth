@@ -1,4 +1,5 @@
 import { useLocation, useParams, Link } from 'react-router-dom';
+import config from '../config';
 import {
   Sidebar,
   SidebarHeader,
@@ -61,7 +62,7 @@ export function AppSidebar({ user, onLogout, isLoggingOut }: AppSidebarProps) {
             <img src="/favicon.png" alt="Nube Auth" className="size-8" />
             <span className="font-semibold">Nube Auth</span>
           </SidebarLogo>
-          <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">Beta</span>
+          <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">{config.envTag}</span>
         </Link>
       </SidebarHeader>
 

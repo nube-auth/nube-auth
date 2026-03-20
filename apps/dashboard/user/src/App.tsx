@@ -50,7 +50,7 @@ function ProtectedLayout({
 					<Link to="/profile" className="header-logo">
 						<img src="/favicon.png" alt="Nube Auth" className="header-logo-img" />
 						<span className="header-logo-text">Nube Auth</span>
-						<span className="header-beta-badge">Beta</span>
+						<span className="header-beta-badge">{config.envTag}</span>
 					</Link>
 				</div>
 

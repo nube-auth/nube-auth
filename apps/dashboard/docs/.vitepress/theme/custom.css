@@ -146,7 +146,7 @@
 
 /* Logo with Beta badge */
 .VPNavBarTitle .title::after {
-	content: 'BETA';
+	content: var(--env-tag-label, 'BETA');
 	font-size: 10px;
 	font-weight: 600;
 	padding: 2px 8px;
