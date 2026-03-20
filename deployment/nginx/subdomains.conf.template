@@ -6,6 +6,7 @@
 #
 # Routes:
 #   ${DOMAIN}             → Home (Astro marketing site)
+#   home.${DOMAIN}        → Home (Astro marketing site)
 #   manage.${DOMAIN}      → Admin Dashboard (React SPA)
 #   me.${DOMAIN}          → User Dashboard (React SPA)
 #   docs.${DOMAIN}        → Docs (VitePress)
@@ -23,7 +24,7 @@
 # ── Home ──────────────────────────────────────────────────────────────────────
 server {
     listen 8080;
-    server_name ${DOMAIN} www.${DOMAIN};
+    server_name ${DOMAIN} www.${DOMAIN} home.${DOMAIN};
     root /var/www/home;
 
     location / {
