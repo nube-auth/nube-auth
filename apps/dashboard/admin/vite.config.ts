@@ -20,7 +20,7 @@ export default defineConfig({
 			// Nube Auth packages
 			"@nube-auth/react": path.resolve(__dirname, "../../packages/react/dist/index.js"),
 			"@nube-auth/client": path.resolve(__dirname, "../../packages/client/dist/index.js"),
-			"@nube-auth/shared": path.resolve(__dirname, "../../packages/shared/dist/index.js"),
+			"@nube-auth/shared": path.resolve(__dirname, "../../packages/shared/src/index.ts"),
 			"@nube-auth/auth": path.resolve(__dirname, "../../packages/auth/dist/index.js"),
 			"@nube-auth/cache": path.resolve(__dirname, "../../packages/cache/dist/index.js"),
 			"@nube-auth/db": path.resolve(__dirname, "../../packages/db/dist/index.js"),
