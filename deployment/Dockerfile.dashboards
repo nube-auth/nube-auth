@@ -31,6 +31,7 @@ COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 
 # All packages needed by any dashboard
 COPY apps/packages/shared/package.json          ./apps/packages/shared/
+COPY apps/packages/cache/package.json           ./apps/packages/cache/
 COPY apps/packages/auth/package.json            ./apps/packages/auth/
 COPY apps/packages/client/package.json          ./apps/packages/client/
 COPY apps/packages/react/package.json           ./apps/packages/react/
@@ -48,7 +49,8 @@ FROM installer AS shared_builder
 COPY tsconfig.json ./
 COPY apps/packages/ ./apps/packages/
 
-RUN pnpm --filter @nube-auth/shared build \
+RUN pnpm --filter @nube-auth/cache build \
+ && pnpm --filter @nube-auth/shared build \
  && pnpm --filter @nube-auth/auth build \
  && pnpm --filter @nube-auth/client build \
  && pnpm --filter @nube-auth/react build \
