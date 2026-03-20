@@ -155,6 +155,25 @@ server {
     }
 }
 
+# ── Health check (default server – matches any Host not explicitly listed) ────
+# Used by Railway health checks, Docker HEALTHCHECK, and monitoring tools.
+# Railway hits the service's own *.up.railway.app URL, which doesn't match any
+# server_name above, so this default_server block answers those requests.
+server {
+    listen 8080 default_server;
+    server_name _;
+
+    location /health {
+        access_log off;
+        return 200 '{"status":"ok","service":"dashboards"}';
+        add_header Content-Type application/json;
+    }
+
+    location / {
+        return 404;
+    }
+}
+
 # ── Legacy Subdomain Redirects (301 Permanent) ────────────────────────────────
 server {
     listen 8080;

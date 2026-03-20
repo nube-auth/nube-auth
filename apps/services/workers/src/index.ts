@@ -118,9 +118,14 @@ async function main(): Promise<void> {
 		// Minimal HTTP server so Railway health checks and nginx proxy have an endpoint
 		const port = Number(process.env.PORT ?? 8080);
 		const server = createServer((req, res) => {
-			const body = JSON.stringify({ service: "workers", status: "ok", timestamp: new Date().toISOString() });
-			res.writeHead(200, { "Content-Type": "application/json" });
-			res.end(body);
+			if (req.url === "/health" || req.url === "/") {
+				const body = JSON.stringify({ service: "workers", status: "ok", timestamp: new Date().toISOString() });
+				res.writeHead(200, { "Content-Type": "application/json" });
+				res.end(body);
+			} else {
+				res.writeHead(404);
+				res.end();
+			}
 		});
 		server.listen(port, () => {
 			log.info({ port }, "Workers health server running");
