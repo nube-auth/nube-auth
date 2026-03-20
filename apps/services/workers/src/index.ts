@@ -10,6 +10,7 @@
  */
 
 import { createLogger } from "@nube-auth/shared";
+import { createServer } from "node:http";
 import type { Worker } from "bullmq";
 import { setupProcessPaymentWorker } from "./process-payment.js";
 import { setupProcessWebhookWorker } from "./process-webhook.js";
@@ -113,6 +114,18 @@ export function getWorkers(): Worker[] {
 async function main(): Promise<void> {
 	try {
 		await initializeWorkers();
+
+		// Minimal HTTP server so Railway health checks and nginx proxy have an endpoint
+		const port = Number(process.env.PORT ?? 8080);
+		const server = createServer((req, res) => {
+			const body = JSON.stringify({ service: "workers", status: "ok", timestamp: new Date().toISOString() });
+			res.writeHead(200, { "Content-Type": "application/json" });
+			res.end(body);
+		});
+		server.listen(port, () => {
+			log.info({ port }, "Workers health server running");
+		});
+
 		log.info("Workers service is running");
 	} catch (error) {
 		log.error(

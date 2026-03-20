@@ -6,8 +6,11 @@ set -e
 
 : "${DOMAIN:?DOMAIN environment variable is required (e.g. DOMAIN=nubeauth.com)}"
 : "${GATEWAY_INTERNAL_URL:?GATEWAY_INTERNAL_URL environment variable is required (e.g. GATEWAY_INTERNAL_URL=http://nubeauth-gateway.railway.internal:8080)}"
-: "${CORE_INTERNAL_URL:?CORE_INTERNAL_URL environment variable is required (e.g. CORE_INTERNAL_URL=http://nubeauth-core.railway.internal:8080)}"
-: "${WORKERS_INTERNAL_URL:?WORKERS_INTERNAL_URL environment variable is required (e.g. WORKERS_INTERNAL_URL=http://nubeauth-workers.railway.internal:8080)}"
+
+# Optional – default to a dummy address so nginx starts even if these services
+# are not yet deployed. Requests to core./work. will return 502 until set.
+CORE_INTERNAL_URL="${CORE_INTERNAL_URL:-http://127.0.0.1:1}"
+WORKERS_INTERNAL_URL="${WORKERS_INTERNAL_URL:-http://127.0.0.1:1}"
 
 envsubst '${DOMAIN} ${GATEWAY_INTERNAL_URL} ${CORE_INTERNAL_URL} ${WORKERS_INTERNAL_URL}' \
   < /etc/nginx/templates/subdomains.conf.template \

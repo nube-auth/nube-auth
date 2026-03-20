@@ -56,8 +56,12 @@ app.route("/v1/subscription", subscriptionRoutes);
 app.route("/v1/admin", adminRoutes);
 
 // Health check
+app.get("/", (c) => {
+	return c.json<{ service: string; status: string; timestamp: string }>({ service: "core", status: "ok", timestamp: new Date().toISOString() });
+});
+
 app.get("/health", (c) => {
-	return c.json({ status: "ok", timestamp: new Date().toISOString() });
+	return c.json<{ status: string; timestamp: string }>({ status: "ok", timestamp: new Date().toISOString() });
 });
 
 // Error handling
