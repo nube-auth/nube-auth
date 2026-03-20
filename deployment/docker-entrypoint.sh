@@ -9,8 +9,9 @@ set -e
 
 # Optional – default to a dummy address so nginx starts even if these services
 # are not yet deployed. Requests to core./work. will return 502 until set.
-CORE_INTERNAL_URL="${CORE_INTERNAL_URL:-http://127.0.0.1:1}"
-WORKERS_INTERNAL_URL="${WORKERS_INTERNAL_URL:-http://127.0.0.1:1}"
+# Must be exported so envsubst (a child process) can see them.
+export CORE_INTERNAL_URL="${CORE_INTERNAL_URL:-http://127.0.0.1:1}"
+export WORKERS_INTERNAL_URL="${WORKERS_INTERNAL_URL:-http://127.0.0.1:1}"
 
 envsubst '${DOMAIN} ${GATEWAY_INTERNAL_URL} ${CORE_INTERNAL_URL} ${WORKERS_INTERNAL_URL}' \
   < /etc/nginx/templates/subdomains.conf.template \
