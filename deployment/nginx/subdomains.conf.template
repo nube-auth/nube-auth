@@ -7,9 +7,17 @@
 # Routes:
 #   ${DOMAIN}             → Home (Astro marketing site)
 #   manage.${DOMAIN}      → Admin Dashboard (React SPA)
-#   user.${DOMAIN}        → User Dashboard (React SPA)
+#   me.${DOMAIN}          → User Dashboard (React SPA)
 #   docs.${DOMAIN}        → Docs (VitePress)
 #   api.${DOMAIN}         → Gateway service (proxy)
+#   core.${DOMAIN}        → Core service (proxy)
+#   work.${DOMAIN}        → Workers service (proxy)
+#
+# Redirects (301):
+#   user.${DOMAIN}        → me.${DOMAIN}
+#   admin.${DOMAIN}       → manage.${DOMAIN}
+#   doc.${DOMAIN}         → docs.${DOMAIN}
+#   documents.${DOMAIN}   → docs.${DOMAIN}
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── Home ──────────────────────────────────────────────────────────────────────
@@ -53,7 +61,7 @@ server {
 # ── User Dashboard (SPA) ──────────────────────────────────────────────────────
 server {
     listen 8080;
-    server_name user.${DOMAIN};
+    server_name me.${DOMAIN};
     root /var/www/user;
 
     location / {
@@ -106,4 +114,61 @@ server {
         proxy_set_header Connection "";
         proxy_read_timeout 60s;
     }
+}
+
+# ── Core Service Proxy ───────────────────────────────────────────────────────
+# CORE_INTERNAL_URL: Railway private network URL, e.g.
+#   http://nubeauth-core.railway.internal:8080
+server {
+    listen 8080;
+    server_name core.${DOMAIN};
+
+    location / {
+        proxy_pass ${CORE_INTERNAL_URL};
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+        proxy_read_timeout 60s;
+    }
+}
+
+# ── Workers Service Proxy ─────────────────────────────────────────────────────
+# WORKERS_INTERNAL_URL: Railway private network URL, e.g.
+#   http://nubeauth-workers.railway.internal:8080
+server {
+    listen 8080;
+    server_name work.${DOMAIN};
+
+    location / {
+        proxy_pass ${WORKERS_INTERNAL_URL};
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+        proxy_read_timeout 60s;
+    }
+}
+
+# ── Legacy Subdomain Redirects (301 Permanent) ────────────────────────────────
+server {
+    listen 8080;
+    server_name user.${DOMAIN};
+    return 301 $scheme://me.${DOMAIN}$request_uri;
+}
+
+server {
+    listen 8080;
+    server_name admin.${DOMAIN};
+    return 301 $scheme://manage.${DOMAIN}$request_uri;
+}
+
+server {
+    listen 8080;
+    server_name doc.${DOMAIN} documents.${DOMAIN};
+    return 301 $scheme://docs.${DOMAIN}$request_uri;
 }
