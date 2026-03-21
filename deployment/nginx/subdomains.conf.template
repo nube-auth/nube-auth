@@ -105,14 +105,22 @@ server {
     listen 8080;
     server_name api.${DOMAIN};
 
+    # Use Docker's embedded DNS resolver so nginx re-resolves the Railway internal hostname
+    # on every request (with a 10s TTL cache). Without this, nginx resolves once at startup
+    # and caches the IP — when the upstream container restarts it gets a new IP and all
+    # requests time out until nginx is reloaded.
+    resolver 127.0.0.11 valid=10s ipv6=off;
+
     location / {
-        proxy_pass ${GATEWAY_INTERNAL_URL};
+        set $gateway "${GATEWAY_INTERNAL_URL}";
+        proxy_pass $gateway;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Connection "";
+        proxy_connect_timeout 5s;
         proxy_read_timeout 60s;
     }
 }
@@ -124,14 +132,18 @@ server {
     listen 8080;
     server_name core.${DOMAIN};
 
+    resolver 127.0.0.11 valid=10s ipv6=off;
+
     location / {
-        proxy_pass ${CORE_INTERNAL_URL};
+        set $core "${CORE_INTERNAL_URL}";
+        proxy_pass $core;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Connection "";
+        proxy_connect_timeout 5s;
         proxy_read_timeout 60s;
     }
 }
@@ -143,14 +155,18 @@ server {
     listen 8080;
     server_name work.${DOMAIN};
 
+    resolver 127.0.0.11 valid=10s ipv6=off;
+
     location / {
-        proxy_pass ${WORKERS_INTERNAL_URL};
+        set $workers "${WORKERS_INTERNAL_URL}";
+        proxy_pass $workers;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Connection "";
+        proxy_connect_timeout 5s;
         proxy_read_timeout 60s;
     }
 }
