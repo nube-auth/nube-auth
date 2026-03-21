@@ -209,6 +209,18 @@ export class QueueClient {
 		await this.closeAllQueues();
 		this.redisConnection.disconnect();
 	}
+
+	/**
+	 * Ping Redis — resolves true if connected, false otherwise.
+	 */
+	public async ping(): Promise<boolean> {
+		try {
+			const result = await this.redisConnection.ping();
+			return result === "PONG";
+		} catch {
+			return false;
+		}
+	}
 }
 
 /**

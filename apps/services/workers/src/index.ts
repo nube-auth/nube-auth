@@ -11,6 +11,7 @@
 
 import { createLogger } from "@nube-auth/shared";
 import { createServer } from "node:http";
+import { QueueClient } from "@nube-auth/queue";
 import type { Worker } from "bullmq";
 import { setupProcessPaymentWorker } from "./process-payment.js";
 import { setupProcessWebhookWorker } from "./process-webhook.js";
@@ -23,6 +24,7 @@ const log = createLogger("worker-manager");
 
 let workers: Worker<any>[] = [];
 let webhookRescueTimer: NodeJS.Timeout | null = null;
+let healthQueueClient: QueueClient | null = null;
 
 /**
  * Initialize all workers
@@ -30,6 +32,16 @@ let webhookRescueTimer: NodeJS.Timeout | null = null;
 export async function initializeWorkers(): Promise<void> {
 	try {
 		log.info("Initializing workers...");
+
+		// Shared Redis client used for health checks
+		healthQueueClient = new QueueClient();
+
+		// Verify Redis connectivity before starting workers
+		const redisReady = await healthQueueClient.ping();
+		if (!redisReady) {
+			throw new Error("Redis ping failed — cannot start workers without Redis");
+		}
+		log.info("Redis connection verified");
 
 		// Setup workers
 		const paymentWorker = await setupProcessPaymentWorker();
@@ -117,10 +129,19 @@ async function main(): Promise<void> {
 
 		// Minimal HTTP server so Railway health checks and nginx proxy have an endpoint
 		const port = Number(process.env.PORT ?? 8080);
-		const server = createServer((req, res) => {
+		const server = createServer(async (req, res) => {
 			if (req.url === "/health" || req.url === "/") {
-				const body = JSON.stringify({ service: "workers", status: "ok", timestamp: new Date().toISOString() });
-				res.writeHead(200, { "Content-Type": "application/json" });
+				const redisOk = healthQueueClient ? await healthQueueClient.ping() : false;
+				const status = redisOk ? "ok" : "degraded";
+				const code = redisOk ? 200 : 503;
+				const body = JSON.stringify({
+					service: "workers",
+					status,
+					redis: redisOk ? "ok" : "unreachable",
+					workers: workers.length,
+					timestamp: new Date().toISOString(),
+				});
+				res.writeHead(code, { "Content-Type": "application/json" });
 				res.end(body);
 			} else {
 				res.writeHead(404);
