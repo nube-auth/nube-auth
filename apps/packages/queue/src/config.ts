@@ -4,15 +4,50 @@
  */
 
 /**
- * Get Redis configuration from environment variables
+ * Get Redis configuration from environment variables.
+ * Prefers individual REDIS_HOST/PORT/PASSWORD vars, falls back to parsing REDIS_URL.
  */
 export function getRedisConfig() {
+	// If REDIS_HOST is explicitly set, use individual vars
+	if (process.env['REDIS_HOST']) {
+		return {
+			host: process.env['REDIS_HOST'],
+			port: parseInt(process.env['REDIS_PORT'] || "6379", 10),
+			password: process.env['REDIS_PASSWORD'],
+			db: parseInt(process.env['REDIS_DB'] || "0", 10),
+			username: process.env['REDIS_USERNAME'],
+			maxRetriesPerRequest: null,
+			enableReadyCheck: false,
+			enableOfflineQueue: false,
+		};
+	}
+
+	// Fall back to parsing REDIS_URL (e.g. Railway sets this as a connection string)
+	const redisUrl = process.env['REDIS_URL'];
+	if (redisUrl) {
+		try {
+			const parsed = new URL(redisUrl);
+			return {
+				host: parsed.hostname,
+				port: parsed.port ? parseInt(parsed.port, 10) : 6379,
+				password: parsed.password || undefined,
+				username: parsed.username || undefined,
+				db: parseInt(process.env['REDIS_DB'] || "0", 10),
+				maxRetriesPerRequest: null,
+				enableReadyCheck: false,
+				enableOfflineQueue: false,
+			};
+		} catch {
+			// Fall through to default if URL is malformed
+		}
+	}
+
 	return {
-		host: process.env['REDIS_HOST'] || "localhost",
-		port: parseInt(process.env['REDIS_PORT'] || "6379", 10),
-		password: process.env['REDIS_PASSWORD'],
+		host: "localhost",
+		port: 6379,
+		password: undefined,
 		db: parseInt(process.env['REDIS_DB'] || "0", 10),
-		username: process.env['REDIS_USERNAME'],
+		username: undefined,
 		maxRetriesPerRequest: null,
 		enableReadyCheck: false,
 		enableOfflineQueue: false,
