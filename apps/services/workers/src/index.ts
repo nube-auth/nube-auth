@@ -130,7 +130,7 @@ async function main(): Promise<void> {
 		// Minimal HTTP server so Railway health checks and nginx proxy have an endpoint
 		const port = Number(process.env.PORT ?? 8080);
 		const server = createServer(async (req, res) => {
-			if (req.url === "/health" || req.url === "/") {
+			if (req.url === "/health") {
 				const redisOk = healthQueueClient ? await healthQueueClient.ping() : false;
 				const status = redisOk ? "ok" : "degraded";
 				const code = redisOk ? 200 : 503;
