@@ -20,6 +20,8 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import pg from "pg";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import * as schema from "./schema.js";
 
 const { Pool } = pg;
@@ -38,8 +40,15 @@ export async function runMigrations() {
 
 	const db = drizzle(pool, { schema });
 
+	// Resolve drizzle/ relative to this compiled file, not CWD.
+	// When deployed via `pnpm deploy`, this file lives at:
+	//   /app/node_modules/@nube-auth/db/dist/migrations.js
+	// and the drizzle folder is at:
+	//   /app/node_modules/@nube-auth/db/drizzle/
+	const migrationsFolder = path.join(path.dirname(fileURLToPath(import.meta.url)), "../drizzle");
+
 	console.log("Running database migrations...");
-	await migrate(db, { migrationsFolder: "./drizzle" });
+	await migrate(db, { migrationsFolder });
 	console.log("✅ Database migrations completed");
 
 	await pool.end();
