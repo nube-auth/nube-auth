@@ -1,4 +1,5 @@
 import { serve } from "@hono/node-server";
+import { runMigrations } from "@nube-auth/db";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -69,6 +70,14 @@ app.onError((err, c) => {
 	log.error({ err: serializeError(err), path: c.req.path }, "Unhandled error");
 	return errorHandler(err, c);
 });
+
+// Run DB migrations before starting
+try {
+	await runMigrations();
+} catch (err) {
+	log.error({ err: serializeError(err as Error) }, "Database migration failed — exiting");
+	process.exit(1);
+}
 
 // Start server
 const port = env.CORE_PORT;

@@ -104,6 +104,8 @@ export {
 	userQueries,
 	webhookLogQueries,
 } from "./queries.js";
+// Export migration runner
+export { runMigrations } from "./migrations.js";
 // Export schema for migrations and types
 export * from "./schema.js";
 // Export transaction utilities
