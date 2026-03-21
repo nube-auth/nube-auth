@@ -1,6 +1,7 @@
 import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Context, Next } from "hono";
 import { createMiddleware } from "hono/factory";
+import { env } from "../config/env";
 
 const log = createLogger("admin-security");
 
@@ -53,9 +54,8 @@ export const adminSecurityCheck = createMiddleware(async (c: Context, next: Next
 		// 2. Validate Origin/Referer matches expected admin domains
 		const allowedDomains = [
 			"http://localhost:5174", // Local admin dashboard
-			"https://manage.nubeauth.com", // Production admin dashboard
-			"https://admin.nubeauth.com", // Alternative admin domain
-		];
+			env.ADMIN_DASHBOARD_URL, // Configured admin dashboard URL (staging/production)
+		].filter(Boolean);
 
 		const requestOrigin = origin || referer || "";
 		const isValidOrigin = allowedDomains.some((domain) => requestOrigin.startsWith(domain));

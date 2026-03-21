@@ -39,13 +39,11 @@ const allowedOrigins = [
 function getAllowedOriginOrNull(origin: string): string | null {
 	if (!origin) return "*";
 	if (allowedOrigins.includes(origin)) return origin;
-	// Allow *.nubeauth.com (production convenience)
-	if (origin.endsWith(".nubeauth.com")) return origin;
-	// Allow any subdomain of the gateway's own base domain
+	// Allow any subdomain of the gateway's own base domain (derived from GATEWAY_PUBLIC_URL)
+	// e.g. GATEWAY_PUBLIC_URL=https://api.staging.proofa.dev → allows *.staging.proofa.dev and *.proofa.dev
 	try {
-		const gatewayHost = new URL(env.GATEWAY_PUBLIC_URL).hostname; // e.g. api.staging.proofa.dev
+		const gatewayHost = new URL(env.GATEWAY_PUBLIC_URL).hostname;
 		const parts = gatewayHost.split(".");
-		// Match *.staging.proofa.dev and *.proofa.dev
 		for (let i = 1; i < parts.length - 1; i++) {
 			const suffix = "." + parts.slice(i).join(".");
 			if (origin.endsWith(suffix)) return origin;
