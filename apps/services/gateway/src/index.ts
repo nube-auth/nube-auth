@@ -18,13 +18,36 @@ const log = createLogger("gateway");
 const app = new Hono();
 
 // CORS configuration for cross-subdomain requests with credentials
+// Build allowed origins dynamically from env vars so staging/production work without code changes
 const allowedOrigins = [
 	"http://localhost:5173",
 	"http://localhost:5174",
-	"https://user.nubeauth.com",
-	"https://manage.nubeauth.com",
-	"https://nubeauth.com",
-];
+	env.USER_DASHBOARD_URL,
+	env.ADMIN_DASHBOARD_URL,
+	env.FRONTEND_URL,
+].filter(Boolean);
+
+// Derive the root domain from GATEWAY_PUBLIC_URL for wildcard subdomain matching
+// e.g. "https://api.staging.proofa.dev" → ".staging.proofa.dev" and ".proofa.dev"
+function getAllowedOriginOrNull(origin: string): string | null {
+	if (!origin) return "*";
+	if (allowedOrigins.includes(origin)) return origin;
+	// Allow *.nubeauth.com (production convenience)
+	if (origin.endsWith(".nubeauth.com")) return origin;
+	// Allow any subdomain of the gateway's own base domain
+	try {
+		const gatewayHost = new URL(env.GATEWAY_PUBLIC_URL).hostname; // e.g. api.staging.proofa.dev
+		const parts = gatewayHost.split(".");
+		// Match *.staging.proofa.dev and *.proofa.dev
+		for (let i = 1; i < parts.length - 1; i++) {
+			const suffix = "." + parts.slice(i).join(".");
+			if (origin.endsWith(suffix)) return origin;
+		}
+	} catch {
+		// ignore invalid URL
+	}
+	return null;
+}
 
 // Security headers middleware
 app.use(
@@ -35,7 +58,7 @@ app.use(
 			scriptSrc: ["'self'", "'unsafe-inline'"],
 			styleSrc: ["'self'", "'unsafe-inline'"],
 			imgSrc: ["'self'", "data:", "https:"],
-			connectSrc: ["'self'", "https://api.nubeauth.com"],
+			connectSrc: ["'self'", env.GATEWAY_PUBLIC_URL],
 			fontSrc: ["'self'"],
 			objectSrc: ["'none'"],
 			mediaSrc: ["'self'"],
@@ -57,15 +80,7 @@ app.use(
 app.use(
 	"*",
 	cors({
-		origin: (origin) => {
-			// Allow requests with no origin (e.g., same-origin, curl)
-			if (!origin) return "*";
-			// Check if origin is in allowed list
-			if (allowedOrigins.includes(origin)) return origin;
-			// Allow any *.nubeauth.com subdomain
-			if (origin.endsWith(".nubeauth.com")) return origin;
-			return null;
-		},
+		origin: getAllowedOriginOrNull,
 		credentials: true,
 		allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 		allowHeaders: ["Content-Type", "Authorization", "X-Nube-Service-Token", "X-Nube-CSRF-Token", "X-Nube-S2S-Token", "X-Nube-Project-Id"],
