@@ -38,10 +38,21 @@ async function getRedisClient(): Promise<RedisClientType> {
 
 	redisInstance = createClient({
 		url,
+		socket: {
+			// Auto-reconnect with exponential backoff (100ms → 5s cap)
+			reconnectStrategy: (retries: number) => Math.min(retries * 100, 5000),
+			// TCP keepalive to prevent Railway's network proxy from dropping idle connections
+			keepAlive: 10000,
+			// Timeout for each individual connection attempt
+			connectTimeout: 10000,
+		},
 	});
 
 	redisInstance.on("error", (err) => {
-		console.error("Redis Client Error:", err);
+		// Suppressed during auto-reconnect cycles — node-redis will retry per reconnectStrategy
+		if ((err as NodeJS.ErrnoException).code !== "ECONNREFUSED" && err.name !== "SocketClosedUnexpectedlyError") {
+			console.error("Redis Client Error:", err);
+		}
 	});
 
 	await redisInstance.connect();
