@@ -1,5 +1,5 @@
 import { serve } from "@hono/node-server";
-import { pingCache } from "@nube-auth/cache";
+import { initCache, pingCache } from "@nube-auth/cache";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -14,6 +14,9 @@ import { authRoutes } from "./routes/auth";
 import { debugRoutes } from "./routes/debug";
 import { meRoutes } from "./routes/me";
 import { paymentsRoutes } from "./routes/payments";
+
+// Initialize cache with the validated Redis URL from env.ts before any cache operations
+initCache(env.REDIS_URL);
 
 const log = createLogger("gateway");
 const app = new Hono();

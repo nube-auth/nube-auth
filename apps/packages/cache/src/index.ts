@@ -4,6 +4,7 @@ export {
 	rateLimit,
 	sessionStore,
 	pingCache,
+	initCache,
 } from "./client.js";
 
 // Re-export constants

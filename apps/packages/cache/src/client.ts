@@ -11,6 +11,16 @@ type SessionEntitlements = Record<string, { role: string; resources?: string[]; 
  * Lazily initialized on first use
  */
 let redisInstance: RedisClientType | null = null;
+let configuredRedisUrl: string | null = null;
+
+/**
+ * Initialize the cache package with a Redis URL.
+ * Must be called at service startup before any cache operations.
+ * Accepts the validated URL from the service's env.ts.
+ */
+export function initCache(redisUrl: string): void {
+	configuredRedisUrl = redisUrl;
+}
 
 /**
  * Get or create Redis client instance (internal use only)
@@ -21,9 +31,9 @@ async function getRedisClient(): Promise<RedisClientType> {
 		return redisInstance;
 	}
 
-	const url = process.env['REDIS_URL'];
+	const url = configuredRedisUrl;
 	if (!url) {
-		throw new Error("REDIS_URL environment variable is not set");
+		throw new Error("Cache not initialized: call initCache(redisUrl) at service startup before using @nube-auth/cache");
 	}
 
 	redisInstance = createClient({
