@@ -105,11 +105,10 @@ server {
     listen 8080;
     server_name api.${DOMAIN};
 
-    # Use Docker's embedded DNS resolver so nginx re-resolves the Railway internal hostname
-    # on every request (with a 10s TTL cache). Without this, nginx resolves once at startup
-    # and caches the IP — when the upstream container restarts it gets a new IP and all
-    # requests time out until nginx is reloaded.
-    resolver 127.0.0.11 valid=10s ipv6=off;
+    # Use the system DNS resolver (detected at container startup from /etc/resolv.conf)
+    # so nginx re-resolves Railway internal hostnames at runtime instead of caching
+    # the IP at startup time.
+    resolver ${NGINX_RESOLVER} valid=10s ipv6=off;
 
     location / {
         set $gateway "${GATEWAY_INTERNAL_URL}";
@@ -132,7 +131,7 @@ server {
     listen 8080;
     server_name core.${DOMAIN};
 
-    resolver 127.0.0.11 valid=10s ipv6=off;
+    resolver ${NGINX_RESOLVER} valid=10s ipv6=off;
 
     location / {
         set $core "${CORE_INTERNAL_URL}";
@@ -155,7 +154,7 @@ server {
     listen 8080;
     server_name work.${DOMAIN};
 
-    resolver 127.0.0.11 valid=10s ipv6=off;
+    resolver ${NGINX_RESOLVER} valid=10s ipv6=off;
 
     location / {
         set $workers "${WORKERS_INTERNAL_URL}";
