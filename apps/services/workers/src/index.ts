@@ -36,12 +36,15 @@ export async function initializeWorkers(): Promise<void> {
 		// Shared Redis client used for health checks
 		healthQueueClient = new QueueClient();
 
-		// Verify Redis connectivity before starting workers
+		// Verify Redis connectivity before starting workers.
+		// This is informational — BullMQ handles reconnection internally,
+		// so a failed ping at startup is a warning, not a fatal error.
 		const redisReady = await healthQueueClient.ping();
 		if (!redisReady) {
-			throw new Error("Redis ping failed — cannot start workers without Redis");
+			log.warn("Redis not reachable at startup — workers will retry via BullMQ reconnection");
+		} else {
+			log.info("Redis connection verified");
 		}
-		log.info("Redis connection verified");
 
 		// Setup workers
 		const paymentWorker = await setupProcessPaymentWorker();

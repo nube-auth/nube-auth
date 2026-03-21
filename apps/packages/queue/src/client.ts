@@ -212,9 +212,27 @@ export class QueueClient {
 
 	/**
 	 * Ping Redis — resolves true if connected, false otherwise.
+	 * Waits for the connection to reach 'ready' state before issuing the command
+	 * because ioredis with enableOfflineQueue:false rejects commands while connecting.
 	 */
-	public async ping(): Promise<boolean> {
+	public async ping(timeoutMs = 5000): Promise<boolean> {
 		try {
+			if (this.redisConnection.status !== "ready") {
+				await new Promise<void>((resolve, reject) => {
+					const timer = setTimeout(
+						() => reject(new Error("Redis connection timeout")),
+						timeoutMs,
+					);
+					this.redisConnection.once("ready", () => {
+						clearTimeout(timer);
+						resolve();
+					});
+					this.redisConnection.once("error", (err) => {
+						clearTimeout(timer);
+						reject(err);
+					});
+				});
+			}
 			const result = await this.redisConnection.ping();
 			return result === "PONG";
 		} catch {

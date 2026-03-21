@@ -1,4 +1,5 @@
 import { serve } from "@hono/node-server";
+import { pingCache } from "@nube-auth/cache";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -16,6 +17,9 @@ import { paymentsRoutes } from "./routes/payments";
 
 const log = createLogger("gateway");
 const app = new Hono();
+
+// Readiness state — gates the /health endpoint
+const isReady = { redis: false };
 
 // CORS configuration for cross-subdomain requests with credentials
 // Build allowed origins dynamically from env vars so staging/production work without code changes
@@ -117,9 +121,19 @@ app.route("/v1/admin", adminRoutes);
 app.route("/v1/payment", paymentsRoutes);
 app.route("/v1/debug", debugRoutes);
 
-// Health check
-app.get("/health", (c) => {
-	return c.json<{ service: string; status: string; timestamp: string }>({ service: "gateway", status: "ok", timestamp: new Date().toISOString() });
+// Health check — returns 503 until Redis is reachable
+app.get("/health", async (c) => {
+	const redisOk = await pingCache();
+	if (redisOk) isReady.redis = true;
+	return c.json(
+		{
+			service: "gateway",
+			status: redisOk ? "ok" : "starting",
+			redis: redisOk ? "ok" : "unreachable",
+			timestamp: new Date().toISOString(),
+		},
+		redisOk ? 200 : 503,
+	);
 });
 
 // 404
@@ -147,6 +161,18 @@ app.onError((err, c) => {
 
 	return c.json({ error: errorMessage }, 500);
 });
+
+// Warm up Redis connection — non-fatal, /health will report degraded if unreachable
+try {
+	isReady.redis = await pingCache();
+	if (isReady.redis) {
+		log.info("Redis connection verified");
+	} else {
+		log.warn("Redis not reachable at startup — will retry on first request");
+	}
+} catch (err) {
+	log.warn({ err: serializeError(err as Error) }, "Redis ping failed at startup");
+}
 
 // Start server
 const port = env.GATEWAY_PORT;

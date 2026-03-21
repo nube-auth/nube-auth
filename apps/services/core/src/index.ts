@@ -1,5 +1,6 @@
 import { serve } from "@hono/node-server";
 import { runMigrations } from "@nube-auth/db";
+import { pingCache } from "@nube-auth/cache";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -16,6 +17,9 @@ import { subscriptionRoutes } from "./routes/v1/subscription";
 
 const log = createLogger("core");
 const app = new Hono();
+
+// Readiness state — gates the /health endpoint
+const isReady = { db: false, redis: false };
 
 // Global middleware - CORS with credentials support
 app.use(
@@ -56,9 +60,21 @@ app.route("/v1/license", licenseRoutes);
 app.route("/v1/subscription", subscriptionRoutes);
 app.route("/v1/admin", adminRoutes);
 
-// Health check
-app.get("/health", (c) => {
-	return c.json<{ service: string; status: string; timestamp: string }>({ service: "core", status: "ok", timestamp: new Date().toISOString() });
+// Health check — returns 503 until DB migrations and Redis are ready
+app.get("/health", async (c) => {
+	const redisOk = await pingCache();
+	if (redisOk) isReady.redis = true;
+	const ready = isReady.db && isReady.redis;
+	return c.json(
+		{
+			service: "core",
+			status: ready ? "ok" : "starting",
+			db: isReady.db ? "ok" : "not_ready",
+			redis: redisOk ? "ok" : "unreachable",
+			timestamp: new Date().toISOString(),
+		},
+		ready ? 200 : 503,
+	);
 });
 
 // Error handling
@@ -70,9 +86,22 @@ app.onError((err, c) => {
 // Run DB migrations before starting
 try {
 	await runMigrations();
+	isReady.db = true;
 } catch (err) {
 	log.error({ err: serializeError(err as Error) }, "Database migration failed — exiting");
 	process.exit(1);
+}
+
+// Warm up Redis connection — non-fatal, /health will report degraded if unreachable
+try {
+	isReady.redis = await pingCache();
+	if (isReady.redis) {
+		log.info("Redis connection verified");
+	} else {
+		log.warn("Redis not reachable at startup — will retry on first request");
+	}
+} catch (err) {
+	log.warn({ err: serializeError(err as Error) }, "Redis ping failed at startup");
 }
 
 // Start server
