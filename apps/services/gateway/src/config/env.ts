@@ -74,7 +74,10 @@ function validateEnv(): Env {
 		USER_DASHBOARD_URL: process.env["USER_DASHBOARD_URL"] || "https://user.nubeauth.com",
 		ADMIN_DASHBOARD_URL: process.env["ADMIN_DASHBOARD_URL"] || "https://manage.nubeauth.com",
 		FRONTEND_URL: process.env["FRONTEND_URL"] || "https://user.nubeauth.com",
-		COOKIE_DOMAIN: process.env["COOKIE_DOMAIN"] || "nubeauth.com",
+		// Default to empty string (host-only cookie). Set to ".yourdomain.com" to share cookies
+		// across subdomains. NEVER hardcode a domain here — an incorrect default causes browsers
+		// to silently reject Set-Cookie when the gateway runs on a different domain.
+		COOKIE_DOMAIN: process.env["COOKIE_DOMAIN"] || "",
 		SEND_EMAILS: process.env["SEND_EMAILS"] === "true",
 		EMAIL_FROM: process.env["EMAIL_FROM"] || "noreply@nubeauth.com",
 		STRIPE_SECRET_KEY: process.env["STRIPE_SECRET_KEY"] || "",
