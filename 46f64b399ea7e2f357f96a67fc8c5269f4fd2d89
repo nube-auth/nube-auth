@@ -1,0 +1,30 @@
+apps/services/core/src/index.ts
+  9f96d675df0e1435 36-47
+apps/services/core/src/routes/v1/admin/test.ts
+  9f96d675df0e1435 789,799
+apps/services/core/src/config/env.ts
+  9f96d675df0e1435 89,109
+apps/services/gateway/src/config/env.ts
+  9f96d675df0e1435 73-76,82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.15",
+  "base_commit_sha": "46f64b399ea7e2f357f96a67fc8c5269f4fd2d89",
+  "prompts": {
+    "9f96d675df0e1435": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "0ee53b3d-dca0-4d50-add0-c1af1fa298d9",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 21,
+      "total_deletions": 11,
+      "accepted_lines": 21,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/7a916f8ae28a4e46c2b29db84d4506f85689976fc1f6c6c31df8fcdba5b3c300"
+    }
+  }
+}
