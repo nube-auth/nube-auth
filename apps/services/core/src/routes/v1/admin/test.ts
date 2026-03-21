@@ -786,7 +786,7 @@ router.get("/providers", async (c: Context) => {
 				name: "stripe",
 				status: "available",
 				testMode: true,
-				webhookUrl: `${env.API_BASE_URL || "https://api.nubeauth.com"}/v1/payment/webhooks/stripe`,
+						webhookUrl: `${env.API_BASE_URL || "http://localhost:3003"}/v1/payment/webhooks/stripe`,
 				credentials: {
 					publicKey: `${env.STRIPE_PUBLISHABLE_KEY?.substring(0, 20)}****`,
 					hasSecretKey: !!env.STRIPE_SECRET_KEY,
@@ -796,7 +796,7 @@ router.get("/providers", async (c: Context) => {
 				name: "lemonsqueezy",
 				status: "available",
 				testMode: true,
-				webhookUrl: `${env.API_BASE_URL || "https://api.nubeauth.com"}/v1/payment/webhooks/lemonsqueezy`,
+						webhookUrl: `${env.API_BASE_URL || "http://localhost:3003"}/v1/payment/webhooks/lemonsqueezy`,
 				credentials: {
 					hasApiKey: !!env.LEMONSQUEEZY_API_KEY,
 				},
@@ -805,7 +805,7 @@ router.get("/providers", async (c: Context) => {
 				name: "dodo",
 				status: "available",
 				testMode: true,
-				webhookUrl: `${env.API_BASE_URL || "https://api.nubeauth.com"}/v1/payment/webhooks/dodo`,
+				webhookUrl: `${env.API_BASE_URL || "http://localhost:3003"}/v1/payment/webhooks/dodo`,
 				credentials: {
 					hasApiKey: !!env.DODO_API_KEY,
 				},

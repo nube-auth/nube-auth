@@ -70,16 +70,16 @@ function validateEnv(): Env {
 		S2S_SECRET: process.env["S2S_SECRET"]!,
 		X_NUBE_AUTH_SERVICE_TOKEN: process.env["X_NUBE_AUTH_SERVICE_TOKEN"]!,
 		SESSION_SECRET: process.env["SESSION_SECRET"]!,
-		GATEWAY_PUBLIC_URL: process.env["GATEWAY_PUBLIC_URL"] || "https://api.nubeauth.com",
-		USER_DASHBOARD_URL: process.env["USER_DASHBOARD_URL"] || "https://user.nubeauth.com",
-		ADMIN_DASHBOARD_URL: process.env["ADMIN_DASHBOARD_URL"] || "https://manage.nubeauth.com",
-		FRONTEND_URL: process.env["FRONTEND_URL"] || "https://user.nubeauth.com",
+		GATEWAY_PUBLIC_URL: process.env["GATEWAY_PUBLIC_URL"] || "http://localhost:3004",
+		USER_DASHBOARD_URL: process.env["USER_DASHBOARD_URL"] || "http://localhost:5173",
+		ADMIN_DASHBOARD_URL: process.env["ADMIN_DASHBOARD_URL"] || "http://localhost:5174",
+		FRONTEND_URL: process.env["FRONTEND_URL"] || "http://localhost:5173",
 		// Default to empty string (host-only cookie). Set to ".yourdomain.com" to share cookies
 		// across subdomains. NEVER hardcode a domain here — an incorrect default causes browsers
 		// to silently reject Set-Cookie when the gateway runs on a different domain.
 		COOKIE_DOMAIN: process.env["COOKIE_DOMAIN"] || "",
 		SEND_EMAILS: process.env["SEND_EMAILS"] === "true",
-		EMAIL_FROM: process.env["EMAIL_FROM"] || "noreply@nubeauth.com",
+		EMAIL_FROM: process.env["EMAIL_FROM"] || "noreply@localhost",
 		STRIPE_SECRET_KEY: process.env["STRIPE_SECRET_KEY"] || "",
 		STRIPE_WEBHOOK_SECRET: process.env["STRIPE_WEBHOOK_SECRET"] || "",
 		SMTP_HOST: process.env["SMTP_HOST"] ?? "localhost",

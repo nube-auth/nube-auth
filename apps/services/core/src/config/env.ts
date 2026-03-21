@@ -86,7 +86,7 @@ function getEnvironment(): Environment {
 		REDIS_URL: process.env["REDIS_URL"]!,
 		RESEND_API_KEY: process.env["RESEND_API_KEY"]!,
 		SEND_EMAILS: process.env["SEND_EMAILS"] === "true",
-		EMAIL_FROM: process.env["EMAIL_FROM"] ?? "noreply@nubeauth.com",
+		EMAIL_FROM: process.env["EMAIL_FROM"] ?? "noreply@localhost",
 		ADMIN_DASHBOARD_URL: process.env["ADMIN_DASHBOARD_URL"] ?? "http://localhost:5174",
 		PAYMENT_CONFIGS_KEY: process.env["PAYMENT_CONFIGS_KEY"]!,
 		SMTP_HOST: process.env["SMTP_HOST"] ?? "localhost",
@@ -106,7 +106,7 @@ function getEnvironment(): Environment {
 		MAX_EMAIL_ATTEMPTS: parseInt(process.env["MAX_EMAIL_ATTEMPTS"] ?? "3", 10),
 		MAX_OAUTH_ATTEMPTS: parseInt(process.env["MAX_OAUTH_ATTEMPTS"] ?? "3", 10),
 		// Allowed redirect origins for OAuth
-		ALLOWED_REDIRECT_ORIGINS: (process.env["ALLOWED_REDIRECT_ORIGINS"] ?? "http://localhost:3004,http://localhost:5173,http://localhost:5174,https://api.nubeauth.com,https://user.nubeauth.com,https://manage.nubeauth.com")
+		ALLOWED_REDIRECT_ORIGINS: (process.env["ALLOWED_REDIRECT_ORIGINS"] ?? "http://localhost:3004,http://localhost:5173,http://localhost:5174")
 			.split(",")
 			.map((s) => s.trim())
 			.filter(Boolean),

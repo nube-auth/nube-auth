@@ -33,8 +33,18 @@ app.use(
 			if (!origin) return "*";
 			// Allow localhost for development
 			if (origin.startsWith("http://localhost:")) return origin;
-			// Allow nubeauth.com domains
-			if (origin.endsWith(".nubeauth.com")) return origin;
+			// Allow any subdomain of the deployment domain (derived from CORE_PUBLIC_URL)
+			// e.g. CORE_PUBLIC_URL=https://api.staging.example.com → allows *.staging.example.com and *.example.com
+			if (env.CORE_PUBLIC_URL) {
+				try {
+					const coreHost = new URL(env.CORE_PUBLIC_URL).hostname;
+					const parts = coreHost.split(".");
+					for (let i = 1; i < parts.length - 1; i++) {
+						const suffix = "." + parts.slice(i).join(".");
+						if (origin.endsWith(suffix)) return origin;
+					}
+				} catch { }
+			}
 			return null;
 		},
 		credentials: true,
