@@ -22,7 +22,6 @@ export interface ProcessWebhookJobData {
 export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhookJobData>> {
 	const { Worker: BullWorker } = await import("bullmq");
 	const queueClient = new QueueClient();
-	const queue = queueClient.getQueue("billing");
 
 	// Dynamically import webhook handler to avoid circular dependencies
 	const { processWebhook } = await import("@nube-auth/core/billing/services/webhook-handler");  
@@ -84,7 +83,7 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 			}
 		},
 		{
-			connection: queue.client as any,
+			connection: queueClient.getConnectionOptions(),
 			concurrency: 5,
 		}
 	);

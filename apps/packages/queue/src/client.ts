@@ -211,6 +211,15 @@ export class QueueClient {
 	}
 
 	/**
+	 * Returns a copy of the connection options for use with BullMQ Workers.
+	 * Pass this directly to `new Worker({ connection: ... })` so BullMQ manages
+	 * its own ioredis connection — do NOT pass queue.client (a Promise in BullMQ v5).
+	 */
+	public getConnectionOptions(): QueueConnectionOptions {
+		return { ...this.connectionOptions };
+	}
+
+	/**
 	 * Ping Redis — resolves true if connected, false otherwise.
 	 * Waits for the connection to reach 'ready' state before issuing the command
 	 * because ioredis with enableOfflineQueue:false rejects commands while connecting.

@@ -14,7 +14,6 @@ const log = createLogger("sync-plan-worker-setup");
 export async function setupSyncPlanWorker(): Promise<Worker> {
 	const { Worker: BullWorker } = await import("bullmq");
 	const queueClient = new QueueClient();
-	const queue = queueClient.getQueue("billing");
 
 	// Dynamically import to avoid circular dependencies
 	const { syncPlanToProviders } = await import("./sync-plan-to-providers.js");
@@ -59,7 +58,7 @@ export async function setupSyncPlanWorker(): Promise<Worker> {
 			}
 		},
 		{
-			connection: queue.client as any,
+			connection: queueClient.getConnectionOptions(),
 			concurrency: 3,
 		},
 	);

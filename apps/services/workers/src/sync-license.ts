@@ -30,7 +30,6 @@ export interface SyncLicenseJobData {
 export async function setupSyncLicenseWorker(): Promise<Worker<SyncLicenseJobData>> {
 	const { Worker: BullWorker } = await import("bullmq");
 	const queueClient = new QueueClient();
-	const queue = queueClient.getQueue("SYNC_LICENSE");
 
 	// Dynamically import licenseManager to avoid circular dependencies
 	const { licenseManager } = await import(
@@ -119,7 +118,7 @@ export async function setupSyncLicenseWorker(): Promise<Worker<SyncLicenseJobDat
 			return { success: true, licenseId: license.public_id };
 		},
 		{
-			connection: queue.client as any,
+			connection: queueClient.getConnectionOptions(),
 			concurrency: 5,
 		},
 	);

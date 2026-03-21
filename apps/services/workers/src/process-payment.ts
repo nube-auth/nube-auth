@@ -25,7 +25,6 @@ export interface ProcessPaymentJobData {
 export async function setupProcessPaymentWorker(): Promise<Worker<ProcessPaymentJobData>> {
 	const { Worker: BullWorker } = await import("bullmq");
 	const queueClient = new QueueClient();
-	const queue = queueClient.getQueue("PROCESS_PAYMENT");
 	return new BullWorker<ProcessPaymentJobData>(
 		"PROCESS_PAYMENT",
 		async (job) => {
@@ -38,7 +37,7 @@ export async function setupProcessPaymentWorker(): Promise<Worker<ProcessPayment
 			return { success: true, purchaseId: job.data.purchaseId };
 		},
 		{
-			connection: queue.client as any,
+			connection: queueClient.getConnectionOptions(),
 			concurrency: 5,
 		},
 	);

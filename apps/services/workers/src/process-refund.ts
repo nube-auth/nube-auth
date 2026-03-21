@@ -204,10 +204,9 @@ export function startProcessRefundWorker(): Worker {
 	log.info("Starting PROCESS_REFUND worker");
 
 	const queueClient = new QueueClient();
-	const queue = queueClient.getQueue("PROCESS_REFUND");
 
 	const worker = new Worker("PROCESS_REFUND", processRefundJob, {
-		connection: queue.client as any,
+		connection: queueClient.getConnectionOptions(),
 		concurrency: 5, // Process up to 5 refunds concurrently
 		limiter: {
 			max: 10, // Max 10 jobs
