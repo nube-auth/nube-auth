@@ -15,10 +15,24 @@ export WORKERS_INTERNAL_URL="${WORKERS_INTERNAL_URL:-http://127.0.0.1:1}"
 
 # Detect the system DNS resolver so nginx can re-resolve Railway internal
 # hostnames at runtime. Railway containers use their own DNS — it is not
-# always 127.0.0.11 (Docker's embedded DNS). We read the first nameserver
-# from /etc/resolv.conf and fall back to 8.8.8.8 if unavailable.
+# always 127.0.0.11 (Docker's embedded DNS). We read the nameservers from
+# /etc/resolv.conf, preferring IPv4. IPv6 addresses must be wrapped in
+# brackets for nginx's resolver directive.
 export NGINX_RESOLVER
-NGINX_RESOLVER=$(awk '/^nameserver/{print $2; exit}' /etc/resolv.conf 2>/dev/null || echo '8.8.8.8')
+
+# Try IPv4 nameserver first (no brackets needed in nginx resolver directive)
+NGINX_RESOLVER=$(awk '/^nameserver/ && $2 !~ /:/{print $2; exit}' /etc/resolv.conf 2>/dev/null)
+
+# Fall back to IPv6 nameserver, wrapped in brackets as nginx requires
+if [ -z "$NGINX_RESOLVER" ]; then
+  _raw=$(awk '/^nameserver/{print $2; exit}' /etc/resolv.conf 2>/dev/null)
+  if [ -n "$_raw" ]; then
+    NGINX_RESOLVER="[${_raw}]"
+  else
+    NGINX_RESOLVER="8.8.8.8"
+  fi
+fi
+
 echo "[entrypoint] using DNS resolver: ${NGINX_RESOLVER}"
 
 envsubst '${DOMAIN} ${GATEWAY_INTERNAL_URL} ${CORE_INTERNAL_URL} ${WORKERS_INTERNAL_URL} ${NGINX_RESOLVER}' \
