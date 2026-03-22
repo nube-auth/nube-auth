@@ -126,6 +126,24 @@ export const cache = {
 		}
 	},
 
+	/**
+	 * Atomically GET and DELETE a key in one Redis round-trip (GETDEL).
+	 * Preferred over a separate get() + delete() pair when the value should
+	 * be consumed exactly once — e.g. single-use exchange codes.
+	 * Returns the parsed value, or null if the key did not exist.
+	 */
+	async getAndDelete<T>(key: string): Promise<T | null> {
+		try {
+			const client = await getRedisClient();
+			const value = await client.getDel(key);
+			if (value === null || value === undefined) return null;
+			return JSON.parse(value) as T;
+		} catch (error) {
+			console.error(`Cache getAndDelete error for key ${key}:`, error);
+			return null;
+		}
+	},
+
 	async deleteMany(keys: string[]): Promise<void> {
 		try {
 			if (keys.length === 0) return;

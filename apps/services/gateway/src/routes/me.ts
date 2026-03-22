@@ -1,4 +1,4 @@
-import { getDb, sessionQueries, userQueries } from "@nube-auth/db";
+import { getDb, sessionQueries, userQueries, subscriptionQueries, planQueries, priceQueries, appQueries } from "@nube-auth/db";
 import { cache, sessionStore } from "@nube-auth/cache";
 import { createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
@@ -201,4 +201,60 @@ meRoutes.delete("/sessions/:sessionId", async (c: Context) => {
 		log.error({ err: serializeError(error as Error) }, "Revoke session error:");
 		return c.json({ error: "Failed to revoke session" }, 500);
 	}
+});
+/**
+ * GET /v1/me/subscription
+ *
+ * Returns the active subscription for the authenticated user in the context of
+ * the app that issued the session token (audience=app sessions only).
+ *
+ * Used by Native/CLI clients to check license/plan status after OAuth.
+ *
+ * Returns:
+ *  { hasActivePlan: boolean, planSlug: string | null, status: string | null,
+ *    billingInterval: string | null, periodEnd: string | null }
+ */
+meRoutes.get("/subscription", async (c: Context) => {
+        try {
+                const auth = getAuth(c);
+
+                if (!auth.appId) {
+                        return c.json({ error: "Subscription check is only available for app sessions" }, 400);
+                }
+
+                const db = getDb();
+
+                // Resolve internal IDs for both user and app
+                const [user, app] = await Promise.all([
+                        userQueries.findByPublicId(db, auth.userId),
+                        appQueries.findByPublicId(db, auth.appId),
+                ]);
+
+                if (!user || !app) {
+                        return c.json({ hasActivePlan: false, planSlug: null, status: null, billingInterval: null, periodEnd: null });
+                }
+
+                const subscription = await subscriptionQueries.findActiveByUserAndApp(db, user.id, app.id);
+
+                if (!subscription) {
+                        return c.json({ hasActivePlan: false, planSlug: null, status: null, billingInterval: null, periodEnd: null });
+                }
+
+                // Walk subscription → price → plan to get the slug
+                const price = await priceQueries.findById(db, subscription.price_id);
+                const plan = price ? await planQueries.findById(db, price.plan_id) : null;
+
+                return c.json({
+                        hasActivePlan: true,
+                        planSlug: plan?.slug ?? null,
+                        status: subscription.status,
+                        billingInterval: subscription.billing_interval,
+                        periodEnd: subscription.billing_period_end
+                                ? new Date(subscription.billing_period_end).toISOString()
+                                : null,
+                });
+        } catch (error) {
+                log.error({ err: serializeError(error as Error) }, "Subscription check error:");
+                return c.json({ error: "Failed to fetch subscription" }, 500);
+        }
 });

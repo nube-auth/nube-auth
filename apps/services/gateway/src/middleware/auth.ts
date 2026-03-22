@@ -21,12 +21,22 @@ export interface AuthContext {
 	name: string;
 	sessionId: string;
 	appSessionId?: string;
+	appId?: string;
 	coreSessionId: string;
 	entitlements: SessionEntitlements;
 }
 
 /**
- * Middleware to extract and validate session cookie
+ * Middleware to extract and validate session cookie OR Bearer token.
+ *
+ * Two auth paths:
+ *  1. Bearer token  — used by app clients (macOS app, CLI, browser extensions).
+ *     The sessionToken from POST /v1/auth/token is sent as:
+ *       Authorization: Bearer <sessionToken>
+ *     It is the raw Redis key (session:app:<token>), no cookie signing needed.
+ *
+ *  2. Session cookie — used by browser-based user/admin sessions.
+ *     Cookie name: nube_user_session (users) / nube_admin_session (admins).
  */
 export const authMiddleware = createMiddleware(async (c: Context, next) => {
 	// Skip auth for public routes
@@ -41,15 +51,67 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 	}
 
 	const isAdminRoute = c.req.path.startsWith("/v1/admin");
+
+	// --- Bearer token path (audience=app sessions) ---
+	const authHeader = c.req.header("authorization");
+	const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
+
+	// audience=app Bearer tokens must never access admin routes.
+	// Admin operations require a browser-based session cookie (SameSite, CSRF-protected).
+	if (bearerToken && isAdminRoute) {
+		return c.json({ error: "Admin routes require browser session authentication" }, 401);
+	}
+
+	if (bearerToken) {
+		try {
+			const appSession = await sessionStore.getAppSession(bearerToken);
+
+			if (!appSession) {
+				return c.json({ error: "Unauthorized" }, 401);
+			}
+
+			const coreSessionId = appSession.metadata?.["coreSessionId"] as string | undefined;
+			if (!coreSessionId) {
+				return c.json({ error: "Invalid session" }, 401);
+			}
+
+			// Rolling TTL refresh
+			await cache.expire(`session:app:${bearerToken}`, SESSION_TTL);
+
+			const coreSession = await coreClient.exchangeSession(coreSessionId);
+			if (!coreSession) {
+				return c.json({ error: "Invalid session" }, 401);
+			}
+
+			const auth: AuthContext = {
+				userId: coreSession.userId,
+				email: coreSession.email,
+				name: coreSession.name,
+				sessionId: bearerToken,
+				appSessionId: bearerToken,
+				appId: appSession.appId,
+				coreSessionId,
+				entitlements: appSession.entitlements ?? {},
+			};
+
+			c.set("auth", auth);
+			return next();
+		} catch (error) {
+			loggers.auth.error({ err: serializeError(error as Error) }, "Bearer token auth error");
+			return c.json({ error: "Unauthorized" }, 401);
+		}
+	}
+
+	// --- Cookie path (browser user/admin sessions) ---
 	const cookieName = isAdminRoute ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
 	const cookieValue = getCookie(c, cookieName);
 
 	if (!cookieValue) {
-		loggers.auth.warn({ 
+		loggers.auth.warn({
 			path: c.req.path,
 			cookieName,
 			allCookies: c.req.header("cookie") || "none",
-			isAdminRoute 
+			isAdminRoute,
 		}, "No cookie found - returning 401");
 		return c.json({ error: "Unauthorized" }, 401);
 	}
@@ -59,9 +121,9 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 		const sessionId = parseSessionCookie(cookieValue);
 
 		if (!sessionId) {
-			loggers.auth.error({ 
+			loggers.auth.error({
 				cookieValue: cookieValue ? `${cookieValue.substring(0, 20)}...` : null,
-				cookieLength: cookieValue?.length 
+				cookieLength: cookieValue?.length,
 			}, "Failed to parse session cookie - returning 401");
 			return c.json({ error: "Invalid session" }, 401);
 		}
@@ -73,7 +135,7 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 			loggers.auth.error(
 				{
 					sessionId: `${sessionId.substring(0, 8)}...`,
-					message: "Session exists in cookie but not found in Redis - may be expired or invalid"
+					message: "Session exists in cookie but not found in Redis - may be expired or invalid",
 				},
 				"App session not found in Redis - returning 401",
 			);
@@ -90,7 +152,7 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 				{
 					sessionId: `${sessionId.substring(0, 8)}...`,
 					metadata: appSession.metadata,
-					message: "Core session ID missing from metadata"
+					message: "Core session ID missing from metadata",
 				},
 				"Core session ID not found in metadata - returning 401",
 			);
@@ -132,7 +194,7 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 			loggers.auth.error(
 				{
 					coreSessionId: `${coreSessionId.substring(0, 8)}...`,
-					message: "Core session exchange returned null"
+					message: "Core session exchange returned null",
 				},
 				"Core session invalid - returning 401",
 			);
@@ -146,6 +208,7 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 			name: coreSession.name,
 			sessionId,
 			appSessionId: sessionId,
+			appId: appSession.appId,
 			coreSessionId,
 			entitlements: appSession.entitlements ?? {},
 		};

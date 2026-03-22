@@ -320,4 +320,82 @@ router.post("/deactivate", async (c: Context) => {
 	}
 });
 
+// ---------------------------------------------------------------------------
+// GET /check — Validate license by public_id + update device last_seen_at
+// Called by Gateway's public /v1/license/check endpoint (no user session needed).
+// The licenseId is treated as a lookup key — the server decides what plan it
+// maps to. No plan/feature data should be trusted from the client side.
+// ---------------------------------------------------------------------------
+
+router.get("/check", async (c: Context) => {
+	const licensePublicId = c.req.query("licenseId");
+	const appPublicId = c.req.query("appId");
+	const deviceId = c.req.query("deviceId");
+
+	if (!licensePublicId || !appPublicId || !deviceId) {
+		return c.json({ valid: false, reason: "missing_params" }, 400);
+	}
+
+	try {
+		const db = getDb();
+
+		const app = await appQueries.findByPublicId(db, appPublicId);
+		if (!app) return c.json({ valid: false, reason: "app_not_found" });
+
+		const license = await licenseQueries.findByPublicId(db, licensePublicId);
+		if (!license) return c.json({ valid: false, reason: "license_not_found" });
+
+		// Verify this license belongs to the claimed app (prevent cross-app probing)
+		if (license.app_id !== app.id) return c.json({ valid: false, reason: "app_mismatch" });
+
+		const now = new Date();
+		const isExpired = license.valid_until && new Date(license.valid_until) < now;
+		if (isExpired || license.status === "expired") {
+			return c.json({ valid: false, reason: "expired" });
+		}
+		if (license.status === "canceled") {
+			return c.json({ valid: false, reason: "canceled" });
+		}
+		if (license.status === "suspended") {
+			return c.json({ valid: false, reason: "suspended" });
+		}
+		if (license.status !== "active" && license.status !== "trialing") {
+			return c.json({ valid: false, reason: license.status });
+		}
+
+		// Update last_seen_at on the matching device activation (best-effort)
+		try {
+			const activation = await activationQueries.findByLicenseAndDevice(db, license.id, deviceId);
+			if (activation) {
+				await activationQueries.updateLastSeen(db, activation.id);
+			}
+		} catch {
+			// Non-fatal — don't fail the entire check if heartbeat fails
+		}
+
+		const plan = await planQueries.findById(db, license.plan_id);
+
+		log.info(
+			{ licenseId: licensePublicId.substring(0, 12), appId: appPublicId, plan: plan?.slug },
+			"License check OK",
+		);
+
+		return c.json({
+			valid: true,
+			license: {
+				licenseId: license.public_id,
+				plan: plan
+					? { slug: plan.slug, name: plan.name, features: plan.features }
+					: null,
+				validUntil: license.valid_until
+					? new Date(license.valid_until).toISOString()
+					: null,
+			},
+		});
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "License check error");
+		return c.json({ valid: false, reason: "internal_error" }, 500);
+	}
+});
+
 export const licenseRoutes = router;

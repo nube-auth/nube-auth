@@ -24,6 +24,10 @@ export const INVITATION_EXPIRY_SECONDS = env.INVITATION_EXPIRY_SECONDS ?? 7 * 24
 export const SESSION_ID_BYTES = env.SESSION_ID_BYTES ?? 32; // Default: 32 bytes (256 bits)
 export const CSRF_TOKEN_BYTES = env.CSRF_TOKEN_BYTES ?? 32; // Default: 32 bytes (256 bits)
 
+// Short-lived exchange code TTL for the audience=app token handoff.
+// The code is single-use and expires after this many seconds.
+export const EXCHANGE_CODE_TTL = 60; // 60 seconds
+
 // Rate limiting
 export const MAX_LOGIN_ATTEMPTS = env.MAX_LOGIN_ATTEMPTS ?? 5;
 export const LOGIN_ATTEMPT_WINDOW = env.LOGIN_ATTEMPT_WINDOW_SECONDS ?? 15 * 60; // Default: 15 minutes

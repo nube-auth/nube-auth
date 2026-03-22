@@ -12,6 +12,7 @@ import { rateLimitPresets } from "./middleware/rateLimit";
 import { adminRoutes } from "./routes/admin";
 import { authRoutes } from "./routes/auth";
 import { debugRoutes } from "./routes/debug";
+import { licenseRoutes } from "./routes/license";
 import { meRoutes } from "./routes/me";
 import { paymentsRoutes } from "./routes/payments";
 
@@ -114,12 +115,14 @@ app.use("/v1/auth/*", rateLimitPresets.auth);
 app.use("/v1/admin/*", rateLimitPresets.api);
 app.use("/v1/me/*", rateLimitPresets.api);
 app.use("/v1/payment/*", rateLimitPresets.api);
+app.use("/v1/license/*", rateLimitPresets.api);
 
 // Routes
 app.route("/v1/auth", authRoutes);
 app.route("/v1/me", meRoutes);
 app.route("/v1/admin", adminRoutes);
 app.route("/v1/payment", paymentsRoutes);
+app.route("/v1/license", licenseRoutes);
 app.route("/v1/debug", debugRoutes);
 
 // Health check — returns 503 until Redis is reachable

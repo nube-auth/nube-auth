@@ -329,3 +329,111 @@ async function listProjects() {
   return response.json();
 }
 */
+
+// ============================================
+// APP / CLI / EXTENSION INTEGRATION (Bearer)
+// ============================================
+
+import type { OAuthStartOptions, TokenExchangeResult } from "./src/index";
+
+const APP_ID    = "app_abc123";      // your app's public ID from NubeAuth admin
+const RETURN_TO = "myapp://auth";   // registered custom URL scheme (or https callback)
+
+/**
+ * Step 1 — Build the OAuth URL and open in the system browser.
+ * No session token needed yet — use a bootstrap client.
+ */
+function _buildOAuthUrl(deviceId?: string): string {
+	const bootstrapClient = new NubeAuthClient({ gatewayUrl: "https://api.nubeauth.com" });
+
+	const options: OAuthStartOptions = {
+		appId: APP_ID,
+		returnTo: RETURN_TO,
+		deviceId,  // optional hardware UUID for audit logs / device-level revocation
+	};
+
+	return bootstrapClient.app.buildOAuthUrl(options);
+	// → https://api.nubeauth.com/v1/auth/start?audience=app&app_id=app_abc123&return_to=myapp://auth
+}
+
+/**
+ * Step 2 — Handle the deep-link / HTTPS callback.
+ * The user signs in and is redirected to: return_to?code=<one-time-code>
+ * The code expires in 60 seconds and is single-use.
+ */
+async function _exchangeCode(callbackUrl: string): Promise<TokenExchangeResult> {
+	const code = new URL(callbackUrl).searchParams.get("code");
+	if (!code) throw new Error("Missing exchange code in callback URL");
+
+	const bootstrapClient = new NubeAuthClient({ gatewayUrl: "https://api.nubeauth.com" });
+	const result = await bootstrapClient.app.exchangeCode(code, APP_ID);
+	// result: { sessionToken, userId, appId }
+
+	// Persist the token in secure storage (Keychain, credential store, etc.)
+	// await secureStorage.set("session_token", result.sessionToken);
+
+	return result;
+}
+
+/**
+ * Step 3 — Create an authenticated client with the stored token.
+ * All requests will include: Authorization: Bearer <sessionToken>
+ */
+function _createAuthedClient(sessionToken: string): NubeAuthClient {
+	return new NubeAuthClient({
+		gatewayUrl: "https://api.nubeauth.com",
+		appId: APP_ID,
+		sessionToken,
+	});
+}
+
+/**
+ * Step 4 — Check the user's subscription / plan.
+ */
+async function _checkSubscription(sessionToken: string) {
+	const authedClient = _createAuthedClient(sessionToken);
+
+	const sub = await authedClient.subscription.getDetails();
+	// {
+	//   hasActivePlan: boolean
+	//   planSlug: string | null       — e.g. "power"
+	//   status: string | null         — "active" | "trialing" | "past_due" | ...
+	//   billingInterval: string | null — "month" | "year"
+	//   periodEnd: string | null      — ISO-8601
+	// }
+
+	if (sub.hasActivePlan) {
+		console.log(`Active plan: ${sub.planSlug}, expires: ${sub.periodEnd}`);
+	} else {
+		console.log("No active plan — prompt upgrade");
+	}
+}
+
+/**
+ * Full app flow (e.g. CLI — simplified, no real HTTP server)
+ */
+async function _fullAppFlow() {
+	// 1. Start login
+	const oauthUrl = _buildOAuthUrl("device-uuid-1234");
+	console.log("Open in browser:", oauthUrl);
+
+	// 2. Wait for callback (your platform-specific mechanism)
+	// const callbackUrl = await waitForDeepLink(); // macOS / mobile
+	// const callbackUrl = await localHttpServer();  // CLI
+	const callbackUrl = "myapp://auth?code=abc123_example_only"; // placeholder
+
+	// 3. Exchange code → sessionToken
+	const result = await _exchangeCode(callbackUrl).catch(() => null);
+	if (!result) {
+		console.error("Code exchange failed — expired or already used");
+		return;
+	}
+	console.log("Signed in, userId:", result.userId);
+
+	// 4. Use the authenticated client
+	const authedClient = _createAuthedClient(result.sessionToken);
+	const user = await authedClient.me.get();
+	console.log("Hello,", user.name);
+
+	await _checkSubscription(result.sessionToken);
+}
