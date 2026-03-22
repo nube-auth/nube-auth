@@ -343,7 +343,7 @@ const RETURN_TO = "myapp://auth";   // registered custom URL scheme (or https ca
  * Step 1 — Build the OAuth URL and open in the system browser.
  * No session token needed yet — use a bootstrap client.
  */
-function _buildOAuthUrl(deviceId?: string): string {
+async function _buildOAuthUrl(deviceId?: string): Promise<PkceOAuthStart> {
 	const bootstrapClient = new NubeAuthClient({ gatewayUrl: "https://api.nubeauth.com" });
 
 	const options: OAuthStartOptions = {
@@ -414,7 +414,7 @@ async function _checkSubscription(sessionToken: string) {
  */
 async function _fullAppFlow() {
 	// 1. Start login
-	const oauthUrl = _buildOAuthUrl("device-uuid-1234");
+	const { url: oauthUrl } = await _buildOAuthUrl("device-uuid-1234");
 	console.log("Open in browser:", oauthUrl);
 
 	// 2. Wait for callback (your platform-specific mechanism)

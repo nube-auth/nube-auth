@@ -1,4 +1,3 @@
-import { createHash, randomBytes } from "node:crypto";
 import pingpong from "@pingpong-js/fetch";
 import type {
 	ApiError,
@@ -126,7 +125,7 @@ export class NubeAuthClient {
 		 * await secureStorage.set("pkce_verifier", codeVerifier);
 		 * openBrowserWindow(url);
 		 */
-		buildOAuthUrl: (options: OAuthStartOptions): PkceOAuthStart => {
+		buildOAuthUrl: async (options: OAuthStartOptions): Promise<PkceOAuthStart> => {
 			const appId = options.appId ?? this.appId;
 			if (!appId) {
 				throw new NubeAuthError(
@@ -138,8 +137,22 @@ export class NubeAuthClient {
 
 			// RFC 7636 PKCE: code_verifier is a high-entropy random string;
 			// code_challenge = BASE64URL(SHA256(code_verifier))
-			const codeVerifier = randomBytes(32).toString("base64url");
-			const codeChallenge = createHash("sha256").update(codeVerifier).digest("base64url");
+			const randomArray = new Uint8Array(32);
+			crypto.getRandomValues(randomArray);
+			const codeVerifier = btoa(String.fromCharCode(...randomArray))
+				.replace(/\+/g, "-")
+				.replace(/\//g, "_")
+				.replace(/=/g, "");
+			const hashBuffer = await crypto.subtle.digest(
+				"SHA-256",
+				new TextEncoder().encode(codeVerifier),
+			);
+			const codeChallenge = btoa(
+				String.fromCharCode(...new Uint8Array(hashBuffer)),
+			)
+				.replace(/\+/g, "-")
+				.replace(/\//g, "_")
+				.replace(/=/g, "");
 
 			const url = new URL(`${this.baseUrl}/v1/auth/start`);
 			url.searchParams.set("audience", "app");
