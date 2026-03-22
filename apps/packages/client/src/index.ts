@@ -6,6 +6,7 @@ export type {
 	OAuthStartOptions,
 	PkceOAuthStart,
 	Session,
+	Subscription,
 	SubscriptionStatus,
 	TokenExchangeResult,
 	UpdateProfileData,
