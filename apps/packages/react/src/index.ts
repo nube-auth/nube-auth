@@ -5,6 +5,7 @@ export type {
 	NubeAuthClientConfig,
 	Session,
 	Subscription,
+	SubscriptionStatus,
 	UpdateProfileData,
 	User,
 } from "@nube-auth/client";

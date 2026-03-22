@@ -1,4 +1,4 @@
-import type { Subscription } from "@nube-auth/client";
+import type { SubscriptionStatus } from "@nube-auth/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNubeAuthContext } from "./ProofaProvider";
 
@@ -11,7 +11,7 @@ export function useSubscription() {
 		isLoading,
 		error,
 		refetch,
-	} = useQuery<Subscription>({
+	} = useQuery<SubscriptionStatus>({
 		queryKey: ["subscription"],
 		queryFn: () => client.subscription.getDetails(),
 		staleTime: 1000 * 60 * 5, // 5 minutes
@@ -37,7 +37,7 @@ export function useSubscription() {
 
 	return {
 		subscription,
-		isActive: subscription?.status === "active",
+		isActive: subscription?.hasActivePlan === true,
 		isLoading,
 		error,
 		refetch,

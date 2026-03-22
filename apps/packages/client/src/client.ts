@@ -279,6 +279,15 @@ export class NubeAuthClient {
 		getDetails: async (): Promise<SubscriptionStatus> => {
 			return this.request<SubscriptionStatus>("/v1/me/subscription");
 		},
+		cancel: async (reason?: string): Promise<void> => {
+			return this.request<void>("/v1/me/subscription/cancel", {
+				method: "POST",
+				...(reason ? { body: JSON.stringify({ reason }) } : {}),
+			});
+		},
+		resume: async (): Promise<void> => {
+			return this.request<void>("/v1/me/subscription/resume", { method: "POST" });
+		},
 	};
 }
 
