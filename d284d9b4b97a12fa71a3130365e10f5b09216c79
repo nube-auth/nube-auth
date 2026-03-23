@@ -1,0 +1,52 @@
+apps/services/core/src/billing/services/webhook-processor.ts
+  b9b9567d4b04a9ac 7,162-185,193-195
+apps/services/core/src/billing/services/purchases.ts
+  b9b9567d4b04a9ac 8,45,89-106,112-155
+apps/services/core/src/routes/v1/admin/stats.ts
+  b9b9567d4b04a9ac 3,188-193,209
+apps/packages/db/src/schema.ts
+  b9b9567d4b04a9ac 82-108
+apps/packages/db/src/index.ts
+  b9b9567d4b04a9ac 80
+apps/packages/db/src/queries.ts
+  b9b9567d4b04a9ac 4,2147-2156,2158-2160,2162-2179
+apps/services/core/src/routes/v1/auth/index.ts
+  b9b9567d4b04a9ac 438-441,453-454,470
+apps/services/core/src/routes/v1/billing/checkout.ts
+  b9b9567d4b04a9ac 9-10,132-140,155,175-196
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.17",
+  "base_commit_sha": "d284d9b4b97a12fa71a3130365e10f5b09216c79",
+  "prompts": {
+    "9f96d675df0e1435": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "0ee53b3d-dca0-4d50-add0-c1af1fa298d9",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 369,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/b2b365b5cc79023b7cf8652d9cfaeae51f0475991d9ac19f904efd9980940a3b"
+    },
+    "b9b9567d4b04a9ac": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "f22f2aa8-a742-47d6-b3fc-e3b85c1e0840",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 138,
+      "total_deletions": 36,
+      "accepted_lines": 207,
+      "overriden_lines": 3,
+      "messages_url": "https://usegitai.com/cas/a09cc999072ea2cd0e6da45858222f9a72942a99781bd4a9efcd85583caa84ab"
+    }
+  }
+}
