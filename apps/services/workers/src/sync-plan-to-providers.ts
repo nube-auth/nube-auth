@@ -251,7 +251,7 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 			);
 
 			const queueClient = new QueueClient();
-			const queue = queueClient.getQueue("billing");
+			const queue = queueClient.getQueue("sync-plan");
 			await queue.add(
 				"sync-plan-to-providers",
 				{ planId, retryCount: retryCount + 1 } as any,

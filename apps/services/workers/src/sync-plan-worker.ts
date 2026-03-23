@@ -1,8 +1,12 @@
 /**
  * Sync Plan to Providers Worker
  *
- * Listens on the "billing" queue for "sync-plan-to-providers" jobs
+ * Listens on the dedicated "sync-plan" queue for "sync-plan-to-providers" jobs
  * and delegates to the sync-plan handler.
+ *
+ * Uses a separate queue (not "billing") to avoid competing with the
+ * process-webhook worker, which also listens on "billing" and would silently
+ * consume and discard sync jobs without processing them.
  */
 
 import { createLogger, serializeError } from "@nube-auth/shared";
@@ -19,11 +23,8 @@ export async function setupSyncPlanWorker(): Promise<Worker> {
 	const { syncPlanToProviders } = await import("./sync-plan-to-providers.js");
 
 	return new BullWorker(
-		"billing",
+		"sync-plan",
 		async (job) => {
-			if (job.name !== "sync-plan-to-providers") {
-				return; // Skip non-sync-plan jobs
-			}
 
 			try {
 				log.info(

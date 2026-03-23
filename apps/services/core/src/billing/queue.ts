@@ -115,9 +115,13 @@ export async function enqueueRefundProcessing(data: ProcessRefundJobData): Promi
 
 /**
  * Enqueue plan sync to payment providers
+ *
+ * Uses a dedicated "sync-plan" queue so it doesn't compete with the
+ * process-webhook worker (which also listens on "billing" and silently
+ * consumes unrecognised jobs without processing them).
  */
 export async function enqueuePlanSync(data: SyncPlanJobData): Promise<void> {
-	const queue = getQueue<any>("billing");
+	const queue = getQueue<any>("sync-plan");
 	await queue.add("sync-plan-to-providers", data as any, {
 		attempts: 5,
 		backoff: {
