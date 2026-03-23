@@ -50,6 +50,7 @@ import {
 	useDeleteV2Plan,
 	useV2Prices,
 	useCreateV2Price,
+	useSyncPrice,
 	useV2Licenses,
 	useV2LicenseSummary,
 	useGrantV2License,
@@ -451,6 +452,20 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 function PricesSection({ appId, plan, showToast }: { appId: string; plan: V2Plan; showToast: (msg: string, type?: "success" | "error" | "info" | "warning") => void }) {
 	const { data, isLoading } = useV2Prices(appId, plan.planId);
 	const createPrice = useCreateV2Price(appId, plan.planId);
+	const syncPrice = useSyncPrice(appId, plan.planId);
+	const [syncingPriceId, setSyncingPriceId] = useState<string | null>(null);
+
+	const handleSync = async (priceId: string) => {
+		setSyncingPriceId(priceId);
+		try {
+			await syncPrice.mutateAsync(priceId);
+			showToast("Sync job enqueued — price will update shortly", "info");
+		} catch (err) {
+			showToast(err instanceof Error ? err.message : "Failed to enqueue sync", "error");
+		} finally {
+			setSyncingPriceId(null);
+		}
+	};
 
 	const [showModal, setShowModal] = useState(false);
 	const [form, setForm] = useState({
@@ -504,39 +519,68 @@ function PricesSection({ appId, plan, showToast }: { appId: string; plan: V2Plan
 				<Text className="text-muted-foreground text-sm py-4">No prices yet. Add a price to enable purchases.</Text>
 			) : (
 				<div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
-					{prices.map((price) => (
-						<div key={price.priceId} className="p-3 rounded-lg border border-card-border bg-bg-muted">
-							<div className="flex items-center gap-2 mb-1">
-								<Text className="font-semibold">
-									${(price.amountCents / 100).toFixed(2)}
-								</Text>
-								{price.interval && (
-									<Text className="text-muted-foreground text-xs">/{price.interval}</Text>
-								)}
+					{prices.map((price) => {
+						const isSynced = !!price.externalProvider;
+						const isSyncing = syncingPriceId === price.priceId;
+						return (
+							<div key={price.priceId} className="p-3 rounded-lg border border-card-border bg-bg-muted">
+								<div className="flex items-center gap-2 mb-1">
+									<Text className="font-semibold">
+										${(price.amountCents / 100).toFixed(2)}
+									</Text>
+									{price.interval && (
+										<Text className="text-muted-foreground text-xs">/{price.interval}</Text>
+									)}
+								</div>
+								<div className="flex flex-wrap gap-1.5 mb-1.5">
+									<Chip size="sm" variant="default">{price.billingType}</Chip>
+									<Chip size="sm" variant={price.isActive ? "success" : "default"}>
+										{price.isActive ? "active" : "inactive"}
+									</Chip>
+								</div>
+								<Text className="text-muted-foreground text-xs">{price.currency.toUpperCase()}</Text>
+								<div className="flex items-center gap-1 mt-1.5 min-w-0">
+									<code className="text-xs font-mono text-muted-foreground bg-bg-subtle px-1.5 py-0.5 rounded truncate flex-1 min-w-0">{price.priceId}</code>
+									<button
+										type="button"
+										className="text-muted-foreground hover:text-text-primary shrink-0"
+										title="Copy price ID"
+										onClick={() => {
+											navigator.clipboard.writeText(price.priceId);
+											showToast("Price ID copied", "info");
+										}}
+									>
+										<Icon icon={IconType.Copy} size={12} />
+									</button>
+								</div>
+								{/* Provider sync status */}
+								<div className="flex items-center justify-between mt-2.5 pt-2 border-t border-card-border">
+									<div className="flex items-center gap-1.5">
+										<span
+											className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSynced ? "bg-green-500" : "bg-yellow-500"}`}
+										/>
+										<Text className="text-xs text-muted-foreground">
+											{isSynced ? price.externalProvider : "Not synced"}
+										</Text>
+									</div>
+									<button
+										type="button"
+										className="text-xs text-muted-foreground hover:text-text-primary disabled:opacity-40 flex items-center gap-1"
+										title="Sync to payment provider"
+										disabled={isSyncing}
+										onClick={() => handleSync(price.priceId)}
+									>
+										{isSyncing ? (
+											<Spinner className="size-3" />
+										) : (
+											<Icon icon={IconType.Refresh} size={12} />
+										)}
+										Sync
+									</button>
+								</div>
 							</div>
-							<div className="flex gap-1.5">
-								<Chip size="sm" variant="default">{price.billingType}</Chip>
-								<Chip size="sm" variant={price.isActive ? "success" : "default"}>
-									{price.isActive ? "active" : "inactive"}
-								</Chip>
-							</div>
-							<Text className="text-muted-foreground text-xs mt-1">{price.currency.toUpperCase()}</Text>
-							<div className="flex items-center gap-1 mt-1.5 min-w-0">
-								<code className="text-xs font-mono text-muted-foreground bg-bg-subtle px-1.5 py-0.5 rounded truncate flex-1 min-w-0">{price.priceId}</code>
-								<button
-									type="button"
-									className="text-muted-foreground hover:text-text-primary shrink-0"
-									title="Copy price ID"
-									onClick={() => {
-										navigator.clipboard.writeText(price.priceId);
-										showToast("Price ID copied", "info");
-									}}
-								>
-									<Icon icon={IconType.Copy} size={12} />
-								</button>
-							</div>
-						</div>
-					))}
+						);
+					})}
 				</div>
 			)}
 

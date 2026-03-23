@@ -1161,6 +1161,8 @@ export interface V2Price {
 	intervalCount: number | null;
 	amountCents: number;
 	currency: string;
+	externalProvider: string | null;
+	externalPriceId: string | null;
 	isActive: boolean;
 	createdAt: string;
 }
@@ -1229,6 +1231,22 @@ export function useCreateV2Price(appId: string, planId: string) {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["v2-prices", appId, planId] });
 			queryClient.invalidateQueries({ queryKey: ["v2-plans", appId] });
+		},
+	});
+}
+
+export function useSyncPrice(appId: string, planId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (priceId: string) =>
+			fetchAPI(`/v1/admin/apps/${appId}/plans/${planId}/prices/${priceId}/sync`, {
+				method: "POST",
+			}),
+		onSuccess: () => {
+			// Refetch prices after a short delay to pick up updated external_provider/external_price_id
+			setTimeout(() => {
+				queryClient.invalidateQueries({ queryKey: ["v2-prices", appId, planId] });
+			}, 3000);
 		},
 	});
 }

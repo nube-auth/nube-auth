@@ -278,6 +278,44 @@ pricesRouter.patch("/:priceId", async (c: Context) => {
 });
 
 /**
+ * POST /prices/:priceId/sync
+ * Manually trigger sync of the parent plan (and all its prices) to all active payment providers.
+ */
+pricesRouter.post("/:priceId/sync", async (c: Context) => {
+	try {
+		const userPublicId = getUserIdHeader(c);
+		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
+
+		const appId = c.req.param("appId");
+		const planId = c.req.param("planId");
+		const priceId = c.req.param("priceId");
+
+		const db = getDb();
+
+		const adminUser = await userQueries.findByPublicId(db, userPublicId);
+		if (!adminUser) return c.json({ error: "User not found" }, 404);
+
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) return c.json({ error: "App not found" }, 404);
+
+		const plan = await planQueries.findByPublicId(db, planId);
+		if (!plan || plan.app_id !== app.id) return c.json({ error: "Plan not found" }, 404);
+
+		const price = await priceQueries.findByPublicId(db, priceId);
+		if (!price || price.plan_id !== plan.id) return c.json({ error: "Price not found" }, 404);
+
+		await enqueuePlanSync({ planId: plan.public_id });
+
+		log.info({ priceId: price.public_id, planId: plan.public_id }, "Manual price sync enqueued");
+
+		return c.json({ message: "Sync job enqueued", priceId: price.public_id, planId: plan.public_id });
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Sync price error");
+		return c.json({ error: "Failed to enqueue sync" }, 500);
+	}
+});
+
+/**
  * DELETE /prices/:priceId
  * Deactivate a price (soft delete)
  */
