@@ -6,7 +6,7 @@ import { createLogger, GatewayLoginRequestSchema, serializeError, type SessionEn
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
-import { CSRF_TOKEN_BYTES, SESSION_ID_BYTES, SESSION_TTL, ADMIN_SESSION_TTL, EXCHANGE_CODE_TTL } from "../config/constants";
+import { CSRF_TOKEN_BYTES, SESSION_ID_BYTES, SESSION_TTL, ADMIN_SESSION_TTL, EXCHANGE_CODE_TTL, CHECKOUT_EXCHANGE_CODE_TTL } from "../config/constants";
 import { env } from "../config/env";
 import { coreClient } from "../lib/core-client";
 import { pingpong } from "@nube-auth/auth";
@@ -142,6 +142,11 @@ authRoutes.get("/start", async (c: Context) => {
 	const codeChallenge = c.req.query("code_challenge");
 	const codeChallengeMethod = c.req.query("code_challenge_method") || "S256";
 
+	// Optional billing param from the SDK client. When present, the callback
+	// will create a checkout session after auth and redirect there instead of
+	// going straight to returnTo.
+	const priceId = c.req.query("price_id");
+
 	// Encode state as JSON to preserve returnTo, audience, and app context
 	const statePayload: Record<string, string> = { returnTo, audience, csrfNonce };
 	if (appId) statePayload["appId"] = appId;
@@ -152,6 +157,9 @@ authRoutes.get("/start", async (c: Context) => {
 	}
 	if (appSessionTtlSeconds !== undefined) {
 		statePayload["sessionTtlSeconds"] = String(appSessionTtlSeconds);
+	}
+	if (priceId) {
+		statePayload["priceId"] = priceId;
 	}
 	const stateData = JSON.stringify(statePayload);
 	const encodedState = Buffer.from(stateData).toString("base64")
@@ -295,6 +303,7 @@ authRoutes.get("/callback", async (c: Context) => {
 	let stateCodeChallenge: string | undefined;
 	let stateCodeChallengeMethod: string | undefined;
 	let stateSessionTtlSeconds: number | undefined;
+	let statePriceId: string | undefined;
 	try {
 		log.debug({ rawState: state }, "Decoding state parameter");
 		// Decode URL-safe base64 back to standard base64
@@ -312,6 +321,7 @@ authRoutes.get("/callback", async (c: Context) => {
 			codeChallenge?: string;
 			codeChallengeMethod?: string;
 			sessionTtlSeconds?: string;
+			priceId?: string;
 		};
 		returnTo = stateData.returnTo || "/";
 		audience = stateData.audience || "user";
@@ -321,6 +331,7 @@ authRoutes.get("/callback", async (c: Context) => {
 		stateCodeChallenge = stateData.codeChallenge;
 		stateCodeChallengeMethod = stateData.codeChallengeMethod ?? "S256";
 		stateSessionTtlSeconds = stateData.sessionTtlSeconds ? parseInt(stateData.sessionTtlSeconds, 10) : undefined;
+		statePriceId = stateData.priceId;
 		log.info({ 
 			decodedState, 
 			stateData, 
@@ -464,8 +475,10 @@ authRoutes.get("/callback", async (c: Context) => {
 				...(stateDeviceId ? { deviceId: stateDeviceId } : {}),
 			});
 
-			// Issue a short-lived single-use exchange code instead of putting the real
-			// sessionToken in the URL (prevents exposure in browser history, logs, Referer).
+			// Issue a single-use exchange code. When a priceId is present we use a
+			// longer TTL so the code survives while the user completes checkout at
+			// the payment provider (which can take several minutes).
+			const hasPlanCheckout = !!(statePriceId && data.email);
 			const exchangeCode = crypto.randomBytes(SESSION_ID_BYTES).toString("hex");
 			await cache.set(
 				`exchange:${exchangeCode}`,
@@ -476,8 +489,53 @@ authRoutes.get("/callback", async (c: Context) => {
 						? { codeChallenge: stateCodeChallenge, codeChallengeMethod: stateCodeChallengeMethod ?? "S256" }
 						: {}),
 				},
-				EXCHANGE_CODE_TTL,
+				hasPlanCheckout ? CHECKOUT_EXCHANGE_CODE_TTL : EXCHANGE_CODE_TTL,
 			);
+
+			// Combined OAuth+checkout flow: create a checkout session on Core and
+			// redirect the user to the payment provider. The exchange code is
+			// embedded in the successUrl so the app receives it after payment.
+			if (hasPlanCheckout) {
+				try {
+					const checkoutResponse = await pingpong(`${env.CORE_URL}/v1/billing/checkout`, {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							"X-Nube-S2S-Token": env.S2S_SECRET,
+						},
+						body: {
+							appId: stateAppId,
+							userId: data.userId,
+							priceId: statePriceId,
+							customerEmail: data.email,
+							successUrl: `${returnTo}?code=${exchangeCode}`,
+							cancelUrl: `${returnTo}?error=payment_cancelled`,
+							metadata: { source: "oauth_checkout" },
+						},
+					});
+
+					if (checkoutResponse.ok()) {
+						const checkoutData = checkoutResponse.data as { checkoutUrl?: string };
+						if (checkoutData.checkoutUrl) {
+							log.info(
+								{ userId: data.userId, appId: stateAppId, priceId: statePriceId },
+								"OAuth+checkout: redirecting to payment provider",
+							);
+							return c.redirect(checkoutData.checkoutUrl);
+						}
+					}
+
+					log.warn(
+						{ userId: data.userId, priceId: statePriceId, status: checkoutResponse.status },
+						"Checkout creation failed — falling back to direct returnTo",
+					);
+				} catch (checkoutError) {
+					log.error(
+						{ err: serializeError(checkoutError as Error), userId: data.userId },
+						"Checkout error — falling back to direct returnTo",
+					);
+				}
+			}
 
 			log.info({ userId: data.userId, appId: stateAppId }, "App OAuth complete — delivering exchange code");
 			return c.redirect(`${returnTo}?code=${exchangeCode}`);

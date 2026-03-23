@@ -263,6 +263,39 @@ console.log("Signed in as:", user.name);
 
 ---
 
+## Combined Auth + Checkout (Single Flow)
+
+Pass a `priceId` to `buildOAuthUrl` to combine sign-in and payment into one redirect. After the user authenticates, NubeAuth automatically creates a checkout session and sends the browser to the payment provider. The exchange code arrives at `returnTo` only after the payment completes.
+
+```typescript
+// Get the priceId from your pricing page (e.g. via the NubeAuth prices API)
+// Each price encodes the plan, billing interval, provider, and currency.
+const PRICE_ID = "PRICE0abc..."; // monthly Pro plan via Stripe
+
+const { url, codeVerifier } = await bootstrapClient.app.buildOAuthUrl({
+  appId: APP_ID,
+  returnTo: RETURN_TO,
+  priceId: PRICE_ID, // triggers checkout after auth
+});
+
+// Redirect user to `url`.
+//
+// Flow:
+//   1. User signs in with OAuth provider
+//   2. Gateway creates session, then calls POST /v1/billing/checkout
+//   3. User is redirected to payment provider (Stripe, Dodo, etc.)
+//   4. On payment success → returnTo?code=<exchange-code>
+//   5. On cancel / failure → returnTo?error=payment_cancelled
+//
+// The exchange code is valid for 30 minutes (instead of the usual 60 seconds)
+// to give the user time to complete the payment form. Exchange it the same
+// way as a normal auth flow using exchangeCode().
+```
+
+> **Note:** The exchange code is only delivered after a successful payment. If the user cancels at the payment provider, they land at `returnTo?error=payment_cancelled` with no code and must restart the flow.
+
+---
+
 ## Browser Extension Integration
 
 Browser extensions cannot rely on cookies from a different origin. Use the Bearer token flow with `chrome.storage.session` (cleared on browser restart) or `chrome.storage.local` (persistent):
@@ -364,6 +397,15 @@ import type {
   License,               // license.getDetails() return value
 } from "@nube-auth/client";
 ```
+
+### `OAuthStartOptions`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `returnTo` | `string` | ✅ | Redirect URI after auth (must be registered in NubeAuth admin) |
+| `appId` | `string` | — | App public ID (overrides client-level `appId`) |
+| `deviceId` | `string` | — | Stable device identifier for audit logs |
+| `priceId` | `string` | — | Price public ID — triggers combined auth+checkout flow |
 
 ### `NubeAuthClientConfig`
 

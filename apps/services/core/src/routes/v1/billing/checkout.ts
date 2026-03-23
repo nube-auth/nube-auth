@@ -1,16 +1,17 @@
 /**
  * Checkout Routes
  *
- * Handles payment checkout session creation using provider routing
+ * Handles payment checkout session creation driven by a specific price record.
+ * The caller passes a priceId (PRICE0...) which already encodes plan, provider,
+ * interval, and currency — no routing logic is needed here.
  */
 
-import { getDb, prices, plans, eq, and } from "@nube-auth/db";
+import { getDb, prices, plans, payment_provider_configs, appQueries, priceQueries, eq, and } from "@nube-auth/db";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
 import { createProviderAdapter } from "../../../billing/adapters/index.js";
-import { selectProvider } from "../../../billing/services/provider-selector.js";
 import { decryptString } from "../../../utils/encryption.js";
 
 const log = createLogger("checkout-routes");
@@ -19,22 +20,24 @@ export const checkoutRoutes = new Hono();
 
 const CheckoutRequestSchema = z.object({
 	appId: z.string(),
-	userId: z.string(), // Nube Auth user public_id (USER0...)
-	planId: z.string(), // Nube Auth plan public_id (PLAN0...)
-	interval: z.enum(["month", "year"]), // Billing interval
+	userId: z.string(),   // Nube Auth user public_id (USER0...)
+	priceId: z.string(),  // Nube Auth price public_id (PRICE0...)
 	customerId: z.string().optional(),
 	customerEmail: z.string().email(),
 	quantity: z.number().int().positive().optional().default(1),
 	successUrl: z.string().url(),
 	cancelUrl: z.string().url(),
 	metadata: z.record(z.string(), z.string()).optional(),
-	trialPeriodDays: z.number().int().positive().optional(),
 	promoCode: z.string().optional(),
 });
 
 /**
  * POST /v1/billing/checkout
- * Create checkout session using routing rules and plan-based pricing
+ * Create a checkout session for a specific price.
+ *
+ * The priceId already encodes the plan, billing interval, provider, and
+ * currency — no routing rules are evaluated. The provider config is looked
+ * up directly from the price's external_provider field.
  */
 checkoutRoutes.post("/", async (c: Context) => {
 	try {
@@ -43,59 +46,62 @@ checkoutRoutes.post("/", async (c: Context) => {
 
 		const db = getDb();
 
-		// Verify plan exists and is active
+		// Resolve price — this is the single source of truth for the checkout
+		const price = await priceQueries.findByPublicId(db, validated.priceId);
+
+		if (!price || !price.is_active) {
+			log.warn({ priceId: validated.priceId }, "Price not found or inactive");
+			return c.json({ error: "Invalid price ID" }, 400);
+		}
+
+		if (!price.external_provider || !price.external_price_id) {
+			log.error({ priceId: validated.priceId }, "Price has no provider mapping");
+			return c.json(
+				{
+					error: "Price not synced to a payment provider",
+					details: "Sync the plan to a provider in the NubeAuth admin before accepting payments",
+				},
+				400,
+			);
+		}
+
+		// Get plan for name and public_id (used in response + webhook metadata)
 		const plan = await db.query.plans.findFirst({
-			where: and(eq(plans.public_id, validated.planId), eq(plans.is_active, true)),
-			columns: { id: true, public_id: true, name: true, app_id: true },
+			where: eq(plans.id, price.plan_id),
+			columns: { public_id: true, name: true },
 		});
 
 		if (!plan) {
-			log.warn({ planId: validated.planId }, "Plan not found or inactive");
-			return c.json({ error: "Invalid plan ID" }, 400);
+			log.error({ planId: price.plan_id }, "Plan referenced by price not found");
+			return c.json({ error: "Plan not found" }, 500);
 		}
 
-		// Select provider based on routing rules
-		const providerConfig = await selectProvider(plan.app_id, {
-			country: c.req.header("cf-ipcountry") || undefined,
-			currency: (validated.metadata?.["currency"] as string | undefined) || undefined,
-		});
+		// Resolve app → project_id, then find the active provider config
+		const app = await appQueries.findById(db, price.app_id);
+
+		if (!app) {
+			log.error({ appId: price.app_id }, "App referenced by price not found");
+			return c.json({ error: "App not found" }, 500);
+		}
+
+		const [providerConfig] = await db
+			.select()
+			.from(payment_provider_configs)
+			.where(
+				and(
+					eq(payment_provider_configs.project_id, app.project_id),
+					eq(payment_provider_configs.provider, price.external_provider),
+					eq(payment_provider_configs.is_active, true),
+				),
+			)
+			.limit(1);
 
 		if (!providerConfig) {
-			log.error({ appId: validated.appId }, "No payment provider configured");
-			return c.json({ error: "No payment provider configured for this app" }, 400);
-		}
-
-		// Lookup active price for this plan + interval + provider
-		const priceMapping = await db.query.prices.findFirst({
-			where: and(
-				eq(prices.plan_id, plan.id),
-				eq(prices.interval, validated.interval),
-				eq(prices.is_active, true),
-				eq(prices.external_provider, providerConfig.provider)
-			),
-			columns: {
-				external_price_id: true,
-				amount_cents: true,
-				billing_type: true,
-			},
-		});
-
-		if (!priceMapping) {
 			log.error(
-				{
-					planId: validated.planId,
-					providerId: providerConfig.id,
-					interval: validated.interval,
-				},
-				"Price mapping not found for plan/provider/interval"
+				{ priceId: validated.priceId, provider: price.external_provider },
+				"No active provider config found for price's provider",
 			);
-			return c.json(
-				{
-					error: "Price not available for selected plan and billing interval",
-					details: "Plan may not be synced to this payment provider yet",
-				},
-				400
-			);
+			return c.json({ error: "No active payment provider configuration found" }, 400);
 		}
 
 		// Decrypt credentials
@@ -106,7 +112,7 @@ checkoutRoutes.post("/", async (c: Context) => {
 		} catch (error) {
 			log.error(
 				{ err: serializeError(error as Error), providerId: providerConfig.id },
-				"Failed to decrypt provider credentials"
+				"Failed to decrypt provider credentials",
 			);
 			return c.json({ error: "Provider configuration error" }, 500);
 		}
@@ -117,14 +123,16 @@ checkoutRoutes.post("/", async (c: Context) => {
 			(decryptedCredentials as any).webhookSecret = providerConfig.webhook_secret || (decryptedCredentials as any).webhookSecret;
 		}
 
-		// Create adapter
 		const adapter = createProviderAdapter(providerConfig.provider, decryptedCredentials);
 
-		// Create checkout session with provider price ID
+		// Use trial settings from the price record
+		const trialPeriodDays = price.trial_enabled && price.trial_days ? price.trial_days : undefined;
+		const interval = price.interval ?? "one_time";
+
 		const session = await adapter.createCheckout({
 			customerId: validated.customerId || "",
 			customerEmail: validated.customerEmail,
-			productId: priceMapping.external_price_id || "", // Use provider's price ID
+			productId: price.external_price_id,
 			...(validated.quantity && { quantity: validated.quantity }),
 			successUrl: validated.successUrl,
 			cancelUrl: validated.cancelUrl,
@@ -133,23 +141,25 @@ checkoutRoutes.post("/", async (c: Context) => {
 				appId: validated.appId,
 				userId: validated.userId,
 				planId: plan.public_id,
-				interval: validated.interval,
+				priceId: price.public_id,
+				interval,
 			},
-			...(validated.trialPeriodDays && { trialPeriodDays: validated.trialPeriodDays }),
-			mode: priceMapping.billing_type === "recurring" ? "subscription" : "payment",
+			...(trialPeriodDays && { trialPeriodDays }),
+			mode: price.billing_type === "recurring" ? "subscription" : "payment",
 			...(validated.promoCode && { promoCode: validated.promoCode }),
 		});
 
 		log.info(
 			{
 				appId: validated.appId,
-				planId: validated.planId,
-				interval: validated.interval,
+				priceId: validated.priceId,
+				planId: plan.public_id,
+				interval,
 				provider: providerConfig.provider,
 				sessionId: session.sessionId,
-				amountCents: priceMapping.amount_cents,
+				amountCents: price.amount_cents,
 			},
-			"Checkout session created"
+			"Checkout session created",
 		);
 
 		return c.json({
@@ -158,8 +168,8 @@ checkoutRoutes.post("/", async (c: Context) => {
 			sessionId: session.sessionId,
 			provider: providerConfig.provider,
 			planName: plan.name,
-			amountCents: priceMapping.amount_cents,
-			interval: validated.interval,
+			amountCents: price.amount_cents,
+			interval,
 		});
 	} catch (error) {
 		if (error instanceof z.ZodError) {

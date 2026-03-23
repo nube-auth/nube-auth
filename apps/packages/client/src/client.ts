@@ -161,9 +161,8 @@ export class NubeAuthClient {
 			url.searchParams.set("code_challenge", codeChallenge);
 			url.searchParams.set("code_challenge_method", "S256");
 			if (options.deviceId) url.searchParams.set("device_id", options.deviceId);
-			if (options.planId) {
-				url.searchParams.set("plan_id", options.planId);
-				url.searchParams.set("interval", options.billingInterval ?? "month");
+			if (options.priceId) {
+				url.searchParams.set("price_id", options.priceId);
 			}
 
 			return { url: url.toString(), codeVerifier };

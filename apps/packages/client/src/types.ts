@@ -66,17 +66,18 @@ export interface OAuthStartOptions {
          */
         deviceId?: string | undefined;
         /**
-         * Plan public ID to trigger a payment checkout after OAuth.
-         * When set, NubeAuth initiates a subscription checkout after the user
-         * authenticates and redirects to `returnTo` on success.
+         * Price public ID (PRICE0...) to trigger a payment checkout after OAuth.
+         * When set, NubeAuth creates a checkout session immediately after the user
+         * authenticates and redirects to the payment provider. On success the
+         * provider redirects back to `returnTo` with `?code=<exchange-code>`.
+         *
+         * Obtain the priceId from your pricing page by listing prices via the
+         * NubeAuth API. Each price already encodes the plan, interval, provider,
+         * and currency — no additional billing params are needed.
+         *
          * Leave undefined for a plain authenticate-only flow.
          */
-        planId?: string | undefined;
-        /**
-         * Billing interval for the checkout. Defaults to "month".
-         * Only relevant when `planId` is set.
-         */
-        billingInterval?: "month" | "year" | undefined;
+        priceId?: string | undefined;
 }
 
 /**
