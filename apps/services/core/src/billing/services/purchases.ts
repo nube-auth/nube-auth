@@ -278,7 +278,8 @@ export async function createPurchaseRecords(
 				provider_transaction_id: paymentDetails.transactionId,
 				provider_customer_id: paymentDetails.customerId || null,
 				type: paymentDetails.subscriptionId ? "renewal" : "purchase",
-				status: paymentDetails.status,
+			// Normalize provider status values to the DB enum: 'success' | 'failed' | 'pending' | 'disputed'
+			status: paymentDetails.status === "succeeded" ? "success" : paymentDetails.status === "failed" ? "failed" : "pending",
 				amount_cents: paymentDetails.amount,
 				currency: paymentDetails.currency,
 				discount_applied_cents: 0,

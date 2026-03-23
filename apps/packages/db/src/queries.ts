@@ -2178,4 +2178,14 @@ export const appUserQueries = {
 	async findByAppId(db: DbClient, appId: number) {
 		return db.select().from(app_users).where(eq(app_users.app_id, appId));
 	},
+
+	/** Sum unique users across all apps belonging to a project */
+	async countByProjectId(db: DbClient, projectId: number) {
+		const result = await db
+			.select({ count: sql<number>`count(distinct ${app_users.user_id})` })
+			.from(app_users)
+			.innerJoin(apps, eq(apps.id, app_users.app_id))
+			.where(eq(apps.project_id, projectId));
+		return Number(result[0]?.count ?? 0);
+	},
 };

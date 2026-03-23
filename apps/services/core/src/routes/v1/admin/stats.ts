@@ -6,7 +6,6 @@ import {
 	paymentTransactionQueries,
 	planQueries,
 	projectQueries,
-	userQueries,
 } from "@nube-auth/db";
 import { createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
@@ -60,22 +59,21 @@ statsRouter.get("/stats", async (c: Context) => {
 
 			let totalLicenses = 0;
 			let activeLicenses = 0;
-			const uniqueUsers = new Set<number>();
 
 			for (const app of apps) {
 				const appLicenses = await licenseQueries.findByAppId(db, app.id);
 				totalLicenses += appLicenses.length;
 				for (const license of appLicenses) {
 					if (license.status === "active") activeLicenses++;
-					uniqueUsers.add(license.user_id);
 				}
 			}
 
+			const totalUsers = await appUserQueries.countByProjectId(db, project.id);
 			const totalRevenue = await paymentTransactionQueries.getTotalRevenueByProjectId(db, project.id);
 
 			stats[project.public_id] = {
 				totalApps: apps.length,
-				totalUsers: uniqueUsers.size,
+				totalUsers,
 				totalLicenses,
 				activeLicenses,
 				totalRevenue,
@@ -115,7 +113,6 @@ statsRouter.get("/:projectId/stats", async (c: Context) => {
 		const appIds = apps.map((a) => a.id);
 		let totalLicenses = 0;
 		let activeLicenses = 0;
-		const uniqueUsers = new Set<number>();
 		const licenseCounts: Record<string, number> = {};
 
 		for (const appId of appIds) {
@@ -127,8 +124,6 @@ statsRouter.get("/:projectId/stats", async (c: Context) => {
 					activeLicenses++;
 				}
 
-				uniqueUsers.add(license.user_id);
-
 				// Count by plan
 				const plan = await planQueries.findById(db, license.plan_id);
 				if (plan) {
@@ -137,12 +132,13 @@ statsRouter.get("/:projectId/stats", async (c: Context) => {
 			}
 		}
 
+		const totalUsers = await appUserQueries.countByProjectId(db, project.id);
 		const totalRevenue = await paymentTransactionQueries.getTotalRevenueByProjectId(db, project.id);
 
 		return c.json({
 			projectId,
 			totalApps: apps.length,
-			totalUsers: uniqueUsers.size,
+			totalUsers,
 			totalLicenses,
 			activeLicenses,
 			licenseCounts,

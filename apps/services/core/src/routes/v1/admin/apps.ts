@@ -1,4 +1,4 @@
-import { appQueries, auditLogQueries, getDb, planQueries, projectMemberQueries, projectQueries, userQueries, licenseQueries } from "@nube-auth/db";
+import { appQueries, appUserQueries, auditLogQueries, getDb, licenseQueries, planQueries, projectMemberQueries, projectQueries, userQueries } from "@nube-auth/db";
 import { createId, createLogger, CreateAppRequestSchema, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -556,14 +556,28 @@ appsRouter.get("/:projectId/apps/:appId/users", async (c: Context) => {
 			}
 		}
 
-		// Get all licenses for this app
-		const appLicenses = await licenseQueries.findByAppId(db, app.id);
+		// Get all users who have ever authenticated with this app (persistent, not session-based)
+		const appUserRows = await appUserQueries.findByAppId(db, app.id);
 
-		// Get user details for each license
+		// Build a license map keyed by user_id for O(1) lookup
+		const appLicenses = await licenseQueries.findByAppId(db, app.id);
+		const licenseByUserId = new Map(appLicenses.map((l) => [l.user_id, l]));
+
+		// Build plan map to avoid repeated DB calls
+		const planIds = [...new Set(appLicenses.map((l) => l.plan_id))];
+		const planMap = new Map<number, { name: string; slug: string }>();
+		for (const planId of planIds) {
+			const plan = await planQueries.findById(db, planId);
+			if (plan) planMap.set(planId, { name: plan.name, slug: plan.slug });
+		}
+
 		const usersList = await Promise.all(
-			appLicenses.map(async (license) => {
-				const user = await userQueries.findById(db, license.user_id);
+			appUserRows.map(async (row) => {
+				const user = await userQueries.findById(db, row.user_id);
 				if (!user) return null;
+
+				const license = licenseByUserId.get(user.id);
+				const plan = license ? planMap.get(license.plan_id) : undefined;
 
 				return {
 					id: user.public_id,
@@ -571,16 +585,16 @@ appsRouter.get("/:projectId/apps/:appId/users", async (c: Context) => {
 					email: user.primary_email,
 					avatarUrl: user.avatar_url || null,
 					primaryEmailVerified: user.primary_email_verified,
-				plan: "unknown", // plan_slug field removed from schema
-					status: license.status,
-					createdAt: Math.floor(new Date(user.created_at).getTime() / 1000),
-					licenseValidUntil: license.valid_until ? Math.floor(new Date(license.valid_until).getTime() / 1000) : null,
+					plan: plan?.slug ?? null,
+					status: license?.status ?? "no_license",
+					createdAt: Math.floor(new Date(row.created_at).getTime() / 1000),
+					lastSeenAt: Math.floor(new Date(row.last_seen_at).getTime() / 1000),
+					licenseValidUntil: license?.valid_until ? Math.floor(new Date(license.valid_until).getTime() / 1000) : null,
 				};
 			})
 		);
 
-		// Filter out null entries
-		const validUsers = usersList.filter(user => user !== null);
+		const validUsers = usersList.filter((u) => u !== null);
 
 		return c.json({
 			users: validUsers,
