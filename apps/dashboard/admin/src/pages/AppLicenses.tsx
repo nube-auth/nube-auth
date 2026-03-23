@@ -263,7 +263,21 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 												<Chip variant="info" size="sm">default</Chip>
 											)}
 										</div>
-										<Text className="text-muted-foreground text-xs mb-2">{plan.slug}</Text>
+										<Text className="text-muted-foreground text-xs mb-1">{plan.slug}</Text>
+										<div className="flex items-center gap-1.5 mb-2">
+											<code className="text-xs font-mono text-muted-foreground bg-bg-subtle px-1.5 py-0.5 rounded">{plan.planId}</code>
+											<button
+												type="button"
+												className="text-muted-foreground hover:text-text-primary"
+												title="Copy plan ID"
+												onClick={() => {
+													navigator.clipboard.writeText(plan.planId);
+													showToast("Plan ID copied", "info");
+												}}
+											>
+												<Icon icon={IconType.Copy} size={12} />
+											</button>
+										</div>
 										{plan.description && (
 											<Text className="text-muted-foreground text-sm mb-2">{plan.description}</Text>
 										)}
@@ -507,6 +521,20 @@ function PricesSection({ appId, plan, showToast }: { appId: string; plan: V2Plan
 								</Chip>
 							</div>
 							<Text className="text-muted-foreground text-xs mt-1">{price.currency.toUpperCase()}</Text>
+							<div className="flex items-center gap-1 mt-1.5 min-w-0">
+								<code className="text-xs font-mono text-muted-foreground bg-bg-subtle px-1.5 py-0.5 rounded truncate flex-1 min-w-0">{price.priceId}</code>
+								<button
+									type="button"
+									className="text-muted-foreground hover:text-text-primary shrink-0"
+									title="Copy price ID"
+									onClick={() => {
+										navigator.clipboard.writeText(price.priceId);
+										showToast("Price ID copied", "info");
+									}}
+								>
+									<Icon icon={IconType.Copy} size={12} />
+								</button>
+							</div>
 						</div>
 					))}
 				</div>
@@ -743,6 +771,20 @@ function LicensesTab({ appId, showToast }: { appId: string; showToast: (msg: str
 											{lic.userEmail && lic.userName && (
 												<Text className="text-xs text-muted-foreground">{lic.userEmail}</Text>
 											)}
+											<div className="flex items-center gap-1 mt-0.5">
+												<code className="text-xs font-mono text-muted-foreground">{lic.licenseId}</code>
+												<button
+													type="button"
+													className="text-muted-foreground hover:text-text-primary"
+													title="Copy license ID"
+													onClick={() => {
+														navigator.clipboard.writeText(lic.licenseId);
+														showToast("License ID copied", "info");
+													}}
+												>
+													<Icon icon={IconType.Copy} size={11} />
+												</button>
+											</div>
 										</div>
 									</TableCell>
 									<TableCell>

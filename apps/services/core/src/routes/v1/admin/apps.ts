@@ -172,7 +172,7 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 				clientSecret,
 			},
 			security_settings: {
-				redirectUris: body.redirectUris || [],
+				redirectUris: (body.redirectUris || []).map((u: string) => { try { return new URL(u).href; } catch { return u; } }),
 				allowedHosts: body.allowedHosts || [],
 				sessionTtlDays: body.sessionTtlDays ?? 28,
 			},
@@ -331,11 +331,30 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 	try {
 		const projectId = c.req.param("projectId");
 		const appId = c.req.param("appId");
-		const { name, slug, description, enabledProviders } = (await c.req.json()) as {
+		const {
+			name,
+			slug,
+			description,
+			enabledProviders,
+			redirectUris,
+			allowedHosts,
+			corsOrigins,
+			sessionTtlDays,
+			accountLockoutMinutes,
+			cacheTtlMinutes,
+			rateLimit,
+		} = (await c.req.json()) as {
 			name?: string;
 			slug?: string;
 			description?: string;
 			enabledProviders?: string[];
+			redirectUris?: string[];
+			allowedHosts?: string[];
+			corsOrigins?: string[];
+			sessionTtlDays?: number;
+			accountLockoutMinutes?: number;
+			cacheTtlMinutes?: number;
+			rateLimit?: number;
 		};
 
 		if (!appId || !idPatterns.app.test(appId)) {
@@ -378,7 +397,7 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 			}
 		}
 
-		// Update app
+		// Update app basic fields
 		const updateData: Record<string, any> = {};
 		if (name !== undefined) updateData["name"] = name;
 		if (slug !== undefined) updateData["slug"] = slug;
@@ -386,10 +405,25 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 		if (enabledProviders !== undefined) updateData["enabled_providers"] = enabledProviders;
 
 		const results = await appQueries.update(db, app.id, updateData);
-		const updated = results;
+		let updated = results;
 
 		if (!updated) {
 			return c.json({ error: "App not found" }, 404);
+		}
+
+		// Update security_settings fields atomically if any were provided
+		const normalizeUri = (uri: string) => { try { return new URL(uri).href; } catch { return uri; } };
+		const securityUpdates: Record<string, any> = {};
+		if (redirectUris !== undefined) securityUpdates["redirectUris"] = redirectUris.map(normalizeUri);
+		if (allowedHosts !== undefined) securityUpdates["allowedHosts"] = allowedHosts;
+		if (corsOrigins !== undefined) securityUpdates["corsOrigins"] = corsOrigins;
+		if (sessionTtlDays !== undefined) securityUpdates["sessionTtlDays"] = sessionTtlDays;
+		if (accountLockoutMinutes !== undefined) securityUpdates["accountLockoutMinutes"] = accountLockoutMinutes;
+		if (cacheTtlMinutes !== undefined) securityUpdates["cacheTtlMinutes"] = cacheTtlMinutes;
+		if (rateLimit !== undefined) securityUpdates["rateLimit"] = rateLimit;
+
+		if (Object.keys(securityUpdates).length > 0) {
+			updated = await appQueries.updateSecuritySettings(db, app.id, securityUpdates);
 		}
 
 		// Get project for response

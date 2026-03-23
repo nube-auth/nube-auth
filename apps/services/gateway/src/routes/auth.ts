@@ -104,8 +104,10 @@ authRoutes.get("/start", async (c: Context) => {
 				return c.json({ error: "Unknown app_id" }, 400);
 			}
 			const securitySettings = app.security_settings as { redirectUris?: string[]; sessionTtlDays?: number } | null;
-			const registeredUris: string[] = securitySettings?.redirectUris ?? [];
-			if (registeredUris.length > 0 && !registeredUris.includes(returnTo)) {
+			const normalizeUri = (uri: string) => { try { return new URL(uri).href; } catch { return uri; } };
+			const registeredUris: string[] = (securitySettings?.redirectUris ?? []).map(normalizeUri);
+			const normalizedReturnTo = normalizeUri(returnTo);
+			if (registeredUris.length > 0 && !registeredUris.includes(normalizedReturnTo)) {
 				log.warn({ returnTo, registeredUris, appId }, "return_to not in registered redirect URIs");
 				return c.json({ error: "return_to URI is not registered for this app_id" }, 400);
 			}

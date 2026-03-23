@@ -139,8 +139,11 @@ router.get("/start", async (c: Context) => {
 			if (appId) {
 				const db = getDb();
 				const app = await appQueries.findByPublicId(db, appId);
-				const appRedirectUris = (app?.security_settings as Record<string, unknown> | null)?.['redirectUris'] as string[] | undefined;
-				appAllowed = appRedirectUris?.includes(redirectUri) ?? false;
+				const rawUris = (app?.security_settings as Record<string, unknown> | null)?.['redirectUris'] as string[] | undefined;
+				const normalizeUri = (uri: string) => { try { return new URL(uri).href; } catch { return uri; } };
+				const appRedirectUris = rawUris?.map(normalizeUri);
+				const normalizedRedirectUri = normalizeUri(redirectUri);
+				appAllowed = appRedirectUris?.includes(normalizedRedirectUri) ?? false;
 			}
 			if (!appAllowed) {
 				log.warn({ redirectUri, appId }, "Invalid redirect_uri - not in allowlist");
