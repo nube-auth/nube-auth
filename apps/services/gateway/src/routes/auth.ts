@@ -508,7 +508,7 @@ authRoutes.get("/callback", async (c: Context) => {
 							userId: data.userId,
 							priceId: statePriceId,
 							customerEmail: data.email,
-							successUrl: `${returnTo}?code=${exchangeCode}`,
+							successUrl: `${returnTo}?code=${exchangeCode}&upgraded=true`,
 							cancelUrl: `${returnTo}?error=payment_cancelled`,
 							metadata: { source: "oauth_checkout" },
 						},
