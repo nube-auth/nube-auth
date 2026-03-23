@@ -77,6 +77,7 @@ export {
 export {
 	activationQueries,
 	appQueries,
+	appUserQueries,
 	auditLogQueries,
 	authCodeQueries,
 	emailVerificationQueries,

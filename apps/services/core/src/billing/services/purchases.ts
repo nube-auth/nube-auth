@@ -5,7 +5,7 @@
  */
 
 import type { Database } from "@nube-auth/db";
-import { eq, sql, } from "@nube-auth/db";
+import { eq, priceQueries, purchaseQueries, sql, } from "@nube-auth/db";
 import {
 	apps,
 	licenses,
@@ -42,6 +42,7 @@ export async function createPurchaseRecords(
 		const appPublicId = paymentDetails.metadata?.["appId"] as string | undefined;
 		const userPublicId = paymentDetails.metadata?.["userId"] as string | undefined;
 		const planPublicId = paymentDetails.metadata?.["planId"] as string | undefined;
+		const pricePublicId = paymentDetails.metadata?.["priceId"] as string | undefined;
 		const interval = paymentDetails.metadata?.["interval"] as string | undefined; // 'month' | 'year' | 'one_time'
 
 		if (!appPublicId || !userPublicId || !planPublicId) {
@@ -85,41 +86,74 @@ export async function createPurchaseRecords(
 			throw new Error("Plan not found");
 		}
 
-		// Find the price record for this plan+provider
-		const price = await db.query.prices.findFirst({
-			where: (p, { and, eq: eqCol }) =>
-				and(
-					eqCol(p.plan_id, plan.id),
-					eqCol(p.external_provider, provider),
-					eqCol(p.is_active, true),
-				),
-			columns: { id: true, interval: true, amount_cents: true, currency: true, duration_days: true, billing_type: true },
-		});
+		// Find the price record — prefer the priceId stored in metadata (set at checkout time)
+		// since there can be multiple prices per plan+provider (monthly/yearly).
+		// Fall back to plan+provider lookup for backwards-compat with older webhook events.
+		let price: { id: number; interval: string | null; amount_cents: number; currency: string; duration_days: number | null; billing_type: string | null } | undefined;
+		if (pricePublicId) {
+			price = await priceQueries.findByPublicId(db, pricePublicId) as typeof price;
+		}
+		if (!price) {
+			price = await db.query.prices.findFirst({
+				where: (p, { and, eq: eqCol }) =>
+					and(
+						eqCol(p.plan_id, plan.id),
+						eqCol(p.external_provider, provider),
+						eqCol(p.is_active, true),
+					),
+				columns: { id: true, interval: true, amount_cents: true, currency: true, duration_days: true, billing_type: true },
+			});
+		}
 
 		if (!price) {
 			throw new Error("Price not found for plan and provider");
 		}
 
-		// Create purchase record
-		const [purchase] = await db
-			.insert(purchases)
-			.values({
-				public_id: id.request(),
-				app_id: app.id,
-				subject_type: "user",
-				subject_id: user.id,
-				price_id: price.id,
-				provider_config_id: providerConfigId,
-				provider_session_id: paymentDetails.metadata?.["sessionId"] || paymentDetails.transactionId,
-				status: paymentDetails.status === "succeeded" ? "completed" : paymentDetails.status === "failed" ? "failed" : "pending",
-			})
-			.returning();
+		// If a purchaseId was embedded in the checkout metadata, update that pending record.
+		// Otherwise create a new one. This prevents duplicates when the pending record was
+		// already created at checkout initiation time.
+		const pendingPurchaseId = paymentDetails.metadata?.["purchaseId"] as string | undefined;
+		const webhookStatus = paymentDetails.status === "succeeded" ? "completed" : paymentDetails.status === "failed" ? "failed" : "pending";
+		const providerSessionId = paymentDetails.metadata?.["sessionId"] || paymentDetails.transactionId;
 
-		if (!purchase) {
-			throw new Error("Failed to create purchase record");
+		let purchase: typeof purchases.$inferSelect;
+		const existingPurchase = pendingPurchaseId
+			? await purchaseQueries.findByPublicId(db, pendingPurchaseId)
+			: undefined;
+
+		if (existingPurchase) {
+			// Update the pending record created at checkout time
+			const [updatedPurchase] = await db
+				.update(purchases)
+				.set({
+					status: webhookStatus,
+					provider_session_id: providerSessionId || existingPurchase.provider_session_id,
+					updated_at: new Date(),
+				})
+				.where(eq(purchases.id, existingPurchase.id))
+				.returning();
+			if (!updatedPurchase) throw new Error("Failed to update pending purchase record");
+			purchase = updatedPurchase;
+			log.info({ purchaseId: purchase.public_id, status: webhookStatus }, "Pending purchase record updated by webhook");
+		} else {
+			// No pre-existing pending record — create one now (backwards compat / webhook-only flow)
+			const [newPurchase] = await db
+				.insert(purchases)
+				.values({
+					public_id: pendingPurchaseId ?? id.request(),
+					app_id: app.id,
+					subject_type: "user",
+					subject_id: user.id,
+					price_id: price.id,
+					provider_config_id: providerConfigId,
+					provider_session_id: providerSessionId,
+					status: webhookStatus,
+				})
+				.returning();
+			if (!newPurchase) throw new Error("Failed to create purchase record");
+			purchase = newPurchase;
+			log.info({ purchaseId: purchase.public_id }, "Purchase record created by webhook");
 		}
-
-		log.info({ purchaseId: purchase.public_id }, "Purchase record created");
 
 		// Calculate valid_until based on price duration
 		let validUntil: Date | null = null;

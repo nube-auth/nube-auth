@@ -1,5 +1,6 @@
 import {
 	appQueries,
+	appUserQueries,
 	getDb,
 	licenseQueries,
 	paymentTransactionQueries,
@@ -184,7 +185,12 @@ statsRouter.get("/:projectId/apps/:appId/stats", async (c: Context) => {
 		// Get all licenses for this app
 		const licenses = await licenseQueries.findByAppId(db, app.id);
 		const activeLicenses = licenses.filter((l) => l.status === "active");
-		const uniqueUsers = new Set(licenses.map((l) => l.user_id));
+
+		// Count unique authenticated users from the persistent app_users table.
+		// This table is upserted on every login and never deleted, so it accurately
+		// reflects all users who have authenticated with this app.
+		const totalUsers = await appUserQueries.countByAppId(db, app.id);
+
 		const licenseCounts: Record<string, number> = {};
 
 		for (const license of licenses) {
@@ -200,7 +206,7 @@ statsRouter.get("/:projectId/apps/:appId/stats", async (c: Context) => {
 			appId,
 			totalLicenses: licenses.length,
 			activeLicenses: activeLicenses.length,
-			totalUsers: uniqueUsers.size,
+			totalUsers,
 			licenseCounts,
 			totalRevenue,
 		});

@@ -4,7 +4,7 @@
  * Processes all webhook events and updates license states accordingly
  */
 
-import { getDb, } from "@nube-auth/db";
+import { eq, getDb, purchaseQueries, purchases } from "@nube-auth/db";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import type { PaymentDetails } from "../adapters/types.js";
 import { licenseManager } from "./license-manager.js";
@@ -159,12 +159,40 @@ async function handleSubscriptionCancellation(paymentDetails: PaymentDetails, pr
 }
 
 /**
+ * Mark a pending purchase record as failed.
+ * Tries metadata.purchaseId first (set at checkout), then falls back to
+ * provider_session_id = transactionId for older events without purchaseId.
+ */
+async function markPurchaseFailed(db: ReturnType<typeof getDb>, paymentDetails: PaymentDetails): Promise<void> {
+	try {
+		const purchaseIdFromMeta = paymentDetails.metadata?.["purchaseId"] as string | undefined;
+		const existing = purchaseIdFromMeta
+			? await purchaseQueries.findByPublicId(db, purchaseIdFromMeta)
+			: await purchaseQueries.findByProviderSessionId(db, paymentDetails.transactionId);
+
+		if (existing && existing.status === "pending") {
+			await db
+				.update(purchases)
+				.set({ status: "failed", updated_at: new Date() })
+				.where(eq(purchases.id, existing.id));
+			log.info({ purchaseId: existing.public_id }, "Purchase marked as failed");
+		}
+	} catch (error) {
+		// Non-fatal: log and continue so the license suspension still runs
+		log.error({ err: serializeError(error as Error) }, "Failed to mark purchase as failed");
+	}
+}
+
+/**
  * Handle failed payment
  */
 async function handleFailedPayment(paymentDetails: PaymentDetails, provider: string): Promise<void> {
 	const db = getDb();
 
 	try {
+		// Mark the pending purchase record as failed so the audit trail is complete
+		await markPurchaseFailed(db, paymentDetails);
+
 		// Find license by subscription ID or customer email
 		let license = await findLicenseBySubscriptionId(paymentDetails.subscriptionId || "");
 

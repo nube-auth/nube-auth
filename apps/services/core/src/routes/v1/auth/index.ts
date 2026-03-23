@@ -2,6 +2,7 @@ import { GitHubOAuthAdapter, GoogleOAuthAdapter } from "@nube-auth/auth";
 import { cache } from "@nube-auth/cache";
 import {
 	appQueries,
+	appUserQueries,
 	getDb,
 	identityQueries,
 	invitationQueries,
@@ -433,6 +434,24 @@ router.get("/callback/:provider", async (c: Context) => {
 		// Auto-provision license for the app on first login (if app_id provided)
 		await ensureLicenseForApp(db, userId, storedState.appId);
 
+		// Resolve app internal id — needed for session TTL lookup and app_users upsert
+		let appInternalId: number | undefined;
+		if (storedState.appId) {
+			const resolvedApp = await appQueries.findByPublicId(db, storedState.appId);
+			appInternalId = resolvedApp?.id;
+		}
+
+		// Upsert persistent app_users record — survives session deletion and captures
+		// every user who has authenticated with the app, regardless of licence status.
+		if (appInternalId !== undefined) {
+			try {
+				await appUserQueries.upsert(db, appInternalId, userId);
+			} catch (appUserError) {
+				// Non-fatal: log and continue, session creation should not fail
+				log.error({ err: serializeError(appUserError as Error), appId: storedState.appId }, "Failed to upsert app_user");
+			}
+		}
+
 		// Capture IP address, user-agent, and location for session tracking
 		const ipAddress = getClientIp(c);
 		const userAgent = c.req.header("user-agent") || null;
@@ -448,6 +467,7 @@ router.get("/callback/:provider", async (c: Context) => {
 			ip_address: ipAddress,
 			user_agent: userAgent,
 			country: country,
+			...(appInternalId !== undefined && { app_id: appInternalId }),
 		};
 		const session = await sessionQueries.create(db, sessionData);
 		log.info({ userId, sessionPublicId: session.public_id.substring(0, 8) }, "Session created successfully");

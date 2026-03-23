@@ -6,8 +6,8 @@
  * interval, and currency — no routing logic is needed here.
  */
 
-import { getDb, prices, plans, payment_provider_configs, appQueries, priceQueries, eq, and } from "@nube-auth/db";
-import { createLogger, serializeError } from "@nube-auth/shared";
+import { getDb, prices, plans, payment_provider_configs, appQueries, priceQueries, purchases, userQueries, eq, and } from "@nube-auth/db";
+import { createLogger, id, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -129,6 +129,15 @@ checkoutRoutes.post("/", async (c: Context) => {
 		const trialPeriodDays = price.trial_enabled && price.trial_days ? price.trial_days : undefined;
 		const interval = price.interval ?? "one_time";
 
+		// Generate the pending purchase public_id before creating the checkout session
+		// so we can embed it in the provider metadata. The webhook will use this to
+		// update the existing pending record instead of creating a duplicate.
+		let pendingPurchasePublicId: string | undefined;
+		const user = await userQueries.findByPublicId(db, validated.userId);
+		if (user) {
+			pendingPurchasePublicId = id.request();
+		}
+
 		const session = await adapter.createCheckout({
 			customerId: validated.customerId || "",
 			customerEmail: validated.customerEmail,
@@ -143,6 +152,7 @@ checkoutRoutes.post("/", async (c: Context) => {
 				planId: plan.public_id,
 				priceId: price.public_id,
 				interval,
+				...(pendingPurchasePublicId && { purchaseId: pendingPurchasePublicId }),
 			},
 			...(trialPeriodDays && { trialPeriodDays }),
 			mode: price.billing_type === "recurring" ? "subscription" : "payment",
@@ -161,6 +171,29 @@ checkoutRoutes.post("/", async (c: Context) => {
 			},
 			"Checkout session created",
 		);
+
+		// Persist a pending purchase record so there is always a DB trace of the payment,
+		// even if the provider webhook is delayed, fails to deliver, or arrives out of order.
+		if (user && pendingPurchasePublicId) {
+			try {
+				await db.insert(purchases).values({
+					public_id: pendingPurchasePublicId,
+					app_id: app.id,
+					subject_type: "user",
+					subject_id: user.id,
+					price_id: price.id,
+					provider_config_id: providerConfig.id,
+					provider_session_id: session.sessionId,
+					status: "pending",
+				});
+				log.info({ sessionId: session.sessionId, userId: validated.userId, purchaseId: pendingPurchasePublicId }, "Pending purchase record created");
+			} catch (purchaseError) {
+				// Non-fatal: the webhook will still create the final record; log and continue
+				log.error({ err: serializeError(purchaseError as Error), sessionId: session.sessionId }, "Failed to create pending purchase record");
+			}
+		} else {
+			log.warn({ userId: validated.userId, sessionId: session.sessionId }, "User not found — pending purchase not recorded");
+		}
 
 		return c.json({
 			success: true,

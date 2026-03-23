@@ -1,4 +1,4 @@
-import { getDb, sessionQueries, userQueries, subscriptionQueries, planQueries, priceQueries, appQueries } from "@nube-auth/db";
+import { getDb, sessionQueries, userQueries, subscriptionQueries, licenseQueries, planQueries, priceQueries, appQueries } from "@nube-auth/db";
 import { cache, sessionStore } from "@nube-auth/cache";
 import { createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
@@ -237,7 +237,24 @@ meRoutes.get("/subscription", async (c: Context) => {
                 const subscription = await subscriptionQueries.findActiveByUserAndApp(db, user.id, app.id);
 
                 if (!subscription) {
-                        return c.json({ hasActivePlan: false, planSlug: null, status: null, billingInterval: null, periodEnd: null });
+                        // No subscription row — fall back to licenses table (covers one-time purchases)
+                        const license = await licenseQueries.findByUserAndApp(db, user.id, app.id);
+                        if (!license || license.status !== "active") {
+                                return c.json({ hasActivePlan: false, planSlug: null, status: null, billingInterval: null, periodEnd: null });
+                        }
+                        const licensePrice = license.price_id ? await priceQueries.findById(db, license.price_id) : null;
+                        const licensePlan = licensePrice
+                                ? await planQueries.findById(db, licensePrice.plan_id)
+                                : license.plan_id
+                                        ? await planQueries.findById(db, license.plan_id)
+                                        : null;
+                        return c.json({
+                                hasActivePlan: true,
+                                planSlug: licensePlan?.slug ?? null,
+                                status: license.status,
+                                billingInterval: null,
+                                periodEnd: license.valid_until ? new Date(license.valid_until).toISOString() : null,
+                        });
                 }
 
                 // Walk subscription → price → plan to get the slug

@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, gt, gte, inArray, isNull, lt, lte, sql } from "drizzle-orm";
 import type { DbClient } from "./index.js";
 import {
+	app_users,
 	apps,
 	audit_logs,
 	auth_codes,
@@ -2141,5 +2142,40 @@ export const webhookLogQueries = {
 			.where(eq(webhook_logs.id, logId))
 			.returning();
 		return results[0]!;
+	},
+};
+
+/**
+ * App User queries
+ * Persistent (app, user) membership — survives session deletion.
+ */
+export const appUserQueries = {
+	/**
+	 * Upsert: insert on first login, bump last_seen_at on every subsequent login.
+	 * publicId is only used when a new row is inserted.
+	 */
+	async upsert(db: DbClient, appId: number, userId: number) {
+		const now = new Date();
+		const results = await db
+			.insert(app_users)
+			.values({ app_id: appId, user_id: userId, last_seen_at: now })
+			.onConflictDoUpdate({
+				target: [app_users.app_id, app_users.user_id],
+				set: { last_seen_at: now },
+			})
+			.returning();
+		return results[0]!;
+	},
+
+	async countByAppId(db: DbClient, appId: number) {
+		const result = await db
+			.select({ count: sql<number>`count(*)` })
+			.from(app_users)
+			.where(eq(app_users.app_id, appId));
+		return Number(result[0]?.count ?? 0);
+	},
+
+	async findByAppId(db: DbClient, appId: number) {
+		return db.select().from(app_users).where(eq(app_users.app_id, appId));
 	},
 };

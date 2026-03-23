@@ -79,6 +79,34 @@ export const sessions = pgTable(
 );
 
 /**
+ * App Users table
+ * Persistent record of every (app, user) pair that has authenticated.
+ * Upserted on every login — never deleted when sessions are removed.
+ * Use this as the authoritative "unique users" source for app-level stats.
+ */
+export const app_users = pgTable(
+	"app_users",
+	{
+		id: serial("id").primaryKey(),
+		app_id: integer("app_id")
+			.notNull()
+			.references(() => apps.id),
+		user_id: integer("user_id")
+			.notNull()
+			.references(() => users.id),
+		// created_at = first time this user authenticated with this app
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		// last_seen_at updated on every subsequent login
+		last_seen_at: timestamp("last_seen_at").notNull().defaultNow(),
+	},
+	(table) => [
+		unique("app_users_app_user_unique").on(table.app_id, table.user_id),
+		index("app_users_app_id_idx").on(table.app_id),
+		index("app_users_user_id_idx").on(table.user_id),
+	],
+);
+
+/**
  * Projects table
  * Projects owned by users
  */
