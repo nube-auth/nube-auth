@@ -90,6 +90,16 @@ paymentsRoutes.all("/*", async (c: Context) => {
 			}
 		}
 
+		// Checkout security: always stamp userId and customerEmail from the authenticated
+		// session so callers cannot claim a different identity. appId is left to the
+		// caller (needed for cases where the web dashboard triggers checkout on behalf
+		// of a specific app).
+		if (method === "POST" && path.endsWith("/checkout") && body && typeof body === "object" && !Array.isArray(body)) {
+			const checkoutBody = body as Record<string, unknown>;
+			checkoutBody.userId = auth.userId;
+			checkoutBody.customerEmail = auth.email;
+		}
+
 		const url = new URL(coreUrl);
 		const queryString = c.req.url.split("?")[1];
 		if (queryString) {

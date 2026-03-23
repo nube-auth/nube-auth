@@ -478,7 +478,7 @@ authRoutes.get("/callback", async (c: Context) => {
 			// Issue a single-use exchange code. When a priceId is present we use a
 			// longer TTL so the code survives while the user completes checkout at
 			// the payment provider (which can take several minutes).
-			const hasPlanCheckout = !!(statePriceId && data.email);
+			const hasPlanCheckout = !!statePriceId;
 			const exchangeCode = crypto.randomBytes(SESSION_ID_BYTES).toString("hex");
 			await cache.set(
 				`exchange:${exchangeCode}`,
@@ -526,7 +526,7 @@ authRoutes.get("/callback", async (c: Context) => {
 					}
 
 					log.warn(
-						{ userId: data.userId, priceId: statePriceId, status: checkoutResponse.status },
+						{ userId: data.userId, priceId: statePriceId, status: checkoutResponse.status, body: checkoutResponse.data },
 						"Checkout creation failed — falling back to direct returnTo",
 					);
 				} catch (checkoutError) {
