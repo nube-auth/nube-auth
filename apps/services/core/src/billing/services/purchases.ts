@@ -156,11 +156,18 @@ export async function createPurchaseRecords(
 		}
 
 		// Calculate valid_until based on price duration
-		let validUntil: Date | null = null;
+		const LIFETIME_DATE = new Date('2099-12-31T23:59:59.000Z');
+		let validUntil: Date;
 		if (price.duration_days) {
 			validUntil = new Date(Date.now() + price.duration_days * 24 * 60 * 60 * 1000);
+		} else if (price.billing_type === 'recurring' && price.interval) {
+			// Recurring subscriptions without an explicit duration_days: derive from interval
+			const daysToAdd = price.interval === 'year' ? 365 : 30;
+			validUntil = new Date(Date.now() + daysToAdd * 24 * 60 * 60 * 1000);
+		} else {
+			// Lifetime / one_time with no duration_days — use fixed far-future date
+			validUntil = LIFETIME_DATE;
 		}
-		// If duration_days is null, valid_until stays null (lifetime license)
 
 		// Upsert license (update if exists for this user+app, create if not)
 		const existingLicense = await db.query.licenses.findFirst({
