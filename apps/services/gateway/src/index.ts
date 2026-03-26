@@ -36,12 +36,12 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 // Derive the root domain from GATEWAY_PUBLIC_URL for wildcard subdomain matching
-// e.g. "https://api.staging.proofa.dev" → ".staging.proofa.dev" and ".proofa.dev"
+// e.g. "https://api.staging.nubeauth.com" → ".staging.nubeauth.com" and ".nubeauth.com"
 function getAllowedOriginOrNull(origin: string): string | null {
 	if (!origin) return "*";
 	if (allowedOrigins.includes(origin)) return origin;
 	// Allow any subdomain of the gateway's own base domain (derived from GATEWAY_PUBLIC_URL)
-	// e.g. GATEWAY_PUBLIC_URL=https://api.staging.proofa.dev → allows *.staging.proofa.dev and *.proofa.dev
+	// e.g. GATEWAY_PUBLIC_URL=https://api.staging.nubeauth.com → allows *.staging.nubeauth.com and *.nubeauth.com
 	try {
 		const gatewayHost = new URL(env.GATEWAY_PUBLIC_URL).hostname;
 		const parts = gatewayHost.split(".");
