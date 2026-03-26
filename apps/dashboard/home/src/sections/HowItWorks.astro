@@ -3,7 +3,7 @@ const steps = [
   {
     number: 1,
     title: 'Create Your Project',
-    description: 'Sign up at admin.proofa.com and create your first project. Invite team members and set up payment providers.'
+    description: 'Sign up at admin.nubeauth.com and create your first project. Invite team members and set up payment providers.'
   },
   {
     number: 2,
@@ -17,18 +17,18 @@ const steps = [
   }
 ];
 
-const codeExample = `import { ProofaClient } from '@proofa/sdk';
+const codeExample = `import { NubeAuthClient } from '@nube-auth/sdk';
 
-const proofa = new ProofaClient({
+const nubeAuth = new NubeAuthClient({
   appId: 'your-app-id',
-  apiUrl: 'https://api.proofa.com'
+  apiUrl: 'https://api.nubeauth.com'
 });
 
 // Redirect to login
-await proofa.login({ provider: 'google' });
+await nubeAuth.login({ provider: 'google' });
 
 // Get current user
-const user = await proofa.getUser();`;
+const user = await nubeAuth.getUser();`;
 ---
 
 <section id="how-it-works" class="how-it-works">
@@ -62,27 +62,27 @@ const user = await proofa.getUser();`;
       </div>
       <div class="code-block-body">
         <pre><code><span class="code-comment"># Install for React apps</span>
-<span class="code-variable">npm install</span> <span class="code-string">@proofa/client @proofa/react</span>
+<span class="code-variable">npm install</span> <span class="code-string">@nube-auth/client @nube-auth/react</span>
 
 <span class="code-comment"># Or vanilla JavaScript</span>
-<span class="code-variable">npm install</span> <span class="code-string">@proofa/client</span>
+<span class="code-variable">npm install</span> <span class="code-string">@nube-auth/client</span>
 
 <span class="code-comment"># React integration</span>
-<span class="code-keyword">import</span> {'{'} <span class="code-property">ProofaProvider</span>, <span class="code-property">useProofa</span> {'}'} <span class="code-keyword">from</span> <span class="code-string">'@proofa/react'</span>;
+<span class="code-keyword">import</span> {'{'} <span class="code-property">NubeAuthProvider</span>, <span class="code-property">useNubeAuth</span> {'}'} <span class="code-keyword">from</span> <span class="code-string">'@nube-auth/react'</span>;
 
 <span class="code-keyword">function</span> <span class="code-function">App</span>() {'{'}
   <span class="code-keyword">return</span> (
-    <span class="code-tag">&lt;ProofaProvider</span>
+    <span class="code-tag">&lt;NubeAuthProvider</span>
       <span class="code-property">appId</span>=<span class="code-string">"APP0abc123..."</span>
-      <span class="code-property">gatewayUrl</span>=<span class="code-string">"https://api.proofa.sh"</span>
+      <span class="code-property">gatewayUrl</span>=<span class="code-string">"https://api.nubeauth.com"</span>
     <span class="code-tag">&gt;</span>
       <span class="code-tag">&lt;YourApp /&gt;</span>
-    <span class="code-tag">&lt;/ProofaProvider&gt;</span>
+    <span class="code-tag">&lt;/NubeAuthProvider&gt;</span>
   );
 {'}'}
 
 <span class="code-comment">// Use in components</span>
-<span class="code-keyword">const</span> {'{'} <span class="code-variable">login</span>, <span class="code-variable">user</span> {'}'} = <span class="code-function">useProofa</span>();
+<span class="code-keyword">const</span> {'{'} <span class="code-variable">login</span>, <span class="code-variable">user</span> {'}'} = <span class="code-function">useNubeAuth</span>();
 <span class="code-function">login</span>({'{'} <span class="code-property">provider</span>: <span class="code-string">'google'</span> {'}'});</code></pre>
       </div>
     </div>
