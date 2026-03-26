@@ -1,0 +1,24 @@
+apps/dashboard/home/vercel.json
+  784d17b78e855ac4 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.19",
+  "base_commit_sha": "7eff4ab4a0067c3001a231913d80bc207b3274d5",
+  "prompts": {
+    "784d17b78e855ac4": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "731f7fc5-a7a0-41ba-b386-9dc63d7871a8",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 2,
+      "accepted_lines": 1,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/7882f500532e0a5cccb38ab22ef7a4d2d85c4fa140bc459c69b98cdea76c15c4"
+    }
+  }
+}
