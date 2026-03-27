@@ -22,13 +22,25 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── Home ──────────────────────────────────────────────────────────────────────
+# NOTE: nubeauth.com and www.nubeauth.com are served by Vercel.
+# Railway only handles home.${DOMAIN} as a fallback/alias.
 server {
     listen 8080;
-    server_name ${DOMAIN} www.${DOMAIN} home.${DOMAIN};
+    server_name home.${DOMAIN};
     root /var/www/home;
 
+    # Serve Astro static pages cleanly (no trailing-slash 301).
+    # Astro static adapter outputs pages as directories (privacy/index.html),
+    # so we skip $uri/ to avoid nginx redirecting /privacy → /privacy/.
     location / {
-        try_files $uri $uri/ $uri.html $uri/index.html =404;
+        try_files $uri $uri.html $uri/index.html =404;
+    }
+
+    # Silently ignore Vercel-specific requests (web analytics, etc.)
+    # that are injected by the Vercel adapter at build time but don't
+    # exist when the site is served from nginx on Railway.
+    location /_vercel/ {
+        return 204;
     }
 
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?|ttf|eot)$ {

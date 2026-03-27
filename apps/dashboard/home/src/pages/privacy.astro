@@ -1,12 +1,51 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
 ---
 
+<style>
+  .legal-page {
+    background: var(--bg-primary);
+    min-height: 100vh;
+  }
+  .legal-page h1 {
+    color: var(--text-primary);
+  }
+  .legal-page h2,
+  .legal-page h3 {
+    color: var(--text-primary);
+  }
+  .legal-page p,
+  .legal-page li {
+    color: var(--text-secondary);
+  }
+  .legal-page strong {
+    color: var(--text-primary);
+  }
+  .legal-date {
+    color: var(--text-tertiary);
+  }
+  .legal-back {
+    color: var(--text-link);
+  }
+  .legal-back:hover {
+    color: var(--text-link-hover);
+  }
+  .legal-link {
+    color: var(--text-link);
+  }
+  .legal-link:hover {
+    color: var(--text-link-hover);
+  }
+</style>
+
 <Layout title="Privacy Policy - NubeAuth">
-  <div class="bg-white">
-    <div class="max-w-4xl mx-auto px-4 py-16">
+  <Nav />
+  <div class="legal-page">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 pt-28 pb-16">
       <div class="mb-8">
-        <a href="/" class="text-primary-600 hover:text-primary-700 transition inline-flex items-center gap-2">
+        <a href="/" class="legal-back transition inline-flex items-center gap-2">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
           </svg>
@@ -14,34 +53,36 @@ import Layout from '../layouts/Layout.astro';
         </a>
       </div>
 
-      <h1 class="text-4xl font-bold mb-4 text-gray-900">Privacy Policy</h1>
-      <p class="text-gray-600 mb-8">Last Updated: December 14, 2025</p>
+      <h1 class="text-2xl sm:text-4xl font-bold mb-4">Privacy Policy</h1>
+      <p class="legal-date mb-8">Last Updated: December 14, 2025</p>
 
       <div class="prose prose-lg max-w-none">
-        <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">1. Introduction</h2>
-        <p class="mb-4 text-gray-700">
+        <h2 class="text-xl sm:text-2xl font-bold mt-8 mb-4">1. Introduction</h2>
+        <p class="mb-4">
           NubeAuth ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our authentication, session management, and licensing platform.
         </p>
 
-        <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">2. Information We Collect</h2>
+        <h2 class="text-xl sm:text-2xl font-bold mt-8 mb-4">2. Information We Collect</h2>
         
-        <h3 class="text-xl font-semibold mt-6 mb-3 text-gray-900">2.1 Information You Provide</h3>
-        <ul class="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+        <h3 class="text-lg sm:text-xl font-semibold mt-6 mb-3">2.1 Information You Provide</h3>
+        <ul class="list-disc pl-6 mb-4 space-y-2">
           <li><strong>Account Information:</strong> Email address, name, and profile picture from OAuth providers (Google, GitHub, etc.)</li>
           <li><strong>Project Data:</strong> Project names, app configurations, and team member information</li>
           <li><strong>Payment Information:</strong> Billing details processed through third-party payment processors (we do not store credit card numbers)</li>
         </ul>
 
-        <h3 class="text-xl font-semibold mt-6 mb-3 text-gray-900">2.2 Automatically Collected Information</h3>
-        <ul class="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+        <h3 class="text-lg sm:text-xl font-semibold mt-6 mb-3">2.2 Automatically Collected Information</h3>
+        <ul class="list-disc pl-6 mb-4 space-y-2">
           <li><strong>Usage Data:</strong> API calls, authentication events, session activity</li>
           <li><strong>Technical Data:</strong> IP addresses, browser type, device information, referring URLs</li>
           <li><strong>Audit Logs:</strong> Actions performed within your account for security and compliance</li>
         </ul>
 
-        <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">3. How We Use Your Information</h2>
-        <p class="mb-4 text-gray-700">We use the information we collect to:</p>
-        <ul class="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+        <h2 class="text-xl sm:text-2xl font-bold mt-8 mb-4">3. How We Use Your Information</h2>
+        <p class="mb-4">
+          We use the information we collect to:
+        </p>
+        <ul class="list-disc pl-6 mb-4 space-y-2">
           <li>Provide, maintain, and improve our services</li>
           <li>Process authentication and manage user sessions</li>
           <li>Send transactional emails and service notifications</li>
@@ -50,20 +91,20 @@ import Layout from '../layouts/Layout.astro';
           <li>Analyze usage patterns to improve our platform</li>
         </ul>
 
-        <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">4. Information Sharing</h2>
-        <p class="mb-4 text-gray-700">We do not sell your personal information. We may share your information with:</p>
-        <ul class="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+        <h2 class="text-xl sm:text-2xl font-bold mt-8 mb-4">4. Information Sharing</h2>
+        <p class="mb-4">We do not sell your personal information. We may share your information with:</p>
+        <ul class="list-disc pl-6 mb-4 space-y-2">
           <li><strong>Service Providers:</strong> Infrastructure providers (Vercel, Fly.io), email services (Resend), and payment processors</li>
           <li><strong>OAuth Providers:</strong> When you authenticate through Google, GitHub, etc.</li>
           <li><strong>Legal Requirements:</strong> When required by law or to protect our rights</li>
           <li><strong>Business Transfers:</strong> In connection with a merger, acquisition, or sale of assets</li>
         </ul>
 
-        <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">5. Data Security</h2>
-        <p class="mb-4 text-gray-700">
+        <h2 class="text-xl sm:text-2xl font-bold mt-8 mb-4">5. Data Security</h2>
+        <p class="mb-4">
           We implement industry-standard security measures including:
         </p>
-        <ul class="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+        <ul class="list-disc pl-6 mb-4 space-y-2">
           <li>Encryption in transit (TLS/SSL) and at rest</li>
           <li>Secure session management with configurable TTLs</li>
           <li>Rate limiting and DDoS protection</li>
@@ -71,57 +112,58 @@ import Layout from '../layouts/Layout.astro';
           <li>Access controls and audit logging</li>
         </ul>
 
-        <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">6. Data Retention</h2>
-        <p class="mb-4 text-gray-700">
+        <h2 class="text-xl sm:text-2xl font-bold mt-8 mb-4">6. Data Retention</h2>
+        <p class="mb-4">
           We retain your information for as long as your account is active or as needed to provide services. When you delete your account, we will delete or anonymize your personal information within 30 days, except where retention is required by law.
         </p>
 
-        <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">7. Your Rights</h2>
-        <p class="mb-4 text-gray-700">Depending on your location, you may have the following rights:</p>
-        <ul class="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+        <h2 class="text-xl sm:text-2xl font-bold mt-8 mb-4">7. Your Rights</h2>
+        <p class="mb-4">Depending on your location, you may have the following rights:</p>
+        <ul class="list-disc pl-6 mb-4 space-y-2">
           <li><strong>Access:</strong> Request a copy of your personal information</li>
           <li><strong>Correction:</strong> Update inaccurate or incomplete information</li>
           <li><strong>Deletion:</strong> Request deletion of your account and data</li>
           <li><strong>Portability:</strong> Receive your data in a machine-readable format</li>
           <li><strong>Objection:</strong> Object to certain processing activities</li>
         </ul>
-        <p class="mb-4 text-gray-700">
-          To exercise these rights, contact us at <a href="mailto:privacy@nubeauth.com" class="text-primary-600 hover:text-primary-700">privacy@nubeauth.com</a>.
+        <p class="mb-4">
+          To exercise these rights, contact us at <a href="mailto:privacy@nubeauth.com" class="legal-link">privacy@nubeauth.com</a>.
         </p>
 
-        <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">8. Cookies and Tracking</h2>
-        <p class="mb-4 text-gray-700">
+        <h2 class="text-xl sm:text-2xl font-bold mt-8 mb-4">8. Cookies and Tracking</h2>
+        <p class="mb-4">
           We use cookies and similar technologies for:
         </p>
-        <ul class="list-disc pl-6 mb-4 text-gray-700 space-y-2">
+        <ul class="list-disc pl-6 mb-4 space-y-2">
           <li><strong>Essential Cookies:</strong> Session management and authentication (required)</li>
           <li><strong>Analytics:</strong> Understanding usage patterns (Vercel Analytics)</li>
           <li><strong>Security:</strong> Fraud detection and rate limiting</li>
         </ul>
 
-        <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">9. International Data Transfers</h2>
-        <p class="mb-4 text-gray-700">
+        <h2 class="text-xl sm:text-2xl font-bold mt-8 mb-4">9. International Data Transfers</h2>
+        <p class="mb-4">
           Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place for such transfers.
         </p>
 
-        <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">10. Children's Privacy</h2>
-        <p class="mb-4 text-gray-700">
+        <h2 class="text-xl sm:text-2xl font-bold mt-8 mb-4">10. Children's Privacy</h2>
+        <p class="mb-4">
           Our services are not intended for users under 13 years of age. We do not knowingly collect information from children under 13.
         </p>
 
-        <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">11. Changes to This Policy</h2>
-        <p class="mb-4 text-gray-700">
+        <h2 class="text-xl sm:text-2xl font-bold mt-8 mb-4">11. Changes to This Policy</h2>
+        <p class="mb-4">
           We may update this Privacy Policy from time to time. We will notify you of material changes by email or through our platform. Continued use after changes constitutes acceptance.
         </p>
 
-        <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">12. Contact Us</h2>
-        <p class="mb-4 text-gray-700">
+        <h2 class="text-xl sm:text-2xl font-bold mt-8 mb-4">12. Contact Us</h2>
+        <p class="mb-4">
           If you have questions about this Privacy Policy, please contact us at:
         </p>
-        <ul class="list-none mb-4 text-gray-700 space-y-1">
-          <li>Email: <a href="mailto:privacy@nubeauth.com" class="text-primary-600 hover:text-primary-700">privacy@nubeauth.com</a></li>
+        <ul class="list-none mb-4 space-y-1">
+          <li>Email: <a href="mailto:privacy@nubeauth.com" class="legal-link">privacy@nubeauth.com</a></li>
         </ul>
       </div>
     </div>
   </div>
+  <Footer />
 </Layout>
