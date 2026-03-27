@@ -1,47 +1,48 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Nube Auth – Subdomain-based routing
 #
-# Resolved at container startup via envsubst. Set DOMAIN in Railway Variables:
-#   DOMAIN=nubeauth.com
+# Resolved at container startup via envsubst. Set DOMAIN in Railway Variables.
 #
-# Routes:
-#   ${DOMAIN}             → Home (Astro marketing site) – served by VERCEL
-#   www.${DOMAIN}         → Home (Astro marketing site) – served by VERCEL
-#   home.${DOMAIN}        → Home (Astro marketing site) – Railway fallback
-#   manage.${DOMAIN}      → Admin Dashboard (React SPA)
-#   me.${DOMAIN}          → User Dashboard (React SPA)
-#   docs.${DOMAIN}        → Docs (VitePress)
-#   api.${DOMAIN}         → Gateway service (proxy)
-#   core.${DOMAIN}        → Core service (proxy)
-#   work.${DOMAIN}        → Workers service (proxy)
+# PRODUCTION  (DOMAIN=nubeauth.com)
+#   manage/me/docs/home/www.nubeauth.com → Vercel (DNS never reaches Railway)
+#   api.nubeauth.com                     → Gateway proxy
+#
+# STAGING     (DOMAIN=staging.nubeauth.com)
+#   *.staging.nubeauth.com → Railway (all traffic)
+#   home.staging / www.staging → serve /var/www/home
+#   manage.staging         → serve /var/www/admin  (React SPA)
+#   me.staging             → serve /var/www/user   (React SPA)
+#   docs.staging           → serve /var/www/docs   (VitePress)
+#   api.staging            → Gateway proxy
+#   core.staging           → Core proxy
+#   work.staging           → Workers proxy
 #
 # Redirects (301):
+#   ${DOMAIN} (bare)      → home.${DOMAIN}
 #   user.${DOMAIN}        → me.${DOMAIN}
 #   admin.${DOMAIN}       → manage.${DOMAIN}
-#   doc.${DOMAIN}         → docs.${DOMAIN}
-#   documents.${DOMAIN}   → docs.${DOMAIN}
+#   doc/documents         → docs.${DOMAIN}
 # ─────────────────────────────────────────────────────────────────────────────
 
-# ── Apex + www → Vercel redirect ─────────────────────────────────────────────
-# nubeauth.com and www.nubeauth.com are owned by Vercel. If the wildcard DNS
-# (*.nubeauth.com → Railway) accidentally catches www., redirect cleanly to
-# Vercel using an explicit HTTPS URL so the browser never sees :8080.
+# ── Bare apex → home.${DOMAIN} ───────────────────────────────────────────────
+# Prod: nubeauth.com DNS points to Vercel — this block is dead code.
+# Staging: staging.nubeauth.com hits Railway; redirect once to home.staging…
+#   (www.staging.nubeauth.com is handled directly by the home server block
+#    below, so no infinite redirect loop.)
 server {
     listen 8080;
-    server_name ${DOMAIN} www.${DOMAIN};
-
-    # Never append the internal port to redirect URLs.
+    server_name ${DOMAIN};
     port_in_redirect off;
-
-    return 301 https://www.${DOMAIN}$request_uri;
+    return 301 https://home.${DOMAIN}$request_uri;
 }
 
 # ── Home ──────────────────────────────────────────────────────────────────────
-# NOTE: nubeauth.com and www.nubeauth.com are served by Vercel.
-# Railway only handles home.${DOMAIN} as a fallback/alias.
+# Serves the Astro marketing site.
+# Also catches www.${DOMAIN} so www.staging.nubeauth.com works without looping.
+# In prod these names never reach Railway (DNS → Vercel).
 server {
     listen 8080;
-    server_name home.${DOMAIN};
+    server_name home.${DOMAIN} www.${DOMAIN};
     root /var/www/home;
 
     # Never append the internal port (:8080) to any redirect URL.
