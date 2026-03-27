@@ -1,62 +1,130 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Nube Auth – API Proxy routing
-#
-# All dashboards (home, admin, user, docs) are deployed on Vercel.
-# This nginx instance ONLY proxies service subdomains on Railway.
+# Nube Auth – Subdomain-based routing
 #
 # Resolved at container startup via envsubst. Set DOMAIN in Railway Variables:
 #   DOMAIN=nubeauth.com
 #
 # Routes:
+#   ${DOMAIN}             → Home (Astro marketing site) – served by VERCEL
+#   www.${DOMAIN}         → Home (Astro marketing site) – served by VERCEL
+#   home.${DOMAIN}        → Home (Astro marketing site) – Railway fallback
+#   manage.${DOMAIN}      → Admin Dashboard (React SPA)
+#   me.${DOMAIN}          → User Dashboard (React SPA)
+#   docs.${DOMAIN}        → Docs (VitePress)
 #   api.${DOMAIN}         → Gateway service (proxy)
 #   core.${DOMAIN}        → Core service (proxy)
 #   work.${DOMAIN}        → Workers service (proxy)
 #
-# Catch-all redirects:
-#   ${DOMAIN}             → https://www.${DOMAIN} (Vercel)
-#   www.${DOMAIN}         → https://www.${DOMAIN} (Vercel)
-#   manage.${DOMAIN}      → https://manage.${DOMAIN} (Vercel)
-#   me.${DOMAIN}          → https://me.${DOMAIN} (Vercel)
-#   docs.${DOMAIN}        → https://docs.${DOMAIN} (Vercel)
+# Redirects (301):
+#   user.${DOMAIN}        → me.${DOMAIN}
+#   admin.${DOMAIN}       → manage.${DOMAIN}
+#   doc.${DOMAIN}         → docs.${DOMAIN}
+#   documents.${DOMAIN}   → docs.${DOMAIN}
 # ─────────────────────────────────────────────────────────────────────────────
 
-# ── Apex + www → Vercel ───────────────────────────────────────────────────────
-# Wildcard DNS (*.nubeauth.com → Railway) can catch www. — redirect to Vercel.
+# ── Apex + www → Vercel redirect ─────────────────────────────────────────────
+# nubeauth.com and www.nubeauth.com are owned by Vercel. If the wildcard DNS
+# (*.nubeauth.com → Railway) accidentally catches www., redirect cleanly to
+# Vercel using an explicit HTTPS URL so the browser never sees :8080.
 server {
     listen 8080;
     server_name ${DOMAIN} www.${DOMAIN};
+
+    # Never append the internal port to redirect URLs.
     port_in_redirect off;
+
     return 301 https://www.${DOMAIN}$request_uri;
 }
 
-# ── Dashboard subdomains → Vercel ─────────────────────────────────────────────
-# In case any dashboard subdomain DNS points at Railway, send to Vercel.
-server {
-    listen 8080;
-    server_name manage.${DOMAIN};
-    port_in_redirect off;
-    return 301 https://manage.${DOMAIN}$request_uri;
-}
-
-server {
-    listen 8080;
-    server_name me.${DOMAIN};
-    port_in_redirect off;
-    return 301 https://me.${DOMAIN}$request_uri;
-}
-
-server {
-    listen 8080;
-    server_name docs.${DOMAIN};
-    port_in_redirect off;
-    return 301 https://docs.${DOMAIN}$request_uri;
-}
-
+# ── Home ──────────────────────────────────────────────────────────────────────
+# NOTE: nubeauth.com and www.nubeauth.com are served by Vercel.
+# Railway only handles home.${DOMAIN} as a fallback/alias.
 server {
     listen 8080;
     server_name home.${DOMAIN};
+    root /var/www/home;
+
+    # Never append the internal port (:8080) to any redirect URL.
     port_in_redirect off;
-    return 301 https://www.${DOMAIN}$request_uri;
+
+    # Serve Astro static pages cleanly (no trailing-slash 301).
+    # Astro static adapter outputs pages as directories (privacy/index.html),
+    # so we skip $uri/ to avoid nginx redirecting /privacy → /privacy/.
+    location / {
+        try_files $uri $uri.html $uri/index.html =404;
+    }
+
+    # Silently ignore Vercel-specific requests (web analytics, etc.)
+    # that are injected by the Vercel adapter at build time but don't
+    # exist when the site is served from nginx on Railway.
+    location /_vercel/ {
+        return 204;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
+}
+
+# ── Admin Dashboard (SPA) ─────────────────────────────────────────────────────
+server {
+    listen 8080;
+    server_name manage.${DOMAIN};
+    root /var/www/admin;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /assets {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+}
+
+# ── User Dashboard (SPA) ──────────────────────────────────────────────────────
+server {
+    listen 8080;
+    server_name me.${DOMAIN};
+    root /var/www/user;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /assets {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+}
+
+# ── Docs Site (VitePress) ─────────────────────────────────────────────────────
+server {
+    listen 8080;
+    server_name docs.${DOMAIN};
+    root /var/www/docs;
+
+    location / {
+        try_files $uri $uri/ $uri.html $uri/index.html =404;
+    }
+
+    location /assets {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 }
 
 # ── Gateway API Proxy ─────────────────────────────────────────────────────────
@@ -86,7 +154,7 @@ server {
     }
 }
 
-# ── Core Service Proxy ────────────────────────────────────────────────────────
+# ── Core Service Proxy ───────────────────────────────────────────────────────
 # CORE_INTERNAL_URL: Railway private network URL, e.g.
 #   http://nubeauth-core.railway.internal:8080
 server {
@@ -134,13 +202,15 @@ server {
 
 # ── Health check (default server – matches any Host not explicitly listed) ────
 # Used by Railway health checks, Docker HEALTHCHECK, and monitoring tools.
+# Railway hits the service's own *.up.railway.app URL, which doesn't match any
+# server_name above, so this default_server block answers those requests.
 server {
     listen 8080 default_server;
     server_name _;
 
     location /health {
         access_log off;
-        return 200 '{"status":"ok","service":"proxy"}';
+        return 200 '{"status":"ok","service":"dashboards"}';
         add_header Content-Type application/json;
     }
 
@@ -149,24 +219,21 @@ server {
     }
 }
 
-# ── Legacy Subdomain Redirects ────────────────────────────────────────────────
+# ── Legacy Subdomain Redirects (301 Permanent) ────────────────────────────────
 server {
     listen 8080;
     server_name user.${DOMAIN};
-    port_in_redirect off;
-    return 301 https://me.${DOMAIN}$request_uri;
+    return 301 $scheme://me.${DOMAIN}$request_uri;
 }
 
 server {
     listen 8080;
     server_name admin.${DOMAIN};
-    port_in_redirect off;
-    return 301 https://manage.${DOMAIN}$request_uri;
+    return 301 $scheme://manage.${DOMAIN}$request_uri;
 }
 
 server {
     listen 8080;
     server_name doc.${DOMAIN} documents.${DOMAIN};
-    port_in_redirect off;
-    return 301 https://docs.${DOMAIN}$request_uri;
+    return 301 $scheme://docs.${DOMAIN}$request_uri;
 }
