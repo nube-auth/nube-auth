@@ -1,0 +1,105 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<style>
+  .not-found-page {
+    background: var(--bg-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .not-found-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 6rem 1.5rem 4rem;
+  }
+  .not-found-code {
+    font-size: clamp(6rem, 20vw, 10rem);
+    font-weight: 800;
+    line-height: 1;
+    color: var(--color-primary);
+    opacity: 0.15;
+    letter-spacing: -0.04em;
+    user-select: none;
+  }
+  .not-found-title {
+    margin-top: -1rem;
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .not-found-desc {
+    margin-top: 1rem;
+    max-width: 36ch;
+    font-size: 1.0625rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .not-found-actions {
+    margin-top: 2.5rem;
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.4rem;
+    background: var(--color-primary);
+    color: #fff;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.4rem;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    text-decoration: none;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .btn-secondary:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+  }
+</style>
+
+<Layout
+  title="404 – Page not found · NubeAuth"
+  description="The page you're looking for doesn't exist."
+>
+  <div class="not-found-page">
+    <Nav />
+    <div class="not-found-content">
+      <div class="not-found-code" aria-hidden="true">404</div>
+      <h1 class="not-found-title">Page not found</h1>
+      <p class="not-found-desc">
+        The page you're looking for doesn't exist or may have been moved.
+      </p>
+      <div class="not-found-actions">
+        <a href="/" class="btn-primary">Go home</a>
+        <a href="/docs" class="btn-secondary">Browse docs</a>
+      </div>
+    </div>
+    <Footer />
+  </div>
+</Layout>
