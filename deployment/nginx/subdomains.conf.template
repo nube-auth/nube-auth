@@ -5,8 +5,9 @@
 #   DOMAIN=nubeauth.com
 #
 # Routes:
-#   ${DOMAIN}             → Home (Astro marketing site)
-#   home.${DOMAIN}        → Home (Astro marketing site)
+#   ${DOMAIN}             → Home (Astro marketing site) – served by VERCEL
+#   www.${DOMAIN}         → Home (Astro marketing site) – served by VERCEL
+#   home.${DOMAIN}        → Home (Astro marketing site) – Railway fallback
 #   manage.${DOMAIN}      → Admin Dashboard (React SPA)
 #   me.${DOMAIN}          → User Dashboard (React SPA)
 #   docs.${DOMAIN}        → Docs (VitePress)
@@ -21,6 +22,20 @@
 #   documents.${DOMAIN}   → docs.${DOMAIN}
 # ─────────────────────────────────────────────────────────────────────────────
 
+# ── Apex + www → Vercel redirect ─────────────────────────────────────────────
+# nubeauth.com and www.nubeauth.com are owned by Vercel. If the wildcard DNS
+# (*.nubeauth.com → Railway) accidentally catches www., redirect cleanly to
+# Vercel using an explicit HTTPS URL so the browser never sees :8080.
+server {
+    listen 8080;
+    server_name ${DOMAIN} www.${DOMAIN};
+
+    # Never append the internal port to redirect URLs.
+    port_in_redirect off;
+
+    return 301 https://www.${DOMAIN}$request_uri;
+}
+
 # ── Home ──────────────────────────────────────────────────────────────────────
 # NOTE: nubeauth.com and www.nubeauth.com are served by Vercel.
 # Railway only handles home.${DOMAIN} as a fallback/alias.
@@ -28,6 +43,9 @@ server {
     listen 8080;
     server_name home.${DOMAIN};
     root /var/www/home;
+
+    # Never append the internal port (:8080) to any redirect URL.
+    port_in_redirect off;
 
     # Serve Astro static pages cleanly (no trailing-slash 301).
     # Astro static adapter outputs pages as directories (privacy/index.html),
