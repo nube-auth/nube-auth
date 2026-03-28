@@ -61,7 +61,7 @@ export function ProjectDetailPage() {
 						{/* Left: Main Info */}
 						<div className="flex items-start gap-5 flex-1">
 							<IconBox size="lg" variant="primary-subtle">
-								<Icon icon={getIconById(project.icon || "folder")} size={28} />
+								<Icon icon={IconType[getIconById(project.icon || "dashboard")]} size={28} />
 							</IconBox>
 							<div className="flex-1">
 								<div className="flex items-center gap-3 mb-2">
@@ -205,7 +205,7 @@ export function ProjectDetailPage() {
 								<TableCell>
 									<div className="flex items-center gap-3">
 									<IconBox size="sm" variant="secondary-subtle">
-											<Icon icon={getIconById(app.icon || "application")} size={18} />
+											<Icon icon={IconType[getIconById(app.icon || "dashboard")]} size={18} />
 										</IconBox>
 										<Text className="font-medium">
 											{app.name}

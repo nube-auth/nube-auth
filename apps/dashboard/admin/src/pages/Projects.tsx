@@ -139,7 +139,7 @@ export default function Projects() {
 								<div className="flex items-center justify-between mb-3">
 									<div className="flex items-center gap-2.5">
 										<div className="w-9 h-9 bg-surface-secondary rounded-lg flex items-center justify-center">
-											<Icon icon={getIconById(project.icon || "folder")} size={20} className="text-primary" />
+											<Icon icon={IconType[getIconById(project.icon || "dashboard")]} size={20} className="text-primary" />
 										</div>
 										<div>
 											<Heading level={3} size="sm" className="font-semibold">
@@ -219,7 +219,7 @@ export default function Projects() {
 										<TableCell>
 											<div className="flex items-center gap-3">
 												<div className="w-8 h-8 bg-surface-secondary rounded-md flex items-center justify-center shrink-0">
-													<Icon icon={getIconById(project.icon || "folder")} size={18} className="text-primary" />
+													<Icon icon={IconType[getIconById(project.icon || "dashboard")]} size={18} className="text-primary" />
 												</div>
 												<div>
 													<Text className="font-medium mb-0.5">

@@ -57,7 +57,7 @@ export function AppSetupPage() {
 		name: "",
 		slug: "",
 		description: "",
-		icon: "application",
+		icon: "dashboard",
 		redirectUris: [""],
 		allowedHosts: [""],
 		sessionTtlDays: 30,

@@ -19,7 +19,7 @@ import {
 export function CreateProjectPage() {
 	const navigate = useNavigate();
 	const createProjectMutation = useCreateProject();
-	const [formData, setFormData] = useState({ name: "", slug: "", description: "", icon: "folder" });
+	const [formData, setFormData] = useState({ name: "", slug: "", description: "", icon: "dashboard" });
 
 	const generateSlug = (name: string) => {
 		return name
@@ -43,7 +43,7 @@ export function CreateProjectPage() {
 		e.preventDefault();
 		createProjectMutation.mutate(formData, {
 			onSuccess: (newProject) => {
-				setFormData({ name: "", slug: "", description: "", icon: "folder" });
+				setFormData({ name: "", slug: "", description: "", icon: "dashboard" });
 				navigate(`/projects/${newProject.id}`, { 
 					state: { toast: { message: "Project created successfully!", type: "success" } }
 				});
