@@ -154,10 +154,12 @@ checkoutRoutes.post("/", async (c: Context) => {
 				interval,
 				...(pendingPurchasePublicId && { purchaseId: pendingPurchasePublicId }),
 			},
-			...(trialPeriodDays && { trialPeriodDays }),
-			mode: price.billing_type === "recurring" ? "subscription" : "payment",
-			...(validated.promoCode && { promoCode: validated.promoCode }),
-		});
+		...(trialPeriodDays && { trialPeriodDays }),
+		mode: price.billing_type === "recurring" ? "subscription" : "payment",
+		...(validated.promoCode && { promoCode: validated.promoCode }),
+		// Pass the price's currency so Dodo's Adaptive Currency shows the correct local currency at checkout
+		billingCurrency: price.currency,
+	});
 
 		log.info(
 			{

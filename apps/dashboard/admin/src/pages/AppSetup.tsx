@@ -68,7 +68,7 @@ export function AppSetupPage() {
 			slug: "",
 			description: "Default free plan for new users",
 			price: 0,
-			currency: "USD",
+			currency: "usd",
 			billing_period: "none" as const,
 			trial_days: 0,
 			features: {},
@@ -728,23 +728,30 @@ export function AppSetupPage() {
 															<FieldLabel htmlFor="planCurrency">
 																Currency <span className="text-danger">*</span>
 															</FieldLabel>
-															<Input
-																type="text"
-																id="planCurrency"
+															<Select
 																value={formData.defaultLicensePlan.currency}
-																onChange={(e) =>
+																onValueChange={(value) =>
 																	setFormData({
 																		...formData,
 																		defaultLicensePlan: {
 																			...formData.defaultLicensePlan,
-																			currency: e.target.value.toUpperCase(),
+																			currency: value,
 																		},
 																	})
 																}
-																placeholder="USD"
-																maxLength={3}
-																required={formData.requiresLicensing}
-															/>
+															>
+																<SelectTrigger id="planCurrency">
+																	<SelectValue placeholder="Select currency" />
+																</SelectTrigger>
+																<SelectPopup>
+																	<SelectItem value="usd">USD — US Dollar</SelectItem>
+																	<SelectItem value="eur">EUR — Euro</SelectItem>
+																	<SelectItem value="gbp">GBP — British Pound</SelectItem>
+																	<SelectItem value="cad">CAD — Canadian Dollar</SelectItem>
+																	<SelectItem value="aud">AUD — Australian Dollar</SelectItem>
+																	<SelectItem value="inr">INR — Indian Rupee</SelectItem>
+																</SelectPopup>
+															</Select>
 														</Field>
 												</div>
 

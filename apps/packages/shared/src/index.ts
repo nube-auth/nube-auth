@@ -51,6 +51,8 @@ export {
 	type BillingType,
 	BILLING_INTERVALS,
 	type BillingInterval,
+	SUPPORTED_CURRENCIES,
+	type SupportedCurrency,
 	OTP_LENGTH,
 	OTP_LOCKOUT_MINUTES,
 	OTP_MAX_ATTEMPTS,

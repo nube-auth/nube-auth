@@ -45,7 +45,12 @@ export class DodoAdapter implements PaymentProviderAdapter {
 	 */
 	async createCheckout(params: CreateCheckoutParams): Promise<CheckoutSession> {
 		try {
-			const session = await this.client.checkoutSessions.create({
+			// billing_currency activates Dodo's Adaptive Currency feature so the
+		// customer sees and pays in the price's native currency (e.g. INR via UPI).
+		// Without this, Dodo defaults to USD display regardless of the product price currency.
+		type DodoBillingCurrency = NonNullable<Parameters<typeof this.client.checkoutSessions.create>[0]["billing_currency"]>;
+
+		const session = await this.client.checkoutSessions.create({
 				product_cart: [
 					{
 						product_id: params.productId,
@@ -58,6 +63,9 @@ export class DodoAdapter implements PaymentProviderAdapter {
 				},
 				return_url: params.successUrl,
 				metadata: params.metadata ?? null,
+				...(params.billingCurrency
+					? { billing_currency: params.billingCurrency.toUpperCase() as DodoBillingCurrency }
+					: {}),
 				...(params.trialPeriodDays
 					? { subscription_data: { trial_period_days: params.trialPeriodDays } }
 					: {}),
@@ -177,7 +185,7 @@ export class DodoAdapter implements PaymentProviderAdapter {
 		return {
 			transactionId: String(data["payment_id"] ?? ""),
 			amount: Number(data["total_amount"] ?? 0),
-			currency: String(data["currency"] ?? "USD"),
+			currency: String(data["currency"] ?? "usd").toLowerCase(),
 			status,
 			customerId: customer?.customer_id ?? "",
 			customerEmail: customer?.email ?? "",
@@ -195,7 +203,7 @@ export class DodoAdapter implements PaymentProviderAdapter {
 		return {
 			transactionId: String(data["subscription_id"] ?? ""),
 			amount: Number(data["recurring_pre_tax_amount"] ?? 0),
-			currency: String(data["currency"] ?? "USD"),
+			currency: String(data["currency"] ?? "usd").toLowerCase(),
 			status,
 			customerId: customer?.customer_id ?? "",
 			customerEmail: customer?.email ?? "",
@@ -211,7 +219,7 @@ export class DodoAdapter implements PaymentProviderAdapter {
 		return {
 			transactionId: String(data["refund_id"] ?? ""),
 			amount: Number(data["amount"] ?? 0),
-			currency: String(data["currency"] ?? "USD"),
+			currency: String(data["currency"] ?? "usd").toLowerCase(),
 			status: "refunded",
 			customerId: customer?.customer_id ?? "",
 			customerEmail: customer?.email ?? "",
@@ -276,9 +284,11 @@ export class DodoAdapter implements PaymentProviderAdapter {
 		try {
 			const product = await this.client.products.create({
 				name: params.name,
+				// description is used as the product description; metadata is not supported by Dodo at product level
 				description: params.description ?? null,
 				price: {
-					currency: "USD",
+					// Placeholder product — actual price is set via createPrice
+					currency: "USD" as Parameters<typeof this.client.products.create>[0]["price"]["currency"],
 					discount: 0,
 					price: 0,
 					purchasing_power_parity: false,
@@ -319,11 +329,20 @@ export class DodoAdapter implements PaymentProviderAdapter {
 				year: "Year",
 			};
 
-			const product = await this.client.products.create({
-				name: `Price ${params.amountCents} ${params.currency} ${params.interval}`,
+			// Dodo's SDK type for currency — cast required because the SDK uses a
+		// branded string union. We validate currency upstream via CurrencyCodeSchema.
+		type DodoCurrency = Parameters<typeof this.client.products.create>[0]["price"]["currency"];
+		const dodoCurrency = params.currency.toUpperCase() as DodoCurrency;
+
+		// Use the rich label from the sync worker (e.g. "Pro — Monthly (USD 9.99)").
+		// In Dodo each "price" is its own product, so the label becomes the product name.
+		const priceName = params.label ?? `${params.currency.toUpperCase()} ${(params.amountCents / 100).toFixed(2)} ${params.interval}`;
+
+		const product = await this.client.products.create({
+				name: priceName,
 				price: isRecurring
 					? {
-							currency: params.currency.toUpperCase() as "USD",
+							currency: dodoCurrency,
 							discount: 0,
 							price: params.amountCents,
 							purchasing_power_parity: false,
@@ -334,7 +353,7 @@ export class DodoAdapter implements PaymentProviderAdapter {
 							subscription_period_interval: intervalMap[params.interval] ?? "Month",
 						}
 					: {
-							currency: params.currency.toUpperCase() as "USD",
+							currency: dodoCurrency,
 							discount: 0,
 							price: params.amountCents,
 							purchasing_power_parity: false,
@@ -391,7 +410,7 @@ export class DodoAdapter implements PaymentProviderAdapter {
 				refundId: refund.refund_id,
 				status: refund.status === "review" ? "pending" : refund.status,
 				amount: refund.amount ?? 0,
-				currency: (refund.currency as string) ?? "USD",
+				currency: ((refund.currency as string) ?? "usd").toLowerCase(),
 			};
 		} catch (error) {
 			this.log.error(

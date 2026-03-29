@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SUPPORTED_CURRENCIES } from "../../constants/index.js";
 
 /**
  * Common schemas used across admin APIs
@@ -90,6 +91,12 @@ export const NonNegativeIntSchema = z.number().int().min(0);
 
 // Currency amount (2 decimal places max)
 export const CurrencySchema = z.number().min(0).max(999999.99).multipleOf(0.01);
+
+// ISO 4217 currency code — validated against the v1 supported set, normalized to lowercase
+export const CurrencyCodeSchema = z
+	.string()
+	.transform((v) => v.toLowerCase())
+	.pipe(z.enum(SUPPORTED_CURRENCIES));
 
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
 export type Pagination = z.infer<typeof PaginationSchema>;

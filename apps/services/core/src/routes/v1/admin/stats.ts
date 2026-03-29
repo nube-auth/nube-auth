@@ -6,6 +6,7 @@ import {
 	paymentTransactionQueries,
 	planQueries,
 	projectQueries,
+	userQueries,
 } from "@nube-auth/db";
 import { createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
@@ -46,41 +47,54 @@ statsRouter.get("/stats", async (c: Context) => {
 			}
 		}
 
-		const stats: Record<string, {
-			totalApps: number;
-			totalUsers: number;
-			totalLicenses: number;
-			activeLicenses: number;
-			totalRevenue: number;
-		}> = {};
+	const stats: Record<string, {
+		totalApps: number;
+		totalUsers: number;
+		totalLicenses: number;
+		activeLicenses: number;
+		totalRevenue: number;
+		revenueByCurrency: Record<string, number>;
+	}> = {};
 
-		for (const project of allProjects) {
-			const apps = await appQueries.findByProjectId(db, project.id);
+	for (const project of allProjects) {
+		const allApps = await appQueries.findByProjectId(db, project.id);
+		// Exclude test apps (created by payment testing playground)
+		const productionApps = allApps.filter((a) => !a.is_test);
 
-			let totalLicenses = 0;
-			let activeLicenses = 0;
+		let totalLicenses = 0;
+		let activeLicenses = 0;
 
-			for (const app of apps) {
-				const appLicenses = await licenseQueries.findByAppId(db, app.id);
-				totalLicenses += appLicenses.length;
-				for (const license of appLicenses) {
-					if (license.status === "active") activeLicenses++;
-				}
+		for (const app of productionApps) {
+			const appLicenses = await licenseQueries.findByAppId(db, app.id);
+			// Exclude test licenses created during payment testing
+			const productionLicenses = appLicenses.filter((l) => !l.is_test);
+			totalLicenses += productionLicenses.length;
+			for (const license of productionLicenses) {
+				// Both "active" and "trialing" represent users with live access
+				if (license.status === "active" || license.status === "trialing") activeLicenses++;
 			}
-
-			const totalUsers = await appUserQueries.countByProjectId(db, project.id);
-			const totalRevenue = await paymentTransactionQueries.getTotalRevenueByProjectId(db, project.id);
-
-			stats[project.public_id] = {
-				totalApps: apps.length,
-				totalUsers,
-				totalLicenses,
-				activeLicenses,
-				totalRevenue,
-			};
 		}
 
-		return c.json({ stats });
+		const totalUsers = await appUserQueries.countByProjectId(db, project.id);
+		const revenueByCurrency = await paymentTransactionQueries.getRevenueByProjectIdGroupedByCurrency(db, project.id);
+
+		// totalRevenue is USD cents converted to dollars for the summary card
+		const totalRevenue = (revenueByCurrency["usd"] ?? 0) / 100;
+
+		stats[project.public_id] = {
+			totalApps: productionApps.length,
+			totalUsers,
+			totalLicenses,
+			activeLicenses,
+			totalRevenue,
+			// Each value is in dollars for the respective currency
+			revenueByCurrency: Object.fromEntries(
+				Object.entries(revenueByCurrency).map(([currency, cents]) => [currency, cents / 100]),
+			),
+		};
+	}
+
+	return c.json({ stats });
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get batch project stats error");
 		return c.json({ error: "Failed to get project stats" }, 500);
@@ -106,44 +120,64 @@ statsRouter.get("/:projectId/stats", async (c: Context) => {
 			return c.json({ error: "Project not found" }, 404);
 		}
 
-		// Get apps in project
-		const apps = await appQueries.findByProjectId(db, project.id);
+	// Get apps in project — exclude test apps from the payment testing playground
+	const allApps = await appQueries.findByProjectId(db, project.id);
+	const apps = allApps.filter((a) => !a.is_test);
 
-		// Get all licenses for apps in this project
-		const appIds = apps.map((a) => a.id);
-		let totalLicenses = 0;
-		let activeLicenses = 0;
-		const licenseCounts: Record<string, number> = {};
+	// Gather all plan IDs up front (one query) to avoid N+1 per license
+	const planIds = [...new Set(
+		(await Promise.all(apps.map((a) => licenseQueries.findByAppId(db, a.id))))
+			.flat()
+			.filter((l) => !l.is_test)
+			.map((l) => l.plan_id),
+	)];
+	const planMap = new Map(
+		(await Promise.all(planIds.map((id) => planQueries.findById(db, id))))
+			.filter(Boolean)
+			.map((p) => [p!.id, p!]),
+	);
 
-		for (const appId of appIds) {
-			const appLicenses = await licenseQueries.findByAppId(db, appId);
-			totalLicenses += appLicenses.length;
+	let totalLicenses = 0;
+	let activeLicenses = 0;
+	const licenseCounts: Record<string, number> = {};
 
-			for (const license of appLicenses) {
-				if (license.status === "active") {
-					activeLicenses++;
-				}
+	for (const app of apps) {
+		const appLicenses = (await licenseQueries.findByAppId(db, app.id)).filter((l) => !l.is_test);
+		totalLicenses += appLicenses.length;
 
-				// Count by plan
-				const plan = await planQueries.findById(db, license.plan_id);
-				if (plan) {
-					licenseCounts[plan.slug] = (licenseCounts[plan.slug] || 0) + 1;
-				}
+		for (const license of appLicenses) {
+			// Both "active" and "trialing" represent users with live access
+			if (license.status === "active" || license.status === "trialing") {
+				activeLicenses++;
+			}
+
+			// Count by plan slug using pre-fetched plan map (no extra DB query per license)
+			const plan = planMap.get(license.plan_id);
+			if (plan) {
+				licenseCounts[plan.slug] = (licenseCounts[plan.slug] || 0) + 1;
 			}
 		}
+	}
 
-		const totalUsers = await appUserQueries.countByProjectId(db, project.id);
-		const totalRevenue = await paymentTransactionQueries.getTotalRevenueByProjectId(db, project.id);
+	const totalUsers = await appUserQueries.countByProjectId(db, project.id);
+	const revenueByCurrency = await paymentTransactionQueries.getRevenueByProjectIdGroupedByCurrency(db, project.id);
 
-		return c.json({
-			projectId,
-			totalApps: apps.length,
-			totalUsers,
-			totalLicenses,
-			activeLicenses,
-			licenseCounts,
-			totalRevenue,
-		});
+	// totalRevenue is USD amount in dollars for the summary card
+	const totalRevenue = (revenueByCurrency["usd"] ?? 0) / 100;
+
+	return c.json({
+		projectId,
+		totalApps: apps.length,
+		totalUsers,
+		totalLicenses,
+		activeLicenses,
+		licenseCounts,
+		totalRevenue,
+		// Per-currency revenue in dollars (not cents)
+		revenueByCurrency: Object.fromEntries(
+			Object.entries(revenueByCurrency).map(([currency, cents]) => [currency, cents / 100]),
+		),
+	});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get project stats error");
 		return c.json({ error: "Failed to get project stats" }, 500);
@@ -178,34 +212,53 @@ statsRouter.get("/:projectId/apps/:appId/stats", async (c: Context) => {
 			}
 		}
 
-		// Get all licenses for this app
-		const licenses = await licenseQueries.findByAppId(db, app.id);
-		const activeLicenses = licenses.filter((l) => l.status === "active");
+	// Exclude test licenses created by the payment testing playground
+	const allLicenses = await licenseQueries.findByAppId(db, app.id);
+	const licenses = allLicenses.filter((l) => !l.is_test);
 
-		// Count unique authenticated users from the persistent app_users table.
-		// This table is upserted on every login and never deleted, so it accurately
-		// reflects all users who have authenticated with this app.
-		const totalUsers = await appUserQueries.countByAppId(db, app.id);
+	// Both "active" and "trialing" represent users with live access
+	const activeLicenses = licenses.filter(
+		(l) => l.status === "active" || l.status === "trialing",
+	);
 
-		const licenseCounts: Record<string, number> = {};
+	// Count unique authenticated users from the persistent app_users table.
+	// This table is upserted on every login and never deleted, so it accurately
+	// reflects all users who have authenticated with this app.
+	const totalUsers = await appUserQueries.countByAppId(db, app.id);
 
-		for (const license of licenses) {
-			const plan = await planQueries.findById(db, license.plan_id);
-			if (plan) {
-				licenseCounts[plan.slug] = (licenseCounts[plan.slug] || 0) + 1;
-			}
+	// Pre-fetch all referenced plans in one pass to avoid N+1 per license
+	const planIds = [...new Set(licenses.map((l) => l.plan_id))];
+	const planMap = new Map(
+		(await Promise.all(planIds.map((id) => planQueries.findById(db, id))))
+			.filter(Boolean)
+			.map((p) => [p!.id, p!]),
+	);
+
+	const licenseCounts: Record<string, number> = {};
+	for (const license of licenses) {
+		const plan = planMap.get(license.plan_id);
+		if (plan) {
+			licenseCounts[plan.slug] = (licenseCounts[plan.slug] || 0) + 1;
 		}
+	}
 
-		const totalRevenue = await paymentTransactionQueries.getTotalRevenueByAppId(db, app.id);
+	const revenueByCurrency = await paymentTransactionQueries.getRevenueByAppIdGroupedByCurrency(db, app.id);
 
-		return c.json({
-			appId,
-			totalLicenses: licenses.length,
-			activeLicenses: activeLicenses.length,
-			totalUsers,
-			licenseCounts,
-			totalRevenue,
-		});
+	// totalRevenue is USD amount in dollars for the summary card
+	const totalRevenue = (revenueByCurrency["usd"] ?? 0) / 100;
+
+	return c.json({
+		appId,
+		totalLicenses: licenses.length,
+		activeLicenses: activeLicenses.length,
+		totalUsers,
+		licenseCounts,
+		totalRevenue,
+		// Per-currency revenue in dollars (not cents)
+		revenueByCurrency: Object.fromEntries(
+			Object.entries(revenueByCurrency).map(([currency, cents]) => [currency, cents / 100]),
+		),
+	});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get app stats error");
 		return c.json({ error: "Failed to get app stats" }, 500);

@@ -35,8 +35,8 @@ function formatPurchase(purchase: any, extras?: { app?: any; user?: any; provide
 		user_id: extras?.user?.public_id ?? null,
 		provider: extras?.providerConfig?.provider ?? null,
 		provider_purchase_id: purchase.provider_session_id,
-		amount: 0, // Amount lives on payment_transactions, not purchases
-		currency: "usd",
+		amount: null, // Amount and currency live on payment_transactions, not purchases
+		currency: null,
 		status: purchase.status,
 		created_at: new Date(purchase.created_at).toISOString(),
 		updated_at: new Date(purchase.updated_at).toISOString(),

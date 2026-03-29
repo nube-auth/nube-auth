@@ -14,6 +14,8 @@ export interface CreateCheckoutParams {
   trialPeriodDays?: number;
   mode?: 'payment' | 'subscription';
   promoCode?: string;
+  /** ISO 4217 currency code (lowercase). Used by Dodo's Adaptive Currency to set the checkout display/billing currency. */
+  billingCurrency?: string;
 }
 
 export interface CheckoutSession {
@@ -52,6 +54,12 @@ export interface SubscriptionDetails {
 export interface CreateProductParams {
   name: string;
   description?: string;
+  /**
+   * Key/value pairs attached to the product in the provider dashboard.
+   * Supported by Stripe (product metadata). Ignored by providers that lack metadata support.
+   * Use for traceability: nube_app_id, nube_plan_id, etc.
+   */
+  metadata?: Record<string, string>;
 }
 
 export interface CreateProductResult {
@@ -64,6 +72,17 @@ export interface CreatePriceParams {
   amountCents: number;
   currency: string;
   interval: 'month' | 'year' | 'one_time';
+  /**
+   * Human-readable label shown in the provider dashboard alongside the price.
+   * Used as Stripe price `nickname`, LemonSqueezy variant `name`, and Dodo product `name`.
+   * Pattern: "[Plan] — [Interval] ([CURRENCY] [Amount])"  e.g. "Pro — Monthly (USD 9.99)"
+   */
+  label?: string;
+  /**
+   * Key/value pairs attached to the price object in the provider dashboard.
+   * Supported by Stripe (price metadata). Ignored by providers that lack metadata support.
+   */
+  metadata?: Record<string, string>;
 }
 
 export interface CreatePriceResult {

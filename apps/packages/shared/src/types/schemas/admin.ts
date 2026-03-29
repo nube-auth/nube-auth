@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
 	AllowedHostsSchema,
 	AppSessionTtlDaysSchema,
+	CurrencyCodeSchema,
 	DescriptionSchema,
 	EmailSchema,
 	NameSchema,
@@ -64,12 +65,8 @@ export const CreateAppRequestSchema = z.object({
 			name: NameSchema,
 			slug: SlugSchema.optional(),
 			description: DescriptionSchema,
-			price: z.number().min(0).max(999999.99),
-			currency: z
-				.string()
-				.length(3)
-				.regex(/^[A-Z]{3}$/, "Currency must be 3-letter ISO code")
-				.default("USD"),
+		price: z.number().min(0).max(999999.99),
+		currency: CurrencyCodeSchema.default("usd"),
 			billing_period: z.enum(["none", "monthly", "yearly", "lifetime", "custom"]).default("none"),
 			trial_days: TrialDaysSchema,
 			features: z.record(z.any()).optional(),
@@ -142,10 +139,7 @@ export const CreatePlanRequestSchema = z.object({
 	slug: SlugSchema.optional(),
 	description: DescriptionSchema,
 	price: z.number().min(0).max(999999.99),
-	currency: z
-		.string()
-		.length(3)
-		.regex(/^[A-Z]{3}$/, "Currency must be 3-letter ISO code"),
+	currency: CurrencyCodeSchema,
 	billing_period: z.enum(["monthly", "yearly", "lifetime", "custom"]),
 	trial_days: TrialDaysSchema,
 	features: z.record(z.any()).optional(),
@@ -202,7 +196,6 @@ export const AppDTOSchema = z.object({
 	cacheTtlMinutes: z.number(),
 	rateLimit: z.number(),
 	enabledProviders: z.array(z.string()),
-	selectedPaymentProviderId: z.number().nullable().optional(),
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
 });
@@ -244,7 +237,7 @@ export const LicenseDTOSchema = z.object({
 	id: PublicIdSchema,
 	appId: PublicIdSchema,
 	plan: z.string(),
-	status: z.enum(["active", "expired", "canceled", "suspended"]),
+	status: z.enum(["active", "trialing", "expired", "canceled", "suspended"]),
 	validUntil: z.coerce.date().nullable().optional(),
 	createdAt: z.coerce.date(),
 });

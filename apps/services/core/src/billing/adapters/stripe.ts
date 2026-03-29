@@ -205,19 +205,19 @@ export class StripeAdapter implements PaymentProviderAdapter {
 				return result;
 			}
 
-			// Handle customer.subscription.deleted (subscription canceled)
-			if (event.type === "customer.subscription.deleted") {
-				const subscription = event.data as Stripe.Subscription;
+		// Handle customer.subscription.deleted (subscription canceled)
+		if (event.type === "customer.subscription.deleted") {
+			const subscription = event.data as Stripe.Subscription;
 
-				const result: PaymentDetails = {
-					transactionId: subscription.id, // Use subscription ID as transaction reference
-					amount: 0,
-					currency: "usd",
-					status: "canceled",
-					customerId: subscription.customer as string,
-					customerEmail: "", // Email not available in subscription event
-					subscriptionId: subscription.id,
-				};
+			const result: PaymentDetails = {
+				transactionId: subscription.id, // Use subscription ID as transaction reference
+				amount: 0,
+				currency: subscription.items.data[0]?.price?.currency ?? "usd",
+				status: "canceled",
+				customerId: subscription.customer as string,
+				customerEmail: "", // Email not available in subscription event
+				subscriptionId: subscription.id,
+			};
 
 				if (subscription.metadata) {
 					result.metadata = subscription.metadata as Record<string, string>;
@@ -296,19 +296,19 @@ export class StripeAdapter implements PaymentProviderAdapter {
 				return result;
 			}
 
-			// Handle customer.subscription.updated (subscription modified)
-			if (event.type === "customer.subscription.updated") {
-				const subscription = event.data as Stripe.Subscription;
+		// Handle customer.subscription.updated (subscription modified)
+		if (event.type === "customer.subscription.updated") {
+			const subscription = event.data as Stripe.Subscription;
 
-				const result: PaymentDetails = {
-					transactionId: subscription.id,
-					amount: 0,
-					currency: "usd",
-					status: "pending",
-					customerId: subscription.customer as string,
-					customerEmail: "",
-					subscriptionId: subscription.id,
-				};
+			const result: PaymentDetails = {
+				transactionId: subscription.id,
+				amount: 0,
+				currency: subscription.items.data[0]?.price?.currency ?? "usd",
+				status: "pending",
+				customerId: subscription.customer as string,
+				customerEmail: "",
+				subscriptionId: subscription.id,
+			};
 
 				if (subscription.metadata) {
 					result.metadata = subscription.metadata as Record<string, string>;
@@ -420,6 +420,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 			const product = await this.stripe.products.create({
 				name: params.name,
 				...(params.description && { description: params.description }),
+				...(params.metadata && { metadata: params.metadata }),
 			});
 
 			this.log.info(
@@ -449,6 +450,9 @@ export class StripeAdapter implements PaymentProviderAdapter {
 				product: params.productId,
 				unit_amount: params.amountCents,
 				currency: params.currency,
+				// nickname appears as a label in the Stripe dashboard alongside the price
+				...(params.label && { nickname: params.label }),
+				...(params.metadata && { metadata: params.metadata }),
 			};
 
 			// Set recurring or one-time based on interval

@@ -13,7 +13,7 @@ import { getDb, appQueries, planQueries, priceQueries, userQueries, auditLogQuer
 import { prices } from "@nube-auth/db/schema";
 import { eq } from "@nube-auth/db";
 import type { Context } from "hono";
-import { createLogger, serializeError, id, BILLING_TYPES, BILLING_INTERVALS } from "@nube-auth/shared";
+import { createLogger, serializeError, id, BILLING_TYPES, BILLING_INTERVALS, SUPPORTED_CURRENCIES } from "@nube-auth/shared";
 import { enqueuePlanSync } from "../../../billing/queue.js";
 
 const log = createLogger("admin-prices");
@@ -31,7 +31,7 @@ const CreatePriceSchema = z.object({
 	billingType: z.enum(billingTypeValues),
 	interval: z.enum(billingIntervalValues).optional().nullable(),
 	amountCents: z.number().int().nonnegative(),
-	currency: z.string().length(3).default("usd"),
+	currency: z.string().transform((v) => v.toLowerCase()).pipe(z.enum(SUPPORTED_CURRENCIES)).default("usd"),
 	durationDays: z.number().int().positive().optional().nullable(),
 	trialEnabled: z.boolean().optional().default(false),
 	trialDays: z.number().int().positive().optional().nullable(),

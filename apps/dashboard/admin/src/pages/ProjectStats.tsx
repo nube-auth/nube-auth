@@ -88,16 +88,24 @@ export function ProjectStatsPage() {
 				</CardBody>
 			</Card>
 
-			<Card>
-				<CardBody>
-				<Text className="text-13px text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
-					Monthly Revenue
+		<Card>
+			<CardBody>
+			<Text className="text-13px text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
+				Total Revenue
+			</Text>
+			<Text className="text-32px font-bold text-text-primary">
+				${(stats?.totalRevenue ?? 0).toFixed(2)}
+			</Text>
+			{stats?.revenueByCurrency && Object.keys(stats.revenueByCurrency).filter((c) => c !== "usd").length > 0 && (
+				<Text className="text-11px text-text-tertiary mt-1">
+					+{Object.entries(stats.revenueByCurrency)
+						.filter(([c]) => c !== "usd")
+						.map(([c, v]) => `${c.toUpperCase()} ${(v as number).toFixed(2)}`)
+						.join(", ")}
 				</Text>
-				<Text className="text-32px font-bold text-text-primary">
-					${stats?.totalRevenue || 0}
-				</Text>
-				</CardBody>
-			</Card>
+			)}
+			</CardBody>
+		</Card>
 		</div>
 
 			{/* Coming Soon Section */}

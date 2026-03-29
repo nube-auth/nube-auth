@@ -126,33 +126,71 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 				(credentials as any).webhookSecret = provider.webhook_secret || (credentials as any).webhookSecret;
 			}
 
-			// Create adapter
-			const adapter = createProviderAdapter(provider.provider, credentials);
+		// Create adapter
+		const adapter = createProviderAdapter(provider.provider, credentials);
 
-			// Create product in provider
-			const product = await adapter.createProduct({
-				name: plan.name,
-				description: plan.description ?? "",
-			});
+		// ── Naming convention ─────────────────────────────────────────────────────
+		// Product:  "[App Name] — [Plan Name]"  e.g. "Pingpong — Pro"
+		// Description prefix: "[nube:<app-slug>/<plan-slug>]" for easy grepping
+		// Price label: "[Plan Name] — [Interval] ([CURRENCY] [Amount])"
+		//              e.g. "Pro — Monthly (USD 9.99)", "Pro — Lifetime (INR 4999.00)"
+		// ─────────────────────────────────────────────────────────────────────────
+		const productName = `${app.name} — ${plan.name}`;
+		const productDescription = `[nube:${app.slug}/${plan.slug}]${plan.description ? ` ${plan.description}` : ""}`;
+		const productMetadata: Record<string, string> = {
+			nube_app_id: app.public_id,
+			nube_app_slug: app.slug,
+			nube_plan_id: plan.public_id,
+			nube_plan_slug: plan.slug,
+			nube_env: provider.environment ?? "production",
+		};
 
-			log.info(
-				{ planId, provider: provider.provider, productId: product.productId },
-				"Product created in provider",
-			);
+		// Create product in provider
+		const product = await adapter.createProduct({
+			name: productName,
+			description: productDescription,
+			metadata: productMetadata,
+		});
 
-			const syncedPrices: Array<{ interval: string; priceId: string }> = [];
+		log.info(
+			{ planId, provider: provider.provider, productId: product.productId },
+			"Product created in provider",
+		);
 
-			// Create a provider price for each active price record
-			for (const priceRecord of activePrices) {
-				try {
-					const providerPrice = await adapter.createPrice({
-						productId: product.productId,
-						amountCents: priceRecord.amount_cents,
-						currency: priceRecord.currency,
-						interval: priceRecord.billing_type === "one_time" || priceRecord.billing_type === "lifetime"
-							? "one_time"
-							: (priceRecord.interval as "month" | "year"),
-					});
+		const syncedPrices: Array<{ interval: string; priceId: string }> = [];
+
+		// Create a provider price for each active price record
+		for (const priceRecord of activePrices) {
+			try {
+				const billingInterval: "month" | "year" | "one_time" =
+					priceRecord.billing_type === "one_time" || priceRecord.billing_type === "lifetime"
+						? "one_time"
+						: (priceRecord.interval as "month" | "year");
+
+				const intervalLabel =
+					priceRecord.billing_type === "lifetime"
+						? "Lifetime"
+						: billingInterval === "one_time"
+							? "One-time"
+							: billingInterval === "month"
+								? "Monthly"
+								: "Yearly";
+				const amountFormatted = `${priceRecord.currency.toUpperCase()} ${(priceRecord.amount_cents / 100).toFixed(2)}`;
+				const priceLabel = `${plan.name} — ${intervalLabel} (${amountFormatted})`;
+
+				const providerPrice = await adapter.createPrice({
+					productId: product.productId,
+					amountCents: priceRecord.amount_cents,
+					currency: priceRecord.currency,
+					interval: billingInterval,
+					label: priceLabel,
+					metadata: {
+						nube_app_id: app.public_id,
+						nube_plan_id: plan.public_id,
+						nube_price_id: priceRecord.public_id,
+						nube_env: provider.environment ?? "production",
+					},
+				});
 
 					// Store external ref directly on the price record
 					await db

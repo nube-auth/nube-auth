@@ -207,99 +207,99 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 				attributes: Record<string, unknown>;
 			};
 
-			// Handle order_created event (successful payment)
-			if (event.type === "order_created") {
-				const attrs = payload.attributes;
+		// Handle order_created event (successful payment)
+		if (event.type === "order_created") {
+			const attrs = payload.attributes;
 
-				return {
-					transactionId: payload.id,
-					amount: Number(attrs["total"]) / 100, // LemonSqueezy returns cents
-					currency: String(attrs["currency"] || "usd"),
-					status: String(attrs["status"]) === "paid" ? "succeeded" : "pending",
-					customerId: String(attrs["customer_id"] || ""),
-					customerEmail: String(attrs["user_email"] || ""),
-					metadata: (attrs["custom_data"] as Record<string, string>) || {},
-				};
-			}
+			return {
+				transactionId: payload.id,
+				amount: Number(attrs["total"]) / 100, // LemonSqueezy returns cents
+				currency: String(attrs["currency"] || "usd").toLowerCase(),
+				status: String(attrs["status"]) === "paid" ? "succeeded" : "pending",
+				customerId: String(attrs["customer_id"] || ""),
+				customerEmail: String(attrs["user_email"] || ""),
+				metadata: (attrs["custom_data"] as Record<string, string>) || {},
+			};
+		}
 
-			// Handle subscription_created event
-			if (event.type === "subscription_created") {
-				const attrs = payload.attributes;
+		// Handle subscription_created event
+		if (event.type === "subscription_created") {
+			const attrs = payload.attributes;
 
-				return {
-					transactionId: payload.id,
-					amount: 0,
-					currency: "usd",
-					status: "succeeded",
-					customerId: String(attrs["customer_id"] || ""),
-					customerEmail: String(attrs["user_email"] || ""),
-					subscriptionId: payload.id,
-					metadata: (attrs["custom_data"] as Record<string, string>) || {},
-				};
-			}
+			return {
+				transactionId: payload.id,
+				amount: 0,
+				currency: String(attrs["currency"] || "usd").toLowerCase(),
+				status: "succeeded",
+				customerId: String(attrs["customer_id"] || ""),
+				customerEmail: String(attrs["user_email"] || ""),
+				subscriptionId: payload.id,
+				metadata: (attrs["custom_data"] as Record<string, string>) || {},
+			};
+		}
 
-			// Handle subscription_updated event
-			if (event.type === "subscription_updated") {
-				const attrs = payload.attributes;
+		// Handle subscription_updated event
+		if (event.type === "subscription_updated") {
+			const attrs = payload.attributes;
 
-				return {
-					transactionId: payload.id,
-					amount: 0,
-					currency: "usd",
-					status: String(attrs["status"]) === "active" ? "succeeded" : "pending",
-					customerId: String(attrs["customer_id"] || ""),
-					customerEmail: String(attrs["user_email"] || ""),
-					subscriptionId: payload.id,
-					metadata: (attrs["custom_data"] as Record<string, string>) || {},
-				};
-			}
+			return {
+				transactionId: payload.id,
+				amount: 0,
+				currency: String(attrs["currency"] || "usd").toLowerCase(),
+				status: String(attrs["status"]) === "active" ? "succeeded" : "pending",
+				customerId: String(attrs["customer_id"] || ""),
+				customerEmail: String(attrs["user_email"] || ""),
+				subscriptionId: payload.id,
+				metadata: (attrs["custom_data"] as Record<string, string>) || {},
+			};
+		}
 
-			// Handle subscription_cancelled event
-			if (event.type === "subscription_cancelled") {
-				const attrs = payload.attributes;
+		// Handle subscription_cancelled event
+		if (event.type === "subscription_cancelled") {
+			const attrs = payload.attributes;
 
-				return {
-					transactionId: payload.id,
-					amount: 0,
-					currency: "usd",
-					status: "canceled",
-					customerId: String(attrs["customer_id"] || ""),
-					customerEmail: String(attrs["user_email"] || ""),
-					subscriptionId: payload.id,
-					metadata: (attrs["custom_data"] as Record<string, string>) || {},
-				};
-			}
+			return {
+				transactionId: payload.id,
+				amount: 0,
+				currency: String(attrs["currency"] || "usd").toLowerCase(),
+				status: "canceled",
+				customerId: String(attrs["customer_id"] || ""),
+				customerEmail: String(attrs["user_email"] || ""),
+				subscriptionId: payload.id,
+				metadata: (attrs["custom_data"] as Record<string, string>) || {},
+			};
+		}
 
-			// Handle subscription_payment_failed event
-			if (event.type === "subscription_payment_failed") {
-				const attrs = payload.attributes;
+		// Handle subscription_payment_failed event
+		if (event.type === "subscription_payment_failed") {
+			const attrs = payload.attributes;
 
-				return {
-					transactionId: payload.id,
-					amount: Number(attrs["amount"] || 0) / 100,
-					currency: "usd",
-					status: "failed",
-					customerId: String(attrs["customer_id"] || ""),
-					customerEmail: String(attrs["user_email"] || ""),
-					subscriptionId: String(attrs["subscription_id"] || ""),
-					metadata: (attrs["custom_data"] as Record<string, string>) || {},
-				};
-			}
+			return {
+				transactionId: payload.id,
+				amount: Number(attrs["amount"] || 0) / 100,
+				currency: String(attrs["currency"] || "usd").toLowerCase(),
+				status: "failed",
+				customerId: String(attrs["customer_id"] || ""),
+				customerEmail: String(attrs["user_email"] || ""),
+				subscriptionId: String(attrs["subscription_id"] || ""),
+				metadata: (attrs["custom_data"] as Record<string, string>) || {},
+			};
+		}
 
-			// Handle subscription_payment_refunded event
-			if (event.type === "subscription_payment_refunded") {
-				const attrs = payload.attributes;
+		// Handle subscription_payment_refunded event
+		if (event.type === "subscription_payment_refunded") {
+			const attrs = payload.attributes;
 
-				return {
-					transactionId: payload.id,
-					amount: Number(attrs["refunded_amount"] || 0) / 100,
-					currency: "usd",
-					status: "refunded",
-					customerId: String(attrs["customer_id"] || ""),
-					customerEmail: String(attrs["user_email"] || ""),
-					metadata: (attrs["custom_data"] as Record<string, string>) || {},
-				};
-			}
+			return {
+				transactionId: payload.id,
+				amount: Number(attrs["refunded_amount"] || 0) / 100,
+				currency: String(attrs["currency"] || "usd").toLowerCase(),
+				status: "refunded",
+				customerId: String(attrs["customer_id"] || ""),
+				customerEmail: String(attrs["user_email"] || ""),
+				metadata: (attrs["custom_data"] as Record<string, string>) || {},
+			};
+		}
 
 			this.log.debug({ eventType: event.type }, "LemonSqueezy event type not handled");
 			return null;
@@ -454,13 +454,14 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 			const variantData = {
 				data: {
 					type: "variants",
-					attributes: {
-						product_id: Number.parseInt(params.productId, 10),
-						name: `${params.interval === "one_time" ? "One-time" : params.interval === "month" ? "Monthly" : "Yearly"}`,
-						price: params.amountCents,
-						interval: params.interval === "one_time" ? null : params.interval,
-						interval_count: params.interval === "one_time" ? null : 1,
-					},
+				attributes: {
+					product_id: Number.parseInt(params.productId, 10),
+					// Use the rich label from the sync worker; fall back to interval name only
+					name: params.label ?? (params.interval === "one_time" ? "One-time" : params.interval === "month" ? "Monthly" : "Yearly"),
+					price: params.amountCents,
+					interval: params.interval === "one_time" ? null : params.interval,
+					interval_count: params.interval === "one_time" ? null : 1,
+				},
 				},
 			};
 

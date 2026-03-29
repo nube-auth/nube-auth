@@ -107,6 +107,23 @@ export const SUBSCRIPTION_STATUSES = {
 export type SubscriptionStatusType = (typeof SUBSCRIPTION_STATUSES)[keyof typeof SUBSCRIPTION_STATUSES];
 
 /**
+ * Supported currencies (v1)
+ * All stored and compared in lowercase (ISO 4217).
+ *
+ * Provider coverage (all 6 currencies supported by all 3 providers):
+ *   Stripe       — 135+ currencies, all 6 supported natively
+ *   LemonSqueezy — 130+ currencies, all 6 supported (display currency; settlement in USD)
+ *   Dodo         — INR supported with dedicated wallet + UPI/Rupay payment methods;
+ *                  non-USD currencies use Adaptive Currency (billing_currency on checkout)
+ *
+ * Note: JPY excluded from v1 — it is a zero-decimal currency requiring special
+ * amount handling (amount_cents = whole yen, not hundredths). Add in v2.
+ */
+export const SUPPORTED_CURRENCIES = ["usd", "eur", "gbp", "cad", "aud", "inr"] as const;
+
+export type SupportedCurrency = (typeof SUPPORTED_CURRENCIES)[number];
+
+/**
  * Price billing types
  */
 export const BILLING_TYPES = {

@@ -2015,7 +2015,7 @@ export const paymentTransactionQueries = {
 		return result[0]?.count ?? 0;
 	},
 
-	/** Sum completed revenue (in cents) for a specific app */
+	/** Sum completed revenue (in cents) for a specific app — excludes test data */
 	async getTotalRevenueByAppId(db: DbClient, appId: number): Promise<number> {
 		const result = await db
 			.select({ total: sql<number>`coalesce(sum(${payment_transactions.amount_cents}), 0)` })
@@ -2024,6 +2024,7 @@ export const paymentTransactionQueries = {
 			.where(
 				and(
 					eq(licenses.app_id, appId),
+					eq(licenses.is_test, false),
 					eq(payment_transactions.status, "success"),
 					inArray(payment_transactions.type, ["purchase", "renewal"]),
 				),
@@ -2031,7 +2032,7 @@ export const paymentTransactionQueries = {
 		return Number(result[0]?.total ?? 0);
 	},
 
-	/** Sum completed revenue (in cents) for all apps in a project */
+	/** Sum completed revenue (in cents) for all apps in a project — excludes test data */
 	async getTotalRevenueByProjectId(db: DbClient, projectId: number): Promise<number> {
 		const result = await db
 			.select({ total: sql<number>`coalesce(sum(${payment_transactions.amount_cents}), 0)` })
@@ -2041,11 +2042,67 @@ export const paymentTransactionQueries = {
 			.where(
 				and(
 					eq(apps.project_id, projectId),
+					eq(apps.is_test, false),
+					eq(licenses.is_test, false),
 					eq(payment_transactions.status, "success"),
 					inArray(payment_transactions.type, ["purchase", "renewal"]),
 				),
 			);
 		return Number(result[0]?.total ?? 0);
+	},
+
+	/**
+	 * Revenue grouped by currency (in cents) for a specific app — excludes test data.
+	 * Returns a map of { usd: 12345, eur: 5000, ... }.
+	 * Callers should divide by 100 to convert to dollars before displaying.
+	 */
+	async getRevenueByAppIdGroupedByCurrency(db: DbClient, appId: number): Promise<Record<string, number>> {
+		const rows = await db
+			.select({
+				currency: payment_transactions.currency,
+				total: sql<number>`coalesce(sum(${payment_transactions.amount_cents}), 0)`,
+			})
+			.from(payment_transactions)
+			.innerJoin(licenses, eq(licenses.id, payment_transactions.license_id))
+			.where(
+				and(
+					eq(licenses.app_id, appId),
+					eq(licenses.is_test, false),
+					eq(payment_transactions.status, "success"),
+					inArray(payment_transactions.type, ["purchase", "renewal"]),
+				),
+			)
+			.groupBy(payment_transactions.currency);
+
+		return Object.fromEntries(rows.map((r) => [r.currency, Number(r.total)]));
+	},
+
+	/**
+	 * Revenue grouped by currency (in cents) for all apps in a project — excludes test data.
+	 * Returns a map of { usd: 12345, eur: 5000, ... }.
+	 * Callers should divide by 100 to convert to dollars before displaying.
+	 */
+	async getRevenueByProjectIdGroupedByCurrency(db: DbClient, projectId: number): Promise<Record<string, number>> {
+		const rows = await db
+			.select({
+				currency: payment_transactions.currency,
+				total: sql<number>`coalesce(sum(${payment_transactions.amount_cents}), 0)`,
+			})
+			.from(payment_transactions)
+			.innerJoin(licenses, eq(licenses.id, payment_transactions.license_id))
+			.innerJoin(apps, eq(apps.id, licenses.app_id))
+			.where(
+				and(
+					eq(apps.project_id, projectId),
+					eq(apps.is_test, false),
+					eq(licenses.is_test, false),
+					eq(payment_transactions.status, "success"),
+					inArray(payment_transactions.type, ["purchase", "renewal"]),
+				),
+			)
+			.groupBy(payment_transactions.currency);
+
+		return Object.fromEntries(rows.map((r) => [r.currency, Number(r.total)]));
 	},
 };
 
