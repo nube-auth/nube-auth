@@ -69,7 +69,12 @@ export class DodoAdapter implements PaymentProviderAdapter {
 				...(params.trialPeriodDays
 					? { subscription_data: { trial_period_days: params.trialPeriodDays } }
 					: {}),
-				...(params.promoCode ? { discount_code: params.promoCode } : {}),
+				// Prefer the resolved provider coupon id (our internal Dodo discount code)
+			...(params.providerCoupon
+				? { discount_code: params.providerCoupon.id }
+				: params.promoCode
+					? { discount_code: params.promoCode }
+					: {}),
 			});
 
 			this.log.info(
@@ -276,43 +281,16 @@ export class DodoAdapter implements PaymentProviderAdapter {
 	}
 
 	/**
-	 * Create a product in Dodo.
-	 * In Dodo, products contain pricing directly. We create a placeholder one-time product here;
-	 * the actual pricing is set via createPrice which creates a separate product per price point.
+	 * No-op for Dodo — Dodo has no separate "product" concept.
+	 * Each price point IS its own product in Dodo's data model, created by createPrice.
+	 * Returning a sentinel so the sync worker can proceed to createPrice calls.
 	 */
 	async createProduct(params: CreateProductParams): Promise<CreateProductResult> {
-		try {
-			const product = await this.client.products.create({
-				name: params.name,
-				// description is used as the product description; metadata is not supported by Dodo at product level
-				description: params.description ?? null,
-				price: {
-					// Placeholder product — actual price is set via createPrice
-					currency: "USD" as Parameters<typeof this.client.products.create>[0]["price"]["currency"],
-					discount: 0,
-					price: 0,
-					purchasing_power_parity: false,
-					type: "one_time_price",
-				},
-				tax_category: "saas",
-			});
-
-			this.log.info(
-				{ productId: product.product_id, name: params.name },
-				"Dodo product created",
-			);
-
-			return {
-				productId: product.product_id,
-				name: params.name,
-			};
-		} catch (error) {
-			this.log.error(
-				{ err: serializeError(error as Error), name: params.name },
-				"Failed to create Dodo product",
-			);
-			throw error;
-		}
+		this.log.info(
+			{ name: params.name },
+			"Dodo: skipping createProduct (each price is its own Dodo product)",
+		);
+		return { productId: "__dodo_no_product__", name: params.name };
 	}
 
 	/**
@@ -387,6 +365,55 @@ export class DodoAdapter implements PaymentProviderAdapter {
 				},
 				"Failed to create Dodo price",
 			);
+			throw error;
+		}
+	}
+
+	/**
+	 * Create a Dodo Discount for a Nube promotion.
+	 * Dodo discounts are identified by a code string. We generate an internal
+	 * code so many Nube promotion_codes can all resolve to this one Dodo discount.
+	 */
+	async createCoupon(params: import("./types.js").CreateCouponParams): Promise<import("./types.js").CreateCouponResult> {
+		try {
+			const internalCode = `NUBE-${params.name.toUpperCase().replace(/[^A-Z0-9]/g, "").substring(0, 25)}-${Date.now().toString(36).toUpperCase()}`;
+
+			const discount = await this.client.discounts.create({
+				name: params.name,
+				code: internalCode,
+				type: params.discountType === "percent" ? "percentage" : "flat",
+				amount: params.discountType === "percent"
+					? params.discountValue
+					: params.discountValue, // Dodo uses cents for flat discounts
+				...(params.maxRedemptions && { usage_limit: params.maxRedemptions }),
+				...(params.expiresAt && { expires_at: params.expiresAt.toISOString() }),
+			} as Parameters<typeof this.client.discounts.create>[0]);
+
+			this.log.info({ discountId: discount.discount_id, code: internalCode }, "Dodo discount created");
+
+			return { couponId: internalCode, objectType: "discount" };
+		} catch (error) {
+			this.log.error({ err: serializeError(error as Error), name: params.name }, "Failed to create Dodo discount");
+			throw error;
+		}
+	}
+
+	/**
+	 * Delete a Dodo Discount by code.
+	 */
+	async deleteCoupon(discountCode: string): Promise<void> {
+		try {
+			// Dodo SDK: look up discounts and delete by ID
+			const list = await this.client.discounts.list({ page_size: 100 });
+			const match = list.items?.find((d: any) => d.code === discountCode);
+			if (!match) {
+				this.log.warn({ discountCode }, "Dodo discount not found — skipping delete");
+				return;
+			}
+			await this.client.discounts.delete(match.discount_id);
+			this.log.info({ discountCode, discountId: match.discount_id }, "Dodo discount deleted");
+		} catch (error) {
+			this.log.error({ err: serializeError(error as Error), discountCode }, "Failed to delete Dodo discount");
 			throw error;
 		}
 	}

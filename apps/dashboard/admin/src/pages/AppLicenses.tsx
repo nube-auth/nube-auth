@@ -467,12 +467,28 @@ function PricesSection({ appId, plan, showToast }: { appId: string; plan: V2Plan
 		}
 	};
 
+	const CURRENCY_META: Record<string, { symbol: string; label: string }> = {
+		usd: { symbol: "$", label: "USD — US Dollar" },
+		eur: { symbol: "€", label: "EUR — Euro" },
+		gbp: { symbol: "£", label: "GBP — British Pound" },
+		cad: { symbol: "CA$", label: "CAD — Canadian Dollar" },
+		aud: { symbol: "A$", label: "AUD — Australian Dollar" },
+		inr: { symbol: "₹", label: "INR — Indian Rupee" },
+	};
+
+	const formatPrice = (amountCents: number, currency: string) =>
+		new Intl.NumberFormat("en", {
+			style: "currency",
+			currency: currency.toUpperCase(),
+			minimumFractionDigits: 2,
+		}).format(amountCents / 100);
+
 	const [showModal, setShowModal] = useState(false);
 	const [form, setForm] = useState({
 		billingType: "recurring",
 		interval: "month",
 		intervalCount: "1",
-		amountCents: "",
+		amount: "",
 		currency: "usd",
 	});
 	const [saving, setSaving] = useState(false);
@@ -480,8 +496,9 @@ function PricesSection({ appId, plan, showToast }: { appId: string; plan: V2Plan
 	const prices = data?.prices ?? [];
 
 	const handleCreate = async () => {
-		if (!form.amountCents) {
-			showToast("Amount is required", "error");
+		const parsed = parseFloat(form.amount);
+		if (!form.amount || isNaN(parsed) || parsed < 0) {
+			showToast("Enter a valid amount", "error");
 			return;
 		}
 		setSaving(true);
@@ -490,12 +507,12 @@ function PricesSection({ appId, plan, showToast }: { appId: string; plan: V2Plan
 				billingType: form.billingType,
 				interval: form.billingType === "recurring" ? form.interval : null,
 				intervalCount: form.billingType === "recurring" ? parseInt(form.intervalCount, 10) : null,
-				amountCents: parseInt(form.amountCents, 10),
+				amountCents: Math.round(parsed * 100),
 				currency: form.currency,
 			});
 			showToast("Price created", "success");
 			setShowModal(false);
-			setForm({ billingType: "recurring", interval: "month", intervalCount: "1", amountCents: "", currency: "usd" });
+			setForm({ billingType: "recurring", interval: "month", intervalCount: "1", amount: "", currency: "usd" });
 		} catch (err) {
 			showToast(err instanceof Error ? err.message : "Failed to create price", "error");
 		} finally {
@@ -524,14 +541,14 @@ function PricesSection({ appId, plan, showToast }: { appId: string; plan: V2Plan
 						const isSyncing = syncingPriceId === price.priceId;
 						return (
 							<div key={price.priceId} className="p-3 rounded-lg border border-card-border bg-bg-muted">
-								<div className="flex items-center gap-2 mb-1">
-									<Text className="font-semibold">
-										${(price.amountCents / 100).toFixed(2)}
-									</Text>
-									{price.interval && (
-										<Text className="text-muted-foreground text-xs">/{price.interval}</Text>
-									)}
-								</div>
+						<div className="flex items-center gap-2 mb-1">
+								<Text className="font-semibold">
+									{formatPrice(price.amountCents, price.currency)}
+								</Text>
+								{price.interval && (
+									<Text className="text-muted-foreground text-xs">/{price.interval}</Text>
+								)}
+							</div>
 								<div className="flex flex-wrap gap-1.5 mb-1.5">
 									<Chip size="sm" variant="default">{price.billingType}</Chip>
 									<Chip size="sm" variant={price.isActive ? "success" : "default"}>
@@ -596,10 +613,9 @@ function PricesSection({ appId, plan, showToast }: { appId: string; plan: V2Plan
 								value={form.billingType}
 								onChange={(v) => setForm({ ...form, billingType: v })}
 								options={[
-									{ value: "recurring", label: "Recurring" },
-									{ value: "one_time", label: "One Time" },
-									{ value: "lifetime", label: "Lifetime" },
-								]}
+								{ value: "recurring", label: "Recurring" },
+								{ value: "one_time", label: "One-time" },
+							]}
 							/>
 						</div>
 						{form.billingType === "recurring" && (
@@ -626,28 +642,39 @@ function PricesSection({ appId, plan, showToast }: { appId: string; plan: V2Plan
 								</div>
 							</>
 						)}
-						<div>
-							<Label>Amount (cents)</Label>
+					<div>
+						<Label>Currency</Label>
+						<Select
+							value={form.currency}
+							onChange={(v) => setForm({ ...form, currency: v })}
+							options={Object.entries(CURRENCY_META).map(([code, { label }]) => ({
+								value: code,
+								label,
+							}))}
+						/>
+					</div>
+					<div>
+						<Label>Amount</Label>
+						<div className="relative">
+							<span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm select-none pointer-events-none">
+								{CURRENCY_META[form.currency]?.symbol ?? form.currency.toUpperCase()}
+							</span>
 							<Input
 								type="number"
-								value={form.amountCents}
-								onChange={(e) => setForm({ ...form, amountCents: e.target.value })}
-								placeholder="999"
-							/>
-							{form.amountCents && (
-								<Text className="text-xs text-muted-foreground mt-1">
-									= ${(parseInt(form.amountCents, 10) / 100).toFixed(2)}
-								</Text>
-							)}
-						</div>
-						<div>
-							<Label>Currency</Label>
-							<Input
-								value={form.currency}
-								onChange={(e) => setForm({ ...form, currency: e.target.value })}
-								placeholder="usd"
+								min="0"
+								step="0.01"
+								value={form.amount}
+								onChange={(e) => setForm({ ...form, amount: e.target.value })}
+								placeholder="9.99"
+								className="pl-8"
 							/>
 						</div>
+						{form.amount && !isNaN(parseFloat(form.amount)) && (
+							<Text className="text-xs text-muted-foreground mt-1">
+								= {formatPrice(Math.round(parseFloat(form.amount) * 100), form.currency)}
+							</Text>
+						)}
+					</div>
 					</DialogBody>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>

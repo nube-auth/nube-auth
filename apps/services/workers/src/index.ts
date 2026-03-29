@@ -74,16 +74,20 @@ export async function initializeWorkers(): Promise<void> {
 				);
 			});
 
-			worker.on("error", (err) => {
-				log.error(
-					{ error: err.message },
-					"Worker encountered error",
-				);
-			});
+		worker.on("error", (err) => {
+			log.error(
+				{
+					error: err.message || String(err),
+					code: (err as NodeJS.ErrnoException).code,
+					stack: err.stack,
+				},
+				"Worker encountered error",
+			);
+		});
 		});
 	} catch (error) {
 		log.error(
-			{ error: (error as Error).message },
+			{ err: error, error: (error as Error).message || String(error) },
 			"Failed to initialize workers",
 		);
 		throw error;

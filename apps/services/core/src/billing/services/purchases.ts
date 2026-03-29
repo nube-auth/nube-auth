@@ -5,7 +5,7 @@
  */
 
 import type { Database } from "@nube-auth/db";
-import { eq, priceQueries, purchaseQueries, sql, } from "@nube-auth/db";
+import { eq, priceQueries, purchaseQueries, promotionCodeQueries, promotionQueries, promotionRedemptionQueries, sql, } from "@nube-auth/db";
 import {
 	apps,
 	licenses,
@@ -16,6 +16,7 @@ import {
 	users,
 	plans,
 	payment_transactions,
+	promotion_redemptions,
 } from "@nube-auth/db/schema";
 import { createLogger, serializeError, id } from "@nube-auth/shared";
 import type { PaymentDetails } from "../adapters/types.js";
@@ -155,18 +156,19 @@ export async function createPurchaseRecords(
 			log.info({ purchaseId: purchase.public_id }, "Purchase record created by webhook");
 		}
 
-		// Calculate valid_until based on price duration
-		const LIFETIME_DATE = new Date('2099-12-31T23:59:59.000Z');
+		// Calculate valid_until based on billing type:
+		// - one_time: always 2099-12-31 (permanent access after a single payment)
+		// - recurring: derive from interval (30 days for month, 365 for year)
+		const ONE_TIME_EXPIRY = new Date('2099-12-31T23:59:59.000Z');
 		let validUntil: Date;
-		if (price.duration_days) {
-			validUntil = new Date(Date.now() + price.duration_days * 24 * 60 * 60 * 1000);
+		if (price.billing_type === 'one_time') {
+			validUntil = ONE_TIME_EXPIRY;
 		} else if (price.billing_type === 'recurring' && price.interval) {
-			// Recurring subscriptions without an explicit duration_days: derive from interval
-			const daysToAdd = price.interval === 'year' ? 365 : 30;
+			const daysToAdd = price.duration_days
+				?? (price.interval === 'year' ? 365 : 30);
 			validUntil = new Date(Date.now() + daysToAdd * 24 * 60 * 60 * 1000);
 		} else {
-			// Lifetime / one_time with no duration_days — use fixed far-future date
-			validUntil = LIFETIME_DATE;
+			validUntil = ONE_TIME_EXPIRY;
 		}
 
 		// Upsert license (update if exists for this user+app, create if not)
@@ -274,6 +276,23 @@ export async function createPurchaseRecords(
 			}
 		}
 
+		// Resolve promotion from the pending purchase (stored at checkout initiation time)
+		let promoCodeRow: { id: number; promotion_id: number; code: string } | undefined;
+		let discountAppliedCents = 0;
+		if (purchase.promotion_code_id) {
+			promoCodeRow = await promotionCodeQueries.findById(db, purchase.promotion_code_id) as typeof promoCodeRow;
+		}
+
+		if (promoCodeRow) {
+			const promo = await promotionQueries.findById(db, promoCodeRow.promotion_id);
+			if (promo && price) {
+				discountAppliedCents = promo.discount_type === "percent"
+					? Math.round((price.amount_cents * promo.discount_value) / 100)
+					: promo.discount_value;
+				discountAppliedCents = Math.min(discountAppliedCents, price.amount_cents);
+			}
+		}
+
 		const [paymentTransaction] = await db
 			.insert(payment_transactions)
 			.values({
@@ -289,10 +308,10 @@ export async function createPurchaseRecords(
 			status: paymentDetails.status === "succeeded" ? "success" : paymentDetails.status === "failed" ? "failed" : "pending",
 				amount_cents: paymentDetails.amount,
 				currency: paymentDetails.currency,
-				discount_applied_cents: 0,
-				discount_applied: false,
-				promotion_id: null,
-				promotion_code_id: null,
+				discount_applied_cents: discountAppliedCents,
+				discount_applied: discountAppliedCents > 0,
+				promotion_id: promoCodeRow ? promoCodeRow.promotion_id : null,
+				promotion_code_id: promoCodeRow ? promoCodeRow.id : null,
 				provider_discount_id: paymentDetails.metadata?.["discountId"] || null,
 				description: `Purchase - ${interval || "one-time"}`,
 				metadata: paymentDetails.metadata || {},
@@ -308,6 +327,30 @@ export async function createPurchaseRecords(
 			.update(purchases)
 			.set({ payment_transaction_id: paymentTransaction.id })
 			.where(eq(purchases.id, purchase.id));
+
+		// Record promotion redemption and increment usage counters
+		if (promoCodeRow && paymentDetails.status === "succeeded") {
+			try {
+				await db.insert(promotion_redemptions).values({
+					public_id: id.request(),
+					promotion_code_id: promoCodeRow.id,
+					purchase_id: purchase.id,
+					app_id: app.id,
+					subject_type: "user",
+					subject_id: user.id,
+					discount_cents: discountAppliedCents,
+				});
+				await promotionCodeQueries.incrementUses(db, promoCodeRow.id);
+				await promotionQueries.incrementRedemptions(db, promoCodeRow.promotion_id);
+				log.info(
+					{ promotionCodeId: promoCodeRow.id, discountCents: discountAppliedCents, purchaseId: purchase.public_id },
+					"Promotion redemption recorded",
+				);
+			} catch (redeemErr) {
+				// Non-fatal: transaction is already committed
+				log.error({ err: serializeError(redeemErr as Error), promotionCodeId: promoCodeRow.id }, "Failed to record promotion redemption");
+			}
+		}
 
 		if (paymentDetails.subscriptionId) {
 			const [subscription] = await db

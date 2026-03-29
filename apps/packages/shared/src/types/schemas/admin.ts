@@ -67,7 +67,7 @@ export const CreateAppRequestSchema = z.object({
 			description: DescriptionSchema,
 		price: z.number().min(0).max(999999.99),
 		currency: CurrencyCodeSchema.default("usd"),
-			billing_period: z.enum(["none", "monthly", "yearly", "lifetime", "custom"]).default("none"),
+			billing_period: z.enum(["none", "monthly", "yearly", "one_time", "custom"]).default("none"),
 			trial_days: TrialDaysSchema,
 			features: z.record(z.any()).optional(),
 		})
@@ -140,7 +140,7 @@ export const CreatePlanRequestSchema = z.object({
 	description: DescriptionSchema,
 	price: z.number().min(0).max(999999.99),
 	currency: CurrencyCodeSchema,
-	billing_period: z.enum(["monthly", "yearly", "lifetime", "custom"]),
+	billing_period: z.enum(["monthly", "yearly", "one_time", "custom"]),
 	trial_days: TrialDaysSchema,
 	features: z.record(z.any()).optional(),
 	is_active: z.boolean().default(true),

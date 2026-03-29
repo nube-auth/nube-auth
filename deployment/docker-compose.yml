@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-nube-auth}
       POSTGRES_USER: ${POSTGRES_USER:-nube-auth}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Database password must be set in .env or .env.local}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nube-auth-dev-password}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

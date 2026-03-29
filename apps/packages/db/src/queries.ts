@@ -1644,6 +1644,14 @@ export const promotionCodeQueries = {
 		return results[0]!;
 	},
 
+	async findById(db: DbClient, codeId: number) {
+		const results = await db
+			.select()
+			.from(promotion_codes)
+			.where(eq(promotion_codes.id, codeId));
+		return results[0];
+	},
+
 	async findByCode(db: DbClient, code: string) {
 		const results = await db
 			.select()

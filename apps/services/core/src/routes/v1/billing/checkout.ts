@@ -6,7 +6,7 @@
  * interval, and currency — no routing logic is needed here.
  */
 
-import { getDb, prices, plans, payment_provider_configs, appQueries, priceQueries, purchases, userQueries, eq, and } from "@nube-auth/db";
+import { getDb, prices, plans, payment_provider_configs, appQueries, priceQueries, purchases, userQueries, promotionCodeQueries, promotionProviderRefQueries, eq, and } from "@nube-auth/db";
 import { createLogger, id, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -129,6 +129,37 @@ checkoutRoutes.post("/", async (c: Context) => {
 		const trialPeriodDays = price.trial_enabled && price.trial_days ? price.trial_days : undefined;
 		const interval = price.interval ?? "one_time";
 
+		// Resolve promo code: Nube code → promotion_code row → provider coupon via promotion_provider_refs
+		let resolvedPromoCodeId: number | undefined;
+		let resolvedProviderCoupon: { id: string; objectType: "coupon" | "promotion_code" | "discount" } | undefined;
+
+		if (validated.promoCode) {
+			const promoCode = await promotionCodeQueries.findByCode(db, validated.promoCode.toUpperCase());
+			if (promoCode && promoCode.app_id === app.id && promoCode.is_active) {
+				resolvedPromoCodeId = promoCode.id;
+				const ref = await promotionProviderRefQueries.findByPromotionAndProvider(
+					db,
+					promoCode.promotion_id,
+					providerConfig.id,
+				);
+				if (ref) {
+					resolvedProviderCoupon = {
+						id: ref.provider_coupon_id,
+						objectType: ref.provider_object_type as "coupon" | "promotion_code" | "discount",
+					};
+					log.info(
+						{ promoCode: validated.promoCode, couponId: ref.provider_coupon_id, provider: providerConfig.provider },
+						"Resolved Nube promo code to provider coupon",
+					);
+				} else {
+					log.warn(
+						{ promoCode: validated.promoCode, provider: providerConfig.provider },
+						"No provider ref found for promo code — discount will not be applied",
+					);
+				}
+			}
+		}
+
 		// Generate the pending purchase public_id before creating the checkout session
 		// so we can embed it in the provider metadata. The webhook will use this to
 		// update the existing pending record instead of creating a duplicate.
@@ -154,12 +185,12 @@ checkoutRoutes.post("/", async (c: Context) => {
 				interval,
 				...(pendingPurchasePublicId && { purchaseId: pendingPurchasePublicId }),
 			},
-		...(trialPeriodDays && { trialPeriodDays }),
-		mode: price.billing_type === "recurring" ? "subscription" : "payment",
-		...(validated.promoCode && { promoCode: validated.promoCode }),
-		// Pass the price's currency so Dodo's Adaptive Currency shows the correct local currency at checkout
-		billingCurrency: price.currency,
-	});
+			...(trialPeriodDays && { trialPeriodDays }),
+			mode: price.billing_type === "recurring" ? "subscription" : "payment",
+			...(resolvedProviderCoupon && { providerCoupon: resolvedProviderCoupon }),
+			// Pass the price's currency so Dodo's Adaptive Currency shows the correct local currency at checkout
+			billingCurrency: price.currency,
+		});
 
 		log.info(
 			{
@@ -187,6 +218,8 @@ checkoutRoutes.post("/", async (c: Context) => {
 					provider_config_id: providerConfig.id,
 					provider_session_id: session.sessionId,
 					status: "pending",
+					// Store the Nube promotion_code so the webhook can link it to the transaction
+					...(resolvedPromoCodeId && { promotion_code_id: resolvedPromoCodeId }),
 				});
 				log.info({ sessionId: session.sessionId, userId: validated.userId, purchaseId: pendingPurchasePublicId }, "Pending purchase record created");
 			} catch (purchaseError) {

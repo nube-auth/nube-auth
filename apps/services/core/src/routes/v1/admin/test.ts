@@ -308,9 +308,9 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 						productId: product.productId,
 						amountCents: testPrice.amount_cents,
 						currency: testPrice.currency,
-						interval: testPrice.billing_type === "one_time" || testPrice.billing_type === "lifetime"
-							? "one_time"
-							: (testPrice.interval as "month" | "year") ?? "month",
+					interval: testPrice.billing_type === "one_time"
+						? "one_time"
+						: (testPrice.interval as "month" | "year") ?? "month",
 					});
 					
 					log.info({ priceId: providerPrice.priceId, provider }, "Price created, updating DB");

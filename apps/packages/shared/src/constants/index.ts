@@ -129,7 +129,6 @@ export type SupportedCurrency = (typeof SUPPORTED_CURRENCIES)[number];
 export const BILLING_TYPES = {
 	RECURRING: "recurring",
 	ONE_TIME: "one_time",
-	LIFETIME: "lifetime",
 } as const;
 
 export type BillingType = (typeof BILLING_TYPES)[keyof typeof BILLING_TYPES];

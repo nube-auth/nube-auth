@@ -10,6 +10,8 @@ import crypto from "node:crypto";
 import type {
 	CheckoutSession,
 	CreateCheckoutParams,
+	CreateCouponParams,
+	CreateCouponResult,
 	CreatePriceParams,
 	CreatePriceResult,
 	CreateProductParams,
@@ -98,7 +100,8 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 						checkout_data: {
 							email: params.customerEmail,
 							custom: params.metadata || {},
-							discount_code: params.promoCode || undefined,
+							// Prefer the resolved provider coupon id (our internal LS discount code)
+					discount_code: params.providerCoupon?.id || params.promoCode || undefined,
 						},
 					},
 					relationships: {
@@ -516,6 +519,106 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 		// LemonSqueezy handles refunds through their dashboard.
 		// API-initiated refunds are not supported in their current API.
 		throw new Error("LemonSqueezy does not support API-initiated refunds");
+	}
+
+	/**
+	 * Create a LemonSqueezy Discount for a Nube promotion.
+	 * LemonSqueezy discounts need a code string — we generate one from the
+	 * promotion metadata so many Nube codes can resolve to this one LS discount.
+	 * The returned couponId IS the discount code (e.g. "NUBE-PROMO0abc123") which
+	 * is stored in promotion_provider_refs and passed as discount_code at checkout.
+	 */
+	async createCoupon(params: CreateCouponParams): Promise<CreateCouponResult> {
+		try {
+			// Generate a stable internal code from the promotion name (max 50 chars for LS)
+			const internalCode = `NUBE-${params.name.toUpperCase().replace(/[^A-Z0-9]/g, "").substring(0, 30)}-${Date.now().toString(36).toUpperCase()}`;
+
+			const discountData = {
+				data: {
+					type: "discounts",
+					attributes: {
+						store_id: Number.parseInt(this.storeId, 10),
+						name: params.name,
+						code: internalCode,
+						amount: params.discountType === "percent"
+							? params.discountValue
+							: Math.round(params.discountValue / 100), // LS uses dollars for fixed
+						amount_type: params.discountType === "percent" ? "percent" : "fixed",
+						is_limited_to_products: false,
+						is_limited_redemptions: !!params.maxRedemptions,
+						...(params.maxRedemptions && { max_redemptions: params.maxRedemptions }),
+						...(params.expiresAt && { expires_at: params.expiresAt.toISOString() }),
+					},
+				},
+			};
+
+			const response = await fetch(`${this.baseUrl}/discounts`, {
+				method: "POST",
+				headers: {
+					Accept: "application/vnd.api+json",
+					"Content-Type": "application/vnd.api+json",
+					Authorization: `Bearer ${this.apiKey}`,
+				},
+				body: JSON.stringify(discountData),
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				throw new Error(`LemonSqueezy API error: ${response.status} ${errorText}`);
+			}
+
+			const result = await response.json() as { data: { id: string } };
+			this.log.info({ discountId: result.data.id, code: internalCode }, "LemonSqueezy discount created");
+
+			// Store the code string (not the ID) — LS checkout uses code strings
+			return { couponId: internalCode, objectType: "discount" };
+		} catch (error) {
+			this.log.error({ err: serializeError(error as Error), name: params.name }, "Failed to create LemonSqueezy discount");
+			throw error;
+		}
+	}
+
+	/**
+	 * Delete a LemonSqueezy Discount by its code.
+	 * We first look up the discount by code, then delete by numeric ID.
+	 */
+	async deleteCoupon(discountCode: string): Promise<void> {
+		try {
+			// Find discount by code
+			const listResponse = await fetch(
+				`${this.baseUrl}/discounts?filter[store_id]=${this.storeId}&filter[code]=${encodeURIComponent(discountCode)}`,
+				{
+					headers: {
+						Accept: "application/vnd.api+json",
+						Authorization: `Bearer ${this.apiKey}`,
+					},
+				},
+			);
+
+			if (!listResponse.ok) {
+				throw new Error(`LemonSqueezy API error: ${listResponse.status}`);
+			}
+
+			const list = await listResponse.json() as { data: Array<{ id: string }> };
+			if (!list.data.length) {
+				this.log.warn({ discountCode }, "LemonSqueezy discount not found — skipping delete");
+				return;
+			}
+
+			const discountId = list.data[0]!.id;
+			await fetch(`${this.baseUrl}/discounts/${discountId}`, {
+				method: "DELETE",
+				headers: {
+					Accept: "application/vnd.api+json",
+					Authorization: `Bearer ${this.apiKey}`,
+				},
+			});
+
+			this.log.info({ discountCode, discountId }, "LemonSqueezy discount deleted");
+		} catch (error) {
+			this.log.error({ err: serializeError(error as Error), discountCode }, "Failed to delete LemonSqueezy discount");
+			throw error;
+		}
 	}
 
 	/**

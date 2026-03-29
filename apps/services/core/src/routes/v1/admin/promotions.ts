@@ -12,6 +12,78 @@ import {
 import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { z } from "zod";
+import { createProviderAdapter } from "../../../billing/adapters/index.js";
+import { decryptString } from "../../../utils/encryption.js";
+
+/**
+ * Sync a promotion to all active payment providers for a project.
+ * Creates provider coupon objects and stores mappings in promotion_provider_refs.
+ * Safe to call multiple times — skips providers that already have an active ref.
+ */
+async function syncPromotionToProviders(
+	promo: { id: number; public_id: string; name: string; discount_type: string; discount_value: number; max_redemptions: number | null; ends_at: Date | null },
+	projectId: number,
+): Promise<void> {
+	const db = getDb();
+
+	const providers = await paymentProviderConfigQueries.findByProjectId(db, projectId);
+	const activeProviders = providers.filter((p: any) => p.is_active);
+
+	for (const provider of activeProviders) {
+		try {
+			// Skip if mapping already exists for this provider
+			const existing = await promotionProviderRefQueries.findByPromotionAndProvider(db, promo.id, provider.id);
+			if (existing) continue;
+
+			// Decrypt credentials
+			let credentials: unknown;
+			try {
+				const credentialsJson = decryptString(provider.credentials);
+				credentials = JSON.parse(credentialsJson);
+			} catch {
+				log.error({ providerId: provider.public_id }, "Failed to decrypt credentials for coupon sync");
+				continue;
+			}
+
+			if (provider.provider === "dodo" && provider.environment) {
+				(credentials as any).environment = provider.environment === "production" ? "live_mode" : "test_mode";
+				(credentials as any).webhookSecret = provider.webhook_secret || (credentials as any).webhookSecret;
+			}
+
+			const adapter = createProviderAdapter(provider.provider, credentials);
+
+			const result = await adapter.createCoupon({
+				name: promo.name,
+				discountType: promo.discount_type as "percent" | "fixed",
+				discountValue: promo.discount_value,
+				...(promo.max_redemptions && { maxRedemptions: promo.max_redemptions }),
+				...(promo.ends_at && { expiresAt: promo.ends_at }),
+				metadata: {
+					nube_promotion_id: promo.public_id,
+				},
+			});
+
+			await promotionProviderRefQueries.create(db, {
+				public_id: createId("promotionProviderRef"),
+				promotion_id: promo.id,
+				provider_config_id: provider.id,
+				provider_coupon_id: result.couponId,
+				provider_object_type: result.objectType,
+			});
+
+			log.info(
+				{ promotionId: promo.public_id, provider: provider.provider, couponId: result.couponId },
+				"Promotion synced to provider",
+			);
+		} catch (error) {
+			// Non-fatal: log and continue to next provider
+			log.error(
+				{ err: serializeError(error as Error), promotionId: promo.public_id, provider: provider.provider },
+				"Failed to sync promotion to provider",
+			);
+		}
+	}
+}
 
 const log = createLogger("admin-promotions-routes");
 
@@ -101,8 +173,8 @@ const createPromoSchema = z.object({
 	name: z.string().min(1).max(255),
 	discountType: z.enum(["percent", "fixed"]),
 	discountValue: z.number().int().positive(),
-	startsAt: z.string().datetime(),
-	endsAt: z.string().datetime().optional(),
+	startsAt: z.coerce.date(),
+	endsAt: z.coerce.date().optional(),
 	allowedIntervals: z.array(z.enum(["month", "year"])).optional(),
 	isNewCustomersOnly: z.boolean().optional().default(false),
 	maxRedemptions: z.number().int().positive().optional(),
@@ -146,8 +218,8 @@ promotionsRouter.post("/", async (c) => {
 		name: data.name,
 		discount_type: data.discountType,
 		discount_value: data.discountValue,
-		starts_at: new Date(data.startsAt),
-		ends_at: data.endsAt ? new Date(data.endsAt) : null,
+		starts_at: data.startsAt,
+		ends_at: data.endsAt ?? null,
 		allowed_intervals: data.allowedIntervals ?? null,
 		is_new_customers_only: data.isNewCustomersOnly,
 		max_redemptions: data.maxRedemptions ?? null,
@@ -165,6 +237,11 @@ promotionsRouter.post("/", async (c) => {
 		const plan = await planQueries.findById(db, pt.plan_id);
 		if (plan) planPublicIds.push(plan.public_id);
 	}
+
+	// Auto-sync coupon to all active payment providers (non-blocking)
+	syncPromotionToProviders(promo, app.project_id).catch((err) =>
+		log.error({ err: serializeError(err as Error), promotionId: promo.public_id }, "Background provider sync failed"),
+	);
 
 	return c.json(formatPromotion(promo, { plans: planPublicIds }), 201);
 });
@@ -239,8 +316,8 @@ promotionsRouter.get("/:promoId", async (c) => {
  */
 const updatePromoSchema = z.object({
 	name: z.string().min(1).max(255).optional(),
-	startsAt: z.string().datetime().optional(),
-	endsAt: z.string().datetime().nullable().optional(),
+	startsAt: z.coerce.date().optional(),
+	endsAt: z.coerce.date().nullable().optional(),
 	allowedIntervals: z.array(z.enum(["month", "year"])).nullable().optional(),
 	isNewCustomersOnly: z.boolean().optional(),
 	maxRedemptions: z.number().int().positive().nullable().optional(),
@@ -264,8 +341,8 @@ promotionsRouter.patch("/:promoId", async (c) => {
 	const updateData: Record<string, unknown> = {};
 
 	if (data.name !== undefined) updateData["name"] = data.name;
-	if (data.startsAt !== undefined) updateData["starts_at"] = new Date(data.startsAt);
-	if (data.endsAt !== undefined) updateData["ends_at"] = data.endsAt ? new Date(data.endsAt) : null;
+	if (data.startsAt !== undefined) updateData["starts_at"] = data.startsAt;
+	if (data.endsAt !== undefined) updateData["ends_at"] = data.endsAt ?? null;
 	if (data.allowedIntervals !== undefined) updateData["allowed_intervals"] = data.allowedIntervals;
 	if (data.isNewCustomersOnly !== undefined) updateData["is_new_customers_only"] = data.isNewCustomersOnly;
 	if (data.maxRedemptions !== undefined) updateData["max_redemptions"] = data.maxRedemptions;
@@ -315,7 +392,57 @@ promotionsRouter.delete("/:promoId", async (c) => {
 	const db = getDb();
 	await promotionQueries.deactivate(db, promo.id);
 
+	// Best-effort: delete provider coupons so they can't be applied at checkout
+	const refs = await promotionProviderRefQueries.findByPromotionId(db, promo.id);
+	for (const ref of refs) {
+		try {
+			const config = await paymentProviderConfigQueries.findById(db, ref.provider_config_id);
+			if (!config || !config.is_active) continue;
+
+			let credentials: unknown;
+			try {
+				const credentialsJson = decryptString(config.credentials);
+				credentials = JSON.parse(credentialsJson);
+			} catch { continue; }
+
+			if (config.provider === "dodo" && config.environment) {
+				(credentials as any).environment = config.environment === "production" ? "live_mode" : "test_mode";
+				(credentials as any).webhookSecret = config.webhook_secret || (credentials as any).webhookSecret;
+			}
+
+			const adapter = createProviderAdapter(config.provider, credentials);
+			await adapter.deleteCoupon(ref.provider_coupon_id);
+			await promotionProviderRefQueries.deactivate(db, ref.id);
+		} catch (err) {
+			log.error({ err: serializeError(err as Error), refId: ref.public_id }, "Failed to delete provider coupon on deactivation");
+		}
+	}
+
 	return c.json({ success: true });
+});
+
+// ===========================================================================
+// PROVIDER SYNC (manual trigger)
+// ===========================================================================
+
+/**
+ * POST /:promoId/sync-to-providers
+ * Manually (re-)sync a promotion to all active payment providers.
+ * Idempotent — skips providers that already have an active mapping.
+ */
+promotionsRouter.post("/:promoId/sync-to-providers", async (c) => {
+	const app = await resolveApp(c);
+	if (!app) return c.json({ error: "App not found" }, 404);
+
+	const promo = await resolvePromotion(c, app.id);
+	if (!promo) return c.json({ error: "Promotion not found" }, 404);
+
+	await syncPromotionToProviders(promo, app.project_id);
+
+	const db = getDb();
+	const refs = await promotionProviderRefQueries.findByPromotionId(db, promo.id);
+
+	return c.json({ synced: true, providerRefs: refs.map(formatProviderRef) });
 });
 
 // ===========================================================================

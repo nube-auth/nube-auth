@@ -13,7 +13,18 @@ export interface CreateCheckoutParams {
   metadata?: Record<string, string>;
   trialPeriodDays?: number;
   mode?: 'payment' | 'subscription';
+  /** @deprecated Pass providerCoupon instead — raw Nube code is resolved server-side to provider IDs */
   promoCode?: string;
+  /**
+   * Resolved provider coupon to apply at checkout.
+   * Populated by checkout.ts after looking up promotion_provider_refs.
+   * - Stripe: objectType 'coupon' → discounts:[{coupon:id}]; 'promotion_code' → discounts:[{promotion_code:id}]
+   * - LemonSqueezy / Dodo: id is passed as discount_code (provider's internal code string)
+   */
+  providerCoupon?: {
+    id: string;
+    objectType: 'coupon' | 'promotion_code' | 'discount';
+  };
   /** ISO 4217 currency code (lowercase). Used by Dodo's Adaptive Currency to set the checkout display/billing currency. */
   billingCurrency?: string;
 }
@@ -93,6 +104,31 @@ export interface CreatePriceResult {
   interval: 'month' | 'year' | 'one_time';
 }
 
+export interface CreateCouponParams {
+  /** Display name shown in the provider dashboard */
+  name: string;
+  discountType: 'percent' | 'fixed';
+  /** For percent: 1–100. For fixed: amount in cents. */
+  discountValue: number;
+  /** Required for fixed discounts in Stripe (ISO 4217 lowercase, e.g. "usd") */
+  currency?: string;
+  maxRedemptions?: number;
+  expiresAt?: Date;
+  /** Traceability metadata (supported by Stripe; ignored by LS/Dodo) */
+  metadata?: Record<string, string>;
+}
+
+export interface CreateCouponResult {
+  /**
+   * ID/code stored in promotion_provider_refs.provider_coupon_id.
+   * - Stripe: coupon ID (e.g. "EkCW1234")
+   * - LemonSqueezy: discount code string (e.g. "NUBE-PROMO0abc")
+   * - Dodo: discount code string
+   */
+  couponId: string;
+  objectType: 'coupon' | 'promotion_code' | 'discount';
+}
+
 export interface CreateRefundParams {
   paymentId: string; // Provider transaction/payment ID
   amount?: number; // Partial refund amount in cents; omit for full refund
@@ -115,6 +151,17 @@ export interface PaymentProviderAdapter {
   createProduct(params: CreateProductParams): Promise<CreateProductResult>;
   createPrice(params: CreatePriceParams): Promise<CreatePriceResult>;
   createRefund(params: CreateRefundParams): Promise<RefundResult>;
+  /**
+   * Create a coupon/discount on the payment provider.
+   * The returned couponId is stored in promotion_provider_refs so checkout
+   * can resolve a Nube promotion code to a provider-native discount.
+   */
+  createCoupon(params: CreateCouponParams): Promise<CreateCouponResult>;
+  /**
+   * Deactivate/delete a coupon on the provider.
+   * Called when a Nube promotion is deactivated.
+   */
+  deleteCoupon(couponId: string): Promise<void>;
 }
 
 export interface StripeCredentials {

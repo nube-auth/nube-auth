@@ -778,9 +778,9 @@ export function AppSetupPage() {
 															</SelectTrigger>
 															<SelectPopup>
 																<SelectItem value="none">No Billing Required</SelectItem>
-																<SelectItem value="lifetime">
-																	Lifetime (One-time Payment)
-																</SelectItem>
+															<SelectItem value="one_time">
+																One-time Payment
+															</SelectItem>
 																<SelectItem value="monthly">Monthly Subscription</SelectItem>
 																<SelectItem value="yearly">Yearly Subscription</SelectItem>
 															</SelectPopup>

@@ -57,8 +57,17 @@ export class StripeAdapter implements PaymentProviderAdapter {
 				sessionParams.metadata = params.metadata;
 			}
 
-			// Add promotional code if provided
-			if (params.promoCode) {
+			// Apply discount — prefer the resolved provider coupon over the raw promo code string
+			if (params.providerCoupon) {
+				sessionParams.discounts =
+					params.providerCoupon.objectType === "promotion_code"
+						? [{ promotion_code: params.providerCoupon.id }]
+						: [{ coupon: params.providerCoupon.id }];
+				// When using a specific coupon/promotion_code, disable Stripe's own code box
+				// to prevent double-discounting.
+				sessionParams.allow_promotion_codes = false;
+			} else if (params.promoCode) {
+				// Legacy fallback: raw code passed directly (e.g. a Stripe Promotion Code ID)
 				sessionParams.discounts = [{ promotion_code: params.promoCode }];
 			}
 
@@ -494,6 +503,48 @@ export class StripeAdapter implements PaymentProviderAdapter {
 				},
 				"Failed to create Stripe price"
 			);
+			throw error;
+		}
+	}
+
+	/**
+	 * Create a Stripe Coupon for a Nube promotion.
+	 * Returns the coupon ID which is stored in promotion_provider_refs and passed
+	 * directly to checkout as discounts:[{coupon:id}] — no Stripe PromotionCode object
+	 * is created because Nube manages its own code strings.
+	 */
+	async createCoupon(params: import("./types.js").CreateCouponParams): Promise<import("./types.js").CreateCouponResult> {
+		try {
+			const coupon = await this.stripe.coupons.create({
+				name: params.name,
+				...(params.discountType === "percent"
+					? { percent_off: params.discountValue }
+					: { amount_off: params.discountValue, currency: params.currency ?? "usd" }),
+				duration: "once",
+				...(params.maxRedemptions && { max_redemptions: params.maxRedemptions }),
+				...(params.expiresAt && { redeem_by: Math.floor(params.expiresAt.getTime() / 1000) }),
+				...(params.metadata && { metadata: params.metadata }),
+			});
+
+			this.log.info({ couponId: coupon.id, name: params.name }, "Stripe coupon created");
+
+			return { couponId: coupon.id, objectType: "coupon" };
+		} catch (error) {
+			this.log.error({ err: serializeError(error as Error), name: params.name }, "Failed to create Stripe coupon");
+			throw error;
+		}
+	}
+
+	/**
+	 * Delete a Stripe Coupon.
+	 * Stripe does not support deactivation — deletion is the only option.
+	 */
+	async deleteCoupon(couponId: string): Promise<void> {
+		try {
+			await this.stripe.coupons.del(couponId);
+			this.log.info({ couponId }, "Stripe coupon deleted");
+		} catch (error) {
+			this.log.error({ err: serializeError(error as Error), couponId }, "Failed to delete Stripe coupon");
 			throw error;
 		}
 	}

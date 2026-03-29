@@ -162,21 +162,19 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 		// Create a provider price for each active price record
 		for (const priceRecord of activePrices) {
 			try {
-				const billingInterval: "month" | "year" | "one_time" =
-					priceRecord.billing_type === "one_time" || priceRecord.billing_type === "lifetime"
-						? "one_time"
-						: (priceRecord.interval as "month" | "year");
+			const billingInterval: "month" | "year" | "one_time" =
+				priceRecord.billing_type === "one_time"
+					? "one_time"
+					: (priceRecord.interval as "month" | "year");
 
-				const intervalLabel =
-					priceRecord.billing_type === "lifetime"
-						? "Lifetime"
-						: billingInterval === "one_time"
-							? "One-time"
-							: billingInterval === "month"
-								? "Monthly"
-								: "Yearly";
+			const intervalLabel =
+				billingInterval === "one_time"
+					? "One-time"
+					: billingInterval === "month"
+						? "Monthly"
+						: "Yearly";
 				const amountFormatted = `${priceRecord.currency.toUpperCase()} ${(priceRecord.amount_cents / 100).toFixed(2)}`;
-				const priceLabel = `${plan.name} — ${intervalLabel} (${amountFormatted})`;
+				const priceLabel = `${app.name} — ${plan.name} — ${intervalLabel} (${amountFormatted})`;
 
 				const providerPrice = await adapter.createPrice({
 					productId: product.productId,

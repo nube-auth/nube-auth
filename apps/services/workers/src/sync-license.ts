@@ -71,7 +71,7 @@ export async function setupSyncLicenseWorker(): Promise<Worker<SyncLicenseJobDat
 			const price = purchase.price_id
 				? await db.query.prices.findFirst({
 						where: eq(pricesTable.id, purchase.price_id),
-						columns: { id: true, plan_id: true, duration_days: true },
+						columns: { id: true, plan_id: true, duration_days: true, billing_type: true },
 					})
 				: null;
 
@@ -80,10 +80,13 @@ export async function setupSyncLicenseWorker(): Promise<Worker<SyncLicenseJobDat
 				throw new Error(`Price not found for purchase: ${purchaseId}`);
 			}
 
-			// 3. Calculate expiry
-			const validUntil = price.duration_days
+		// 3. Calculate expiry — one_time purchases are always permanent (2099-12-31)
+		const ONE_TIME_EXPIRY = new Date('2099-12-31T23:59:59.000Z');
+		const validUntil: Date = price.billing_type === 'one_time'
+			? ONE_TIME_EXPIRY
+			: price.duration_days
 				? new Date(Date.now() + price.duration_days * 24 * 60 * 60 * 1000)
-				: null; // null = lifetime license
+				: ONE_TIME_EXPIRY;
 
 			// 4. Check if license already exists (idempotent)
 			const existingLicense = await licenseQueries.findByUserAndApp(db, subjectId, appId);

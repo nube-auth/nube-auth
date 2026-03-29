@@ -227,7 +227,7 @@ export const plans = pgTable(
 /**
  * Prices table (Commercial Packaging)
  * How do they pay? Pricing lives here, not on the plan.
- * One plan can have multiple prices (monthly, yearly, lifetime).
+ * One plan can have multiple prices (monthly, yearly, one_time).
  */
 export const prices = pgTable(
 	"prices",
@@ -242,8 +242,8 @@ export const prices = pgTable(
 			.references(() => apps.id),
 
 		// Billing
-		billing_type: varchar("billing_type", { length: 20 }).notNull(), // 'recurring' | 'one_time' | 'lifetime'
-		interval: varchar("interval", { length: 20 }), // 'month' | 'year' (NULL for one_time/lifetime)
+		billing_type: varchar("billing_type", { length: 20 }).notNull(), // 'recurring' | 'one_time'
+		interval: varchar("interval", { length: 20 }), // 'month' | 'year' (NULL for one_time)
 		amount_cents: integer("amount_cents").notNull(), // Price in cents (999 = $9.99)
 		currency: varchar("currency", { length: 3 }).notNull().default("usd"),
 		duration_days: integer("duration_days"), // License duration. NULL = perpetual/until canceled
