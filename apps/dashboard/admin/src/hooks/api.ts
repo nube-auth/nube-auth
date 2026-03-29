@@ -325,6 +325,7 @@ export function useProjectStats(projectId: string) {
 				activeLicenses: number;
 				licenseCounts: Record<string, number>;
 				totalRevenue: number;
+				revenueByCurrency: Record<string, number>;
 			}>(`/v1/admin/projects/${projectId}/stats`);
 		},
 		enabled: !!projectId,

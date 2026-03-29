@@ -730,14 +730,14 @@ export function AppSetupPage() {
 															</FieldLabel>
 															<Select
 																value={formData.defaultLicensePlan.currency}
-																onValueChange={(value) =>
-																	setFormData({
-																		...formData,
-																		defaultLicensePlan: {
-																			...formData.defaultLicensePlan,
-																			currency: value,
-																		},
-																	})
+															onValueChange={(value) =>
+																setFormData({
+																	...formData,
+																	defaultLicensePlan: {
+																		...formData.defaultLicensePlan,
+																		currency: value as string,
+																	},
+																})
 																}
 															>
 																<SelectTrigger id="planCurrency">
