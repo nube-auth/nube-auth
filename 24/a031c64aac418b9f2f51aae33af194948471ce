@@ -1,0 +1,40 @@
+apps/services/core/src/utils/index.ts
+  553d97324ef36351 4
+apps/dashboard/admin/src/pages/AppSetup.tsx
+  553d97324ef36351 157-159,169-171
+apps/services/core/src/routes/v1/admin/plans.ts
+  553d97324ef36351 17,31-33,97-111,120
+apps/dashboard/admin/src/pages/CreateProject.tsx
+  553d97324ef36351 24,29-30
+apps/services/core/src/utils/slug.ts
+  553d97324ef36351 1-79
+apps/packages/db/src/queries.ts
+  553d97324ef36351 193-200,410-417
+apps/dashboard/admin/src/pages/Onboarding.tsx
+  553d97324ef36351 29,34-35
+apps/services/core/src/routes/v1/admin/apps.ts
+  553d97324ef36351 6,161-176,205-211
+apps/services/core/src/routes/v1/admin/projects.ts
+  553d97324ef36351 5,126,134-135,152-166
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.22",
+  "base_commit_sha": "24a031c64aac418b9f2f51aae33af194948471ce",
+  "prompts": {
+    "553d97324ef36351": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5c50c261-943e-4200-90dd-4b989d11189b",
+        "model": "claude-4.6-sonnet-medium-thinking"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 186,
+      "total_deletions": 36,
+      "accepted_lines": 173,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/0d15a652f28b21011c59da744c57fb3328dc27fbbc2ef039f439e6047ba69651"
+    }
+  }
+}
