@@ -14,6 +14,7 @@ import type { Context } from "hono";
 import { createLogger, serializeError, id } from "@nube-auth/shared";
 import { pricesRouter } from "./prices.js";
 import { enqueuePlanSync } from "../../../billing/queue.js";
+import { generatePlanSlug } from "../../../utils/slug.js";
 
 const log = createLogger("admin-plans");
 const plansRouter = new Hono();
@@ -27,7 +28,9 @@ function getUserIdHeader(c: Context): string | null {
 
 const CreatePlanSchema = z.object({
 	name: z.string().min(1).max(255),
-	slug: z.string().min(1).max(100).regex(/^[a-z0-9-_]+$/),
+	// slug is optional — if omitted, server auto-generates as "{appSlug}-{planName}"
+	// with a random postfix to resolve collisions
+	slug: z.string().min(1).max(100).regex(/^[a-z0-9-_]+$/).optional(),
 	description: z.string().optional(),
 	features: z.array(z.string()).optional().default([]),
 	displayOrder: z.number().int().nonnegative().optional().default(0),
@@ -91,9 +94,21 @@ plansRouter.post("/", async (c: Context) => {
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) return c.json({ error: "App not found" }, 404);
 
-		const existing = await planQueries.findByAppAndSlug(db, app.id, validated.slug);
-		if (existing) {
-			return c.json({ error: "Plan with slug already exists for this app" }, 400);
+		// If caller supplied a slug, validate it is not already taken
+		// Otherwise, auto-generate as "{appSlug}-{planName}" with collision handling
+		const planSlug = validated.slug
+			? validated.slug
+			: await generatePlanSlug(
+					(slug) => planQueries.findByAppAndSlug(db, app.id, slug).then(Boolean),
+					app.slug,
+					validated.name,
+				);
+
+		if (validated.slug) {
+			const existing = await planQueries.findByAppAndSlug(db, app.id, planSlug);
+			if (existing) {
+				return c.json({ error: "Plan with this slug already exists for this app" }, 400);
+			}
 		}
 
 		const [plan] = await db
@@ -102,7 +117,7 @@ plansRouter.post("/", async (c: Context) => {
 				public_id: id.plan(),
 				app_id: app.id,
 				name: validated.name,
-				slug: validated.slug,
+				slug: planSlug,
 				description: validated.description,
 				features: validated.features,
 				display_order: validated.displayOrder,

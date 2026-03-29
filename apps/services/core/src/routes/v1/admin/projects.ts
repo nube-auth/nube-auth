@@ -2,6 +2,7 @@ import { auditLogQueries, getDb, projectMemberQueries, projectQueries, userQueri
 import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
+import { generateProjectSlug, slugify } from "../../../utils/slug.js";
 
 const log = createLogger("admin-projects-routes");
 
@@ -122,7 +123,7 @@ projectsRouter.get("/users/:userId/projects", async (c: Context) => {
  */
 projectsRouter.post("/", async (c: Context) => {
 	try {
-		const { name, slug, description, icon } = (await c.req.json()) as {
+		const { name, slug: rawSlug, description, icon } = (await c.req.json()) as {
 			name?: string;
 			slug?: string;
 			description?: string;
@@ -130,8 +131,8 @@ projectsRouter.post("/", async (c: Context) => {
 		};
 
 		// Validate required fields
-		if (!name || !slug) {
-			return c.json({ error: "Missing required fields: name, slug" }, 400);
+		if (!name) {
+			return c.json({ error: "Missing required field: name" }, 400);
 		}
 
 		// Get current user from context
@@ -146,6 +147,23 @@ projectsRouter.post("/", async (c: Context) => {
 		const user = await userQueries.findByPublicId(db, userId);
 		if (!user) {
 			return c.json({ error: "User not found" }, 404);
+		}
+
+		// Determine slug:
+		//  - If caller provided one, sanitize it and check for collisions (409 if taken)
+		//  - Otherwise, auto-generate from name with random postfix on collision
+		let slug: string;
+		if (rawSlug) {
+			slug = slugify(rawSlug);
+			const existing = await projectQueries.findBySlug(db, slug);
+			if (existing) {
+				return c.json({ error: "A project with this slug already exists. Please choose a different one." }, 409);
+			}
+		} else {
+			slug = await generateProjectSlug(
+				(s) => projectQueries.findBySlug(db, s).then(Boolean),
+				name,
+			);
 		}
 
 		// Create project in transaction

@@ -26,13 +26,13 @@ export function OnboardingPage() {
 	const [showForm, setShowForm] = useState(false);
 	const [formData, setFormData] = useState({ name: "", slug: "", description: "" });
 
+	// Mirrors the server-side slugify() — only lowercase alphanumeric + hyphens
 	const generateSlug = (name: string) => {
 		return name
 			.toLowerCase()
 			.trim()
-			.replace(/[^\w\s-]/g, "")
-			.replace(/\s+/g, "-")
-			.replace(/-+/g, "-")
+			.replace(/[^a-z0-9]+/g, "-")
+			.replace(/^-+|-+$/g, "")
 			.substring(0, 50);
 	};
 

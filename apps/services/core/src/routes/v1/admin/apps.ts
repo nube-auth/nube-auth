@@ -3,6 +3,7 @@ import { createId, createLogger, CreateAppRequestSchema, idPatterns, serializeEr
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { randomBytes } from "node:crypto";
+import { generateAppSlug, generatePlanSlug } from "../../../utils/slug.js";
 
 const log = createLogger("admin-apps-routes");
 
@@ -157,7 +158,22 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 			return c.json({ error: "Forbidden" }, 403);
 		}
 
-		const appSlug = body.slug || body.name.toLowerCase().replace(/\s+/g, "-");
+		// Determine app slug:
+		//  - If caller provided one, sanitize it and validate uniqueness within the project
+		//  - Otherwise, auto-generate from name with random postfix on collision
+		let appSlug: string;
+		if (body.slug) {
+			appSlug = body.slug;
+			const existing = await appQueries.findByProjectAndSlug(db, project.id, appSlug);
+			if (existing) {
+				return c.json({ error: "An app with this slug already exists in this project. Please choose a different one." }, 409);
+			}
+		} else {
+			appSlug = await generateAppSlug(
+				(slug) => appQueries.findByProjectAndSlug(db, project.id, slug).then(Boolean),
+				body.name,
+			);
+		}
 
 		// Create app
 		const clientSecret = randomBytes(32).toString("hex");
@@ -186,7 +202,13 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 		// If licensing is enabled and a default plan is provided, create it
 		let defaultPlan = null;
 		if (body.requiresLicensing && body.defaultLicensePlan) {
-			const planSlug = body.defaultLicensePlan.slug || body.defaultLicensePlan.name.toLowerCase().replace(/\s+/g, "-");
+			const planSlug = body.defaultLicensePlan.slug
+				? body.defaultLicensePlan.slug
+				: await generatePlanSlug(
+						(slug) => planQueries.findByAppAndSlug(db, newApp.id, slug).then(Boolean),
+						appSlug,
+						body.defaultLicensePlan.name,
+					);
 			defaultPlan = await planQueries.create(db, {
 				public_id: createId("plan"),
 				app_id: newApp.id,

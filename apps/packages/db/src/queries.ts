@@ -190,6 +190,14 @@ export const projectQueries = {
 			.where(and(inArray(projects.id, projectIds), eq(projects.is_active, true), isNull(projects.deleted_at)));
 	},
 
+	async findBySlug(db: DbClient, slug: string) {
+		const results = await db
+			.select()
+			.from(projects)
+			.where(and(eq(projects.slug, slug), eq(projects.is_active, true), isNull(projects.deleted_at)));
+		return results[0];
+	},
+
 	async create(db: DbClient, data: typeof projects.$inferInsert) {
 		const results = await db.insert(projects).values(data).returning();
 		return results[0]!;
@@ -396,6 +404,14 @@ export const appQueries = {
 			.select()
 			.from(apps)
 			.where(and(eq(apps.public_id, publicId), isNull(apps.deleted_at)));
+		return results[0];
+	},
+
+	async findByProjectAndSlug(db: DbClient, projectId: number, slug: string) {
+		const results = await db
+			.select()
+			.from(apps)
+			.where(and(eq(apps.project_id, projectId), eq(apps.slug, slug), isNull(apps.deleted_at)));
 		return results[0];
 	},
 

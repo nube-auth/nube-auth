@@ -154,7 +154,9 @@ export function AppSetupPage() {
 		e.preventDefault();
 		const dataToSend: any = {
 			name: formData.name,
-			slug: formData.slug || formData.name.toLowerCase().replace(/\s+/g, "-"),
+			// Omit slug entirely — server auto-generates as "{appSlug}-{planName}" with collision handling.
+			// Only include if the user explicitly typed a custom slug.
+			...(formData.slug ? { slug: formData.slug } : {}),
 			description: formData.description,
 			redirectUris: formData.redirectUris.filter((uri) => uri.trim()),
 			allowedHosts: formData.allowedHosts.filter((host) => host.trim()),
@@ -164,12 +166,9 @@ export function AppSetupPage() {
 		};
 
 		if (formData.requiresLicensing) {
-			dataToSend.defaultLicensePlan = {
-				...formData.defaultLicensePlan,
-				slug:
-					formData.defaultLicensePlan.slug ||
-					formData.defaultLicensePlan.name.toLowerCase().replace(/\s+/g, "-"),
-			};
+			// Omit plan slug — server auto-generates as "{appSlug}-{planName}"
+			const { slug: _planSlug, ...planWithoutSlug } = formData.defaultLicensePlan;
+			dataToSend.defaultLicensePlan = planWithoutSlug;
 		}
 
 		createAppMutation.mutate(dataToSend, {
