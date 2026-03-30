@@ -62,6 +62,34 @@ paymentsRoutes.post("/webhooks/:provider", async (c: Context) => {
 });
 
 /**
+ * POST /v1/payment/validate-promo
+ * Public endpoint — no auth required. Used by native apps to validate a promo
+ * code before opening the browser for the OAuth+checkout flow.
+ */
+paymentsRoutes.post("/validate-promo", async (c: Context) => {
+	try {
+		const body = await c.req.json();
+		const coreUrl = `${env.CORE_URL}/v1/billing/validate-promo`;
+
+		const response = await pingpong(coreUrl, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"X-Nube-S2S-Token": env.S2S_SECRET,
+				// Forward user ID if provided (enables new-customer and already-redeemed checks)
+				...(c.req.header("X-Nube-User-Id") && { "X-Nube-User-Id": c.req.header("X-Nube-User-Id")! }),
+			},
+			body,
+		});
+
+		return c.json(response.data, response.status as ContentfulStatusCode);
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "validate-promo proxy error");
+		return c.json({ error: "Service unavailable" }, 502);
+	}
+});
+
+/**
  * Proxy all other payment routes to Core service with authentication.
  */
 paymentsRoutes.all("/*", async (c: Context) => {

@@ -11,9 +11,11 @@ This guide covers the canonical integration pattern for `@nube-auth/client` acro
 3. [Web App Integration (cookie)](#web-app-integration-cookie)
 4. [App / CLI Integration (Bearer token)](#app--cli-integration-bearer-token)
 5. [Browser Extension Integration](#browser-extension-integration)
-6. [Checking Subscription / Plan](#checking-subscription--plan)
-7. [Error Handling](#error-handling)
-8. [TypeScript Types Reference](#typescript-types-reference)
+6. [Combined Auth + Checkout (Single Flow)](#combined-auth--checkout-single-flow)
+7. [Combined Auth + Checkout with Promo Code](#combined-auth--checkout-with-promo-code)
+8. [Checking Subscription / Plan](#checking-subscription--plan)
+9. [Error Handling](#error-handling)
+10. [TypeScript Types Reference](#typescript-types-reference)
 
 ---
 
@@ -272,7 +274,7 @@ Pass a `priceId` to `buildOAuthUrl` to combine sign-in and payment into one redi
 // Each price encodes the plan, billing interval, provider, and currency.
 const PRICE_ID = "PRICE0abc..."; // monthly Pro plan via Stripe
 
-const { url, codeVerifier } = await bootstrapClient.app.buildOAuthUrl({
+const url = bootstrapClient.app.buildOAuthUrl({
   appId: APP_ID,
   returnTo: RETURN_TO,
   priceId: PRICE_ID, // triggers checkout after auth
@@ -284,7 +286,7 @@ const { url, codeVerifier } = await bootstrapClient.app.buildOAuthUrl({
 //   1. User signs in with OAuth provider
 //   2. Gateway creates session, then calls POST /v1/billing/checkout
 //   3. User is redirected to payment provider (Stripe, Dodo, etc.)
-//   4. On payment success → returnTo?code=<exchange-code>
+//   4. On payment success → returnTo?code=<exchange-code>&upgraded=true
 //   5. On cancel / failure → returnTo?error=payment_cancelled
 //
 // The exchange code is valid for 30 minutes (instead of the usual 60 seconds)
@@ -293,6 +295,135 @@ const { url, codeVerifier } = await bootstrapClient.app.buildOAuthUrl({
 ```
 
 > **Note:** The exchange code is only delivered after a successful payment. If the user cancels at the payment provider, they land at `returnTo?error=payment_cancelled` with no code and must restart the flow.
+
+---
+
+## Combined Auth + Checkout with Promo Code
+
+For native apps (macOS, Windows, etc.) that want to apply a discount coupon at checkout, use the **validate-first** pattern. This gives the user immediate native feedback before any browser is opened.
+
+### Why validate first?
+
+Once the system browser opens for OAuth, you lose control of the UI. If the promo code is exhausted or invalid, the checkout will silently fail mid-flow and the user lands back at `returnTo` without `upgraded=true` — a confusing experience. Validating upfront catches the obvious failure cases before any redirect happens.
+
+### Step 1 — Validate the promo code
+
+Call `POST /v1/billing/validate-promo` before opening the browser. This is a plain API call — no auth required:
+
+```typescript
+const GATEWAY_URL = "https://api.nubeauth.com";
+const APP_ID      = "APP0...";
+const PRICE_ID    = "PRICE0...";
+const PROMO_CODE  = "LAUNCH50";
+
+const res = await fetch(`${GATEWAY_URL}/v1/billing/validate-promo`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    code: PROMO_CODE,
+    priceId: PRICE_ID,
+    appId: APP_ID,
+  }),
+});
+
+const data = await res.json();
+// Success: { valid: true, discountCents: 2500, adjustedTotal: 4900,
+//            promotion: { name, discountType, discountValue } }
+// Failure: { valid: false, reason: "..." }
+```
+
+**Possible `reason` values:**
+
+| reason | Meaning | Suggested message |
+|--------|---------|------------------|
+| `code_not_found` | Code doesn't exist for this app | "Invalid promo code" |
+| `promotion_inactive` | Promotion has been manually disabled | "This promo code is no longer active" |
+| `promotion_not_started` | Promotion hasn't started yet | "This promo code isn't active yet" |
+| `promotion_expired` | Past the end date | "This promo code has expired" |
+| `code_inactive` | This specific code was disabled | "This promo code is no longer active" |
+| `code_exhausted` | Per-code usage cap reached | "This promo code has reached its usage limit" |
+| `promotion_max_redemptions_reached` | Global cap reached (e.g. 100-user limit) | "This promo code has reached its usage limit" |
+| `plan_not_eligible` | Code doesn't apply to the selected plan | "This promo code isn't valid for this plan" |
+| `interval_not_eligible` | Code doesn't apply to the billing interval | "This promo code isn't valid for this billing period" |
+| `existing_customer` | Code is for new customers only | "This promo code is for new customers only" |
+| `already_redeemed` | User already used this promotion | "You've already used this promo code" |
+
+> **Tip:** Pass the `X-Nube-User-Id: USER0...` header if the user is already signed in. This enables checks for `existing_customer` and `already_redeemed`.
+
+### Step 2 — Launch the combined OAuth + checkout flow
+
+If `valid: true`, open the browser with both `price_id` and `promo_code`:
+
+```typescript
+if (!data.valid) {
+  // Show native alert with mapped message — no browser opened
+  showAlert(mapPromoError(data.reason));
+  return;
+}
+
+// Show the discounted price to the user before they proceed
+console.log(`Price after discount: $${data.adjustedTotal / 100}`);
+
+const url = bootstrapClient.app.buildOAuthUrl({
+  appId: APP_ID,
+  returnTo: RETURN_TO,
+  priceId: PRICE_ID,
+  promoCode: PROMO_CODE,  // pre-applied at checkout — user sees it already on the payment page
+});
+
+openBrowser(url);
+```
+
+### Step 3 — Handle the callback
+
+```typescript
+export async function handleCallback(callbackUrl: string): Promise<void> {
+  const params   = new URL(callbackUrl).searchParams;
+  const code     = params.get("code");
+  const error    = params.get("error");
+  const upgraded = params.get("upgraded") === "true";
+
+  if (error === "payment_cancelled") {
+    // User bailed at the payment page — offer checkout without promo
+    showAlert("Payment cancelled. Would you like to checkout at full price?");
+    return;
+  }
+
+  if (!code) {
+    // Checkout failed (e.g. promo exhausted mid-flow due to race condition)
+    // This affects at most 1-2 users at the exact moment the limit is hit.
+    showAlert("Promo code is no longer available. Would you like to checkout at full price?");
+    return;
+  }
+
+  const result = await bootstrapClient.app.exchangeCode(code, APP_ID);
+  await keychain.save("session_token", result.sessionToken);
+
+  if (upgraded) {
+    showAlert("Payment successful! Your plan is now active.");
+  }
+}
+```
+
+### Complete flow summary
+
+```
+macOS app
+  │
+  ├─ POST /v1/billing/validate-promo  ← fast, no browser
+  │     valid: false → show native error, done
+  │     valid: true  ↓
+  │
+  ├─ open browser: /v1/auth/start?price_id=...&promo_code=...
+  │     → OAuth provider (Apple/Google)
+  │     → Gateway creates checkout with coupon pre-applied
+  │     → Payment provider (Stripe/Dodo/LemonSqueezy)
+  │
+  └─ deep-link callback: myapp://callback
+        ?code=...&upgraded=true  → exchange code, activate license ✅
+        ?error=payment_cancelled → offer full-price checkout
+        ?code=... (no upgraded)  → promo race edge case, offer full-price checkout
+```
 
 ---
 
@@ -406,6 +537,7 @@ import type {
 | `appId` | `string` | — | App public ID (overrides client-level `appId`) |
 | `deviceId` | `string` | — | Stable device identifier for audit logs |
 | `priceId` | `string` | — | Price public ID — triggers combined auth+checkout flow |
+| `promoCode` | `string` | — | Promo code to pre-apply at checkout (use with `priceId`; validate with `/v1/billing/validate-promo` first) |
 
 ### `NubeAuthClientConfig`
 
