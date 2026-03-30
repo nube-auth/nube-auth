@@ -8,7 +8,7 @@
  * 4. Implements retry logic with exponential backoff
  */
 
-import { getDb, planQueries, appQueries, priceQueries, priceProviderRefQueries } from "@nube-auth/db";
+import { getDb, planQueries, appQueries, priceQueries, priceProviderRefQueries, prices } from "@nube-auth/db";
 import { payment_provider_configs } from "@nube-auth/db/schema";
 import { eq } from "@nube-auth/db";
 import { createId } from "@nube-auth/shared";
@@ -204,13 +204,13 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 				// Also keep the legacy external_price_id column in sync for backwards compatibility
 				// (queries that still use prices.external_price_id will work for single-provider setups)
 				await db
-					.update(prices as any)
+					.update(prices)
 					.set({
 						external_provider: provider.provider,
 						external_price_id: providerPrice.priceId,
 						updated_at: new Date(),
 					})
-					.where(eq((prices as any).id, priceRecord.id));
+					.where(eq(prices.id, priceRecord.id));
 
 					log.info(
 						{
