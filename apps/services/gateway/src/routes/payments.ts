@@ -94,9 +94,27 @@ paymentsRoutes.post("/validate-promo", async (c: Context) => {
  */
 paymentsRoutes.all("/*", async (c: Context) => {
 	try {
-		const auth = getAuth(c);
 		const method = c.req.method;
 		const path = c.req.path;
+
+		// validate-promo is a public endpoint — no auth required.
+		// Guard here as a safety net in case the dedicated POST route above doesn't match.
+		if (path.endsWith("/validate-promo") && method === "POST") {
+			const body = await c.req.json();
+			const coreUrl = `${env.CORE_URL}/v1/billing/validate-promo`;
+			const response = await pingpong(coreUrl, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"X-Nube-S2S-Token": env.S2S_SECRET,
+					...(c.req.header("X-Nube-User-Id") && { "X-Nube-User-Id": c.req.header("X-Nube-User-Id")! }),
+				},
+				body,
+			});
+			return c.json(response.data, response.status as ContentfulStatusCode);
+		}
+
+		const auth = getAuth(c);
 
 		// Map /v1/payment/* → /v1/billing/*
 		const corePath = path.replace("/v1/payment", "/v1/billing");
