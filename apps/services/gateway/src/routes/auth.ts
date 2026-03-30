@@ -154,10 +154,11 @@ authRoutes.get("/start", async (c: Context) => {
 		return c.json({ error: "unsupported_code_challenge_method", message: "Only S256 is supported" }, 400);
 	}
 
-	// Optional billing param from the SDK client. When present, the callback
-	// will create a checkout session after auth and redirect there instead of
-	// going straight to returnTo.
+	// Optional billing params from the SDK client. When price_id is present, the
+	// callback will create a checkout session after auth and redirect there instead
+	// of going straight to returnTo. promo_code is pre-applied to that checkout.
 	const priceId = c.req.query("price_id");
+	const promoCode = c.req.query("promo_code");
 
 	// Encode state as JSON to preserve returnTo, audience, and app context
 	const statePayload: Record<string, string> = { returnTo, audience, csrfNonce };
@@ -172,6 +173,9 @@ authRoutes.get("/start", async (c: Context) => {
 	}
 	if (priceId) {
 		statePayload["priceId"] = priceId;
+	}
+	if (promoCode) {
+		statePayload["promoCode"] = promoCode;
 	}
 	const stateData = JSON.stringify(statePayload);
 	const encodedState = Buffer.from(stateData).toString("base64")
@@ -316,6 +320,7 @@ authRoutes.get("/callback", async (c: Context) => {
 	let stateCodeChallengeMethod: string | undefined;
 	let stateSessionTtlSeconds: number | undefined;
 	let statePriceId: string | undefined;
+	let statePromoCode: string | undefined;
 	try {
 		log.debug({ rawState: state }, "Decoding state parameter");
 		// Decode URL-safe base64 back to standard base64
@@ -334,6 +339,7 @@ authRoutes.get("/callback", async (c: Context) => {
 			codeChallengeMethod?: string;
 			sessionTtlSeconds?: string;
 			priceId?: string;
+			promoCode?: string;
 		};
 		returnTo = stateData.returnTo || "/";
 		audience = stateData.audience || "user";
@@ -344,6 +350,7 @@ authRoutes.get("/callback", async (c: Context) => {
 		stateCodeChallengeMethod = stateData.codeChallengeMethod ?? "S256";
 		stateSessionTtlSeconds = stateData.sessionTtlSeconds ? parseInt(stateData.sessionTtlSeconds, 10) : undefined;
 		statePriceId = stateData.priceId;
+		statePromoCode = stateData.promoCode;
 		log.info({ 
 			decodedState, 
 			stateData, 
@@ -523,6 +530,7 @@ authRoutes.get("/callback", async (c: Context) => {
 							successUrl: `${returnTo}?code=${exchangeCode}&upgraded=true`,
 							cancelUrl: `${returnTo}?error=payment_cancelled`,
 							metadata: { source: "oauth_checkout" },
+							...(statePromoCode && { promoCode: statePromoCode }),
 						},
 					});
 
