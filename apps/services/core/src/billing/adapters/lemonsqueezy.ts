@@ -533,6 +533,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 			// Generate a stable internal code from the promotion name (max 50 chars for LS)
 			const internalCode = `NUBE-${params.name.toUpperCase().replace(/[^A-Z0-9]/g, "").substring(0, 30)}-${Date.now().toString(36).toUpperCase()}`;
 
+			const hasProductRestriction = !!params.restrictedToProductIds?.length;
 			const discountData = {
 				data: {
 					type: "discounts",
@@ -544,11 +545,22 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 							? params.discountValue
 							: Math.round(params.discountValue / 100), // LS uses dollars for fixed
 						amount_type: params.discountType === "percent" ? "percent" : "fixed",
-						is_limited_to_products: false,
+						is_limited_to_products: hasProductRestriction,
 						is_limited_redemptions: !!params.maxRedemptions,
 						...(params.maxRedemptions && { max_redemptions: params.maxRedemptions }),
 						...(params.expiresAt && { expires_at: params.expiresAt.toISOString() }),
 					},
+					// LemonSqueezy uses JSON:API relationships to attach variant restrictions
+					...(hasProductRestriction && {
+						relationships: {
+							variants: {
+								data: params.restrictedToProductIds!.map((id) => ({
+									type: "variants",
+									id,
+								})),
+							},
+						},
+					}),
 				},
 			};
 

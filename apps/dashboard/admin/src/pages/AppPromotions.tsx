@@ -39,12 +39,14 @@ import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
 import { useApp, useProject } from "../hooks/api";
 import {
+	useV2Plans,
 	useV2Promotions,
 	useCreateV2Promotion,
 	useUpdateV2Promotion,
 	useDeactivateV2Promotion,
 	useCreateV2PromoCode,
 	useDeactivateV2PromoCode,
+	type V2Plan,
 	type V2Promotion,
 	type V2PromoCode,
 } from "../hooks/api";
@@ -56,6 +58,7 @@ export function AppPromotionsPage() {
 	const { showToast } = useToast();
 
 	const { data, isLoading } = useV2Promotions(appId || "");
+	const { data: plansData } = useV2Plans(appId || "");
 	const createPromotion = useCreateV2Promotion(appId || "");
 	const updatePromotion = useUpdateV2Promotion(appId || "");
 	const deactivatePromotion = useDeactivateV2Promotion(appId || "");
@@ -78,6 +81,7 @@ export function AppPromotionsPage() {
 		startsAt: "",
 		endsAt: "",
 		isNewCustomersOnly: false,
+		planIds: [] as string[],
 	});
 
 	const [codeForm, setCodeForm] = useState({
@@ -106,7 +110,7 @@ export function AppPromotionsPage() {
 
 	const openCreate = () => {
 		setEditingPromo(null);
-		setForm({ name: "", description: "", discountType: "percent", discountValue: "", maxRedemptions: "", startsAt: "", endsAt: "", isNewCustomersOnly: false });
+		setForm({ name: "", description: "", discountType: "percent", discountValue: "", maxRedemptions: "", startsAt: "", endsAt: "", isNewCustomersOnly: false, planIds: [] });
 		setShowCreateModal(true);
 	};
 
@@ -121,6 +125,7 @@ export function AppPromotionsPage() {
 			startsAt: promo.startsAt ? promo.startsAt.slice(0, 16) : "",
 			endsAt: promo.endsAt ? promo.endsAt.slice(0, 16) : "",
 			isNewCustomersOnly: promo.isNewCustomersOnly,
+			planIds: promo.plans.map((p) => p.planId),
 		});
 		setShowCreateModal(true);
 	};
@@ -141,6 +146,7 @@ export function AppPromotionsPage() {
 				startsAt: form.startsAt || null,
 				endsAt: form.endsAt || null,
 				isNewCustomersOnly: form.isNewCustomersOnly,
+				planIds: form.planIds.length > 0 ? form.planIds : undefined,
 			};
 			if (editingPromo) {
 				await updatePromotion.mutateAsync({ promoId: editingPromo.promotionId, data: payload });
@@ -262,6 +268,13 @@ export function AppPromotionsPage() {
 										</div>
 										{promo.description && (
 											<Text className="text-muted-foreground text-sm mb-2">{promo.description}</Text>
+										)}
+										{promo.plans && promo.plans.length > 0 && (
+											<div className="flex flex-wrap gap-1 mb-2">
+												{promo.plans.map((p) => (
+													<Chip key={p.planId} variant="warning" size="sm">{p.name}</Chip>
+												))}
+											</div>
 										)}
 										<div className="flex gap-4 text-xs text-muted-foreground">
 											{promo.startsAt && (
@@ -442,6 +455,32 @@ export function AppPromotionsPage() {
 							/>
 							<Label>New customers only</Label>
 						</div>
+						{plansData?.plans && plansData.plans.length > 0 && (
+							<div>
+								<Label>Restrict to Plans (leave empty for all plans)</Label>
+								<div className="mt-2 space-y-2 max-h-40 overflow-y-auto border border-input rounded-md p-3">
+									{plansData.plans.filter((p: V2Plan) => p.isActive).map((p: V2Plan) => (
+										<div key={p.planId} className="flex items-center gap-2">
+											<Checkbox
+												checked={form.planIds.includes(p.planId)}
+												onCheckedChange={(checked) => {
+													const ids = checked
+														? [...form.planIds, p.planId]
+														: form.planIds.filter((id) => id !== p.planId);
+													setForm({ ...form, planIds: ids });
+												}}
+											/>
+											<Label className="font-normal cursor-pointer">{p.name}</Label>
+										</div>
+									))}
+								</div>
+								{form.planIds.length > 0 && (
+									<Text className="text-xs text-muted-foreground mt-1">
+										Applies to: {plansData.plans.filter((p: V2Plan) => form.planIds.includes(p.planId)).map((p: V2Plan) => p.name).join(", ")}
+									</Text>
+								)}
+							</div>
+						)}
 					</DialogBody>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setShowCreateModal(false)}>Cancel</Button>

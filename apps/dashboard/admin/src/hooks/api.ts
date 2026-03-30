@@ -1406,6 +1406,11 @@ export function useV2SubscriptionAction(appId: string) {
 
 // --- Promotions ---
 
+export interface V2PromotionPlan {
+	planId: string;
+	name: string;
+}
+
 export interface V2Promotion {
 	promotionId: string;
 	name: string;
@@ -1419,7 +1424,7 @@ export interface V2Promotion {
 	maxRedemptions: number | null;
 	currentRedemptions: number;
 	isActive: boolean;
-	plans: string[];
+	plans: V2PromotionPlan[];
 	codes: V2PromoCode[];
 	providerRefs?: V2ProviderRef[];
 	createdAt: string;

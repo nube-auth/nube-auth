@@ -116,6 +116,14 @@ export interface CreateCouponParams {
   expiresAt?: Date;
   /** Traceability metadata (supported by Stripe; ignored by LS/Dodo) */
   metadata?: Record<string, string>;
+  /**
+   * Restrict this coupon to specific provider-native product/price IDs.
+   * - Stripe:       Stripe Product IDs  (e.g. "prod_xxx") → applies_to.products
+   * - LemonSqueezy: Variant IDs         (e.g. "123456")   → relationships.variants
+   * - Dodo:         Dodo Product IDs    (= external_price_id) → restricted_to
+   * If omitted or empty, the coupon applies to all products (global).
+   */
+  restrictedToProductIds?: string[];
 }
 
 export interface CreateCouponResult {

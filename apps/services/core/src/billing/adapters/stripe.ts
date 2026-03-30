@@ -515,16 +515,20 @@ export class StripeAdapter implements PaymentProviderAdapter {
 	 */
 	async createCoupon(params: import("./types.js").CreateCouponParams): Promise<import("./types.js").CreateCouponResult> {
 		try {
-			const coupon = await this.stripe.coupons.create({
-				name: params.name,
-				...(params.discountType === "percent"
-					? { percent_off: params.discountValue }
-					: { amount_off: params.discountValue, currency: params.currency ?? "usd" }),
-				duration: "once",
-				...(params.maxRedemptions && { max_redemptions: params.maxRedemptions }),
-				...(params.expiresAt && { redeem_by: Math.floor(params.expiresAt.getTime() / 1000) }),
-				...(params.metadata && { metadata: params.metadata }),
-			});
+		const coupon = await this.stripe.coupons.create({
+			name: params.name,
+			...(params.discountType === "percent"
+				? { percent_off: params.discountValue }
+				: { amount_off: params.discountValue, currency: params.currency ?? "usd" }),
+			duration: "once",
+			...(params.maxRedemptions && { max_redemptions: params.maxRedemptions }),
+			...(params.expiresAt && { redeem_by: Math.floor(params.expiresAt.getTime() / 1000) }),
+			...(params.metadata && { metadata: params.metadata }),
+			// Restrict to specific Stripe product IDs if provided (applies_to takes product IDs, not price IDs)
+			...(params.restrictedToProductIds?.length && {
+				applies_to: { products: params.restrictedToProductIds },
+			}),
+		});
 
 			this.log.info({ couponId: coupon.id, name: params.name }, "Stripe coupon created");
 

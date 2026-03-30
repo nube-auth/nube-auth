@@ -373,20 +373,31 @@ export class DodoAdapter implements PaymentProviderAdapter {
 	 * Create a Dodo Discount for a Nube promotion.
 	 * Dodo discounts are identified by a code string. We generate an internal
 	 * code so many Nube promotion_codes can all resolve to this one Dodo discount.
+	 *
+	 * Amount encoding:
+	 *  - percentage: basis points  (10% → 1000, 5.4% → 540)
+	 *  - flat:       USD cents      ($1.00 → 100)  — Dodo only allows USD for flat
+	 *
+	 * Product restriction: pass params.restrictedToProductIds to limit which
+	 * Dodo products (= our external_price_id values) the discount applies to.
 	 */
 	async createCoupon(params: import("./types.js").CreateCouponParams): Promise<import("./types.js").CreateCouponResult> {
 		try {
 			const internalCode = `NUBE-${params.name.toUpperCase().replace(/[^A-Z0-9]/g, "").substring(0, 25)}-${Date.now().toString(36).toUpperCase()}`;
 
+			// Dodo percentage amounts are in basis points (100 basis points = 1%)
+			const amount = params.discountType === "percent"
+				? params.discountValue * 100  // e.g. 10% → 1000 basis points
+				: params.discountValue;       // flat: already in USD cents
+
 			const discount = await this.client.discounts.create({
 				name: params.name,
 				code: internalCode,
-				type: params.discountType === "percent" ? "percentage" : "flat",
-				amount: params.discountType === "percent"
-					? params.discountValue
-					: params.discountValue, // Dodo uses cents for flat discounts
+				type: "percentage" as Parameters<typeof this.client.discounts.create>[0]["type"],
+				amount,
 				...(params.maxRedemptions && { usage_limit: params.maxRedemptions }),
 				...(params.expiresAt && { expires_at: params.expiresAt.toISOString() }),
+				...(params.restrictedToProductIds?.length && { restricted_to: params.restrictedToProductIds }),
 			} as Parameters<typeof this.client.discounts.create>[0]);
 
 			this.log.info({ discountId: discount.discount_id, code: internalCode }, "Dodo discount created");

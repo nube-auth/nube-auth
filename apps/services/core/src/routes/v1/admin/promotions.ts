@@ -2,6 +2,7 @@ import {
 	appQueries,
 	getDb,
 	planQueries,
+	priceQueries,
 	promotionCodeQueries,
 	promotionPlanQueries,
 	promotionProviderRefQueries,
@@ -12,6 +13,7 @@ import {
 import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { z } from "zod";
+import Stripe from "stripe";
 import { createProviderAdapter } from "../../../billing/adapters/index.js";
 import { decryptString } from "../../../utils/encryption.js";
 
@@ -25,6 +27,26 @@ async function syncPromotionToProviders(
 	projectId: number,
 ): Promise<void> {
 	const db = getDb();
+
+	// Collect external_price_ids for plan-restricted promotions
+	const planTargets = await promotionPlanQueries.findByPromotionId(db, promo.id);
+	const priceIdsByProvider = new Map<string, string[]>();
+	
+	if (planTargets.length > 0) {
+		for (const pt of planTargets) {
+			const activePrices = await priceQueries.findActiveByPlanId(db, pt.plan_id);
+			for (const price of activePrices) {
+				const priceId = (price as any).external_price_id;
+				const provider = (price as any).external_provider;
+				if (priceId && provider) {
+					if (!priceIdsByProvider.has(provider)) {
+						priceIdsByProvider.set(provider, []);
+					}
+					priceIdsByProvider.get(provider)!.push(priceId);
+				}
+			}
+		}
+	}
 
 	const providers = await paymentProviderConfigQueries.findByProjectId(db, projectId);
 	const activeProviders = providers.filter((p: any) => p.is_active);
@@ -50,6 +72,41 @@ async function syncPromotionToProviders(
 				(credentials as any).webhookSecret = provider.webhook_secret || (credentials as any).webhookSecret;
 			}
 
+			// Resolve provider-specific product IDs for plan restrictions
+			let restrictedToProductIds: string[] | undefined;
+			const providerPriceIds = priceIdsByProvider.get(provider.provider);
+			
+			if (providerPriceIds && providerPriceIds.length > 0) {
+				if (provider.provider === "stripe") {
+					// Stripe: resolve price_xxx → prod_xxx
+					const stripe = new Stripe((credentials as any).secretKey, {
+						apiVersion: "2025-02-24.acacia",
+					});
+					const productIds = new Set<string>();
+					
+					for (const priceId of providerPriceIds) {
+						try {
+							const stripePrice = await stripe.prices.retrieve(priceId);
+							if (typeof stripePrice.product === "string") {
+								productIds.add(stripePrice.product);
+							}
+						} catch (err) {
+							log.warn(
+								{ err: serializeError(err as Error), priceId, promotionId: promo.public_id },
+								"Failed to resolve Stripe price to product ID",
+							);
+						}
+					}
+					
+					if (productIds.size > 0) {
+						restrictedToProductIds = Array.from(productIds);
+					}
+				} else {
+					// Dodo/LemonSqueezy: use price IDs directly
+					restrictedToProductIds = [...new Set(providerPriceIds)];
+				}
+			}
+
 			const adapter = createProviderAdapter(provider.provider, credentials);
 
 			const result = await adapter.createCoupon({
@@ -58,6 +115,7 @@ async function syncPromotionToProviders(
 				discountValue: promo.discount_value,
 				...(promo.max_redemptions && { maxRedemptions: promo.max_redemptions }),
 				...(promo.ends_at && { expiresAt: promo.ends_at }),
+				...(restrictedToProductIds && { restrictedToProductIds }),
 				metadata: {
 					nube_promotion_id: promo.public_id,
 				},
@@ -97,7 +155,7 @@ export const promotionsRouter = new Hono();
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatPromotion(promo: any, extras?: { plans?: string[]; codes?: any[]; providerRefs?: any[] }) {
+function formatPromotion(promo: any, extras?: { plans?: { planId: string; name: string }[]; codes?: any[]; providerRefs?: any[] }) {
 	return {
 		promotionId: promo.public_id,
 		name: promo.name,
@@ -230,12 +288,12 @@ promotionsRouter.post("/", async (c) => {
 		await promotionPlanQueries.replaceForPromotion(db, promo.id, planInternalIds);
 	}
 
-	// Fetch plan public IDs for response
+	// Fetch plan items for response
 	const planTargets = await promotionPlanQueries.findByPromotionId(db, promo.id);
-	const planPublicIds: string[] = [];
+	const planItems: { planId: string; name: string }[] = [];
 	for (const pt of planTargets) {
 		const plan = await planQueries.findById(db, pt.plan_id);
-		if (plan) planPublicIds.push(plan.public_id);
+		if (plan) planItems.push({ planId: plan.public_id, name: plan.name });
 	}
 
 	// Auto-sync coupon to all active payment providers (non-blocking)
@@ -243,7 +301,7 @@ promotionsRouter.post("/", async (c) => {
 		log.error({ err: serializeError(err as Error), promotionId: promo.public_id }, "Background provider sync failed"),
 	);
 
-	return c.json(formatPromotion(promo, { plans: planPublicIds }), 201);
+	return c.json(formatPromotion(promo, { plans: planItems }), 201);
 });
 
 /**
@@ -263,14 +321,14 @@ promotionsRouter.get("/", async (c) => {
 	const items = [];
 	for (const promo of promos) {
 		const planTargets = await promotionPlanQueries.findByPromotionId(db, promo.id);
-		const planPublicIds: string[] = [];
+		const planItems: { planId: string; name: string }[] = [];
 		for (const pt of planTargets) {
 			const plan = await planQueries.findById(db, pt.plan_id);
-			if (plan) planPublicIds.push(plan.public_id);
+			if (plan) planItems.push({ planId: plan.public_id, name: plan.name });
 		}
 		const codes = await promotionCodeQueries.findByPromotionId(db, promo.id);
 		items.push(formatPromotion(promo, {
-			plans: planPublicIds,
+			plans: planItems,
 			codes: codes.map(formatCode),
 		}));
 	}
@@ -292,10 +350,10 @@ promotionsRouter.get("/:promoId", async (c) => {
 
 	// Fetch plan targets
 	const planTargets = await promotionPlanQueries.findByPromotionId(db, promo.id);
-	const planPublicIds: string[] = [];
+	const planItems: { planId: string; name: string }[] = [];
 	for (const pt of planTargets) {
 		const plan = await planQueries.findById(db, pt.plan_id);
-		if (plan) planPublicIds.push(plan.public_id);
+		if (plan) planItems.push({ planId: plan.public_id, name: plan.name });
 	}
 
 	// Fetch codes
@@ -305,7 +363,7 @@ promotionsRouter.get("/:promoId", async (c) => {
 	const refs = await promotionProviderRefQueries.findByPromotionId(db, promo.id);
 
 	return c.json(formatPromotion(promo, {
-		plans: planPublicIds,
+		plans: planItems,
 		codes: codes.map(formatCode),
 		providerRefs: refs.map(formatProviderRef),
 	}));
@@ -370,13 +428,13 @@ promotionsRouter.patch("/:promoId", async (c) => {
 
 	// Fetch updated plan targets
 	const planTargets = await promotionPlanQueries.findByPromotionId(db, promo.id);
-	const planPublicIds: string[] = [];
+	const planItems: { planId: string; name: string }[] = [];
 	for (const pt of planTargets) {
 		const plan = await planQueries.findById(db, pt.plan_id);
-		if (plan) planPublicIds.push(plan.public_id);
+		if (plan) planItems.push({ planId: plan.public_id, name: plan.name });
 	}
 
-	return c.json(formatPromotion(updated, { plans: planPublicIds }));
+	return c.json(formatPromotion(updated, { plans: planItems }));
 });
 
 /**
