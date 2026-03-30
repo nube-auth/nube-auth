@@ -104,7 +104,11 @@ authRoutes.get("/start", async (c: Context) => {
 				return c.json({ error: "Unknown app_id" }, 400);
 			}
 		const securitySettings = app.security_settings as { redirectUris?: string[]; sessionTtlDays?: number } | null;
-		const normalizeUri = (uri: string) => { try { return new URL(uri).href; } catch { return uri; } };
+		// Strip query string and fragment before comparing — only origin+pathname must match.
+		// This mirrors how Google/GitHub handle redirect_uri validation and allows callers to
+		// append their own query params (e.g. ?upgraded=true) without needing to register
+		// every possible variant.
+		const normalizeUri = (uri: string) => { try { const u = new URL(uri); return u.origin + u.pathname; } catch { return uri; } };
 		const registeredUris: string[] = (securitySettings?.redirectUris ?? []).map(normalizeUri);
 		const normalizedReturnTo = normalizeUri(returnTo);
 		if (registeredUris.length === 0) {
