@@ -1,0 +1,36 @@
+apps/services/core/src/billing/adapters/stripe.ts
+  553d97324ef36351 518-531
+apps/services/core/src/billing/adapters/lemonsqueezy.ts
+  553d97324ef36351 536,548,553-563
+apps/services/core/src/billing/adapters/dodo.ts
+  553d97324ef36351 376-382,388-392,396-397,400
+apps/services/core/src/routes/v1/admin/promotions.ts
+  553d97324ef36351 5,16,31-50,75-107,118,158,291,293,296,304,324,327,331,353,356,366,431,434,437
+apps/services/core/src/billing/adapters/types.ts
+  553d97324ef36351 119-126
+apps/dashboard/admin/src/hooks/api.ts
+  553d97324ef36351 1409-1413,1427
+apps/dashboard/admin/src/pages/AppPromotions.tsx
+  553d97324ef36351 42,49,61,84,113,128,149,272-278,458-483
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.22",
+  "base_commit_sha": "f1ad21498d379c9f827802bf2a86cf0052d67a84",
+  "prompts": {
+    "553d97324ef36351": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5c50c261-943e-4200-90dd-4b989d11189b",
+        "model": "claude-4.5-sonnet"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 172,
+      "total_deletions": 35,
+      "accepted_lines": 168,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/c3ca944cf153504cd3000bbaea573e0a8a707a93b08d595ec9344bf3fc30cd6f"
+    }
+  }
+}
