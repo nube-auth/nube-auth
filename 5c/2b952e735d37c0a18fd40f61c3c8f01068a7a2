@@ -1,0 +1,24 @@
+apps/services/gateway/src/routes/auth.ts
+  a7f15147f1aec0bb 107-111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.22",
+  "base_commit_sha": "5c2b952e735d37c0a18fd40f61c3c8f01068a7a2",
+  "prompts": {
+    "a7f15147f1aec0bb": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "54c1279e-58da-4d33-95b4-fb44d17eff0e",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 5,
+      "total_deletions": 1,
+      "accepted_lines": 5,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/1cc3cb089c0af5e0bd7c38143600acf14491d33e71dd9ce2469a86eb458eacc2"
+    }
+  }
+}
