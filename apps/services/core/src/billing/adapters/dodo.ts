@@ -57,6 +57,11 @@ export class DodoAdapter implements PaymentProviderAdapter {
 						quantity: params.quantity ?? 1,
 					},
 				],
+				// Prevent customers from applying arbitrary discount codes on the hosted checkout UI.
+				// We still pass `discount_code` above to pre-apply the Nube-resolved coupon.
+				feature_flags: {
+					allow_discount_code: false,
+				},
 				customer: {
 					email: params.customerEmail,
 					...(params.customerId ? { customer_id: params.customerId } : {}),
