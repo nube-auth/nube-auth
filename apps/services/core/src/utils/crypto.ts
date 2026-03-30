@@ -26,13 +26,13 @@ export function verifyTokenHash(token: string, hash: string): boolean {
 }
 
 /**
- * Generate a secure random code (numeric)
+ * Generate a cryptographically secure random numeric OTP.
+ * Uses crypto.randomInt (CSPRNG) — never Math.random().
  */
 export function generateOTP(length: number = 6): string {
-	const digits = "0123456789";
 	let otp = "";
 	for (let i = 0; i < length; i++) {
-		otp += digits[Math.floor(Math.random() * 10)];
+		otp += crypto.randomInt(0, 10).toString();
 	}
 	return otp;
 }

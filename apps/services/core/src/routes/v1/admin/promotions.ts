@@ -3,6 +3,7 @@ import {
 	getDb,
 	planQueries,
 	priceQueries,
+	priceProviderRefQueries,
 	promotionCodeQueries,
 	promotionPlanQueries,
 	promotionProviderRefQueries,
@@ -13,7 +14,6 @@ import {
 import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { z } from "zod";
-import Stripe from "stripe";
 import { createProviderAdapter } from "../../../billing/adapters/index.js";
 import { decryptString } from "../../../utils/encryption.js";
 
@@ -28,21 +28,43 @@ async function syncPromotionToProviders(
 ): Promise<void> {
 	const db = getDb();
 
-	// Collect external_price_ids for plan-restricted promotions
+	// Collect provider-specific product/price IDs for plan-restricted promotions.
+	// Primary source: price_provider_refs (new junction table, populated after re-sync).
+	// Fallback source: prices.external_price_id (legacy single-provider column, always populated).
 	const planTargets = await promotionPlanQueries.findByPromotionId(db, promo.id);
-	const priceIdsByProvider = new Map<string, string[]>();
-	
+
+	// Map: providerConfigId → ids[]  (primary — from price_provider_refs)
+	const refsByProviderConfigId = new Map<number, { provider: string; ids: string[] }>();
+	// Map: providerName → ids[]  (fallback — from prices.external_price_id)
+	const legacyIdsByProviderName = new Map<string, string[]>();
+
 	if (planTargets.length > 0) {
 		for (const pt of planTargets) {
 			const activePrices = await priceQueries.findActiveByPlanId(db, pt.plan_id);
 			for (const price of activePrices) {
-				const priceId = (price as any).external_price_id;
-				const provider = (price as any).external_provider;
-				if (priceId && provider) {
-					if (!priceIdsByProvider.has(provider)) {
-						priceIdsByProvider.set(provider, []);
+				// Primary: use price_provider_refs if available
+				const refs = await priceProviderRefQueries.findByPriceId(db, price.id);
+				if (refs.length > 0) {
+					for (const ref of refs) {
+						if (!refsByProviderConfigId.has(ref.provider_config_id)) {
+							refsByProviderConfigId.set(ref.provider_config_id, { provider: ref.provider, ids: [] });
+						}
+						// Stripe: use external_product_id (prod_xxx); others: use external_price_id
+						const idToUse = ref.provider === "stripe" && ref.external_product_id
+							? ref.external_product_id
+							: ref.external_price_id;
+						const entry = refsByProviderConfigId.get(ref.provider_config_id)!;
+						if (!entry.ids.includes(idToUse)) entry.ids.push(idToUse);
 					}
-					priceIdsByProvider.get(provider)!.push(priceId);
+				} else if ((price as any).external_provider && (price as any).external_price_id) {
+					// Fallback: prices were synced before price_provider_refs table existed
+					const providerName = (price as any).external_provider as string;
+					const externalId = (price as any).external_price_id as string;
+					if (!legacyIdsByProviderName.has(providerName)) {
+						legacyIdsByProviderName.set(providerName, []);
+					}
+					const legacyIds = legacyIdsByProviderName.get(providerName)!;
+					if (!legacyIds.includes(externalId)) legacyIds.push(externalId);
 				}
 			}
 		}
@@ -72,40 +94,15 @@ async function syncPromotionToProviders(
 				(credentials as any).webhookSecret = provider.webhook_secret || (credentials as any).webhookSecret;
 			}
 
-			// Resolve provider-specific product IDs for plan restrictions
-			let restrictedToProductIds: string[] | undefined;
-			const providerPriceIds = priceIdsByProvider.get(provider.provider);
-			
-			if (providerPriceIds && providerPriceIds.length > 0) {
-				if (provider.provider === "stripe") {
-					// Stripe: resolve price_xxx → prod_xxx
-					const stripe = new Stripe((credentials as any).secretKey, {
-						apiVersion: "2025-02-24.acacia",
-					});
-					const productIds = new Set<string>();
-					
-					for (const priceId of providerPriceIds) {
-						try {
-							const stripePrice = await stripe.prices.retrieve(priceId);
-							if (typeof stripePrice.product === "string") {
-								productIds.add(stripePrice.product);
-							}
-						} catch (err) {
-							log.warn(
-								{ err: serializeError(err as Error), priceId, promotionId: promo.public_id },
-								"Failed to resolve Stripe price to product ID",
-							);
-						}
-					}
-					
-					if (productIds.size > 0) {
-						restrictedToProductIds = Array.from(productIds);
-					}
-				} else {
-					// Dodo/LemonSqueezy: use price IDs directly
-					restrictedToProductIds = [...new Set(providerPriceIds)];
-				}
-			}
+			// Resolve product IDs: prefer price_provider_refs (primary), fall back to legacy column
+			const restrictionEntry = refsByProviderConfigId.get(provider.id);
+			const legacyIds = legacyIdsByProviderName.get(provider.provider);
+			const restrictedToProductIds =
+				restrictionEntry && restrictionEntry.ids.length > 0
+					? restrictionEntry.ids
+					: legacyIds && legacyIds.length > 0
+						? legacyIds
+						: undefined;
 
 			const adapter = createProviderAdapter(provider.provider, credentials);
 
@@ -236,7 +233,7 @@ const createPromoSchema = z.object({
 	allowedIntervals: z.array(z.enum(["month", "year"])).optional(),
 	isNewCustomersOnly: z.boolean().optional().default(false),
 	maxRedemptions: z.number().int().positive().optional(),
-	planIds: z.array(z.string()).optional(),
+	planIds: z.array(z.string()).min(1, "At least one plan must be selected"),
 });
 
 promotionsRouter.post("/", async (c) => {
@@ -251,6 +248,11 @@ promotionsRouter.post("/", async (c) => {
 	// Validate percent discount doesn't exceed 100
 	if (data.discountType === "percent" && data.discountValue > 100) {
 		return c.json({ error: "Percent discount cannot exceed 100" }, 400);
+	}
+
+	// Validate endsAt is after startsAt when both are provided
+	if (data.endsAt && data.startsAt && data.endsAt <= data.startsAt) {
+		return c.json({ error: "endsAt must be after startsAt" }, 400);
 	}
 
 	const db = getDb();
@@ -394,6 +396,13 @@ promotionsRouter.patch("/:promoId", async (c) => {
 	const parsed = updatePromoSchema.safeParse(body);
 	if (!parsed.success) return c.json({ error: "Invalid input", details: parsed.error.flatten() }, 400);
 	const data = parsed.data;
+
+	// Validate endsAt is after startsAt when both are provided (use existing promo value as fallback)
+	const effectiveStartsAt = data.startsAt ?? promo.starts_at;
+	const effectiveEndsAt = data.endsAt !== undefined ? data.endsAt : promo.ends_at;
+	if (effectiveEndsAt && effectiveStartsAt && effectiveEndsAt <= effectiveStartsAt) {
+		return c.json({ error: "endsAt must be after startsAt" }, 400);
+	}
 
 	const db = getDb();
 	const updateData: Record<string, unknown> = {};
@@ -653,6 +662,12 @@ promotionsRouter.post("/:promoId/provider-refs", async (c) => {
 	const config = await paymentProviderConfigQueries.findByPublicId(db, data.providerConfigId);
 	if (!config) {
 		return c.json({ error: "Provider config not found" }, 404);
+	}
+
+	// Verify the provider config belongs to the same project as the app.
+	// Without this check a caller could link a promotion to another tenant's payment config.
+	if (config.project_id !== app.project_id) {
+		return c.json({ error: "Provider config does not belong to this app's project" }, 403);
 	}
 
 	// Check for existing active mapping

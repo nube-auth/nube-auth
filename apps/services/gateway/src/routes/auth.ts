@@ -103,14 +103,21 @@ authRoutes.get("/start", async (c: Context) => {
 			if (!app) {
 				return c.json({ error: "Unknown app_id" }, 400);
 			}
-			const securitySettings = app.security_settings as { redirectUris?: string[]; sessionTtlDays?: number } | null;
-			const normalizeUri = (uri: string) => { try { return new URL(uri).href; } catch { return uri; } };
-			const registeredUris: string[] = (securitySettings?.redirectUris ?? []).map(normalizeUri);
-			const normalizedReturnTo = normalizeUri(returnTo);
-			if (registeredUris.length > 0 && !registeredUris.includes(normalizedReturnTo)) {
-				log.warn({ returnTo, registeredUris, appId }, "return_to not in registered redirect URIs");
-				return c.json({ error: "return_to URI is not registered for this app_id" }, 400);
+		const securitySettings = app.security_settings as { redirectUris?: string[]; sessionTtlDays?: number } | null;
+		const normalizeUri = (uri: string) => { try { return new URL(uri).href; } catch { return uri; } };
+		const registeredUris: string[] = (securitySettings?.redirectUris ?? []).map(normalizeUri);
+		const normalizedReturnTo = normalizeUri(returnTo);
+		if (registeredUris.length === 0) {
+			// In production an empty allowlist is a misconfiguration — reject to prevent open redirect.
+			// In development allow any URI so local apps work before configuration is complete.
+			if (process.env["NODE_ENV"] === "production") {
+				log.warn({ returnTo, appId }, "No redirect URIs registered for app — rejecting in production");
+				return c.json({ error: "No redirect URIs registered for this app. Configure them in the NubeAuth admin." }, 403);
 			}
+		} else if (!registeredUris.includes(normalizedReturnTo)) {
+			log.warn({ returnTo, registeredUris, appId }, "return_to not in registered redirect URIs");
+			return c.json({ error: "return_to URI is not registered for this app_id" }, 400);
+		}
 			// Per-app TTL: prefer security_settings.sessionTtlDays; fall back to SESSION_TTL constant.
 			if (securitySettings?.sessionTtlDays && securitySettings.sessionTtlDays > 0) {
 				appSessionTtlSeconds = securitySettings.sessionTtlDays * 24 * 60 * 60;
@@ -140,7 +147,12 @@ authRoutes.get("/start", async (c: Context) => {
 	// Accept PKCE challenge from the SDK client (audience=app) and round-trip it
 	// through the encoded state so it's available when Gateway issues the exchange code.
 	const codeChallenge = c.req.query("code_challenge");
-	const codeChallengeMethod = c.req.query("code_challenge_method") || "S256";
+	const codeChallengeMethod = c.req.query("code_challenge_method");
+
+	// Only S256 is accepted — reject plain and unknown methods to prevent downgrade attacks
+	if (codeChallenge && codeChallengeMethod && codeChallengeMethod !== "S256") {
+		return c.json({ error: "unsupported_code_challenge_method", message: "Only S256 is supported" }, 400);
+	}
 
 	// Optional billing param from the SDK client. When present, the callback
 	// will create a checkout session after auth and redirect there instead of
@@ -153,7 +165,7 @@ authRoutes.get("/start", async (c: Context) => {
 	if (deviceId) statePayload["deviceId"] = deviceId;
 	if (codeChallenge) {
 		statePayload["codeChallenge"] = codeChallenge;
-		statePayload["codeChallengeMethod"] = codeChallengeMethod;
+		statePayload["codeChallengeMethod"] = "S256"; // always S256 — enforced above
 	}
 	if (appSessionTtlSeconds !== undefined) {
 		statePayload["sessionTtlSeconds"] = String(appSessionTtlSeconds);
@@ -1200,19 +1212,23 @@ authRoutes.post("/token", async (c: Context) => {
 			return c.json({ error: "invalid_or_expired_code" }, 400);
 		}
 
-		// PKCE S256 verification — only enforced when the flow included a code_challenge
+		// PKCE S256 verification — enforced when the flow included a code_challenge.
+		// Non-S256 methods are rejected (never silently skipped).
 		if (exchangeData.codeChallenge) {
 			if (!code_verifier) {
 				log.warn({ appId: app_id }, "PKCE code_verifier missing but challenge is present");
 				return c.json({ error: "code_verifier_required" }, 400);
 			}
 			const method = exchangeData.codeChallengeMethod ?? "S256";
-			if (method === "S256") {
-				const computed = crypto.createHash("sha256").update(code_verifier).digest("base64url");
-				if (computed !== exchangeData.codeChallenge) {
-					log.warn({ appId: app_id }, "PKCE verification failed — code_verifier does not match challenge");
-					return c.json({ error: "invalid_code_verifier" }, 400);
-				}
+			if (method !== "S256") {
+				// Should never happen (rejected at /start), but defend in depth
+				log.warn({ appId: app_id, method }, "Unsupported PKCE method in stored challenge");
+				return c.json({ error: "unsupported_code_challenge_method" }, 400);
+			}
+			const computed = crypto.createHash("sha256").update(code_verifier).digest("base64url");
+			if (computed !== exchangeData.codeChallenge) {
+				log.warn({ appId: app_id }, "PKCE verification failed — code_verifier does not match challenge");
+				return c.json({ error: "invalid_code_verifier" }, 400);
 			}
 		}
 

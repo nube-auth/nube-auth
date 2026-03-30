@@ -519,6 +519,11 @@ router.post("/exchange", async (c: Context) => {
 			return c.json({ error: "Session expired" }, 401);
 		}
 
+		if (session.revoked_at) {
+			log.warn({ sessionId: `${sessionId.substring(0, 8)}...` }, "Session has been revoked");
+			return c.json({ error: "Session revoked" }, 401);
+		}
+
 		const user = await userQueries.findById(db, session.user_id);
 
 		if (!user) {

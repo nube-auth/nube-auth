@@ -17,6 +17,7 @@ import {
 	project_invitations,
 	project_members,
 	projects,
+	price_provider_refs,
 	promotion_codes,
 	promotion_plans,
 	promotion_provider_refs,
@@ -2268,5 +2269,82 @@ export const appUserQueries = {
 			.innerJoin(apps, eq(apps.id, app_users.app_id))
 			.where(eq(apps.project_id, projectId));
 		return Number(result[0]?.count ?? 0);
+	},
+};
+
+/**
+ * Price provider ref queries
+ * Stores one row per (price, provider_config) pair for multi-provider support.
+ */
+export const priceProviderRefQueries = {
+	async findByPriceAndProvider(db: DbClient, priceId: number, providerConfigId: number) {
+		const results = await db
+			.select()
+			.from(price_provider_refs)
+			.where(
+				and(
+					eq(price_provider_refs.price_id, priceId),
+					eq(price_provider_refs.provider_config_id, providerConfigId),
+					eq(price_provider_refs.is_active, true),
+				),
+			);
+		return results[0];
+	},
+
+	async findByPriceId(db: DbClient, priceId: number) {
+		return db
+			.select()
+			.from(price_provider_refs)
+			.where(and(eq(price_provider_refs.price_id, priceId), eq(price_provider_refs.is_active, true)));
+	},
+
+	async findByExternalPriceId(db: DbClient, externalPriceId: string, provider: string) {
+		const results = await db
+			.select()
+			.from(price_provider_refs)
+			.where(
+				and(
+					eq(price_provider_refs.external_price_id, externalPriceId),
+					eq(price_provider_refs.provider, provider),
+					eq(price_provider_refs.is_active, true),
+				),
+			);
+		return results[0];
+	},
+
+	async upsert(
+		db: DbClient,
+		data: {
+			public_id: string;
+			price_id: number;
+			provider_config_id: number;
+			provider: string;
+			external_price_id: string;
+			external_product_id?: string | null;
+		},
+	) {
+		const results = await db
+			.insert(price_provider_refs)
+			.values({ ...data, external_product_id: data.external_product_id ?? null })
+			.onConflictDoUpdate({
+				target: [price_provider_refs.price_id, price_provider_refs.provider_config_id],
+				set: {
+					external_price_id: data.external_price_id,
+					external_product_id: data.external_product_id ?? null,
+					is_active: true,
+					updated_at: new Date(),
+				},
+			})
+			.returning();
+		return results[0]!;
+	},
+
+	async deactivate(db: DbClient, id: number) {
+		const results = await db
+			.update(price_provider_refs)
+			.set({ is_active: false, updated_at: new Date() })
+			.where(eq(price_provider_refs.id, id))
+			.returning();
+		return results[0];
 	},
 };

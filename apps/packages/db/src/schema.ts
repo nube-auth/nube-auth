@@ -667,6 +667,38 @@ export const promotion_plans = pgTable(
 );
 
 /**
+ * Price Provider Refs table (Multi-Provider Price Mapping)
+ * Stores one row per (price, payment_provider_config) pair.
+ * Replaces the single external_provider/external_price_id columns on prices,
+ * allowing the same Nube price to exist in Stripe, LemonSqueezy, and Dodo simultaneously.
+ */
+export const price_provider_refs = pgTable(
+	"price_provider_refs",
+	{
+		id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		price_id: integer("price_id")
+			.notNull()
+			.references(() => prices.id),
+		provider_config_id: integer("provider_config_id")
+			.notNull()
+			.references(() => payment_provider_configs.id),
+		provider: varchar("provider", { length: 50 }).notNull(), // 'stripe' | 'lemonsqueezy' | 'dodo'
+		external_price_id: varchar("external_price_id", { length: 255 }).notNull(),
+		external_product_id: varchar("external_product_id", { length: 255 }), // Stripe: prod_xxx; null for LS/Dodo
+		is_active: boolean("is_active").notNull().default(true),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [
+		unique("price_provider_refs_unique").on(table.price_id, table.provider_config_id),
+		index("price_provider_refs_price_id_idx").on(table.price_id),
+		index("price_provider_refs_provider_config_id_idx").on(table.provider_config_id),
+		index("price_provider_refs_external_price_id_idx").on(table.external_price_id),
+	],
+);
+
+/**
  * Promotion Provider Refs table (Provider Coupon Mapping)
  * Maps Nube Auth promotions to provider-specific coupons/discounts.
  * Immutable pattern — deactivate old ref, create new promotion if terms change.

@@ -80,10 +80,17 @@ webhookRoutes.post("/:provider", async (c: Context) => {
 			normalizedProvider = provider as "stripe" | "lemon_squeezy" | "dodo" | "paddle";
 		}
 
+		// Extract the provider's canonical event ID at ingress so the unique
+		// (provider, event_id) constraint in webhook_logs can deduplicate replays.
+		// For Dodo, the Standard Webhooks spec uses the webhook-id header as the canonical ID.
+		const dodoEventId = provider === "dodo" ? c.req.header("webhook-id") : null;
+		const eventId = dodoEventId ?? extractEventId(provider, parsedBody);
+
 		// Store every incoming webhook first for full ingress audit trail.
 		const webhookLogId = await WebhookLoggingService.createWebhookLog({
 			provider: normalizedProvider,
 			eventType,
+			eventId: eventId ?? undefined,
 			requestBody: parsedBody,
 			requestHeaders,
 			signature,
@@ -116,8 +123,8 @@ webhookRoutes.post("/:provider", async (c: Context) => {
 		return c.json({ success: true, message: "Webhook received and queued" }, 200);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Webhook processing error");
-		// Return 200 to acknowledge receipt (don't retry on errors)
-		return c.json({ error: "Processing error" }, 200);
+		// Return 500 so providers know to retry — a 200 would silently swallow the failure
+		return c.json({ error: "Processing error" }, 500);
 	}
 });
 
@@ -170,4 +177,35 @@ function extractEventType(provider: string, payload: unknown): string {
 	}
 
 	return `${provider}.incoming`;
+}
+
+/**
+ * Extract the provider's canonical event ID from the payload.
+ * Used at ingress to populate webhook_logs.event_id so the unique
+ * (provider, event_id) constraint can prevent duplicate processing.
+ */
+function extractEventId(provider: string, payload: unknown): string | null {
+	if (!payload || typeof payload !== "object") return null;
+	const body = payload as Record<string, unknown>;
+
+	// Stripe: top-level "id" field (e.g. "evt_xxx")
+	if (provider === "stripe") {
+		if (typeof body["id"] === "string") return body["id"];
+	}
+
+	// Dodo: top-level "id" field — prefer header webhook-id but we don't have it here;
+	// fall back to body id if available
+	if (provider === "dodo") {
+		if (typeof body["id"] === "string") return body["id"];
+	}
+
+	// LemonSqueezy: meta.webhook_id
+	if (provider === "lemon_squeezy" || provider === "lemon-squeezy" || provider === "lemonsqueezy") {
+		if (typeof body["meta"] === "object" && body["meta"] != null) {
+			const meta = body["meta"] as Record<string, unknown>;
+			if (typeof meta["webhook_id"] === "string") return meta["webhook_id"];
+		}
+	}
+
+	return null;
 }

@@ -153,10 +153,15 @@ export class StripeAdapter implements PaymentProviderAdapter {
 					expand: ["line_items", "subscription"],
 				});
 
-				const result: PaymentDetails = {
-					transactionId: fullSession.payment_intent as string,
-					amount: (fullSession.amount_total || 0) / 100, // Convert cents to dollars
-					currency: fullSession.currency || "usd",
+			// payment_intent can be a string ID, an expanded object, or null (e.g. free trials)
+			const paymentIntentId = typeof fullSession.payment_intent === "string"
+				? fullSession.payment_intent
+				: (fullSession.payment_intent as { id?: string } | null)?.id ?? fullSession.id;
+
+			const result: PaymentDetails = {
+				transactionId: paymentIntentId,
+				amount: fullSession.amount_total || 0, // Minor units (cents/paise/etc.) — do NOT divide
+				currency: fullSession.currency || "usd",
 					status: fullSession.payment_status === "paid" ? "succeeded" : "pending",
 					customerId: fullSession.customer as string,
 					customerEmail: fullSession.customer_email || "",
@@ -186,11 +191,15 @@ export class StripeAdapter implements PaymentProviderAdapter {
 			if (event.type === "invoice.payment_succeeded") {
 				const invoice = event.data as Stripe.Invoice;
 
-				const result: PaymentDetails = {
-					transactionId: invoice.payment_intent as string,
-					amount: (invoice.amount_paid || 0) / 100,
-					currency: invoice.currency,
-					status: invoice.status === "paid" ? "succeeded" : "failed",
+			const invoicePaymentIntentId = typeof invoice.payment_intent === "string"
+				? invoice.payment_intent
+				: (invoice.payment_intent as { id?: string } | null)?.id ?? invoice.id;
+
+			const result: PaymentDetails = {
+				transactionId: invoicePaymentIntentId,
+				amount: invoice.amount_paid || 0, // Minor units — do NOT divide
+				currency: invoice.currency,
+				status: invoice.status === "paid" ? "succeeded" : invoice.status === "open" ? "pending" : "failed",
 					customerId: invoice.customer as string,
 					customerEmail: invoice.customer_email || "",
 				};
@@ -247,11 +256,15 @@ export class StripeAdapter implements PaymentProviderAdapter {
 			if (event.type === "invoice.payment_failed") {
 				const invoice = event.data as Stripe.Invoice;
 
-				const result: PaymentDetails = {
-					transactionId: invoice.payment_intent as string,
-					amount: (invoice.amount_due || 0) / 100,
-					currency: invoice.currency,
-					status: "failed",
+			const failedInvoicePaymentIntentId = typeof invoice.payment_intent === "string"
+				? invoice.payment_intent
+				: (invoice.payment_intent as { id?: string } | null)?.id ?? invoice.id;
+
+			const result: PaymentDetails = {
+				transactionId: failedInvoicePaymentIntentId,
+				amount: invoice.amount_due || 0, // Minor units — do NOT divide
+				currency: invoice.currency,
+				status: "failed",
 					customerId: invoice.customer as string,
 					customerEmail: invoice.customer_email || "",
 				};
@@ -280,11 +293,11 @@ export class StripeAdapter implements PaymentProviderAdapter {
 			if (event.type === "charge.refunded") {
 				const charge = event.data as Stripe.Charge;
 
-				const result: PaymentDetails = {
-					transactionId: charge.id,
-					amount: (charge.amount_refunded || 0) / 100,
-					currency: charge.currency,
-					status: "refunded",
+			const result: PaymentDetails = {
+				transactionId: charge.id,
+				amount: charge.amount_refunded || 0, // Minor units — do NOT divide
+				currency: charge.currency,
+				status: "refunded",
 					customerId: charge.customer as string,
 					customerEmail: charge.billing_details?.email || "",
 				};

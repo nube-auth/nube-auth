@@ -123,7 +123,10 @@ app.route("/v1/me", meRoutes);
 app.route("/v1/admin", adminRoutes);
 app.route("/v1/payment", paymentsRoutes);
 app.route("/v1/license", licenseRoutes);
-app.route("/v1/debug", debugRoutes);
+// Debug routes only available in non-production environments
+if (process.env["NODE_ENV"] !== "production") {
+	app.route("/v1/debug", debugRoutes);
+}
 
 // Health check — returns 503 until Redis is reachable
 app.get("/health", async (c) => {

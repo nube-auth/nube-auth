@@ -135,6 +135,10 @@ export function AppPromotionsPage() {
 			showToast("Name and discount value are required", "error");
 			return;
 		}
+		if (form.planIds.length === 0) {
+			showToast("At least one plan must be selected", "error");
+			return;
+		}
 		setSaving(true);
 		try {
 			const payload = {
@@ -146,7 +150,7 @@ export function AppPromotionsPage() {
 				startsAt: form.startsAt || null,
 				endsAt: form.endsAt || null,
 				isNewCustomersOnly: form.isNewCustomersOnly,
-				planIds: form.planIds.length > 0 ? form.planIds : undefined,
+				planIds: form.planIds,
 			};
 			if (editingPromo) {
 				await updatePromotion.mutateAsync({ promoId: editingPromo.promotionId, data: payload });
@@ -457,8 +461,9 @@ export function AppPromotionsPage() {
 						</div>
 						{plansData?.plans && plansData.plans.length > 0 && (
 							<div>
-								<Label>Restrict to Plans (leave empty for all plans)</Label>
-								<div className="mt-2 space-y-2 max-h-40 overflow-y-auto border border-input rounded-md p-3">
+								<Label>Plans <span className="text-destructive">*</span></Label>
+								<Text className="text-xs text-muted-foreground mb-2">Select which plans this promotion applies to</Text>
+								<div className={`mt-2 space-y-2 max-h-40 overflow-y-auto border rounded-md p-3 ${form.planIds.length === 0 ? "border-destructive" : "border-input"}`}>
 									{plansData.plans.filter((p: V2Plan) => p.isActive).map((p: V2Plan) => (
 										<div key={p.planId} className="flex items-center gap-2">
 											<Checkbox

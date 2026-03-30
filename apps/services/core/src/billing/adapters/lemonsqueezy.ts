@@ -216,7 +216,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 
 			return {
 				transactionId: payload.id,
-				amount: Number(attrs["total"]) / 100, // LemonSqueezy returns cents
+				amount: Number(attrs["total"]), // Minor units (cents) — do NOT divide
 				currency: String(attrs["currency"] || "usd").toLowerCase(),
 				status: String(attrs["status"]) === "paid" ? "succeeded" : "pending",
 				customerId: String(attrs["customer_id"] || ""),
@@ -279,9 +279,9 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 
 			return {
 				transactionId: payload.id,
-				amount: Number(attrs["amount"] || 0) / 100,
-				currency: String(attrs["currency"] || "usd").toLowerCase(),
-				status: "failed",
+			amount: Number(attrs["amount"] || 0), // Minor units — do NOT divide
+			currency: String(attrs["currency"] || "usd").toLowerCase(),
+			status: "failed",
 				customerId: String(attrs["customer_id"] || ""),
 				customerEmail: String(attrs["user_email"] || ""),
 				subscriptionId: String(attrs["subscription_id"] || ""),
@@ -295,9 +295,9 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 
 			return {
 				transactionId: payload.id,
-				amount: Number(attrs["refunded_amount"] || 0) / 100,
-				currency: String(attrs["currency"] || "usd").toLowerCase(),
-				status: "refunded",
+			amount: Number(attrs["refunded_amount"] || 0), // Minor units — do NOT divide
+			currency: String(attrs["currency"] || "usd").toLowerCase(),
+			status: "refunded",
 				customerId: String(attrs["customer_id"] || ""),
 				customerEmail: String(attrs["user_email"] || ""),
 				metadata: (attrs["custom_data"] as Record<string, string>) || {},

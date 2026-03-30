@@ -1,5 +1,6 @@
 import { parseSessionCookie } from "@nube-auth/auth";
 import { sessionStore } from "@nube-auth/cache";
+import crypto from "node:crypto";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
@@ -36,8 +37,13 @@ export const csrfProtection = createMiddleware(async (c: Context, next) => {
 		return c.json({ error: "CSRF token invalid" }, 403);
 	}
 
-	// Verify tokens match
-	if (csrfTokenHeader !== csrfTokenCookie) {
+	// Verify tokens match using constant-time comparison to prevent timing attacks
+	const headerBuf = Buffer.from(csrfTokenHeader);
+	const cookieBuf = Buffer.from(csrfTokenCookie);
+	const tokensMatch = headerBuf.length === cookieBuf.length &&
+		crypto.timingSafeEqual(headerBuf, cookieBuf);
+
+	if (!tokensMatch) {
 		loggers.auth.warn(
 			{
 				path: c.req.path,

@@ -110,6 +110,38 @@ export async function createPurchaseRecords(
 			throw new Error("Price not found for plan and provider");
 		}
 
+		// Validate that the webhook amount and currency match the expected price.
+		// This guards against underpayments, wrong currencies, or tampered metadata.
+		// A 5% tolerance covers rounding and promo-adjusted amounts.
+		if (paymentDetails.status === "succeeded" && paymentDetails.amount > 0) {
+			const currencyMatch = paymentDetails.currency.toLowerCase() === price.currency.toLowerCase();
+			const amountRatio = paymentDetails.amount / price.amount_cents;
+			const amountWithinTolerance = amountRatio >= 0.01 && amountRatio <= 1.05;
+			if (!currencyMatch) {
+				log.error(
+					{
+						expected: price.currency,
+						received: paymentDetails.currency,
+						transactionId: paymentDetails.transactionId,
+					},
+					"Currency mismatch between webhook and price record — rejecting fulfillment",
+				);
+				throw new Error(`Currency mismatch: expected ${price.currency}, received ${paymentDetails.currency}`);
+			}
+			if (!amountWithinTolerance) {
+				log.error(
+					{
+						expected: price.amount_cents,
+						received: paymentDetails.amount,
+						ratio: amountRatio,
+						transactionId: paymentDetails.transactionId,
+					},
+					"Amount mismatch between webhook and price record — rejecting fulfillment",
+				);
+				throw new Error(`Amount mismatch: expected ~${price.amount_cents} cents, received ${paymentDetails.amount}`);
+			}
+		}
+
 		// If a purchaseId was embedded in the checkout metadata, update that pending record.
 		// Otherwise create a new one. This prevents duplicates when the pending record was
 		// already created at checkout initiation time.
@@ -352,39 +384,56 @@ export async function createPurchaseRecords(
 			}
 		}
 
-		if (paymentDetails.subscriptionId) {
-			const [subscription] = await db
-				.insert(subscriptions)
-				.values({
-					public_id: id.request(),
-					user_id: user.id,
-					app_id: app.id,
-					license_id: license.id,
-					price_id: price.id,
-					provider_config_id: providerConfigId,
-					provider,
-					provider_subscription_id: paymentDetails.subscriptionId,
-					provider_customer_id: paymentDetails.customerId || null,
+	if (paymentDetails.subscriptionId) {
+		// Upsert subscription: create on first payment, update billing dates on renewal.
+		// A plain INSERT would violate the unique(provider_config_id, provider_subscription_id)
+		// constraint on every renewal since the subscription ID never changes.
+		const [subscription] = await db
+			.insert(subscriptions)
+			.values({
+				public_id: id.request(),
+				user_id: user.id,
+				app_id: app.id,
+				license_id: license.id,
+				price_id: price.id,
+				provider_config_id: providerConfigId,
+				provider,
+				provider_subscription_id: paymentDetails.subscriptionId,
+				provider_customer_id: paymentDetails.customerId || null,
+				status: "active",
+				billing_interval: price.interval || "month",
+				billing_period_start: new Date(),
+				billing_period_end: validUntil,
+				next_billing_date: validUntil,
+				cancel_at_period_end: false,
+				canceled_at: null,
+				ended_at: null,
+				amount_cents: price.amount_cents,
+				currency: price.currency || "usd",
+				metadata: paymentDetails.metadata || {},
+				trial_start: null,
+				trial_end: null,
+			})
+			.onConflictDoUpdate({
+				target: [subscriptions.provider_config_id, subscriptions.provider_subscription_id],
+				set: {
 					status: "active",
-					billing_interval: price.interval || "month",
 					billing_period_start: new Date(),
 					billing_period_end: validUntil,
 					next_billing_date: validUntil,
-					cancel_at_period_end: false,
-					canceled_at: null,
-					ended_at: null,
-					amount_cents: price.amount_cents,
-					currency: price.currency || "usd",
-					metadata: paymentDetails.metadata || {},
-					trial_start: null,
-					trial_end: null,
-				})
-				.returning();
+					license_id: license.id,
+					updated_at: new Date(),
+				},
+			})
+			.returning();
 
-			if (subscription) {
-				log.info({ subscriptionId: subscription.public_id }, "Subscription record created");
-			}
+		if (subscription) {
+			log.info(
+				{ subscriptionId: subscription.public_id, providerSubId: paymentDetails.subscriptionId },
+				"Subscription record upserted (created or renewed)",
+			);
 		}
+	}
 
 		if (createdLicense) {
 			await db.insert(license_history).values({

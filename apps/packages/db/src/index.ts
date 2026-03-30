@@ -88,6 +88,7 @@ export {
 	paymentProviderConfigQueries,
 	paymentTransactionQueries,
 	planQueries,
+	priceProviderRefQueries,
 	priceQueries,
 	projectInvitationQueries,
 	projectMemberQueries,

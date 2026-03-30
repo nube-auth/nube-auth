@@ -8,9 +8,10 @@
  * 4. Implements retry logic with exponential backoff
  */
 
-import { getDb, planQueries, appQueries, priceQueries } from "@nube-auth/db";
-import { prices, payment_provider_configs } from "@nube-auth/db/schema";
+import { getDb, planQueries, appQueries, priceQueries, priceProviderRefQueries } from "@nube-auth/db";
+import { payment_provider_configs } from "@nube-auth/db/schema";
 import { eq } from "@nube-auth/db";
+import { createId } from "@nube-auth/shared";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import { QueueClient } from "@nube-auth/queue";
 import { createProviderAdapter } from "@nube-auth/core/billing/adapters/index";
@@ -190,15 +191,26 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 					},
 				});
 
-					// Store external ref directly on the price record
-					await db
-						.update(prices)
-						.set({
-							external_provider: provider.provider,
-							external_price_id: providerPrice.priceId,
-							updated_at: new Date(),
-						})
-						.where(eq(prices.id, priceRecord.id));
+				// Store external ref in price_provider_refs (supports multiple providers per price)
+				await priceProviderRefQueries.upsert(db, {
+					public_id: createId("priceProviderRef"),
+					price_id: priceRecord.id,
+					provider_config_id: provider.id,
+					provider: provider.provider,
+					external_price_id: providerPrice.priceId,
+					external_product_id: product.productId !== "__dodo_no_product__" ? product.productId : null,
+				});
+
+				// Also keep the legacy external_price_id column in sync for backwards compatibility
+				// (queries that still use prices.external_price_id will work for single-provider setups)
+				await db
+					.update(prices as any)
+					.set({
+						external_provider: provider.provider,
+						external_price_id: providerPrice.priceId,
+						updated_at: new Date(),
+					})
+					.where(eq((prices as any).id, priceRecord.id));
 
 					log.info(
 						{

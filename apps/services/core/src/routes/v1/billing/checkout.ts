@@ -6,7 +6,7 @@
  * interval, and currency — no routing logic is needed here.
  */
 
-import { getDb, prices, plans, payment_provider_configs, appQueries, priceQueries, purchases, userQueries, promotionCodeQueries, promotionProviderRefQueries, eq, and } from "@nube-auth/db";
+import { getDb, prices, plans, payment_provider_configs, appQueries, priceQueries, purchases, userQueries, promotionCodeQueries, promotionPlanQueries, promotionProviderRefQueries, eq, and } from "@nube-auth/db";
 import { createLogger, id, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -136,6 +136,20 @@ checkoutRoutes.post("/", async (c: Context) => {
 		if (validated.promoCode) {
 			const promoCode = await promotionCodeQueries.findByCode(db, validated.promoCode.toUpperCase());
 			if (promoCode && promoCode.app_id === app.id && promoCode.is_active) {
+				// Enforce plan restriction: check promotion_plans before passing coupon to provider.
+				// This is the primary gate — provider-side restriction is just a secondary safety net.
+				const planTargets = await promotionPlanQueries.findByPromotionId(db, promoCode.promotion_id);
+				if (planTargets.length > 0) {
+					const eligiblePlanIds = planTargets.map((pt) => pt.plan_id);
+					if (!eligiblePlanIds.includes(price.plan_id)) {
+						log.warn(
+							{ promoCode: validated.promoCode, planId: price.plan_id },
+							"Promo code not eligible for this plan — rejecting checkout",
+						);
+						return c.json({ error: "Promo code is not valid for the selected plan" }, 400);
+					}
+				}
+
 				resolvedPromoCodeId = promoCode.id;
 				const ref = await promotionProviderRefQueries.findByPromotionAndProvider(
 					db,
