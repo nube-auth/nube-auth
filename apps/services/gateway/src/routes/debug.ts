@@ -9,6 +9,7 @@ import { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 import { sessionStore } from "@nube-auth/cache";
 import { parseSessionCookie } from "@nube-auth/auth";
+import { ADMIN_SESSION_COOKIE, CSRF_TOKEN_COOKIE, USER_SESSION_COOKIE } from "../utils/cookieNames";
 
 const log = createLogger("debug-routes");
 
@@ -31,12 +32,17 @@ debugRoutes.get("/cookies", (c: Context) => {
 	});
 
 	// Also try to get specific cookies with getCookie
-	const adminSession = getCookie(c, "nube_admin_session");
-	const userSession = getCookie(c, "nube_user_session");
-	const csrfToken = getCookie(c, "nube_csrf_token");
+	const adminSession = getCookie(c, ADMIN_SESSION_COOKIE);
+	const userSession = getCookie(c, USER_SESSION_COOKIE);
+	const csrfToken = getCookie(c, CSRF_TOKEN_COOKIE);
 
 	return c.json({
 		"Cookie header": cookieHeader,
+		"Cookie names": {
+			admin: ADMIN_SESSION_COOKIE,
+			user: USER_SESSION_COOKIE,
+			csrf: CSRF_TOKEN_COOKIE,
+		},
 		"Parsed cookies": cookies,
 		"Admin session cookie": adminSession ? `${adminSession.substring(0, 20)}...` : null,
 		"User session cookie": userSession ? `${userSession.substring(0, 20)}...` : null,
@@ -190,8 +196,8 @@ debugRoutes.get("/test-getcookie", (c: Context) => {
 	const rawCookieHeader = c.req.header("cookie") || "";
 	
 	// Try to get with getCookie
-	const adminSessionFromGetCookie = getCookie(c, "nube_admin_session");
-	const userSessionFromGetCookie = getCookie(c, "nube_user_session");
+	const adminSessionFromGetCookie = getCookie(c, ADMIN_SESSION_COOKIE);
+	const userSessionFromGetCookie = getCookie(c, USER_SESSION_COOKIE);
 	
 	// Manual parsing
 	const cookies: Record<string, string> = {};
@@ -204,13 +210,17 @@ debugRoutes.get("/test-getcookie", (c: Context) => {
 	
 	return c.json({
 		rawCookieHeader: `${rawCookieHeader.substring(0, 100)}...`,
+		cookieNames: {
+			admin: ADMIN_SESSION_COOKIE,
+			user: USER_SESSION_COOKIE,
+		},
 		getCookieResults: {
 			adminSession: adminSessionFromGetCookie ? `${adminSessionFromGetCookie.substring(0, 20)}...` : null,
 			userSession: userSessionFromGetCookie ? `${userSessionFromGetCookie.substring(0, 20)}...` : null,
 		},
 		manualParsing: {
-			nube_admin_session: cookies["nube_admin_session"] ? `${cookies["nube_admin_session"].substring(0, 20)}...` : null,
-			nube_user_session: cookies["nube_user_session"] ? `${cookies["nube_user_session"].substring(0, 20)}...` : null,
+			[ADMIN_SESSION_COOKIE]: cookies[ADMIN_SESSION_COOKIE] ? `${cookies[ADMIN_SESSION_COOKIE].substring(0, 20)}...` : null,
+			[USER_SESSION_COOKIE]: cookies[USER_SESSION_COOKIE] ? `${cookies[USER_SESSION_COOKIE].substring(0, 20)}...` : null,
 		},
 	});
 });

@@ -5,10 +5,7 @@ import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 import { loggers } from "../utils/logger";
-
-const ADMIN_SESSION_COOKIE = "nube_admin_session";
-const USER_SESSION_COOKIE = "nube_user_session";
-const CSRF_TOKEN_COOKIE = "nube_csrf_token";
+import { ADMIN_SESSION_COOKIE, CSRF_TOKEN_COOKIE, USER_SESSION_COOKIE } from "../utils/cookieNames";
 
 /**
  * CSRF protection middleware

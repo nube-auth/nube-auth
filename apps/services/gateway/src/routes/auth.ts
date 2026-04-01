@@ -11,14 +11,17 @@ import { env } from "../config/env";
 import { coreClient } from "../lib/core-client";
 import { pingpong } from "@nube-auth/auth";
 import { sessionService } from "../services/sessionService";
+import {
+	ADMIN_SESSION_COOKIE,
+	CSRF_TOKEN_COOKIE,
+	LEGACY_SESSION_COOKIE,
+	OAUTH_NONCE_COOKIE,
+	USER_SESSION_COOKIE,
+} from "../utils/cookieNames";
 
 const log = createLogger("auth-routes");
 
 export const authRoutes = new Hono();
-
-const USER_SESSION_COOKIE = "nube_user_session";
-const ADMIN_SESSION_COOKIE = "nube_admin_session";
-const LEGACY_SESSION_COOKIE = "nube_session";
 
 /**
  * Safely extract string values from cookie attributes
@@ -139,7 +142,7 @@ authRoutes.get("/start", async (c: Context) => {
 	const csrfNonce = crypto.randomBytes(16).toString("hex");
 	const secureCookies = env.NODE_ENV === "production" || env.GATEWAY_PUBLIC_URL?.startsWith("https://");
 	const cookieDomain = env.COOKIE_DOMAIN;
-	setCookie(c, "nube_oauth_nonce", csrfNonce, {
+	setCookie(c, OAUTH_NONCE_COOKIE, csrfNonce, {
 		httpOnly: true,
 		secure: secureCookies,
 		sameSite: "Lax",
@@ -377,11 +380,11 @@ authRoutes.get("/callback", async (c: Context) => {
 	// CSRF nonce verification: the nonce set in the /start cookie must match
 	// the nonce embedded in the state. Skip for legacy state (no nonce in state).
 	// Also clears the nonce cookie regardless of outcome to prevent reuse.
-	const nonceCookie = getCookie(c, "nube_oauth_nonce");
+	const nonceCookie = getCookie(c, OAUTH_NONCE_COOKIE);
 	const cookieDomainCb = env.COOKIE_DOMAIN;
 	const secureCookiesCb = env.NODE_ENV === "production" || env.GATEWAY_PUBLIC_URL?.startsWith("https://");
 	// Always clear the nonce cookie (single-use)
-	setCookie(c, "nube_oauth_nonce", "", {
+	setCookie(c, OAUTH_NONCE_COOKIE, "", {
 		httpOnly: true,
 		secure: secureCookiesCb,
 		sameSite: "Lax",
@@ -634,7 +637,7 @@ authRoutes.get("/callback", async (c: Context) => {
 		});
 
 		// Set CSRF token cookie (NOT httpOnly so JavaScript can read it)
-		setCookie(c, "nube_csrf_token", csrfToken, {
+		setCookie(c, CSRF_TOKEN_COOKIE, csrfToken, {
 			httpOnly: false, // Must be readable by JavaScript
 			secure,
 			sameSite,
@@ -743,7 +746,7 @@ authRoutes.post("/login", async (c: Context) => {
 		});
 
 		// Set CSRF token cookie (NOT httpOnly so JavaScript can read it)
-		setCookie(c, "nube_csrf_token", csrfToken, {
+		setCookie(c, CSRF_TOKEN_COOKIE, csrfToken, {
 			httpOnly: false, // Must be readable by JavaScript
 			secure,
 			sameSite,
@@ -900,7 +903,7 @@ authRoutes.post("/logout", async (c: Context) => {
 
 		// Clear CSRF token cookie
 		if (cookieDomain) {
-			setCookie(c, "nube_csrf_token", "", {
+			setCookie(c, CSRF_TOKEN_COOKIE, "", {
 				httpOnly: false,
 				secure: true,
 				sameSite: "Lax",
@@ -909,14 +912,14 @@ authRoutes.post("/logout", async (c: Context) => {
 				maxAge: 0,
 			});
 		}
-		setCookie(c, "nube_csrf_token", "", {
+		setCookie(c, CSRF_TOKEN_COOKIE, "", {
 			httpOnly: false,
 			secure: true,
 			sameSite: "Lax",
 			path: "/",
 			maxAge: 0,
 		});
-		setCookie(c, "nube_csrf_token", "", {
+		setCookie(c, CSRF_TOKEN_COOKIE, "", {
 			httpOnly: false,
 			secure: false,
 			sameSite: "Lax",

@@ -4,9 +4,13 @@
  */
 
 function getCsrfToken(): string | null {
-	const match = document.cookie.match(/nube_csrf_token=([^;]+)/);
-	const token = match?.[1] ?? null;
-	return token;
+	const namespace = (import.meta.env.VITE_COOKIE_NAMESPACE || "").trim();
+	const cookieName = namespace ? `nube_${namespace}_csrf_token` : "nube_csrf_token";
+	const cookie = document.cookie
+		.split("; ")
+		.find((entry) => entry.startsWith(`${cookieName}=`));
+
+	return cookie ? decodeURIComponent(cookie.slice(cookieName.length + 1)) : null;
 }
 
 /** Returns CSRF header object for use in pingpong/fetch calls. */

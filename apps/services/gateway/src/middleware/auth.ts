@@ -8,9 +8,7 @@ import { env } from "../config/env";
 import { coreClient } from "../lib/core-client";
 import { loggers, serializeError } from "../utils/logger";
 import { SESSION_TTL, ADMIN_INACTIVITY_TIMEOUT } from "../config/constants";
-
-const USER_SESSION_COOKIE = "nube_user_session";
-const ADMIN_SESSION_COOKIE = "nube_admin_session";
+import { ADMIN_SESSION_COOKIE, USER_SESSION_COOKIE } from "../utils/cookieNames";
 
 /**
  * Auth context with user and session info
@@ -36,7 +34,7 @@ export interface AuthContext {
  *     It is the raw Redis key (session:app:<token>), no cookie signing needed.
  *
  *  2. Session cookie — used by browser-based user/admin sessions.
- *     Cookie name: nube_user_session (users) / nube_admin_session (admins).
+ *     Cookie name: env-scoped user/admin session cookies.
  */
 export const authMiddleware = createMiddleware(async (c: Context, next) => {
 	// Skip auth for public routes

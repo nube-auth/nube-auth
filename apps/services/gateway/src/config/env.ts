@@ -17,6 +17,7 @@ export interface Env {
 	ADMIN_DASHBOARD_URL: string;
 	FRONTEND_URL: string;
 	COOKIE_DOMAIN: string;
+	COOKIE_NAMESPACE: string;
 	SEND_EMAILS: boolean;
 	EMAIL_FROM: string;
 	STRIPE_SECRET_KEY: string;
@@ -55,6 +56,23 @@ const requiredEnvVars = [
 	"SESSION_SECRET",
 ] as const;
 
+function normalizeCookieNamespace(value: string): string {
+	const trimmed = value.trim();
+	if (!trimmed) return "";
+
+	const normalized = trimmed
+		.toLowerCase()
+		.replace(/[^a-z0-9_-]+/g, "-")
+		.replace(/-{2,}/g, "-")
+		.replace(/^[-_]+|[-_]+$/g, "");
+
+	if (!normalized) {
+		throw new Error("COOKIE_NAMESPACE must contain at least one alphanumeric character");
+	}
+
+	return normalized;
+}
+
 function validateEnv(): Env {
 	// Validate required environment variables
 	validateEnvVars(requiredEnvVars);
@@ -78,6 +96,9 @@ function validateEnv(): Env {
 		// across subdomains. NEVER hardcode a domain here — an incorrect default causes browsers
 		// to silently reject Set-Cookie when the gateway runs on a different domain.
 		COOKIE_DOMAIN: process.env["COOKIE_DOMAIN"] || "",
+		// Namespace cookie names so multiple environments can safely share one parent domain.
+		// Example: COOKIE_NAMESPACE=s -> nube_s_user_session, nube_s_csrf_token.
+		COOKIE_NAMESPACE: normalizeCookieNamespace(process.env["COOKIE_NAMESPACE"] || ""),
 		SEND_EMAILS: process.env["SEND_EMAILS"] === "true",
 		EMAIL_FROM: process.env["EMAIL_FROM"] || "noreply@localhost",
 		STRIPE_SECRET_KEY: process.env["STRIPE_SECRET_KEY"] || "",

@@ -43,5 +43,6 @@ export default defineConfig({
 		"import.meta.env.VITE_GATEWAY_URL": JSON.stringify(process.env.VITE_GATEWAY_URL || "http://localhost:3004"),
 		"import.meta.env.VITE_HOME_URL": JSON.stringify(process.env.VITE_HOME_URL || "http://localhost:4321"),
 		"import.meta.env.VITE_DOCS_URL": JSON.stringify(process.env.VITE_DOCS_URL || "http://localhost:4322"),
+		"import.meta.env.VITE_COOKIE_NAMESPACE": JSON.stringify(process.env.VITE_COOKIE_NAMESPACE || ""),
 	},
 });

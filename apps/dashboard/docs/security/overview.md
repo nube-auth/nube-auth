@@ -91,7 +91,7 @@ Additional middleware that blocks:
 ```typescript
 // Example blocked request
 curl -X POST https://api.nubeauth.com/v1/admin/projects \
-  -H "Cookie: nube_admin_session=<token>"
+  -H "Cookie: nube[_<namespace>]_admin_session=<token>"
 
 // Response: 403 Forbidden
 // "Admin operations must be performed through the web interface"
@@ -153,9 +153,11 @@ All state-changing operations on admin routes require CSRF tokens:
 ```http
 POST /v1/admin/projects
 Origin: https://manage.nubeauth.com
-Cookie: nube_admin_session=...
+Cookie: nube[_<namespace>]_admin_session=...
 X-Nube-CSRF-Token: ...
 ```
+
+Production uses no namespace. Staging and local can set a namespace such as `s` or `local`, which produces cookie names like `nube_s_admin_session` and `nube_local_admin_session`.
 
 ### Allowed Origins
 
