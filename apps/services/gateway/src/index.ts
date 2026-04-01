@@ -35,13 +35,13 @@ const allowedOrigins = [
 	env.FRONTEND_URL,
 ].filter(Boolean);
 
-// Derive the root domain from GATEWAY_PUBLIC_URL for wildcard subdomain matching
-// e.g. "https://api.staging.nubeauth.com" → ".staging.nubeauth.com" and ".nubeauth.com"
+// Derive the root domain from GATEWAY_PUBLIC_URL for wildcard subdomain matching.
+// e.g. "https://s-api.nubeauth.com" → ".nubeauth.com"
 function getAllowedOriginOrNull(origin: string): string | null {
 	if (!origin) return "*";
 	if (allowedOrigins.includes(origin)) return origin;
-	// Allow any subdomain of the gateway's own base domain (derived from GATEWAY_PUBLIC_URL)
-	// e.g. GATEWAY_PUBLIC_URL=https://api.staging.nubeauth.com → allows *.staging.nubeauth.com and *.nubeauth.com
+	// Allow any subdomain of the gateway's own base domain (derived from GATEWAY_PUBLIC_URL).
+	// With flattened staging hosts like s-api.nubeauth.com, this still allows *.nubeauth.com.
 	try {
 		const gatewayHost = new URL(env.GATEWAY_PUBLIC_URL).hostname;
 		const parts = gatewayHost.split(".");

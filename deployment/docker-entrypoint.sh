@@ -1,11 +1,14 @@
 #!/bin/sh
 # Nube Auth – nginx entrypoint
-# Injects DOMAIN, GATEWAY_INTERNAL_URL, CORE_INTERNAL_URL, WORKERS_INTERNAL_URL,
-# and NGINX_RESOLVER into the nginx config template at startup.
+# Injects DOMAIN, SUBDOMAIN_PREFIX, GATEWAY_INTERNAL_URL, CORE_INTERNAL_URL,
+# WORKERS_INTERNAL_URL, and NGINX_RESOLVER into the nginx config template at startup.
 set -e
 
 : "${DOMAIN:?DOMAIN environment variable is required (e.g. DOMAIN=nubeauth.com)}"
 : "${GATEWAY_INTERNAL_URL:?GATEWAY_INTERNAL_URL environment variable is required (e.g. GATEWAY_INTERNAL_URL=http://nubeauth-gateway.railway.internal:8080)}"
+
+# Production uses an empty prefix. Staging should set SUBDOMAIN_PREFIX=s-
+export SUBDOMAIN_PREFIX="${SUBDOMAIN_PREFIX:-}"
 
 # Optional – default to a dummy address so nginx starts even if these services
 # are not yet deployed. Requests to core./work. will return 502 until set.
@@ -35,7 +38,7 @@ fi
 
 echo "[entrypoint] using DNS resolver: ${NGINX_RESOLVER}"
 
-envsubst '${DOMAIN} ${GATEWAY_INTERNAL_URL} ${CORE_INTERNAL_URL} ${WORKERS_INTERNAL_URL} ${NGINX_RESOLVER}' \
+envsubst '${DOMAIN} ${SUBDOMAIN_PREFIX} ${GATEWAY_INTERNAL_URL} ${CORE_INTERNAL_URL} ${WORKERS_INTERNAL_URL} ${NGINX_RESOLVER}' \
   < /etc/nginx/templates/subdomains.conf.template \
   > /etc/nginx/conf.d/default.conf
 
