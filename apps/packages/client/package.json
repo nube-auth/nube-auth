@@ -1,7 +1,9 @@
 {
 	"name": "@nube-auth/client",
-	"version": "0.0.1",
+	"version": "0.1.0",
+	"description": "Nube Auth API client for TypeScript/JavaScript applications",
 	"type": "module",
+	"main": "./dist/index.cjs",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
@@ -9,6 +11,10 @@
 			"require": "./dist/index.cjs"
 		}
 	},
+	"files": [
+		"dist",
+		"README.md"
+	],
 	"scripts": {
 		"build": "tsup",
 		"dev": "tsup --watch",
@@ -21,5 +27,17 @@
 	"devDependencies": {
 		"tsup": "^8.0.0",
 		"typescript": "^5.7.2"
+	},
+	"keywords": [
+		"auth",
+		"authentication",
+		"nube-auth",
+		"sdk",
+		"client"
+	],
+	"author": "Nube Auth",
+	"license": "MIT",
+	"publishConfig": {
+		"access": "public"
 	}
 }

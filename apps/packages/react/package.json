@@ -1,6 +1,7 @@
 {
 	"name": "@nube-auth/react",
-	"version": "0.0.1",
+	"version": "0.1.0",
+	"description": "React hooks and components for Nube Auth authentication and user management",
 	"type": "module",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -11,6 +12,10 @@
 			"require": "./dist/index.cjs"
 		}
 	},
+	"files": [
+		"dist",
+		"README.md"
+	],
 	"scripts": {
 		"build": "tsup",
 		"dev": "tsup --watch",
@@ -29,5 +34,17 @@
 	},
 	"peerDependencies": {
 		"react": "^18.0.0"
+	},
+	"keywords": [
+		"auth",
+		"authentication",
+		"nube-auth",
+		"react",
+		"hooks"
+	],
+	"author": "Nube Auth",
+	"license": "MIT",
+	"publishConfig": {
+		"access": "public"
 	}
 }
