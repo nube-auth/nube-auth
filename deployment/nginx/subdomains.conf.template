@@ -1,48 +1,46 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Nube Auth – Subdomain-based routing
 #
-# Resolved at container startup via envsubst. Set DOMAIN in Railway Variables.
+# Resolved at container startup via envsubst. Set DOMAIN to the base domain and
+# SUBDOMAIN_PREFIX to "" for production or "s-" for staging in Railway.
 #
-# PRODUCTION  (DOMAIN=nubeauth.com)
+# PRODUCTION  (DOMAIN=nubeauth.com, SUBDOMAIN_PREFIX="")
 #   manage/me/docs/home/www.nubeauth.com → Vercel (DNS never reaches Railway)
-#   api.nubeauth.com                     → Gateway proxy
+#   api/core/work.nubeauth.com           → Railway proxies
 #
-# STAGING     (DOMAIN=staging.nubeauth.com)
-#   *.staging.nubeauth.com → Railway (all traffic)
-#   home.staging / www.staging → serve /var/www/home
-#   manage.staging         → serve /var/www/admin  (React SPA)
-#   me.staging             → serve /var/www/user   (React SPA)
-#   docs.staging           → serve /var/www/docs   (VitePress)
-#   api.staging            → Gateway proxy
-#   core.staging           → Core proxy
-#   work.staging           → Workers proxy
+# STAGING     (DOMAIN=nubeauth.com, SUBDOMAIN_PREFIX="s-")
+#   s-home / s-www.nubeauth.com → serve /var/www/home
+#   s-manage.nubeauth.com       → serve /var/www/admin  (React SPA)
+#   s-me.nubeauth.com           → serve /var/www/user   (React SPA)
+#   s-docs.nubeauth.com         → serve /var/www/docs   (VitePress)
+#   s-api.nubeauth.com          → Gateway proxy
+#   s-core.nubeauth.com         → Core proxy
+#   s-work.nubeauth.com         → Workers proxy
 #
 # Redirects (301):
-#   ${DOMAIN} (bare)      → home.${DOMAIN}
-#   user.${DOMAIN}        → me.${DOMAIN}
-#   admin.${DOMAIN}       → manage.${DOMAIN}
-#   doc/documents         → docs.${DOMAIN}
+#   ${DOMAIN} (bare)               → ${SUBDOMAIN_PREFIX}home.${DOMAIN}
+#   ${SUBDOMAIN_PREFIX}user.${DOMAIN}  → ${SUBDOMAIN_PREFIX}me.${DOMAIN}
+#   ${SUBDOMAIN_PREFIX}admin.${DOMAIN} → ${SUBDOMAIN_PREFIX}manage.${DOMAIN}
+#   ${SUBDOMAIN_PREFIX}doc/documents.${DOMAIN} → ${SUBDOMAIN_PREFIX}docs.${DOMAIN}
 # ─────────────────────────────────────────────────────────────────────────────
 
-# ── Bare apex → home.${DOMAIN} ───────────────────────────────────────────────
+# ── Bare apex → ${SUBDOMAIN_PREFIX}home.${DOMAIN} ────────────────────────────
 # Prod: nubeauth.com DNS points to Vercel — this block is dead code.
-# Staging: staging.nubeauth.com hits Railway; redirect once to home.staging…
-#   (www.staging.nubeauth.com is handled directly by the home server block
-#    below, so no infinite redirect loop.)
+# Staging: if bare apex reaches Railway, redirect once to the flattened home host.
 server {
     listen 8080;
     server_name ${DOMAIN};
     port_in_redirect off;
-    return 301 https://home.${DOMAIN}$request_uri;
+    return 301 https://${SUBDOMAIN_PREFIX}home.${DOMAIN}$request_uri;
 }
 
 # ── Home ──────────────────────────────────────────────────────────────────────
 # Serves the Astro marketing site.
-# Also catches www.${DOMAIN} so www.staging.nubeauth.com works without looping.
-# In prod these names never reach Railway (DNS → Vercel).
+# Also catches the flattened www host.
+# In prod these names usually never reach Railway (DNS → Vercel).
 server {
     listen 8080;
-    server_name home.${DOMAIN} www.${DOMAIN};
+    server_name ${SUBDOMAIN_PREFIX}home.${DOMAIN} ${SUBDOMAIN_PREFIX}www.${DOMAIN};
     root /var/www/home;
 
     # Never append the internal port (:8080) to any redirect URL.
@@ -74,7 +72,7 @@ server {
 # ── Admin Dashboard (SPA) ─────────────────────────────────────────────────────
 server {
     listen 8080;
-    server_name manage.${DOMAIN};
+    server_name ${SUBDOMAIN_PREFIX}manage.${DOMAIN};
     root /var/www/admin;
 
     location / {
@@ -93,7 +91,7 @@ server {
 # ── User Dashboard (SPA) ──────────────────────────────────────────────────────
 server {
     listen 8080;
-    server_name me.${DOMAIN};
+    server_name ${SUBDOMAIN_PREFIX}me.${DOMAIN};
     root /var/www/user;
 
     location / {
@@ -112,7 +110,7 @@ server {
 # ── Docs Site (VitePress) ─────────────────────────────────────────────────────
 server {
     listen 8080;
-    server_name docs.${DOMAIN};
+    server_name ${SUBDOMAIN_PREFIX}docs.${DOMAIN};
     root /var/www/docs;
 
     location / {
@@ -134,7 +132,7 @@ server {
 # Both services must be in the same Railway environment for .railway.internal to resolve.
 server {
     listen 8080;
-    server_name api.${DOMAIN};
+    server_name ${SUBDOMAIN_PREFIX}api.${DOMAIN};
 
     # Use the system DNS resolver (detected at container startup from /etc/resolv.conf)
     # so nginx re-resolves Railway internal hostnames at runtime instead of caching
@@ -160,7 +158,7 @@ server {
 #   http://nubeauth-core.railway.internal:8080
 server {
     listen 8080;
-    server_name core.${DOMAIN};
+    server_name ${SUBDOMAIN_PREFIX}core.${DOMAIN};
 
     resolver ${NGINX_RESOLVER} valid=10s ipv6=off;
 
@@ -183,7 +181,7 @@ server {
 #   http://nubeauth-workers.railway.internal:8080
 server {
     listen 8080;
-    server_name work.${DOMAIN};
+    server_name ${SUBDOMAIN_PREFIX}work.${DOMAIN};
 
     resolver ${NGINX_RESOLVER} valid=10s ipv6=off;
 
@@ -223,18 +221,18 @@ server {
 # ── Legacy Subdomain Redirects (301 Permanent) ────────────────────────────────
 server {
     listen 8080;
-    server_name user.${DOMAIN};
-    return 301 $scheme://me.${DOMAIN}$request_uri;
+    server_name ${SUBDOMAIN_PREFIX}user.${DOMAIN};
+    return 301 $scheme://${SUBDOMAIN_PREFIX}me.${DOMAIN}$request_uri;
 }
 
 server {
     listen 8080;
-    server_name admin.${DOMAIN};
-    return 301 $scheme://manage.${DOMAIN}$request_uri;
+    server_name ${SUBDOMAIN_PREFIX}admin.${DOMAIN};
+    return 301 $scheme://${SUBDOMAIN_PREFIX}manage.${DOMAIN}$request_uri;
 }
 
 server {
     listen 8080;
-    server_name doc.${DOMAIN} documents.${DOMAIN};
-    return 301 $scheme://docs.${DOMAIN}$request_uri;
+    server_name ${SUBDOMAIN_PREFIX}doc.${DOMAIN} ${SUBDOMAIN_PREFIX}documents.${DOMAIN};
+    return 301 $scheme://${SUBDOMAIN_PREFIX}docs.${DOMAIN}$request_uri;
 }

@@ -2,15 +2,13 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Nube Auth – All Dashboards (single image)
 #
-# Serves all 4 dashboards from one nginx on port 8080, routed by subdomain:
-#   ${DOMAIN}           → Home (Astro marketing site)
-#   manage.${DOMAIN}    → Admin Dashboard (React SPA)
-#   user.${DOMAIN}      → User Dashboard (React SPA)
-#   docs.${DOMAIN}      → Docs Site (VitePress)
-#   api.${DOMAIN}       → Gateway service (proxied)
+# Serves all 4 dashboards from one nginx on port 8080, routed by subdomain.
+# Use DOMAIN as the base domain and SUBDOMAIN_PREFIX for environment flattening:
+#   production: SUBDOMAIN_PREFIX=""   → me.${DOMAIN}, api.${DOMAIN}
+#   staging:    SUBDOMAIN_PREFIX="s-" → s-me.${DOMAIN}, s-api.${DOMAIN}
 #
-# Set DOMAIN and GATEWAY_INTERNAL_URL as Railway Variables — they are injected
-# into nginx at container startup, not at build time.
+# Set DOMAIN, SUBDOMAIN_PREFIX, and GATEWAY_INTERNAL_URL as Railway Variables —
+# they are injected into nginx at container startup, not at build time.
 #
 # Build from REPO ROOT:
 #   docker build -f deployment/Dockerfile.dashboards \
@@ -67,7 +65,7 @@ ARG VITE_HOME_URL
 ARG VITE_DOCS_URL
 ARG VITE_ENV_TAG=Beta
 
-# Admin lives at root / of manage.${DOMAIN}
+# Admin lives at root / of ${SUBDOMAIN_PREFIX}manage.${DOMAIN}
 RUN VITE_GATEWAY_URL=${VITE_GATEWAY_URL} \
     VITE_HOME_URL=${VITE_HOME_URL} \
     VITE_DOCS_URL=${VITE_DOCS_URL} \
@@ -116,7 +114,7 @@ RUN VITE_ENV_TAG=${VITE_ENV_TAG} \
 # ── Stage 7: serve all dashboards with nginx ──────────────────────────────────
 FROM nginx:1.27-alpine AS runner
 
-# Custom entrypoint injects DOMAIN + GATEWAY_INTERNAL_URL into nginx config at startup
+# Custom entrypoint injects DOMAIN + SUBDOMAIN_PREFIX + internal URLs into nginx config at startup
 COPY deployment/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
