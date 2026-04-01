@@ -206,7 +206,7 @@ export const AppsListResponseSchema = z.object({
 			id: PublicIdSchema,
 			name: NameSchema,
 			slug: SlugSchema,
-			description: DescriptionSchema,
+			description: DescriptionSchema.nullish(),
 			createdAt: z.coerce.date().optional(),
 		}),
 	),

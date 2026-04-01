@@ -35,7 +35,7 @@ appsRouter.get("/:projectId/apps", async (c: Context) => {
 				id: app.public_id,
 				name: app.name,
 				slug: app.slug,
-				description: app.description,
+				...(app.description != null ? { description: app.description } : {}),
 				enabledProviders: app.enabled_providers || [],
 				createdAt: new Date(app.created_at).toISOString(),
 				updatedAt: new Date(app.updated_at).toISOString(),
