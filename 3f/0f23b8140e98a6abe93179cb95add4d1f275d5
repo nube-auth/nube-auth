@@ -1,0 +1,58 @@
+apps/services/core/src/billing/services/purchases.ts
+  553d97324ef36351 113-144,387-419,424-428,430-434,436
+apps/dashboard/admin/src/pages/AppPromotions.tsx
+  553d97324ef36351 138-141,464-466
+apps/services/core/src/routes/v1/billing/webhooks.ts
+  553d97324ef36351 83-88,93,126-127,181-211
+apps/services/core/src/routes/v1/auth/index.ts
+  553d97324ef36351 522-526
+apps/services/workers/src/sync-plan-to-providers.ts
+  553d97324ef36351 11-12,14,194-213
+apps/packages/shared/src/id.ts
+  553d97324ef36351 102-104,159
+apps/services/core/src/billing/adapters/lemonsqueezy.ts
+  553d97324ef36351 219,282-284,298-300
+apps/services/gateway/src/index.ts
+  553d97324ef36351 126-129
+apps/packages/db/drizzle/0003_price_provider_refs.sql
+  553d97324ef36351 1-32
+apps/services/core/src/routes/v1/admin/promotions.ts
+  553d97324ef36351 6,31-33,35-40,45-57,59-64,66-67,97-105,236,253-257,400-406,667-672
+apps/services/gateway/src/routes/auth.ts
+  553d97324ef36351 106-115,117-120,152-155,168,1215-1216,1223-1231
+apps/services/core/src/billing/adapters/stripe.ts
+  553d97324ef36351 156-164,194-202,259-267,296-300
+apps/services/gateway/src/middleware/csrf.ts
+  553d97324ef36351 3,40-46
+apps/packages/db/src/index.ts
+  553d97324ef36351 91
+apps/services/core/src/routes/v1/billing/checkout.ts
+  553d97324ef36351 9,139-152
+apps/services/core/src/utils/crypto.ts
+  553d97324ef36351 29-30,35
+apps/packages/db/src/queries.ts
+  553d97324ef36351 20,2274-2350
+apps/packages/db/src/schema.ts
+  553d97324ef36351 670-700
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.22",
+  "base_commit_sha": "3f0f23b8140e98a6abe93179cb95add4d1f275d5",
+  "prompts": {
+    "553d97324ef36351": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5c50c261-943e-4200-90dd-4b989d11189b",
+        "model": "claude-4.6-sonnet-medium-thinking"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 481,
+      "total_deletions": 158,
+      "accepted_lines": 458,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/bf832f35fb42838ca765d0a730819ed2bbe1281212c08528fc87626025fbabda"
+    }
+  }
+}

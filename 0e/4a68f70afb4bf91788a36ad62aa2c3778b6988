@@ -1,0 +1,59 @@
+apps/dashboard/admin/src/components/Modal.tsx
+  ca0797480df5063e 8,47-49,51,55
+apps/dashboard/admin/src/pages/AppPaymentSettings.tsx
+  351020bd6da3ac9f 12,56,58
+apps/dashboard/admin/src/pages/ProjectPaymentProviders.tsx
+  ca0797480df5063e 15,234-235,245-246,263-264,274-275,285-286,303-304,314-315,325-326,387,389,395,416,433,436,440,442-444,449,462,464,478-480,483,509-511,514,532,534-535,537,553,555,559-571,573-575,577-582,585-590,593-595,597,599,603-604,606-607,609-611,615-618,622,624-626,639,641-643,648,650-651,653-655
+apps/dashboard/admin/src/pages/WebhookMonitoring.tsx
+  ca0797480df5063e 20,237-238,241-249,251-252,255-263,265,267-268,274,276-277,283
+apps/dashboard/admin/src/pages/AppSubscriptions.tsx
+  ca0797480df5063e 22-23,294-295
+apps/dashboard/admin/src/pages/Projects.tsx
+  351020bd6da3ac9f 21,190
+apps/dashboard/admin/src/pages/TransactionExport.tsx
+  ca0797480df5063e 8-19,168,170-175,178-182,185,192,195-196,198-207,212-213,215-222,227-228,230-236,241-242,250-251,317-320,325,327,333-345,347-358,360-362,364-370,372-374,376-379,387
+apps/dashboard/admin/src/pages/ProjectApps.tsx
+  351020bd6da3ac9f 19,178
+apps/dashboard/admin/src/pages/BillingDashboard.tsx
+  351020bd6da3ac9f 4,273,284,339,350
+apps/dashboard/admin/src/pages/RefundProcessing.tsx
+  351020bd6da3ac9f 71,73,80,82
+  ca0797480df5063e 220,222-223,225-232,236,238-239,241-250,254,256-257,265,267-268,309-321,323-325,327-329,331-332,334-335,337-338,340-342
+apps/dashboard/admin/src/pages/AppUsers.tsx
+  ca0797480df5063e 13,264-270,306-320,322-323,339-367,369-385,387,389-406,408-410,421,423-426,433,435-436,438-442
+apps/dashboard/admin/src/components/InviteUserModal.tsx
+  ca0797480df5063e 2,157-159,164,187,189-190,205,207,248,250,252,272,274-275,285-286,291-293,308
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.6",
+  "base_commit_sha": "0e4a68f70afb4bf91788a36ad62aa2c3778b6988",
+  "prompts": {
+    "351020bd6da3ac9f": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "bb71da80-1907-4c7f-85c6-f3afd893b747",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 37,
+      "total_deletions": 37,
+      "accepted_lines": 16,
+      "overriden_lines": 1
+    },
+    "ca0797480df5063e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6a3cebda-12e4-4b70-bcc0-c715a02f1d6b",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 564,
+      "total_deletions": 727,
+      "accepted_lines": 451,
+      "overriden_lines": 0
+    }
+  }
+}

@@ -1,0 +1,32 @@
+apps/dashboard/admin/src/pages/Projects.tsx
+  5fde03d2aeb6fdab 142,222
+apps/dashboard/admin/src/pages/ProjectDetail.tsx
+  5fde03d2aeb6fdab 64,208
+apps/dashboard/admin/src/components/IconPicker.tsx
+  5fde03d2aeb6fdab 1-2,8-9,13-82,91,93-94,98-121,128,156,159-187,190-249,260,262-266,268
+apps/dashboard/admin/src/pages/AppSetup.tsx
+  5fde03d2aeb6fdab 60
+apps/dashboard/admin/src/pages/CreateProject.tsx
+  5fde03d2aeb6fdab 22,46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.22",
+  "base_commit_sha": "7b64a7c21b3da93d6640a7ca6faa7ed4f7524fff",
+  "prompts": {
+    "5fde03d2aeb6fdab": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6de4c8d6-3bf5-4e88-a125-c116f5c2a2ea",
+        "model": "claude-4.5-sonnet"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 207,
+      "total_deletions": 63,
+      "accepted_lines": 207,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/a9b7e8bcdbf1337c31165782c8d159c70319b51a9ccacf712c8bbbd63a1f755d"
+    }
+  }
+}

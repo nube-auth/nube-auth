@@ -1,0 +1,24 @@
+apps/services/gateway/src/routes/payments.ts
+  e70b34f3c67d3458 100-117
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.22",
+  "base_commit_sha": "1aa9cbd6efd475a9cfc087dafcb619c1e6bbab31",
+  "prompts": {
+    "e70b34f3c67d3458": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "97723e48-6275-4989-b82c-1e58fb88f988",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 19,
+      "total_deletions": 1,
+      "accepted_lines": 19,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/d0c973abf64da4ccba71d2f239066229860f9700ede786454992759a0a695699"
+    }
+  }
+}

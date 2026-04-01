@@ -1,0 +1,26 @@
+apps/packages/db/src/migrations.ts
+  9f96d675df0e1435 23-24,43-49,51
+apps/packages/db/package.json
+  9f96d675df0e1435 49-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.15",
+  "base_commit_sha": "b9197e9b7eedad96a28ff2fd56812188700653df",
+  "prompts": {
+    "9f96d675df0e1435": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "0ee53b3d-dca0-4d50-add0-c1af1fa298d9",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 12,
+      "total_deletions": 2,
+      "accepted_lines": 12,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/4c0f2ebe5433c34319acf68128b614539150ad957e185ccd7bd929cdd0302db2"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+apps/packages/queue/src/config.ts
+  9f96d675df0e1435 7-8,11-44,46-48,50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.15",
+  "base_commit_sha": "87ae9b3ad3224124edf77fde7283d9c6b320a196",
+  "prompts": {
+    "9f96d675df0e1435": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "0ee53b3d-dca0-4d50-add0-c1af1fa298d9",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 40,
+      "total_deletions": 5,
+      "accepted_lines": 40,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/f9bc850de5977dfa3d3fb7ce2c72fb713af0796399b0c57c6b466560b398ca98"
+    }
+  }
+}

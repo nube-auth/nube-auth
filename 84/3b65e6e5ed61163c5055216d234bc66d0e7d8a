@@ -1,0 +1,24 @@
+deployment/nginx/subdomains.conf.template
+  4343bb04abb2627b 8-10,25-38,47-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.20",
+  "base_commit_sha": "843b65e6e5ed61163c5055216d234bc66d0e7d8a",
+  "prompts": {
+    "4343bb04abb2627b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "411dba86-83ca-498d-aeea-eeb318940c6a",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 20,
+      "total_deletions": 2,
+      "accepted_lines": 20,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/906c1b907da9d0641eae51a93de37036cc406538d4f7f1c161360952623cc139"
+    }
+  }
+}

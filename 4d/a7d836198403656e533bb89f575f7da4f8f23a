@@ -1,0 +1,75 @@
+apps/packages/db/src/index.ts
+  ca0797480df5063e 78,85,89,93-96,99
+apps/dashboard/admin/src/pages/AppLicenses.tsx
+  ca0797480df5063e 903-904,908-910
+apps/dashboard/admin/src/pages/AppOAuth.tsx
+  ca0797480df5063e 113-114
+apps/packages/shared/src/id.ts
+  ca0797480df5063e 77-91,130-134
+apps/services/core/src/billing/services/purchases.ts
+  ca0797480df5063e 14,88-90,92-94,96,99-100,111,124,126-127,230-231,233,239,246-247
+apps/services/core/src/billing/services/webhook-processor.ts
+  ca0797480df5063e 308,311,318,321
+apps/services/core/src/routes/v1/admin/test.ts
+  ca0797480df5063e 187
+apps/services/core/src/routes/v1/admin/index.ts
+  ca0797480df5063e 179
+apps/packages/shared/src/index.ts
+  ca0797480df5063e 48-53
+apps/services/core/src/routes/v1/auth/index.ts
+  ca0797480df5063e 10,83-90,104
+apps/packages/db/src/queries.ts
+  ca0797480df5063e 10-11,14,18-21,23,594-609,663-694,696,886-889,1247-1738
+apps/services/core/src/routes/v1/billing/checkout.ts
+  ca0797480df5063e 7,67-68,70-73,76,120
+docs/PRD_LICENSING_V2.md
+  351020bd6da3ac9f 1-17,27-93,99-136,139,151-185,194-443,455-606,608,610,665,721-821,823-825,874-893,895-943,945-964,1107,1228-1229,1231,1233-1249,1251-1268,1270-1275,1277,1282-1284,1286,1288-1300,1302-1304,1306-1308,1319,1321-1327,1329-1346,1348,1350-1380,1382-1406,1408,1410-1438,1440-1457,1459-1460,1493-1495,1497-1503,1509-1512,1514-1515,1520-1534,1536-1539,1541-1543,1546-1554,1558-1574,1576-1578,1580,1582,1584-1589,1599,1601,1606,1608,1613,1615,1619-1621,1623-1635,1650-1655,1657-1658
+  ca0797480df5063e 18-26,94-98,137-138,140-150,186-193,444-454,607,609,611-664,666-720,822,826-873,894,944,965-1106,1108-1227,1230,1232,1250,1269,1276,1278-1281,1285,1287,1301,1305,1309-1318,1320,1328,1347,1349,1381,1407,1409,1439,1458,1461-1492,1496,1504-1508,1513,1516-1519,1535,1540,1544-1545,1555-1557,1575,1579,1581,1583,1590-1598,1600,1602-1605,1607,1609-1612,1614,1616-1618,1622,1636-1649,1656
+docs/PLAN_LICENSE_FLOW.md
+  351020bd6da3ac9f 1-398
+apps/dashboard/admin/src/pages/AppDevelopers.tsx
+  ca0797480df5063e 69-70
+apps/services/core/src/routes/v1/admin/prices.ts
+  351020bd6da3ac9f 1-324
+apps/services/core/src/routes/v1/admin/plans.ts
+  ca0797480df5063e 2,4-5,10,15,26,31-32,39-41,45-61,65-67,71-75,81,90-91,93-95,107,128,138-140,144,155-175,177,184-186,198-199,203-214,223-225,241,243-244,251-253,257,261-263,275-276,286-288,291,299,302,305,309,326,333-334
+apps/packages/shared/src/constants/index.ts
+  ca0797480df5063e 73,82,85-89,94-128
+apps/packages/db/src/schema.ts
+  ca0797480df5063e 168-170,179,183-184,192,200-244,308-310,326-328,330-339,350,395-423,481,483-484,524,535,539-545,618-671,755-757,765-766,768-771,775-777,783,787,789,792,797-800,803,819-820,822,827
+apps/services/workers/src/sync-plan-to-providers.ts
+  ca0797480df5063e 2,4,6-7,11-12,63-70,87,91-92,111,131,134,136-137,139,141-145,147-148,150-165,167-171,177-178,180-181,185,189,194,204,231,241,244,261,265,267,272,276,278
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.6",
+  "base_commit_sha": "4da7d836198403656e533bb89f575f7da4f8f23a",
+  "prompts": {
+    "351020bd6da3ac9f": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "bb71da80-1907-4c7f-85c6-f3afd893b747",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 1855,
+      "total_deletions": 1,
+      "accepted_lines": 1786,
+      "overriden_lines": 0
+    },
+    "ca0797480df5063e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6a3cebda-12e4-4b70-bcc0-c715a02f1d6b",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 1789,
+      "total_deletions": 747,
+      "accepted_lines": 1665,
+      "overriden_lines": 0
+    }
+  }
+}

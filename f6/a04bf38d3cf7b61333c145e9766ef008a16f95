@@ -1,0 +1,28 @@
+apps/services/gateway/.env.example
+  9f96d675df0e1435 8-9,14,17
+.env.example
+  9f96d675df0e1435 79,98-100,135-136
+apps/services/core/.env.example
+  9f96d675df0e1435 22,24-25,29-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.15",
+  "base_commit_sha": "f6a04bf38d3cf7b61333c145e9766ef008a16f95",
+  "prompts": {
+    "9f96d675df0e1435": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "0ee53b3d-dca0-4d50-add0-c1af1fa298d9",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 544,
+      "total_deletions": 23,
+      "accepted_lines": 538,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/1ba054b95435fb0c984754be566d970b88dfe68e7806ee5639842706c20a7daa"
+    }
+  }
+}

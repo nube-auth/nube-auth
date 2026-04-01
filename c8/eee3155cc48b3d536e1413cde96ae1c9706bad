@@ -1,0 +1,24 @@
+apps/services/workers/src/sync-plan-to-providers.ts
+  e70b34f3c67d3458 11,207,213
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.22",
+  "base_commit_sha": "c8eee3155cc48b3d536e1413cde96ae1c9706bad",
+  "prompts": {
+    "e70b34f3c67d3458": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "97723e48-6275-4989-b82c-1e58fb88f988",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 3,
+      "total_deletions": 3,
+      "accepted_lines": 3,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/c6e6db193b47483a79d780fc6620a85ec0eef248a4d6d2d3b8f634c7b362e5a7"
+    }
+  }
+}

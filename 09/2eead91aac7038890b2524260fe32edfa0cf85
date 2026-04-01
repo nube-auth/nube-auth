@@ -1,0 +1,24 @@
+deployment/docker-entrypoint.sh
+  9f96d675df0e1435 18-20,22-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.15",
+  "base_commit_sha": "092eead91aac7038890b2524260fe32edfa0cf85",
+  "prompts": {
+    "9f96d675df0e1435": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "0ee53b3d-dca0-4d50-add0-c1af1fa298d9",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 17,
+      "total_deletions": 3,
+      "accepted_lines": 17,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/2522b8496d0397cd2f94e46324f07e69b6664b3cae5cded0ff53de742bb7c37b"
+    }
+  }
+}

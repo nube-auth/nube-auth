@@ -1,0 +1,24 @@
+apps/services/core/src/billing/adapters/dodo.ts
+  553d97324ef36351 60-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.22",
+  "base_commit_sha": "83605b454bc3d4035cf9f7c1bab02f4f76b45d30",
+  "prompts": {
+    "553d97324ef36351": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5c50c261-943e-4200-90dd-4b989d11189b",
+        "model": "default"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 5,
+      "total_deletions": 0,
+      "accepted_lines": 5,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/ac82903597ca56e96f7d00c14ffb2faffff46a4963b87b34eab456ea8f936c6c"
+    }
+  }
+}

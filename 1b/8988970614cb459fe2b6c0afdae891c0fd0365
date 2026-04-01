@@ -1,0 +1,50 @@
+apps/dashboard/user/src/api.ts
+  351020bd6da3ac9f 2-3,7,10-11,15,17,21-22,26,28,32-33,37,39,42-43
+apps/dashboard/user/src/main.tsx
+  ca0797480df5063e 7,11
+apps/dashboard/user/src/pages/Profile.tsx
+  ca0797480df5063e 21,47
+apps/dashboard/user/src/components/PageLoader.tsx
+  ca0797480df5063e 1-4,6-10
+apps/dashboard/user/src/lib/csrf.ts
+  ca0797480df5063e 1-15
+apps/dashboard/user/src/pages/Security.tsx
+  ca0797480df5063e 12
+apps/dashboard/user/src/pages/Sessions.tsx
+  ca0797480df5063e 23,97
+apps/dashboard/user/src/pages/Login.tsx
+  ca0797480df5063e 5,23-25,41,48-53,67-68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.8",
+  "base_commit_sha": "1b8988970614cb459fe2b6c0afdae891c0fd0365",
+  "prompts": {
+    "351020bd6da3ac9f": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "bb71da80-1907-4c7f-85c6-f3afd893b747",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 17,
+      "total_deletions": 16,
+      "accepted_lines": 17,
+      "overriden_lines": 0
+    },
+    "ca0797480df5063e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6a3cebda-12e4-4b70-bcc0-c715a02f1d6b",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 64,
+      "total_deletions": 55,
+      "accepted_lines": 44,
+      "overriden_lines": 1
+    }
+  }
+}

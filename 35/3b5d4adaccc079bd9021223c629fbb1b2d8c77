@@ -1,0 +1,26 @@
+apps/dashboard/admin/vercel.json
+  5fde03d2aeb6fdab 15
+apps/dashboard/user/vercel.json
+  5fde03d2aeb6fdab 15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.22",
+  "base_commit_sha": "353b5d4adaccc079bd9021223c629fbb1b2d8c77",
+  "prompts": {
+    "5fde03d2aeb6fdab": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6de4c8d6-3bf5-4e88-a125-c116f5c2a2ea",
+        "model": "claude-4.5-sonnet"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 8,
+      "total_deletions": 8,
+      "accepted_lines": 4,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/af86b180b2424bea0a6911c0bae38a36fd664b1b756ccdd64512cc001b8a948e"
+    }
+  }
+}

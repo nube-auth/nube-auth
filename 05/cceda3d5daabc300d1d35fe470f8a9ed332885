@@ -1,0 +1,91 @@
+apps/dashboard/user/package.json
+  ca0797480df5063e 14
+apps/dashboard/user/src/pages/Security.tsx
+  351020bd6da3ac9f 54
+apps/dashboard/user/src/lib/csrf.ts
+  351020bd6da3ac9f 8-9
+apps/dashboard/user/src/pages/Sessions.tsx
+  351020bd6da3ac9f 128
+SETUP.md
+  ca0797480df5063e 95
+docs/design-system/index.html
+  ca0797480df5063e 15,17-20,728-731,790,900-901,911-913,1033-1036
+apps/dashboard/home/src/styles/global.css
+  ca0797480df5063e 59-61,160-161
+apps/dashboard/admin/src/pages/Projects.tsx
+  ca0797480df5063e 116
+apps/dashboard/admin/src/pages/WebhookMonitoring.tsx
+  351020bd6da3ac9f 50,55
+apps/dashboard/admin/src/pages/CreateProject.tsx
+  351020bd6da3ac9f 70-72,88-90
+apps/dashboard/user/src/pages/Profile.tsx
+  351020bd6da3ac9f 92
+docs/ADMIN_SESSION_SECURITY.md
+  ca0797480df5063e 52-59,63-68
+.env.example
+  ca0797480df5063e 154,159
+apps/dashboard/admin/src/pages/PaymentTestingPlayground.tsx
+  351020bd6da3ac9f 401-402
+CSRF_DEBUG.md
+  ca0797480df5063e 1-87
+apps/dashboard/admin/src/lib/csrf.ts
+  ca0797480df5063e 8-9
+  351020bd6da3ac9f 15
+apps/dashboard/admin/src/pages/AppSettings.tsx
+  351020bd6da3ac9f 208-210,224-226,438,447
+  ca0797480df5063e 481-482
+apps/dashboard/admin/src/hooks/api.ts
+  ca0797480df5063e 45-46
+apps/packages/components/src/styles/theme.css
+  351020bd6da3ac9f 5,12,19,21-22,26-27,34-37,44-45,65,77-79,89
+  ca0797480df5063e 128-131,138-139,159,168-169,191-192,202-205,212-213,233,242-243,265-266
+apps/dashboard/user/src/lib/pingpong.ts
+  ca0797480df5063e 1-3
+apps/dashboard/user/src/styles.css
+  ca0797480df5063e 13-14
+apps/dashboard/admin/src/pages/ProjectTeam.tsx
+  351020bd6da3ac9f 151,248
+apps/dashboard/admin/src/pages/TransactionExport.tsx
+  351020bd6da3ac9f 163-165,168-171,185-197,200,270,289,293
+apps/dashboard/admin/src/styles.css
+  351020bd6da3ac9f 13-14
+apps/packages/components/src/base/feedback/avatar.tsx
+  351020bd6da3ac9f 9
+apps/services/gateway/src/config/constants.ts
+  ca0797480df5063e 6-17
+apps/dashboard/admin/src/pages/ProjectSettings.tsx
+  ca0797480df5063e 297-298
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.8",
+  "base_commit_sha": "05cceda3d5daabc300d1d35fe470f8a9ed332885",
+  "prompts": {
+    "351020bd6da3ac9f": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "bb71da80-1907-4c7f-85c6-f3afd893b747",
+        "model": "copilot/auto"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 227,
+      "total_deletions": 190,
+      "accepted_lines": 75,
+      "overriden_lines": 0
+    },
+    "ca0797480df5063e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6a3cebda-12e4-4b70-bcc0-c715a02f1d6b",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 380,
+      "total_deletions": 87,
+      "accepted_lines": 204,
+      "overriden_lines": 0
+    }
+  }
+}
