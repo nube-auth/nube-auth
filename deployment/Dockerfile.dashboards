@@ -64,12 +64,14 @@ ARG VITE_GATEWAY_URL
 ARG VITE_HOME_URL
 ARG VITE_DOCS_URL
 ARG VITE_ENV_TAG=Beta
+ARG VITE_COOKIE_NAMESPACE
 
 # Admin lives at root / of ${SUBDOMAIN_PREFIX}manage.${DOMAIN}
 RUN VITE_GATEWAY_URL=${VITE_GATEWAY_URL} \
     VITE_HOME_URL=${VITE_HOME_URL} \
     VITE_DOCS_URL=${VITE_DOCS_URL} \
     VITE_ENV_TAG=${VITE_ENV_TAG} \
+    VITE_COOKIE_NAMESPACE=${VITE_COOKIE_NAMESPACE} \
     pnpm --filter @nube-auth/dashboard-admin build
 
 # ── Stage 4: build user dashboard ─────────────────────────────────────────────
@@ -81,11 +83,13 @@ ARG VITE_GATEWAY_URL
 ARG VITE_HOME_URL
 ARG VITE_DOCS_URL
 ARG VITE_ENV_TAG=Beta
+ARG VITE_COOKIE_NAMESPACE
 
 RUN VITE_GATEWAY_URL=${VITE_GATEWAY_URL} \
     VITE_HOME_URL=${VITE_HOME_URL} \
     VITE_DOCS_URL=${VITE_DOCS_URL} \
     VITE_ENV_TAG=${VITE_ENV_TAG} \
+    VITE_COOKIE_NAMESPACE=${VITE_COOKIE_NAMESPACE} \
     pnpm --filter @nube-auth/dashboard-user build
 
 # ── Stage 5: build home (Astro) ───────────────────────────────────────────────
