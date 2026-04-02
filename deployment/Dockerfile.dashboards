@@ -23,7 +23,7 @@
 FROM node:22-alpine AS installer
 WORKDIR /app
 
-RUN apk add --no-cache git && npm install -g pnpm@9
+RUN apk update && apk add --no-cache git && npm install -g pnpm@9
 
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 
