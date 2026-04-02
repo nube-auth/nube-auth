@@ -17,7 +17,8 @@
 		"exactOptionalPropertyTypes": true,
 		"forceConsistentCasingInFileNames": true,
 		"outDir": "./dist",
-		"rootDir": "./src"
+		"rootDir": "./src",
+		"ignoreDeprecations": "6.0"
 	},
 	"include": ["src/**/*"]
 }
