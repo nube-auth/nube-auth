@@ -90,7 +90,7 @@ webhookRoutes.post("/:provider", async (c: Context) => {
 		const webhookLogId = await WebhookLoggingService.createWebhookLog({
 			provider: normalizedProvider,
 			eventType,
-			eventId: eventId ?? undefined,
+			...(eventId != null ? { eventId } : {}),
 			requestBody: parsedBody,
 			requestHeaders,
 			signature,

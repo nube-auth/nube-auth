@@ -28,7 +28,7 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
-    "typescript": "^5.3.3"
+    "typescript": "^6.0.2"
   },
   "optionalDependencies": {
     "google-auth-library": "^9.4.1",

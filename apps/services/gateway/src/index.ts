@@ -10,6 +10,7 @@ import { csrfProtection } from "./middleware/csrf";
 import { httpLogger } from "./middleware/logger";
 import { rateLimitPresets } from "./middleware/rateLimit";
 import { adminRoutes } from "./routes/admin";
+import { appCatalogRoutes } from "./routes/appCatalog";
 import { authRoutes } from "./routes/auth";
 import { debugRoutes } from "./routes/debug";
 import { licenseRoutes } from "./routes/license";
@@ -116,11 +117,13 @@ app.use("/v1/admin/*", rateLimitPresets.api);
 app.use("/v1/me/*", rateLimitPresets.api);
 app.use("/v1/payment/*", rateLimitPresets.api);
 app.use("/v1/license/*", rateLimitPresets.api);
+app.use("/v1/app/*", rateLimitPresets.api);
 
 // Routes
 app.route("/v1/auth", authRoutes);
 app.route("/v1/me", meRoutes);
 app.route("/v1/admin", adminRoutes);
+app.route("/v1/app", appCatalogRoutes);
 app.route("/v1/payment", paymentsRoutes);
 app.route("/v1/license", licenseRoutes);
 // Debug routes only available in non-production environments

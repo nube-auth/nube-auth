@@ -44,7 +44,7 @@
     "clsx": "^2.0.0",
     "tailwind-merge": "^2.0.0",
     "tailwindcss": "^4.1.18",
-    "typescript": "^5.0.0"
+    "typescript": "^6.0.2"
   },
   "devDependencies": {
     "selia": "^0.2.3"

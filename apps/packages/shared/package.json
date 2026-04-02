@@ -41,7 +41,7 @@
     "@types/nodemailer": "^7.0.4",
     "nanoid": "^4.0.2",
     "tsup": "^8.0.0",
-    "typescript": "^5.3.3"
+    "typescript": "^6.0.2"
   },
   "files": [
     "dist"

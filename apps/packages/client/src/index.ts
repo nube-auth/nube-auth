@@ -5,6 +5,8 @@ export type {
 	NubeAuthClientConfig,
 	OAuthStartOptions,
 	PkceOAuthStart,
+	Plan,
+	Price,
 	Session,
 	Subscription,
 	SubscriptionStatus,

@@ -6,6 +6,8 @@ import type {
 	NubeAuthClientConfig,
 	OAuthStartOptions,
 	PkceOAuthStart,
+	Plan,
+	Price,
 	Session,
 	SubscriptionStatus,
 	TokenExchangeResult,
@@ -18,6 +20,7 @@ export class NubeAuthClient {
 	private s2sToken?: string | undefined;
 	private appId?: string | undefined;
 	private sessionToken?: string | undefined;
+	private appSecret?: string | undefined;
 	private onSessionExpired?: (() => void) | undefined;
 	private httpClient = pingpong;
 
@@ -26,6 +29,7 @@ export class NubeAuthClient {
 		this.s2sToken = config.s2sToken;
 		this.appId = config.appId;
 		this.sessionToken = config.sessionToken;
+		this.appSecret = config.appSecret;
 		this.onSessionExpired = config.onSessionExpired;
 	}
 
@@ -274,6 +278,94 @@ export class NubeAuthClient {
 			} catch {
 				return false;
 			}
+		},
+	};
+
+	// ---------------------------------------------------------------------------
+	// App Catalog — plan + pricing data (server-to-server, uses appSecret)
+	// ---------------------------------------------------------------------------
+
+	/**
+	 * Read-only catalog of plans and prices for this app.
+	 * Requires `appId` and `appSecret` in the client config.
+	 * Intended for use from a backend service (control plane, webhook server, etc.).
+	 * Never use `appSecret` in browser code.
+	 *
+	 * @example
+	 * const client = new NubeAuthClient({
+	 *   gatewayUrl: process.env.NUBE_GATEWAY_URL,
+	 *   appId: process.env.NUBE_APP_ID,
+	 *   appSecret: process.env.NUBE_APP_SECRET,
+	 * });
+	 * const { plans } = await client.appCatalog.getPlans();
+	 */
+	public appCatalog = {
+		/**
+		 * List all active plans for this app, ordered by display_order.
+		 * Returns plan names, slugs, feature bullets, and display order.
+		 * Does NOT return pricing — use `getPrices(planId)` for that.
+		 */
+		getPlans: async (): Promise<{ plans: Plan[] }> => {
+			const appId = this.requireAppId();
+			if (!this.appSecret) {
+				throw new NubeAuthError(
+					"appSecret is required for appCatalog calls. Pass appSecret in NubeAuthClientConfig.",
+					"APP_SECRET_REQUIRED",
+					400,
+				);
+			}
+			const url = `${this.baseUrl}/v1/app/${appId}/plans`;
+			const response = await this.httpClient.send({
+				url,
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json",
+					"Authorization": `Bearer ${this.appSecret}`,
+				},
+				credentials: "omit" as any,
+			});
+			if (!response.ok()) {
+				throw new NubeAuthError(
+					`Failed to fetch plans: HTTP ${response.status}`,
+					"CATALOG_ERROR",
+					response.status,
+				);
+			}
+			return response.json() as { plans: Plan[] };
+		},
+
+		/**
+		 * List all active prices for a plan, identified by the plan's public_id.
+		 * Returns billing type, interval, amount in cents, currency, and trial info.
+		 * Provider-internal fields (external_price_id, etc.) are NOT returned.
+		 */
+		getPrices: async (planId: string): Promise<{ planId: string; prices: Price[] }> => {
+			const appId = this.requireAppId();
+			if (!this.appSecret) {
+				throw new NubeAuthError(
+					"appSecret is required for appCatalog calls. Pass appSecret in NubeAuthClientConfig.",
+					"APP_SECRET_REQUIRED",
+					400,
+				);
+			}
+			const url = `${this.baseUrl}/v1/app/${appId}/plans/${planId}/prices`;
+			const response = await this.httpClient.send({
+				url,
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json",
+					"Authorization": `Bearer ${this.appSecret}`,
+				},
+				credentials: "omit" as any,
+			});
+			if (!response.ok()) {
+				throw new NubeAuthError(
+					`Failed to fetch prices: HTTP ${response.status}`,
+					"CATALOG_ERROR",
+					response.status,
+				);
+			}
+			return response.json() as { planId: string; prices: Price[] };
 		},
 	};
 

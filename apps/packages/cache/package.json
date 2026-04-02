@@ -21,7 +21,7 @@
     "redis": "^4.7.0"
   },
   "devDependencies": {
-    "typescript": "^5.3.3"
+    "typescript": "^6.0.2"
   },
   "files": [
     "dist"

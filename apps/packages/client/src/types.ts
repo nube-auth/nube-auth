@@ -23,6 +23,56 @@ export interface NubeAuthClientConfig {
          * the callback returns.
          */
         onSessionExpired?: (() => void) | undefined;
+        /**
+         * App client secret (the `clientSecret` from `app_tokens`, shown once in the
+         * NubeAuth dashboard). When set, `appCatalog` calls include
+         * `Authorization: Bearer <appSecret>` and bypass user-session auth.
+         * Use this for server-side calls from your backend (e.g. fetching plans).
+         * Never expose in browser code.
+         */
+        appSecret?: string | undefined;
+}
+
+// ---------------------------------------------------------------------------
+// App Catalog — plan + pricing data (server-to-server, no user session needed)
+// ---------------------------------------------------------------------------
+
+/**
+ * A plan returned by GET /v1/app/:appId/plans.
+ * Contains capability/feature data only — no pricing.
+ */
+export interface Plan {
+        /** Public plan ID (PLAN0...). */
+        planId: string;
+        /** Human-readable name, e.g. "Starter". */
+        name: string;
+        /** URL-safe slug, e.g. "starter". */
+        slug: string;
+        description: string | null;
+        /** Marketing feature bullet strings defined in the NubeAuth dashboard. */
+        features: string[];
+        /** Ascending sort order for display. */
+        displayOrder: number;
+}
+
+/**
+ * A price attached to a plan, returned by GET /v1/app/:appId/plans/:planId/prices.
+ * Provider-internal fields (external_price_id, external_provider) are excluded.
+ */
+export interface Price {
+        /** Public price ID (PRICE0...). */
+        priceId: string;
+        /** "recurring" or "one_time". */
+        billingType: string;
+        /** "month" | "year" | null (null for one_time). */
+        interval: string | null;
+        /** Price in the smallest currency unit (cents). 999 = $9.99. */
+        amountCents: number;
+        /** ISO 4217 lowercase currency code, e.g. "usd". */
+        currency: string;
+        trialEnabled: boolean;
+        /** Number of trial days, or null if no trial. */
+        trialDays: number | null;
 }
 
 // ---------------------------------------------------------------------------
