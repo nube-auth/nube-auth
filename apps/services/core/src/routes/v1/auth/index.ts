@@ -8,13 +8,13 @@ import {
 	invitationQueries,
 	licenseQueries,
 	planQueries,
-	priceQueries,
 	projectInvitationQueries,
 	projectMemberQueries,
 	sessionQueries,
 	userQueries,
 } from "@nube-auth/db";
-import { createId, createLogger, idPatterns, serializeError, type PlanSettings } from "@nube-auth/shared";
+import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
+import { ensureLicenseForApp } from "../../../utils/license";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { env } from "../../../config/env";
@@ -47,64 +47,6 @@ async function getOAuthState(state: string): Promise<OAuthStateData | null> {
 
 async function deleteOAuthState(state: string): Promise<void> {
 	await cache.delete(`${OAUTH_STATE_PREFIX}${state}`);
-}
-
-const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-
-async function ensureLicenseForApp(db: ReturnType<typeof getDb>, userId: number, appPublicId?: string): Promise<void> {
-	if (!appPublicId) return;
-
-	try {
-		const app = await appQueries.findByPublicId(db, appPublicId);
-		if (!app) return;
-
-		// Type-safe access to plan_settings JSONB field
-		const planSettings = app.plan_settings as unknown as PlanSettings;
-		if (planSettings?.licensingRequired === false) return;
-
-		const existing = await licenseQueries.findByUserAndApp(db, userId, app.id);
-		if (existing) return;
-
-		if (!planSettings?.defaultPlanId) {
-		log.warn({ appId: appPublicId }, "Auto-license skipped: defaultPlanId not set in plan_settings");
-			return;
-		}
-
-		const plan = await planQueries.findById(db, planSettings.defaultPlanId);
-		if (!plan || plan.app_id !== app.id || plan.status !== "active" || plan.deleted_at) {
-		log.warn(
-				{ appId: appPublicId, planId: planSettings.defaultPlanId },
-				"Auto-license skipped: default plan invalid or inactive",
-			);
-			return;
-		}
-
-		const now = new Date();
-		let validUntil: Date | null = null;
-
-		// Look up the default active price for trial/duration info
-		const activePrices = await priceQueries.findActiveByPlanId(db, plan.id);
-		const defaultPrice = activePrices[0] ?? null;
-
-		if (defaultPrice?.trial_enabled && defaultPrice.trial_days) {
-			validUntil = new Date(now.getTime() + defaultPrice.trial_days * ONE_DAY_MS);
-		} else if (defaultPrice?.duration_days) {
-			validUntil = new Date(now.getTime() + defaultPrice.duration_days * ONE_DAY_MS);
-		}
-
-		await licenseQueries.create(db, {
-			public_id: createId("license"),
-			user_id: userId,
-			app_id: app.id,
-			plan_id: plan.id,
-			status: "active",
-			valid_until: validUntil,
-			created_at: now,
-			updated_at: now,
-		});
-	} catch (licenseError) {
-		log.error({ appId: appPublicId, err: serializeError(licenseError as Error) }, "Auto-license creation failed");
-	}
 }
 
 /**

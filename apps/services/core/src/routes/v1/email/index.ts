@@ -1,12 +1,13 @@
 import { generateOTP, hashOTP, verifyOTP } from "@nube-auth/auth";
 import { rateLimit } from "@nube-auth/cache";
-import { emailVerificationQueries, getDb, identityQueries, sessionQueries, userQueries } from "@nube-auth/db";
+import { appQueries, appUserQueries, emailVerificationQueries, getDb, identityQueries, sessionQueries, userQueries } from "@nube-auth/db";
 import { createId, createLogger, serializeError, OTP_LENGTH, OTP_LOCKOUT_MINUTES, OTP_MAX_ATTEMPTS } from "@nube-auth/shared";
 import { createEmailService } from "@nube-auth/shared/email";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { env } from "../../../config/env";
 import { getClientIp, getClientCountry } from "../../../middleware/rateLimit";
+import { ensureLicenseForApp } from "../../../utils/license";
 
 const log = createLogger("email-routes");
 
@@ -100,7 +101,7 @@ router.post("/start", async (c: Context) => {
  * Verify OTP and create session
  */
 router.post("/verify", async (c: Context) => {
-	const { email, otp } = (await c.req.json()) as { email?: string; otp?: string };
+	const { email, otp, appId } = (await c.req.json()) as { email?: string; otp?: string; appId?: string };
 
 	if (!email || !email.includes("@")) {
 		return c.json({ error: "Invalid email" }, 400);
@@ -215,6 +216,30 @@ router.post("/verify", async (c: Context) => {
 		const userAgent = c.req.header("user-agent") || null;
 		const country = getClientCountry(c);
 
+		// Auto-provision free/default plan license if the app has one configured
+		await ensureLicenseForApp(db, userId, appId);
+
+		// Resolve app internal id for session scoping and app_users upsert
+		let appInternalId: number | undefined;
+		if (appId) {
+			try {
+				const resolvedApp = await appQueries.findByPublicId(db, appId);
+				appInternalId = resolvedApp?.id;
+			} catch (appLookupError) {
+				log.error({ err: serializeError(appLookupError as Error), appId }, "Failed to resolve app for email login");
+			}
+		}
+
+		// Upsert persistent app_users record — survives session deletion and captures
+		// every user who has authenticated with the app, regardless of licence status.
+		if (appInternalId !== undefined) {
+			try {
+				await appUserQueries.upsert(db, appInternalId, userId);
+			} catch (appUserError) {
+				log.error({ err: serializeError(appUserError as Error), appId }, "Failed to upsert app_user");
+			}
+		}
+
 		// Create core session
 		const sessionData = {
 			public_id: createId("session"),
@@ -225,6 +250,7 @@ router.post("/verify", async (c: Context) => {
 			ip_address: ipAddress,
 			user_agent: userAgent,
 			country: country,
+			...(appInternalId !== undefined && { app_id: appInternalId }),
 		};
 
 		const session = await sessionQueries.create(db, sessionData);

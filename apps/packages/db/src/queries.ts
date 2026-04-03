@@ -146,6 +146,22 @@ export const sessionQueries = {
 			.returning();
 		return results[0]!;
 	},
+
+	/** Count all non-expired, non-revoked sessions for a given app */
+	async countByAppId(db: DbClient, appId: number) {
+		const now = new Date();
+		const result = await db
+			.select({ count: sql<number>`count(*)` })
+			.from(sessions)
+			.where(
+				and(
+					eq(sessions.app_id, appId),
+					isNull(sessions.revoked_at),
+					gt(sessions.expires_at, now),
+				),
+			);
+		return Number(result[0]?.count ?? 0);
+	},
 };
 
 /**
@@ -2261,13 +2277,13 @@ export const appUserQueries = {
 		return db.select().from(app_users).where(eq(app_users.app_id, appId));
 	},
 
-	/** Sum unique users across all apps belonging to a project */
+	/** Sum unique users across all non-test apps belonging to a project */
 	async countByProjectId(db: DbClient, projectId: number) {
 		const result = await db
 			.select({ count: sql<number>`count(distinct ${app_users.user_id})` })
 			.from(app_users)
 			.innerJoin(apps, eq(apps.id, app_users.app_id))
-			.where(eq(apps.project_id, projectId));
+			.where(and(eq(apps.project_id, projectId), eq(apps.is_test, false)));
 		return Number(result[0]?.count ?? 0);
 	},
 };

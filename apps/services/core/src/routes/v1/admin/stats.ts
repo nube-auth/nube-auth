@@ -6,6 +6,7 @@ import {
 	paymentTransactionQueries,
 	planQueries,
 	projectQueries,
+	sessionQueries,
 	userQueries,
 } from "@nube-auth/db";
 import { createLogger, idPatterns, serializeError } from "@nube-auth/shared";
@@ -124,12 +125,20 @@ statsRouter.get("/:projectId/stats", async (c: Context) => {
 	const allApps = await appQueries.findByProjectId(db, project.id);
 	const apps = allApps.filter((a) => !a.is_test);
 
-	// Gather all plan IDs up front (one query) to avoid N+1 per license
+	// Fetch all licenses per app up-front (single pass) — used both for plan ID
+	// collection and for the per-app aggregation loop below, avoiding a double-fetch.
+	const licensesByApp = new Map(
+		await Promise.all(
+			apps.map(async (a) => [
+				a.id,
+				(await licenseQueries.findByAppId(db, a.id)).filter((l) => !l.is_test),
+			] as [number, (typeof licensesByApp extends Map<number, infer V> ? V : never)]),
+		),
+	);
+
+	// Gather unique plan IDs from the already-fetched licenses
 	const planIds = [...new Set(
-		(await Promise.all(apps.map((a) => licenseQueries.findByAppId(db, a.id))))
-			.flat()
-			.filter((l) => !l.is_test)
-			.map((l) => l.plan_id),
+		[...licensesByApp.values()].flat().map((l) => l.plan_id),
 	)];
 	const planMap = new Map(
 		(await Promise.all(planIds.map((id) => planQueries.findById(db, id))))
@@ -142,7 +151,7 @@ statsRouter.get("/:projectId/stats", async (c: Context) => {
 	const licenseCounts: Record<string, number> = {};
 
 	for (const app of apps) {
-		const appLicenses = (await licenseQueries.findByAppId(db, app.id)).filter((l) => !l.is_test);
+		const appLicenses = licensesByApp.get(app.id) ?? [];
 		totalLicenses += appLicenses.length;
 
 		for (const license of appLicenses) {
@@ -226,6 +235,9 @@ statsRouter.get("/:projectId/apps/:appId/stats", async (c: Context) => {
 	// reflects all users who have authenticated with this app.
 	const totalUsers = await appUserQueries.countByAppId(db, app.id);
 
+	// Count active (non-expired, non-revoked) sessions for this app
+	const totalSessions = await sessionQueries.countByAppId(db, app.id);
+
 	// Pre-fetch all referenced plans in one pass to avoid N+1 per license
 	const planIds = [...new Set(licenses.map((l) => l.plan_id))];
 	const planMap = new Map(
@@ -252,6 +264,7 @@ statsRouter.get("/:projectId/apps/:appId/stats", async (c: Context) => {
 		totalLicenses: licenses.length,
 		activeLicenses: activeLicenses.length,
 		totalUsers,
+		totalSessions,
 		licenseCounts,
 		totalRevenue,
 		// Per-currency revenue in dollars (not cents)
