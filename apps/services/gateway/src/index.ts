@@ -88,6 +88,9 @@ const CORS_ALLOW_METHODS = "GET, POST, PUT, PATCH, DELETE, OPTIONS";
 const CORS_ALLOW_HEADERS = "Content-Type, Authorization, X-Nube-Service-Token, X-Nube-CSRF-Token, X-Nube-S2S-Token, X-Nube-Project-Id";
 
 function originMatchesPattern(origin: string, pattern: string): boolean {
+	// Bare wildcard — allow any origin (we still echo the exact origin,
+	// not "*", so credentials: "include" keeps working).
+	if (pattern === "*") return true;
 	if (pattern === origin) return true;
 	if (pattern.startsWith("*.")) {
 		const domain = pattern.slice(2);
