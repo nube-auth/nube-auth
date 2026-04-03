@@ -62,6 +62,12 @@ export class NubeAuthClient {
 			headers["X-Nube-Service-Token"] = this.s2sToken;
 		}
 
+		// App secret — server-to-gateway calls from trusted app backends.
+		// Enables Cloudflare Bot Management bypass via matching WAF rule.
+		if (this.appSecret) {
+			headers["X-Nube-App-Secret"] = this.appSecret;
+		}
+
 		const response = await this.httpClient.send({
 			url,
 			method: (options?.method || "GET") as any,

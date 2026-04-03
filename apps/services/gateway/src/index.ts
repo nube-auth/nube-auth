@@ -1,5 +1,5 @@
 import { serve } from "@hono/node-server";
-import { initCache, pingCache } from "@nube-auth/cache";
+import { initCache, pingCache, cache } from "@nube-auth/cache";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import { getDb, appQueries } from "@nube-auth/db";
 import { Hono } from "hono";
@@ -102,6 +102,43 @@ function originMatchesPattern(origin: string, pattern: string): boolean {
 // Resolve app ID from query param (?app=), X-App-ID header, or hostname.
 // Must run before CORS so per-app origin lookups have appId in context.
 app.use("*", appResolverMiddleware);
+
+// Trusted-backend validation — checks X-Nube-App-Secret against the app's
+// stored clientSecret (cached in Redis for 5 min). When valid, marks the
+// request as trustedBackend in context, which exempts it from rate limiting.
+// This enables a Cloudflare WAF bypass rule: requests carrying a valid secret
+// skip Bot Management, allowing server-side calls from Vercel to go through.
+app.use("*", async (c, next) => {
+	const secretHeader = c.req.header("x-nube-app-secret");
+	if (secretHeader) {
+		const appId = (c as any).get("appId") as string | undefined;
+		if (appId) {
+			try {
+				const cacheKey = `app-client-secret:${appId}`;
+				let storedSecret = await cache.get<string>(cacheKey);
+
+				if (storedSecret === null) {
+					const db = getDb();
+					const appRecord = await appQueries.findByPublicId(db, appId);
+					storedSecret = (appRecord?.app_tokens as { clientSecret?: string } | null)?.clientSecret ?? null;
+					if (storedSecret) {
+						// Cache for 5 minutes — short enough to pick up rotations, long enough to matter
+						await cache.set(cacheKey, storedSecret, 300);
+					}
+				}
+
+				if (storedSecret && secretHeader === storedSecret) {
+					(c as any).set("trustedBackend", true);
+					log.debug({ appId }, "Trusted backend authenticated via app secret");
+				}
+			} catch (err) {
+				// Non-fatal — request proceeds without trustedBackend privileges
+				log.warn({ err: err instanceof Error ? err.message : String(err), appId }, "App secret validation error");
+			}
+		}
+	}
+	return next();
+});
 
 // CORS — supports both hardcoded gateway origins and per-app origins stored in the DB.
 // Per-app lookup requires the app_id to be resolved by appResolverMiddleware first

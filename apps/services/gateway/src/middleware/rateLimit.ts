@@ -37,6 +37,12 @@ export function rateLimitMiddleware(options: RateLimitOptions) {
 			return;
 		}
 
+		// Skip rate limiting for trusted app backends (valid X-Nube-App-Secret)
+		if (c.get("trustedBackend")) {
+			await next();
+			return;
+		}
+
 		try {
 			// Get identifier (IP address by default)
 			const id = identifier ? await identifier(c) : getClientIp(c);
