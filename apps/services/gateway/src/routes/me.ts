@@ -2,13 +2,20 @@ import { getDb, sessionQueries, userQueries, subscriptionQueries, licenseQueries
 import { cache, sessionStore } from "@nube-auth/cache";
 import { createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 import { Hono } from "hono";
+import { pingpong } from "@nube-auth/auth";
 import { getAuth } from "../middleware/auth";
+import { env } from "../config/env";
+import { CACHE_TTL } from "../config/constants";
 
 const log = createLogger("me-routes");
 
 export const meRoutes = new Hono();
+
+const subCacheKey = (userId: string, appId: string) => `gateway:sub:${userId}:${appId}`;
+const licenseCacheKey = (userId: string, appId: string) => `gateway:license:${userId}:${appId}`;
 
 async function revokeGatewaySessions(userPublicId: string, targetCoreSessionId?: string): Promise<void> {
 	let cursor = 0;
@@ -222,6 +229,11 @@ meRoutes.get("/subscription", async (c: Context) => {
                         return c.json({ error: "Subscription check is only available for app sessions" }, 400);
                 }
 
+                // Return cached response when available
+                const cacheKey = subCacheKey(auth.userId, auth.appId);
+                const cached = await cache.get<object>(cacheKey);
+                if (cached) return c.json(cached);
+
                 const db = getDb();
 
                 // Resolve internal IDs for both user and app
@@ -236,42 +248,130 @@ meRoutes.get("/subscription", async (c: Context) => {
 
                 const subscription = await subscriptionQueries.findActiveByUserAndApp(db, user.id, app.id);
 
+                let result: object;
+
                 if (!subscription) {
                         // No subscription row — fall back to licenses table (covers one-time purchases)
                         const license = await licenseQueries.findByUserAndApp(db, user.id, app.id);
                         if (!license || license.status !== "active") {
-                                return c.json({ hasActivePlan: false, planSlug: null, status: null, billingInterval: null, periodEnd: null });
+                                result = { hasActivePlan: false, planSlug: null, status: null, billingInterval: null, periodEnd: null };
+                        } else {
+                                const licensePrice = license.price_id ? await priceQueries.findById(db, license.price_id) : null;
+                                const licensePlan = licensePrice
+                                        ? await planQueries.findById(db, licensePrice.plan_id)
+                                        : license.plan_id
+                                                ? await planQueries.findById(db, license.plan_id)
+                                                : null;
+                                result = {
+                                        hasActivePlan: true,
+                                        planSlug: licensePlan?.slug ?? null,
+                                        status: license.status,
+                                        billingInterval: null,
+                                        periodEnd: license.valid_until ? new Date(license.valid_until).toISOString() : null,
+                                };
                         }
-                        const licensePrice = license.price_id ? await priceQueries.findById(db, license.price_id) : null;
-                        const licensePlan = licensePrice
-                                ? await planQueries.findById(db, licensePrice.plan_id)
-                                : license.plan_id
-                                        ? await planQueries.findById(db, license.plan_id)
-                                        : null;
-                        return c.json({
+                } else {
+                        // Walk subscription → price → plan to get the slug
+                        const price = await priceQueries.findById(db, subscription.price_id);
+                        const plan = price ? await planQueries.findById(db, price.plan_id) : null;
+
+                        result = {
                                 hasActivePlan: true,
-                                planSlug: licensePlan?.slug ?? null,
-                                status: license.status,
-                                billingInterval: null,
-                                periodEnd: license.valid_until ? new Date(license.valid_until).toISOString() : null,
-                        });
+                                planSlug: plan?.slug ?? null,
+                                status: subscription.status,
+                                billingInterval: subscription.billing_interval,
+                                periodEnd: subscription.billing_period_end
+                                        ? new Date(subscription.billing_period_end).toISOString()
+                                        : null,
+                        };
                 }
 
-                // Walk subscription → price → plan to get the slug
-                const price = await priceQueries.findById(db, subscription.price_id);
-                const plan = price ? await planQueries.findById(db, price.plan_id) : null;
-
-                return c.json({
-                        hasActivePlan: true,
-                        planSlug: plan?.slug ?? null,
-                        status: subscription.status,
-                        billingInterval: subscription.billing_interval,
-                        periodEnd: subscription.billing_period_end
-                                ? new Date(subscription.billing_period_end).toISOString()
-                                : null,
-                });
+                await cache.set(cacheKey, result, CACHE_TTL);
+                return c.json(result);
         } catch (error) {
                 log.error({ err: serializeError(error as Error) }, "Subscription check error:");
                 return c.json({ error: "Failed to fetch subscription" }, 500);
+        }
+});
+
+/**
+ * POST /v1/me/subscription/cancel
+ *
+ * Cancels the active subscription for the authenticated user.
+ * Proxies to Core S2S endpoint and busts the subscription + license caches.
+ */
+meRoutes.post("/subscription/cancel", async (c: Context) => {
+        try {
+                const auth = getAuth(c);
+                if (!auth.appId) {
+                        return c.json({ error: "Subscription cancel is only available for app sessions" }, 400);
+                }
+
+                let reason: string | undefined;
+                try {
+                        const body = await c.req.json();
+                        reason = typeof body?.reason === "string" ? body.reason : undefined;
+                } catch {
+                        // Body is optional
+                }
+
+                const response = await pingpong(`${env.CORE_URL}/v1/subscription/cancel`, {
+                        method: "POST",
+                        headers: {
+                                "Content-Type": "application/json",
+                                "X-Nube-S2S-Token": env.S2S_SECRET,
+                                "X-Nube-User-Id": auth.userId,
+                        },
+                        body: { appId: auth.appId, ...(reason ? { reason } : {}) },
+                });
+
+                if (response.ok()) {
+                        await Promise.all([
+                                cache.delete(subCacheKey(auth.userId, auth.appId)),
+                                cache.delete(licenseCacheKey(auth.userId, auth.appId)),
+                        ]);
+                }
+
+                return c.json(response.data, response.status as ContentfulStatusCode);
+        } catch (error) {
+                log.error({ err: serializeError(error as Error) }, "Subscription cancel error:");
+                return c.json({ error: "Failed to cancel subscription" }, 500);
+        }
+});
+
+/**
+ * POST /v1/me/subscription/resume
+ *
+ * Resumes a subscription that was scheduled for cancellation at period end.
+ * Proxies to Core S2S endpoint and busts the subscription + license caches.
+ */
+meRoutes.post("/subscription/resume", async (c: Context) => {
+        try {
+                const auth = getAuth(c);
+                if (!auth.appId) {
+                        return c.json({ error: "Subscription resume is only available for app sessions" }, 400);
+                }
+
+                const response = await pingpong(`${env.CORE_URL}/v1/subscription/resume`, {
+                        method: "POST",
+                        headers: {
+                                "Content-Type": "application/json",
+                                "X-Nube-S2S-Token": env.S2S_SECRET,
+                                "X-Nube-User-Id": auth.userId,
+                        },
+                        body: { appId: auth.appId },
+                });
+
+                if (response.ok()) {
+                        await Promise.all([
+                                cache.delete(subCacheKey(auth.userId, auth.appId)),
+                                cache.delete(licenseCacheKey(auth.userId, auth.appId)),
+                        ]);
+                }
+
+                return c.json(response.data, response.status as ContentfulStatusCode);
+        } catch (error) {
+                log.error({ err: serializeError(error as Error) }, "Subscription resume error:");
+                return c.json({ error: "Failed to resume subscription" }, 500);
         }
 });
