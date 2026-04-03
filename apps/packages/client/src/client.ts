@@ -212,7 +212,10 @@ export class NubeAuthClient {
 					400,
 				);
 			}
-			return this.request<TokenExchangeResult>("/v1/auth/token", {
+			// Include app_id as a query param so the gateway's appResolverMiddleware
+			// can identify the app on the OPTIONS preflight (which has no body),
+			// enabling per-app CORS origin lookup from the database.
+			return this.request<TokenExchangeResult>(`/v1/auth/token?app=${encodeURIComponent(resolvedAppId)}`, {
 				method: "POST",
 				body: JSON.stringify({
 					code,

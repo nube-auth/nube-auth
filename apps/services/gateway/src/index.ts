@@ -1,11 +1,12 @@
 import { serve } from "@hono/node-server";
 import { initCache, pingCache } from "@nube-auth/cache";
 import { createLogger, serializeError } from "@nube-auth/shared";
+import { getDb, appQueries } from "@nube-auth/db";
 import { Hono } from "hono";
-import { cors } from "hono/cors";
 import { env } from "./config/env";
 import { secureHeaders } from "hono/secure-headers";
 import { authMiddleware } from "./middleware/auth";
+import { appResolverMiddleware } from "./middleware/appResolver";
 import { csrfProtection } from "./middleware/csrf";
 import { httpLogger } from "./middleware/logger";
 import { rateLimitPresets } from "./middleware/rateLimit";
@@ -83,17 +84,72 @@ app.use(
 	}),
 );
 
-// CORS configuration
-app.use(
-	"*",
-	cors({
-		origin: getAllowedOriginOrNull,
-		credentials: true,
-		allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-		allowHeaders: ["Content-Type", "Authorization", "X-Nube-Service-Token", "X-Nube-CSRF-Token", "X-Nube-S2S-Token", "X-Nube-Project-Id"],
-		exposeHeaders: ["Set-Cookie"],
-	}),
-);
+const CORS_ALLOW_METHODS = "GET, POST, PUT, PATCH, DELETE, OPTIONS";
+const CORS_ALLOW_HEADERS = "Content-Type, Authorization, X-Nube-Service-Token, X-Nube-CSRF-Token, X-Nube-S2S-Token, X-Nube-Project-Id";
+
+function originMatchesPattern(origin: string, pattern: string): boolean {
+	if (pattern === origin) return true;
+	if (pattern.startsWith("*.")) {
+		const domain = pattern.slice(2);
+		return origin.endsWith(`.${domain}`) || origin === `https://${domain}` || origin === `http://${domain}`;
+	}
+	return false;
+}
+
+// Resolve app ID from query param (?app=), X-App-ID header, or hostname.
+// Must run before CORS so per-app origin lookups have appId in context.
+app.use("*", appResolverMiddleware);
+
+// CORS — supports both hardcoded gateway origins and per-app origins stored in the DB.
+// Per-app lookup requires the app_id to be resolved by appResolverMiddleware first
+// (query param ?app=<id> or X-App-ID header). The NubeAuth client passes ?app= on
+// /v1/auth/token so the OPTIONS preflight (which has no body) is also resolved correctly.
+app.use("*", async (c, next) => {
+	const origin = c.req.header("origin");
+
+	// Same-origin requests have no Origin header — allow them through.
+	if (!origin) return next();
+
+	const setHeaders = (allowedOrigin: string) => {
+		c.header("Access-Control-Allow-Origin", allowedOrigin);
+		c.header("Access-Control-Allow-Credentials", "true");
+		c.header("Access-Control-Allow-Methods", CORS_ALLOW_METHODS);
+		c.header("Access-Control-Allow-Headers", CORS_ALLOW_HEADERS);
+		c.header("Access-Control-Expose-Headers", "Set-Cookie");
+		c.header("Access-Control-Max-Age", "86400");
+	};
+
+	// Fast path: hardcoded + gateway-subdomain origins.
+	const fastAllowed = getAllowedOriginOrNull(origin);
+	if (fastAllowed) {
+		setHeaders(fastAllowed);
+		if (c.req.method === "OPTIONS") return c.body(null, 204);
+		return next();
+	}
+
+	// Slow path: look up per-app CORS origins from the database.
+	// appResolverMiddleware must have already run and set appId in context.
+	const appId = (c as any).get("appId") as string | undefined;
+	if (appId) {
+		try {
+			const db = getDb();
+			const appRecord = await appQueries.findByPublicId(db, appId);
+			const corsOrigins: string[] = (appRecord?.security_settings as any)?.corsOrigins ?? [];
+			if (corsOrigins.some((p) => originMatchesPattern(origin, p))) {
+				setHeaders(origin);
+				if (c.req.method === "OPTIONS") return c.body(null, 204);
+				return next();
+			}
+		} catch (err) {
+			log.error({ err, appId }, "CORS: failed to look up app origins");
+		}
+	}
+
+	// Origin not allowed — reject preflight silently, let POST through without
+	// CORS headers so the browser blocks it on its end (standard behavior).
+	if (c.req.method === "OPTIONS") return c.body(null, 204);
+	return next();
+});
 
 // HTTP request logging
 app.use("*", httpLogger(log));
