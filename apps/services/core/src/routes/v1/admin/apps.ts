@@ -194,7 +194,7 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 			},
 			plan_settings: {
 				licensingRequired: body.requiresLicensing,
-				defaultPlan: body.requiresLicensing ? "free" : null,
+				defaultPlanId: null,
 			},
 			is_active: true,
 		});
@@ -220,6 +220,7 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 				display_order: 0,
 				is_active: true,
 			});
+			await appQueries.updatePlanSettings(db, newApp.id, { defaultPlanId: defaultPlan.id });
 		}
 
 		// Extract JSONB fields
