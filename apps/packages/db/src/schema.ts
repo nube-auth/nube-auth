@@ -1,4 +1,4 @@
-import { boolean, index, integer, jsonb, pgTable, serial, text, timestamp, unique, varchar } from "drizzle-orm/pg-core";
+import { boolean, index, integer, jsonb, pgTable, serial, smallint, text, timestamp, unique, varchar } from "drizzle-orm/pg-core";
 
 /**
  * Users table
@@ -1144,5 +1144,77 @@ export const test_sessions = pgTable(
 		index("test_sessions_status_idx").on(table.status),
 		index("test_sessions_expires_at_idx").on(table.expires_at),
 		index("test_sessions_created_at_idx").on(table.created_at),
+	],
+);
+
+/**
+ * App Webhooks table
+ * Outbound webhook endpoints registered by app developers.
+ * Nube Auth POSTs signed events here when things happen (user.registered, license.upgraded, etc.)
+ */
+export const app_webhooks = pgTable(
+"app_webhooks",
+{
+id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		app_id: integer("app_id")
+			.notNull()
+			.references(() => apps.id, { onDelete: "cascade" }),
+		/** Public HTTPS URL that receives POST requests */
+		url: text("url").notNull(),
+		/** HMAC-SHA256 secret — never returned to the client after creation */
+		secret: text("secret").notNull(),
+		/** JSON array of subscribed event names, e.g. ["user.registered","license.upgraded"] */
+		events: jsonb("events").notNull().default("[]"), // string[]
+		/** Human-readable label */
+		description: varchar("description", { length: 255 }),
+		is_active: boolean("is_active").notNull().default(true),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+		updated_at: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [
+		index("app_webhooks_app_id_idx").on(table.app_id),
+		index("app_webhooks_is_active_idx").on(table.is_active),
+	],
+);
+
+/**
+ * Outbound Webhook Delivery Logs table
+ * One row per delivery attempt (a single event may retry multiple times).
+ */
+export const outbound_webhook_logs = pgTable(
+"outbound_webhook_logs",
+{
+id: serial("id").primaryKey(),
+		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
+		webhook_id: integer("webhook_id")
+			.notNull()
+			.references(() => app_webhooks.id, { onDelete: "cascade" }),
+		app_id: integer("app_id")
+			.notNull()
+			.references(() => apps.id, { onDelete: "cascade" }),
+		/** The event name, e.g. "license.upgraded" */
+		event: varchar("event", { length: 100 }).notNull(),
+		/** Full JSON payload that was (attempted to be) delivered */
+		payload: jsonb("payload").notNull(),
+		/** HTTP status code returned by the endpoint (NULL if network error) */
+		response_status: smallint("response_status"),
+		/** First 1 KB of the response body for debugging */
+		response_body: text("response_body"),
+		/** 'success' | 'failed' | 'pending' */
+		status: varchar("status", { length: 20 }).notNull().default("pending"),
+		/** Which attempt number this is (1-based) */
+		attempt: smallint("attempt").notNull().default(1),
+		/** Round-trip duration in ms */
+		duration_ms: integer("duration_ms"),
+		error_message: text("error_message"),
+		created_at: timestamp("created_at").notNull().defaultNow(),
+	},
+	(table) => [
+		index("outbound_webhook_logs_webhook_id_idx").on(table.webhook_id),
+		index("outbound_webhook_logs_app_id_idx").on(table.app_id),
+		index("outbound_webhook_logs_event_idx").on(table.event),
+		index("outbound_webhook_logs_status_idx").on(table.status),
+		index("outbound_webhook_logs_created_at_idx").on(table.created_at),
 	],
 );

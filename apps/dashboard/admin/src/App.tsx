@@ -11,6 +11,7 @@ import { AppSidebar } from "./layouts/AppSidebar";
 import { AppApiKeysPage } from "./pages/AppApiKeys";
 import { AppDetailPage } from "./pages/AppDetail";
 import { AppDevelopersPage } from "./pages/AppDevelopers";
+import { AppWebhooksPage } from "./pages/AppWebhooks";
 import { AppLicensesPage } from "./pages/AppLicenses";
 import AppOAuthPage from "./pages/AppOAuth";
 import { AppSubscriptionsPage } from "./pages/AppSubscriptions";
@@ -274,6 +275,14 @@ function App() {
 								element={
 									<ProtectedLayout>
 										<AppDevelopersPage />
+									</ProtectedLayout>
+								}
+							/>
+							<Route
+								path="/projects/:projectId/apps/:appId/webhooks"
+								element={
+									<ProtectedLayout>
+										<AppWebhooksPage />
 									</ProtectedLayout>
 								}
 							/>

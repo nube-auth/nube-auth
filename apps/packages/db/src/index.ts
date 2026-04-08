@@ -105,6 +105,8 @@ export {
 	testSessionQueries,
 	userQueries,
 	webhookLogQueries,
+	appWebhookQueries,
+	outboundWebhookLogQueries,
 } from "./queries.js";
 // Export migration runner
 export { runMigrations } from "./migrations.js";

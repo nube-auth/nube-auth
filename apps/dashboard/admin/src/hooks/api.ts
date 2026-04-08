@@ -1510,3 +1510,107 @@ export function useDeactivateV2PromoCode(appId: string) {
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["v2-promotions", appId] }),
 	});
 }
+
+// ─── Outbound Webhooks ────────────────────────────────────────────────────────
+
+export interface AppWebhook {
+	webhookId: string;
+	url: string;
+	events: string[];
+	description: string | null;
+	isActive: boolean;
+	createdAt: string;
+	updatedAt: string;
+	/** Only returned on create / rotate-secret */
+	secret?: string;
+}
+
+export interface WebhookHealth {
+	total: number;
+	success: number;
+	failed: number;
+	successRate: number | null;
+	window: string;
+}
+
+export interface WebhookLog {
+	logId: string;
+	event: string;
+	status: "success" | "failed" | "pending";
+	responseStatus: number | null;
+	durationMs: number | null;
+	attempt: number;
+	errorMessage: string | null;
+	createdAt: string;
+}
+
+export function useAppWebhooks(appId: string) {
+	return useQuery<{ webhooks: AppWebhook[]; total: number; supportedEvents: string[] }>({
+		queryKey: ["app-webhooks", appId],
+		queryFn: () => fetchAPI(`/v1/admin/apps/${appId}/webhooks`),
+		enabled: !!appId,
+		staleTime: 30_000,
+	});
+}
+
+export function useWebhookHealth(appId: string) {
+	return useQuery<{ health: WebhookHealth }>({
+		queryKey: ["app-webhook-health", appId],
+		queryFn: () => fetchAPI(`/v1/admin/apps/${appId}/webhooks/health`),
+		enabled: !!appId,
+		staleTime: 60_000,
+	});
+}
+
+export function useWebhookLogs(appId: string, webhookId: string) {
+	return useQuery<{ logs: WebhookLog[]; total: number }>({
+		queryKey: ["app-webhook-logs", appId, webhookId],
+		queryFn: () => fetchAPI(`/v1/admin/apps/${appId}/webhooks/${webhookId}/logs?limit=50`),
+		enabled: !!appId && !!webhookId,
+		staleTime: 15_000,
+	});
+}
+
+export function useCreateWebhook(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation<AppWebhook, Error, { url: string; events: string[]; description?: string }>({
+		mutationFn: (data) =>
+			fetchAPI<{ webhook: AppWebhook }>(`/v1/admin/apps/${appId}/webhooks`, {
+				method: "POST",
+				body: JSON.stringify(data),
+			}).then((r) => r.webhook),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["app-webhooks", appId] }),
+	});
+}
+
+export function useUpdateWebhook(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation<
+		AppWebhook,
+		Error,
+		{ webhookId: string; url?: string; events?: string[]; description?: string | null; isActive?: boolean }
+	>({
+		mutationFn: ({ webhookId, ...data }) =>
+			fetchAPI<{ webhook: AppWebhook }>(`/v1/admin/apps/${appId}/webhooks/${webhookId}`, {
+				method: "PATCH",
+				body: JSON.stringify(data),
+			}).then((r) => r.webhook),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["app-webhooks", appId] }),
+	});
+}
+
+export function useDeleteWebhook(appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation<void, Error, string>({
+		mutationFn: (webhookId) =>
+			fetchAPI(`/v1/admin/apps/${appId}/webhooks/${webhookId}`, { method: "DELETE" }),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["app-webhooks", appId] }),
+	});
+}
+
+export function useRotateWebhookSecret(appId: string) {
+	return useMutation<{ webhookId: string; secret: string }, Error, string>({
+		mutationFn: (webhookId) =>
+			fetchAPI(`/v1/admin/apps/${appId}/webhooks/${webhookId}/rotate-secret`, { method: "POST" }),
+	});
+}

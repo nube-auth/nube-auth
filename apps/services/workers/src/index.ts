@@ -18,6 +18,7 @@ import { setupProcessWebhookWorker } from "./process-webhook.js";
 import { setupSyncLicenseWorker } from "./sync-license.js";
 import { startProcessRefundWorker } from "./process-refund.js";
 import { setupSyncPlanWorker } from "./sync-plan-worker.js";
+import { setupDispatchOutboundWebhookWorker } from "./dispatch-outbound-webhook-worker.js";
 import { startWebhookRescueCron } from "./webhook-rescue-cron.js";
 
 const log = createLogger("worker-manager");
@@ -52,8 +53,9 @@ export async function initializeWorkers(): Promise<void> {
 		const licenseWorker = await setupSyncLicenseWorker();
 		const refundWorker = startProcessRefundWorker();
 		const syncPlanWorker = await setupSyncPlanWorker();
+		const outboundWebhookWorker = await setupDispatchOutboundWebhookWorker();
 
-		workers = [paymentWorker, webhookWorker, licenseWorker, refundWorker, syncPlanWorker];
+		workers = [paymentWorker, webhookWorker, licenseWorker, refundWorker, syncPlanWorker, outboundWebhookWorker];
 		webhookRescueTimer = startWebhookRescueCron();
 
 		log.info(

@@ -15,6 +15,7 @@ import { createLogger, serializeError, id } from "@nube-auth/shared";
 import { pricesRouter } from "./prices.js";
 import { enqueuePlanSync } from "../../../billing/queue.js";
 import { generatePlanSlug } from "../../../utils/slug.js";
+import { fireWebhookEvent } from "../../../utils/outbound-events.js";
 
 const log = createLogger("admin-plans");
 const plansRouter = new Hono();
@@ -152,6 +153,14 @@ plansRouter.post("/", async (c: Context) => {
 		// Trigger async sync to payment providers
 		enqueuePlanSync({ planId: plan.public_id }).catch((error) => {
 			log.error({ err: serializeError(error as Error), planId: plan.public_id }, "Failed to enqueue plan sync");
+		});
+
+		// Fire outbound webhook event
+		await fireWebhookEvent(db, app.id, "plan.created", {
+			planId: plan.public_id,
+			appId: app.public_id,
+			name: plan.name,
+			slug: plan.slug,
 		});
 
 		return c.json({ plan: formatPlan(plan, app.public_id, validated.isDefault ? plan.id : null) }, 201);
@@ -328,6 +337,13 @@ plansRouter.patch("/:planId", async (c: Context) => {
 				? null
 				: typeof (app.plan_settings as any)?.defaultPlanId === "number" ? (app.plan_settings as any).defaultPlanId : null;
 
+		// Fire outbound webhook event
+		await fireWebhookEvent(db, app.id, "plan.updated", {
+			planId: updatedPlan.public_id,
+			appId: app.public_id,
+			name: updatedPlan.name,
+		});
+
 		return c.json({ plan: formatPlan(updatedPlan, app.public_id, updatedDefaultPlanId) });
 	} catch (error) {
 		if (error instanceof z.ZodError) {
@@ -383,6 +399,13 @@ plansRouter.delete("/:planId", async (c: Context) => {
 			entity_id: plan.public_id,
 			changes: { slug: plan.slug, name: plan.name },
 			ip_address: c.req.header("X-Forwarded-For") || c.req.header("X-Real-IP") || null,
+		});
+
+		// Fire outbound webhook event
+		await fireWebhookEvent(db, app.id, "plan.deleted", {
+			planId: plan.public_id,
+			appId: app.public_id,
+			name: plan.name,
 		});
 
 		return c.json({ message: "Plan deleted successfully", planId: plan.public_id });

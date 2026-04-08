@@ -2,6 +2,7 @@ import { and, asc, desc, eq, gt, gte, inArray, isNull, lt, lte, sql } from "driz
 import type { DbClient } from "./index.js";
 import {
 	app_users,
+	app_webhooks,
 	apps,
 	audit_logs,
 	auth_codes,
@@ -11,6 +12,7 @@ import {
 	license_activations,
 	license_history,
 	licenses,
+	outbound_webhook_logs,
 	payment_transactions,
 	plans,
 	prices,
@@ -2362,5 +2364,102 @@ export const priceProviderRefQueries = {
 			.where(eq(price_provider_refs.id, id))
 			.returning();
 		return results[0];
+	},
+};
+
+/**
+ * App Webhook queries
+ */
+export const appWebhookQueries = {
+	async findById(db: DbClient, id: number) {
+		const results = await db.select().from(app_webhooks).where(eq(app_webhooks.id, id));
+		return results[0];
+	},
+
+	async findByPublicId(db: DbClient, publicId: string) {
+		const results = await db.select().from(app_webhooks).where(eq(app_webhooks.public_id, publicId));
+		return results[0];
+	},
+
+	async findActiveByAppId(db: DbClient, appId: number) {
+		return db.select().from(app_webhooks).where(
+and(eq(app_webhooks.app_id, appId), eq(app_webhooks.is_active, true)),
+);
+	},
+
+	async findAllByAppId(db: DbClient, appId: number) {
+		return db.select().from(app_webhooks).where(eq(app_webhooks.app_id, appId));
+	},
+
+	async create(db: DbClient, data: typeof app_webhooks.$inferInsert) {
+		const results = await db.insert(app_webhooks).values(data).returning();
+		return results[0]!;
+	},
+
+	async update(db: DbClient, id: number, data: Partial<typeof app_webhooks.$inferInsert>) {
+		const results = await db
+			.update(app_webhooks)
+			.set({ ...data, updated_at: new Date() })
+			.where(eq(app_webhooks.id, id))
+			.returning();
+		return results[0];
+	},
+
+	async deactivate(db: DbClient, id: number) {
+		const results = await db
+			.update(app_webhooks)
+			.set({ is_active: false, updated_at: new Date() })
+			.where(eq(app_webhooks.id, id))
+			.returning();
+		return results[0];
+	},
+};
+
+/**
+ * Outbound Webhook Log queries
+ */
+export const outboundWebhookLogQueries = {
+	async create(db: DbClient, data: typeof outbound_webhook_logs.$inferInsert) {
+		const results = await db.insert(outbound_webhook_logs).values(data).returning();
+		return results[0]!;
+	},
+
+	async findByWebhookId(db: DbClient, webhookId: number, limit = 50) {
+		return db
+			.select()
+			.from(outbound_webhook_logs)
+			.where(eq(outbound_webhook_logs.webhook_id, webhookId))
+			.orderBy(desc(outbound_webhook_logs.created_at))
+			.limit(limit);
+	},
+
+	async findByAppId(db: DbClient, appId: number, limit = 100) {
+		return db
+			.select()
+			.from(outbound_webhook_logs)
+			.where(eq(outbound_webhook_logs.app_id, appId))
+			.orderBy(desc(outbound_webhook_logs.created_at))
+			.limit(limit);
+	},
+
+	async getHealthStats(db: DbClient, appId: number, since: Date) {
+		const rows = await db
+			.select({
+status: outbound_webhook_logs.status,
+count: sql<number>`cast(count(*) as int)`,
+			})
+			.from(outbound_webhook_logs)
+			.where(
+and(
+eq(outbound_webhook_logs.app_id, appId),
+gt(outbound_webhook_logs.created_at, since),
+),
+)
+			.groupBy(outbound_webhook_logs.status);
+
+		const total = rows.reduce((s, r) => s + r.count, 0);
+		const success = rows.find((r) => r.status === "success")?.count ?? 0;
+		const failed = rows.find((r) => r.status === "failed")?.count ?? 0;
+		return { total, success, failed, successRate: total > 0 ? Math.round((success / total) * 100) : null };
 	},
 };

@@ -13,6 +13,7 @@ import { promotionsRouter } from "./promotions.js";
 import { plansRouter } from "./plans.js";
 import routingRulesRouter from "./routing-rules.js";
 import { testRouter } from "./test.js";
+import { webhooksRouter } from "./webhooks.js";
 
 const _log = createLogger("admin-routes");
 const router = new Hono();
@@ -34,6 +35,7 @@ router.route("/apps/:appId/plans", plansRouter);
 router.route("/apps/:appId/licenses", licenseManagementRouter);
 router.route("/apps/:appId/subscriptions", subscriptionsRouter);
 router.route("/apps/:appId/promotions", promotionsRouter);
+router.route("/apps/:appId/webhooks", webhooksRouter);
 
 // Project-scoped app routes (for frontend compatibility)
 router.route("/projects/:projectId/apps/:appId/plans", plansRouter);

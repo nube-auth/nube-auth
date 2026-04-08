@@ -48,9 +48,20 @@ Example:
 }
 ```
 
+## Request Headers
+
+Every webhook delivery includes these headers:
+
+| Header | Description |
+|--------|-------------|
+| `Content-Type` | `application/json` |
+| `X-Nube-Signature` | `sha256=<hmac-sha256-hex>` — HMAC-SHA256 of the raw body |
+| `X-Nube-Event` | The event name, e.g. `user.registered` |
+| `X-Nube-Delivery` | Unique UUID for this specific delivery attempt |
+
 ## Verifying Signatures
 
-Every request includes an `X-Nube-Signature` header — a HMAC-SHA256 hex digest of the raw request body signed with your webhook secret.
+Every request includes an `X-Nube-Signature` header in the format `sha256=<hex>` — a HMAC-SHA256 hex digest of the raw request body signed with your webhook secret.
 
 **Always verify the signature before processing.**
 
@@ -59,9 +70,14 @@ import { createHmac, timingSafeEqual } from 'crypto';
 
 function verifyWebhookSignature(
   rawBody: Buffer,
-  signature: string,
+  signatureHeader: string,
   secret: string,
 ): boolean {
+  // Strip the "sha256=" prefix
+  const signature = signatureHeader.startsWith('sha256=')
+    ? signatureHeader.slice(7)
+    : signatureHeader;
+
   const expected = createHmac('sha256', secret)
     .update(rawBody)
     .digest('hex');
@@ -75,9 +91,9 @@ function verifyWebhookSignature(
 
 // Express example
 app.post('/webhooks/nube-auth', express.raw({ type: 'application/json' }), (req, res) => {
-  const signature = req.headers['x-nube-signature'] as string;
+  const signatureHeader = req.headers['x-nube-signature'] as string;
 
-  if (!verifyWebhookSignature(req.body, signature, process.env.NUBE_WEBHOOK_SECRET!)) {
+  if (!verifyWebhookSignature(req.body, signatureHeader, process.env.NUBE_WEBHOOK_SECRET!)) {
     return res.status(401).send('Invalid signature');
   }
 

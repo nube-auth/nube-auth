@@ -226,6 +226,11 @@ function Navigation({
       icon: IconType.Code,
     },
     {
+      to: `/projects/${projectId}/apps/${appId}/webhooks`,
+      label: 'Webhooks',
+      icon: IconType.CloudUpload,
+    },
+    {
       to: `/projects/${projectId}/apps/${appId}/settings`,
       label: 'App Settings',
       icon: IconType.Settings,

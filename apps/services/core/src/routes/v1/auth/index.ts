@@ -15,6 +15,7 @@ import {
 } from "@nube-auth/db";
 import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import { ensureLicenseForApp } from "../../../utils/license";
+import { fireWebhookEvent } from "../../../utils/outbound-events.js";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { env } from "../../../config/env";
@@ -223,6 +224,8 @@ router.get("/callback/:provider", async (c: Context) => {
 		const existingIdentity = await identityQueries.findByProviderUserId(db, provider, profile.id);
 
 		let userId = existingIdentity?.user_id;
+		const isNewUser = !userId;
+		const isNewOAuthConnection = isNewUser; // new identity is always created for new users
 
 		if (!userId) {
 			log.debug({ email: profile.email, provider }, "Creating new user");
@@ -413,6 +416,30 @@ router.get("/callback/:provider", async (c: Context) => {
 		};
 		const session = await sessionQueries.create(db, sessionData);
 		log.info({ userId, sessionPublicId: session.public_id.substring(0, 8) }, "Session created successfully");
+
+		// Fire outbound webhook events (fire-and-forget)
+		if (appInternalId !== undefined) {
+			const user = await userQueries.findById(db, userId);
+			if (user) {
+				if (isNewUser) {
+					await fireWebhookEvent(db, appInternalId, "user.registered", {
+						userId: user.public_id,
+						email: user.primary_email,
+						name: user.name,
+					});
+				}
+				if (isNewOAuthConnection) {
+					await fireWebhookEvent(db, appInternalId, "oauth.connected", {
+						userId: user.public_id,
+						provider,
+					});
+				}
+				await fireWebhookEvent(db, appInternalId, "session.created", {
+					userId: user.public_id,
+					sessionId: session.public_id,
+				});
+			}
+		}
 
 		// Redirect to Gateway callback with session ID as code
 		const redirectUrl = new URL(storedState.redirectUri);

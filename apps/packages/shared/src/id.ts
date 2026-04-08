@@ -110,6 +110,12 @@ export const id = {
 
 	/** Generate webhook log ID (WHL0, 13 chars total) */
 	webhookLog: () => `WHL0${nano9()}`,
+
+	/** Generate app webhook ID (AWH0, 13 chars total) */
+	appWebhook: () => `AWH0${nano9()}`,
+
+	/** Generate outbound webhook log ID (OWL0, 13 chars total) */
+	outboundWebhookLog: () => `OWL0${nano9()}`,
 } as const;
 
 /** Type representing valid ID entity types */
@@ -160,6 +166,8 @@ export const idPatterns = {
 	purchase: /^PUR0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 	paymentTransaction: /^PTX0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 	webhookLog: /^WHL0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+	appWebhook: /^AWH0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
+	outboundWebhookLog: /^OWL0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/,
 } as const;
 
 /**

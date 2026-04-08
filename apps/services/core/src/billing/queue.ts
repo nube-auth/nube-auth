@@ -131,3 +131,27 @@ export async function enqueuePlanSync(data: SyncPlanJobData): Promise<void> {
 	});
 	log.info({ planId: data.planId }, "Plan sync job enqueued");
 }
+
+export interface DispatchOutboundWebhookJobData {
+	/** Internal app ID (integer) — used for DB lookups inside the worker */
+	appId: number;
+	event: string;
+	payload: Record<string, unknown>;
+}
+
+/**
+ * Enqueue an outbound webhook dispatch.
+ * Fire-and-forget: callers should not await errors from this function —
+ * the queue provides retry / backoff automatically.
+ */
+export async function enqueueOutboundWebhook(data: DispatchOutboundWebhookJobData): Promise<void> {
+	const queue = getQueue<any>("outbound-webhooks");
+	await queue.add("dispatch-outbound-webhook", data as any, {
+		attempts: 5,
+		backoff: {
+			type: "exponential",
+			delay: 3000,
+		},
+	});
+	log.info({ appId: data.appId, event: data.event }, "Outbound webhook dispatch job enqueued");
+}
