@@ -286,7 +286,7 @@ export function AppWebhooksPage() {
 
 	// Test event state
 	const [testTarget, setTestTarget] = useState<AppWebhook | null>(null);
-	const [testEvent, setTestEvent] = useState(SUPPORTED_EVENTS[0]);
+	const [testEvent, setTestEvent] = useState<string>(SUPPORTED_EVENTS[0]!);
 	const [testResult, setTestResult] = useState<{ success: boolean; responseStatus: number | null; durationMs: number } | null>(null);
 	const [testing, setTesting] = useState(false);
 
@@ -372,7 +372,7 @@ export function AppWebhooksPage() {
 
 	const openTestModal = (wh: AppWebhook) => {
 		setTestTarget(wh);
-		setTestEvent(SUPPORTED_EVENTS[0]);
+		setTestEvent(SUPPORTED_EVENTS[0]!);
 		setTestResult(null);
 	};
 
