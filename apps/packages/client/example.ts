@@ -1,439 +1,388 @@
 /**
- * Example usage of @nube-auth/client
+ * @nube-auth/client — usage examples
  *
- * This file demonstrates how to use the Nube Auth client in your applications.
+ * Run individual functions to explore the API against a local dev environment:
+ *   npx tsx example.ts
  */
 
-import { NubeAuthClient } from "./src/index";
+import {
+	NubeAuthClient,
+	NubeAuthError,
+	verifyWebhookSignature,
+} from "./src/index";
+import type {
+	WebhookEnvelope,
+	WebhookEventName,
+} from "./src/index";
 
-// Frontend usage (cookie-based authentication)
-const client = new NubeAuthClient({
-	gatewayUrl: "https://api.nubeauth.com",
-	// For local development:
-	// gatewayUrl: 'http://localhost:3004'
+// ---------------------------------------------------------------------------
+// Client setup
+// ---------------------------------------------------------------------------
+
+/** Web / browser apps — cookies are sent automatically */
+const webClient = new NubeAuthClient({
+	gatewayUrl: process.env.NUBE_GATEWAY_URL ?? "http://localhost:3004",
+	appId: process.env.NUBE_APP_ID ?? "APP0abc123",
+	onSessionExpired: () => console.log("[auth] session expired — redirect to login"),
 });
 
-// Backend usage (S2S token authentication)
-const _backendClient = new NubeAuthClient({
-	gatewayUrl: process.env.GATEWAY_URL || "https://api.nubeauth.com",
-	s2sToken: process.env.X_NUBE_AUTH_SERVICE_TOKEN,
+/** Native app or CLI — pass a Bearer session token obtained via OAuth */
+const nativeClient = new NubeAuthClient({
+	gatewayUrl: process.env.NUBE_GATEWAY_URL ?? "http://localhost:3004",
+	appId: process.env.NUBE_APP_ID ?? "APP0abc123",
+	sessionToken: process.env.NUBE_SESSION_TOKEN,
 });
 
-// ============================================
-// AUTHENTICATION
-// ============================================
-
-async function _checkAuthentication() {
-	try {
-		const status = await client.auth.checkStatus();
-		console.log("Logged in:", status.loggedIn);
-		if (status.user) {
-			console.log("User:", status.user.name, status.user.primary_email);
-		}
-	} catch (_error) {
-		console.error("Not authenticated");
-	}
-}
-
-async function _logout() {
-	try {
-		await client.auth.logout();
-		console.log("Logged out successfully");
-	} catch (error) {
-		console.error("Logout failed:", error);
-	}
-}
-
-// ============================================
-// USER PROFILE
-// ============================================
-
-async function _getUserProfile() {
-	try {
-		const user = await client.me.get();
-		console.log("User profile:", {
-			id: user.public_id,
-			name: user.name,
-			email: user.primary_email,
-			verified: user.primary_email_verified,
-		});
-	} catch (error) {
-		console.error("Failed to fetch profile:", error);
-	}
-}
-
-async function _updateProfile() {
-	try {
-		const updated = await client.me.update({
-			name: "John Doe",
-			avatar_url: "https://example.com/avatar.jpg",
-		});
-		console.log("Profile updated:", updated);
-	} catch (error) {
-		console.error("Failed to update profile:", error);
-	}
-}
-
-// ============================================
-// SESSIONS
-// ============================================
-
-async function _listSessions() {
-	try {
-		const { sessions } = await client.sessions.list();
-		console.log(`Found ${sessions.length} active sessions`);
-		sessions.forEach((session) => {
-			console.log({
-				id: session.public_id,
-				created: new Date(session.created_at * 1000),
-				lastSeen: new Date(session.last_seen_at * 1000),
-				expires: new Date(session.expires_at * 1000),
-			});
-		});
-	} catch (error) {
-		console.error("Failed to list sessions:", error);
-	}
-}
-
-async function _deleteSession(sessionId: string) {
-	try {
-		await client.sessions.delete(sessionId);
-		console.log("Session deleted");
-	} catch (error) {
-		console.error("Failed to delete session:", error);
-	}
-}
-
-async function _logoutAllSessions() {
-	try {
-		await client.sessions.deleteAll();
-		console.log("All sessions logged out");
-	} catch (error) {
-		console.error("Failed to logout all sessions:", error);
-	}
-}
-
-// ============================================
-// ERROR HANDLING
-// ============================================
-
-import { NubeAuthError } from "./src/index";
-
-async function _handleErrors() {
-	try {
-		await client.me.get();
-	} catch (error) {
-		if (error instanceof NubeAuthError) {
-			console.error("Nube Auth API Error:", {
-				code: error.code,
-				message: error.message,
-				status: error.status,
-			});
-
-			// Handle specific errors
-			if (error.status === 401) {
-				console.log("User not authenticated, redirect to login");
-			} else if (error.status === 403) {
-				console.log("User not authorized");
-			} else if (error.status === 404) {
-				console.log("Resource not found");
-			}
-		} else {
-			console.error("Unknown error:", error);
-		}
-	}
-}
-
-// ============================================
-// USAGE WITH REACT HOOKS
-// ============================================
-
-/**
- * Example React hooks using @nube-auth/client with TanStack Query
- */
-
-/*
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { NubeAuthClient } from '@nube-auth/client';
-
-const client = new NubeAuthClient({
-  gatewayUrl: import.meta.env.VITE_GATEWAY_URL || 'http://localhost:3004'
+/** Server-side backend — reads plans, creates checkouts, calls catalog */
+const serverClient = new NubeAuthClient({
+	gatewayUrl: process.env.NUBE_GATEWAY_URL ?? "http://localhost:3004",
+	appId: process.env.NUBE_APP_ID ?? "APP0abc123",
+	appSecret: process.env.NUBE_APP_SECRET,
+	sessionToken: process.env.NUBE_SESSION_TOKEN, // user session from request context
 });
 
-// Check authentication
-export function useAuthStatus() {
-  return useQuery({
-    queryKey: ['auth-status'],
-    queryFn: () => client.auth.checkStatus(),
-  });
+// ---------------------------------------------------------------------------
+// Authentication
+// ---------------------------------------------------------------------------
+
+async function exampleAuth() {
+	const { loggedIn, user } = await webClient.auth.checkStatus();
+	console.log("Logged in:", loggedIn);
+	if (user) console.log("User ID:", user.id, "Email:", user.email);
+
+	// Sign out
+	await webClient.auth.logout();
+	console.log("Signed out");
 }
 
-// Get current user
-export function useMe() {
-  return useQuery({
-    queryKey: ['me'],
-    queryFn: () => client.me.get(),
-  });
-}
+// ---------------------------------------------------------------------------
+// App OAuth flow — native apps, CLIs, browser extensions
+// ---------------------------------------------------------------------------
 
-// Update profile
-export function useUpdateProfile() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: { name?: string; avatar_url?: string }) =>
-      client.me.update(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['me'] });
-    },
-  });
-}
+async function exampleOAuth() {
+	// Step 1 — build the OAuth URL (runs on the client, opens a browser window)
+	const { url, codeVerifier } = await nativeClient.app.buildOAuthUrl({
+		returnTo: "myapp://auth",        // custom scheme for native apps
+		// returnTo: "https://app.example.com/auth/callback",  // for web
+		priceId: "PRICE0abc123",         // optional: trigger checkout after login
+		deviceId: "device-hardware-uuid", // optional: per-device audit trail
+	});
 
-// List projects
-export function useProjects() {
-  return useQuery({
-    queryKey: ['projects'],
-    queryFn: async () => {
-      const data = await client.admin.projects.list();
-      return data.projects;
-    },
-  });
-}
+	console.log("Open in browser:", url);
+	// In a real app: open `url` in the system browser, then intercept the redirect
 
-// Create project
-export function useCreateProject() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: { name: string; slug: string }) =>
-      client.admin.projects.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-    },
-  });
-}
-*/
+	// Step 2 — after redirect, exchange the one-time code for a session token
+	const oneTimeCode = "code-from-redirect-query-param";
+	const { sessionToken, userId, appId } = await nativeClient.app.exchangeCode(oneTimeCode, {
+		codeVerifier,
+	});
 
-// ============================================
+	console.log("Session token obtained for user:", userId, "app:", appId);
 
-/**
- * For React applications, use the @nube-auth/react package instead!
- * It provides ready-to-use hooks with built-in React Query integration.
- *
- * Install: pnpm add @nube-auth/react
- *
- * Example usage:
- */
-
-/*
-import { NubeAuthProvider, useAuth, useMe, useSessions } from '@nube-auth/react';
-
-// 1. Wrap your app with NubeAuthProvider
-function App() {
-  return (
-    <NubeAuthProvider config={{ gatewayUrl: 'https://api.nubeauth.com' }}>
-      <YourApp />
-    </NubeAuthProvider>
-  );
-}
-
-// 2. Use hooks in your components
-function Profile() {
-  const { user, isLoading, update, isUpdating } = useMe();
-  
-  if (isLoading) return <div>Loading...</div>;
-  
-  return (
-    <div>
-      <h1>{user?.name}</h1>
-      <button 
-        onClick={() => update({ name: 'New Name' })}
-        disabled={isUpdating}
-      >
-        Update Name
-      </button>
-    </div>
-  );
-}
-
-function Sessions() {
-  const { sessions, deleteSession, deleteAll } = useSessions();
-  
-  return (
-    <div>
-      <button onClick={() => deleteAll()}>Logout All</button>
-      {sessions.map(session => (
-        <div key={session.public_id}>
-          <span>{new Date(session.created_at * 1000).toLocaleDateString()}</span>
-          <button onClick={() => deleteSession(session.public_id)}>Delete</button>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function Header() {
-  const { isAuthenticated, user, logout } = useAuth();
-  
-  return (
-    <header>
-      {isAuthenticated ? (
-        <>
-          <span>Hello, {user?.name}</span>
-          <button onClick={() => logout()}>Logout</button>
-        </>
-      ) : (
-        <a href="/login">Login</a>
-      )}
-    </header>
-  );
-}
-*/
-
-// ============================================
-// ADMIN OPERATIONS
-// ============================================
-
-/**
- * Admin operations (projects, apps, licenses) are not included in @nube-auth/client.
- * Admin dashboards should call the Gateway API directly using fetch or your HTTP client.
- *
- * Example:
- */
-
-/*
-// Create project (admin only)
-async function createProject(data: { name: string; slug: string }) {
-  const response = await fetch('https://api.nubeauth.com/v1/admin/projects', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-    credentials: 'include', // Important: includes session cookie
-  });
-  
-  if (!response.ok) {
-    throw new Error('Failed to create project');
-  }
-  
-  return response.json();
-}
-
-// List projects (admin only)
-async function listProjects() {
-  const response = await fetch('https://api.nubeauth.com/v1/admin/projects', {
-    credentials: 'include',
-  });
-  
-  if (!response.ok) {
-    throw new Error('Failed to list projects');
-  }
-  
-  return response.json();
-}
-*/
-
-// ============================================
-// APP / CLI / EXTENSION INTEGRATION (Bearer)
-// ============================================
-
-import type { OAuthStartOptions, TokenExchangeResult } from "./src/index";
-
-const APP_ID    = "app_abc123";      // your app's public ID from NubeAuth admin
-const RETURN_TO = "myapp://auth";   // registered custom URL scheme (or https callback)
-
-/**
- * Step 1 — Build the OAuth URL and open in the system browser.
- * No session token needed yet — use a bootstrap client.
- */
-async function _buildOAuthUrl(deviceId?: string): Promise<PkceOAuthStart> {
-	const bootstrapClient = new NubeAuthClient({ gatewayUrl: "https://api.nubeauth.com" });
-
-	const options: OAuthStartOptions = {
-		appId: APP_ID,
-		returnTo: RETURN_TO,
-		deviceId,  // optional hardware UUID for audit logs / device-level revocation
-	};
-
-	return bootstrapClient.app.buildOAuthUrl(options);
-	// → https://api.nubeauth.com/v1/auth/start?audience=app&app_id=app_abc123&return_to=myapp://auth
-}
-
-/**
- * Step 2 — Handle the deep-link / HTTPS callback.
- * The user signs in and is redirected to: return_to?code=<one-time-code>
- * The code expires in 60 seconds and is single-use.
- */
-async function _exchangeCode(callbackUrl: string): Promise<TokenExchangeResult> {
-	const code = new URL(callbackUrl).searchParams.get("code");
-	if (!code) throw new Error("Missing exchange code in callback URL");
-
-	const bootstrapClient = new NubeAuthClient({ gatewayUrl: "https://api.nubeauth.com" });
-	const result = await bootstrapClient.app.exchangeCode(code, APP_ID);
-	// result: { sessionToken, userId, appId }
-
-	// Persist the token in secure storage (Keychain, credential store, etc.)
-	// await secureStorage.set("session_token", result.sessionToken);
-
-	return result;
-}
-
-/**
- * Step 3 — Create an authenticated client with the stored token.
- * All requests will include: Authorization: Bearer <sessionToken>
- */
-function _createAuthedClient(sessionToken: string): NubeAuthClient {
-	return new NubeAuthClient({
-		gatewayUrl: "https://api.nubeauth.com",
-		appId: APP_ID,
+	// Step 3 — construct an authenticated client for all subsequent calls
+	const authedClient = new NubeAuthClient({
+		gatewayUrl: process.env.NUBE_GATEWAY_URL ?? "http://localhost:3004",
+		appId,
 		sessionToken,
 	});
+
+	const user = await authedClient.me.get();
+	console.log("Authenticated as:", user.email);
 }
 
-/**
- * Step 4 — Check the user's subscription / plan.
- */
-async function _checkSubscription(sessionToken: string) {
-	const authedClient = _createAuthedClient(sessionToken);
+// ---------------------------------------------------------------------------
+// User profile
+// ---------------------------------------------------------------------------
 
-	const sub = await authedClient.subscription.getDetails();
-	// {
-	//   hasActivePlan: boolean
-	//   planSlug: string | null       — e.g. "power"
-	//   status: string | null         — "active" | "trialing" | "past_due" | ...
-	//   billingInterval: string | null — "month" | "year"
-	//   periodEnd: string | null      — ISO-8601
-	// }
+async function exampleProfile() {
+	const user = await webClient.me.get();
+	console.log("Profile:", user);
+	// { id, email, name, createdAt, avatar_url, emailVerified }
+
+	const updated = await webClient.me.update({
+		name: "Alice Smith",
+		avatar_url: "https://example.com/avatar.jpg",
+	});
+	console.log("Updated name:", updated.name);
+}
+
+// ---------------------------------------------------------------------------
+// Sessions
+// ---------------------------------------------------------------------------
+
+async function exampleSessions() {
+	const { sessions } = await webClient.sessions.list();
+	console.log(`${sessions.length} active session(s)`);
+
+	for (const s of sessions) {
+		console.log(
+			s.isCurrent ? "[current]" : "        ",
+			s.id,
+			s.ipAddress ?? "unknown IP",
+			"expires", new Date(s.expiresAt).toLocaleString(),
+		);
+	}
+
+	// Revoke a specific session
+	const toRevoke = sessions.find((s) => !s.isCurrent);
+	if (toRevoke) {
+		await webClient.sessions.delete(toRevoke.id);
+		console.log("Revoked session:", toRevoke.id);
+	}
+
+	// Sign out everywhere
+	await webClient.sessions.deleteAll();
+	console.log("All sessions revoked");
+}
+
+// ---------------------------------------------------------------------------
+// License
+// ---------------------------------------------------------------------------
+
+async function exampleLicense() {
+	const active = await webClient.license.isActive();
+	console.log("License active:", active);
+
+	if (active) {
+		const license = await webClient.license.getDetails();
+		console.log("Plan:", license.plan);
+		console.log("Status:", license.status);
+		console.log("Valid until:", license.valid_until ? new Date(license.valid_until * 1000) : "lifetime");
+		console.log("Entitlements:", license.entitlements);
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Subscription
+// ---------------------------------------------------------------------------
+
+async function exampleSubscription() {
+	const sub = await webClient.subscription.getDetails();
+	console.log("Has active plan:", sub.hasActivePlan);
 
 	if (sub.hasActivePlan) {
-		console.log(`Active plan: ${sub.planSlug}, expires: ${sub.periodEnd}`);
-	} else {
-		console.log("No active plan — prompt upgrade");
+		console.log("Plan:", sub.planSlug, "— status:", sub.status);
+		console.log("Interval:", sub.billingInterval);
+		console.log("Renews:", sub.periodEnd ? new Date(sub.periodEnd).toLocaleDateString() : "N/A");
+
+		// Cancel at end of billing period
+		await webClient.subscription.cancel("too_expensive");
+		console.log("Cancellation scheduled");
+
+		// Change your mind
+		await webClient.subscription.resume();
+		console.log("Cancellation reversed");
 	}
 }
+
+// ---------------------------------------------------------------------------
+// App catalog — fetch plans and prices (server-side, requires appSecret)
+// ---------------------------------------------------------------------------
+
+async function exampleAppCatalog() {
+	const { plans } = await serverClient.appCatalog.getPlans();
+	console.log(`${plans.length} plan(s):`);
+
+	for (const plan of plans) {
+		console.log(`\n  ${plan.name} (${plan.slug})`);
+		console.log("  Features:", plan.features.join(", "));
+
+		const { prices } = await serverClient.appCatalog.getPrices(plan.planId);
+		for (const price of prices) {
+			const amount = (price.amountCents / 100).toFixed(2);
+			const label = price.billingType === "recurring"
+				? `$${amount} / ${price.interval}`
+				: `$${amount} one-time`;
+			console.log(`    ${label} [${price.priceId}]`);
+			if (price.trialEnabled) console.log(`    Free trial: ${price.trialDays} days`);
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Payment — create checkout session (server-side)
+// ---------------------------------------------------------------------------
+
+async function exampleCreateCheckout() {
+	// Fetch available prices first
+	const { plans } = await serverClient.appCatalog.getPlans();
+	const { prices } = await serverClient.appCatalog.getPrices(plans[0]!.planId);
+	const price = prices.find((p) => p.interval === "month") ?? prices[0]!;
+
+	// Create a checkout session — redirect the user to session.checkoutUrl
+	const session = await serverClient.payment.createCheckout({
+		priceId: price.priceId,
+		userId: "USER0def456",                    // from the authenticated session
+		customerEmail: "alice@example.com",
+		successUrl: "https://myapp.com/billing/success?session_id={CHECKOUT_SESSION_ID}",
+		cancelUrl: "https://myapp.com/billing",
+		promoCode: "LAUNCH50",                    // optional
+		metadata: { referral: "homepage" },       // optional, stored on the purchase
+	});
+
+	console.log("Checkout URL:", session.checkoutUrl);
+	console.log("Provider:", session.provider);
+	console.log("Plan:", session.planName);
+	console.log("Amount:", `${(session.amountCents / 100).toFixed(2)} / ${session.interval}`);
+	// In a real app: redirect(session.checkoutUrl)
+}
+
+// ---------------------------------------------------------------------------
+// Payment — validate promo code (can be called from browser)
+// ---------------------------------------------------------------------------
+
+async function exampleValidatePromoCode() {
+	const result = await webClient.payment.validatePromoCode({
+		code: "LAUNCH50",
+		priceId: "PRICE0abc123",
+	});
+
+	if (result.valid) {
+		const discount = (result.discountCents / 100).toFixed(2);
+		const total = (result.adjustedTotal / 100).toFixed(2);
+		console.log(`${result.promotion.name}: -$${discount} — you pay $${total}`);
+	} else {
+		console.log("Promo code rejected:", result.reason);
+		// reason: 'code_not_found' | 'promotion_expired' | 'plan_not_eligible'
+		//         | 'code_exhausted' | 'already_redeemed' | 'existing_customer' | ...
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Webhooks — signature verification
+// ---------------------------------------------------------------------------
+
+async function exampleVerifySignature() {
+	// Simulated incoming webhook (normally comes from an HTTP request)
+	const payload = JSON.stringify({
+		id: "delivery-uuid",
+		event: "license.upgraded",
+		appId: "APP0abc123",
+		timestamp: new Date().toISOString(),
+		data: { licenseId: "LIC0abc", userId: "USER0def", fromPlan: "Starter", toPlan: "Pro", upgradedAt: new Date().toISOString() },
+	});
+	const secret = "whsec_your_signing_secret";
+
+	// Generate a test signature (mimics what the server sends)
+	const { createHmac } = await import("node:crypto");
+	const sig = `sha256=${createHmac("sha256", secret).update(payload).digest("hex")}`;
+
+	const valid = await verifyWebhookSignature({
+		rawBody: payload,   // string or Uint8Array — MUST be the raw bytes before JSON.parse
+		signature: sig,
+		secret,
+	});
+
+	console.log("Signature valid:", valid); // true
+
+	// Tampered payload returns false, never throws
+	const tampered = await verifyWebhookSignature({
+		rawBody: payload + " ",
+		signature: sig,
+		secret,
+	});
+	console.log("Tampered payload valid:", tampered); // false
+}
+
+// ---------------------------------------------------------------------------
+// Webhooks — typed event handling
+// ---------------------------------------------------------------------------
 
 /**
- * Full app flow (e.g. CLI — simplified, no real HTTP server)
+ * Narrowed handler: TypeScript infers the exact `data` shape from `E`.
+ * No type assertion needed — `envelope.data` is fully typed.
  */
-async function _fullAppFlow() {
-	// 1. Start login
-	const { url: oauthUrl } = await _buildOAuthUrl("device-uuid-1234");
-	console.log("Open in browser:", oauthUrl);
+type WebhookHandler<E extends WebhookEventName> = (envelope: WebhookEnvelope<E>) => Promise<void>;
 
-	// 2. Wait for callback (your platform-specific mechanism)
-	// const callbackUrl = await waitForDeepLink(); // macOS / mobile
-	// const callbackUrl = await localHttpServer();  // CLI
-	const callbackUrl = "myapp://auth?code=abc123_example_only"; // placeholder
+const onLicenseUpgraded: WebhookHandler<"license.upgraded"> = async (envelope) => {
+	// envelope.data is WebhookLicenseUpgradedData — fully typed
+	console.log(`User ${envelope.data.userId} upgraded from ${envelope.data.fromPlan} → ${envelope.data.toPlan}`);
+};
 
-	// 3. Exchange code → sessionToken
-	const result = await _exchangeCode(callbackUrl).catch(() => null);
-	if (!result) {
-		console.error("Code exchange failed — expired or already used");
-		return;
+const onUserRegistered: WebhookHandler<"user.registered"> = async (envelope) => {
+	console.log(`New user: ${envelope.data.email} (${envelope.data.userId})`);
+	// Send a welcome email, provision resources, etc.
+};
+
+const onLicenseCanceled: WebhookHandler<"license.canceled"> = async (envelope) => {
+	console.log(`License canceled — access ends at: ${new Date(envelope.data.endsAt).toLocaleDateString()}`);
+};
+
+/** Dispatcher — routes a raw envelope to the right handler */
+async function exampleDispatchWebhookEvent(raw: unknown) {
+	const envelope = raw as WebhookEnvelope;
+
+	switch (envelope.event) {
+		case "license.upgraded":  return onLicenseUpgraded(envelope as WebhookEnvelope<"license.upgraded">);
+		case "user.registered":   return onUserRegistered(envelope as WebhookEnvelope<"user.registered">);
+		case "license.canceled":  return onLicenseCanceled(envelope as WebhookEnvelope<"license.canceled">);
+		default:
+			console.log(`Unhandled event: ${envelope.event}`);
 	}
-	console.log("Signed in, userId:", result.userId);
-
-	// 4. Use the authenticated client
-	const authedClient = _createAuthedClient(result.sessionToken);
-	const user = await authedClient.me.get();
-	console.log("Hello,", user.name);
-
-	await _checkSubscription(result.sessionToken);
 }
+
+// ---------------------------------------------------------------------------
+// Error handling
+// ---------------------------------------------------------------------------
+
+async function exampleErrorHandling() {
+	try {
+		await webClient.me.get();
+	} catch (error) {
+		if (error instanceof NubeAuthError) {
+			console.error("API error:", {
+				code: error.code,      // machine-readable, e.g. 'UNAUTHORIZED'
+				status: error.status,  // HTTP status code
+				message: error.message,
+			});
+
+			switch (error.status) {
+				case 401:
+					console.log("Session expired — redirect to login");
+					break;
+				case 403:
+					console.log("Insufficient permissions");
+					break;
+				case 404:
+					console.log("Resource not found");
+					break;
+				default:
+					console.log("Unexpected error");
+			}
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Run all examples (skips if env vars are not set)
+// ---------------------------------------------------------------------------
+
+(async () => {
+	const examples: [string, () => Promise<void>][] = [
+		["auth", exampleAuth],
+		["oauth", exampleOAuth],
+		["profile", exampleProfile],
+		["sessions", exampleSessions],
+		["license", exampleLicense],
+		["subscription", exampleSubscription],
+		["appCatalog", exampleAppCatalog],
+		["createCheckout", exampleCreateCheckout],
+		["validatePromoCode", exampleValidatePromoCode],
+		["verifySignature", exampleVerifySignature],
+		["webhookEvents", async () => exampleDispatchWebhookEvent({
+			id: "abc", event: "user.registered", appId: "APP0abc", timestamp: new Date().toISOString(),
+			data: { userId: "USER0xyz", email: "bob@example.com", name: "Bob", createdAt: new Date().toISOString() },
+		})],
+		["errorHandling", exampleErrorHandling],
+	];
+
+	const target = process.argv[2]; // run a specific example: npx tsx example.ts auth
+
+	for (const [name, fn] of examples) {
+		if (target && name !== target) continue;
+		console.log(`\n${"─".repeat(60)}`);
+		console.log(`Example: ${name}`);
+		console.log("─".repeat(60));
+		await fn().catch((e) => console.error(`[${name}]`, (e as Error).message));
+	}
+})();
