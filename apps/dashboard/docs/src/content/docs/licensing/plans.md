@@ -80,6 +80,19 @@ interface Plan {
 }
 ```
 
+## Price Intervals
+
+When creating a recurring price you can set `interval` (`month` or `year`) and `intervalCount` (how many intervals between each charge):
+
+| `interval` | `intervalCount` | Billing cycle |
+|------------|-----------------|---------------|
+| `month`    | `1`             | Monthly       |
+| `month`    | `3`             | Quarterly     |
+| `month`    | `6`             | Every 6 months|
+| `year`     | `1`             | Annually      |
+
+> **Known limitation:** `intervalCount` is accepted by the UI but is not yet persisted to the database or forwarded to payment providers. All recurring prices currently bill every single interval regardless of the value entered. Implementing full support requires adding an `interval_count` column to the `prices` table, updating `CreatePriceSchema`, and passing the value through the provider adapters.
+
 ## Upgrading/Downgrading
 
 ```typescript
