@@ -73,7 +73,7 @@ function formatPlan(plan: {
 		status: plan.status,
 		displayOrder: plan.display_order,
 		isActive: plan.is_active,
-		isDefault: defaultPlanId != null ? plan.id === defaultPlanId : undefined,
+		isDefault: defaultPlanId != null ? plan.id === defaultPlanId : false,
 		createdAt: plan.created_at.toISOString(),
 		updatedAt: plan.updated_at.toISOString(),
 	};
@@ -178,7 +178,8 @@ plansRouter.get("/", async (c: Context) => {
 		if (!app) return c.json({ error: "App not found" }, 404);
 
 		const planSettings = app.plan_settings as any;
-		const defaultPlanId: number | null = planSettings?.defaultPlanId ?? null;
+		// Normalize to number — old data may have stored a string (public ID) here
+		const defaultPlanId: number | null = typeof planSettings?.defaultPlanId === "number" ? planSettings.defaultPlanId : null;
 
 		const plansList = includeInactive
 			? await planQueries.findByAppId(db, app.id)
@@ -229,7 +230,8 @@ plansRouter.get("/:planId", async (c: Context) => {
 		if (!plan || plan.app_id !== app.id) return c.json({ error: "Plan not found" }, 404);
 
 		const planSettings = app.plan_settings as any;
-		const defaultPlanId: number | null = planSettings?.defaultPlanId ?? null;
+		// Normalize to number — old data may have stored a string (public ID) here
+		const defaultPlanId: number | null = typeof planSettings?.defaultPlanId === "number" ? planSettings.defaultPlanId : null;
 
 		const planPrices = await priceQueries.findActiveByPlanId(db, plan.id);
 
@@ -299,7 +301,9 @@ plansRouter.patch("/:planId", async (c: Context) => {
 		} else if (validated.isDefault === false) {
 			// Clear defaultPlanId only if this plan was the current default
 			const planSettings = app.plan_settings as any;
-			if (planSettings?.defaultPlanId === updatedPlan.id) {
+			// Normalize to number to handle old string data
+			const currentDefaultId = typeof planSettings?.defaultPlanId === "number" ? planSettings.defaultPlanId : null;
+			if (currentDefaultId === updatedPlan.id) {
 				await appQueries.updatePlanSettings(db, app.id, { defaultPlanId: null });
 			}
 		}
@@ -320,9 +324,9 @@ plansRouter.patch("/:planId", async (c: Context) => {
 
 		const updatedDefaultPlanId = validated.isDefault === true
 			? updatedPlan.id
-			: validated.isDefault === false && (app.plan_settings as any)?.defaultPlanId === updatedPlan.id
+			: validated.isDefault === false && (typeof (app.plan_settings as any)?.defaultPlanId === "number" ? (app.plan_settings as any).defaultPlanId : null) === updatedPlan.id
 				? null
-				: (app.plan_settings as any)?.defaultPlanId ?? null;
+				: typeof (app.plan_settings as any)?.defaultPlanId === "number" ? (app.plan_settings as any).defaultPlanId : null;
 
 		return c.json({ plan: formatPlan(updatedPlan, app.public_id, updatedDefaultPlanId) });
 	} catch (error) {
@@ -362,7 +366,8 @@ plansRouter.delete("/:planId", async (c: Context) => {
 
 		// If the deleted plan was the default, clear it
 		const planSettings = app.plan_settings as any;
-		if (planSettings?.defaultPlanId === plan.id) {
+		const currentDefaultId = typeof planSettings?.defaultPlanId === "number" ? planSettings.defaultPlanId : null;
+		if (currentDefaultId === plan.id) {
 			await appQueries.updatePlanSettings(db, app.id, { defaultPlanId: null });
 		}
 
