@@ -1614,3 +1614,17 @@ export function useRotateWebhookSecret(appId: string) {
 			fetchAPI(`/v1/admin/apps/${appId}/webhooks/${webhookId}/rotate-secret`, { method: "POST" }),
 	});
 }
+
+export function useSendTestEvent(appId: string) {
+	return useMutation<
+		{ success: boolean; event: string; durationMs: number; responseStatus: number | null; deliveryId: string },
+		Error,
+		{ webhookId: string; event: string }
+	>({
+		mutationFn: ({ webhookId, event }) =>
+			fetchAPI(`/v1/admin/apps/${appId}/webhooks/${webhookId}/test`, {
+				method: "POST",
+				body: JSON.stringify({ event }),
+			}),
+	});
+}

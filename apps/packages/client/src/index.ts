@@ -1,4 +1,6 @@
 export { NubeAuthClient, NubeAuthError } from "./client";
+export { verifyWebhookSignature } from "./webhook";
+export type { VerifyWebhookSignatureOptions } from "./webhook";
 export type {
 	AuthStatus,
 	License,
@@ -13,5 +15,30 @@ export type {
 	TokenExchangeResult,
 	UpdateProfileData,
 	User,
+	// Webhook types
+	WebhookEventName,
+	WebhookEnvelope,
+	WebhookEventData,
+	WebhookUserRegisteredData,
+	WebhookUserUpdatedData,
+	WebhookUserDeletedData,
+	WebhookSessionCreatedData,
+	WebhookSessionRevokedData,
+	WebhookSessionExpiredData,
+	WebhookSessionAllRevokedData,
+	WebhookLicenseCreatedData,
+	WebhookLicenseUpgradedData,
+	WebhookLicenseDowngradedData,
+	WebhookLicenseCanceledData,
+	WebhookLicenseExpiredData,
+	WebhookLicenseRenewedData,
+	WebhookLicenseReactivatedData,
+	WebhookLicenseTrialStartedData,
+	WebhookLicenseTrialEndedData,
+	WebhookPlanCreatedData,
+	WebhookPlanUpdatedData,
+	WebhookPlanDeletedData,
+	WebhookOAuthConnectedData,
+	WebhookOAuthDisconnectedData,
 } from "./types";
 export { pingpong, pingpongFetch } from "./pingpong";

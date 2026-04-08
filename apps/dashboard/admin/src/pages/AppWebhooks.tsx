@@ -30,6 +30,12 @@ import {
 	TableRow,
 	TableHead,
 	TableCell,
+	Select,
+	SelectTrigger,
+	SelectValue,
+	SelectPopup,
+	SelectList,
+	SelectItem,
 } from "@nube-auth/components";
 import { useToast } from "../components/Toast";
 import { useApp, useProject } from "../hooks/api";
@@ -41,6 +47,7 @@ import {
 	useUpdateWebhook,
 	useDeleteWebhook,
 	useRotateWebhookSecret,
+	useSendTestEvent,
 	type AppWebhook,
 } from "../hooks/api";
 import { PageLoader } from "../components/PageLoader";
@@ -266,6 +273,7 @@ export function AppWebhooksPage() {
 	const updateWebhook = useUpdateWebhook(appId || "");
 	const deleteWebhook = useDeleteWebhook(appId || "");
 	const rotateSecret = useRotateWebhookSecret(appId || "");
+	const sendTestEvent = useSendTestEvent(appId || "");
 
 	// Modal state
 	const [showCreateModal, setShowCreateModal] = useState(false);
@@ -275,6 +283,12 @@ export function AppWebhooksPage() {
 	const [rotateTarget, setRotateTarget] = useState<AppWebhook | null>(null);
 	const [shownSecret, setShownSecret] = useState<string | null>(null);
 	const [saving, setSaving] = useState(false);
+
+	// Test event state
+	const [testTarget, setTestTarget] = useState<AppWebhook | null>(null);
+	const [testEvent, setTestEvent] = useState(SUPPORTED_EVENTS[0]);
+	const [testResult, setTestResult] = useState<{ success: boolean; responseStatus: number | null; durationMs: number } | null>(null);
+	const [testing, setTesting] = useState(false);
 
 	// Form state (shared for create/edit)
 	const [form, setForm] = useState({ url: "", events: [] as string[], description: "" });
@@ -353,6 +367,26 @@ export function AppWebhooksPage() {
 			showToast("Failed to rotate secret", "error");
 		} finally {
 			setRotateTarget(null);
+		}
+	};
+
+	const openTestModal = (wh: AppWebhook) => {
+		setTestTarget(wh);
+		setTestEvent(SUPPORTED_EVENTS[0]);
+		setTestResult(null);
+	};
+
+	const handleSendTest = async () => {
+		if (!testTarget) return;
+		setTesting(true);
+		setTestResult(null);
+		try {
+			const result = await sendTestEvent.mutateAsync({ webhookId: testTarget.webhookId, event: testEvent });
+			setTestResult({ success: result.success, responseStatus: result.responseStatus, durationMs: result.durationMs });
+		} catch {
+			setTestResult({ success: false, responseStatus: null, durationMs: 0 });
+		} finally {
+			setTesting(false);
 		}
 	};
 
@@ -490,6 +524,14 @@ export function AppWebhooksPage() {
 												Rotate Secret
 											</Button>
 											<Button
+												variant="secondary"
+												size="sm"
+												onClick={() => openTestModal(wh)}
+											>
+												<Icon icon={IconType.Flash} size={14} />
+												Send Test
+											</Button>
+											<Button
 												variant="danger"
 												size="sm"
 												onClick={() => setDeactivateTarget(wh)}
@@ -605,6 +647,68 @@ export function AppWebhooksPage() {
 					onConfirm={handleRotateSecret}
 					onClose={() => setRotateTarget(null)}
 				/>
+			)}
+
+			{/* Test event dialog */}
+			{testTarget && (
+				<Dialog open onOpenChange={(open) => { if (!open) setTestTarget(null); }}>
+					<DialogPopup>
+						<DialogHeader>
+							<DialogTitle>Send Test Event</DialogTitle>
+						</DialogHeader>
+						<DialogBody className="space-y-4">
+							<Text className="text-sm text-muted">
+								Send a sample payload to{" "}
+								<code className="text-xs">{testTarget.url}</code> immediately,
+								by-passing the delivery queue so you get instant feedback.
+							</Text>
+							<div className="space-y-1.5">
+								<Label htmlFor="test-event-select">Event type</Label>
+								<Select value={testEvent} onValueChange={(v) => setTestEvent(v as string)}>
+									<SelectTrigger id="test-event-select">
+										<SelectValue placeholder="Choose event" />
+									</SelectTrigger>
+									<SelectPopup>
+										<SelectList>
+											{SUPPORTED_EVENTS.map((e) => (
+												<SelectItem key={e} value={e}>
+													<code className="text-xs">{e}</code>
+												</SelectItem>
+											))}
+										</SelectList>
+									</SelectPopup>
+								</Select>
+							</div>
+							{testResult && (
+								<div className="rounded-lg border border-border p-3 space-y-1">
+									<div className="flex items-center gap-2">
+										<Chip variant={testResult.success ? "success" : "danger"} size="sm">
+											{testResult.success ? "Delivered" : "Failed"}
+										</Chip>
+										{testResult.responseStatus != null && (
+											<Text className="text-xs text-muted">HTTP {testResult.responseStatus}</Text>
+										)}
+										<Text className="text-xs text-muted">{testResult.durationMs}ms</Text>
+									</div>
+									{!testResult.success && (
+										<Text className="text-xs text-muted">
+											Check the delivery logs for more details.
+										</Text>
+									)}
+								</div>
+							)}
+						</DialogBody>
+						<DialogFooter>
+							<Button variant="secondary" onClick={() => setTestTarget(null)}>
+								Close
+							</Button>
+							<Button variant="primary" onClick={handleSendTest} disabled={testing}>
+								{testing ? <Spinner className="size-4" /> : <Icon icon={IconType.Flash} size={14} />}
+								Send Test Event
+							</Button>
+						</DialogFooter>
+					</DialogPopup>
+				</Dialog>
 			)}
 		</div>
 	);

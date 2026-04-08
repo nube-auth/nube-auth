@@ -222,3 +222,239 @@ export interface ApiError {
 		details?: Record<string, unknown>;
 	};
 }
+
+// ---------------------------------------------------------------------------
+// Webhook event types
+// ---------------------------------------------------------------------------
+
+/** All event names that can be delivered to webhook endpoints. */
+export type WebhookEventName =
+	| "user.registered"
+	| "user.updated"
+	| "user.deleted"
+	| "session.created"
+	| "session.revoked"
+	| "session.expired"
+	| "session.all_revoked"
+	| "license.created"
+	| "license.upgraded"
+	| "license.downgraded"
+	| "license.canceled"
+	| "license.expired"
+	| "license.renewed"
+	| "license.reactivated"
+	| "license.trial_started"
+	| "license.trial_ended"
+	| "plan.created"
+	| "plan.updated"
+	| "plan.deleted"
+	| "oauth.connected"
+	| "oauth.disconnected";
+
+/** Outer envelope wrapping every webhook delivery. */
+export interface WebhookEnvelope<E extends WebhookEventName = WebhookEventName> {
+	/** Unique delivery ID (UUID). Matches the `X-Nube-Delivery` header. */
+	id: string;
+	/** The event name. Matches the `X-Nube-Event` header. */
+	event: E;
+	/** Public app ID the event originated from. */
+	appId: string;
+	/** ISO-8601 timestamp when the event was fired. */
+	timestamp: string;
+	/** Present and `true` on test deliveries sent from the dashboard. */
+	test?: boolean;
+	/** Event-specific payload. */
+	data: WebhookEventData[E];
+}
+
+// ---------------------------------------------------------------------------
+// Per-event payload shapes
+// ---------------------------------------------------------------------------
+
+export interface WebhookUserRegisteredData {
+	userId: string;
+	email: string;
+	name: string | null;
+	createdAt: string;
+}
+
+export interface WebhookUserUpdatedData {
+	userId: string;
+	email: string;
+	name: string | null;
+	updatedAt: string;
+	/** Fields that were changed, e.g. ["name", "avatar_url"]. */
+	changes: string[];
+}
+
+export interface WebhookUserDeletedData {
+	userId: string;
+	email: string;
+	deletedAt: string;
+}
+
+export interface WebhookSessionCreatedData {
+	sessionId: string;
+	userId: string;
+	ipAddress: string | null;
+	userAgent: string | null;
+	createdAt: string;
+}
+
+export interface WebhookSessionRevokedData {
+	sessionId: string;
+	userId: string;
+	revokedAt: string;
+	/** Why the session was revoked, e.g. "user_request" | "admin" | "password_change". */
+	reason: string;
+}
+
+export interface WebhookSessionExpiredData {
+	sessionId: string;
+	userId: string;
+	expiredAt: string;
+}
+
+export interface WebhookSessionAllRevokedData {
+	userId: string;
+	revokedAt: string;
+	/** Number of sessions that were revoked. */
+	sessionCount: number;
+}
+
+export interface WebhookLicenseCreatedData {
+	licenseId: string;
+	userId: string;
+	planId: string;
+	planName: string;
+	status: string;
+	createdAt: string;
+}
+
+export interface WebhookLicenseUpgradedData {
+	licenseId: string;
+	userId: string;
+	fromPlan: string;
+	toPlan: string;
+	upgradedAt: string;
+}
+
+export interface WebhookLicenseDowngradedData {
+	licenseId: string;
+	userId: string;
+	fromPlan: string;
+	toPlan: string;
+	downgradedAt: string;
+}
+
+export interface WebhookLicenseCanceledData {
+	licenseId: string;
+	userId: string;
+	planName: string;
+	canceledAt: string;
+	/** When the license actually stops being active (end of billing period). */
+	endsAt: string;
+}
+
+export interface WebhookLicenseExpiredData {
+	licenseId: string;
+	userId: string;
+	planName: string;
+	expiredAt: string;
+}
+
+export interface WebhookLicenseRenewedData {
+	licenseId: string;
+	userId: string;
+	planName: string;
+	renewedAt: string;
+	nextRenewalAt: string;
+}
+
+export interface WebhookLicenseReactivatedData {
+	licenseId: string;
+	userId: string;
+	planName: string;
+	reactivatedAt: string;
+}
+
+export interface WebhookLicenseTrialStartedData {
+	licenseId: string;
+	userId: string;
+	planName: string;
+	trialStartedAt: string;
+	trialEndsAt: string;
+}
+
+export interface WebhookLicenseTrialEndedData {
+	licenseId: string;
+	userId: string;
+	planName: string;
+	trialEndedAt: string;
+	/** Whether the user converted to a paid plan. */
+	converted: boolean;
+}
+
+export interface WebhookPlanCreatedData {
+	planId: string;
+	name: string;
+	/** Price in smallest currency unit (e.g. cents). */
+	price: number;
+	currency: string;
+	interval: string;
+	createdAt: string;
+}
+
+export interface WebhookPlanUpdatedData {
+	planId: string;
+	name: string;
+	updatedAt: string;
+	changes: string[];
+}
+
+export interface WebhookPlanDeletedData {
+	planId: string;
+	name: string;
+	deletedAt: string;
+}
+
+export interface WebhookOAuthConnectedData {
+	userId: string;
+	provider: string;
+	providerUserId: string;
+	connectedAt: string;
+}
+
+export interface WebhookOAuthDisconnectedData {
+	userId: string;
+	provider: string;
+	disconnectedAt: string;
+}
+
+/**
+ * Maps every `WebhookEventName` to its corresponding payload interface.
+ * Used to type the `data` field of `WebhookEnvelope<E>` generically.
+ */
+export interface WebhookEventData {
+	"user.registered": WebhookUserRegisteredData;
+	"user.updated": WebhookUserUpdatedData;
+	"user.deleted": WebhookUserDeletedData;
+	"session.created": WebhookSessionCreatedData;
+	"session.revoked": WebhookSessionRevokedData;
+	"session.expired": WebhookSessionExpiredData;
+	"session.all_revoked": WebhookSessionAllRevokedData;
+	"license.created": WebhookLicenseCreatedData;
+	"license.upgraded": WebhookLicenseUpgradedData;
+	"license.downgraded": WebhookLicenseDowngradedData;
+	"license.canceled": WebhookLicenseCanceledData;
+	"license.expired": WebhookLicenseExpiredData;
+	"license.renewed": WebhookLicenseRenewedData;
+	"license.reactivated": WebhookLicenseReactivatedData;
+	"license.trial_started": WebhookLicenseTrialStartedData;
+	"license.trial_ended": WebhookLicenseTrialEndedData;
+	"plan.created": WebhookPlanCreatedData;
+	"plan.updated": WebhookPlanUpdatedData;
+	"plan.deleted": WebhookPlanDeletedData;
+	"oauth.connected": WebhookOAuthConnectedData;
+	"oauth.disconnected": WebhookOAuthDisconnectedData;
+}
