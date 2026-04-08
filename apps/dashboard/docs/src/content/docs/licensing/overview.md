@@ -104,27 +104,22 @@ function FeatureGate({ feature, children, fallback }) {
 
 ## Webhooks
 
-Get notified of license changes:
+Nube Auth sends real-time webhook events when licenses change. Key events:
 
-```typescript
-// In your webhook handler
-app.post('/webhooks/nube-auth', (req, res) => {
-  const { event, data } = req.body;
-  
-  switch (event) {
-    case 'license.upgraded':
-      // User upgraded their plan
-      break;
-    case 'license.canceled':
-      // User canceled subscription
-      break;
-    case 'license.expired':
-      // License expired
-      break;
-  }
-});
-```
+| Event | When |
+|-------|------|
+| `license.created` | User first gets a license |
+| `license.upgraded` | User moves to a higher plan |
+| `license.downgraded` | User moves to a lower plan |
+| `license.canceled` | Subscription is canceled |
+| `license.expired` | Access period ends |
+| `license.renewed` | Subscription renews |
+| `license.trial_started` | Trial begins |
+| `license.trial_ended` | Trial ends (converted or not) |
+
+See [Webhooks](/integration/webhooks/) for full payload schemas, signature verification, and the complete event reference.
 
 ## Next Steps
 
 - [Plans & Tiers](/licensing/plans/) - Configure your pricing
+- [Webhooks](/integration/webhooks/) - Receive real-time event notifications

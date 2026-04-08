@@ -40,6 +40,7 @@ export default defineConfig({
         items: [
           { text: 'Quick Start', link: '/integration/quickstart/' },
           { text: 'Browser Extension', link: '/integration/browser-extension/' },
+          { text: 'Webhooks', link: '/integration/webhooks/' },
         ]
       },
       {
