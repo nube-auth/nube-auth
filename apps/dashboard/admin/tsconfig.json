@@ -29,7 +29,9 @@
 			"@nube-auth/react": ["../../packages/react/src"],
 			"@nube-auth/react/*": ["../../packages/react/src/*"],
 			"@nube-auth/shared": ["../../packages/shared/src"],
-			"@nube-auth/shared/*": ["../../packages/shared/src/*"]
+			"@nube-auth/shared/*": ["../../packages/shared/src/*"],
+			"@nube-auth/components": ["../../packages/components/src"],
+			"@nube-auth/components/*": ["../../packages/components/src/*"]
 		},
 
 		/* Strict mode */

@@ -1533,7 +1533,7 @@ export interface WebhookHealth {
 	window: string;
 }
 
-export interface WebhookLog {
+export interface OutboundWebhookLog {
 	logId: string;
 	event: string;
 	status: "success" | "failed" | "pending";
@@ -1562,8 +1562,8 @@ export function useWebhookHealth(appId: string) {
 	});
 }
 
-export function useWebhookLogs(appId: string, webhookId: string) {
-	return useQuery<{ logs: WebhookLog[]; total: number }>({
+export function useOutboundWebhookLogs(appId: string, webhookId: string) {
+	return useQuery<{ logs: OutboundWebhookLog[]; total: number }>({
 		queryKey: ["app-webhook-logs", appId, webhookId],
 		queryFn: () => fetchAPI(`/v1/admin/apps/${appId}/webhooks/${webhookId}/logs?limit=50`),
 		enabled: !!appId && !!webhookId,

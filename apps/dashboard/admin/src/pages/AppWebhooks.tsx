@@ -36,7 +36,7 @@ import { useApp, useProject } from "../hooks/api";
 import {
 	useAppWebhooks,
 	useWebhookHealth,
-	useWebhookLogs,
+	useOutboundWebhookLogs,
 	useCreateWebhook,
 	useUpdateWebhook,
 	useDeleteWebhook,
@@ -175,7 +175,7 @@ function EventSelector({
 	return (
 		<div className="space-y-3">
 			<div className="flex items-center gap-2">
-				<Checkbox checked={allSelected} onChange={toggleAll} />
+				<Checkbox checked={allSelected} onCheckedChange={toggleAll} />
 				<Label className="text-sm font-medium cursor-pointer" onClick={toggleAll}>
 					All events
 				</Label>
@@ -188,7 +188,7 @@ function EventSelector({
 							<div key={event} className="flex items-center gap-2">
 								<Checkbox
 									checked={selected.includes(event)}
-									onChange={() => toggle(event)}
+									onCheckedChange={() => toggle(event)}
 									id={`event-${event}`}
 								/>
 								<label htmlFor={`event-${event}`} className="text-xs font-mono cursor-pointer">
@@ -206,9 +206,9 @@ function EventSelector({
 // ─── Logs Panel ───────────────────────────────────────────────────────────────
 
 function WebhookLogsPanel({ appId, webhook }: { appId: string; webhook: AppWebhook }) {
-	const { data, isLoading } = useWebhookLogs(appId, webhook.webhookId);
+	const { data, isLoading } = useOutboundWebhookLogs(appId, webhook.webhookId);
 
-	if (isLoading) return <Spinner size="sm" />;
+	if (isLoading) return <Spinner className="size-4" />;
 	if (!data || data.logs.length === 0) {
 		return <Text className="text-muted text-sm">No delivery logs yet.</Text>;
 	}
@@ -387,7 +387,7 @@ export function AppWebhooksPage() {
 					</Text>
 				</div>
 				<Button variant="primary" onClick={openCreate}>
-					<Icon icon={IconType.Plus} />
+					<Icon icon={IconType.Add} />
 					Add Endpoint
 				</Button>
 			</div>
@@ -397,9 +397,9 @@ export function AppWebhooksPage() {
 				<div className="grid grid-cols-4 gap-4">
 					{(
 						[
-							{ label: "Total Deliveries", value: health.total, icon: IconType.Send },
-							{ label: "Successful", value: health.success, icon: IconType.Check },
-							{ label: "Failed", value: health.failed, icon: IconType.Warning },
+			{ label: "Total Deliveries", value: health.total, icon: IconType.Flash },
+						{ label: "Successful", value: health.success, icon: IconType.Check },
+						{ label: "Failed", value: health.failed, icon: IconType.Alert },
 							{
 								label: "Success Rate",
 								value: health.successRate != null ? `${health.successRate}%` : "—",
@@ -432,12 +432,12 @@ export function AppWebhooksPage() {
 					) : webhooks.length === 0 ? (
 						<div className="p-8">
 							<EmptyState
-								icon={<Icon icon={IconType.CloudUpload} size={32} />}
+								icon="CloudUpload"
 								title="No webhooks registered"
 								description="Add an HTTPS endpoint to start receiving event notifications."
 								action={
 									<Button variant="primary" onClick={openCreate}>
-										<Icon icon={IconType.Plus} />
+										<Icon icon={IconType.Add} />
 										Add Endpoint
 									</Button>
 								}
@@ -570,7 +570,7 @@ export function AppWebhooksPage() {
 								Cancel
 							</Button>
 							<Button variant="primary" onClick={handleSave} disabled={saving}>
-								{saving ? <Spinner size="sm" /> : null}
+								{saving ? <Spinner className="size-4" /> : null}
 								{editingWebhook ? "Save Changes" : "Register Endpoint"}
 							</Button>
 						</DialogFooter>
@@ -584,24 +584,26 @@ export function AppWebhooksPage() {
 			{/* Confirm remove */}
 			{deactivateTarget && (
 				<ConfirmModal
+					isOpen
 					title="Remove Webhook"
 					message={`Remove the webhook endpoint for ${deactivateTarget.url}? This will stop all deliveries immediately.`}
-					confirmLabel="Remove"
+					confirmText="Remove"
 					variant="danger"
 					onConfirm={handleDelete}
-					onCancel={() => setDeactivateTarget(null)}
+					onClose={() => setDeactivateTarget(null)}
 				/>
 			)}
 
 			{/* Confirm rotate secret */}
 			{rotateTarget && (
 				<ConfirmModal
+					isOpen
 					title="Rotate Signing Secret"
 					message="A new signing secret will be generated. You must update your webhook handler immediately — the old secret becomes invalid right away."
-					confirmLabel="Rotate Secret"
+					confirmText="Rotate Secret"
 					variant="warning"
 					onConfirm={handleRotateSecret}
-					onCancel={() => setRotateTarget(null)}
+					onClose={() => setRotateTarget(null)}
 				/>
 			)}
 		</div>
