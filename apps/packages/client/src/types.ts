@@ -458,3 +458,118 @@ export interface WebhookEventData {
 	"oauth.connected": WebhookOAuthConnectedData;
 	"oauth.disconnected": WebhookOAuthDisconnectedData;
 }
+
+// ---------------------------------------------------------------------------
+// Payment / Checkout
+// ---------------------------------------------------------------------------
+
+/**
+ * Options for creating a payment checkout session.
+ * Requires an authenticated user session (cookie or Bearer token) and
+ * should be called from a backend — never expose `successUrl`/`cancelUrl`
+ * construction to untrusted clients.
+ */
+export interface CreateCheckoutOptions {
+	/**
+	 * Public price ID (PRICE0...) from the NubeAuth app catalog.
+	 * Encodes the plan, billing interval, provider, and currency — no
+	 * additional routing parameters are needed.
+	 */
+	priceId: string;
+	/**
+	 * Public user ID (USER0...) of the user being checked out.
+	 * Obtained from the authenticated session.
+	 */
+	userId: string;
+	/**
+	 * Email address to pre-fill on the provider checkout page.
+	 */
+	customerEmail: string;
+	/**
+	 * URL to redirect to after a successful payment.
+	 * Must be an absolute HTTPS URL (or a custom scheme for native apps).
+	 */
+	successUrl: string;
+	/**
+	 * URL to redirect to when the user cancels / closes the checkout.
+	 */
+	cancelUrl: string;
+	/**
+	 * App public ID (APP0...). Falls back to the `appId` set in client config.
+	 */
+	appId?: string;
+	/**
+	 * Provider-side customer ID if you already have one (e.g. Stripe customer_id).
+	 * Leave undefined to let NubeAuth create a new customer automatically.
+	 */
+	customerId?: string;
+	/** Number of units to purchase. Defaults to 1. */
+	quantity?: number;
+	/**
+	 * Nube Auth promo code string (e.g. "LAUNCH50").
+	 * Will be validated and mapped to the provider coupon automatically.
+	 */
+	promoCode?: string;
+	/** Arbitrary key/value metadata forwarded to the provider and stored on the purchase. */
+	metadata?: Record<string, string>;
+}
+
+/** Response from `payment.createCheckout()`. */
+export interface CheckoutSession {
+	/** Always `true` on success (errors throw `NubeAuthError`). */
+	success: boolean;
+	/**
+	 * Redirect the user to this URL to complete payment.
+	 * For web apps: `window.location.href = checkoutUrl`.
+	 * For native apps: open in system browser.
+	 */
+	checkoutUrl: string;
+	/** Provider-specific session identifier (e.g. Stripe `cs_...`). */
+	sessionId: string;
+	/** Payment provider name, e.g. `"stripe"` or `"dodo"`. */
+	provider: string;
+	/** Human-readable plan name, e.g. `"Pro"`. */
+	planName: string;
+	/** Price in the smallest currency unit (e.g. cents). */
+	amountCents: number;
+	/** Billing interval: `"month"`, `"year"`, or `"one_time"`. */
+	interval: string;
+}
+
+/** Options for validating a promo code before initiating checkout. */
+export interface ValidatePromoOptions {
+	/** The promo code string entered by the user, e.g. `"LAUNCH50"`. */
+	code: string;
+	/** Public price ID the promo is being applied to. */
+	priceId: string;
+	/** App public ID. Falls back to the `appId` set in client config. */
+	appId?: string;
+}
+
+/** Result of `payment.validatePromoCode()`. */
+export type ValidatePromoResult =
+	| {
+			valid: false;
+			/**
+			 * Machine-readable reason:
+			 * `"code_not_found"` | `"promotion_inactive"` | `"promotion_expired"` |
+			 * `"code_inactive"` | `"code_exhausted"` | `"promotion_max_redemptions_reached"` |
+			 * `"plan_not_eligible"` | `"interval_not_eligible"` | `"existing_customer"` |
+			 * `"already_redeemed"` | `"user_required"` | `"invalid_input"`
+			 */
+			reason: string;
+	  }
+	| {
+			valid: true;
+			/** Discount amount in smallest currency unit (e.g. cents). */
+			discountCents: number;
+			/** Final price after discount, in smallest currency unit. */
+			adjustedTotal: number;
+			promotion: {
+				name: string;
+				/** `"percent"` or `"fixed"`. */
+				discountType: string;
+				/** Percentage (0–100) for `"percent"`, or flat amount in cents for `"fixed"`. */
+				discountValue: number;
+			};
+	  };

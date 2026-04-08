@@ -15,6 +15,11 @@ export type {
 	TokenExchangeResult,
 	UpdateProfileData,
 	User,
+	// Payment types
+	CreateCheckoutOptions,
+	CheckoutSession,
+	ValidatePromoOptions,
+	ValidatePromoResult,
 	// Webhook types
 	WebhookEventName,
 	WebhookEnvelope,

@@ -2,6 +2,8 @@ import pingpong from "@pingpong-js/fetch";
 import type {
 	ApiError,
 	AuthStatus,
+	CheckoutSession,
+	CreateCheckoutOptions,
 	License,
 	NubeAuthClientConfig,
 	OAuthStartOptions,
@@ -13,6 +15,8 @@ import type {
 	TokenExchangeResult,
 	UpdateProfileData,
 	User,
+	ValidatePromoOptions,
+	ValidatePromoResult,
 } from "./types";
 
 export class NubeAuthClient {
@@ -400,6 +404,118 @@ export class NubeAuthClient {
 		},
 		resume: async (): Promise<void> => {
 			return this.request<void>("/v1/me/subscription/resume", { method: "POST" });
+		},
+	};
+
+	// ---------------------------------------------------------------------------
+	// Payment — checkout session creation and promo code validation
+	// ---------------------------------------------------------------------------
+
+	/**
+	 * Payment operations: create a hosted checkout session and validate promo codes.
+	 *
+	 * `createCheckout` should be called from your **backend** (e.g. a Next.js
+	 * Server Action or an Express route) — it needs a user session and returns a
+	 * provider-hosted payment URL you redirect the user to.
+	 *
+	 * `validatePromoCode` is safe to call from the browser to give instant
+	 * discount feedback before the user hits "Pay".
+	 *
+	 * @example — server-side (Next.js Server Action)
+	 * ```ts
+	 * const client = new NubeAuthClient({
+	 *   gatewayUrl: process.env.NUBE_GATEWAY_URL!,
+	 *   appId: process.env.NUBE_APP_ID!,
+	 *   sessionToken: await getSessionToken(),   // from cookies / auth session
+	 * });
+	 *
+	 * const session = await client.payment.createCheckout({
+	 *   priceId: "PRICE0abc123",
+	 *   userId: "USER0def456",
+	 *   customerEmail: user.email,
+	 *   successUrl: "https://myapp.com/billing/success",
+	 *   cancelUrl: "https://myapp.com/billing",
+	 * });
+	 *
+	 * redirect(session.checkoutUrl);
+	 * ```
+	 */
+	public payment = {
+		/**
+		 * Create a hosted payment checkout session for a specific price.
+		 *
+		 * The `priceId` already encodes the plan, billing interval, provider, and
+		 * currency — no additional routing parameters are needed.
+		 *
+		 * On success, redirect the user to `session.checkoutUrl` to complete payment.
+		 * After payment the provider redirects to `successUrl`.
+		 *
+		 * @throws `NubeAuthError` for invalid priceId, missing provider config,
+		 *         authentication failures, or downstream provider errors.
+		 */
+		createCheckout: async (options: CreateCheckoutOptions): Promise<CheckoutSession> => {
+			const appId = options.appId ?? this.appId;
+			if (!appId) {
+				throw new NubeAuthError(
+					"appId is required for payment.createCheckout. Pass it in CreateCheckoutOptions or NubeAuthClientConfig.",
+					"APP_ID_REQUIRED",
+					400,
+				);
+			}
+			return this.request<CheckoutSession>("/v1/payment/checkout", {
+				method: "POST",
+				body: JSON.stringify({
+					appId,
+					userId: options.userId,
+					priceId: options.priceId,
+					customerEmail: options.customerEmail,
+					successUrl: options.successUrl,
+					cancelUrl: options.cancelUrl,
+					...(options.customerId !== undefined && { customerId: options.customerId }),
+					...(options.quantity !== undefined && { quantity: options.quantity }),
+					...(options.promoCode !== undefined && { promoCode: options.promoCode }),
+					...(options.metadata !== undefined && { metadata: options.metadata }),
+				}),
+			});
+		},
+
+		/**
+		 * Validate a promo code before initiating checkout.
+		 *
+		 * Safe to call from the browser — no authentication required. Returns the
+		 * discount amount and adjusted total so you can display a preview to the user.
+		 *
+		 * @example
+		 * ```ts
+		 * const result = await client.payment.validatePromoCode({
+		 *   code: promoInput,
+		 *   priceId: selectedPrice.priceId,
+		 * });
+		 *
+		 * if (result.valid) {
+		 *   showDiscount(result.discountCents, result.adjustedTotal);
+		 * } else {
+		 *   showError(`Promo code invalid: ${result.reason}`);
+		 * }
+		 * ```
+		 */
+		validatePromoCode: async (options: ValidatePromoOptions): Promise<ValidatePromoResult> => {
+			const appId = options.appId ?? this.appId;
+			if (!appId) {
+				throw new NubeAuthError(
+					"appId is required for payment.validatePromoCode. Pass it in ValidatePromoOptions or NubeAuthClientConfig.",
+					"APP_ID_REQUIRED",
+					400,
+				);
+			}
+			return this.request<ValidatePromoResult>("/v1/payment/validate-promo", {
+				method: "POST",
+				body: JSON.stringify({
+					code: options.code,
+					priceId: options.priceId,
+					appId,
+				}),
+			});
 		},
 	};
 }
