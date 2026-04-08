@@ -35,6 +35,7 @@ const CreatePlanSchema = z.object({
 	features: z.array(z.string()).optional().default([]),
 	displayOrder: z.number().int().nonnegative().optional().default(0),
 	isActive: z.boolean().optional().default(true),
+	isDefault: z.boolean().optional().default(false),
 });
 
 const UpdatePlanSchema = z.object({
@@ -44,11 +45,13 @@ const UpdatePlanSchema = z.object({
 	displayOrder: z.number().int().nonnegative().optional(),
 	status: z.enum(["active", "archived"]).optional(),
 	isActive: z.boolean().optional(),
+	isDefault: z.boolean().optional(),
 });
 
 // Helpers
 
 function formatPlan(plan: {
+	id: number;
 	public_id: string;
 	name: string;
 	slug: string;
@@ -59,7 +62,7 @@ function formatPlan(plan: {
 	is_active: boolean;
 	created_at: Date;
 	updated_at: Date;
-}, appPublicId: string) {
+}, appPublicId: string, defaultPlanId?: number | null) {
 	return {
 		planId: plan.public_id,
 		appId: appPublicId,
@@ -70,6 +73,7 @@ function formatPlan(plan: {
 		status: plan.status,
 		displayOrder: plan.display_order,
 		isActive: plan.is_active,
+		isDefault: defaultPlanId != null ? plan.id === defaultPlanId : undefined,
 		createdAt: plan.created_at.toISOString(),
 		updatedAt: plan.updated_at.toISOString(),
 	};
@@ -127,6 +131,10 @@ plansRouter.post("/", async (c: Context) => {
 
 		if (!plan) return c.json({ error: "Failed to create plan" }, 500);
 
+		if (validated.isDefault) {
+			await appQueries.updatePlanSettings(db, app.id, { defaultPlanId: plan.id });
+		}
+
 		log.info({ planId: plan.public_id, appId: app.public_id }, "Plan created");
 
 		await auditLogQueries.create(db, {
@@ -137,7 +145,7 @@ plansRouter.post("/", async (c: Context) => {
 			action: "plan.created",
 			entity_type: "plan",
 			entity_id: plan.public_id,
-			changes: { name: plan.name, slug: plan.slug },
+			changes: { name: plan.name, slug: plan.slug, isDefault: validated.isDefault },
 			ip_address: c.req.header("X-Forwarded-For") || c.req.header("X-Real-IP") || null,
 		});
 
@@ -146,7 +154,7 @@ plansRouter.post("/", async (c: Context) => {
 			log.error({ err: serializeError(error as Error), planId: plan.public_id }, "Failed to enqueue plan sync");
 		});
 
-		return c.json({ plan: formatPlan(plan, app.public_id) }, 201);
+		return c.json({ plan: formatPlan(plan, app.public_id, validated.isDefault ? plan.id : null) }, 201);
 	} catch (error) {
 		if (error instanceof z.ZodError) {
 			return c.json({ error: "Validation error", details: error.issues }, 400);
@@ -169,6 +177,9 @@ plansRouter.get("/", async (c: Context) => {
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) return c.json({ error: "App not found" }, 404);
 
+		const planSettings = app.plan_settings as any;
+		const defaultPlanId: number | null = planSettings?.defaultPlanId ?? null;
+
 		const plansList = includeInactive
 			? await planQueries.findByAppId(db, app.id)
 			: await planQueries.findActiveByAppId(db, app.id);
@@ -177,7 +188,7 @@ plansRouter.get("/", async (c: Context) => {
 		if (includePrices) {
 			result = await Promise.all(
 				plansList.map(async (plan) => ({
-					...formatPlan(plan, app.public_id),
+					...formatPlan(plan, app.public_id, defaultPlanId),
 					prices: (await priceQueries.findActiveByPlanId(db, plan.id)).map((p) => ({
 						priceId: p.public_id,
 						billingType: p.billing_type,
@@ -192,7 +203,7 @@ plansRouter.get("/", async (c: Context) => {
 				})),
 			);
 		} else {
-			result = plansList.map((plan) => formatPlan(plan, app.public_id));
+			result = plansList.map((plan) => formatPlan(plan, app.public_id, defaultPlanId));
 		}
 
 		return c.json({ plans: result, total: plansList.length });
@@ -217,11 +228,14 @@ plansRouter.get("/:planId", async (c: Context) => {
 		const plan = await planQueries.findByPublicId(db, planId);
 		if (!plan || plan.app_id !== app.id) return c.json({ error: "Plan not found" }, 404);
 
+		const planSettings = app.plan_settings as any;
+		const defaultPlanId: number | null = planSettings?.defaultPlanId ?? null;
+
 		const planPrices = await priceQueries.findActiveByPlanId(db, plan.id);
 
 		return c.json({
 			plan: {
-				...formatPlan(plan, app.public_id),
+				...formatPlan(plan, app.public_id, defaultPlanId),
 				prices: planPrices.map((p) => ({
 					priceId: p.public_id,
 					billingType: p.billing_type,
@@ -280,6 +294,16 @@ plansRouter.patch("/:planId", async (c: Context) => {
 
 		if (!updatedPlan) return c.json({ error: "Failed to update plan" }, 500);
 
+		if (validated.isDefault === true) {
+			await appQueries.updatePlanSettings(db, app.id, { defaultPlanId: updatedPlan.id });
+		} else if (validated.isDefault === false) {
+			// Clear defaultPlanId only if this plan was the current default
+			const planSettings = app.plan_settings as any;
+			if (planSettings?.defaultPlanId === updatedPlan.id) {
+				await appQueries.updatePlanSettings(db, app.id, { defaultPlanId: null });
+			}
+		}
+
 		log.info({ planId: updatedPlan.public_id }, "Plan updated");
 
 		await auditLogQueries.create(db, {
@@ -294,7 +318,13 @@ plansRouter.patch("/:planId", async (c: Context) => {
 			ip_address: c.req.header("X-Forwarded-For") || c.req.header("X-Real-IP") || null,
 		});
 
-		return c.json({ plan: formatPlan(updatedPlan, app.public_id) });
+		const updatedDefaultPlanId = validated.isDefault === true
+			? updatedPlan.id
+			: validated.isDefault === false && (app.plan_settings as any)?.defaultPlanId === updatedPlan.id
+				? null
+				: (app.plan_settings as any)?.defaultPlanId ?? null;
+
+		return c.json({ plan: formatPlan(updatedPlan, app.public_id, updatedDefaultPlanId) });
 	} catch (error) {
 		if (error instanceof z.ZodError) {
 			return c.json({ error: "Validation error", details: error.issues }, 400);
@@ -329,6 +359,12 @@ plansRouter.delete("/:planId", async (c: Context) => {
 			.update(plans)
 			.set({ is_active: false, deleted_at: new Date(), updated_at: new Date() })
 			.where(eq(plans.id, plan.id));
+
+		// If the deleted plan was the default, clear it
+		const planSettings = app.plan_settings as any;
+		if (planSettings?.defaultPlanId === plan.id) {
+			await appQueries.updatePlanSettings(db, app.id, { defaultPlanId: null });
+		}
 
 		log.info({ planId: plan.public_id }, "Plan soft deleted");
 
