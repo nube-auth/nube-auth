@@ -391,7 +391,7 @@ export function useAppPlans(projectId: string, appId: string) {
 					name: string;
 					slug: string;
 					description: string | null;
-					features: string[];
+					features: Record<string, boolean | number | string>;
 					status: string;
 					displayOrder: number;
 				}>;
@@ -1145,7 +1145,7 @@ export interface V2Plan {
 	name: string;
 	slug: string;
 	description: string | null;
-	features: string[];
+	features: Record<string, boolean | number | string>;
 	isDefault: boolean;
 	displayOrder: number;
 	trialDays: number | null;

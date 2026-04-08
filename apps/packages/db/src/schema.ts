@@ -208,7 +208,7 @@ export const plans = pgTable(
 		name: varchar("name", { length: 255 }).notNull(),
 		slug: varchar("slug", { length: 255 }).notNull(),
 		description: text("description"),
-		features: jsonb("features").notNull().default("[]"),
+		features: jsonb("features").notNull().default("{}"),
 		status: varchar("status", { length: 20 }).notNull().default("active"), // 'active' | 'archived'
 		display_order: integer("display_order").notNull().default(0),
 		is_active: boolean("is_active").notNull().default(true),

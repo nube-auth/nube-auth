@@ -32,7 +32,7 @@ const CreatePlanSchema = z.object({
 	// with a random postfix to resolve collisions
 	slug: z.string().min(1).max(100).regex(/^[a-z0-9-_]+$/).optional(),
 	description: z.string().optional(),
-	features: z.array(z.string()).optional().default([]),
+	features: z.record(z.string(), z.union([z.boolean(), z.number().int().min(-1), z.string()])).optional().default({}),
 	displayOrder: z.number().int().nonnegative().optional().default(0),
 	isActive: z.boolean().optional().default(true),
 	isDefault: z.boolean().optional().default(false),
@@ -41,7 +41,7 @@ const CreatePlanSchema = z.object({
 const UpdatePlanSchema = z.object({
 	name: z.string().min(1).max(255).optional(),
 	description: z.string().optional().nullable(),
-	features: z.array(z.string()).optional(),
+	features: z.record(z.string(), z.union([z.boolean(), z.number().int().min(-1), z.string()])).optional(),
 	displayOrder: z.number().int().nonnegative().optional(),
 	status: z.enum(["active", "archived"]).optional(),
 	isActive: z.boolean().optional(),

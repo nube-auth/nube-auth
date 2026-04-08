@@ -59,7 +59,7 @@ appCatalogRoutes.get("/:appId/plans", async (c: Context) => {
 				name: plan.name,
 				slug: plan.slug,
 				description: plan.description ?? null,
-				features: Array.isArray(plan.features) ? plan.features : [],
+				features: plan.features && !Array.isArray(plan.features) ? plan.features : {},
 				displayOrder: plan.display_order,
 			})),
 		});

@@ -155,12 +155,13 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 		name: "",
 		slug: "",
 		description: "",
-		features: [] as string[],
+		features: {} as Record<string, boolean | number | string>,
 		trialDays: "",
 		displayOrder: 0,
 		isDefault: false,
 	});
-	const [featureInput, setFeatureInput] = useState("");
+	const [entitlementKey, setEntitlementKey] = useState("");
+	const [entitlementValue, setEntitlementValue] = useState<string>("");
 	const [saving, setSaving] = useState(false);
 	const [deleteTarget, setDeleteTarget] = useState<V2Plan | null>(null);
 
@@ -168,8 +169,9 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 
 	const openCreate = () => {
 		setEditingPlan(null);
-		setPlanForm({ name: "", slug: "", description: "", features: [], trialDays: "", displayOrder: 0, isDefault: false });
-		setFeatureInput("");
+		setPlanForm({ name: "", slug: "", description: "", features: {}, trialDays: "", displayOrder: 0, isDefault: false });
+		setEntitlementKey("");
+		setEntitlementValue("");
 		setShowPlanModal(true);
 	};
 
@@ -179,12 +181,13 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 			name: plan.name,
 			slug: plan.slug,
 			description: plan.description || "",
-			features: [...plan.features],
+			features: { ...plan.features },
 			trialDays: plan.trialDays?.toString() || "",
 			displayOrder: plan.displayOrder,
 			isDefault: plan.isDefault,
 		});
-		setFeatureInput("");
+		setEntitlementKey("");
+		setEntitlementValue("");
 		setShowPlanModal(true);
 	};
 
@@ -282,10 +285,12 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 										{plan.description && (
 											<Text className="text-muted-foreground text-sm mb-2">{plan.description}</Text>
 										)}
-										{plan.features.length > 0 && (
+										{Object.keys(plan.features).length > 0 && (
 											<div className="flex flex-wrap gap-1.5 mb-2">
-												{plan.features.map((f) => (
-													<Chip key={f} size="sm" variant="default">{f}</Chip>
+												{Object.entries(plan.features).map(([key, val]) => (
+													<Chip key={key} size="sm" variant="default">
+														{key}: {val === true ? "✓" : val === false ? "✗" : val === -1 ? "∞" : String(val)}
+													</Chip>
 												))}
 											</div>
 										)}
@@ -376,29 +381,45 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 							<Label>Default plan (assigned to new users)</Label>
 						</div>
 						<div>
-							<Label>Features</Label>
+							<Label>Entitlements</Label>
+							<Text className="text-xs text-muted-foreground mb-2">
+								Use <code>-1</code> for unlimited counts. Booleans control feature access; numbers set limits.
+							</Text>
 							<div className="flex gap-2 mb-2">
 								<Input
-									value={featureInput}
-									onChange={(e) => setFeatureInput(e.target.value)}
-									placeholder="e.g. unlimited_projects"
+									value={entitlementKey}
+									onChange={(e) => setEntitlementKey(e.target.value.replace(/\s+/g, "_").toLowerCase())}
+									placeholder="key (e.g. api_calls)"
+									className="flex-1"
 									onKeyDown={(e) => {
 										if (e.key === "Enter") {
 											e.preventDefault();
-											if (featureInput.trim()) {
-												setPlanForm({ ...planForm, features: [...planForm.features, featureInput.trim()] });
-												setFeatureInput("");
+											if (entitlementKey.trim()) {
+												const n = Number(entitlementValue);
+												const parsed = entitlementValue === "true" ? true : entitlementValue === "false" ? false : (entitlementValue !== "" && Number.isInteger(n)) ? n : entitlementValue;
+												setPlanForm({ ...planForm, features: { ...planForm.features, [entitlementKey.trim()]: parsed } });
+												setEntitlementKey("");
+												setEntitlementValue("");
 											}
 										}
 									}}
+								/>
+								<Input
+									value={entitlementValue}
+									onChange={(e) => setEntitlementValue(e.target.value)}
+									placeholder="true / false / 100 / -1 / gold"
+									className="w-32"
 								/>
 								<Button
 									size="sm"
 									variant="outline"
 									onClick={() => {
-										if (featureInput.trim()) {
-											setPlanForm({ ...planForm, features: [...planForm.features, featureInput.trim()] });
-											setFeatureInput("");
+										if (entitlementKey.trim()) {
+											const n = Number(entitlementValue);
+												const parsed = entitlementValue === "true" ? true : entitlementValue === "false" ? false : (entitlementValue !== "" && Number.isInteger(n)) ? n : entitlementValue;
+											setPlanForm({ ...planForm, features: { ...planForm.features, [entitlementKey.trim()]: parsed } });
+											setEntitlementKey("");
+											setEntitlementValue("");
 										}
 									}}
 								>
@@ -406,15 +427,19 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 								</Button>
 							</div>
 							<div className="flex flex-wrap gap-1.5">
-								{planForm.features.map((f, i) => (
-									<span key={`${f}-${i}`} className="inline-flex items-center gap-1">
-										<Chip size="sm">{f}</Chip>
+								{Object.entries(planForm.features).map(([key, val]) => (
+									<span key={key} className="inline-flex items-center gap-1">
+										<Chip size="sm">
+											{key}: {val === true ? "✓" : val === false ? "✗" : val === -1 ? "∞" : String(val)}
+										</Chip>
 										<button
 											type="button"
 											className="text-muted-foreground hover:text-text-primary text-xs"
-											onClick={() =>
-												setPlanForm({ ...planForm, features: planForm.features.filter((_, idx) => idx !== i) })
-											}
+											onClick={() => {
+												const updated = { ...planForm.features };
+												delete updated[key];
+												setPlanForm({ ...planForm, features: updated });
+											}}
 										>
 											×
 										</button>
