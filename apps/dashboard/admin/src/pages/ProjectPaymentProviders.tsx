@@ -71,6 +71,7 @@ interface PaymentProviderItem {
 	environment: string;
 	isActive: boolean;
 	isDefault: boolean;
+	hasWebhookSecret?: boolean;
 	createdAt: number | string;
 	updatedAt: number | string;
 }
@@ -139,24 +140,24 @@ export default function ProjectPaymentProvidersPage() {
 
 		try {
 			if (editingProvider) {
+				const cfg = formData.config as any;
+				const copy = { ...cfg };
+				if (copy.webhookSecret) delete copy.webhookSecret;
+				// Only send credentials if the user actually filled something in
+				const hasCredentials = Object.values(copy).some((v) => typeof v === "string" && v.trim() !== "");
 				await updateMutation.mutateAsync({
 					projectId: projectId!,
 					providerId: editingProvider.id,
 					data: {
-						credentials: (() => {
-							const cfg = formData.config as any;
-							const copy = { ...cfg };
-							// Remove webhookSecret from credentials payload if present
-							if (copy.webhookSecret) delete copy.webhookSecret;
-							return copy as Record<string, string>;
-						})(),
-						webhookSecret: (formData.config as any).webhookSecret,
+						...(hasCredentials ? { credentials: copy as Record<string, string> } : {}),
+						webhookSecret: (formData.config as any).webhookSecret || undefined,
 						isActive: true,
 					},
 				});
 				showToast("Provider updated successfully", "success");
 			} else {
-				await createMutation.mutateAsync({
+				const isDodo = formData.provider === "dodo";
+				const created = await createMutation.mutateAsync({
 					projectId: projectId!,
 					data: {
 						provider: formData.provider,
@@ -167,13 +168,21 @@ export default function ProjectPaymentProvidersPage() {
 							if (copy.webhookSecret) delete copy.webhookSecret;
 							return copy as Record<string, string>;
 						})(),
-						webhookSecret: (formData.config as any).webhookSecret,
+						webhookSecret: (formData.config as any).webhookSecret || undefined,
 					},
 				});
-				showToast("Provider created successfully", "success");
+				showToast(isDodo ? "Provider created — copy the webhook URL below and add it in Dodo" : "Provider created successfully", "success");
+				const result = await refetch();
+				handleCancel();
+				// For Dodo, auto-open the detail modal so the webhook URL is immediately visible
+				if (isDodo && created?.id) {
+					const newProvider = (result.data as PaymentProviderItem[] | undefined)?.find(p => p.id === created.id);
+					if (newProvider) setDetailProvider(newProvider);
+				}
+				return;
 			}
 
-			refetch();
+			await refetch();
 			handleCancel();
 		} catch (error: any) {
 			showToast(error.message || "Failed to save provider", "error");
@@ -211,7 +220,13 @@ export default function ProjectPaymentProvidersPage() {
 			}
 			case "dodo": {
 				const c = config as DodoConfig;
-				return !!(c.apiKey && c.webhookSecret);
+				// Step-2 edit: provider exists but has no webhook secret — only webhookSecret required
+				if (editingProvider && !editingProvider.hasWebhookSecret) {
+					return !!c.webhookSecret;
+				}
+				// Creation: only apiKey required; webhookSecret is added in step 2
+				// Full edit: if editing an already-complete config, at least apiKey must be non-empty if provided
+				return !!(editingProvider ? true : c.apiKey);
 			}
 			case "stripe": {
 				const c = config as StripeConfig;
@@ -255,39 +270,57 @@ export default function ProjectPaymentProvidersPage() {
 			}
 			case "dodo": {
 				const config = formData.config as DodoConfig;
+				// Step-2 edit: provider exists but has no webhook secret yet — only ask for the secret
+				const isStep2Edit = !!editingProvider && !editingProvider.hasWebhookSecret;
 				return (
 					<>
+						{!editingProvider && (
+							<Alert variant="info">
+								<strong>Two-step setup:</strong> Save with your API key first — you'll get a webhook URL containing this config's ID. Register that URL in your Dodo dashboard to receive a webhook secret, then edit this config to add it.
+							</Alert>
+						)}
+						{isStep2Edit && (
+							<Alert variant="info">
+								Register the webhook URL in your Dodo dashboard, then paste the webhook secret below. Leave API key blank to keep the existing one.
+							</Alert>
+						)}
+						{!isStep2Edit && (
+							<>
+								<div className="space-y-1.5">
+									<Label>API Key</Label>
+									<Input
+										type="password"
+										value={config.apiKey || ""}
+										onChange={(e) =>
+											setFormData({ ...formData, config: { ...config, apiKey: e.target.value } })
+										}
+										required={!editingProvider}
+										placeholder={editingProvider ? "Leave blank to keep existing" : ""}
+									/>
+								</div>
+								<div className="space-y-1.5">
+									<Label>Public Key <span className="text-text-tertiary font-400">(optional)</span></Label>
+									<Input
+										type="text"
+										value={(config as any).publicKey || ""}
+										onChange={(e) =>
+											setFormData({ ...formData, config: { ...config, publicKey: e.target.value } })
+										}
+										placeholder="Used for client-side validation"
+									/>
+								</div>
+							</>
+						)}
 						<div className="space-y-1.5">
-							<Label>API Key</Label>
-							<Input
-								type="password"
-								value={config.apiKey || ""}
-								onChange={(e) =>
-									setFormData({ ...formData, config: { ...config, apiKey: e.target.value } })
-								}
-								required
-							/>
-						</div>
-						<div className="space-y-1.5">
-							<Label>Webhook Secret</Label>
+							<Label>Webhook Secret {!editingProvider && <span className="text-text-tertiary font-400">(optional — add after step 2)</span>}</Label>
 							<Input
 								type="password"
 								value={config.webhookSecret || ""}
 								onChange={(e) =>
 									setFormData({ ...formData, config: { ...config, webhookSecret: e.target.value } })
 								}
-								required
-							/>
-						</div>
-						<div className="space-y-1.5">
-							<Label>Public Key (optional)</Label>
-							<Input
-								type="text"
-								value={(config as any).publicKey || ""}
-								onChange={(e) =>
-									setFormData({ ...formData, config: { ...config, publicKey: e.target.value } })
-								}
-								placeholder="Used for client-side validation"
+								required={isStep2Edit}
+								placeholder={editingProvider && !isStep2Edit ? "Leave blank to keep existing" : ""}
 							/>
 						</div>
 					</>
@@ -480,6 +513,11 @@ export default function ProjectPaymentProvidersPage() {
 								{/* Webhook URLs */}
 								<div className="mb-6">
 									<Text className="text-13px font-600 mb-3 uppercase text-text-tertiary">Webhook Configuration</Text>
+									{detailProvider.provider === "dodo" && !detailProvider.hasWebhookSecret && (
+										<Alert variant="warning" className="mb-3">
+											<strong>Step 2 required:</strong> Copy the URL below and register it in your Dodo dashboard. Dodo will show you a webhook secret — click <strong>Edit Provider</strong> to save it here.
+										</Alert>
+									)}
 									<div className="bg-bg-secondary p-3 rounded-2 border border-border mb-3">
 										<div className="text-12px text-text-tertiary mb-1.5">Webhook URL</div>
 										<code className="block text-12px font-mono text-text-primary overflow-x-auto p-2 bg-bg-primary rounded-1">
