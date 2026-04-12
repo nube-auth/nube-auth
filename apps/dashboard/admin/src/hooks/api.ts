@@ -678,6 +678,7 @@ export function useCreatePaymentProvider() {
 				credentials: Record<string, string>;
 				webhookSecret?: string;
 				metadata?: Record<string, any>;
+				publicId?: string;
 			};
 		}) => {
 			return fetchAPI<{ id: string }>(`/v1/admin/providers/${data.projectId}/configs`, {
@@ -688,6 +689,7 @@ export function useCreatePaymentProvider() {
 					credentials: data.data.credentials,
 					webhookSecret: data.data.webhookSecret,
 					metadata: data.data.metadata,
+					publicId: data.data.publicId,
 				}),
 			});
 		},

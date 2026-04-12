@@ -247,6 +247,9 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
 			credentials: z.record(z.string(), z.string()),
 			webhookSecret: z.string().optional(),
 			metadata: z.record(z.string(), z.any()).optional(),
+			// Optional client-supplied public ID (e.g. pre-generated for Dodo single-step setup).
+			// Must match CFG0 format; if omitted, one is generated server-side.
+			publicId: z.string().regex(/^CFG0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/).optional(),
 		});
 		const parse = CreateSchema.safeParse(await c.req.json());
 		if (!parse.success) {
@@ -291,7 +294,7 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
 			return c.json({ error: "Server encryption not configured" }, 500);
 		}
 		const newConfig = await paymentProviderConfigQueries.create(db, {
-			public_id: createId("paymentConfig"),
+			public_id: body.publicId ?? createId("paymentConfig"),
 			project_id: accessCheck.project!.id,
 			provider: body.provider as PaymentProvider,
 			environment: body.environment as PaymentEnvironment,

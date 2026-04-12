@@ -34,6 +34,7 @@ import {
 } from "@nube-auth/components";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
+import { id as nubeId } from "@nube-auth/shared";
 import {
 	useCreatePaymentProvider,
 	useDeletePaymentProvider,
@@ -91,6 +92,9 @@ export default function ProjectPaymentProvidersPage() {
 	const [editingProvider, setEditingProvider] = useState<PaymentProviderItem | null>(null);
 	const [detailProvider, setDetailProvider] = useState<PaymentProviderItem | null>(null);
 	const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+	// Pre-generated CFG0 ID for Dodo creation — shown in the form so the user can register
+	// the webhook URL in Dodo before saving, enabling a single-step setup.
+	const [preGeneratedDodoId, setPreGeneratedDodoId] = useState<string>(() => nubeId.paymentConfig());
 
 	const [formData, setFormData] = useState({
 		provider: "stripe" as Provider,
@@ -102,6 +106,7 @@ export default function ProjectPaymentProvidersPage() {
 
 	const handleCreate = () => {
 		setEditingProvider(null);
+		setPreGeneratedDodoId(nubeId.paymentConfig()); // fresh ID for each new form session
 		setFormData({
 			provider: "stripe",
 			environment: "test",
@@ -157,7 +162,7 @@ export default function ProjectPaymentProvidersPage() {
 				showToast("Provider updated successfully", "success");
 			} else {
 				const isDodo = formData.provider === "dodo";
-				const created = await createMutation.mutateAsync({
+				await createMutation.mutateAsync({
 					projectId: projectId!,
 					data: {
 						provider: formData.provider,
@@ -166,19 +171,16 @@ export default function ProjectPaymentProvidersPage() {
 							const cfg = formData.config as any;
 							const copy = { ...cfg };
 							if (copy.webhookSecret) delete copy.webhookSecret;
+							if (copy.publicKey !== undefined && copy.publicKey === "") delete copy.publicKey;
 							return copy as Record<string, string>;
 						})(),
 						webhookSecret: (formData.config as any).webhookSecret || undefined,
+						...(isDodo ? { publicId: preGeneratedDodoId } : {}),
 					},
 				});
-				showToast(isDodo ? "Provider created — copy the webhook URL below and add it in Dodo" : "Provider created successfully", "success");
-				const result = await refetch();
+				showToast("Provider created successfully", "success");
+				await refetch();
 				handleCancel();
-				// For Dodo, auto-open the detail modal so the webhook URL is immediately visible
-				if (isDodo && created?.id) {
-					const newProvider = (result.data as PaymentProviderItem[] | undefined)?.find(p => p.id === created.id);
-					if (newProvider) setDetailProvider(newProvider);
-				}
 				return;
 			}
 
@@ -269,15 +271,21 @@ export default function ProjectPaymentProvidersPage() {
 				);
 			}
 			case "dodo": {
-				const config = formData.config as DodoConfig;
+				const cfg = formData.config as DodoConfig;
 				// Step-2 edit: provider exists but has no webhook secret yet — only ask for the secret
 				const isStep2Edit = !!editingProvider && !editingProvider.hasWebhookSecret;
 				return (
 					<>
 						{!editingProvider && (
-							<Alert variant="info">
-								<strong>Two-step setup:</strong> Save with your API key first — you'll get a webhook URL containing this config's ID. Register that URL in your Dodo dashboard to receive a webhook secret, then edit this config to add it.
-							</Alert>
+							<>
+								<div className="space-y-1.5">
+									<Label>Webhook URL</Label>
+									<code className="block text-11px font-mono text-text-primary overflow-x-auto p-2.5 bg-bg-secondary rounded border border-border select-all">
+										{`${config.gatewayUrl.replace(/\/$/, '')}/v1/payment/webhooks/dodo/${preGeneratedDodoId}`}
+									</code>
+									<p className="text-12px text-text-tertiary">Register this URL in your Dodo dashboard first to receive a webhook secret, then fill in all fields below.</p>
+								</div>
+							</>
 						)}
 						{isStep2Edit && (
 							<Alert variant="info">
@@ -290,9 +298,9 @@ export default function ProjectPaymentProvidersPage() {
 									<Label>API Key</Label>
 									<Input
 										type="password"
-										value={config.apiKey || ""}
+										value={cfg.apiKey || ""}
 										onChange={(e) =>
-											setFormData({ ...formData, config: { ...config, apiKey: e.target.value } })
+											setFormData({ ...formData, config: { ...cfg, apiKey: e.target.value } })
 										}
 										required={!editingProvider}
 										placeholder={editingProvider ? "Leave blank to keep existing" : ""}
@@ -302,9 +310,9 @@ export default function ProjectPaymentProvidersPage() {
 									<Label>Public Key <span className="text-text-tertiary font-400">(optional)</span></Label>
 									<Input
 										type="text"
-										value={(config as any).publicKey || ""}
+										value={(cfg as any).publicKey || ""}
 										onChange={(e) =>
-											setFormData({ ...formData, config: { ...config, publicKey: e.target.value } })
+											setFormData({ ...formData, config: { ...cfg, publicKey: e.target.value } })
 										}
 										placeholder="Used for client-side validation"
 									/>
@@ -312,12 +320,12 @@ export default function ProjectPaymentProvidersPage() {
 							</>
 						)}
 						<div className="space-y-1.5">
-							<Label>Webhook Secret {!editingProvider && <span className="text-text-tertiary font-400">(optional — add after step 2)</span>}</Label>
+							<Label>Webhook Secret {!editingProvider && <span className="text-text-tertiary font-400">(optional — webhooks won't be verified without this)</span>}</Label>
 							<Input
 								type="password"
-								value={config.webhookSecret || ""}
+								value={cfg.webhookSecret || ""}
 								onChange={(e) =>
-									setFormData({ ...formData, config: { ...config, webhookSecret: e.target.value } })
+									setFormData({ ...formData, config: { ...cfg, webhookSecret: e.target.value } })
 								}
 								required={isStep2Edit}
 								placeholder={editingProvider && !isStep2Edit ? "Leave blank to keep existing" : ""}
@@ -424,6 +432,9 @@ export default function ProjectPaymentProvidersPage() {
 										value={formData.provider}
 										onChange={(value) => {
 											const newProvider = value as Provider;
+											if (newProvider === "dodo" && !editingProvider) {
+												setPreGeneratedDodoId(nubeId.paymentConfig());
+											}
 											setFormData({
 												...formData,
 												provider: newProvider,
