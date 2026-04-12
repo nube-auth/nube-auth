@@ -15,7 +15,14 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { and, eq, getDb, paymentProviderConfigQueries, projectQueries, userQueries, } from "@nube-auth/db";
-import { payment_provider_configs } from "@nube-auth/db";
+import {
+	payment_provider_configs,
+	price_provider_refs,
+	promotion_provider_refs,
+	purchases,
+	payment_transactions,
+	subscriptions,
+} from "@nube-auth/db";
 import type { Context } from "hono";
 import { createLogger, createId } from "@nube-auth/shared";
 import { encryptCredentials, decryptCredentials } from "../../../utils";
@@ -449,9 +456,36 @@ providersRouter.delete("/:projectId/configs/:providerId", async (c: Context) => 
 			return c.json({ error: "Provider configuration not found" }, 404);
 		}
 
-		// If this is the default provider, unset it
+		// Block deletion if financial records are tied to this config
+		const [linkedPurchase] = await db
+			.select({ id: purchases.id })
+			.from(purchases)
+			.where(eq(purchases.provider_config_id, config.id))
+			.limit(1);
+		if (linkedPurchase) {
+			return c.json({ error: "Cannot delete provider: purchases are linked to this configuration" }, 409);
+		}
+
+		const [linkedTx] = await db
+			.select({ id: payment_transactions.id })
+			.from(payment_transactions)
+			.where(eq(payment_transactions.provider_config_id, config.id))
+			.limit(1);
+		if (linkedTx) {
+			return c.json({ error: "Cannot delete provider: payment transactions are linked to this configuration" }, 409);
+		}
+
+		const [linkedSub] = await db
+			.select({ id: subscriptions.id })
+			.from(subscriptions)
+			.where(eq(subscriptions.provider_config_id, config.id))
+			.limit(1);
+		if (linkedSub) {
+			return c.json({ error: "Cannot delete provider: active subscriptions are linked to this configuration" }, 409);
+		}
+
+		// If this is the default provider, promote another before deleting
 		if (config.is_default) {
-			// Find another active provider to make default, or just remove the default status
 			const otherConfigs = await db
 				.select()
 				.from(payment_provider_configs)
@@ -469,7 +503,11 @@ providersRouter.delete("/:projectId/configs/:providerId", async (c: Context) => 
 			}
 		}
 
-		// Delete config
+		// Delete mapping rows that don't have DB-level cascade
+		await db.delete(price_provider_refs).where(eq(price_provider_refs.provider_config_id, config.id));
+		await db.delete(promotion_provider_refs).where(eq(promotion_provider_refs.provider_config_id, config.id));
+
+		// Delete config (routing_rules cascade at DB level)
 		await paymentProviderConfigQueries.delete(db, config.id);
 
 		return c.json({ success: true });
