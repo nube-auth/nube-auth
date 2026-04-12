@@ -1,0 +1,2 @@
+ALTER TABLE "payment_provider_configs" DROP CONSTRAINT "payment_provider_configs_project_provider_env_unique";--> statement-breakpoint
+ALTER TABLE "payment_provider_configs" ADD COLUMN "name" varchar(100);

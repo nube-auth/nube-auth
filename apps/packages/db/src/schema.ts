@@ -461,6 +461,7 @@ export const payment_provider_configs = pgTable(
 		project_id: integer("project_id")
 			.notNull()
 			.references(() => projects.id),
+		name: varchar("name", { length: 100 }), // Optional display name — allows multiple configs of same provider/env
 		provider: varchar("provider", { length: 50 }).notNull(), // 'stripe', 'lemonsqueezy', 'dodo'
 		environment: varchar("environment", { length: 20 }).notNull(), // 'test' or 'production'
 		credentials: text("credentials").notNull(), // Encrypted JSON
@@ -477,11 +478,6 @@ export const payment_provider_configs = pgTable(
 		index("payment_provider_configs_project_id_idx").on(table.project_id),
 		index("payment_provider_configs_provider_idx").on(table.provider),
 		index("payment_provider_configs_is_default_idx").on(table.is_default),
-		unique("payment_provider_configs_project_provider_env_unique").on(
-			table.project_id,
-			table.provider,
-			table.environment,
-		),
 	],
 );
 

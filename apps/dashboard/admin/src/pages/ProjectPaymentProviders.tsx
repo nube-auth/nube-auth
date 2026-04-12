@@ -68,6 +68,7 @@ type ProviderConfig = LemonSqueezyConfig | DodoConfig | StripeConfig;
 
 interface PaymentProviderItem {
 	id: string;
+	name?: string | null;
 	provider: string;
 	environment: string;
 	isActive: boolean;
@@ -99,6 +100,7 @@ export default function ProjectPaymentProvidersPage() {
 	const [formData, setFormData] = useState({
 		provider: "stripe" as Provider,
 		environment: "test" as Environment,
+		name: "",
 		config: {} as ProviderConfig,
 	});
 
@@ -110,6 +112,7 @@ export default function ProjectPaymentProvidersPage() {
 		setFormData({
 			provider: "stripe",
 			environment: "test",
+			name: "",
 			config: { publishableKey: "", secretKey: "", webhookSecret: "" },
 		});
 		setShowForm(true);
@@ -120,6 +123,7 @@ export default function ProjectPaymentProvidersPage() {
 		setFormData({
 			provider: provider.provider as Provider,
 			environment: provider.environment as Environment,
+			name: provider.name || "",
 			config: getEmptyConfig(provider.provider as Provider),
 		});
 		setShowForm(true);
@@ -131,6 +135,7 @@ export default function ProjectPaymentProvidersPage() {
 		setFormData({
 			provider: "stripe",
 			environment: "test",
+			name: "",
 			config: getEmptyConfig("stripe"),
 		});
 	};
@@ -154,6 +159,7 @@ export default function ProjectPaymentProvidersPage() {
 					projectId: projectId!,
 					providerId: editingProvider.id,
 					data: {
+						name: formData.name || null,
 						...(hasCredentials ? { credentials: copy as Record<string, string> } : {}),
 						webhookSecret: (formData.config as any).webhookSecret || undefined,
 						isActive: true,
@@ -167,6 +173,7 @@ export default function ProjectPaymentProvidersPage() {
 					data: {
 						provider: formData.provider,
 						environment: formData.environment,
+						name: formData.name || undefined,
 						credentials: (() => {
 							const cfg = formData.config as any;
 							const copy = { ...cfg };
@@ -465,6 +472,17 @@ export default function ProjectPaymentProvidersPage() {
 								</div>
 							</div>
 
+							<div className="space-y-1.5">
+								<Label>Name <span className="text-text-tertiary font-400">(optional)</span></Label>
+								<Input
+									type="text"
+									value={formData.name}
+									onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+									placeholder="e.g. Main Dodo account, EU Stripe"
+									maxLength={100}
+								/>
+							</div>
+
 							{renderConfigFields()}
 
 							{editingProvider && (
@@ -518,6 +536,12 @@ export default function ProjectPaymentProvidersPage() {
 												</Chip>
 											</div>
 										</div>
+										{detailProvider.name && (
+											<div className="col-span-2">
+												<div className="text-12px text-text-tertiary mb-1">Name</div>
+												<div className="text-14px font-500">{detailProvider.name}</div>
+											</div>
+										)}
 									</div>
 								</div>
 
@@ -601,8 +625,7 @@ export default function ProjectPaymentProvidersPage() {
 				<DataTable>
 							<TableHeader>
 								<tr>
-									<TableHead>Provider</TableHead>
-									<TableHead>Environment</TableHead>
+									<TableHead>Provider</TableHead>								<TableHead>Name</TableHead>									<TableHead>Environment</TableHead>
 									<TableHead>Status</TableHead>
 									<TableHead>Default</TableHead>
 									<TableHead>Created</TableHead>
@@ -616,8 +639,9 @@ export default function ProjectPaymentProvidersPage() {
 										<Chip variant="primary" size="sm">
 											{provider.provider}
 										</Chip>
-									</TableCell>
-									<TableCell>
+									</TableCell>								<TableCell className="text-14px text-text-secondary">
+									{provider.name || <span className="text-text-tertiary">—</span>}
+								</TableCell>									<TableCell>
 										<Chip
 											variant={provider.environment === "production" ? "success" : "warning"}
 											size="sm"

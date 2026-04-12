@@ -675,6 +675,7 @@ export function useCreatePaymentProvider() {
 			data: {
 				provider: string;
 				environment: "test" | "production";
+				name?: string;
 				credentials: Record<string, string>;
 				webhookSecret?: string;
 				metadata?: Record<string, any>;
@@ -686,6 +687,7 @@ export function useCreatePaymentProvider() {
 				body: JSON.stringify({
 					provider: data.data.provider,
 					environment: data.data.environment,
+					name: data.data.name,
 					credentials: data.data.credentials,
 					webhookSecret: data.data.webhookSecret,
 					metadata: data.data.metadata,
@@ -709,6 +711,7 @@ export function useUpdatePaymentProvider() {
 			projectId: string;
 			providerId: string;
 			data: {
+				name?: string | null;
 				credentials?: Record<string, string>;
 				webhookSecret?: string;
 				isActive?: boolean;
@@ -720,6 +723,7 @@ export function useUpdatePaymentProvider() {
 				{
 				method: "PATCH",
 					body: JSON.stringify({
+						name: data.data.name,
 						credentials: data.data.credentials,
 						webhookSecret: data.data.webhookSecret,
 						isActive: data.data.isActive,

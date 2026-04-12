@@ -110,6 +110,7 @@ providersRouter.get("/:projectId/configs", async (c: Context) => {
 		// Format response
 		const providers = configs.map((config) => ({
 			id: config.public_id,
+			name: config.name,
 			provider: config.provider,
 			environment: config.environment,
 			isActive: config.is_active,
@@ -161,6 +162,7 @@ providersRouter.get("/:projectId/configs/:providerId", async (c: Context) => {
 
 		return c.json({
 			id: config.public_id,
+			name: config.name,
 			provider: config.provider,
 			environment: config.environment,
 			isActive: config.is_active,
@@ -251,6 +253,7 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
 		const CreateSchema = z.object({
 			provider: z.enum(["stripe", "lemonsqueezy", "dodo"]),
 			environment: z.enum(["test", "production"]),
+			name: z.string().max(100).optional(),
 			credentials: z.record(z.string(), z.string()),
 			webhookSecret: z.string().optional(),
 			metadata: z.record(z.string(), z.any()).optional(),
@@ -275,23 +278,6 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
 			return c.json({ error: accessCheck.error }, accessCheck.status);
 		}
 
-		// Check if config already exists for this provider/environment combo
-		const existing = await paymentProviderConfigQueries.findByProjectAndProvider(
-			db,
-			accessCheck.project!.id,
-			body.provider as PaymentProvider,
-			body.environment as PaymentEnvironment,
-		);
-
-		if (existing) {
-			return c.json(
-				{
-					error: `Provider ${body.provider} in ${body.environment} environment already configured for this project`,
-				},
-				409,
-			);
-		}
-
 		// Create new config (credentials encrypted at rest)
 		let encryptedCredentials: string;
 		try {
@@ -303,6 +289,7 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
 		const newConfig = await paymentProviderConfigQueries.create(db, {
 			public_id: body.publicId ?? createId("paymentConfig"),
 			project_id: accessCheck.project!.id,
+			name: body.name ?? null,
 			provider: body.provider as PaymentProvider,
 			environment: body.environment as PaymentEnvironment,
 			credentials: encryptedCredentials,
@@ -321,6 +308,7 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
 		return c.json(
 			{
 				id: newConfig.public_id,
+				name: newConfig.name,
 				provider: newConfig.provider,
 				environment: newConfig.environment,
 				isActive: newConfig.is_active,
@@ -352,6 +340,7 @@ providersRouter.patch("/:projectId/configs/:providerId", async (c: Context) => {
 
 	try {
 		const UpdateSchema = z.object({
+			name: z.string().max(100).nullable().optional(),
 			credentials: z.record(z.string(), z.string()).optional(),
 			webhookSecret: z.string().nullable().optional(),
 			isActive: z.boolean().optional(),
@@ -381,6 +370,10 @@ providersRouter.patch("/:projectId/configs/:providerId", async (c: Context) => {
 		const updateData: Partial<typeof payment_provider_configs.$inferInsert> = {
 			updated_by_user_id: accessCheck.user!.id,
 		};
+
+		if (body.name !== undefined) {
+			updateData.name = body.name ?? null;
+		}
 
 		if (body.credentials) {
 			try {
@@ -413,6 +406,7 @@ providersRouter.patch("/:projectId/configs/:providerId", async (c: Context) => {
 
 		return c.json({
 			id: updated.public_id,
+			name: updated.name,
 			provider: updated.provider,
 			environment: updated.environment,
 			isActive: updated.is_active,
