@@ -18,6 +18,53 @@ const log = createLogger("payment-routes");
 export const paymentsRoutes = new Hono();
 
 /**
+ * Build the headers to forward to core for webhook signature verification.
+ */
+function buildWebhookForwardHeaders(c: Context): Record<string, string> {
+	const forwardHeaders: Record<string, string> = {
+		"Content-Type": c.req.header("content-type") || "application/json",
+		"X-Nube-S2S-Token": env.S2S_SECRET,
+	};
+	const signatureHeaders = [
+		"webhook-id", "webhook-signature", "webhook-timestamp", // Dodo / Standard Webhooks
+		"stripe-signature",
+		"x-signature",
+		"x-webhook-signature",
+		"paddle-signature",
+	];
+	for (const header of signatureHeaders) {
+		const value = c.req.header(header);
+		if (value) forwardHeaders[header] = value;
+	}
+	return forwardHeaders;
+}
+
+/**
+ * POST /v1/payment/webhooks/:provider/:configId
+ * Config-scoped webhook — skips the "try all configs" loop on core.
+ * configId is the payment_provider_configs.public_id (CFG0...).
+ */
+paymentsRoutes.post("/webhooks/:provider/:configId", async (c: Context) => {
+	try {
+		const provider = c.req.param("provider");
+		const configId = c.req.param("configId");
+		const rawBody = await c.req.text();
+		const coreUrl = `${env.CORE_URL}/v1/billing/webhooks/${encodeURIComponent(provider)}/${encodeURIComponent(configId)}`;
+
+		const response = await pingpong(coreUrl, {
+			method: "POST",
+			headers: buildWebhookForwardHeaders(c),
+			body: rawBody,
+		});
+
+		return c.json(response.data, response.status as ContentfulStatusCode);
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Webhook proxy error");
+		return c.json({ success: true, message: "Webhook received" }, 200);
+	}
+});
+
+/**
  * POST /v1/payment/webhooks/:provider
  * Webhook endpoint — no auth required. Forward raw body + headers to core.
  */
@@ -27,30 +74,9 @@ paymentsRoutes.post("/webhooks/:provider", async (c: Context) => {
 		const rawBody = await c.req.text();
 		const coreUrl = `${env.CORE_URL}/v1/billing/webhooks/${encodeURIComponent(provider)}`;
 
-		// Forward all relevant headers for signature verification
-		const forwardHeaders: Record<string, string> = {
-			"Content-Type": c.req.header("content-type") || "application/json",
-			"X-Nube-S2S-Token": env.S2S_SECRET,
-		};
-
-		// Forward provider-specific signature headers
-		const signatureHeaders = [
-			"webhook-id", "webhook-signature", "webhook-timestamp", // Dodo / Standard Webhooks
-			"stripe-signature",
-			"x-signature",
-			"x-webhook-signature",
-			"paddle-signature",
-		];
-		for (const header of signatureHeaders) {
-			const value = c.req.header(header);
-			if (value) {
-				forwardHeaders[header] = value;
-			}
-		}
-
 		const response = await pingpong(coreUrl, {
 			method: "POST",
-			headers: forwardHeaders,
+			headers: buildWebhookForwardHeaders(c),
 			body: rawBody,
 		});
 

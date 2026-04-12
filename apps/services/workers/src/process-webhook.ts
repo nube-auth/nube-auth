@@ -15,6 +15,8 @@ export interface ProcessWebhookJobData {
 	rawBody: string;
 	signature: string;
 	providerConfigId?: number;
+	/** public_id of the specific payment_provider_config to use for verification (CFG0...) */
+	providerConfigPublicId?: string;
 	ipAddress: string;
 	webhookLogId?: number;
 }
@@ -55,6 +57,7 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 					signature: job.data.signature,
 					...(job.data.webhookLogId != null ? { webhookLogId: job.data.webhookLogId } : {}),
 					...(job.data.providerConfigId != null ? { providerConfigId: job.data.providerConfigId } : {}),
+					...(job.data.providerConfigPublicId ? { providerConfigPublicId: job.data.providerConfigPublicId } : {}),
 				});
 
 				if (!success) {

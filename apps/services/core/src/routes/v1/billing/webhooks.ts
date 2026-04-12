@@ -28,10 +28,9 @@ webhookRoutes.use(
 );
 
 /**
- * POST /v1/billing/webhooks/:provider
- * Receive webhook from payment provider
+ * Shared handler for both /:provider and /:provider/:configId routes.
  */
-webhookRoutes.post("/:provider", async (c: Context) => {
+async function handleIncomingWebhook(c: Context, providerConfigPublicId?: string) {
 	try {
 		const provider = c.req.param("provider");
 		
@@ -98,6 +97,7 @@ webhookRoutes.post("/:provider", async (c: Context) => {
 			metadata: {
 				stage: "ingress",
 				routeProvider: provider,
+				...(providerConfigPublicId ? { providerConfigPublicId } : {}),
 			},
 		});
 
@@ -108,6 +108,7 @@ webhookRoutes.post("/:provider", async (c: Context) => {
 			signature,
 			ipAddress,
 			webhookLogId > 0 ? webhookLogId : undefined,
+			providerConfigPublicId,
 		);
 
 		log.info(
@@ -115,6 +116,7 @@ webhookRoutes.post("/:provider", async (c: Context) => {
 				provider: normalizedProvider,
 				ipAddress,
 				webhookLogId,
+				...(providerConfigPublicId ? { providerConfigPublicId } : {}),
 			},
 			"Webhook queued for processing",
 		);
@@ -126,7 +128,21 @@ webhookRoutes.post("/:provider", async (c: Context) => {
 		// Return 500 so providers know to retry — a 200 would silently swallow the failure
 		return c.json({ error: "Processing error" }, 500);
 	}
-});
+}
+
+/**
+ * POST /v1/billing/webhooks/:provider/:configId
+ * Config-scoped webhook — pins verification to a specific payment_provider_config (CFG0...).
+ */
+webhookRoutes.post("/:provider/:configId", (c: Context) =>
+	handleIncomingWebhook(c, c.req.param("configId")),
+);
+
+/**
+ * POST /v1/billing/webhooks/:provider
+ * Receive webhook from payment provider
+ */
+webhookRoutes.post("/:provider", (c: Context) => handleIncomingWebhook(c));
 
 /**
  * Get client IP address from request headers

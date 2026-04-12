@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import config from "../config";
 import { ConfirmModal } from "../components/ConfirmModal";
 import {
 	Icon,
@@ -482,10 +483,10 @@ export default function ProjectPaymentProvidersPage() {
 									<div className="bg-bg-secondary p-3 rounded-2 border border-border mb-3">
 										<div className="text-12px text-text-tertiary mb-1.5">Webhook URL</div>
 										<code className="block text-12px font-mono text-text-primary overflow-x-auto p-2 bg-bg-primary rounded-1">
-											{`${window.location.origin.replace(/\/$/, '')}/v1/webhooks/${detailProvider.provider}/${detailProvider.id}`}
+											{`${config.gatewayUrl.replace(/\/$/, '')}/v1/payment/webhooks/${detailProvider.provider}/${detailProvider.id}`}
 										</code>
 										<div className="text-11px text-text-tertiary mt-2">
-											Configure this URL in your {detailProvider.provider === "dodo" ? "Paddle" : detailProvider.provider} dashboard
+											Configure this URL in your {detailProvider.provider} dashboard
 										</div>
 									</div>
 								</div>

@@ -20,6 +20,8 @@ interface WebhookProcessingParams {
 	rawBody: string;
 	signature: string;
 	providerConfigId?: number;
+	/** public_id of the specific payment_provider_config (CFG0...) — takes priority over providerConfigId */
+	providerConfigPublicId?: string;
 	ipAddress?: string;
 	webhookLogId?: number;
 }
@@ -38,8 +40,12 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 		// Collect candidate configs to try
 		let configs: Awaited<ReturnType<typeof paymentProviderConfigQueries.findActiveByProvider>>;
 
-		if (params.providerConfigId != null && params.providerConfigId > 0) {
-			// Specific config requested
+		if (params.providerConfigPublicId) {
+			// Specific config requested by public_id (from scoped webhook URL)
+			const config = await paymentProviderConfigQueries.findByPublicId(db, params.providerConfigPublicId);
+			configs = config ? [config] : [];
+		} else if (params.providerConfigId != null && params.providerConfigId > 0) {
+			// Specific config requested by internal id (legacy path)
 			const config = await paymentProviderConfigQueries.findById(db, params.providerConfigId);
 			configs = config ? [config] : [];
 		} else {
