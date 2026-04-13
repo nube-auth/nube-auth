@@ -137,39 +137,41 @@ checkoutRoutes.post("/", async (c: Context) => {
 			const promoCode = await promotionCodeQueries.findByCode(db, validated.promoCode.toUpperCase());
 			if (promoCode && promoCode.app_id === app.id && promoCode.is_active) {
 				// Enforce plan restriction: check promotion_plans before passing coupon to provider.
-				// This is the primary gate — provider-side restriction is just a secondary safety net.
+				// If the code is not eligible for this plan, skip the discount rather than
+				// rejecting the checkout — the attempt is still recorded in our system.
 				const planTargets = await promotionPlanQueries.findByPromotionId(db, promoCode.promotion_id);
-				if (planTargets.length > 0) {
-					const eligiblePlanIds = planTargets.map((pt) => pt.plan_id);
-					if (!eligiblePlanIds.includes(price.plan_id)) {
-						log.warn(
-							{ promoCode: validated.promoCode, planId: price.plan_id },
-							"Promo code not eligible for this plan — rejecting checkout",
-						);
-						return c.json({ error: "Promo code is not valid for the selected plan" }, 400);
-					}
-				}
+				const eligibleForPlan =
+					planTargets.length === 0 ||
+					planTargets.map((pt) => pt.plan_id).includes(price.plan_id);
 
-				resolvedPromoCodeId = promoCode.id;
-				const ref = await promotionProviderRefQueries.findByPromotionAndProvider(
-					db,
-					promoCode.promotion_id,
-					providerConfig.id,
-				);
-				if (ref) {
-					resolvedProviderCoupon = {
-						id: ref.provider_coupon_id,
-						objectType: ref.provider_object_type as "coupon" | "promotion_code" | "discount",
-					};
-					log.info(
-						{ promoCode: validated.promoCode, couponId: ref.provider_coupon_id, provider: providerConfig.provider },
-						"Resolved Nube promo code to provider coupon",
-					);
-				} else {
+				if (!eligibleForPlan) {
 					log.warn(
-						{ promoCode: validated.promoCode, provider: providerConfig.provider },
-						"No provider ref found for promo code — discount will not be applied",
+						{ promoCode: validated.promoCode, planId: price.plan_id },
+						"Promo code not eligible for this plan — skipping discount, continuing checkout",
 					);
+					// resolvedPromoCodeId and resolvedProviderCoupon remain undefined → no discount applied
+				} else {
+					resolvedPromoCodeId = promoCode.id;
+					const ref = await promotionProviderRefQueries.findByPromotionAndProvider(
+						db,
+						promoCode.promotion_id,
+						providerConfig.id,
+					);
+					if (ref) {
+						resolvedProviderCoupon = {
+							id: ref.provider_coupon_id,
+							objectType: ref.provider_object_type as "coupon" | "promotion_code" | "discount",
+						};
+						log.info(
+							{ promoCode: validated.promoCode, couponId: ref.provider_coupon_id, provider: providerConfig.provider },
+							"Resolved Nube promo code to provider coupon",
+						);
+					} else {
+						log.warn(
+							{ promoCode: validated.promoCode, provider: providerConfig.provider },
+							"No provider ref found for promo code — discount will not be applied",
+						);
+					}
 				}
 			}
 		}
