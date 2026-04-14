@@ -80,8 +80,9 @@ export function MenuPopup({
 } & VariantProps<typeof menuPopupVariants>) {
   return (
     <BaseMenu.Portal>
-      <BaseMenu.Backdrop />
+      <BaseMenu.Backdrop className="fixed inset-0 z-50" />
       <BaseMenu.Positioner
+        className="z-[60]"
         align={align}
         alignOffset={alignOffset}
         side={side}

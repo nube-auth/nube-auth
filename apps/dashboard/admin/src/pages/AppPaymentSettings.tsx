@@ -15,7 +15,7 @@ import {
 	BreadcrumbSeparator,
 } from "@nube-auth/components";
 import { useToast } from "../components/Toast";
-import { useApp, useProject, useProjectPaymentProviders, useSelectPaymentProvider, useSelectedPaymentProvider } from "../hooks/api";
+import { useApp, useProject, useProjectPaymentProviders, useSelectDefaultProjectProvider } from "../hooks/api";
 
 export default function AppPaymentSettingsPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -25,11 +25,11 @@ export default function AppPaymentSettingsPage() {
 	const { data: app, isLoading: appLoading, error: appError } = useApp(projectId!, appId!);
 	const { data: project, isLoading: projectLoading } = useProject(projectId!);
 	const { data: availableProviders = [], isLoading: loadingProviders } = useProjectPaymentProviders(projectId!);
-	const { data: selectedProvider, isLoading: loadingSelected } = useSelectedPaymentProvider(projectId!, appId!);
+	const selectedProvider = availableProviders.find((provider) => provider.isDefault) || null;
 
-	const selectProviderMutation = useSelectPaymentProvider(projectId!, appId!);
+	const selectProviderMutation = useSelectDefaultProjectProvider(projectId!);
 
-	const handleSelectProvider = async (providerPublicId: string | null) => {
+	const handleSelectProvider = async (providerPublicId: string) => {
 		try {
 			await selectProviderMutation.mutateAsync(providerPublicId);
 			showToast("Payment provider updated successfully", "success");
@@ -60,7 +60,7 @@ export default function AppPaymentSettingsPage() {
 		);
 	};
 
-	if (appLoading || projectLoading || loadingProviders || loadingSelected) {
+	if (appLoading || projectLoading || loadingProviders) {
 		return (
 			<div className="flex justify-center items-center py-12">
 				<Spinner />
@@ -136,6 +136,22 @@ export default function AppPaymentSettingsPage() {
 				</EmptyState>
 			) : (
 				<div className="flex flex-col gap-4">
+					{selectedProvider && (
+						<Card>
+							<CardBody className="p-4">
+								<div className="flex items-center gap-3">
+									<Icon icon={IconType.CheckCircle} size={18} className="text-success" />
+									<div>
+										<Text className="font-medium text-text-primary">Selected Configuration</Text>
+										<Text className="text-sm text-text-secondary">
+											{selectedProvider.name || `${selectedProvider.provider} (${selectedProvider.environment})`}
+										</Text>
+									</div>
+								</div>
+							</CardBody>
+						</Card>
+					)}
+
 					{availableProviders.map((provider) => {
 						const isSelected = provider.id === selectedProvider?.id;
 						const isLoading = selectProviderMutation.isPending;
@@ -146,7 +162,7 @@ export default function AppPaymentSettingsPage() {
 								className={`card cursor-pointer border-2 transition-all duration-200 ${isSelected ? "border-[var(--primary)] bg-[var(--primary-light)]" : "border-[var(--card-border)] bg-[var(--card-bg)]"} ${isLoading ? "opacity-60" : ""}`}
 								onClick={() => !isLoading && handleSelectProvider(provider.id)}
 							>
-								<div className="flex items-center gap-5">
+								<div className="flex items-center gap-4 p-4">
 									{/* Checkbox at the start */}
 									<div
 										className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] border-2 transition-all duration-200 ${isSelected ? "border-primary bg-primary" : "border-card-border bg-transparent"}`}
@@ -155,27 +171,37 @@ export default function AppPaymentSettingsPage() {
 									</div>
 
 									{/* Provider Icon */}
-									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-content-bg">
+									<div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-content-bg">
 										{getProviderIcon(provider.provider)}
 									</div>
 
 									{/* Provider Info */}
-									<div className="flex-1">
-										<div className="mb-1.5 flex items-center gap-3">
-											<h3 className="m-0 text-base font-semibold capitalize text-text-primary">
-												{provider.provider}
+									<div className="flex-1 min-w-0">
+										<div className="mb-1 flex items-center gap-2 flex-wrap">
+											<h3 className="m-0 text-sm font-semibold text-text-primary">
+												{provider.name || provider.provider}
 											</h3>
 											{getEnvironmentBadge(provider.environment)}
 											{isSelected && (
-													<Chip variant="success" size="sm">
-														Active
-													</Chip>
+												<Chip variant="success" size="sm">
+													Active
+												</Chip>
 											)}
 										</div>
-										<div className="flex items-center gap-4 text-[13px] [color:var(--text-secondary)]">
-											<span>Provider: {provider.provider}</span>
-											{provider.slug && <span>Slug: {provider.slug}</span>}
-											{provider.createdBy && <span>Configured by: {provider.createdBy.name}</span>}
+										<div className="flex items-center gap-3 text-xs text-text-secondary">
+											<span className="capitalize">{provider.provider}</span>
+											{provider.name && provider.name !== provider.provider && (
+												<>
+													<span>·</span>
+													<span>{provider.name}</span>
+												</>
+											)}
+											{provider.slug && (
+												<>
+													<span>·</span>
+													<span>{provider.slug}</span>
+												</>
+											)}
 										</div>
 									</div>
 								</div>

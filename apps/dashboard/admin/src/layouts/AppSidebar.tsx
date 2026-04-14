@@ -1,4 +1,4 @@
-import { useLocation, useParams, Link } from 'react-router-dom';
+import { useLocation, useParams, useNavigate, Link } from 'react-router-dom';
 import config from '../config';
 import {
   Sidebar,
@@ -33,6 +33,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ user, onLogout, isLoggingOut }: AppSidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { projectId, appId } = useParams<{ projectId?: string; appId?: string }>();
   const { data: projects = [] } = useProjects();
 
@@ -100,11 +101,11 @@ export function AppSidebar({ user, onLogout, isLoggingOut }: AppSidebarProps) {
                   className="w-(--anchor-width)" 
                   side="top"
                 >
-                  <MenuItem render={<Link to="/profile" />}>
+                  <MenuItem onClick={() => navigate('/profile')}>
                     <Icon icon={IconType.User} />
                     Profile
                   </MenuItem>
-                  <MenuItem onClick={onLogout} disabled={isLoggingOut}>
+                  <MenuItem onClick={() => onLogout()} disabled={isLoggingOut}>
                     <Icon icon={IconType.Logout} />
                     {isLoggingOut ? 'Logging out...' : 'Logout'}
                   </MenuItem>
