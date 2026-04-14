@@ -15,7 +15,7 @@ export type {
 } from "@nube-auth/client";
 export { NubeAuthProvider, useNubeAuthContext } from "./ProofaProvider";
 export { useAuth } from "./useAuth";
-export { useCheckout } from "./useCheckout";
+export { useCheckout, PromoCodeError } from "./useCheckout";
 export type { StartCheckoutOptions, UseCheckoutOptions } from "./useCheckout";
 export { useLicense } from "./useLicense";
 export { useMe } from "./useMe";
