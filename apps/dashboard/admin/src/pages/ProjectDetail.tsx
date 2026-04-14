@@ -63,7 +63,7 @@ export function ProjectDetailPage() {
 				<BreadcrumbList>
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
-					</BreadcrumbItem>
+				</BreadcrumbItem>
 					<BreadcrumbItem>
 						<BreadcrumbButton active>{project.name}</BreadcrumbButton>
 					</BreadcrumbItem>
@@ -84,25 +84,27 @@ export function ProjectDetailPage() {
 									<Heading size="lg" className="mb-0">
 										{project.name}
 									</Heading>
-									<Chip variant="success" size="sm">Active</Chip>
+									<Chip variant="success" size="sm">
+										Active
+									</Chip>
 								</div>
 								{project.description && (
-									<Text className="text-text-secondary mb-4 max-w-2xl">
-										{project.description}
-									</Text>
+									<Text className="text-text-secondary mb-4 max-w-2xl">{project.description}</Text>
 								)}
 								<div className="flex items-start gap-6">
 									<div>
-										<Text className="text-text-muted mb-1 uppercase font-medium text-xs">
-											Slug
-										</Text>
-										<Chip variant="info" size="sm">{project.slug}</Chip>
+										<Text className="text-text-muted mb-1 uppercase font-medium text-xs">Slug</Text>
+										<Chip variant="info" size="sm">
+											{project.slug}
+										</Chip>
 									</div>
 									<div>
 										<Text className="text-text-muted mb-1 uppercase font-medium text-xs">
 											Project ID
 										</Text>
-										<Chip variant="info" size="sm">{project.id}</Chip>
+										<Chip variant="info" size="sm">
+											{project.id}
+										</Chip>
 									</div>
 								</div>
 							</div>
@@ -118,9 +120,7 @@ export function ProjectDetailPage() {
 						<IconBox size="md" variant="danger-subtle" className="mb-3">
 							<Icon icon={IconType.Dashboard} size={20} />
 						</IconBox>
-						<Heading className="mb-1">
-							{statsLoading ? "—" : stats?.totalApps || 0}
-						</Heading>
+						<Heading className="mb-1">{statsLoading ? "—" : stats?.totalApps || 0}</Heading>
 						<Text className="text-text-muted">Applications</Text>
 					</CardBody>
 				</Card>
@@ -130,9 +130,7 @@ export function ProjectDetailPage() {
 						<IconBox size="md" variant="warning-subtle" className="mb-3">
 							<Icon icon={IconType.UserMultiple} size={20} />
 						</IconBox>
-						<Heading className="mb-1">
-							{statsLoading ? "—" : stats?.totalUsers || 0}
-						</Heading>
+						<Heading className="mb-1">{statsLoading ? "—" : stats?.totalUsers || 0}</Heading>
 						<Text className="text-text-muted">Total Users</Text>
 					</CardBody>
 				</Card>
@@ -142,14 +140,10 @@ export function ProjectDetailPage() {
 						<IconBox size="md" variant="success-subtle" className="mb-3">
 							<Icon icon={IconType.Key} size={20} />
 						</IconBox>
-						<Heading className="mb-1">
-							{statsLoading ? "—" : stats?.activeLicenses || 0}
-						</Heading>
+						<Heading className="mb-1">{statsLoading ? "—" : stats?.activeLicenses || 0}</Heading>
 						<Text className="text-text-muted">Active Licenses</Text>
 						{!statsLoading && stats && (
-							<Text className="text-text-muted mt-1">
-								{stats.totalLicenses} total
-							</Text>
+							<Text className="text-text-muted mt-1">{stats.totalLicenses} total</Text>
 						)}
 					</CardBody>
 				</Card>
@@ -192,10 +186,7 @@ export function ProjectDetailPage() {
 							title="No applications yet"
 							description="Create your first app to start managing authentication."
 							action={
-								<Button
-									variant="primary"
-									onClick={() => navigate(`/projects/${projectId}/apps/new`)}
-								>
+								<Button variant="primary" onClick={() => navigate(`/projects/${projectId}/apps/new`)}>
 									<Icon icon={IconType.Add} size={16} />
 									Create App
 								</Button>
@@ -220,12 +211,10 @@ export function ProjectDetailPage() {
 							>
 								<TableCell>
 									<div className="flex items-center gap-3">
-									<IconBox size="sm" variant="secondary-subtle">
+										<IconBox size="sm" variant="secondary-subtle">
 											<Icon icon={IconType[getIconById(app.icon || "dashboard")]} size={18} />
 										</IconBox>
-										<Text className="font-medium">
-											{app.name}
-										</Text>
+										<Text className="font-medium">{app.name}</Text>
 									</div>
 								</TableCell>
 								<TableCell>
@@ -234,12 +223,12 @@ export function ProjectDetailPage() {
 									</code>
 								</TableCell>
 								<TableCell>
-									<Text className="text-text-secondary">
-										{app.sessionTtlDays || 30} days
-									</Text>
+									<Text className="text-text-secondary">{app.sessionTtlDays || 30} days</Text>
 								</TableCell>
 								<TableCell>
-									<Chip variant="success" size="sm">Active</Chip>
+									<Chip variant="success" size="sm">
+										Active
+									</Chip>
 								</TableCell>
 								<TableCell className="text-right pr-4">
 									<Icon icon={IconType.ArrowRight} size={18} className="text-primary" />
@@ -284,12 +273,8 @@ export function ProjectDetailPage() {
 							<DataTableRow key={member.id}>
 								<TableCell>
 									<div className="flex items-center gap-3">
-										<Avatar size="sm">
-											{member.name?.charAt(0).toUpperCase() || "?"}
-										</Avatar>
-										<Text className="font-medium">
-											{member.name}
-										</Text>
+										<Avatar size="sm">{member.name?.charAt(0).toUpperCase() || "?"}</Avatar>
+										<Text className="font-medium">{member.name}</Text>
 									</div>
 								</TableCell>
 								<TableCell>

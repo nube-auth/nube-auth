@@ -164,15 +164,16 @@ export function AppApiKeysPage() {
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>
+							{project.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>{app.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>
+							{app.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
 						<BreadcrumbButton active>API Keys</BreadcrumbButton>
 					</BreadcrumbItem>
@@ -181,19 +182,17 @@ export function AppApiKeysPage() {
 
 			{/* Page Header */}
 			<div>
-				<Heading level={1} size="lg">API Keys</Heading>
-				<Text className="text-muted-foreground mt-1">
-					Manage your app's API credentials for integration
-				</Text>
+				<Heading level={1} size="lg">
+					API Keys
+				</Heading>
+				<Text className="text-muted-foreground mt-1">Manage your app's API credentials for integration</Text>
 			</div>
 
 			{/* Warning Banner */}
 			<Alert variant="warning">
 				<Icon icon={IconType.AlertCircle} size={20} />
 				<div>
-					<Text className="font-semibold mb-1">
-						Keep these keys secure!
-					</Text>
+					<Text className="font-semibold mb-1">Keep these keys secure!</Text>
 					<Text className="text-muted-foreground text-sm">
 						Never expose these keys in client-side code or public repositories. Store them securely as
 						environment variables.
@@ -204,9 +203,7 @@ export function AppApiKeysPage() {
 			{/* App ID Card */}
 			<Card>
 				<CardBody>
-					<Text className="text-sm font-semibold text-muted-foreground mb-2">
-						App ID (Public)
-					</Text>
+					<Text className="text-sm font-semibold text-muted-foreground mb-2">App ID (Public)</Text>
 					<code className="block w-full rounded-lg bg-muted/30 px-4 py-3 font-mono text-sm text-foreground break-all">
 						{app.id}
 					</code>
@@ -214,11 +211,7 @@ export function AppApiKeysPage() {
 						This is your public app identifier. Safe to use in client-side code.
 					</Text>
 					<div className="flex gap-2 mt-4">
-						<Button
-							variant="secondary"
-							size="sm"
-							onClick={() => handleCopy(app.id, "appId")}
-						>
+						<Button variant="secondary" size="sm" onClick={() => handleCopy(app.id, "appId")}>
 							{copying === "appId" ? "✓ Copied" : "Copy"}
 						</Button>
 					</div>
@@ -228,9 +221,7 @@ export function AppApiKeysPage() {
 			{/* Client Secret Card */}
 			<Card>
 				<CardBody>
-					<Text className="text-sm font-semibold text-muted-foreground mb-2">
-						Client Secret
-					</Text>
+					<Text className="text-sm font-semibold text-muted-foreground mb-2">Client Secret</Text>
 					<code className="block w-full rounded-lg bg-muted/30 px-4 py-3 font-mono text-sm text-foreground break-all">
 						{showSecret && revealedKeys.clientSecret ? revealedKeys.clientSecret : app.clientSecret}
 					</code>
@@ -254,11 +245,7 @@ export function AppApiKeysPage() {
 						>
 							{showSecret ? "Hide" : "Reveal"}
 						</Button>
-						<Button
-							variant="danger"
-							size="sm"
-							onClick={() => setShowRegenerateSecretModal(true)}
-						>
+						<Button variant="danger" size="sm" onClick={() => setShowRegenerateSecretModal(true)}>
 							Regenerate Secret
 						</Button>
 					</div>
@@ -268,9 +255,7 @@ export function AppApiKeysPage() {
 			{/* Service Token Card */}
 			<Card>
 				<CardBody>
-					<Text className="text-sm font-semibold text-muted-foreground mb-2">
-						Service Token
-					</Text>
+					<Text className="text-sm font-semibold text-muted-foreground mb-2">Service Token</Text>
 					<code className="block w-full rounded-lg bg-muted/30 px-4 py-3 font-mono text-sm text-foreground break-all">
 						{showToken && revealedKeys.serviceToken ? revealedKeys.serviceToken : app.serviceToken}
 					</code>
@@ -294,11 +279,7 @@ export function AppApiKeysPage() {
 						>
 							{showToken ? "Hide" : "Reveal"}
 						</Button>
-						<Button
-							variant="danger"
-							size="sm"
-							onClick={() => setShowRegenerateTokenModal(true)}
-						>
+						<Button variant="danger" size="sm" onClick={() => setShowRegenerateTokenModal(true)}>
 							Regenerate Token
 						</Button>
 					</div>
@@ -313,15 +294,17 @@ export function AppApiKeysPage() {
 							<Icon icon={IconType.Bookmark} size={22} />
 						</IconBox>
 						<div>
-							<Text className="font-semibold mb-1">
-								Integration Guide
-							</Text>
+							<Text className="font-semibold mb-1">Integration Guide</Text>
 							<Text className="text-muted-foreground text-sm">
 								Learn how to integrate Nube Auth into your application with code examples
 							</Text>
 						</div>
 					</div>
-					<Button variant="primary" size="sm" onClick={() => navigate(`/projects/${projectId}/apps/${appId}/developers`)}>
+					<Button
+						variant="primary"
+						size="sm"
+						onClick={() => navigate(`/projects/${projectId}/apps/${appId}/developers`)}
+					>
 						View Guide
 					</Button>
 				</CardBody>

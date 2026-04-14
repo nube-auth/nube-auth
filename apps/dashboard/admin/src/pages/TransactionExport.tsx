@@ -141,7 +141,9 @@ export function TransactionExportPage() {
 				};
 
 				// Download JSON
-				const blob = new Blob([JSON.stringify(jsonContent, null, 2)], { type: "application/json;charset=utf-8;" });
+				const blob = new Blob([JSON.stringify(jsonContent, null, 2)], {
+					type: "application/json;charset=utf-8;",
+				});
 				const link = document.createElement("a");
 				link.href = URL.createObjectURL(blob);
 				link.download = `transactions-export-${new Date().toISOString().split("T")[0]}.json`;
@@ -164,7 +166,7 @@ export function TransactionExportPage() {
 				<BreadcrumbList>
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to="/billing" />}>Billing</BreadcrumbButton>
-					</BreadcrumbItem>
+				</BreadcrumbItem>
 					<BreadcrumbItem>
 						<BreadcrumbButton active>Transaction Export</BreadcrumbButton>
 					</BreadcrumbItem>
@@ -172,13 +174,17 @@ export function TransactionExportPage() {
 			</Breadcrumb>
 
 			<div className="mb-6">
-				<Text className="m-0 text-text-secondary">Export and analyze transaction history in CSV or JSON format</Text>
+				<Text className="m-0 text-text-secondary">
+					Export and analyze transaction history in CSV or JSON format
+				</Text>
 			</div>
 
 			{/* Export Controls */}
 			<Card className="mb-6">
 				<CardBody className="p-5 space-y-5">
-					<Heading level={3} size="md" className="mb-0">Export Settings</Heading>
+					<Heading level={3} size="md" className="mb-0">
+						Export Settings
+					</Heading>
 
 					{/* Format Selection */}
 					<div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
@@ -215,135 +221,143 @@ export function TransactionExportPage() {
 
 					<div className="h-px bg-border-primary" />
 
-				{/* Filters */}
-				<Heading level={4} size="sm" className="mt-0 mb-4">Filters</Heading>
-				<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-4">
-					<div>
-						<Label className="text-xs mb-1.5">Transaction Type</Label>
-						<Select
-							value={filters.type}
-							onChange={(value) => setFilters({ ...filters, type: value, offset: 0 })}
-							placeholder="All Types"
-							options={[
-								{ value: "", label: "All Types" },
-								{ value: "purchase", label: "Purchase" },
-								{ value: "renewal", label: "Renewal" },
-								{ value: "refund", label: "Refund" },
-								{ value: "chargeback", label: "Chargeback" },
-								{ value: "manual_adjustment", label: "Manual Adjustment" },
-							]}
-						/>
+					{/* Filters */}
+					<Heading level={4} size="sm" className="mt-0 mb-4">
+						Filters
+					</Heading>
+					<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4 mb-4">
+						<div>
+							<Label className="text-xs mb-1.5">Transaction Type</Label>
+							<Select
+								value={filters.type}
+								onChange={(value) => setFilters({ ...filters, type: value, offset: 0 })}
+								placeholder="All Types"
+								options={[
+									{ value: "", label: "All Types" },
+									{ value: "purchase", label: "Purchase" },
+									{ value: "renewal", label: "Renewal" },
+									{ value: "refund", label: "Refund" },
+									{ value: "chargeback", label: "Chargeback" },
+									{ value: "manual_adjustment", label: "Manual Adjustment" },
+								]}
+							/>
+						</div>
+
+						<div>
+							<Label className="text-xs mb-1.5">Status</Label>
+							<Select
+								value={filters.status}
+								onChange={(value) => setFilters({ ...filters, status: value, offset: 0 })}
+								placeholder="All Statuses"
+								options={[
+									{ value: "", label: "All Statuses" },
+									{ value: "pending", label: "Pending" },
+									{ value: "completed", label: "Completed" },
+									{ value: "failed", label: "Failed" },
+								]}
+							/>
+						</div>
+
+						<div>
+							<Label className="text-xs mb-1.5">Provider</Label>
+							<Select
+								value={filters.provider}
+								onChange={(value) => setFilters({ ...filters, provider: value, offset: 0 })}
+								placeholder="All Providers"
+								options={[
+									{ value: "", label: "All Providers" },
+									{ value: "lemon_squeezy", label: "LemonSqueezy" },
+									{ value: "paddle", label: "Paddle" },
+								]}
+							/>
+						</div>
+
+						<div>
+							<Label className="text-xs mb-1.5">Start Date</Label>
+							<Input
+								type="date"
+								value={filters.start_date}
+								onChange={(e) => setFilters({ ...filters, start_date: e.target.value, offset: 0 })}
+							/>
+						</div>
+
+						<div>
+							<Label className="text-xs mb-1.5">End Date</Label>
+							<Input
+								type="date"
+								value={filters.end_date}
+								onChange={(e) => setFilters({ ...filters, end_date: e.target.value, offset: 0 })}
+							/>
+						</div>
 					</div>
 
-					<div>
-						<Label className="text-xs mb-1.5">Status</Label>
-						<Select
-							value={filters.status}
-							onChange={(value) => setFilters({ ...filters, status: value, offset: 0 })}
-							placeholder="All Statuses"
-							options={[
-								{ value: "", label: "All Statuses" },
-								{ value: "pending", label: "Pending" },
-								{ value: "completed", label: "Completed" },
-								{ value: "failed", label: "Failed" },
-							]}
-						/>
+					<div className="flex gap-2">
+						<Button
+							onClick={() =>
+								setFilters({
+									type: "",
+									status: "",
+									provider: "",
+									limit: 1000,
+									offset: 0,
+									start_date: "",
+									end_date: "",
+								})
+							}
+							variant="outline"
+							size="sm"
+						>
+							Clear Filters
+						</Button>
 					</div>
 
-					<div>
-						<Label className="text-xs mb-1.5">Provider</Label>
-						<Select
-							value={filters.provider}
-							onChange={(value) => setFilters({ ...filters, provider: value, offset: 0 })}
-							placeholder="All Providers"
-							options={[
-								{ value: "", label: "All Providers" },
-								{ value: "lemon_squeezy", label: "LemonSqueezy" },
-								{ value: "paddle", label: "Paddle" },
-							]}
-						/>
-					</div>
+					<div className="h-px bg-border-primary" />
 
-					<div>
-						<Label className="text-xs mb-1.5">Start Date</Label>
-						<Input
-							type="date"
-							value={filters.start_date}
-							onChange={(e) => setFilters({ ...filters, start_date: e.target.value, offset: 0 })}
-						/>
-					</div>
-
-					<div>
-						<Label className="text-xs mb-1.5">End Date</Label>
-						<Input
-							type="date"
-							value={filters.end_date}
-							onChange={(e) => setFilters({ ...filters, end_date: e.target.value, offset: 0 })}
-						/>
-					</div>
-				</div>
-
-				<div className="flex gap-2">
-					<Button
-						onClick={() =>
-							setFilters({
-								type: "",
-								status: "",
-								provider: "",
-								limit: 1000,
-								offset: 0,
-								start_date: "",
-								end_date: "",
-							})
-						}
-						variant="outline" size="sm"
-					>
-						Clear Filters
-					</Button>
-				</div>
-
-				<div className="h-px bg-border-primary" />
-
-				{/* Export Summary */}
-				{transactionsQuery.data && (
-					<div className="p-3 bg-surface-secondary rounded-md">
-						<div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4">
-							<div>
-								<div className="text-xs text-text-tertiary mb-1">Total Transactions</div>
-								<div className="text-lg font-semibold text-text-primary">
-									{transactionsQuery.data.pagination?.total || transactionsQuery.data.data.length}
+					{/* Export Summary */}
+					{transactionsQuery.data && (
+						<div className="p-3 bg-surface-secondary rounded-md">
+							<div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4">
+								<div>
+									<div className="text-xs text-text-tertiary mb-1">Total Transactions</div>
+									<div className="text-lg font-semibold text-text-primary">
+										{transactionsQuery.data.pagination?.total || transactionsQuery.data.data.length}
+									</div>
 								</div>
-							</div>
-							<div>
-								<div className="text-xs text-text-tertiary mb-1">Ready to Export</div>
-								<div className="text-lg font-semibold text-text-primary">
-									{transactionsQuery.data.data.length}
+								<div>
+									<div className="text-xs text-text-tertiary mb-1">Ready to Export</div>
+									<div className="text-lg font-semibold text-text-primary">
+										{transactionsQuery.data.data.length}
+									</div>
 								</div>
-							</div>
-							<div>
-								<div className="text-xs text-text-tertiary mb-1">Format</div>
-								<div className="text-lg font-semibold text-text-primary">
-									{exportFormat.toUpperCase()}
+								<div>
+									<div className="text-xs text-text-tertiary mb-1">Format</div>
+									<div className="text-lg font-semibold text-text-primary">
+										{exportFormat.toUpperCase()}
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
-				)}
+					)}
 
-				{/* Export Button */}
-				<Button
-					onClick={handleExport}
-					disabled={isExporting || !transactionsQuery.data || transactionsQuery.data.data.length === 0}
-					variant="primary" className="w-full"
-				>
-					{isExporting ? "Exporting..." : `↓ Export ${transactionsQuery.data?.data?.length || 0} Transactions as ${exportFormat.toUpperCase()}`}
-				</Button>
+					{/* Export Button */}
+					<Button
+						onClick={handleExport}
+						disabled={isExporting || !transactionsQuery.data || transactionsQuery.data.data.length === 0}
+						variant="primary"
+						className="w-full"
+					>
+						{isExporting
+							? "Exporting..."
+							: `↓ Export ${transactionsQuery.data?.data?.length || 0} Transactions as ${exportFormat.toUpperCase()}`}
+					</Button>
 				</CardBody>
 			</Card>
 
 			{/* Preview Table */}
 			<DataTable
-				header={<DataTableHeader title={`Preview (${transactionsQuery.data?.data?.length || 0} transactions)`} />}
+				header={
+					<DataTableHeader title={`Preview (${transactionsQuery.data?.data?.length || 0} transactions)`} />
+				}
 				isEmpty={!transactionsQuery.data || transactionsQuery.data.data.length === 0}
 				emptyState={
 					<div className="py-16 px-6 text-center">
@@ -356,53 +370,69 @@ export function TransactionExportPage() {
 						</Text>
 					</div>
 				}
-				footer={transactionsQuery.data && transactionsQuery.data.data.length > 10 && (
-					<Text className="text-text-tertiary text-sm text-center">
-						Showing 10 of {transactionsQuery.data.data.length} transactions. Download to see all records.
-					</Text>
-				)}
+				footer={
+					transactionsQuery.data &&
+					transactionsQuery.data.data.length > 10 && (
+						<Text className="text-text-tertiary text-sm text-center">
+							Showing 10 of {transactionsQuery.data.data.length} transactions. Download to see all
+							records.
+						</Text>
+					)
+				}
 			>
-						<TableHeader>
-							<tr>
-								<TableHead>Date</TableHead>
-								<TableHead>Type</TableHead>
-								<TableHead>Status</TableHead>
-								<TableHead align="right">Amount</TableHead>
-								<TableHead>Provider</TableHead>
-							</tr>
-						</TableHeader>
-						<TableBody>
-							{(transactionsQuery.data?.data || []).slice(0, 10).map((txn) => (
-									<DataTableRow key={txn.id}>
-									<TableCell>
-										<Text className="text-text-secondary whitespace-nowrap">{formatDate(txn.created_at)}</Text>
-									</TableCell>
-									<TableCell>
-										<Chip variant="primary" size="sm" pill>{txn.type}</Chip>
-									</TableCell>
-									<TableCell>
-										<Chip
-											variant={txn.status === "completed" ? "success" : txn.status === "pending" ? "warning" : "danger"}
-											size="sm"
-											pill
-										>
-											{txn.status === "completed" && "✓ "}
-											{txn.status === "pending" && "⏱ "}
-											{txn.status === "failed" && "✗ "}
-											{txn.status}
-										</Chip>
-									</TableCell>
-									<TableCell align="right">
-										<Text className="font-semibold text-text-primary">{formatCurrency(txn.amount, txn.currency)}</Text>
-									</TableCell>
-									<TableCell>
-										<Chip variant={txn.provider === "lemon_squeezy" ? "success" : "info"} size="sm" pill>
-											{txn.provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
-										</Chip>
-									</TableCell>
-								</DataTableRow>
-							))}
-						</TableBody>
+				<TableHeader>
+					<tr>
+						<TableHead>Date</TableHead>
+						<TableHead>Type</TableHead>
+						<TableHead>Status</TableHead>
+						<TableHead align="right">Amount</TableHead>
+						<TableHead>Provider</TableHead>
+					</tr>
+				</TableHeader>
+				<TableBody>
+					{(transactionsQuery.data?.data || []).slice(0, 10).map((txn) => (
+						<DataTableRow key={txn.id}>
+							<TableCell>
+								<Text className="text-text-secondary whitespace-nowrap">
+									{formatDate(txn.created_at)}
+								</Text>
+							</TableCell>
+							<TableCell>
+								<Chip variant="primary" size="sm" pill>
+									{txn.type}
+								</Chip>
+							</TableCell>
+							<TableCell>
+								<Chip
+									variant={
+										txn.status === "completed"
+											? "success"
+											: txn.status === "pending"
+												? "warning"
+												: "danger"
+									}
+									size="sm"
+									pill
+								>
+									{txn.status === "completed" && "✓ "}
+									{txn.status === "pending" && "⏱ "}
+									{txn.status === "failed" && "✗ "}
+									{txn.status}
+								</Chip>
+							</TableCell>
+							<TableCell align="right">
+								<Text className="font-semibold text-text-primary">
+									{formatCurrency(txn.amount, txn.currency)}
+								</Text>
+							</TableCell>
+							<TableCell>
+								<Chip variant={txn.provider === "lemon_squeezy" ? "success" : "info"} size="sm" pill>
+									{txn.provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
+								</Chip>
+							</TableCell>
+						</DataTableRow>
+					))}
+				</TableBody>
 			</DataTable>
 		</div>
 	);

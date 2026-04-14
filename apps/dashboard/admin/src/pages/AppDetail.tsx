@@ -34,19 +34,11 @@ export function AppDetailPage() {
 	}
 
 	if (!project) {
-		return (
-			<Alert variant="danger">
-				Project not found
-			</Alert>
-		);
+		return <Alert variant="danger">Project not found</Alert>;
 	}
 
 	if (!app) {
-		return (
-			<Alert variant="danger">
-				App not found
-			</Alert>
-		);
+		return <Alert variant="danger">App not found</Alert>;
 	}
 
 	const statItems = [
@@ -115,15 +107,14 @@ export function AppDetailPage() {
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>
+							{project.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps`} />}>Apps</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
 						<BreadcrumbButton active>{app.name}</BreadcrumbButton>
 					</BreadcrumbItem>
@@ -144,25 +135,29 @@ export function AppDetailPage() {
 									<Heading size="lg" className="mb-0">
 										{app.name}
 									</Heading>
-									<Chip variant="success" size="sm">Active</Chip>
+									<Chip variant="success" size="sm">
+										Active
+									</Chip>
 								</div>
-								{(app.description) && (
-									<Text className="text-muted-foreground mb-4 max-w-2xl">
-										{app.description}
-									</Text>
+								{app.description && (
+									<Text className="text-muted-foreground mb-4 max-w-2xl">{app.description}</Text>
 								)}
 								<div className="flex items-start gap-6">
 									<div>
 										<Text className="text-muted-foreground mb-1 uppercase font-medium text-xs">
 											Slug
 										</Text>
-										<Chip variant="info" size="sm">{app.slug}</Chip>
+										<Chip variant="info" size="sm">
+											{app.slug}
+										</Chip>
 									</div>
 									<div>
 										<Text className="text-muted-foreground mb-1 uppercase font-medium text-xs">
 											App ID
 										</Text>
-										<Chip variant="info" size="sm">{app.id}</Chip>
+										<Chip variant="info" size="sm">
+											{app.id}
+										</Chip>
 									</div>
 								</div>
 							</div>
@@ -181,7 +176,9 @@ export function AppDetailPage() {
 							</IconBox>
 							<div>
 								<Text className="text-muted-foreground text-sm">{stat.label}</Text>
-								<Heading level={3} size="lg">{stat.value}</Heading>
+								<Heading level={3} size="lg">
+									{stat.value}
+								</Heading>
 							</div>
 						</CardBody>
 					</Card>

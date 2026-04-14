@@ -37,11 +37,7 @@ import { PageLoader } from "../components/PageLoader";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
 import { useApp, useProject } from "../hooks/api";
-import {
-	useV2Subscriptions,
-	useV2SubscriptionAction,
-	type V2Subscription,
-} from "../hooks/api";
+import { useV2Subscriptions, useV2SubscriptionAction, type V2Subscription } from "../hooks/api";
 
 export function AppSubscriptionsPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -100,12 +96,18 @@ export function AppSubscriptionsPage() {
 
 	const getStatusChipVariant = (status: string) => {
 		switch (status) {
-			case "active": return "success";
-			case "canceled": return "danger";
-			case "past_due": return "warning";
-			case "trialing": return "info";
-			case "paused": return "default";
-			default: return "default";
+			case "active":
+				return "success";
+			case "canceled":
+				return "danger";
+			case "past_due":
+				return "warning";
+			case "trialing":
+				return "info";
+			case "paused":
+				return "default";
+			default:
+				return "default";
 		}
 	};
 
@@ -129,15 +131,16 @@ export function AppSubscriptionsPage() {
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>
+							{project.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>{app.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>
+							{app.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
 						<BreadcrumbButton active>Subscriptions</BreadcrumbButton>
 					</BreadcrumbItem>
@@ -145,7 +148,9 @@ export function AppSubscriptionsPage() {
 			</Breadcrumb>
 
 			<div>
-				<Heading level={1} size="lg">Subscriptions</Heading>
+				<Heading level={1} size="lg">
+					Subscriptions
+				</Heading>
 				<Text className="text-muted-foreground mt-1">Manage recurring subscriptions for {app.name}</Text>
 			</div>
 
@@ -156,14 +161,33 @@ export function AppSubscriptionsPage() {
 						<Card key={status}>
 							<CardBody className="flex items-center gap-3">
 								<IconBox
-									variant={status === "active" ? "success-subtle" : status === "canceled" ? "danger-subtle" : "secondary-subtle"}
+									variant={
+										status === "active"
+											? "success-subtle"
+											: status === "canceled"
+												? "danger-subtle"
+												: "secondary-subtle"
+									}
 									size="md"
 								>
-									<Icon icon={status === "active" ? IconType.Check : status === "canceled" ? IconType.Cancel : IconType.Clock} size={18} />
+									<Icon
+										icon={
+											status === "active"
+												? IconType.Check
+												: status === "canceled"
+													? IconType.Cancel
+													: IconType.Clock
+										}
+										size={18}
+									/>
 								</IconBox>
 								<div>
-									<Text className="text-muted-foreground text-xs capitalize">{status.replace("_", " ")}</Text>
-									<Heading level={4} size="sm">{count}</Heading>
+									<Text className="text-muted-foreground text-xs capitalize">
+										{status.replace("_", " ")}
+									</Text>
+									<Heading level={4} size="sm">
+										{count}
+									</Heading>
 								</div>
 							</CardBody>
 						</Card>
@@ -193,10 +217,12 @@ export function AppSubscriptionsPage() {
 
 			{/* Table */}
 			{isLoading ? (
-				<div className="flex justify-center py-12"><Spinner /></div>
+				<div className="flex justify-center py-12">
+					<Spinner />
+				</div>
 			) : subscriptions.length === 0 ? (
 				<EmptyState
-				icon={IconType.DollarCircle}
+					icon={IconType.DollarCircle}
 					title="No subscriptions"
 					description="No subscriptions match the current filters"
 				/>
@@ -204,86 +230,99 @@ export function AppSubscriptionsPage() {
 				<DataTable>
 					<TableHeader>
 						<tr>
-								<TableHead>User</TableHead>
-								<TableHead>Plan</TableHead>
-								<TableHead>Price</TableHead>
-								<TableHead>Status</TableHead>
-								<TableHead>Current Period</TableHead>
-								<TableHead>Actions</TableHead>
+							<TableHead>User</TableHead>
+							<TableHead>Plan</TableHead>
+							<TableHead>Price</TableHead>
+							<TableHead>Status</TableHead>
+							<TableHead>Current Period</TableHead>
+							<TableHead>Actions</TableHead>
 						</tr>
 					</TableHeader>
-						<TableBody>
-							{subscriptions.map((sub) => (
-								<DataTableRow key={sub.subscriptionId}>
-									<TableCell>
-										<div>
-											<Text className="text-sm font-medium">{sub.userName || sub.userEmail || "—"}</Text>
-											{sub.userEmail && sub.userName && (
-												<Text className="text-xs text-muted-foreground">{sub.userEmail}</Text>
-											)}
-										</div>
-									</TableCell>
-									<TableCell>
-										<Text className="text-sm">{sub.plan?.name || "—"}</Text>
-									</TableCell>
-									<TableCell>
-										{sub.price ? (
-											<Text className="text-sm">
-												${(sub.price.amountCents / 100).toFixed(2)}/{sub.price.interval || "once"}
-											</Text>
-										) : (
-											<Text className="text-sm text-muted-foreground">—</Text>
+					<TableBody>
+						{subscriptions.map((sub) => (
+							<DataTableRow key={sub.subscriptionId}>
+								<TableCell>
+									<div>
+										<Text className="text-sm font-medium">
+											{sub.userName || sub.userEmail || "—"}
+										</Text>
+										{sub.userEmail && sub.userName && (
+											<Text className="text-xs text-muted-foreground">{sub.userEmail}</Text>
 										)}
-									</TableCell>
-									<TableCell>
-										<Chip variant={getStatusChipVariant(sub.status)} size="sm">
-											{sub.status.replace("_", " ")}
-										</Chip>
-									</TableCell>
-									<TableCell>
-										<div>
+									</div>
+								</TableCell>
+								<TableCell>
+									<Text className="text-sm">{sub.plan?.name || "—"}</Text>
+								</TableCell>
+								<TableCell>
+									{sub.price ? (
+										<Text className="text-sm">
+											${(sub.price.amountCents / 100).toFixed(2)}/{sub.price.interval || "once"}
+										</Text>
+									) : (
+										<Text className="text-sm text-muted-foreground">—</Text>
+									)}
+								</TableCell>
+								<TableCell>
+									<Chip variant={getStatusChipVariant(sub.status)} size="sm">
+										{sub.status.replace("_", " ")}
+									</Chip>
+								</TableCell>
+								<TableCell>
+									<div>
+										<Text className="text-xs text-muted-foreground">
+											{sub.currentPeriodStart
+												? new Date(sub.currentPeriodStart).toLocaleDateString()
+												: "—"}
+										</Text>
+										{sub.currentPeriodEnd && (
 											<Text className="text-xs text-muted-foreground">
-												{sub.currentPeriodStart ? new Date(sub.currentPeriodStart).toLocaleDateString() : "—"}
+												→ {new Date(sub.currentPeriodEnd).toLocaleDateString()}
 											</Text>
-											{sub.currentPeriodEnd && (
-												<Text className="text-xs text-muted-foreground">
-													→ {new Date(sub.currentPeriodEnd).toLocaleDateString()}
-												</Text>
-											)}
-										</div>
-									</TableCell>
-									<TableCell>
-										<div className="flex gap-1">
-											{getAvailableActions(sub).map((act) => (
-												<Button
-													key={act.action}
-													size="sm"
-													variant={act.variant}
-													onClick={() => setActionModal({ sub, action: act.action })}
-												>
-													{act.label}
-												</Button>
-											))}
-										</div>
-									</TableCell>
-								</DataTableRow>
-							))}
-						</TableBody>
-			</DataTable>
+										)}
+									</div>
+								</TableCell>
+								<TableCell>
+									<div className="flex gap-1">
+										{getAvailableActions(sub).map((act) => (
+											<Button
+												key={act.action}
+												size="sm"
+												variant={act.variant}
+												onClick={() => setActionModal({ sub, action: act.action })}
+											>
+												{act.label}
+											</Button>
+										))}
+									</div>
+								</TableCell>
+							</DataTableRow>
+						))}
+					</TableBody>
+				</DataTable>
 			)}
 
 			{/* Action Confirmation Modal */}
-			<Dialog open={!!actionModal} onOpenChange={() => { setActionModal(null); setReason(""); }}>
+			<Dialog
+				open={!!actionModal}
+				onOpenChange={() => {
+					setActionModal(null);
+					setReason("");
+				}}
+			>
 				<DialogPopup>
 					<DialogHeader>
-						<DialogTitle className="capitalize">
-							{actionModal?.action} Subscription
-						</DialogTitle>
+						<DialogTitle className="capitalize">{actionModal?.action} Subscription</DialogTitle>
 					</DialogHeader>
 					<DialogBody className="space-y-4">
 						<Text>
 							Are you sure you want to {actionModal?.action} the subscription for{" "}
-							<strong>{actionModal?.sub.userName || actionModal?.sub.userEmail || actionModal?.sub.subscriptionId}</strong>?
+							<strong>
+								{actionModal?.sub.userName ||
+									actionModal?.sub.userEmail ||
+									actionModal?.sub.subscriptionId}
+							</strong>
+							?
 						</Text>
 						<div>
 							<Label className="block text-sm font-medium mb-1">Reason (optional)</Label>
@@ -295,7 +334,13 @@ export function AppSubscriptionsPage() {
 						</div>
 					</DialogBody>
 					<DialogFooter>
-						<Button variant="outline" onClick={() => { setActionModal(null); setReason(""); }}>
+						<Button
+							variant="outline"
+							onClick={() => {
+								setActionModal(null);
+								setReason("");
+							}}
+						>
 							Cancel
 						</Button>
 						<Button

@@ -147,7 +147,12 @@ function SecretModal({ secret, onClose }: { secret: string; onClose: () => void 
 		setTimeout(() => setCopied(false), 2000);
 	};
 	return (
-		<Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+		<Dialog
+			open
+			onOpenChange={(open) => {
+				if (!open) onClose();
+			}}
+		>
 			<DialogPopup>
 				<DialogHeader>
 					<DialogTitle>Signing Secret</DialogTitle>
@@ -181,13 +186,7 @@ function SecretModal({ secret, onClose }: { secret: string; onClose: () => void 
 
 // ─── Event Selector ───────────────────────────────────────────────────────────
 
-function EventSelector({
-	selected,
-	onChange,
-}: {
-	selected: string[];
-	onChange: (events: string[]) => void;
-}) {
+function EventSelector({ selected, onChange }: { selected: string[]; onChange: (events: string[]) => void }) {
 	const allSelected = SUPPORTED_EVENTS.every((e) => selected.includes(e));
 
 	const toggleAll = () => {
@@ -301,7 +300,9 @@ function WebhookLogsPanel({ appId, webhook }: { appId: string; webhook: AppWebho
 								</Chip>
 							</TableCell>
 							<TableCell className="text-sm">{log.responseStatus ?? "—"}</TableCell>
-							<TableCell className="text-sm">{log.durationMs != null ? `${log.durationMs}ms` : "—"}</TableCell>
+							<TableCell className="text-sm">
+								{log.durationMs != null ? `${log.durationMs}ms` : "—"}
+							</TableCell>
 							<TableCell className="text-sm">{log.attempt}</TableCell>
 							<TableCell className="text-sm text-muted">
 								{new Date(log.createdAt).toLocaleString()}
@@ -355,7 +356,11 @@ export function AppWebhooksPage() {
 	// Test event state
 	const [testTarget, setTestTarget] = useState<AppWebhook | null>(null);
 	const [testEvent, setTestEvent] = useState<string>(SUPPORTED_EVENTS[0]!);
-	const [testResult, setTestResult] = useState<{ success: boolean; responseStatus: number | null; durationMs: number } | null>(null);
+	const [testResult, setTestResult] = useState<{
+		success: boolean;
+		responseStatus: number | null;
+		durationMs: number;
+	} | null>(null);
 	const [testing, setTesting] = useState(false);
 
 	// Form state (shared for create/edit)
@@ -450,7 +455,11 @@ export function AppWebhooksPage() {
 		setTestResult(null);
 		try {
 			const result = await sendTestEvent.mutateAsync({ webhookId: testTarget.webhookId, event: testEvent });
-			setTestResult({ success: result.success, responseStatus: result.responseStatus, durationMs: result.durationMs });
+			setTestResult({
+				success: result.success,
+				responseStatus: result.responseStatus,
+				durationMs: result.durationMs,
+			});
 		} catch {
 			setTestResult({ success: false, responseStatus: null, durationMs: 0 });
 		} finally {
@@ -473,10 +482,14 @@ export function AppWebhooksPage() {
 						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
 					</BreadcrumbItem>
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>
+							{project.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>{app.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>
+							{app.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
 					<BreadcrumbItem>
 						<BreadcrumbButton active>Webhooks</BreadcrumbButton>
@@ -503,9 +516,9 @@ export function AppWebhooksPage() {
 				<div className="grid grid-cols-4 gap-4">
 					{(
 						[
-			{ label: "Total Deliveries", value: health.total, icon: IconType.Flash },
-						{ label: "Successful", value: health.success, icon: IconType.Check },
-						{ label: "Failed", value: health.failed, icon: IconType.Alert },
+							{ label: "Total Deliveries", value: health.total, icon: IconType.Flash },
+							{ label: "Successful", value: health.success, icon: IconType.Check },
+							{ label: "Failed", value: health.failed, icon: IconType.Alert },
 							{
 								label: "Success Rate",
 								value: health.successRate != null ? `${health.successRate}%` : "—",
@@ -572,7 +585,9 @@ export function AppWebhooksPage() {
 													</Chip>
 												))}
 												{wh.events.length > 8 && (
-													<Chip size="sm" variant="default">+{wh.events.length - 8} more</Chip>
+													<Chip size="sm" variant="default">
+														+{wh.events.length - 8} more
+													</Chip>
 												)}
 											</div>
 										</div>
@@ -587,27 +602,15 @@ export function AppWebhooksPage() {
 											>
 												{wh.isActive ? "Disable" : "Enable"}
 											</Button>
-											<Button
-												variant="secondary"
-												size="sm"
-												onClick={() => setRotateTarget(wh)}
-											>
+											<Button variant="secondary" size="sm" onClick={() => setRotateTarget(wh)}>
 												<Icon icon={IconType.Refresh} size={14} />
 												Rotate Secret
 											</Button>
-											<Button
-												variant="secondary"
-												size="sm"
-												onClick={() => openTestModal(wh)}
-											>
+											<Button variant="secondary" size="sm" onClick={() => openTestModal(wh)}>
 												<Icon icon={IconType.Flash} size={14} />
 												Send Test
 											</Button>
-											<Button
-												variant="danger"
-												size="sm"
-												onClick={() => setDeactivateTarget(wh)}
-											>
+											<Button variant="danger" size="sm" onClick={() => setDeactivateTarget(wh)}>
 												Remove
 											</Button>
 										</div>
@@ -622,7 +625,9 @@ export function AppWebhooksPage() {
 												setExpandedLogs(expandedLogs === wh.webhookId ? null : wh.webhookId)
 											}
 										>
-											{expandedLogs === wh.webhookId ? "Hide delivery logs" : "View delivery logs"}
+											{expandedLogs === wh.webhookId
+												? "Hide delivery logs"
+												: "View delivery logs"}
 										</button>
 										{expandedLogs === wh.webhookId && (
 											<div className="mt-3">
@@ -639,10 +644,17 @@ export function AppWebhooksPage() {
 
 			{/* Create / Edit Modal */}
 			{showCreateModal && (
-				<Dialog open onOpenChange={(open) => { if (!open) setShowCreateModal(false); }}>
+				<Dialog
+					open
+					onOpenChange={(open) => {
+						if (!open) setShowCreateModal(false);
+					}}
+				>
 					<DialogPopup className="max-w-2xl">
 						<DialogHeader>
-							<DialogTitle>{editingWebhook ? "Edit Webhook Endpoint" : "Register Webhook Endpoint"}</DialogTitle>
+							<DialogTitle>
+								{editingWebhook ? "Edit Webhook Endpoint" : "Register Webhook Endpoint"}
+							</DialogTitle>
 						</DialogHeader>
 						<DialogBody className="space-y-5">
 							<div className="space-y-1.5">
@@ -723,15 +735,19 @@ export function AppWebhooksPage() {
 
 			{/* Test event dialog */}
 			{testTarget && (
-				<Dialog open onOpenChange={(open) => { if (!open) setTestTarget(null); }}>
+				<Dialog
+					open
+					onOpenChange={(open) => {
+						if (!open) setTestTarget(null);
+					}}
+				>
 					<DialogPopup>
 						<DialogHeader>
 							<DialogTitle>Send Test Event</DialogTitle>
 						</DialogHeader>
 						<DialogBody className="space-y-4">
 							<Text className="text-sm text-muted">
-								Send a sample payload to{" "}
-								<code className="text-xs">{testTarget.url}</code> immediately,
+								Send a sample payload to <code className="text-xs">{testTarget.url}</code> immediately,
 								by-passing the delivery queue so you get instant feedback.
 							</Text>
 							<div className="space-y-1.5">

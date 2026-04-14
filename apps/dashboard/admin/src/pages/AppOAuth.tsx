@@ -92,10 +92,14 @@ export default function AppOAuthPage() {
 						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
 					</BreadcrumbItem>
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project?.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>
+							{project?.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>{app.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>
+							{app.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
 					<BreadcrumbItem>
 						<BreadcrumbButton active>OAuth</BreadcrumbButton>
@@ -106,7 +110,9 @@ export default function AppOAuthPage() {
 			{/* Page Header */}
 			<div className="flex justify-between items-center">
 				<div>
-					<Heading level={1} size="lg">OAuth Providers</Heading>
+					<Heading level={1} size="lg">
+						OAuth Providers
+					</Heading>
 					<Text className="text-muted-foreground">
 						Select which OAuth providers to enable for <strong>{app.name}</strong>
 					</Text>
@@ -120,11 +126,7 @@ export default function AppOAuthPage() {
 						<Button variant="secondary" onClick={handleCancel}>
 							Cancel
 						</Button>
-						<Button
-							variant="primary"
-							onClick={handleSave}
-							disabled={updateAppMutation.isPending}
-						>
+						<Button variant="primary" onClick={handleSave} disabled={updateAppMutation.isPending}>
 							{updateAppMutation.isPending ? "Saving..." : "Save"}
 						</Button>
 					</div>
@@ -136,12 +138,10 @@ export default function AppOAuthPage() {
 				<div className="flex gap-3">
 					<Icon icon={IconType.AlertCircle} size={20} className="text-primary shrink-0" />
 					<div>
-						<Text className="font-semibold text-primary mb-1">
-							Platform-Level Configuration
-						</Text>
+						<Text className="font-semibold text-primary mb-1">Platform-Level Configuration</Text>
 						<Text className="text-muted-foreground">
-							OAuth credentials are managed at the platform level. Simply select which providers to enable for
-							your app.
+							OAuth credentials are managed at the platform level. Simply select which providers to enable
+							for your app.
 						</Text>
 					</div>
 				</div>
@@ -170,23 +170,25 @@ export default function AppOAuthPage() {
 											<h3 className="text-base font-semibold text-foreground m-0">
 												{provider.name}
 											</h3>
-											<Chip size="sm">
-												Platform
-											</Chip>
+											<Chip size="sm">Platform</Chip>
 										</div>
-										<p className="text-sm text-muted-foreground m-0">
-											Managed by Nube Auth
-										</p>
+										<p className="text-sm text-muted-foreground m-0">Managed by Nube Auth</p>
 									</div>
 								</div>
 
 								<div className="flex items-center justify-between pt-4 border-t border-border">
-									<span className={`text-sm font-medium ${isSelected ? "text-primary" : "text-muted-foreground"}`}>
+									<span
+										className={`text-sm font-medium ${isSelected ? "text-primary" : "text-muted-foreground"}`}
+									>
 										{isSelected ? "Enabled" : "Disabled"}
 									</span>
 									{isEditing && (
-										<div className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ${isSelected ? "bg-primary" : "bg-muted"}`}>
-											<span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 mt-0.5 ${isSelected ? "translate-x-5" : "translate-x-0.5"}`} />
+										<div
+											className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ${isSelected ? "bg-primary" : "bg-muted"}`}
+										>
+											<span
+												className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 mt-0.5 ${isSelected ? "translate-x-5" : "translate-x-0.5"}`}
+											/>
 										</div>
 									)}
 								</div>

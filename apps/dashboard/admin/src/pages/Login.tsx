@@ -20,7 +20,7 @@ export function LoginPage() {
 			try {
 				const inviteCode = searchParams.get("invite");
 				const error = searchParams.get("error");
-				
+
 				if (error) {
 					setStatus("error");
 					// Only show known error codes to prevent reflected content injection

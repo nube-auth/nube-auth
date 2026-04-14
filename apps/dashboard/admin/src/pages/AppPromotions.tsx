@@ -110,7 +110,17 @@ export function AppPromotionsPage() {
 
 	const openCreate = () => {
 		setEditingPromo(null);
-		setForm({ name: "", description: "", discountType: "percent", discountValue: "", maxRedemptions: "", startsAt: "", endsAt: "", isNewCustomersOnly: false, planIds: [] });
+		setForm({
+			name: "",
+			description: "",
+			discountType: "percent",
+			discountValue: "",
+			maxRedemptions: "",
+			startsAt: "",
+			endsAt: "",
+			isNewCustomersOnly: false,
+			planIds: [],
+		});
 		setShowCreateModal(true);
 	};
 
@@ -221,15 +231,16 @@ export function AppPromotionsPage() {
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>
+							{project.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>{app.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>
+							{app.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
 						<BreadcrumbButton active>Promotions</BreadcrumbButton>
 					</BreadcrumbItem>
@@ -238,7 +249,9 @@ export function AppPromotionsPage() {
 
 			<div className="flex justify-between items-start">
 				<div>
-					<Heading level={1} size="lg">Promotions</Heading>
+					<Heading level={1} size="lg">
+						Promotions
+					</Heading>
 					<Text className="text-muted-foreground mt-1">Manage discounts and promo codes for {app.name}</Text>
 				</div>
 				<Button onClick={openCreate}>
@@ -249,10 +262,12 @@ export function AppPromotionsPage() {
 
 			{/* Promotions List */}
 			{isLoading ? (
-				<div className="flex justify-center py-12"><Spinner /></div>
+				<div className="flex justify-center py-12">
+					<Spinner />
+				</div>
 			) : promotions.length === 0 ? (
 				<EmptyState
-				icon={IconType.Ticket}
+					icon={IconType.Ticket}
 					title="No promotions yet"
 					description="Create your first promotion to offer discounts to customers"
 				/>
@@ -264,19 +279,27 @@ export function AppPromotionsPage() {
 								<div className="flex items-start justify-between">
 									<div className="flex-1">
 										<div className="flex items-center gap-2 mb-1">
-											<Heading level={4} size="sm">{promo.name}</Heading>
+											<Heading level={4} size="sm">
+												{promo.name}
+											</Heading>
 											<Chip variant={promo.isActive ? "success" : "default"} size="sm">
 												{promo.isActive ? "active" : "inactive"}
 											</Chip>
-											<Chip variant="info" size="sm">{discountDisplay(promo)}</Chip>
+											<Chip variant="info" size="sm">
+												{discountDisplay(promo)}
+											</Chip>
 										</div>
 										{promo.description && (
-											<Text className="text-muted-foreground text-sm mb-2">{promo.description}</Text>
+											<Text className="text-muted-foreground text-sm mb-2">
+												{promo.description}
+											</Text>
 										)}
 										{promo.plans && promo.plans.length > 0 && (
 											<div className="flex flex-wrap gap-1 mb-2">
 												{promo.plans.map((p) => (
-													<Chip key={p.planId} variant="warning" size="sm">{p.name}</Chip>
+													<Chip key={p.planId} variant="warning" size="sm">
+														{p.name}
+													</Chip>
 												))}
 											</div>
 										)}
@@ -290,11 +313,21 @@ export function AppPromotionsPage() {
 											{promo.maxRedemptions && (
 												<span>Max redemptions: {promo.maxRedemptions}</span>
 											)}
-											<span>{promo.isNewCustomersOnly ? "New customers only" : "All customers"}</span>
+											<span>
+												{promo.isNewCustomersOnly ? "New customers only" : "All customers"}
+											</span>
 										</div>
 									</div>
 									<div className="flex gap-2">
-										<Button size="sm" variant="outline" onClick={() => setExpandedPromo(expandedPromo === promo.promotionId ? null : promo.promotionId)}>
+										<Button
+											size="sm"
+											variant="outline"
+											onClick={() =>
+												setExpandedPromo(
+													expandedPromo === promo.promotionId ? null : promo.promotionId,
+												)
+											}
+										>
 											<Icon icon={IconType.Ticket} size={14} />
 											Codes
 										</Button>
@@ -302,7 +335,11 @@ export function AppPromotionsPage() {
 											<Icon icon={IconType.Edit} size={14} />
 										</Button>
 										{promo.isActive && (
-											<Button size="sm" variant="danger" onClick={() => setDeactivateTarget(promo)}>
+											<Button
+												size="sm"
+												variant="danger"
+												onClick={() => setDeactivateTarget(promo)}
+											>
 												<Icon icon={IconType.Cancel} size={14} />
 											</Button>
 										)}
@@ -314,7 +351,11 @@ export function AppPromotionsPage() {
 									<div className="mt-4 pt-4 border-t border-card-border">
 										<div className="flex justify-between items-center mb-3">
 											<Text className="text-sm font-medium">Promo Codes</Text>
-											<Button size="sm" variant="outline" onClick={() => setShowCodeModal(promo.promotionId)}>
+											<Button
+												size="sm"
+												variant="outline"
+												onClick={() => setShowCodeModal(promo.promotionId)}
+											>
 												<Icon icon={IconType.Add} size={14} />
 												Add Code
 											</Button>
@@ -334,16 +375,22 @@ export function AppPromotionsPage() {
 													{promo.codes.map((code: V2PromoCode) => (
 														<TableRow key={code.codeId}>
 															<TableCell>
-																<Text className="text-sm font-mono font-medium">{code.code}</Text>
+																<Text className="text-sm font-mono font-medium">
+																	{code.code}
+																</Text>
 															</TableCell>
 															<TableCell>
-																<Chip variant={code.isActive ? "success" : "default"} size="sm">
+																<Chip
+																	variant={code.isActive ? "success" : "default"}
+																	size="sm"
+																>
 																	{code.isActive ? "active" : "inactive"}
 																</Chip>
 															</TableCell>
 															<TableCell>
 																<Text className="text-sm">
-																	{code.currentUses ?? 0}{code.maxUses ? ` / ${code.maxUses}` : ""}
+																	{code.currentUses ?? 0}
+																	{code.maxUses ? ` / ${code.maxUses}` : ""}
 																</Text>
 															</TableCell>
 															<TableCell>
@@ -351,7 +398,12 @@ export function AppPromotionsPage() {
 																	<Button
 																		size="sm"
 																		variant="danger"
-																		onClick={() => handleDeactivateCode(promo.promotionId, code.codeId)}
+																		onClick={() =>
+																			handleDeactivateCode(
+																				promo.promotionId,
+																				code.codeId,
+																			)
+																		}
 																	>
 																		Deactivate
 																	</Button>
@@ -416,7 +468,9 @@ export function AppPromotionsPage() {
 									placeholder={form.discountType === "percent" ? "20" : "500"}
 								/>
 								{form.discountValue && form.discountType === "percent" && (
-									<Text className="text-xs text-muted-foreground mt-1">{form.discountValue}% off</Text>
+									<Text className="text-xs text-muted-foreground mt-1">
+										{form.discountValue}% off
+									</Text>
 								)}
 								{form.discountValue && form.discountType === "fixed" && (
 									<Text className="text-xs text-muted-foreground mt-1">
@@ -461,34 +515,48 @@ export function AppPromotionsPage() {
 						</div>
 						{plansData?.plans && plansData.plans.length > 0 && (
 							<div>
-								<Label>Plans <span className="text-destructive">*</span></Label>
-								<Text className="text-xs text-muted-foreground mb-2">Select which plans this promotion applies to</Text>
-								<div className={`mt-2 space-y-2 max-h-40 overflow-y-auto border rounded-md p-3 ${form.planIds.length === 0 ? "border-destructive" : "border-input"}`}>
-									{plansData.plans.filter((p: V2Plan) => p.isActive).map((p: V2Plan) => (
-										<div key={p.planId} className="flex items-center gap-2">
-											<Checkbox
-												checked={form.planIds.includes(p.planId)}
-												onCheckedChange={(checked) => {
-													const ids = checked
-														? [...form.planIds, p.planId]
-														: form.planIds.filter((id) => id !== p.planId);
-													setForm({ ...form, planIds: ids });
-												}}
-											/>
-											<Label className="font-normal cursor-pointer">{p.name}</Label>
-										</div>
-									))}
+								<Label>
+									Plans <span className="text-destructive">*</span>
+								</Label>
+								<Text className="text-xs text-muted-foreground mb-2">
+									Select which plans this promotion applies to
+								</Text>
+								<div
+									className={`mt-2 space-y-2 max-h-40 overflow-y-auto border rounded-md p-3 ${form.planIds.length === 0 ? "border-destructive" : "border-input"}`}
+								>
+									{plansData.plans
+										.filter((p: V2Plan) => p.isActive)
+										.map((p: V2Plan) => (
+											<div key={p.planId} className="flex items-center gap-2">
+												<Checkbox
+													checked={form.planIds.includes(p.planId)}
+													onCheckedChange={(checked) => {
+														const ids = checked
+															? [...form.planIds, p.planId]
+															: form.planIds.filter((id) => id !== p.planId);
+														setForm({ ...form, planIds: ids });
+													}}
+												/>
+												<Label className="font-normal cursor-pointer">{p.name}</Label>
+											</div>
+										))}
 								</div>
 								{form.planIds.length > 0 && (
 									<Text className="text-xs text-muted-foreground mt-1">
-										Applies to: {plansData.plans.filter((p: V2Plan) => form.planIds.includes(p.planId)).map((p: V2Plan) => p.name).join(", ")}
+										Applies to:{" "}
+										{plansData.plans
+											.filter((p: V2Plan) => form.planIds.includes(p.planId))
+											.map((p: V2Plan) => p.name)
+											.join(", ")}
 									</Text>
 								)}
 							</div>
 						)}
 					</DialogBody>
 					<DialogFooter>
-						<Button variant="outline" onClick={() => setShowCreateModal(false)}>Cancel</Button>
+						<Button variant="outline" onClick={() => setShowCreateModal(false)}>
+							Cancel
+						</Button>
 						<Button onClick={handleSave} disabled={saving}>
 							{saving ? <Spinner /> : editingPromo ? "Update" : "Create"}
 						</Button>
@@ -497,7 +565,13 @@ export function AppPromotionsPage() {
 			</Dialog>
 
 			{/* Create Code Modal */}
-			<Dialog open={!!showCodeModal} onOpenChange={() => { setShowCodeModal(null); setCodeForm({ code: "", maxUses: "" }); }}>
+			<Dialog
+				open={!!showCodeModal}
+				onOpenChange={() => {
+					setShowCodeModal(null);
+					setCodeForm({ code: "", maxUses: "" });
+				}}
+			>
 				<DialogPopup>
 					<DialogHeader>
 						<DialogTitle>Create Promo Code</DialogTitle>
@@ -523,7 +597,13 @@ export function AppPromotionsPage() {
 						</div>
 					</DialogBody>
 					<DialogFooter>
-						<Button variant="outline" onClick={() => { setShowCodeModal(null); setCodeForm({ code: "", maxUses: "" }); }}>
+						<Button
+							variant="outline"
+							onClick={() => {
+								setShowCodeModal(null);
+								setCodeForm({ code: "", maxUses: "" });
+							}}
+						>
 							Cancel
 						</Button>
 						<Button onClick={handleCreateCode} disabled={saving}>

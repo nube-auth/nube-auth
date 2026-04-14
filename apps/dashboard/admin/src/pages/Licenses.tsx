@@ -44,7 +44,9 @@ export function LicensesPage() {
 			{/* Page Header */}
 			<div className="page-header">
 				<div>
-					<Heading level={1} size="lg">Licenses</Heading>
+					<Heading level={1} size="lg">
+						Licenses
+					</Heading>
 					<Text className="text-text-secondary mt-2">View and manage your license keys</Text>
 				</div>
 			</div>
@@ -54,7 +56,9 @@ export function LicensesPage() {
 				<Card>
 					<CardBody className="p-4">
 						<Text className="text-xs uppercase tracking-wide text-text-tertiary">Total Licenses</Text>
-						<Heading level={3} size="lg" className="mt-2 mb-0">{licenses?.length || 0}</Heading>
+						<Heading level={3} size="lg" className="mt-2 mb-0">
+							{licenses?.length || 0}
+						</Heading>
 					</CardBody>
 				</Card>
 				<Card>
@@ -78,10 +82,7 @@ export function LicensesPage() {
 			{/* Licenses Table */}
 			<DataTable
 				header={
-					<DataTableHeader
-						title="All Licenses"
-						description="Your registered license keys and their status"
-					/>
+					<DataTableHeader title="All Licenses" description="Your registered license keys and their status" />
 				}
 				isEmpty={!licenses || licenses.length === 0}
 				emptyState={
@@ -126,11 +127,17 @@ export function LicensesPage() {
 								</TableCell>
 								<TableCell>
 									{isExpired ? (
-										<Chip variant="danger" size="sm">Expired</Chip>
+										<Chip variant="danger" size="sm">
+											Expired
+										</Chip>
 									) : isActive ? (
-										<Chip variant="success" size="sm">Active</Chip>
+										<Chip variant="success" size="sm">
+											Active
+										</Chip>
 									) : (
-										<Chip variant="warning" size="sm">Inactive</Chip>
+										<Chip variant="warning" size="sm">
+											Inactive
+										</Chip>
 									)}
 								</TableCell>
 								<TableCell>
@@ -149,6 +156,6 @@ export function LicensesPage() {
 					})}
 				</TableBody>
 			</DataTable>
-	</div>
-);
+		</div>
+	);
 }

@@ -77,11 +77,11 @@ export function ProjectSettingsPage() {
 						<BreadcrumbItem>
 							<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
 						</BreadcrumbItem>
-						/
 						<BreadcrumbItem>
-							<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+							<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>
+								{project.name}
+							</BreadcrumbButton>
 						</BreadcrumbItem>
-						/
 						<BreadcrumbItem>
 							<BreadcrumbButton active>Settings</BreadcrumbButton>
 						</BreadcrumbItem>
@@ -91,7 +91,9 @@ export function ProjectSettingsPage() {
 
 			{/* Page Header */}
 			<div className="mb-8">
-				<Heading level={1} size="lg">Project Settings</Heading>
+				<Heading level={1} size="lg">
+					Project Settings
+				</Heading>
 				<Text className="text-text-secondary">Manage your project configuration and preferences</Text>
 			</div>
 
@@ -102,7 +104,9 @@ export function ProjectSettingsPage() {
 					<Card className="mb-4">
 						<CardBody className="p-6">
 							<div className="flex justify-between items-center mb-6">
-								<Heading level={2} size="md">Project Information</Heading>
+								<Heading level={2} size="md">
+									Project Information
+								</Heading>
 								<Button variant="secondary" onClick={() => setIsEditing(true)}>
 									Edit
 								</Button>
@@ -113,9 +117,7 @@ export function ProjectSettingsPage() {
 									<Text className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
 										Project Name
 									</Text>
-									<Text className="text-15px text-text-primary font-semibold">
-										{project.name}
-									</Text>
+									<Text className="text-15px text-text-primary font-semibold">{project.name}</Text>
 								</div>
 
 								<div>
@@ -157,7 +159,7 @@ export function ProjectSettingsPage() {
 													year: "numeric",
 													month: "long",
 													day: "numeric",
-											  })
+												})
 											: "—"}
 									</Text>
 								</div>
@@ -168,13 +170,17 @@ export function ProjectSettingsPage() {
 					{/* Danger Zone */}
 					<Card className="border border-danger/35 bg-danger/5">
 						<CardBody className="p-6">
-							<Heading level={3} size="sm" className="mb-3 text-danger">⚠️ Danger Zone</Heading>
+							<Heading level={3} size="sm" className="mb-3 text-danger">
+								⚠️ Danger Zone
+							</Heading>
 							<Text className="text-text-secondary mb-5">
 								These actions are permanent and cannot be undone.
 							</Text>
 
 							<div className="p-5 bg-danger-bg/20 rounded-lg border border-border">
-								<Heading level={4} size="sm" className="mb-2 text-danger">Delete This Project</Heading>
+								<Heading level={4} size="sm" className="mb-2 text-danger">
+									Delete This Project
+								</Heading>
 								<Text className="text-13px text-text-secondary mb-4">
 									Once you delete a project, there is no going back. This will:
 								</Text>
@@ -197,7 +203,9 @@ export function ProjectSettingsPage() {
 					<Card>
 						<CardBody className="p-8">
 							<form onSubmit={handleSave}>
-								<Heading level={2} size="md" className="mb-7">Edit Project Information</Heading>
+								<Heading level={2} size="md" className="mb-7">
+									Edit Project Information
+								</Heading>
 
 								<div className="grid gap-5 mb-8">
 									<div>
@@ -213,7 +221,9 @@ export function ProjectSettingsPage() {
 											required
 											placeholder="My Project"
 										/>
-										<Text className="text-12px text-text-tertiary mt-1.5">The display name for your project</Text>
+										<Text className="text-12px text-text-tertiary mt-1.5">
+											The display name for your project
+										</Text>
 									</div>
 
 									<div>
@@ -236,9 +246,7 @@ export function ProjectSettingsPage() {
 									</div>
 
 									<div>
-										<Label htmlFor="project-description">
-											Description
-										</Label>
+										<Label htmlFor="project-description">Description</Label>
 										<Textarea
 											id="project-description"
 											name="description"
@@ -255,11 +263,7 @@ export function ProjectSettingsPage() {
 								</div>
 
 								<div className="flex gap-3">
-									<Button
-										type="submit"
-										disabled={updateProjectMutation.isPending}
-										variant="primary"
-									>
+									<Button type="submit" disabled={updateProjectMutation.isPending} variant="primary">
 										{updateProjectMutation.isPending ? "Saving..." : "Save Changes"}
 									</Button>
 									<Button
@@ -289,20 +293,17 @@ export function ProjectSettingsPage() {
 				onClose={() => setShowDeleteModal(false)}
 				onConfirm={async () => {
 					try {
-						const response = await pingpong(
-							`${config.gatewayUrl}/v1/admin/projects/${projectId}`,
-							{
-								method: "DELETE",
-								credentials: "include",
-								headers: csrfHeaders(),
-							},
-						);
+						const response = await pingpong(`${config.gatewayUrl}/v1/admin/projects/${projectId}`, {
+							method: "DELETE",
+							credentials: "include",
+							headers: csrfHeaders(),
+						});
 
 						showToast("Project deleted successfully", "success");
 						setShowDeleteModal(false);
 
 						// Redirect to projects list
-					navigate("/projects");
+						navigate("/projects");
 					} catch (error) {
 						showToast(error instanceof Error ? error.message : "Failed to delete project", "error");
 					}

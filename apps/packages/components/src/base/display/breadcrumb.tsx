@@ -33,6 +33,7 @@ export function BreadcrumbItem({
       data-slot="breadcrumb-item"
       className={cn(
         'inline-flex items-center gap-1.5 group/breadcrumb-item',
+        'not-last:after:content-["/"] not-last:after:ml-1.5 not-last:after:text-muted',
         className,
       )}
       {...props}

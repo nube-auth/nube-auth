@@ -59,7 +59,9 @@ export function OnboardingPage() {
 			{/* Welcome Header */}
 			<div className="page-header">
 				<div>
-					<Heading level={1} size="lg">Welcome to Nube Auth</Heading>
+					<Heading level={1} size="lg">
+						Welcome to Nube Auth
+					</Heading>
 					<Text className="text-text-secondary mt-2">Get started by creating your first project</Text>
 				</div>
 			</div>
@@ -76,23 +78,24 @@ export function OnboardingPage() {
 								Create your first project
 							</Heading>
 							<Text className="text-text-secondary mb-6 leading-relaxed">
-								Set up authentication for your application in minutes. Nube Auth handles user management, OAuth
-								providers, sessions, and more so you can focus on building your product.
+								Set up authentication for your application in minutes. Nube Auth handles user
+								management, OAuth providers, sessions, and more so you can focus on building your
+								product.
 							</Text>
 							<Button variant="primary" onClick={() => setShowForm(true)}>
 								<Icon icon={IconType.Add} size={16} />
 								Create Project
 							</Button>
 						</div>
-					<div className="get-started-preview">
-						<div className="code-preview">
-							<div className="code-preview-header">
-							<span className="code-preview-dot bg-[#ff5f57]" />
-							<span className="code-preview-dot bg-[#febc2e]" />
-							<span className="code-preview-dot bg-[#28c840]" />
-							</div>
-							<pre className="code-preview-content">
-								{`import { Nube AuthAuth } from '@nube-auth/auth';
+						<div className="get-started-preview">
+							<div className="code-preview">
+								<div className="code-preview-header">
+									<span className="code-preview-dot bg-[#ff5f57]" />
+									<span className="code-preview-dot bg-[#febc2e]" />
+									<span className="code-preview-dot bg-[#28c840]" />
+								</div>
+								<pre className="code-preview-content">
+									{`import { Nube AuthAuth } from '@nube-auth/auth';
 
 const auth = new Nube AuthAuth({
   projectId: 'your-project-id',
@@ -177,100 +180,106 @@ const user = await auth.getUser();`}
 
 			{/* Quick Start Steps */}
 			<div>
-					<Heading level={3} size="md" className="mb-4">
-						Quick Start Guide
-					</Heading>
-					<div className="quickstart-steps">
-						<div className="quickstart-step">
-							<div className="quickstart-step-number">1</div>
-							<div className="quickstart-step-content">
-								<Heading level={4} size="sm" className="quickstart-step-title">Create a project</Heading>
-								<Text className="quickstart-step-desc">Set up a new project for your application</Text>
-							</div>
+				<Heading level={3} size="md" className="mb-4">
+					Quick Start Guide
+				</Heading>
+				<div className="quickstart-steps">
+					<div className="quickstart-step">
+						<div className="quickstart-step-number">1</div>
+						<div className="quickstart-step-content">
+							<Heading level={4} size="sm" className="quickstart-step-title">
+								Create a project
+							</Heading>
+							<Text className="quickstart-step-desc">Set up a new project for your application</Text>
 						</div>
-						<div className="quickstart-step">
-							<div className="quickstart-step-number">2</div>
-							<div className="quickstart-step-content">
-								<Heading level={4} size="sm" className="quickstart-step-title">Configure OAuth providers</Heading>
-								<Text className="quickstart-step-desc">Enable Google, GitHub, or other providers</Text>
-							</div>
+					</div>
+					<div className="quickstart-step">
+						<div className="quickstart-step-number">2</div>
+						<div className="quickstart-step-content">
+							<Heading level={4} size="sm" className="quickstart-step-title">
+								Configure OAuth providers
+							</Heading>
+							<Text className="quickstart-step-desc">Enable Google, GitHub, or other providers</Text>
 						</div>
-						<div className="quickstart-step">
-							<div className="quickstart-step-number">3</div>
-							<div className="quickstart-step-content">
-								<Heading level={4} size="sm" className="quickstart-step-title">Install the SDK</Heading>
-								<Text className="quickstart-step-desc">Add Nube Auth to your application</Text>
-							</div>
+					</div>
+					<div className="quickstart-step">
+						<div className="quickstart-step-number">3</div>
+						<div className="quickstart-step-content">
+							<Heading level={4} size="sm" className="quickstart-step-title">
+								Install the SDK
+							</Heading>
+							<Text className="quickstart-step-desc">Add Nube Auth to your application</Text>
 						</div>
-						<div className="quickstart-step">
-							<div className="quickstart-step-number">4</div>
-							<div className="quickstart-step-content">
-								<Heading level={4} size="sm" className="quickstart-step-title">Go live</Heading>
-								<Text className="quickstart-step-desc">Deploy and start authenticating users</Text>					</div>
-				</div>				</div>
+					</div>
+					<div className="quickstart-step">
+						<div className="quickstart-step-number">4</div>
+						<div className="quickstart-step-content">
+							<Heading level={4} size="sm" className="quickstart-step-title">
+								Go live
+							</Heading>
+							<Text className="quickstart-step-desc">Deploy and start authenticating users</Text>{" "}
+						</div>
+					</div>{" "}
+				</div>
 			</div>
 
-		{/* Create Project Modal/Form */}
-		<Dialog open={showForm} onOpenChange={setShowForm}>
-			<DialogPopup>
-				<DialogHeader>
-					<DialogTitle>Create New Project</DialogTitle>
-				</DialogHeader>
-				<form onSubmit={handleSubmit}>
-					<DialogBody>
-						<div className="space-y-4">
-							<Label>
-								Project Name *
-								<Input
-									type="text"
-									id="projectName"
-									placeholder="My Awesome Project"
-									required
-									value={formData.name}
-									onChange={(e) => handleNameChange(e.target.value)}
-								/>
-							</Label>
-							<Label>
-								Project Slug *
-								<Input
-									type="text"
-									id="projectSlug"
-									placeholder="my-awesome-project"
-									required
-									value={formData.slug}
-									onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-								/>
-								<Text className="text-text-tertiary mt-1.5">
-									Auto-generated from project name. Use only letters, numbers, and hyphens.
-								</Text>
-							</Label>
-							<Label>
-								Description (optional)
-								<Textarea
-									id="projectDescription"
-									placeholder="What is this project about?"
-									value={formData.description}
-									onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-									rows={3}
-								/>
-							</Label>
-						</div>
-					</DialogBody>
-					<DialogFooter>
-						<Button variant="secondary" onClick={() => setShowForm(false)}>
-							Cancel
-						</Button>
-						<Button
-							type="submit"
-							variant="primary"
-							disabled={createProjectMutation.isPending}
-						>
-							{createProjectMutation.isPending ? "Creating..." : "Create Project"}
-						</Button>
-					</DialogFooter>
-				</form>
-			</DialogPopup>
-		</Dialog>
+			{/* Create Project Modal/Form */}
+			<Dialog open={showForm} onOpenChange={setShowForm}>
+				<DialogPopup>
+					<DialogHeader>
+						<DialogTitle>Create New Project</DialogTitle>
+					</DialogHeader>
+					<form onSubmit={handleSubmit}>
+						<DialogBody>
+							<div className="space-y-4">
+								<Label>
+									Project Name *
+									<Input
+										type="text"
+										id="projectName"
+										placeholder="My Awesome Project"
+										required
+										value={formData.name}
+										onChange={(e) => handleNameChange(e.target.value)}
+									/>
+								</Label>
+								<Label>
+									Project Slug *
+									<Input
+										type="text"
+										id="projectSlug"
+										placeholder="my-awesome-project"
+										required
+										value={formData.slug}
+										onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+									/>
+									<Text className="text-text-tertiary mt-1.5">
+										Auto-generated from project name. Use only letters, numbers, and hyphens.
+									</Text>
+								</Label>
+								<Label>
+									Description (optional)
+									<Textarea
+										id="projectDescription"
+										placeholder="What is this project about?"
+										value={formData.description}
+										onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+										rows={3}
+									/>
+								</Label>
+							</div>
+						</DialogBody>
+						<DialogFooter>
+							<Button variant="secondary" onClick={() => setShowForm(false)}>
+								Cancel
+							</Button>
+							<Button type="submit" variant="primary" disabled={createProjectMutation.isPending}>
+								{createProjectMutation.isPending ? "Creating..." : "Create Project"}
+							</Button>
+						</DialogFooter>
+					</form>
+				</DialogPopup>
+			</Dialog>
 		</div>
 	);
 }

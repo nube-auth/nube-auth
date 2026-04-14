@@ -54,10 +54,14 @@ export function AppDevelopersPage() {
 						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
 					</BreadcrumbItem>
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>
+							{project.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>{app.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>
+							{app.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
 					<BreadcrumbItem>
 						<BreadcrumbButton active>Integration Guide</BreadcrumbButton>
@@ -67,7 +71,9 @@ export function AppDevelopersPage() {
 
 			{/* Page Header */}
 			<div>
-				<Heading level={1} size="lg">Integration Guide</Heading>
+				<Heading level={1} size="lg">
+					Integration Guide
+				</Heading>
 				<Text className="text-muted-foreground">
 					Learn how to integrate Nube Auth authentication into your application
 				</Text>
@@ -84,26 +90,26 @@ export function AppDevelopersPage() {
 				</TabsList>
 
 				<TabsPanel value="quickstart">
-						<Heading level={2} size="lg" className="text-xl font-bold mb-4">Quick Start</Heading>
-						<Text className="text-sm text-muted-foreground mb-6 leading-relaxed">
-							Get started with Nube Auth in 5 minutes. This guide will walk you through the basic setup.
-						</Text>
+					<Heading level={2} size="lg" className="text-xl font-bold mb-4">
+						Quick Start
+					</Heading>
+					<Text className="text-sm text-muted-foreground mb-6 leading-relaxed">
+						Get started with Nube Auth in 5 minutes. This guide will walk you through the basic setup.
+					</Text>
 
-						{/* Step 1 */}
-						<Card className="mb-4">
-							<CardBody>
+					{/* Step 1 */}
+					<Card className="mb-4">
+						<CardBody>
 							<div className="flex items-center gap-3 mb-4">
-								<div
-									className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold"
-								>
+								<div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold">
 									1
 								</div>
-								<Heading level={3} size="md" className="text-base font-semibold">Install the Nube Auth SDK</Heading>
+								<Heading level={3} size="md" className="text-base font-semibold">
+									Install the Nube Auth SDK
+								</Heading>
 							</div>
 							<div className="relative">
-								<pre
-									className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0"
-								>
+								<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0">
 									<code className="text-foreground">npm install @nube-auth/react</code>
 								</pre>
 								<Button
@@ -116,38 +122,32 @@ export function AppDevelopersPage() {
 									{copied ? "✓ Copied" : "Copy"}
 								</Button>
 							</div>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 
-						{/* Step 2 */}
-						<Card className="mb-4">
-							<CardBody>
+					{/* Step 2 */}
+					<Card className="mb-4">
+						<CardBody>
 							<div className="flex items-center gap-3 mb-4">
-								<div
-									className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold"
-								>
+								<div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold">
 									2
 								</div>
-								<Heading level={3} size="md" className="text-base font-semibold">Get your App ID</Heading>
+								<Heading level={3} size="md" className="text-base font-semibold">
+									Get your App ID
+								</Heading>
 							</div>
-							<Text className="text-sm text-muted-foreground mb-3">
-								Your App ID is:
-							</Text>
-							<code
-								className="block py-3 px-4 bg-muted/30 rounded-lg text-sm font-mono text-foreground"
-							>
+							<Text className="text-sm text-muted-foreground mb-3">Your App ID is:</Text>
+							<code className="block py-3 px-4 bg-muted/30 rounded-lg text-sm font-mono text-foreground">
 								{app.id}
 							</code>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 
-						{/* Step 3 */}
-						<Card className="mb-4">
-							<CardBody>
+					{/* Step 3 */}
+					<Card className="mb-4">
+						<CardBody>
 							<div className="flex items-center gap-3 mb-4">
-								<div
-									className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold"
-								>
+								<div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold">
 									3
 								</div>
 								<Heading level={3} size="md" className="text-base font-semibold">
@@ -155,9 +155,7 @@ export function AppDevelopersPage() {
 								</Heading>
 							</div>
 							<div className="relative">
-								<pre
-									className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
-								>
+								<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
 									<code className="text-foreground">{`import { NubeAuthProvider } from '@nube-auth/react';
 
 function App() {
@@ -169,24 +167,22 @@ function App() {
 }`}</code>
 								</pre>
 							</div>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 
-						{/* Step 4 */}
-						<Card>
-							<CardBody>
+					{/* Step 4 */}
+					<Card>
+						<CardBody>
 							<div className="flex items-center gap-3 mb-4">
-								<div
-									className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold"
-								>
+								<div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold">
 									4
 								</div>
-								<Heading level={3} size="md" className="text-base font-semibold">Use the auth hook</Heading>
+								<Heading level={3} size="md" className="text-base font-semibold">
+									Use the auth hook
+								</Heading>
 							</div>
 							<div className="relative">
-								<pre
-									className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
-								>
+								<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
 									<code className="text-foreground">{`import { useAuth } from '@nube-auth/react';
 
 function YourComponent() {
@@ -205,63 +201,56 @@ function YourComponent() {
 }`}</code>
 								</pre>
 							</div>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 
-						{/* Next Steps */}
-						<div
-							className="mt-8 p-5 bg-muted/30 rounded-lg border border-border"
-						>
-							<Heading level={3} size="md" className="text-base font-semibold mb-3">Next Steps</Heading>
-							<ul
-								className="m-0 pl-5 text-sm text-muted-foreground leading-loose"
-							>
-								<li>Check out framework-specific guides in the tabs above</li>
-								<li>Configure OAuth providers in your app settings</li>
-								<li>Set up backend verification for API routes</li>
-								<li>
-									<Link
-										to={`/projects/${projectId}/apps/${appId}/api-keys`}
-										className="text-primary"
-									>
-										Get your API keys
-									</Link>{" "}
-									for backend integration
-								</li>
-							</ul>
-						</div>
+					{/* Next Steps */}
+					<div className="mt-8 p-5 bg-muted/30 rounded-lg border border-border">
+						<Heading level={3} size="md" className="text-base font-semibold mb-3">
+							Next Steps
+						</Heading>
+						<ul className="m-0 pl-5 text-sm text-muted-foreground leading-loose">
+							<li>Check out framework-specific guides in the tabs above</li>
+							<li>Configure OAuth providers in your app settings</li>
+							<li>Set up backend verification for API routes</li>
+							<li>
+								<Link to={`/projects/${projectId}/apps/${appId}/api-keys`} className="text-primary">
+									Get your API keys
+								</Link>{" "}
+								for backend integration
+							</li>
+						</ul>
+					</div>
 				</TabsPanel>
 
 				<TabsPanel value="react">
-						<Heading level={2} size="lg" className="text-xl font-bold mb-4">React Integration</Heading>
-						<Text
-							className="text-sm text-muted-foreground mb-6 leading-relaxed"
-						>
-							Complete guide for integrating Nube Auth into your React application.
-						</Text>
+					<Heading level={2} size="lg" className="text-xl font-bold mb-4">
+						React Integration
+					</Heading>
+					<Text className="text-sm text-muted-foreground mb-6 leading-relaxed">
+						Complete guide for integrating Nube Auth into your React application.
+					</Text>
 
-						<Card className="mb-4">
-							<CardBody>
-							<Heading level={3} size="md" className="text-base font-semibold mb-3">Installation</Heading>
-							<pre
-								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0"
-							>
+					<Card className="mb-4">
+						<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">
+								Installation
+							</Heading>
+							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0">
 								<code className="text-foreground">npm install @nube-auth/react</code>
 							</pre>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 
-						<Card className="mb-4">
-							<CardBody>
+					<Card className="mb-4">
+						<CardBody>
 							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Setup Provider
 							</Heading>
 							<Text className="text-sm text-muted-foreground mb-3">
 								Wrap your root component with the NubeAuthProvider:
 							</Text>
-							<pre
-								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
-							>
+							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
 								<code className="text-foreground">{`import { NubeAuthProvider } from '@nube-auth/react';
 import { BrowserRouter } from 'react-router-dom';
 
@@ -280,18 +269,18 @@ function App() {
 
 export default App;`}</code>
 							</pre>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 
-						<Card className="mb-4">
-							<CardBody>
-							<Heading level={3} size="md" className="text-base font-semibold mb-3">useAuth Hook</Heading>
+					<Card className="mb-4">
+						<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">
+								useAuth Hook
+							</Heading>
 							<Text className="text-sm text-muted-foreground mb-3">
 								Access authentication state and methods:
 							</Text>
-							<pre
-								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
-							>
+							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
 								<code className="text-foreground">{`import { useAuth } from '@nube-auth/react';
 
 function Dashboard() {
@@ -330,20 +319,18 @@ function Dashboard() {
   );
 }`}</code>
 							</pre>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 
-						<Card>
-							<CardBody>
+					<Card>
+						<CardBody>
 							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Protected Routes
 							</Heading>
 							<Text className="text-sm text-muted-foreground mb-3">
 								Create a component to protect routes:
 							</Text>
-							<pre
-								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
-							>
+							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
 								<code className="text-foreground">{`import { useAuth } from '@nube-auth/react';
 import { Navigate } from 'react-router-dom';
 
@@ -368,39 +355,35 @@ function ProtectedRoute({ children }) {
   </ProtectedRoute>
 } />`}</code>
 							</pre>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 				</TabsPanel>
 
 				<TabsPanel value="nextjs">
-						<Heading level={2} size="lg" className="text-xl font-bold mb-4">
-							Next.js Integration
-						</Heading>
-						<Text
-							className="text-sm text-muted-foreground mb-6 leading-relaxed"
-						>
-							Complete guide for integrating Nube Auth into your Next.js application (App Router).
-						</Text>
+					<Heading level={2} size="lg" className="text-xl font-bold mb-4">
+						Next.js Integration
+					</Heading>
+					<Text className="text-sm text-muted-foreground mb-6 leading-relaxed">
+						Complete guide for integrating Nube Auth into your Next.js application (App Router).
+					</Text>
 
-						<Card className="mb-4">
-							<CardBody>
-							<Heading level={3} size="md" className="text-base font-semibold mb-3">Installation</Heading>
-							<pre
-								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0"
-							>
+					<Card className="mb-4">
+						<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">
+								Installation
+							</Heading>
+							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0">
 								<code className="text-foreground">npm install @nube-auth/react</code>
 							</pre>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 
-						<Card className="mb-4">
-							<CardBody>
+					<Card className="mb-4">
+						<CardBody>
 							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Setup Provider (app/layout.tsx)
 							</Heading>
-							<pre
-								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
-							>
+							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
 								<code className="text-foreground">{`'use client';
 
 import { NubeAuthProvider } from '@nube-auth/react';
@@ -420,17 +403,15 @@ export default function RootLayout({ children }) {
   );
 }`}</code>
 							</pre>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 
-						<Card className="mb-4">
-							<CardBody>
+					<Card className="mb-4">
+						<CardBody>
 							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Client Component
 							</Heading>
-							<pre
-								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
-							>
+							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
 								<code className="text-foreground">{`'use client';
 
 import { useAuth } from '@nube-auth/react';
@@ -450,20 +431,18 @@ export default function Dashboard() {
   );
 }`}</code>
 							</pre>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 
-						<Card>
-							<CardBody>
+					<Card>
+						<CardBody>
 							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Server-Side Verification
 							</Heading>
 							<Text className="text-sm text-muted-foreground mb-3">
 								Verify sessions in Server Components or API Routes:
 							</Text>
-							<pre
-								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
-							>
+							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
 								<code className="text-foreground">{`// app/api/protected/route.ts
 import { verifySession } from '@nube-auth/next';
 
@@ -480,39 +459,35 @@ export async function GET(request: Request) {
   });
 }`}</code>
 							</pre>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 				</TabsPanel>
 
 				<TabsPanel value="javascript">
-						<Heading level={2} size="lg" className="text-xl font-bold mb-4">
-							Vanilla JavaScript
-						</Heading>
-						<Text
-							className="text-sm text-muted-foreground mb-6 leading-relaxed"
-						>
-							Use Nube Auth without any framework.
-						</Text>
+					<Heading level={2} size="lg" className="text-xl font-bold mb-4">
+						Vanilla JavaScript
+					</Heading>
+					<Text className="text-sm text-muted-foreground mb-6 leading-relaxed">
+						Use Nube Auth without any framework.
+					</Text>
 
-						<Card className="mb-4">
-							<CardBody>
-							<Heading level={3} size="md" className="text-base font-semibold mb-3">Installation</Heading>
-							<pre
-								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0"
-							>
+					<Card className="mb-4">
+						<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">
+								Installation
+							</Heading>
+							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0">
 								<code className="text-foreground">npm install @nube-auth/client</code>
 							</pre>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 
-						<Card className="mb-4">
-							<CardBody>
+					<Card className="mb-4">
+						<CardBody>
 							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Initialize Client
 							</Heading>
-							<pre
-								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
-							>
+							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
 								<code className="text-foreground">{`import { NubeAuthClient } from '@nube-auth/client';
 
 const client = new NubeAuthClient({
@@ -545,15 +520,15 @@ document.querySelector('#logout').addEventListener('click', async () => {
 
 checkAuth();`}</code>
 							</pre>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 
-						<Card>
-							<CardBody>
-							<Heading level={3} size="md" className="text-base font-semibold mb-3">HTML Example</Heading>
-							<pre
-								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
-							>
+					<Card>
+						<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">
+								HTML Example
+							</Heading>
+							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
 								<code className="text-foreground">{`<!DOCTYPE html>
 <html>
 <head>
@@ -572,28 +547,24 @@ checkAuth();`}</code>
 </body>
 </html>`}</code>
 							</pre>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 				</TabsPanel>
 
 				<TabsPanel value="backend">
-						<Heading level={2} size="lg" className="text-xl font-bold mb-4">
-							Backend Verification
-						</Heading>
-						<Text
-							className="text-sm text-muted-foreground mb-6 leading-relaxed"
-						>
-							Verify user sessions and protect your API endpoints.
-						</Text>
+					<Heading level={2} size="lg" className="text-xl font-bold mb-4">
+						Backend Verification
+					</Heading>
+					<Text className="text-sm text-muted-foreground mb-6 leading-relaxed">
+						Verify user sessions and protect your API endpoints.
+					</Text>
 
-						<Card className="mb-4">
-							<CardBody>
+					<Card className="mb-4">
+						<CardBody>
 							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Node.js/Express
 							</Heading>
-							<pre
-								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
-							>
+							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
 								<code className="text-foreground">{`import { verifySession } from '@nube-auth/node';
 
 // Middleware
@@ -620,15 +591,15 @@ app.get('/api/protected', requireAuth, (req, res) => {
   });
 });`}</code>
 							</pre>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 
-						<Card className="mb-4">
-							<CardBody>
-							<Heading level={3} size="md" className="text-base font-semibold mb-3">Python/Flask</Heading>
-							<pre
-								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
-							>
+					<Card className="mb-4">
+						<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">
+								Python/Flask
+							</Heading>
+							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
 								<code className="text-foreground">{`from functools import wraps
 import requests
 
@@ -665,18 +636,18 @@ def protected_route():
         'user_id': request.user['id']
     }`}</code>
 							</pre>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 
-						<Card>
-							<CardBody>
-							<Heading level={3} size="md" className="text-base font-semibold mb-3">API Keys</Heading>
+					<Card>
+						<CardBody>
+							<Heading level={3} size="md" className="text-base font-semibold mb-3">
+								API Keys
+							</Heading>
 							<Text className="text-sm text-muted-foreground mb-3">
 								For server-to-server communication, use your Service Token:
 							</Text>
-							<pre
-								className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed"
-							>
+							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
 								<code className="text-foreground">{`// Get user by email (admin operation)
 const response = await fetch('https://api.nubeauth.com/v1/users/by-email', {
   method: 'POST',
@@ -689,20 +660,15 @@ const response = await fetch('https://api.nubeauth.com/v1/users/by-email', {
 
 const user = await response.json();`}</code>
 							</pre>
-							<div
-								className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-md text-sm text-muted-foreground"
-							>
+							<div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-md text-sm text-muted-foreground">
 								<strong className="text-amber-500">Important:</strong> Never expose your Service Token
 								in client-side code!{" "}
-								<Link
-									to={`/projects/${projectId}/apps/${appId}/api-keys`}
-									className="text-primary"
-								>
+								<Link to={`/projects/${projectId}/apps/${appId}/api-keys`} className="text-primary">
 									Get your API keys →
 								</Link>
 							</div>
-							</CardBody>
-						</Card>
+						</CardBody>
+					</Card>
 				</TabsPanel>
 			</Tabs>
 		</div>

@@ -83,10 +83,14 @@ export default function AppPaymentSettingsPage() {
 						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
 					</BreadcrumbItem>
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project?.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>
+							{project?.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>{app?.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>
+							{app?.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
 					<BreadcrumbItem>
 						<BreadcrumbButton active>Payment</BreadcrumbButton>
@@ -96,7 +100,9 @@ export default function AppPaymentSettingsPage() {
 
 			{/* Page Header */}
 			<div className="mb-8">
-				<Heading level={1} size="lg">Payment Provider</Heading>
+				<Heading level={1} size="lg">
+					Payment Provider
+				</Heading>
 				<Text className="text-text-secondary">
 					Select one payment provider for {app.name}. Providers are configured at the project level.
 				</Text>
@@ -110,7 +116,10 @@ export default function AppPaymentSettingsPage() {
 						<Text className="mb-1 font-semibold text-primary">Project-Level Configuration</Text>
 						<Text className="text-text-secondary">
 							Payment providers are configured at the project level. To add or modify providers, visit{" "}
-							<Link to={`/projects/${projectId}/payment-providers`} className="font-semibold text-primary hover:text-primary-dark">
+							<Link
+								to={`/projects/${projectId}/payment-providers`}
+								className="font-semibold text-primary hover:text-primary-dark"
+							>
 								Project Payment Providers
 							</Link>
 							.
@@ -122,7 +131,6 @@ export default function AppPaymentSettingsPage() {
 			{/* Providers List */}
 			{!availableProviders || availableProviders.length === 0 ? (
 				<EmptyState
-					
 					title="No payment providers configured"
 					description="Configure payment providers at the project level to enable payments for this app."
 				>
@@ -141,7 +149,8 @@ export default function AppPaymentSettingsPage() {
 									<div>
 										<Text className="font-medium text-text-primary">Selected Configuration</Text>
 										<Text className="text-sm text-text-secondary">
-											{selectedProvider.name || `${selectedProvider.provider} (${selectedProvider.environment})`}
+											{selectedProvider.name ||
+												`${selectedProvider.provider} (${selectedProvider.environment})`}
 										</Text>
 									</div>
 								</div>
@@ -216,9 +225,13 @@ export default function AppPaymentSettingsPage() {
 							Need to add or modify payment providers?
 						</Heading>
 						<Text className="mb-4 text-text-secondary">
-							Payment providers are managed at the project level. Visit the Payment Providers page to add new providers or update existing ones.
+							Payment providers are managed at the project level. Visit the Payment Providers page to add
+							new providers or update existing ones.
 						</Text>
-						<Button variant="secondary" onClick={() => navigate(`/projects/${projectId}/payment-providers`)}>
+						<Button
+							variant="secondary"
+							onClick={() => navigate(`/projects/${projectId}/payment-providers`)}
+						>
 							<Icon icon={IconType.Settings01} size={16} />
 							Manage Payment Providers
 						</Button>

@@ -64,12 +64,22 @@ export default function PaymentTestingPlayground() {
 	// Fetch entities with cascading dependencies
 	const { data: projects, isLoading: projectsLoading } = useProjects();
 	const { data: apps, isLoading: appsLoading } = useProjectApps(projectId);
-	const { data: appUsers, isLoading: usersLoading } = useAppUsers(projectId, appId && appId !== CREATE_NEW ? appId : "");
+	const { data: appUsers, isLoading: usersLoading } = useAppUsers(
+		projectId,
+		appId && appId !== CREATE_NEW ? appId : "",
+	);
 	const { data: plans, isLoading: plansLoading } = useAppPlans(projectId, appId && appId !== CREATE_NEW ? appId : "");
 
 	// Reset downstream selections when parent changes
-	useEffect(() => { setAppId(""); setUserId(""); setPlanId(""); }, [projectId]);
-	useEffect(() => { setUserId(""); setPlanId(""); }, [appId]);
+	useEffect(() => {
+		setAppId("");
+		setUserId("");
+		setPlanId("");
+	}, [projectId]);
+	useEffect(() => {
+		setUserId("");
+		setPlanId("");
+	}, [appId]);
 
 	// Auto-refresh session status every 2 seconds when session is active
 	useEffect(() => {
@@ -93,7 +103,11 @@ export default function PaymentTestingPlayground() {
 		return () => clearInterval(interval);
 	}, [session]);
 
-	const canStart = projectId && (appId === CREATE_NEW || appId) && (userId === CREATE_NEW || userId) && (planId === CREATE_NEW || planId);
+	const canStart =
+		projectId &&
+		(appId === CREATE_NEW || appId) &&
+		(userId === CREATE_NEW || userId) &&
+		(planId === CREATE_NEW || planId);
 
 	const handleInitialize = async () => {
 		if (!canStart) return;
@@ -147,10 +161,13 @@ export default function PaymentTestingPlayground() {
 			});
 
 			if (response.ok()) {
-				const statusResponse = await pingpong(`${config.gatewayUrl}/v1/admin/test/status/${session.sessionId}`, {
-					method: "GET",
-					credentials: "include",
-				});
+				const statusResponse = await pingpong(
+					`${config.gatewayUrl}/v1/admin/test/status/${session.sessionId}`,
+					{
+						method: "GET",
+						credentials: "include",
+					},
+				);
 
 				if (statusResponse.ok()) {
 					setSessionStatus(statusResponse.data);
@@ -204,7 +221,9 @@ export default function PaymentTestingPlayground() {
 		<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 			{/* Header */}
 			<div className="mb-8">
-				<Heading level={1} size="lg">Payment Testing Playground</Heading>
+				<Heading level={1} size="lg">
+					Payment Testing Playground
+				</Heading>
 				<Text className="mt-2 text-text-secondary">
 					Test payment flows against your existing projects, apps, users, and plans
 				</Text>
@@ -225,17 +244,18 @@ export default function PaymentTestingPlayground() {
 					{/* Entity Selection */}
 					<Card>
 						<CardBody className="p-6">
-							<Heading level={2} size="lg" className="mb-4">📋 Select Entities</Heading>
+							<Heading level={2} size="lg" className="mb-4">
+								📋 Select Entities
+							</Heading>
 							<Text className="text-sm text-text-secondary mb-4">
-								Choose which project, app, user, and plan to test with. Select "+ Create test..." to auto-generate one.
+								Choose which project, app, user, and plan to test with. Select "+ Create test..." to
+								auto-generate one.
 							</Text>
 
 							<div className="space-y-4">
 								{/* Project */}
 								<div>
-									<label className="block text-sm font-medium text-text-primary mb-1">
-										Project
-									</label>
+									<label className="block text-sm font-medium text-text-primary mb-1">Project</label>
 									<Select
 										value={projectId}
 										onChange={setProjectId}
@@ -247,52 +267,74 @@ export default function PaymentTestingPlayground() {
 
 								{/* App */}
 								<div>
-									<label className="block text-sm font-medium text-text-primary mb-1">
-										App
-									</label>
+									<label className="block text-sm font-medium text-text-primary mb-1">App</label>
 									<Select
 										value={appId}
 										onChange={setAppId}
 										options={appOptions}
 										disabled={!!session || !projectId || appsLoading}
-										placeholder={!projectId ? "Select a project first" : appsLoading ? "Loading apps..." : "Select an app or create test app"}
+										placeholder={
+											!projectId
+												? "Select a project first"
+												: appsLoading
+													? "Loading apps..."
+													: "Select an app or create test app"
+										}
 									/>
 									{appId === CREATE_NEW && (
-										<Text className="mt-1 text-xs text-info">A test app will be created in the selected project.</Text>
+										<Text className="mt-1 text-xs text-info">
+											A test app will be created in the selected project.
+										</Text>
 									)}
 								</div>
 
 								{/* User */}
 								<div>
-									<label className="block text-sm font-medium text-text-primary mb-1">
-										User
-									</label>
+									<label className="block text-sm font-medium text-text-primary mb-1">User</label>
 									<Select
 										value={userId}
 										onChange={setUserId}
 										options={userOptions}
 										disabled={!!session || !appId || appId === CREATE_NEW || usersLoading}
-										placeholder={!appId ? "Select an app first" : appId === CREATE_NEW ? "Test user will be created" : usersLoading ? "Loading users..." : "Select a user or create test user"}
+										placeholder={
+											!appId
+												? "Select an app first"
+												: appId === CREATE_NEW
+													? "Test user will be created"
+													: usersLoading
+														? "Loading users..."
+														: "Select a user or create test user"
+										}
 									/>
 									{(userId === CREATE_NEW || appId === CREATE_NEW) && (
-										<Text className="mt-1 text-xs text-info">A test user will be created for this session.</Text>
+										<Text className="mt-1 text-xs text-info">
+											A test user will be created for this session.
+										</Text>
 									)}
 								</div>
 
 								{/* Plan */}
 								<div>
-									<label className="block text-sm font-medium text-text-primary mb-1">
-										Plan
-									</label>
+									<label className="block text-sm font-medium text-text-primary mb-1">Plan</label>
 									<Select
 										value={planId}
 										onChange={setPlanId}
 										options={planOptions}
 										disabled={!!session || !appId || appId === CREATE_NEW || plansLoading}
-										placeholder={!appId ? "Select an app first" : appId === CREATE_NEW ? "Test plan will be created" : plansLoading ? "Loading plans..." : "Select a plan or create test plan"}
+										placeholder={
+											!appId
+												? "Select an app first"
+												: appId === CREATE_NEW
+													? "Test plan will be created"
+													: plansLoading
+														? "Loading plans..."
+														: "Select a plan or create test plan"
+										}
 									/>
 									{(planId === CREATE_NEW || appId === CREATE_NEW) && (
-										<Text className="mt-1 text-xs text-info">A test plan ($29/month) will be created.</Text>
+										<Text className="mt-1 text-xs text-info">
+											A test plan ($29/month) will be created.
+										</Text>
 									)}
 								</div>
 							</div>
@@ -302,53 +344,58 @@ export default function PaymentTestingPlayground() {
 					{/* Provider Configuration */}
 					<Card>
 						<CardBody className="p-6">
-							<Heading level={2} size="lg" className="mb-4">🔧 Provider & Mode</Heading>
-							
+							<Heading level={2} size="lg" className="mb-4">
+								🔧 Provider & Mode
+							</Heading>
+
 							<div className="space-y-4">
 								<div>
-									<label className="block text-sm font-medium text-text-primary mb-1">
-										Provider
-									</label>
+									<label className="block text-sm font-medium text-text-primary mb-1">Provider</label>
 									<Select
 										value={provider}
 										onChange={(value) => setProvider(value as "stripe" | "lemonsqueezy" | "dodo")}
 										options={[
 											{ value: "stripe", label: "Stripe" },
 											{ value: "lemonsqueezy", label: "LemonSqueezy" },
-											{ value: "dodo", label: "Dodo Payments" }
+											{ value: "dodo", label: "Dodo Payments" },
 										]}
 										disabled={!!session}
 									/>
 								</div>
 
 								<div>
-									<label className="block text-sm font-medium text-text-primary mb-1">
-										Mode
-									</label>
+									<label className="block text-sm font-medium text-text-primary mb-1">Mode</label>
 									<Select
 										value={mode}
 										onChange={(value) => setMode(value as "simulate" | "live")}
 										options={[
-										{ value: "simulate", label: "Simulate (Instant) ✨" },
-										{ value: "live", label: "Live Checkout (Requires Webhooks)" }
-									]}
-									disabled={!!session}
-								/>
-								{mode === "simulate" ? (
-									<div className="mt-2 p-2 bg-success/10 border border-success/30 rounded text-xs">
-										<Text className="text-success font-semibold">✓ Recommended for local testing</Text>
-										<Text className="text-text-secondary mt-1">
-											Instantly simulates webhook events without needing real provider integration or ngrok.
-										</Text>
-									</div>
-								) : (
-									<div className="mt-2 p-2 bg-warning/10 border border-warning/30 rounded text-xs">
-										<Text className="text-warning font-semibold">⚠️ Requires webhook configuration</Text>
-										<Text className="text-text-secondary mt-1">
-											Provider must send webhooks to complete payments. In local development, use ngrok or tunnel service to expose localhost. Payment will stay "Processing" until webhook is received.
-										</Text>
-									</div>
-								)}
+											{ value: "simulate", label: "Simulate (Instant) ✨" },
+											{ value: "live", label: "Live Checkout (Requires Webhooks)" },
+										]}
+										disabled={!!session}
+									/>
+									{mode === "simulate" ? (
+										<div className="mt-2 p-2 bg-success/10 border border-success/30 rounded text-xs">
+											<Text className="text-success font-semibold">
+												✓ Recommended for local testing
+											</Text>
+											<Text className="text-text-secondary mt-1">
+												Instantly simulates webhook events without needing real provider
+												integration or ngrok.
+											</Text>
+										</div>
+									) : (
+										<div className="mt-2 p-2 bg-warning/10 border border-warning/30 rounded text-xs">
+											<Text className="text-warning font-semibold">
+												⚠️ Requires webhook configuration
+											</Text>
+											<Text className="text-text-secondary mt-1">
+												Provider must send webhooks to complete payments. In local development,
+												use ngrok or tunnel service to expose localhost. Payment will stay
+												"Processing" until webhook is received.
+											</Text>
+										</div>
+									)}
 								</div>
 							</div>
 						</CardBody>
@@ -373,11 +420,7 @@ export default function PaymentTestingPlayground() {
 							)}
 
 							{session && (
-								<Button
-									variant="secondary"
-									onClick={handleCleanup}
-									className="w-full mt-2"
-								>
+								<Button variant="secondary" onClick={handleCleanup} className="w-full mt-2">
 									🗑️ End Session & Cleanup
 								</Button>
 							)}
@@ -391,16 +434,17 @@ export default function PaymentTestingPlayground() {
 								<Heading level={2} size="lg" className="mb-4">
 									{mode === "simulate" ? "🎭 Simulate Events" : "🔧 Manual Webhook Trigger"}
 								</Heading>
-								
+
 								{mode === "live" && (
 									<div className="mb-4 p-2 bg-info/10 border border-info/30 rounded text-xs">
 										<Text className="text-info">
-											Use these buttons if the real webhook from the provider fails to arrive (e.g., localhost not accessible). 
-											Only works after payment is completed on provider's checkout page.
+											Use these buttons if the real webhook from the provider fails to arrive
+											(e.g., localhost not accessible). Only works after payment is completed on
+											provider's checkout page.
 										</Text>
 									</div>
 								)}
-								
+
 								<div className="grid grid-cols-2 gap-2">
 									<Button
 										onClick={() => handleSimulateEvent("payment.succeeded")}
@@ -453,8 +497,9 @@ export default function PaymentTestingPlayground() {
 									<div className="space-y-2">
 										<Text className="font-semibold">⏳ Waiting for Webhook</Text>
 										<Text className="text-sm">
-											Payment will remain in "Processing" until the provider sends a webhook to Nube Auth. 
-											In local development, make sure your webhook URL is accessible via ngrok or similar tunnel.
+											Payment will remain in "Processing" until the provider sends a webhook to
+											Nube Auth. In local development, make sure your webhook URL is accessible
+											via ngrok or similar tunnel.
 										</Text>
 										<Text className="text-xs text-text-tertiary mt-2">
 											💡 Tip: Use "Simulate" mode for instant local testing without webhook setup.
@@ -467,7 +512,9 @@ export default function PaymentTestingPlayground() {
 							{session.checkoutUrl && (
 								<Card>
 									<CardBody className="p-6">
-										<Heading level={3} size="md" className="mb-3">💳 Checkout Session</Heading>
+										<Heading level={3} size="md" className="mb-3">
+											💳 Checkout Session
+										</Heading>
 										<div className="bg-bg-muted p-3 rounded border border-border">
 											<Text className="text-xs text-text-tertiary mb-1">Checkout URL</Text>
 											<Text className="text-sm font-mono break-all">{session.checkoutUrl}</Text>
@@ -498,27 +545,36 @@ export default function PaymentTestingPlayground() {
 							{/* Test Data */}
 							<Card>
 								<CardBody className="p-6">
-									<Heading level={3} size="md" className="mb-3">📊 Session Data</Heading>
+									<Heading level={3} size="md" className="mb-3">
+										📊 Session Data
+									</Heading>
 									<div className="space-y-3 text-sm">
 										<div className="flex justify-between items-start">
 											<Text className="text-text-secondary">App</Text>
 											<div className="text-right">
 												<Text className="font-medium">{session.testData.app.name}</Text>
-												<Text className="text-xs text-text-tertiary font-mono">{session.testData.app.publicId}</Text>
+												<Text className="text-xs text-text-tertiary font-mono">
+													{session.testData.app.publicId}
+												</Text>
 											</div>
 										</div>
 										<div className="flex justify-between items-start">
 											<Text className="text-text-secondary">User</Text>
 											<div className="text-right">
 												<Text className="font-medium">{session.testData.user.email}</Text>
-												<Text className="text-xs text-text-tertiary font-mono">{session.testData.user.publicId}</Text>
+												<Text className="text-xs text-text-tertiary font-mono">
+													{session.testData.user.publicId}
+												</Text>
 											</div>
 										</div>
 										<div className="flex justify-between items-start">
 											<Text className="text-text-secondary">Plan</Text>
 											<div className="text-right">
 												<Text className="font-medium">{session.testData.plan.name}</Text>
-												<Text className="text-xs text-text-tertiary">${session.testData.plan.amount / 100}/{session.testData.plan.interval}</Text>
+												<Text className="text-xs text-text-tertiary">
+													${session.testData.plan.amount / 100}/
+													{session.testData.plan.interval}
+												</Text>
 											</div>
 										</div>
 									</div>
@@ -529,21 +585,31 @@ export default function PaymentTestingPlayground() {
 							{sessionStatus?.license && (
 								<Card>
 									<CardBody className="p-6">
-										<Heading level={3} size="md" className="mb-3">📜 License Status</Heading>
+										<Heading level={3} size="md" className="mb-3">
+											📜 License Status
+										</Heading>
 										<div className="space-y-2 text-sm">
 											<div className="flex justify-between">
 												<Text className="text-text-secondary">Status</Text>
-												<Text className={`font-semibold ${
-													sessionStatus.license.status === "active" ? "text-success" : "text-text-secondary"
-												}`}>
-													{sessionStatus.license.status === "active" ? "✓ Active" : sessionStatus.license.status}
+												<Text
+													className={`font-semibold ${
+														sessionStatus.license.status === "active"
+															? "text-success"
+															: "text-text-secondary"
+													}`}
+												>
+													{sessionStatus.license.status === "active"
+														? "✓ Active"
+														: sessionStatus.license.status}
 												</Text>
 											</div>
 											{sessionStatus.license.validUntil && (
 												<div className="flex justify-between">
 													<Text className="text-text-secondary">Expires</Text>
 													<Text className="font-mono text-xs">
-														{new Date(sessionStatus.license.validUntil).toLocaleDateString()}
+														{new Date(
+															sessionStatus.license.validUntil,
+														).toLocaleDateString()}
 													</Text>
 												</div>
 											)}
@@ -556,32 +622,52 @@ export default function PaymentTestingPlayground() {
 							{sessionStatus?.transactions && sessionStatus.transactions.length > 0 && (
 								<Card>
 									<CardBody className="p-6">
-										<Heading level={3} size="md" className="mb-3">💳 Transactions</Heading>
+										<Heading level={3} size="md" className="mb-3">
+											💳 Transactions
+										</Heading>
 										<div className="space-y-2">
 											{sessionStatus.transactions.map((txn: any) => (
-												<div key={txn.public_id} className="flex items-center justify-between p-2 bg-bg-muted rounded border border-border text-sm">
+												<div
+													key={txn.public_id}
+													className="flex items-center justify-between p-2 bg-bg-muted rounded border border-border text-sm"
+												>
 													<div>
 														<Text className="font-mono text-xs">{txn.public_id}</Text>
-														<Text className="text-text-secondary text-xs">{txn.type} · {txn.provider}</Text>
+														<Text className="text-text-secondary text-xs">
+															{txn.type} · {txn.provider}
+														</Text>
 													</div>
 													<div className="text-right">
-														<Text className="font-semibold">${(txn.amount_cents / 100).toFixed(2)} {txn.currency.toUpperCase()}</Text>
-														<Text className={`text-xs font-medium ${
-															txn.status === "success" ? "text-success" : txn.status === "failed" ? "text-danger" : "text-warning"
-														}`}>
-															{txn.status === "processing" ? "⏳ Processing (Webhook Pending)" : txn.status}
+														<Text className="font-semibold">
+															${(txn.amount_cents / 100).toFixed(2)}{" "}
+															{txn.currency.toUpperCase()}
+														</Text>
+														<Text
+															className={`text-xs font-medium ${
+																txn.status === "success"
+																	? "text-success"
+																	: txn.status === "failed"
+																		? "text-danger"
+																		: "text-warning"
+															}`}
+														>
+															{txn.status === "processing"
+																? "⏳ Processing (Webhook Pending)"
+																: txn.status}
 														</Text>
 													</div>
 												</div>
 											))}
 										</div>
-										{sessionStatus.transactions.some((t: any) => t.status === "processing") && mode === "live" && (
-											<div className="mt-3 p-2 bg-warning/10 border border-warning/30 rounded text-xs">
-												<Text className="text-warning">
-													Payment is waiting for webhook from provider. If using localhost, you need ngrok to receive webhooks.
-												</Text>
-											</div>
-										)}
+										{sessionStatus.transactions.some((t: any) => t.status === "processing") &&
+											mode === "live" && (
+												<div className="mt-3 p-2 bg-warning/10 border border-warning/30 rounded text-xs">
+													<Text className="text-warning">
+														Payment is waiting for webhook from provider. If using
+														localhost, you need ngrok to receive webhooks.
+													</Text>
+												</div>
+											)}
 									</CardBody>
 								</Card>
 							)}

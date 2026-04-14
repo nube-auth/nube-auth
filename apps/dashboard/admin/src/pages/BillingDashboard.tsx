@@ -88,7 +88,9 @@ export function BillingDashboardPage() {
 			{/* Page Header */}
 			<div className="mb-8 flex justify-between items-center">
 				<div>
-					<Heading size="lg" className="mb-2">Billing Dashboard</Heading>
+					<Heading size="lg" className="mb-2">
+						Billing Dashboard
+					</Heading>
 					<Text className="text-text-muted">Monitor payments, subscriptions, and financial metrics</Text>
 				</div>
 
@@ -106,11 +108,7 @@ export function BillingDashboardPage() {
 						onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
 					/>
 					{(dateRange.start || dateRange.end) && (
-						<Button
-							variant="secondary"
-							size="sm"
-							onClick={() => setDateRange({})}
-						>
+						<Button variant="secondary" size="sm" onClick={() => setDateRange({})}>
 							Clear
 						</Button>
 					)}
@@ -177,9 +175,7 @@ export function BillingDashboardPage() {
 									{stats?.webhooks?.success ?? 0}
 								</Heading>
 								{(stats?.webhooks?.failed ?? 0) > 0 && (
-									<Text className="text-danger mt-2">
-										{stats?.webhooks?.failed} failed
-									</Text>
+									<Text className="text-danger mt-2">{stats?.webhooks?.failed} failed</Text>
 								)}
 							</CardBody>
 						</Card>
@@ -189,7 +185,9 @@ export function BillingDashboardPage() {
 					{stats?.revenue.by_provider && Object.keys(stats.revenue.by_provider).length > 0 && (
 						<Card className="mb-8">
 							<CardBody>
-								<Heading size="sm" className="mb-5">Revenue by Provider</Heading>
+								<Heading size="sm" className="mb-5">
+									Revenue by Provider
+								</Heading>
 								<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
 									{Object.entries(stats.revenue.by_provider).map(([provider, amount]) => (
 										<Card key={provider}>
@@ -216,7 +214,9 @@ export function BillingDashboardPage() {
 					{stats?.revenue.by_type && Object.keys(stats.revenue.by_type).length > 0 && (
 						<Card className="mb-8">
 							<CardBody>
-								<Heading size="sm" className="mb-5">Revenue by Type</Heading>
+								<Heading size="sm" className="mb-5">
+									Revenue by Type
+								</Heading>
 								<div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
 									{Object.entries(stats.revenue.by_type).map(([type, amount]) => (
 										<Card key={type}>
@@ -236,7 +236,10 @@ export function BillingDashboardPage() {
 					)}
 
 					{/* Tabs */}
-					<Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "overview" | "purchases" | "transactions")}>
+					<Tabs
+						value={activeTab}
+						onValueChange={(value) => setActiveTab(value as "overview" | "purchases" | "transactions")}
+					>
 						<TabsList className="mb-6">
 							<TabsItem value="overview">Overview</TabsItem>
 							<TabsItem value="purchases">Purchases</TabsItem>
@@ -249,53 +252,56 @@ export function BillingDashboardPage() {
 								<DataTable
 									header={<DataTableHeader title="Recent Purchases" />}
 									isEmpty={purchasesData.data.length === 0}
-									emptyState={<Text className="text-center py-10 text-text-muted">No purchases found</Text>}
-									footer={purchasesData.pagination && (
-										<Text className="text-text-muted">
-											Showing {purchasesData.data.length} of {purchasesData.pagination.total} purchases
-											{purchasesData.pagination.hasMore && " (more available)"}
-										</Text>
-									)}
+									emptyState={
+										<Text className="text-center py-10 text-text-muted">No purchases found</Text>
+									}
+									footer={
+										purchasesData.pagination && (
+											<Text className="text-text-muted">
+												Showing {purchasesData.data.length} of {purchasesData.pagination.total}{" "}
+												purchases
+												{purchasesData.pagination.hasMore && " (more available)"}
+											</Text>
+										)
+									}
 								>
-														<TableHeader>
-															<tr>
-																<TableHead>Date</TableHead>
-																<TableHead>Provider</TableHead>
-																<TableHead>Amount</TableHead>
-																<TableHead>Status</TableHead>
-																<TableHead>App</TableHead>
-															</tr>
-														</TableHeader>
-														<TableBody>
-															{purchasesData.data.map((purchase) => (
-																<DataTableRow key={purchase.id}>
-																	<TableCell>{formatDate(purchase.created_at)}</TableCell>
-																	<TableCell className="capitalize">
-																		{purchase.provider === "lemon_squeezy"
-																			? "LemonSqueezy"
-																			: "Paddle"}
-																	</TableCell>
-																	<TableCell className="font-medium">
-																		{formatCurrency(purchase.amount, purchase.currency)}
-																	</TableCell>
-																	<TableCell>
-																	<Chip
-																		variant={
-																			purchase.status === "completed"
-																				? "success"
-																				: purchase.status === "pending"
-																					? "info"
-																					: "danger"
-																		}
-																		size="sm"
-																	>
-																		{purchase.status}
-																	</Chip>
-																	</TableCell>
-																	<TableCell>{purchase.app?.name || "—"}</TableCell>
-																</DataTableRow>
-															))}
-														</TableBody>
+									<TableHeader>
+										<tr>
+											<TableHead>Date</TableHead>
+											<TableHead>Provider</TableHead>
+											<TableHead>Amount</TableHead>
+											<TableHead>Status</TableHead>
+											<TableHead>App</TableHead>
+										</tr>
+									</TableHeader>
+									<TableBody>
+										{purchasesData.data.map((purchase) => (
+											<DataTableRow key={purchase.id}>
+												<TableCell>{formatDate(purchase.created_at)}</TableCell>
+												<TableCell className="capitalize">
+													{purchase.provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
+												</TableCell>
+												<TableCell className="font-medium">
+													{formatCurrency(purchase.amount, purchase.currency)}
+												</TableCell>
+												<TableCell>
+													<Chip
+														variant={
+															purchase.status === "completed"
+																? "success"
+																: purchase.status === "pending"
+																	? "info"
+																	: "danger"
+														}
+														size="sm"
+													>
+														{purchase.status}
+													</Chip>
+												</TableCell>
+												<TableCell>{purchase.app?.name || "—"}</TableCell>
+											</DataTableRow>
+										))}
+									</TableBody>
 								</DataTable>
 							)}
 						</TabsPanel>
@@ -306,52 +312,57 @@ export function BillingDashboardPage() {
 								<DataTable
 									header={<DataTableHeader title="Recent Transactions" />}
 									isEmpty={transactionsData.data.length === 0}
-									emptyState={<Text className="text-center py-10 text-text-muted">No transactions found</Text>}
-									footer={transactionsData.pagination && (
-										<Text className="text-text-muted">
-											Showing {transactionsData.data.length} of {transactionsData.pagination.total} transactions
-											{transactionsData.pagination.hasMore && " (more available)"}
-										</Text>
-									)}
+									emptyState={
+										<Text className="text-center py-10 text-text-muted">No transactions found</Text>
+									}
+									footer={
+										transactionsData.pagination && (
+											<Text className="text-text-muted">
+												Showing {transactionsData.data.length} of{" "}
+												{transactionsData.pagination.total} transactions
+												{transactionsData.pagination.hasMore && " (more available)"}
+											</Text>
+										)
+									}
 								>
-														<TableHeader>
-															<tr>
-																<TableHead>Date</TableHead>
-																<TableHead>Type</TableHead>
-																<TableHead>Provider</TableHead>
-																<TableHead>Amount</TableHead>
-																<TableHead>Status</TableHead>
-															</tr>
-														</TableHeader>
-														<TableBody>
-															{transactionsData.data.map((txn) => (
-																<DataTableRow key={txn.id}>
-																	<TableCell>{formatDate(txn.created_at)}</TableCell>
-																	<TableCell className="capitalize">{txn.type}</TableCell>
-																	<TableCell className="capitalize">
-																		{txn.provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
-																	</TableCell>
-																	<TableCell className="font-medium">
-																		{txn.type === "refund" ? "-" : ""}
-																		{formatCurrency(txn.amount, txn.currency)}
-																	</TableCell>
-																	<TableCell>
-																	<Chip
-																		variant={
-																			txn.status === "completed"
-																				? "success"
-																				: txn.status === "pending"
-																					? "info"
-																					: "danger"
-																		}
-																		size="sm"
-																	>
-																		{txn.status}
-																	</Chip>
-																	</TableCell>
-																</DataTableRow>
-															))}
-														</TableBody>
+									<TableHeader>
+										<tr>
+											<TableHead>Date</TableHead>
+											<TableHead>Type</TableHead>
+											<TableHead>Provider</TableHead>
+											<TableHead>Amount</TableHead>
+											<TableHead>Status</TableHead>
+										</tr>
+									</TableHeader>
+									<TableBody>
+										{transactionsData.data.map((txn) => (
+											<DataTableRow key={txn.id}>
+												<TableCell>{formatDate(txn.created_at)}</TableCell>
+												<TableCell className="capitalize">{txn.type}</TableCell>
+												<TableCell className="capitalize">
+													{txn.provider === "lemon_squeezy" ? "LemonSqueezy" : "Paddle"}
+												</TableCell>
+												<TableCell className="font-medium">
+													{txn.type === "refund" ? "-" : ""}
+													{formatCurrency(txn.amount, txn.currency)}
+												</TableCell>
+												<TableCell>
+													<Chip
+														variant={
+															txn.status === "completed"
+																? "success"
+																: txn.status === "pending"
+																	? "info"
+																	: "danger"
+														}
+														size="sm"
+													>
+														{txn.status}
+													</Chip>
+												</TableCell>
+											</DataTableRow>
+										))}
+									</TableBody>
 								</DataTable>
 							)}
 						</TabsPanel>
@@ -361,7 +372,9 @@ export function BillingDashboardPage() {
 							<Card>
 								<CardBody className="text-center py-12">
 									<div className="text-5xl mb-4">💰</div>
-									<Heading size="md" className="mb-2">Billing Overview</Heading>
+									<Heading size="md" className="mb-2">
+										Billing Overview
+									</Heading>
 									<Text className="text-text-muted max-w-md mx-auto">
 										Monitor your payment metrics and transaction history. Use the tabs above to view
 										detailed purchases and transactions from LemonSqueezy and Paddle.

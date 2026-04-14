@@ -26,7 +26,7 @@ import {
 	TableHeader,
 	TableHead,
 	TableBody,
-	TableCell
+	TableCell,
 } from "@nube-auth/components";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { InviteTeamMemberModal } from "../components/InviteTeamMemberModal";
@@ -92,11 +92,11 @@ export function ProjectTeamPage() {
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>
+							{project.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
 						<BreadcrumbButton active>Team</BreadcrumbButton>
 					</BreadcrumbItem>
@@ -106,10 +106,10 @@ export function ProjectTeamPage() {
 			{/* Page Header */}
 			<div className="flex justify-between items-center mb-8">
 				<div>
-					<Heading level={1} size="lg">Team Members</Heading>
-					<Text className="text-text-muted mt-2">
-						Manage team members and their roles for {project.name}
-					</Text>
+					<Heading level={1} size="lg">
+						Team Members
+					</Heading>
+					<Text className="text-text-muted mt-2">Manage team members and their roles for {project.name}</Text>
 				</div>
 				{canManageMembers && (
 					<Button onClick={() => setShowInviteModal(true)}>
@@ -135,94 +135,90 @@ export function ProjectTeamPage() {
 					</EmptyState>
 				}
 			>
-							<TableHeader>
-								<tr>
-									<TableHead>Member</TableHead>
-									<TableHead>Role</TableHead>
-									<TableHead>Joined</TableHead>
-									<TableHead align="right">Actions</TableHead>
-								</tr>
-							</TableHeader>
-							<TableBody>
-								{(members || []).map((member) => (
-							<DataTableRow key={member.id}>
-										<TableCell>
-										<div className="flex items-center gap-3">
-											<div className="w-10 h-10 rounded-full bg-primary/20 ring-1 ring-primary/40 shadow-sm flex items-center justify-center text-sm font-semibold text-primary uppercase">
-												{member.name?.charAt(0) || "U"}
-											</div>
-											<div>
-											<div className="text-sm font-medium text-text-primary">
-												{member.name || "Unknown User"}
-											</div>
-											<div className="text-xs text-text-secondary">
-													{member.email}
-												</div>
-														</div>
-													</div>
-												</TableCell>
-										<TableCell>
-											<Chip variant={member.role === "owner" ? "primary" : "info"} size="sm" className="capitalize">
-												{member.role}
-											</Chip>
-										</TableCell>
-										<TableCell>
-											{new Date(member.createdAt).toLocaleDateString()}
-										</TableCell>
-										<TableCell align="right">
-									<div className="flex gap-2 justify-end">
-											{member.role === "owner" && (
-												<span className="text-xs text-text-tertiary italic">
-													Project Owner
-												</span>
-											)}
-											{member.role !== "owner" && canManageMembers && (
-												<>
-													<Button
-														size="sm"
-														variant="secondary"
-														onClick={() =>
-															setEditingMember({
-																id: member.id,
-																currentRole: member.role,
-															})
-														}
-														disabled={
-															updateMemberMutation.isPending ||
-															removeMemberMutation.isPending
-														}
-													>
-														Edit Role
-													</Button>
-													<Button
-														size="sm"
-														variant="danger"
-														onClick={() =>
-															setMemberToRemove({
-																id: member.id,
-																name: member.name || "",
-																email: member.email || "",
-															})
-														}
-														disabled={
-															updateMemberMutation.isPending ||
-															removeMemberMutation.isPending
-														}
-													>
-														Remove
-													</Button>
-												</>
-											)}
-											{member.role !== "owner" && !canManageMembers && (
-												<span className="text-xs text-text-tertiary italic">
-													{member.userId === currentUser?.id ? "You" : "Team Member"}
-												</span>
-														)}
-													</div>
-												</TableCell>
-											</DataTableRow>
-									))}
-							</TableBody>
+				<TableHeader>
+					<tr>
+						<TableHead>Member</TableHead>
+						<TableHead>Role</TableHead>
+						<TableHead>Joined</TableHead>
+						<TableHead align="right">Actions</TableHead>
+					</tr>
+				</TableHeader>
+				<TableBody>
+					{(members || []).map((member) => (
+						<DataTableRow key={member.id}>
+							<TableCell>
+								<div className="flex items-center gap-3">
+									<div className="w-10 h-10 rounded-full bg-primary/20 ring-1 ring-primary/40 shadow-sm flex items-center justify-center text-sm font-semibold text-primary uppercase">
+										{member.name?.charAt(0) || "U"}
+									</div>
+									<div>
+										<div className="text-sm font-medium text-text-primary">
+											{member.name || "Unknown User"}
+										</div>
+										<div className="text-xs text-text-secondary">{member.email}</div>
+									</div>
+								</div>
+							</TableCell>
+							<TableCell>
+								<Chip
+									variant={member.role === "owner" ? "primary" : "info"}
+									size="sm"
+									className="capitalize"
+								>
+									{member.role}
+								</Chip>
+							</TableCell>
+							<TableCell>{new Date(member.createdAt).toLocaleDateString()}</TableCell>
+							<TableCell align="right">
+								<div className="flex gap-2 justify-end">
+									{member.role === "owner" && (
+										<span className="text-xs text-text-tertiary italic">Project Owner</span>
+									)}
+									{member.role !== "owner" && canManageMembers && (
+										<>
+											<Button
+												size="sm"
+												variant="secondary"
+												onClick={() =>
+													setEditingMember({
+														id: member.id,
+														currentRole: member.role,
+													})
+												}
+												disabled={
+													updateMemberMutation.isPending || removeMemberMutation.isPending
+												}
+											>
+												Edit Role
+											</Button>
+											<Button
+												size="sm"
+												variant="danger"
+												onClick={() =>
+													setMemberToRemove({
+														id: member.id,
+														name: member.name || "",
+														email: member.email || "",
+													})
+												}
+												disabled={
+													updateMemberMutation.isPending || removeMemberMutation.isPending
+												}
+											>
+												Remove
+											</Button>
+										</>
+									)}
+									{member.role !== "owner" && !canManageMembers && (
+										<span className="text-xs text-text-tertiary italic">
+											{member.userId === currentUser?.id ? "You" : "Team Member"}
+										</span>
+									)}
+								</div>
+							</TableCell>
+						</DataTableRow>
+					))}
+				</TableBody>
 			</DataTable>
 			{/* Pending Invitations */}
 			{invitations.length > 0 && (
@@ -231,45 +227,39 @@ export function ProjectTeamPage() {
 						Pending Invitations ({invitations.length})
 					</Heading>
 					<DataTable>
-									<TableHeader>
-										<tr>
-											<TableHead>Email</TableHead>
-											<TableHead>Role</TableHead>
-											<TableHead>Invited</TableHead>
-											<TableHead>Expires</TableHead>
-											<TableHead align="right">Actions</TableHead>
-										</tr>
-									</TableHeader>
-									<TableBody>
-									{invitations.map((invitation) => (
-									<DataTableRow key={invitation.id}>
-										<TableCell>
-											<div className="flex items-center gap-3">
-												<div className="w-10 h-10 rounded-full bg-primary/15 ring-1 ring-primary/35 border border-dashed border-primary/40 flex items-center justify-center text-lg">
-													📧
-												</div>
-												<div>
+						<TableHeader>
+							<tr>
+								<TableHead>Email</TableHead>
+								<TableHead>Role</TableHead>
+								<TableHead>Invited</TableHead>
+								<TableHead>Expires</TableHead>
+								<TableHead align="right">Actions</TableHead>
+							</tr>
+						</TableHeader>
+						<TableBody>
+							{invitations.map((invitation) => (
+								<DataTableRow key={invitation.id}>
+									<TableCell>
+										<div className="flex items-center gap-3">
+											<div className="w-10 h-10 rounded-full bg-primary/15 ring-1 ring-primary/35 border border-dashed border-primary/40 flex items-center justify-center text-lg">
+												📧
+											</div>
+											<div>
 												<div className="text-sm font-medium text-text-primary">
-														{invitation.email}
-													</div>
-												<div className="text-xs text-text-tertiary">
-														Pending signup
-													</div>
-													</div>
+													{invitation.email}
 												</div>
-											</TableCell>
-										<TableCell>
+												<div className="text-xs text-text-tertiary">Pending signup</div>
+											</div>
+										</div>
+									</TableCell>
+									<TableCell>
 										<Chip variant="warning" size="sm" className="capitalize">
-												{invitation.role}
-											</Chip>
-										</TableCell>
-										<TableCell>
-											{new Date(invitation.createdAt).toLocaleDateString()}
-										</TableCell>
-										<TableCell>
-											{new Date(invitation.expiresAt).toLocaleDateString()}
-										</TableCell>
-										<TableCell align="right">
+											{invitation.role}
+										</Chip>
+									</TableCell>
+									<TableCell>{new Date(invitation.createdAt).toLocaleDateString()}</TableCell>
+									<TableCell>{new Date(invitation.expiresAt).toLocaleDateString()}</TableCell>
+									<TableCell align="right">
 										<Button
 											size="sm"
 											variant="danger"
@@ -280,13 +270,13 @@ export function ProjectTeamPage() {
 												})
 											}
 											disabled={cancelInvitationMutation.isPending}
-												>
-													Cancel
-												</Button>
-											</TableCell>
-										</DataTableRow>
-									))}
-								</TableBody>
+										>
+											Cancel
+										</Button>
+									</TableCell>
+								</DataTableRow>
+							))}
+						</TableBody>
 					</DataTable>
 				</div>
 			)}
@@ -301,9 +291,7 @@ export function ProjectTeamPage() {
 					<DialogPopup>
 						<DialogHeader>
 							<DialogTitle>Edit Member Role</DialogTitle>
-							<Text className="text-text-muted mt-2">
-								Change the role for this team member.
-							</Text>
+							<Text className="text-text-muted mt-2">Change the role for this team member.</Text>
 						</DialogHeader>
 
 						<DialogBody>

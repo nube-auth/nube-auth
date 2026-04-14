@@ -18,7 +18,7 @@ import {
 	Text,
 	Label,
 	Input,
-	Button
+	Button,
 } from "@nube-auth/components";
 import { ProfileHeader, InfoGrid } from "@nube-auth/components";
 import { PageLoader } from "../components/PageLoader";
@@ -92,9 +92,7 @@ export function ProfilePage() {
 	}
 
 	if (!profile) {
-		return (
-			<Alert variant="danger">Failed to load profile</Alert>
-		);
+		return <Alert variant="danger">Failed to load profile</Alert>;
 	}
 
 	const email = profile.email || profile.primary_email || "";
@@ -123,7 +121,11 @@ export function ProfilePage() {
 				name={profile.name || "Admin"}
 				email={email}
 				meta="Admin account"
-				avatar={<div className="size-16 rounded-full bg-primary text-white grid place-items-center font-semibold ring-2 ring-card-border/80 shadow-sm">{initials}</div>}
+				avatar={
+					<div className="size-16 rounded-full bg-primary text-white grid place-items-center font-semibold ring-2 ring-card-border/80 shadow-sm">
+						{initials}
+					</div>
+				}
 			/>
 
 			<Card>
@@ -131,8 +133,22 @@ export function ProfilePage() {
 					<InfoGrid
 						items={[
 							{ label: "Email", value: email },
-							{ label: "Status", value: <span className="inline-flex items-center gap-2"><span className="size-2 rounded-full bg-emerald-500" /> Active</span> },
-							{ label: "Account Type", value: <span className="inline-flex items-center gap-2"><Icon icon={IconType.User} size={16} /> Admin</span> },
+							{
+								label: "Status",
+								value: (
+									<span className="inline-flex items-center gap-2">
+										<span className="size-2 rounded-full bg-emerald-500" /> Active
+									</span>
+								),
+							},
+							{
+								label: "Account Type",
+								value: (
+									<span className="inline-flex items-center gap-2">
+										<Icon icon={IconType.User} size={16} /> Admin
+									</span>
+								),
+							},
 							{ label: "Joined", value: formatDate(createdAt) },
 						]}
 						columns={4}
@@ -158,7 +174,9 @@ export function ProfilePage() {
 							<Label>Email Address</Label>
 							<div className="flex items-center gap-2">
 								<Input type="email" value={email} disabled className="flex-1" />
-								<Chip variant="success" size="sm" pill>Verified</Chip>
+								<Chip variant="success" size="sm" pill>
+									Verified
+								</Chip>
 							</div>
 							<Text className="text-sm text-text-muted mt-1">Email cannot be changed here.</Text>
 						</Field>
@@ -172,7 +190,9 @@ export function ProfilePage() {
 								onChange={(e) => setName(e.target.value)}
 								placeholder="Enter your name"
 							/>
-							<Text className="text-sm text-text-muted mt-1">This name is shown across the admin dashboard.</Text>
+							<Text className="text-sm text-text-muted mt-1">
+								This name is shown across the admin dashboard.
+							</Text>
 						</Field>
 
 						<div>
@@ -194,7 +214,9 @@ export function ProfilePage() {
 
 					{updateProfile.isError && (
 						<Alert variant="danger" className="mt-4">
-							{updateProfile.error instanceof Error ? updateProfile.error.message : "Failed to update profile"}
+							{updateProfile.error instanceof Error
+								? updateProfile.error.message
+								: "Failed to update profile"}
 						</Alert>
 					)}
 				</CardBody>

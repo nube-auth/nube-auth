@@ -163,19 +163,19 @@ export function AppSettingsPage() {
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>
+							{project.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps`} />}>Apps</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>{app.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>
+							{app.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
 						<BreadcrumbButton active>Settings</BreadcrumbButton>
 					</BreadcrumbItem>
@@ -184,7 +184,9 @@ export function AppSettingsPage() {
 
 			{/* Page Header */}
 			<div>
-				<Heading level={1} size="lg">App Settings</Heading>
+				<Heading level={1} size="lg">
+					App Settings
+				</Heading>
 				<Text className="text-muted-foreground mt-1">Configure your application settings and preferences</Text>
 			</div>
 
@@ -202,7 +204,9 @@ export function AppSettingsPage() {
 					<form onSubmit={handleSave} className="space-y-6">
 						<Card>
 							<CardBody className="space-y-5">
-								<Heading level={3} size="sm">Basic Information</Heading>
+								<Heading level={3} size="sm">
+									Basic Information
+								</Heading>
 
 								<div className="space-y-1.5">
 									<Label htmlFor="name" className="inline-flex items-center gap-1">
@@ -217,7 +221,9 @@ export function AppSettingsPage() {
 										required
 										placeholder="My Awesome App"
 									/>
-									<Text className="text-muted-foreground text-xs">The public name of your application</Text>
+									<Text className="text-muted-foreground text-xs">
+										The public name of your application
+									</Text>
 								</div>
 
 								<div className="space-y-1.5">
@@ -234,7 +240,9 @@ export function AppSettingsPage() {
 										pattern="[a-z0-9-]+"
 										placeholder="my-awesome-app"
 									/>
-									<Text className="text-muted-foreground text-xs">URL-friendly identifier (lowercase, hyphens only)</Text>
+									<Text className="text-muted-foreground text-xs">
+										URL-friendly identifier (lowercase, hyphens only)
+									</Text>
 								</div>
 
 								<div className="space-y-1.5">
@@ -247,7 +255,9 @@ export function AppSettingsPage() {
 										rows={3}
 										placeholder="A brief description of your application..."
 									/>
-									<Text className="text-muted-foreground text-xs">Optional description for internal reference</Text>
+									<Text className="text-muted-foreground text-xs">
+										Optional description for internal reference
+									</Text>
 								</div>
 							</CardBody>
 						</Card>
@@ -273,7 +283,9 @@ export function AppSettingsPage() {
 						<Card>
 							<CardBody className="space-y-5">
 								<div>
-									<Heading level={3} size="sm">Redirect URIs</Heading>
+									<Heading level={3} size="sm">
+										Redirect URIs
+									</Heading>
 									<Text className="text-muted-foreground text-sm mt-1">
 										Allowed callback URLs after successful authentication
 									</Text>
@@ -286,7 +298,9 @@ export function AppSettingsPage() {
 												className="flex-1"
 												type="url"
 												value={uri}
-												onChange={(e) => handleArrayFieldChange("redirectUris", index, e.target.value)}
+												onChange={(e) =>
+													handleArrayFieldChange("redirectUris", index, e.target.value)
+												}
 												placeholder="https://myapp.com/callback"
 											/>
 											<Button
@@ -301,7 +315,12 @@ export function AppSettingsPage() {
 									))}
 								</div>
 
-								<Button type="button" variant="secondary" size="sm" onClick={() => addArrayField("redirectUris")}>
+								<Button
+									type="button"
+									variant="secondary"
+									size="sm"
+									onClick={() => addArrayField("redirectUris")}
+								>
 									<Icon icon={IconType.Add} size={14} />
 									Add Redirect URI
 								</Button>
@@ -311,7 +330,9 @@ export function AppSettingsPage() {
 						<Card>
 							<CardBody className="space-y-5">
 								<div>
-									<Heading level={3} size="sm">Allowed Hosts</Heading>
+									<Heading level={3} size="sm">
+										Allowed Hosts
+									</Heading>
 									<Text className="text-muted-foreground text-sm mt-1">
 										Domains allowed to make requests to your app
 									</Text>
@@ -323,7 +344,9 @@ export function AppSettingsPage() {
 											<Input
 												className="flex-1"
 												value={host}
-												onChange={(e) => handleArrayFieldChange("allowedHosts", index, e.target.value)}
+												onChange={(e) =>
+													handleArrayFieldChange("allowedHosts", index, e.target.value)
+												}
 												placeholder="myapp.com or localhost:3000"
 											/>
 											<Button
@@ -338,7 +361,12 @@ export function AppSettingsPage() {
 									))}
 								</div>
 
-								<Button type="button" variant="secondary" size="sm" onClick={() => addArrayField("allowedHosts")}>
+								<Button
+									type="button"
+									variant="secondary"
+									size="sm"
+									onClick={() => addArrayField("allowedHosts")}
+								>
 									<Icon icon={IconType.Add} size={14} />
 									Add Allowed Host
 								</Button>
@@ -365,7 +393,9 @@ export function AppSettingsPage() {
 					<form onSubmit={handleSave} className="space-y-6">
 						<Card>
 							<CardBody className="space-y-5">
-								<Heading level={3} size="sm">Security Settings</Heading>
+								<Heading level={3} size="sm">
+									Security Settings
+								</Heading>
 
 								<div className="space-y-1.5">
 									<Label htmlFor="accountLockoutMinutes">Account Lockout Duration (Minutes)</Label>
@@ -379,7 +409,9 @@ export function AppSettingsPage() {
 										max={120}
 										required
 									/>
-									<Text className="text-muted-foreground text-xs">Duration to lock accounts after failed login attempts (5-120 minutes)</Text>
+									<Text className="text-muted-foreground text-xs">
+										Duration to lock accounts after failed login attempts (5-120 minutes)
+									</Text>
 								</div>
 
 								<div className="space-y-1.5">
@@ -394,7 +426,9 @@ export function AppSettingsPage() {
 										max={60}
 										required
 									/>
-									<Text className="text-muted-foreground text-xs">How long to cache user session data (1-60 minutes)</Text>
+									<Text className="text-muted-foreground text-xs">
+										How long to cache user session data (1-60 minutes)
+									</Text>
 								</div>
 
 								<div className="space-y-1.5">
@@ -409,13 +443,16 @@ export function AppSettingsPage() {
 										max={1000}
 										required
 									/>
-									<Text className="text-muted-foreground text-xs">Maximum API requests per minute per user (10-1000)</Text>
+									<Text className="text-muted-foreground text-xs">
+										Maximum API requests per minute per user (10-1000)
+									</Text>
 								</div>
 							</CardBody>
 						</Card>
 
 						<Alert variant="info">
-							Adjust these settings based on your app's needs. Higher values provide better UX but may increase security risks.
+							Adjust these settings based on your app's needs. Higher values provide better UX but may
+							increase security risks.
 						</Alert>
 
 						<div className="flex gap-3">
@@ -438,7 +475,9 @@ export function AppSettingsPage() {
 					<Card className="border-danger/30 bg-danger/5">
 						<CardBody className="space-y-5">
 							<div>
-								<Heading level={3} size="sm" className="text-danger">Danger Zone</Heading>
+								<Heading level={3} size="sm" className="text-danger">
+									Danger Zone
+								</Heading>
 								<Text className="text-muted-foreground text-sm mt-1">
 									These actions are permanent and cannot be undone.
 								</Text>

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useProjects, useProjectsStats } from "../hooks/api";
-import { 
-	Icon, 
+import {
+	Icon,
 	IconType,
 	Button,
 	Spinner,
@@ -55,7 +55,9 @@ export default function Projects() {
 			{/* Page Header */}
 			<div className="flex items-center justify-between">
 				<div>
-					<Heading level={1} size="lg">Projects</Heading>
+					<Heading level={1} size="lg">
+						Projects
+					</Heading>
 					<Text className="text-muted mt-1">Manage your authentication projects</Text>
 				</div>
 				{hasProjects && (
@@ -103,11 +105,7 @@ export default function Projects() {
 					<Text className="text-muted max-w-100 mb-8 leading-relaxed">
 						Projects help you organize your applications and manage authentication across your services.
 					</Text>
-					<Button
-						variant="primary"
-						size="lg"
-						onClick={() => navigate("/projects/new")}
-					>
+					<Button variant="primary" size="lg" onClick={() => navigate("/projects/new")}>
 						<Icon icon={IconType.Add} size={18} bold />
 						New Project
 					</Button>
@@ -135,62 +133,67 @@ export default function Projects() {
 						<Link key={project.id} to={`/projects/${project.id}`} className="no-underline">
 							<Card className="transition-all hover:border-primary hover:-translate-y-0.5 hover:shadow-lg cursor-pointer">
 								<CardBody>
-								{/* Header */}
-								<div className="flex items-center justify-between mb-3">
-									<div className="flex items-center gap-2.5">
-										<div className="w-9 h-9 bg-surface-secondary rounded-lg flex items-center justify-center">
-											<Icon icon={IconType[getIconById(project.icon || "dashboard")]} size={20} className="text-primary" />
+									{/* Header */}
+									<div className="flex items-center justify-between mb-3">
+										<div className="flex items-center gap-2.5">
+											<div className="w-9 h-9 bg-surface-secondary rounded-lg flex items-center justify-center">
+												<Icon
+													icon={IconType[getIconById(project.icon || "dashboard")]}
+													size={20}
+													className="text-primary"
+												/>
+											</div>
+											<div>
+												<Heading level={3} size="sm" className="font-semibold">
+													{project.name}
+												</Heading>
+												{project.slug && (
+													<Text className="text-xs text-muted">{project.slug}</Text>
+												)}
+											</div>
 										</div>
-										<div>
-											<Heading level={3} size="sm" className="font-semibold">
-												{project.name}
-											</Heading>
-											{project.slug && (
-												<Text className="text-xs text-muted">
-													{project.slug}
-												</Text>
-											)}
+										<div className="flex items-center justify-center">
+											<Icon icon={IconType.Check} size={18} className="text-success" bold />
 										</div>
 									</div>
-									<div className="flex items-center justify-center">
-										<Icon icon={IconType.Check} size={18} className="text-success" bold />
-									</div>
-								</div>
 
-								{/* Stats Grid */}
-								<div className="grid grid-cols-3 gap-3 mt-4 p-3 bg-surface-secondary rounded-lg">
-									<div className="text-center">
-										<div className="text-xl font-bold text-foreground mb-0.5">
-											{statsMap?.[project.id]?.totalApps ?? 0}
+									{/* Stats Grid */}
+									<div className="grid grid-cols-3 gap-3 mt-4 p-3 bg-surface-secondary rounded-lg">
+										<div className="text-center">
+											<div className="text-xl font-bold text-foreground mb-0.5">
+												{statsMap?.[project.id]?.totalApps ?? 0}
+											</div>
+											<Text className="text-xs text-muted">Apps</Text>
 										</div>
-										<Text className="text-xs text-muted">Apps</Text>
-									</div>
-									<div className="text-center">
-										<div className="text-xl font-bold text-foreground mb-0.5">
-											{statsMap?.[project.id]?.totalUsers ?? 0}
+										<div className="text-center">
+											<div className="text-xl font-bold text-foreground mb-0.5">
+												{statsMap?.[project.id]?.totalUsers ?? 0}
+											</div>
+											<Text className="text-xs text-muted">Users</Text>
 										</div>
-										<Text className="text-xs text-muted">Users</Text>
-									</div>
-									<div className="text-center">
-										<div className="text-xl font-bold text-foreground mb-0.5">
-											{statsMap?.[project.id]?.activeLicenses ?? 0}
+										<div className="text-center">
+											<div className="text-xl font-bold text-foreground mb-0.5">
+												{statsMap?.[project.id]?.activeLicenses ?? 0}
+											</div>
+											<Text className="text-xs text-muted">Licenses</Text>
 										</div>
-										<Text className="text-xs text-muted">Licenses</Text>
 									</div>
-								</div>
 
-								{/* Footer */}
-								<div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-									<div className="flex items-center gap-1.5">
-										<Icon icon={IconType.DollarCircle} size={14} className="text-success" />
-										<span className="text-sm font-semibold text-success">
-											${(statsMap?.[project.id]?.totalRevenue ?? 0).toFixed(2)}
-										</span>
+									{/* Footer */}
+									<div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+										<div className="flex items-center gap-1.5">
+											<Icon icon={IconType.DollarCircle} size={14} className="text-success" />
+											<span className="text-sm font-semibold text-success">
+												${(statsMap?.[project.id]?.totalRevenue ?? 0).toFixed(2)}
+											</span>
+										</div>
+										<Chip variant="info" size="sm">
+											{" "}
+											{project.id}{" "}
+										</Chip>
 									</div>
-									<Chip variant="info" size="sm"> {project.id} </Chip>
-								</div>
-							</CardBody>
-						</Card>
+								</CardBody>
+							</Card>
 						</Link>
 					))}
 				</div>
@@ -199,74 +202,65 @@ export default function Projects() {
 			{/* Table View */}
 			{hasProjects && viewMode === "table" && (
 				<DataTable>
-						<TableHeader>
-							<tr>
-								<TableHead>Name</TableHead>
-								<TableHead className="text-center">Apps</TableHead>
-								<TableHead className="text-center">Users</TableHead>
-								<TableHead className="text-center">Licenses</TableHead>
-								<TableHead className="text-right">Revenue</TableHead>
-								<TableHead className="text-center">Status</TableHead>
-								<TableHead className="w-12"></TableHead>
-							</tr>
-						</TableHeader>
-						<TableBody>
-							{projects.map((project: Project) => (
-								<DataTableRow
-									key={project.id}
-									onClick={() => navigate(`/projects/${project.id}`)}
-								>
-										<TableCell>
-											<div className="flex items-center gap-3">
-												<div className="w-8 h-8 bg-surface-secondary rounded-md flex items-center justify-center shrink-0">
-													<Icon icon={IconType[getIconById(project.icon || "dashboard")]} size={18} className="text-primary" />
-												</div>
-												<div>
-													<Text className="font-medium mb-0.5">
-														{project.name}
-													</Text>
-													{project.slug && (
-														<Text className="text-xs text-muted">
-															{project.slug}
-														</Text>
-													)}
-												</div>
-											</div>
-										</TableCell>
-										<TableCell className="text-center">
-											<Text className="font-semibold">
-												{statsMap?.[project.id]?.totalApps ?? 0}
-											</Text>
-										</TableCell>
-										<TableCell className="text-center">
-											<Text className="font-semibold">
-												{statsMap?.[project.id]?.totalUsers ?? 0}
-											</Text>
-										</TableCell>
-										<TableCell className="text-center">
-											<Text className="font-semibold">
-												{statsMap?.[project.id]?.activeLicenses ?? 0}
-												<span className="text-sm text-muted font-normal ml-0.5">
-													/ {statsMap?.[project.id]?.totalLicenses ?? 0}
-												</span>
-											</Text>
-										</TableCell>
-										<TableCell className="text-right">
-											<Text className="font-semibold text-success">
-												${(statsMap?.[project.id]?.totalRevenue ?? 0).toFixed(2)}
-											</Text>
-										</TableCell>
-										<TableCell>
-											<div className="flex items-center justify-center">
-												<Icon icon={IconType.Check} size={18} className="text-success" bold />
-											</div>
-										</TableCell>
-										<TableCell className="text-center">
-											<Icon icon={IconType.ArrowRight} size={16} className="text-muted" />
-										</TableCell>
-									</DataTableRow>
-								))}
-							</TableBody>
+					<TableHeader>
+						<tr>
+							<TableHead>Name</TableHead>
+							<TableHead className="text-center">Apps</TableHead>
+							<TableHead className="text-center">Users</TableHead>
+							<TableHead className="text-center">Licenses</TableHead>
+							<TableHead className="text-right">Revenue</TableHead>
+							<TableHead className="text-center">Status</TableHead>
+							<TableHead className="w-12"></TableHead>
+						</tr>
+					</TableHeader>
+					<TableBody>
+						{projects.map((project: Project) => (
+							<DataTableRow key={project.id} onClick={() => navigate(`/projects/${project.id}`)}>
+								<TableCell>
+									<div className="flex items-center gap-3">
+										<div className="w-8 h-8 bg-surface-secondary rounded-md flex items-center justify-center shrink-0">
+											<Icon
+												icon={IconType[getIconById(project.icon || "dashboard")]}
+												size={18}
+												className="text-primary"
+											/>
+										</div>
+										<div>
+											<Text className="font-medium mb-0.5">{project.name}</Text>
+											{project.slug && <Text className="text-xs text-muted">{project.slug}</Text>}
+										</div>
+									</div>
+								</TableCell>
+								<TableCell className="text-center">
+									<Text className="font-semibold">{statsMap?.[project.id]?.totalApps ?? 0}</Text>
+								</TableCell>
+								<TableCell className="text-center">
+									<Text className="font-semibold">{statsMap?.[project.id]?.totalUsers ?? 0}</Text>
+								</TableCell>
+								<TableCell className="text-center">
+									<Text className="font-semibold">
+										{statsMap?.[project.id]?.activeLicenses ?? 0}
+										<span className="text-sm text-muted font-normal ml-0.5">
+											/ {statsMap?.[project.id]?.totalLicenses ?? 0}
+										</span>
+									</Text>
+								</TableCell>
+								<TableCell className="text-right">
+									<Text className="font-semibold text-success">
+										${(statsMap?.[project.id]?.totalRevenue ?? 0).toFixed(2)}
+									</Text>
+								</TableCell>
+								<TableCell>
+									<div className="flex items-center justify-center">
+										<Icon icon={IconType.Check} size={18} className="text-success" bold />
+									</div>
+								</TableCell>
+								<TableCell className="text-center">
+									<Icon icon={IconType.ArrowRight} size={16} className="text-muted" />
+								</TableCell>
+							</DataTableRow>
+						))}
+					</TableBody>
 				</DataTable>
 			)}
 		</div>

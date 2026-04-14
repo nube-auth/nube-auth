@@ -94,15 +94,16 @@ export function AppLicensesPage() {
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>
+							{project.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>{app.name}</BreadcrumbButton>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>
+							{app.name}
+						</BreadcrumbButton>
 					</BreadcrumbItem>
-					/
 					<BreadcrumbItem>
 						<BreadcrumbButton active>Licenses & Plans</BreadcrumbButton>
 					</BreadcrumbItem>
@@ -110,8 +111,12 @@ export function AppLicensesPage() {
 			</Breadcrumb>
 
 			<div>
-				<Heading level={1} size="lg">Licenses & Plans</Heading>
-				<Text className="text-muted-foreground mt-1">Manage plans, pricing, and user licenses for {app.name}</Text>
+				<Heading level={1} size="lg">
+					Licenses & Plans
+				</Heading>
+				<Text className="text-muted-foreground mt-1">
+					Manage plans, pricing, and user licenses for {app.name}
+				</Text>
 			</div>
 
 			<Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -142,7 +147,13 @@ export function AppLicensesPage() {
 // Plans & Prices Tab
 // ===========================================================================
 
-function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string, type?: "success" | "error" | "info" | "warning") => void }) {
+function PlansTab({
+	appId,
+	showToast,
+}: {
+	appId: string;
+	showToast: (msg: string, type?: "success" | "error" | "info" | "warning") => void;
+}) {
 	const { data, isLoading } = useV2Plans(appId);
 	const createPlan = useCreateV2Plan(appId);
 	const updatePlan = useUpdateV2Plan(appId);
@@ -169,7 +180,15 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 
 	const openCreate = () => {
 		setEditingPlan(null);
-		setPlanForm({ name: "", slug: "", description: "", features: {}, trialDays: "", displayOrder: 0, isDefault: false });
+		setPlanForm({
+			name: "",
+			slug: "",
+			description: "",
+			features: {},
+			trialDays: "",
+			displayOrder: 0,
+			isDefault: false,
+		});
 		setEntitlementKey("");
 		setEntitlementValue("");
 		setShowPlanModal(true);
@@ -232,13 +251,19 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 	};
 
 	if (isLoading) {
-		return <div className="flex justify-center py-12"><Spinner /></div>;
+		return (
+			<div className="flex justify-center py-12">
+				<Spinner />
+			</div>
+		);
 	}
 
 	return (
 		<div className="space-y-4">
 			<div className="flex justify-between items-center">
-				<Text className="text-muted-foreground">{plans.length} plan{plans.length !== 1 ? "s" : ""}</Text>
+				<Text className="text-muted-foreground">
+					{plans.length} plan{plans.length !== 1 ? "s" : ""}
+				</Text>
 				<Button size="sm" onClick={openCreate}>
 					<Icon icon={IconType.Add} size={16} />
 					Create Plan
@@ -259,17 +284,23 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 								<div className="flex items-start justify-between">
 									<div className="flex-1">
 										<div className="flex items-center gap-2 mb-1">
-											<Heading level={4} size="sm">{plan.name}</Heading>
+											<Heading level={4} size="sm">
+												{plan.name}
+											</Heading>
 											<Chip variant={plan.isActive ? "success" : "default"} size="sm">
 												{plan.isActive ? "active" : "inactive"}
 											</Chip>
 											{plan.isDefault && (
-												<Chip variant="info" size="sm">default</Chip>
+												<Chip variant="info" size="sm">
+													default
+												</Chip>
 											)}
 										</div>
 										<Text className="text-muted-foreground text-xs mb-1">{plan.slug}</Text>
 										<div className="flex items-center gap-1.5 mb-2">
-											<code className="text-xs font-mono text-muted-foreground bg-bg-subtle px-1.5 py-0.5 rounded">{plan.planId}</code>
+											<code className="text-xs font-mono text-muted-foreground bg-bg-subtle px-1.5 py-0.5 rounded">
+												{plan.planId}
+											</code>
 											<button
 												type="button"
 												className="text-muted-foreground hover:text-text-primary"
@@ -283,13 +314,22 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 											</button>
 										</div>
 										{plan.description && (
-											<Text className="text-muted-foreground text-sm mb-2">{plan.description}</Text>
+											<Text className="text-muted-foreground text-sm mb-2">
+												{plan.description}
+											</Text>
 										)}
 										{Object.keys(plan.features).length > 0 && (
 											<div className="flex flex-wrap gap-1.5 mb-2">
 												{Object.entries(plan.features).map(([key, val]) => (
 													<Chip key={key} size="sm" variant="default">
-														{key}: {val === true ? "✓" : val === false ? "✗" : val === -1 ? "∞" : String(val)}
+														{key}:{" "}
+														{val === true
+															? "✓"
+															: val === false
+																? "✗"
+																: val === -1
+																	? "∞"
+																	: String(val)}
 													</Chip>
 												))}
 											</div>
@@ -301,7 +341,13 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 										)}
 									</div>
 									<div className="flex gap-2">
-										<Button size="sm" variant="outline" onClick={() => setExpandedPlan(expandedPlan === plan.planId ? null : plan.planId)}>
+										<Button
+											size="sm"
+											variant="outline"
+											onClick={() =>
+												setExpandedPlan(expandedPlan === plan.planId ? null : plan.planId)
+											}
+										>
 											<Icon icon={IconType.DollarCircle} size={14} />
 											Prices
 										</Button>
@@ -370,7 +416,9 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 							<Input
 								type="number"
 								value={planForm.displayOrder.toString()}
-								onChange={(e) => setPlanForm({ ...planForm, displayOrder: parseInt(e.target.value, 10) || 0 })}
+								onChange={(e) =>
+									setPlanForm({ ...planForm, displayOrder: parseInt(e.target.value, 10) || 0 })
+								}
 							/>
 						</div>
 						<div className="flex items-center gap-2">
@@ -383,12 +431,15 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 						<div>
 							<Label>Entitlements</Label>
 							<Text className="text-xs text-muted-foreground mb-2">
-								Use <code>-1</code> for unlimited counts. Booleans control feature access; numbers set limits.
+								Use <code>-1</code> for unlimited counts. Booleans control feature access; numbers set
+								limits.
 							</Text>
 							<div className="flex gap-2 mb-2">
 								<Input
 									value={entitlementKey}
-									onChange={(e) => setEntitlementKey(e.target.value.replace(/\s+/g, "_").toLowerCase())}
+									onChange={(e) =>
+										setEntitlementKey(e.target.value.replace(/\s+/g, "_").toLowerCase())
+									}
 									placeholder="key (e.g. api_calls)"
 									className="flex-1"
 									onKeyDown={(e) => {
@@ -396,8 +447,18 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 											e.preventDefault();
 											if (entitlementKey.trim()) {
 												const n = Number(entitlementValue);
-												const parsed = entitlementValue === "true" ? true : entitlementValue === "false" ? false : (entitlementValue !== "" && Number.isInteger(n)) ? n : entitlementValue;
-												setPlanForm({ ...planForm, features: { ...planForm.features, [entitlementKey.trim()]: parsed } });
+												const parsed =
+													entitlementValue === "true"
+														? true
+														: entitlementValue === "false"
+															? false
+															: entitlementValue !== "" && Number.isInteger(n)
+																? n
+																: entitlementValue;
+												setPlanForm({
+													...planForm,
+													features: { ...planForm.features, [entitlementKey.trim()]: parsed },
+												});
 												setEntitlementKey("");
 												setEntitlementValue("");
 											}
@@ -416,8 +477,18 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 									onClick={() => {
 										if (entitlementKey.trim()) {
 											const n = Number(entitlementValue);
-												const parsed = entitlementValue === "true" ? true : entitlementValue === "false" ? false : (entitlementValue !== "" && Number.isInteger(n)) ? n : entitlementValue;
-											setPlanForm({ ...planForm, features: { ...planForm.features, [entitlementKey.trim()]: parsed } });
+											const parsed =
+												entitlementValue === "true"
+													? true
+													: entitlementValue === "false"
+														? false
+														: entitlementValue !== "" && Number.isInteger(n)
+															? n
+															: entitlementValue;
+											setPlanForm({
+												...planForm,
+												features: { ...planForm.features, [entitlementKey.trim()]: parsed },
+											});
 											setEntitlementKey("");
 											setEntitlementValue("");
 										}
@@ -430,7 +501,8 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 								{Object.entries(planForm.features).map(([key, val]) => (
 									<span key={key} className="inline-flex items-center gap-1">
 										<Chip size="sm">
-											{key}: {val === true ? "✓" : val === false ? "✗" : val === -1 ? "∞" : String(val)}
+											{key}:{" "}
+											{val === true ? "✓" : val === false ? "✗" : val === -1 ? "∞" : String(val)}
 										</Chip>
 										<button
 											type="button"
@@ -449,7 +521,9 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 						</div>
 					</DialogBody>
 					<DialogFooter>
-						<Button variant="outline" onClick={() => setShowPlanModal(false)}>Cancel</Button>
+						<Button variant="outline" onClick={() => setShowPlanModal(false)}>
+							Cancel
+						</Button>
 						<Button onClick={handleSave} disabled={saving}>
 							{saving ? <Spinner /> : editingPlan ? "Update" : "Create"}
 						</Button>
@@ -474,7 +548,15 @@ function PlansTab({ appId, showToast }: { appId: string; showToast: (msg: string
 // Prices Section (nested under a plan)
 // ===========================================================================
 
-function PricesSection({ appId, plan, showToast }: { appId: string; plan: V2Plan; showToast: (msg: string, type?: "success" | "error" | "info" | "warning") => void }) {
+function PricesSection({
+	appId,
+	plan,
+	showToast,
+}: {
+	appId: string;
+	plan: V2Plan;
+	showToast: (msg: string, type?: "success" | "error" | "info" | "warning") => void;
+}) {
 	const { data, isLoading } = useV2Prices(appId, plan.planId);
 	const createPrice = useCreateV2Price(appId, plan.planId);
 	const syncPrice = useSyncPrice(appId, plan.planId);
@@ -558,7 +640,9 @@ function PricesSection({ appId, plan, showToast }: { appId: string; plan: V2Plan
 			{isLoading ? (
 				<Spinner />
 			) : prices.length === 0 ? (
-				<Text className="text-muted-foreground text-sm py-4">No prices yet. Add a price to enable purchases.</Text>
+				<Text className="text-muted-foreground text-sm py-4">
+					No prices yet. Add a price to enable purchases.
+				</Text>
 			) : (
 				<div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
 					{prices.map((price) => {
@@ -566,23 +650,27 @@ function PricesSection({ appId, plan, showToast }: { appId: string; plan: V2Plan
 						const isSyncing = syncingPriceId === price.priceId;
 						return (
 							<div key={price.priceId} className="p-3 rounded-lg border border-card-border bg-bg-muted">
-						<div className="flex items-center gap-2 mb-1">
-								<Text className="font-semibold">
-									{formatPrice(price.amountCents, price.currency)}
-								</Text>
-								{price.interval && (
-									<Text className="text-muted-foreground text-xs">/{price.interval}</Text>
-								)}
-							</div>
+								<div className="flex items-center gap-2 mb-1">
+									<Text className="font-semibold">
+										{formatPrice(price.amountCents, price.currency)}
+									</Text>
+									{price.interval && (
+										<Text className="text-muted-foreground text-xs">/{price.interval}</Text>
+									)}
+								</div>
 								<div className="flex flex-wrap gap-1.5 mb-1.5">
-									<Chip size="sm" variant="default">{price.billingType}</Chip>
+									<Chip size="sm" variant="default">
+										{price.billingType}
+									</Chip>
 									<Chip size="sm" variant={price.isActive ? "success" : "default"}>
 										{price.isActive ? "active" : "inactive"}
 									</Chip>
 								</div>
 								<Text className="text-muted-foreground text-xs">{price.currency.toUpperCase()}</Text>
 								<div className="flex items-center gap-1 mt-1.5 min-w-0">
-									<code className="text-xs font-mono text-muted-foreground bg-bg-subtle px-1.5 py-0.5 rounded truncate flex-1 min-w-0">{price.priceId}</code>
+									<code className="text-xs font-mono text-muted-foreground bg-bg-subtle px-1.5 py-0.5 rounded truncate flex-1 min-w-0">
+										{price.priceId}
+									</code>
 									<button
 										type="button"
 										className="text-muted-foreground hover:text-text-primary shrink-0"
@@ -638,9 +726,9 @@ function PricesSection({ appId, plan, showToast }: { appId: string; plan: V2Plan
 								value={form.billingType}
 								onChange={(v) => setForm({ ...form, billingType: v })}
 								options={[
-								{ value: "recurring", label: "Recurring" },
-								{ value: "one_time", label: "One-time" },
-							]}
+									{ value: "recurring", label: "Recurring" },
+									{ value: "one_time", label: "One-time" },
+								]}
 							/>
 						</div>
 						{form.billingType === "recurring" && (
@@ -667,42 +755,44 @@ function PricesSection({ appId, plan, showToast }: { appId: string; plan: V2Plan
 								</div>
 							</>
 						)}
-					<div>
-						<Label>Currency</Label>
-						<Select
-							value={form.currency}
-							onChange={(v) => setForm({ ...form, currency: v })}
-							options={Object.entries(CURRENCY_META).map(([code, { label }]) => ({
-								value: code,
-								label,
-							}))}
-						/>
-					</div>
-					<div>
-						<Label>Amount</Label>
-						<div className="relative">
-							<span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm select-none pointer-events-none">
-								{CURRENCY_META[form.currency]?.symbol ?? form.currency.toUpperCase()}
-							</span>
-							<Input
-								type="number"
-								min="0"
-								step="0.01"
-								value={form.amount}
-								onChange={(e) => setForm({ ...form, amount: e.target.value })}
-								placeholder="9.99"
-								className="pl-8"
+						<div>
+							<Label>Currency</Label>
+							<Select
+								value={form.currency}
+								onChange={(v) => setForm({ ...form, currency: v })}
+								options={Object.entries(CURRENCY_META).map(([code, { label }]) => ({
+									value: code,
+									label,
+								}))}
 							/>
 						</div>
-						{form.amount && !isNaN(parseFloat(form.amount)) && (
-							<Text className="text-xs text-muted-foreground mt-1">
-								= {formatPrice(Math.round(parseFloat(form.amount) * 100), form.currency)}
-							</Text>
-						)}
-					</div>
+						<div>
+							<Label>Amount</Label>
+							<div className="relative">
+								<span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm select-none pointer-events-none">
+									{CURRENCY_META[form.currency]?.symbol ?? form.currency.toUpperCase()}
+								</span>
+								<Input
+									type="number"
+									min="0"
+									step="0.01"
+									value={form.amount}
+									onChange={(e) => setForm({ ...form, amount: e.target.value })}
+									placeholder="9.99"
+									className="pl-8"
+								/>
+							</div>
+							{form.amount && !isNaN(parseFloat(form.amount)) && (
+								<Text className="text-xs text-muted-foreground mt-1">
+									= {formatPrice(Math.round(parseFloat(form.amount) * 100), form.currency)}
+								</Text>
+							)}
+						</div>
 					</DialogBody>
 					<DialogFooter>
-						<Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
+						<Button variant="outline" onClick={() => setShowModal(false)}>
+							Cancel
+						</Button>
 						<Button onClick={handleCreate} disabled={saving}>
 							{saving ? <Spinner /> : "Create Price"}
 						</Button>
@@ -717,7 +807,13 @@ function PricesSection({ appId, plan, showToast }: { appId: string; plan: V2Plan
 // Licenses Tab
 // ===========================================================================
 
-function LicensesTab({ appId, showToast }: { appId: string; showToast: (msg: string, type?: "success" | "error" | "info" | "warning") => void }) {
+function LicensesTab({
+	appId,
+	showToast,
+}: {
+	appId: string;
+	showToast: (msg: string, type?: "success" | "error" | "info" | "warning") => void;
+}) {
 	const [statusFilter, setStatusFilter] = useState<string>("");
 	const [sourceFilter, setSourceFilter] = useState<string>("");
 
@@ -780,7 +876,11 @@ function LicensesTab({ appId, showToast }: { appId: string; showToast: (msg: str
 	};
 
 	if (isLoading) {
-		return <div className="flex justify-center py-12"><Spinner /></div>;
+		return (
+			<div className="flex justify-center py-12">
+				<Spinner />
+			</div>
+		);
 	}
 
 	return (
@@ -792,14 +892,31 @@ function LicensesTab({ appId, showToast }: { appId: string; showToast: (msg: str
 						<Card key={status}>
 							<CardBody className="flex items-center gap-3">
 								<IconBox
-									variant={status === "active" ? "success-subtle" : status === "suspended" ? "danger-subtle" : "secondary-subtle"}
+									variant={
+										status === "active"
+											? "success-subtle"
+											: status === "suspended"
+												? "danger-subtle"
+												: "secondary-subtle"
+									}
 									size="md"
 								>
-									<Icon icon={status === "active" ? IconType.Check : status === "suspended" ? IconType.Shield : IconType.Clock} size={18} />
+									<Icon
+										icon={
+											status === "active"
+												? IconType.Check
+												: status === "suspended"
+													? IconType.Shield
+													: IconType.Clock
+										}
+										size={18}
+									/>
 								</IconBox>
 								<div>
 									<Text className="text-muted-foreground text-xs capitalize">{status}</Text>
-									<Heading level={4} size="sm">{count}</Heading>
+									<Heading level={4} size="sm">
+										{count}
+									</Heading>
 								</div>
 							</CardBody>
 						</Card>
@@ -847,79 +964,98 @@ function LicensesTab({ appId, showToast }: { appId: string; showToast: (msg: str
 				/>
 			) : (
 				<DataTable>
-						<TableHeader>
-							<tr>
-								<TableHead>User</TableHead>
-								<TableHead>Plan</TableHead>
-								<TableHead>Status</TableHead>
-								<TableHead>Source</TableHead>
-								<TableHead>Valid Until</TableHead>
-								<TableHead>Activations</TableHead>
-								<TableHead>Actions</TableHead>
-							</tr>
-						</TableHeader>
-						<TableBody>
-							{licenses.map((lic) => (
-								<DataTableRow key={lic.licenseId}>
-									<TableCell>
-										<div>
-											<Text className="text-sm font-medium">{lic.userName || lic.userEmail || "—"}</Text>
-											{lic.userEmail && lic.userName && (
-												<Text className="text-xs text-muted-foreground">{lic.userEmail}</Text>
-											)}
-											<div className="flex items-center gap-1 mt-0.5">
-												<code className="text-xs font-mono text-muted-foreground">{lic.licenseId}</code>
-												<button
-													type="button"
-													className="text-muted-foreground hover:text-text-primary"
-													title="Copy license ID"
-													onClick={() => {
-														navigator.clipboard.writeText(lic.licenseId);
-														showToast("License ID copied", "info");
-													}}
-												>
-													<Icon icon={IconType.Copy} size={11} />
-												</button>
-											</div>
+					<TableHeader>
+						<tr>
+							<TableHead>User</TableHead>
+							<TableHead>Plan</TableHead>
+							<TableHead>Status</TableHead>
+							<TableHead>Source</TableHead>
+							<TableHead>Valid Until</TableHead>
+							<TableHead>Activations</TableHead>
+							<TableHead>Actions</TableHead>
+						</tr>
+					</TableHeader>
+					<TableBody>
+						{licenses.map((lic) => (
+							<DataTableRow key={lic.licenseId}>
+								<TableCell>
+									<div>
+										<Text className="text-sm font-medium">
+											{lic.userName || lic.userEmail || "—"}
+										</Text>
+										{lic.userEmail && lic.userName && (
+											<Text className="text-xs text-muted-foreground">{lic.userEmail}</Text>
+										)}
+										<div className="flex items-center gap-1 mt-0.5">
+											<code className="text-xs font-mono text-muted-foreground">
+												{lic.licenseId}
+											</code>
+											<button
+												type="button"
+												className="text-muted-foreground hover:text-text-primary"
+												title="Copy license ID"
+												onClick={() => {
+													navigator.clipboard.writeText(lic.licenseId);
+													showToast("License ID copied", "info");
+												}}
+											>
+												<Icon icon={IconType.Copy} size={11} />
+											</button>
 										</div>
-									</TableCell>
-									<TableCell>
-										<Text className="text-sm">{lic.plan?.name || "—"}</Text>
-									</TableCell>
-									<TableCell>
-										<Chip
-											variant={lic.status === "active" ? "success" : lic.status === "suspended" ? "danger" : lic.status === "trial" ? "info" : "default"}
+									</div>
+								</TableCell>
+								<TableCell>
+									<Text className="text-sm">{lic.plan?.name || "—"}</Text>
+								</TableCell>
+								<TableCell>
+									<Chip
+										variant={
+											lic.status === "active"
+												? "success"
+												: lic.status === "suspended"
+													? "danger"
+													: lic.status === "trial"
+														? "info"
+														: "default"
+										}
+										size="sm"
+									>
+										{lic.status}
+									</Chip>
+								</TableCell>
+								<TableCell>
+									<Chip size="sm" variant="default">
+										{lic.source}
+									</Chip>
+								</TableCell>
+								<TableCell>
+									<Text className="text-sm text-muted-foreground">
+										{lic.validUntil ? new Date(lic.validUntil).toLocaleDateString() : "—"}
+									</Text>
+								</TableCell>
+								<TableCell>
+									<Text className="text-sm">
+										{lic.activationsCount ?? 0}
+										{lic.maxActivations ? ` / ${lic.maxActivations}` : ""}
+									</Text>
+								</TableCell>
+								<TableCell>
+									<div className="flex gap-1">
+										<Button
 											size="sm"
+											variant="outline"
+											onClick={() => setViewingHistory(lic.licenseId)}
 										>
-											{lic.status}
-										</Chip>
-									</TableCell>
-									<TableCell>
-										<Chip size="sm" variant="default">{lic.source}</Chip>
-									</TableCell>
-									<TableCell>
-										<Text className="text-sm text-muted-foreground">
-											{lic.validUntil ? new Date(lic.validUntil).toLocaleDateString() : "—"}
-										</Text>
-									</TableCell>
-									<TableCell>
-										<Text className="text-sm">
-											{lic.activationsCount ?? 0}{lic.maxActivations ? ` / ${lic.maxActivations}` : ""}
-										</Text>
-									</TableCell>
-									<TableCell>
-										<div className="flex gap-1">
-											<Button size="sm" variant="outline" onClick={() => setViewingHistory(lic.licenseId)}>
-												<Icon icon={IconType.Clock} size={14} />
-											</Button>
-											<Button size="sm" variant="danger" onClick={() => setRevokeTarget(lic)}>
-												<Icon icon={IconType.Delete} size={14} />
-											</Button>
-										</div>
-									</TableCell>
-								</DataTableRow>
-							))}
-						</TableBody>
+											<Icon icon={IconType.Clock} size={14} />
+										</Button>
+										<Button size="sm" variant="danger" onClick={() => setRevokeTarget(lic)}>
+											<Icon icon={IconType.Delete} size={14} />
+										</Button>
+									</div>
+								</TableCell>
+							</DataTableRow>
+						))}
+					</TableBody>
 				</DataTable>
 			)}
 
@@ -968,7 +1104,9 @@ function LicensesTab({ appId, showToast }: { appId: string; showToast: (msg: str
 						</div>
 					</DialogBody>
 					<DialogFooter>
-						<Button variant="outline" onClick={() => setShowGrantModal(false)}>Cancel</Button>
+						<Button variant="outline" onClick={() => setShowGrantModal(false)}>
+							Cancel
+						</Button>
 						<Button onClick={handleGrant} disabled={saving}>
 							{saving ? <Spinner /> : "Grant License"}
 						</Button>
@@ -978,11 +1116,7 @@ function LicensesTab({ appId, showToast }: { appId: string; showToast: (msg: str
 
 			{/* License History Modal */}
 			{viewingHistory && (
-				<LicenseHistoryModal
-					appId={appId}
-					licenseId={viewingHistory}
-					onClose={() => setViewingHistory(null)}
-				/>
+				<LicenseHistoryModal appId={appId} licenseId={viewingHistory} onClose={() => setViewingHistory(null)} />
 			)}
 
 			<ConfirmModal
@@ -1014,7 +1148,9 @@ function LicenseHistoryModal({ appId, licenseId, onClose }: { appId: string; lic
 				</DialogHeader>
 				<DialogBody>
 					{isLoading ? (
-						<div className="flex justify-center py-8"><Spinner /></div>
+						<div className="flex justify-center py-8">
+							<Spinner />
+						</div>
 					) : history.length === 0 ? (
 						<Text className="text-muted-foreground text-center py-8">No history entries</Text>
 					) : (
@@ -1022,16 +1158,28 @@ function LicenseHistoryModal({ appId, licenseId, onClose }: { appId: string; lic
 							{history.map((entry) => (
 								<div key={entry.historyId} className="p-3 rounded-lg border border-card-border">
 									<div className="flex items-center justify-between mb-1">
-										<Chip size="sm" variant="default">{entry.changeType}</Chip>
+										<Chip size="sm" variant="default">
+											{entry.changeType}
+										</Chip>
 										<Text className="text-xs text-muted-foreground">
 											{new Date(entry.createdAt).toLocaleString()}
 										</Text>
 									</div>
 									{entry.oldValue && (
-										<Text className="text-xs text-muted-foreground">From: {typeof entry.oldValue === "object" ? JSON.stringify(entry.oldValue) : entry.oldValue}</Text>
+										<Text className="text-xs text-muted-foreground">
+											From:{" "}
+											{typeof entry.oldValue === "object"
+												? JSON.stringify(entry.oldValue)
+												: entry.oldValue}
+										</Text>
 									)}
 									{entry.newValue && (
-										<Text className="text-xs text-muted-foreground">To: {typeof entry.newValue === "object" ? JSON.stringify(entry.newValue) : entry.newValue}</Text>
+										<Text className="text-xs text-muted-foreground">
+											To:{" "}
+											{typeof entry.newValue === "object"
+												? JSON.stringify(entry.newValue)
+												: entry.newValue}
+										</Text>
 									)}
 									{entry.reason && (
 										<Text className="text-xs text-muted-foreground mt-1">{entry.reason}</Text>
@@ -1045,7 +1193,9 @@ function LicenseHistoryModal({ appId, licenseId, onClose }: { appId: string; lic
 					)}
 				</DialogBody>
 				<DialogFooter>
-					<Button variant="outline" onClick={onClose}>Close</Button>
+					<Button variant="outline" onClick={onClose}>
+						Close
+					</Button>
 				</DialogFooter>
 			</DialogPopup>
 		</Dialog>
