@@ -27,6 +27,8 @@ export async function ensureLicenseForApp(
 		const existing = await licenseQueries.findByUserAndApp(db, userId, app.id);
 		if (existing) return;
 
+		const existingAny = await licenseQueries.findAnyByUserAndApp(db, userId, app.id);
+
 		if (!planSettings?.defaultPlanId) {
 			log.warn({ appId: appPublicId }, "Auto-license skipped: defaultPlanId not set in plan_settings");
 			return;
@@ -53,16 +55,30 @@ export async function ensureLicenseForApp(
 			validUntil = new Date(now.getTime() + defaultPrice.duration_days * ONE_DAY_MS);
 		}
 
-		await licenseQueries.create(db, {
-			public_id: createId("license"),
-			user_id: userId,
-			app_id: app.id,
-			plan_id: plan.id,
-			status: "active",
-			valid_until: validUntil,
-			created_at: now,
-			updated_at: now,
-		});
+		if (existingAny) {
+			await licenseQueries.update(db, existingAny.id, {
+				plan_id: plan.id,
+				price_id: null,
+				status: "active",
+				valid_until: validUntil,
+				source: "auto_free",
+				max_activations: null,
+				metadata: null,
+				deleted_at: null,
+				updated_at: now,
+			});
+		} else {
+			await licenseQueries.create(db, {
+				public_id: createId("license"),
+				user_id: userId,
+				app_id: app.id,
+				plan_id: plan.id,
+				status: "active",
+				valid_until: validUntil,
+				created_at: now,
+				updated_at: now,
+			});
+		}
 
 		log.info({ appId: appPublicId, userId, planId: plan.public_id }, "Auto-license created");
 	} catch (licenseError) {

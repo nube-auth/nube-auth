@@ -32,6 +32,11 @@ import {
 	BreadcrumbList,
 	BreadcrumbItem,
 	BreadcrumbButton,
+	Menu,
+	MenuTrigger,
+	MenuPopup,
+	MenuItem,
+	MenuSeparator,
 } from "@nube-auth/components";
 
 import { PageLoader } from "../components/PageLoader";
@@ -40,7 +45,7 @@ import { InviteUserModal } from "../components/InviteUserModal";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
 import config from "../config";
-import { useApp, useAppUsers, useProject, useRenewLicense } from "../hooks/api";
+import { useApp, useAppUsers, useProject, useRemoveAppUser, useRenewLicense } from "../hooks/api";
 import { pingpong } from "../lib/pingpong";
 
 export function AppUsersPage() {
@@ -50,6 +55,7 @@ export function AppUsersPage() {
 	const { data: app, isLoading: appLoading } = useApp(projectId || "", appId || "");
 	const { data, isLoading: usersLoading } = useAppUsers(projectId || "", appId || "");
 	const renewLicenseMutation = useRenewLicense(projectId || "", appId || "");
+	const removeAppUserMutation = useRemoveAppUser(projectId || "", appId || "");
 
 	const [searchQuery, setSearchQuery] = useState("");
 	const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -62,6 +68,7 @@ export function AppUsersPage() {
 	const [isUpdating, setIsUpdating] = useState(false);
 	const [updateError, setUpdateError] = useState<string | null>(null);
 	const [userToRenew, setUserToRenew] = useState<{ id: string; name: string; email: string } | null>(null);
+	const [userToRemove, setUserToRemove] = useState<{ id: string; name: string; email: string } | null>(null);
 	const { showToast } = useToast();
 
 	const users = data?.users || [];
@@ -196,6 +203,24 @@ export function AppUsersPage() {
 		}
 	};
 
+	const handleRemoveUser = async () => {
+		if (!userToRemove) return;
+
+		try {
+			const result = await removeAppUserMutation.mutateAsync(userToRemove.id);
+			showToast(result.message, "success");
+			setUserToRemove(null);
+		} catch (error: unknown) {
+			if (error && typeof error === "object" && "message" in error) {
+				showToast(`Failed to remove user: ${(error as { message: string }).message}`, "error");
+			} else {
+				showToast("Failed to remove user", "error");
+			}
+		}
+	};
+
+	const isAnyUserActionPending = renewLicenseMutation.isPending || removeAppUserMutation.isPending || isUpdating;
+
 	if (projectLoading || appLoading) {
 		return <PageLoader />;
 	}
@@ -246,7 +271,7 @@ export function AppUsersPage() {
 
 			{/* Filters */}
 			<div className="mb-5 flex items-center gap-3">
-				<div className="w-full max-w-[400px]">
+				<div className="w-full max-w-100">
 					<Input
 						type="text"
 						placeholder="Search by name or email..."
@@ -380,48 +405,69 @@ export function AppUsersPage() {
 											</TableCell>
 											<TableCell align="right">
 												<div className="flex gap-2 justify-end items-center">
-													<Button
-														variant={user.status === "active" ? "danger" : "primary"}
-														size="sm"
-														onClick={(e) => {
-															e.stopPropagation();
-															handleSuspendToggle(user.id, user.status);
-														}}
-													>
-														{user.status === "active" ? (
-															<><Icon icon={IconType.Shield} size={14} /> Suspend</>
-														) : (
-															<><Icon icon={IconType.Check} size={14} /> Activate</>
-														)}
-													</Button>
+													<Menu>
+														<MenuTrigger
+															render={
+																<Button variant="outline" size="sm" disabled={isAnyUserActionPending}>
+																	<Icon icon={IconType.Menu} size={14} /> More actions
+																</Button>
+															}
+														/>
+														<MenuPopup align="end" size="compact">
+															<MenuItem
+																onClick={() => {
+																	handleSuspendToggle(user.id, user.status);
+																}}
+																disabled={isAnyUserActionPending}
+															>
+																<Icon icon={user.status === "active" ? IconType.Shield : IconType.Check} size={14} />
+																{user.status === "active" ? "Suspend" : "Activate"}
+															</MenuItem>
 
-													{user.licenseValidUntil && (
-														<Button
-															variant="secondary"
-															size="sm"
-															onClick={(e) => {
-																e.stopPropagation();
-																setUserToRenew({
-																	id: user.id,
-																	name: user.name || "",
-																	email: user.email,
-																});
-															}}
-														>
-															<Icon icon={IconType.Refresh} size={14} /> Renew
-														</Button>
-													)}
+															{user.licenseValidUntil && (
+																<MenuItem
+																	onClick={() => {
+																		setUserToRenew({
+																			id: user.id,
+																			name: user.name || "",
+																			email: user.email,
+																		});
+																	}}
+																	disabled={isAnyUserActionPending}
+																>
+																	<Icon icon={IconType.Refresh} size={14} />
+																	Renew license
+																</MenuItem>
+															)}
 
-													<Button
-														variant="secondary"
-														size="sm"
-														onClick={(e) => {
-															e.stopPropagation();
-															setEditingUser(user);
-														}}
-													>
-														<Icon icon={IconType.Edit} size={14} /> Edit
-													</Button>
+															<MenuItem
+																onClick={() => {
+																	setEditingUser(user);
+																}}
+																disabled={isAnyUserActionPending}
+															>
+																<Icon icon={IconType.Edit} size={14} />
+																Edit
+															</MenuItem>
+
+															<MenuSeparator />
+
+															<MenuItem
+																onClick={() => {
+																	setUserToRemove({
+																		id: user.id,
+																		name: user.name || "",
+																		email: user.email,
+																	});
+																}}
+																disabled={isAnyUserActionPending}
+																className="text-danger"
+															>
+																<Icon icon={IconType.Delete} size={14} className="text-danger" />
+																Remove from app
+															</MenuItem>
+														</MenuPopup>
+													</Menu>
 												</div>
 											</TableCell>
 										</DataTableRow>
@@ -546,6 +592,16 @@ export function AppUsersPage() {
 				message={`Renew the license for ${userToRenew?.name || userToRenew?.email}? This will extend their access based on the plan duration.`}
 				confirmText="Renew License"
 				variant="info"
+			/>
+
+			<ConfirmModal
+				isOpen={!!userToRemove}
+				onClose={() => setUserToRemove(null)}
+				onConfirm={handleRemoveUser}
+				title="Remove User From App"
+				message={`Remove ${userToRemove?.name || userToRemove?.email} from this app? Their app sessions, app license, and app membership record will be removed. Their global account will remain.`}
+				confirmText="Remove User"
+				variant="danger"
 			/>
 		</div>
 	);

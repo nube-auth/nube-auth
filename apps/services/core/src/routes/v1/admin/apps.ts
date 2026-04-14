@@ -1,4 +1,4 @@
-import { appQueries, appUserQueries, auditLogQueries, getDb, licenseQueries, planQueries, projectMemberQueries, projectQueries, userQueries } from "@nube-auth/db";
+import { activationQueries, appQueries, appUserQueries, auditLogQueries, getDb, licenseQueries, planQueries, projectMemberQueries, projectQueries, sessionQueries, subscriptionQueries, userQueries } from "@nube-auth/db";
 import { createId, createLogger, CreateAppRequestSchema, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -626,5 +626,116 @@ appsRouter.get("/:projectId/apps/:appId/users", async (c: Context) => {
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get app users error");
 		return c.json({ error: "Failed to get app users" }, 500);
+	}
+});
+
+/**
+ * DELETE /:projectId/apps/:appId/users/:userId
+ * Remove a user from an app (app-scoped cleanup only; keeps global account)
+ */
+appsRouter.delete("/:projectId/apps/:appId/users/:userId", async (c: Context) => {
+	try {
+		const projectId = c.req.param("projectId");
+		const appId = c.req.param("appId");
+		const targetUserId = c.req.param("userId");
+
+		if (!appId || !idPatterns.app.test(appId)) {
+			return c.json({ error: "Invalid appId" }, 400);
+		}
+
+		if (!targetUserId || !idPatterns.user.test(targetUserId)) {
+			return c.json({ error: "Invalid userId" }, 400);
+		}
+
+		const requesterUserId = c.req.header("X-Nube-User-Id");
+		if (!requesterUserId) {
+			return c.json({ error: "Unauthorized" }, 401);
+		}
+
+		const db = getDb();
+
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) {
+			return c.json({ error: "App not found" }, 404);
+		}
+
+		const project = await projectQueries.findByPublicId(db, projectId);
+		if (!project || app.project_id !== project.id) {
+			return c.json({ error: "App not found in this project" }, 404);
+		}
+
+		const requester = await userQueries.findByPublicId(db, requesterUserId);
+		if (!requester) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		const targetUser = await userQueries.findByPublicId(db, targetUserId);
+		if (!targetUser) {
+			return c.json({ error: "Target user not found" }, 404);
+		}
+
+		const member = await projectMemberQueries.findByProjectAndUser(db, project.id, requester.id);
+		const userMember = member?.[0];
+		if (!userMember || (userMember.role !== "owner" && userMember.role !== "admin")) {
+			return c.json({ error: "Forbidden" }, 403);
+		}
+
+		const result = await db.transaction(async (txn: any) => {
+			const revokedSessions = await sessionQueries.revokeByUserAndApp(txn, targetUser.id, app.id);
+			const endedSubscriptions = await subscriptionQueries.endByUserAndApp(txn, targetUser.id, app.id);
+
+			const license = await licenseQueries.findByUserAndApp(txn, targetUser.id, app.id);
+			let deactivatedActivations = 0;
+			let licenseRemoved = false;
+			if (license) {
+				deactivatedActivations = await activationQueries.deactivateByLicenseId(txn, license.id);
+				await licenseQueries.delete(txn, license.id);
+				licenseRemoved = true;
+			}
+
+			const removedAppMembership = await appUserQueries.deleteByAppAndUser(txn, app.id, targetUser.id);
+
+			return {
+				revokedSessions,
+				endedSubscriptions,
+				deactivatedActivations,
+				licenseRemoved,
+				removedAppMembership: removedAppMembership > 0,
+			};
+		});
+
+		try {
+			await auditLogQueries.create(db, {
+				public_id: createId("auditLog"),
+				user_id: requester.id,
+				project_id: project.id,
+				app_id: app.id,
+				action: "app.user.removed",
+				entity_type: "app_user",
+				entity_id: targetUser.public_id,
+				changes: {
+					targetUserId: targetUser.public_id,
+					revokedSessions: result.revokedSessions,
+					endedSubscriptions: result.endedSubscriptions,
+					deactivatedActivations: result.deactivatedActivations,
+					licenseRemoved: result.licenseRemoved,
+					removedAppMembership: result.removedAppMembership,
+				},
+				ip_address: c.req.header("X-Forwarded-For") || c.req.header("X-Real-IP") || null,
+			});
+		} catch (auditError) {
+			log.error({ err: serializeError(auditError as Error) }, "Failed to create audit log");
+		}
+
+		return c.json({
+			message: "User removed from app successfully",
+			userId: targetUser.public_id,
+			appId: app.public_id,
+			projectId: project.public_id,
+			cleanup: result,
+		});
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Remove app user error");
+		return c.json({ error: "Failed to remove user from app" }, 500);
 	}
 });

@@ -536,6 +536,33 @@ export function useRenewLicense(projectId: string, appId: string) {
 	});
 }
 
+export function useRemoveAppUser(projectId: string, appId: string) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: async (userId: string) => {
+			return fetchAPI<{
+				message: string;
+				userId: string;
+				appId: string;
+				projectId: string;
+				cleanup: {
+					revokedSessions: number;
+					endedSubscriptions: number;
+					deactivatedActivations: number;
+					licenseRemoved: boolean;
+					removedAppMembership: boolean;
+				};
+			}>(`/v1/admin/projects/${projectId}/apps/${appId}/users/${userId}`, {
+				method: "DELETE",
+			});
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["app-users", projectId, appId] });
+			queryClient.invalidateQueries({ queryKey: ["app-stats", projectId, appId] });
+		},
+	});
+}
+
 // ===== OAuth Provider Hooks =====
 
 /**

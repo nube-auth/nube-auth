@@ -38,10 +38,11 @@ export const buttonVariants = cva(
           'after:rounded after:bg-background/10 focus-visible:outline-tertiary',
         ],
         danger: [
-          'bg-danger text-danger-foreground',
-          'ring ring-danger-border',
-          'inset-shadow-2xs inset-shadow-white/15 shadow',
-          'after:rounded outline-danger',
+          'bg-danger/12 text-danger',
+          'ring ring-danger/30',
+          'inset-shadow-2xs inset-shadow-white/40 shadow-sm',
+          'hover:not-[[data-disabled]]:bg-danger/18 active:not-[[data-disabled]]:bg-danger/24',
+          'after:rounded after:bg-danger/10 outline-danger',
         ],
         outline: [
           'text-foreground shadow',

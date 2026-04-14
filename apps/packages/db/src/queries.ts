@@ -149,6 +149,22 @@ export const sessionQueries = {
 		return results[0]!;
 	},
 
+	async revokeByUserAndApp(db: DbClient, userId: number, appId: number) {
+		const now = new Date();
+		const results = await db
+			.update(sessions)
+			.set({ revoked_at: now })
+			.where(
+				and(
+					eq(sessions.user_id, userId),
+					eq(sessions.app_id, appId),
+					isNull(sessions.revoked_at),
+				),
+			)
+			.returning({ id: sessions.id });
+		return results.length;
+	},
+
 	/** Count all non-expired, non-revoked sessions for a given app */
 	async countByAppId(db: DbClient, appId: number) {
 		const now = new Date();
@@ -628,6 +644,14 @@ export const licenseQueries = {
 			.select()
 			.from(licenses)
 			.where(and(eq(licenses.user_id, userId), eq(licenses.app_id, appId), isNull(licenses.deleted_at)));
+		return results[0];
+	},
+
+	async findAnyByUserAndApp(db: DbClient, userId: number, appId: number) {
+		const results = await db
+			.select()
+			.from(licenses)
+			.where(and(eq(licenses.user_id, userId), eq(licenses.app_id, appId)));
 		return results[0];
 	},
 
@@ -1491,6 +1515,28 @@ export const subscriptionQueries = {
 			.returning();
 		return results[0]!;
 	},
+
+	async endByUserAndApp(db: DbClient, userId: number, appId: number) {
+		const now = new Date();
+		const results = await db
+			.update(subscriptions)
+			.set({
+				status: "ended",
+				cancel_at_period_end: false,
+				canceled_at: now,
+				ended_at: now,
+				updated_at: now,
+			})
+			.where(
+				and(
+					eq(subscriptions.user_id, userId),
+					eq(subscriptions.app_id, appId),
+					inArray(subscriptions.status, ["trialing", "active", "past_due", "paused", "unpaid"]),
+				),
+			)
+			.returning({ id: subscriptions.id });
+		return results.length;
+	},
 };
 
 /**
@@ -1540,6 +1586,21 @@ export const activationQueries = {
 			.where(eq(license_activations.id, activationId))
 			.returning();
 		return results[0]!;
+	},
+
+	async deactivateByLicenseId(db: DbClient, licenseId: number) {
+		const now = new Date();
+		const results = await db
+			.update(license_activations)
+			.set({ deactivated_at: now, updated_at: now })
+			.where(
+				and(
+					eq(license_activations.license_id, licenseId),
+					isNull(license_activations.deactivated_at),
+				),
+			)
+			.returning({ id: license_activations.id });
+		return results.length;
 	},
 
 	async deactivateByDevice(db: DbClient, licenseId: number, deviceId: string) {
@@ -2277,6 +2338,14 @@ export const appUserQueries = {
 
 	async findByAppId(db: DbClient, appId: number) {
 		return db.select().from(app_users).where(eq(app_users.app_id, appId));
+	},
+
+	async deleteByAppAndUser(db: DbClient, appId: number, userId: number) {
+		const results = await db
+			.delete(app_users)
+			.where(and(eq(app_users.app_id, appId), eq(app_users.user_id, userId)))
+			.returning({ id: app_users.id });
+		return results.length;
 	},
 
 	/** Sum unique users across all non-test apps belonging to a project */
