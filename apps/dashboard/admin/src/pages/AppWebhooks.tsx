@@ -49,6 +49,7 @@ import {
 	useDeleteWebhook,
 	useRotateWebhookSecret,
 	useSendTestEvent,
+	useResendOutboundWebhook,
 	type AppWebhook,
 } from "../hooks/api";
 import { PageLoader } from "../components/PageLoader";
@@ -253,6 +254,21 @@ function EventSelector({
 
 function WebhookLogsPanel({ appId, webhook }: { appId: string; webhook: AppWebhook }) {
 	const { data, isLoading } = useOutboundWebhookLogs(appId, webhook.webhookId);
+	const resend = useResendOutboundWebhook(appId, webhook.webhookId);
+	const [resendingId, setResendingId] = useState<string | null>(null);
+	const { showToast } = useToast();
+
+	const handleResend = async (logId: string) => {
+		setResendingId(logId);
+		try {
+			await resend.mutateAsync(logId);
+			showToast("Delivery re-queued", "success");
+		} catch {
+			showToast("Failed to resend", "error");
+		} finally {
+			setResendingId(null);
+		}
+	};
 
 	if (isLoading) return <Spinner className="size-4" />;
 	if (!data || data.logs.length === 0) {
@@ -270,6 +286,7 @@ function WebhookLogsPanel({ appId, webhook }: { appId: string; webhook: AppWebho
 						<TableHead>Duration</TableHead>
 						<TableHead>Attempt</TableHead>
 						<TableHead>Delivered</TableHead>
+						<TableHead></TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
@@ -288,6 +305,18 @@ function WebhookLogsPanel({ appId, webhook }: { appId: string; webhook: AppWebho
 							<TableCell className="text-sm">{log.attempt}</TableCell>
 							<TableCell className="text-sm text-muted">
 								{new Date(log.createdAt).toLocaleString()}
+							</TableCell>
+							<TableCell>
+								{(log.status === "failed" || log.status === "pending" || log.status === "success") && (
+									<Button
+										variant="plain"
+										size="sm"
+										disabled={resendingId === log.logId}
+										onClick={() => handleResend(log.logId)}
+									>
+										{resendingId === log.logId ? "Sending..." : "Resend"}
+									</Button>
+								)}
 							</TableCell>
 						</TableRow>
 					))}

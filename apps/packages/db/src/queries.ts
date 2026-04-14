@@ -2493,6 +2493,15 @@ export const outboundWebhookLogQueries = {
 		return results[0]!;
 	},
 
+	async findByPublicId(db: DbClient, publicId: string) {
+		const results = await db
+			.select()
+			.from(outbound_webhook_logs)
+			.where(eq(outbound_webhook_logs.public_id, publicId))
+			.limit(1);
+		return results[0] ?? null;
+	},
+
 	async findByWebhookId(db: DbClient, webhookId: number, limit = 50) {
 		return db
 			.select()

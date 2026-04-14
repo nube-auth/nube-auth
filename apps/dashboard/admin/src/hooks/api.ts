@@ -1638,6 +1638,18 @@ export function useUpdateWebhook(appId: string) {
 	});
 }
 
+export function useResendOutboundWebhook(appId: string, webhookId: string) {
+	const queryClient = useQueryClient();
+	return useMutation<{ queued: boolean }, Error, string>({
+		mutationFn: (logId) =>
+			fetchAPI(`/v1/admin/apps/${appId}/webhooks/${webhookId}/logs/${logId}/resend`, {
+				method: "POST",
+			}),
+		onSuccess: () =>
+			queryClient.invalidateQueries({ queryKey: ["app-webhook-logs", appId, webhookId] }),
+	});
+}
+
 export function useDeleteWebhook(appId: string) {
 	const queryClient = useQueryClient();
 	return useMutation<void, Error, string>({

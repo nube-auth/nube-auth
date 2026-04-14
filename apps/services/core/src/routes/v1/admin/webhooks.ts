@@ -22,6 +22,7 @@ import { randomBytes, createHmac, randomUUID } from "node:crypto";
 import type { Context } from "hono";
 import { getDb, appQueries, appWebhookQueries, outboundWebhookLogQueries } from "@nube-auth/db";
 import { createLogger, serializeError, id, idPatterns } from "@nube-auth/shared";
+import { enqueueOutboundWebhook } from "../../../billing/queue.js";
 
 const log = createLogger("admin-webhook-routes");
 
@@ -569,6 +570,42 @@ webhooksRouter.post("/:webhookId/test", async (c: Context) => {
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Send test webhook event error");
 		return c.json({ error: "Failed to send test event" }, 500);
+	}
+});
+
+/**
+ * POST /:webhookId/logs/:logId/resend — re-enqueue a specific delivery
+ */
+webhooksRouter.post("/:webhookId/logs/:logId/resend", async (c: Context) => {
+	try {
+		const appId = c.req.param("appId");
+		const webhookId = c.req.param("webhookId");
+		const logId = c.req.param("logId");
+
+		if (!appId || !idPatterns.app.test(appId)) return c.json({ error: "Invalid appId" }, 400);
+
+		const db = getDb();
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) return c.json({ error: "App not found" }, 404);
+
+		const webhook = await appWebhookQueries.findByPublicId(db, webhookId);
+		if (!webhook || webhook.app_id !== app.id) return c.json({ error: "Webhook not found" }, 404);
+		if (!webhook.is_active) return c.json({ error: "Webhook endpoint is disabled" }, 422);
+
+		const entry = await outboundWebhookLogQueries.findByPublicId(db, logId);
+		if (!entry || entry.webhook_id !== webhook.id) return c.json({ error: "Log entry not found" }, 404);
+
+		await enqueueOutboundWebhook({
+			appId: app.id,
+			event: entry.event,
+			payload: entry.payload as Record<string, unknown>,
+		});
+
+		log.info({ logId, webhookId, appId }, "Outbound webhook re-enqueued for resend");
+		return c.json({ queued: true });
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Resend webhook error");
+		return c.json({ error: "Failed to resend webhook" }, 500);
 	}
 });
 
