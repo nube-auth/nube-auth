@@ -43,6 +43,12 @@ async function fetchAPI<T>(path: string, options?: RequestInit, schema?: any): P
 	// Add CSRF token for state-changing requests
 	if (options?.method && !["GET", "HEAD", "OPTIONS"].includes(options.method.toUpperCase())) {
 		const csrf = csrfHeaders();
+		if (import.meta.env.DEV) {
+			console.log(`[fetchAPI] ${options.method} ${path}`, {
+				crsfHeaders: csrf,
+				allHeaders: headers,
+			});
+		}
 		Object.assign(headers, csrf);
 	}
 
@@ -553,7 +559,7 @@ export function useRemoveAppUser(projectId: string, appId: string) {
 					removedAppMembership: boolean;
 				};
 			}>(`/v1/admin/projects/${projectId}/apps/${appId}/users/${userId}`, {
-				method: "DELETE",
+				method: "POST",
 			});
 		},
 		onSuccess: () => {

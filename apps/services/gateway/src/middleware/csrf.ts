@@ -22,7 +22,11 @@ export const csrfProtection = createMiddleware(async (c: Context, next) => {
 	const csrfTokenHeader = c.req.header("X-Nube-CSRF-Token");
 
 	if (!csrfTokenHeader) {
-		loggers.auth.warn({ path: c.req.path, method }, "CSRF token missing from header");
+		loggers.auth.warn({ 
+			path: c.req.path, 
+			method,
+			allHeaders: Object.fromEntries(c.req.raw.headers.entries ? c.req.raw.headers.entries() : []),
+		}, "CSRF token missing from header");
 		return c.json({ error: "CSRF token required" }, 403);
 	}
 
@@ -30,7 +34,11 @@ export const csrfProtection = createMiddleware(async (c: Context, next) => {
 	const csrfTokenCookie = getCookie(c, CSRF_TOKEN_COOKIE);
 
 	if (!csrfTokenCookie) {
-		loggers.auth.warn({ path: c.req.path, method }, "CSRF token cookie not found");
+		loggers.auth.warn({ 
+			path: c.req.path, 
+			method,
+			headerTokenPreview: csrfTokenHeader.substring(0, 20),
+		}, "CSRF token cookie not found");
 		return c.json({ error: "CSRF token invalid" }, 403);
 	}
 
@@ -45,8 +53,10 @@ export const csrfProtection = createMiddleware(async (c: Context, next) => {
 			{
 				path: c.req.path,
 				method,
-				headerPreview: csrfTokenHeader.substring(0, 8),
-				cookiePreview: csrfTokenCookie.substring(0, 8),
+				headerPreview: csrfTokenHeader.substring(0, 20),
+				headerLength: csrfTokenHeader.length,
+				cookiePreview: csrfTokenCookie.substring(0, 20),
+				cookieLength: csrfTokenCookie.length,
 			},
 			"CSRF token mismatch",
 		);

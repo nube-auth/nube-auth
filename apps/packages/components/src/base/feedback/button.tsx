@@ -38,11 +38,10 @@ export const buttonVariants = cva(
           'after:rounded after:bg-background/10 focus-visible:outline-tertiary',
         ],
         danger: [
-          'bg-danger/12 text-danger',
-          'ring ring-danger/30',
-          'inset-shadow-2xs inset-shadow-white/40 shadow-sm',
-          'hover:not-[[data-disabled]]:bg-danger/18 active:not-[[data-disabled]]:bg-danger/24',
-          'after:rounded after:bg-danger/10 outline-danger',
+          'bg-danger text-foreground',
+          'ring ring-foreground/20',
+          'inset-shadow-2xs inset-shadow-white/15 shadow',
+          'after:rounded outline-foreground',
         ],
         outline: [
           'text-foreground shadow',
@@ -101,18 +100,24 @@ export const buttonVariants = cva(
   },
 );
 
-export function Button({
-  variant,
-  size,
-  pill,
-  progress,
-  block,
-  className,
-  ...props
-}: React.ComponentProps<typeof BaseButton> &
-  VariantProps<typeof buttonVariants>) {
+export const Button = React.forwardRef<
+  React.ElementRef<typeof BaseButton>,
+  React.ComponentProps<typeof BaseButton> & VariantProps<typeof buttonVariants>
+>(function Button(
+  {
+    variant,
+    size,
+    pill,
+    progress,
+    block,
+    className,
+    ...props
+  },
+  ref,
+) {
   return (
     <BaseButton
+      ref={ref}
       data-slot="button"
       data-size={size}
       focusableWhenDisabled
@@ -122,4 +127,4 @@ export function Button({
       )}
     />
   );
-}
+});

@@ -10,7 +10,19 @@ function getCsrfToken(): string | null {
 		.split("; ")
 		.find((entry) => entry.startsWith(`${cookieName}=`));
 
-	return cookie ? decodeURIComponent(cookie.slice(cookieName.length + 1)) : null;
+	const token = cookie ? decodeURIComponent(cookie.slice(cookieName.length + 1)) : null;
+	
+	// Debug logging
+	if (import.meta.env.DEV) {
+		console.log(`[CSRF] Looking for cookie: ${cookieName}, Found:`, !!token, {
+			namespace,
+			cookieName,
+			allCookies: document.cookie,
+			tokenPreview: token ? token.substring(0, 20) : null,
+		});
+	}
+	
+	return token;
 }
 
 /** Returns CSRF header object for use in pingpong/fetch calls. */

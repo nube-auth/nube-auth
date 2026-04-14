@@ -630,10 +630,10 @@ appsRouter.get("/:projectId/apps/:appId/users", async (c: Context) => {
 });
 
 /**
- * DELETE /:projectId/apps/:appId/users/:userId
+ * POST /:projectId/apps/:appId/users/:userId
  * Remove a user from an app (app-scoped cleanup only; keeps global account)
  */
-appsRouter.delete("/:projectId/apps/:appId/users/:userId", async (c: Context) => {
+appsRouter.post("/:projectId/apps/:appId/users/:userId", async (c: Context) => {
 	try {
 		const projectId = c.req.param("projectId");
 		const appId = c.req.param("appId");
