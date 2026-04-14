@@ -20,6 +20,7 @@ import {
 } from "@nube-auth/db/schema";
 import { createLogger, serializeError, id } from "@nube-auth/shared";
 import type { PaymentDetails } from "../adapters/types.js";
+import { fireWebhookEvent } from "../../utils/outbound-events.js";
 
 const log = createLogger("purchases-service");
 
@@ -385,6 +386,15 @@ export async function createPurchaseRecords(
 		}
 
 	if (paymentDetails.subscriptionId) {
+		const existingSubscription = await db.query.subscriptions.findFirst({
+			where: (s, { and, eq: eqCol }) =>
+				and(
+					eqCol(s.provider_config_id, providerConfigId),
+					eqCol(s.provider_subscription_id, paymentDetails.subscriptionId!),
+				),
+			columns: { id: true },
+		});
+
 		// Upsert subscription: create on first payment, update billing dates on renewal.
 		// A plain INSERT would violate the unique(provider_config_id, provider_subscription_id)
 		// constraint on every renewal since the subscription ID never changes.
@@ -432,8 +442,59 @@ export async function createPurchaseRecords(
 				{ subscriptionId: subscription.public_id, providerSubId: paymentDetails.subscriptionId },
 				"Subscription record upserted (created or renewed)",
 			);
+
+			const subscriptionEvent = existingSubscription ? "subscription.renewed" : "subscription.created";
+			try {
+				await fireWebhookEvent(db, app.id, subscriptionEvent, {
+					subscriptionId: subscription.public_id,
+					licenseId: license.public_id,
+					appId: appPublicId,
+					userId: userPublicId,
+					planId: planPublicId,
+					status: subscription.status,
+					billingInterval: subscription.billing_interval,
+					billingPeriodStart: subscription.billing_period_start
+						? new Date(subscription.billing_period_start).toISOString()
+						: null,
+					billingPeriodEnd: subscription.billing_period_end
+						? new Date(subscription.billing_period_end).toISOString()
+						: null,
+					nextBillingDate: subscription.next_billing_date
+						? new Date(subscription.next_billing_date).toISOString()
+						: null,
+					transactionId: paymentDetails.transactionId,
+					amountCents: paymentDetails.amount,
+					currency: paymentDetails.currency,
+				});
+			} catch (webhookEventError) {
+				log.error(
+					{ err: serializeError(webhookEventError as Error), event: subscriptionEvent, appId: appPublicId },
+					"Failed to emit outbound subscription webhook event",
+				);
+			}
 		}
 	}
+
+		const licenseEvent = createdLicense ? "license.created" : "license.renewed";
+		try {
+			await fireWebhookEvent(db, app.id, licenseEvent, {
+				licenseId: license.public_id,
+				appId: appPublicId,
+				userId: userPublicId,
+				planId: planPublicId,
+				status: "active",
+				validUntil: validUntil.toISOString(),
+				transactionId: paymentDetails.transactionId,
+				subscriptionId: paymentDetails.subscriptionId || null,
+				amountCents: paymentDetails.amount,
+				currency: paymentDetails.currency,
+			});
+		} catch (webhookEventError) {
+			log.error(
+				{ err: serializeError(webhookEventError as Error), event: licenseEvent, appId: appPublicId },
+				"Failed to emit outbound license webhook event",
+			);
+		}
 
 		if (createdLicense) {
 			await db.insert(license_history).values({

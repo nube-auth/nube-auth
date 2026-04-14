@@ -12,6 +12,7 @@ import { createId, createLogger, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
+import { fireWebhookEvent } from "../../../utils/outbound-events.js";
 
 const log = createLogger("subscription-routes");
 const router = new Hono();
@@ -165,6 +166,23 @@ router.post("/cancel", async (c: Context) => {
 				});
 			}
 
+			try {
+				await fireWebhookEvent(db, app.id, "subscription.canceled", {
+					subscriptionId: sub.public_id,
+					licenseId: sub.license_id || null,
+					userId: user.public_id,
+					status: "canceled",
+					cancelAtPeriodEnd: false,
+					canceledAt: now.toISOString(),
+					reason: validated.reason || "user_canceled",
+				});
+			} catch (webhookEventError) {
+				log.error(
+					{ err: serializeError(webhookEventError as Error), subId: sub.public_id },
+					"Failed to emit subscription.canceled outbound event",
+				);
+			}
+
 			return c.json({
 				subscriptionId: sub.public_id,
 				status: "canceled",
@@ -195,6 +213,24 @@ router.post("/cancel", async (c: Context) => {
 				changed_by_system: false,
 				notes: validated.reason ?? null,
 			});
+		}
+
+		try {
+			await fireWebhookEvent(db, app.id, "subscription.canceled", {
+				subscriptionId: sub.public_id,
+				licenseId: sub.license_id || null,
+				userId: user.public_id,
+				status: "canceled",
+				cancelAtPeriodEnd: true,
+				canceledAt: now.toISOString(),
+				accessUntil: accessUntil ? new Date(accessUntil).toISOString() : null,
+				reason: validated.reason || "user_canceled",
+			});
+		} catch (webhookEventError) {
+			log.error(
+				{ err: serializeError(webhookEventError as Error), subId: sub.public_id },
+				"Failed to emit subscription.canceled outbound event",
+			);
 		}
 
 		log.info(
@@ -288,6 +324,22 @@ router.post("/resume", async (c: Context) => {
 				changed_by_system: false,
 				notes: null,
 			});
+		}
+
+		try {
+			await fireWebhookEvent(db, app.id, "subscription.resumed", {
+				subscriptionId: sub.public_id,
+				licenseId: sub.license_id || null,
+				userId: user.public_id,
+				status: "active",
+				resumedAt: new Date().toISOString(),
+				source: "user_action",
+			});
+		} catch (webhookEventError) {
+			log.error(
+				{ err: serializeError(webhookEventError as Error), subId: sub.public_id },
+				"Failed to emit subscription.resumed outbound event",
+			);
 		}
 
 		log.info(

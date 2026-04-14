@@ -74,6 +74,12 @@ const SUPPORTED_EVENTS = [
 	"plan.created",
 	"plan.updated",
 	"plan.deleted",
+	"subscription.created",
+	"subscription.renewed",
+	"subscription.canceled",
+	"subscription.payment_failed",
+	"subscription.refunded",
+	"subscription.resumed",
 	"oauth.connected",
 	"oauth.disconnected",
 ];
@@ -105,6 +111,17 @@ const EVENT_GROUPS: { label: string; events: string[] }[] = [
 	{
 		label: "Plan",
 		events: ["plan.created", "plan.updated", "plan.deleted"],
+	},
+	{
+		label: "Subscription",
+		events: [
+			"subscription.created",
+			"subscription.renewed",
+			"subscription.canceled",
+			"subscription.payment_failed",
+			"subscription.refunded",
+			"subscription.resumed",
+		],
 	},
 	{
 		label: "OAuth",
@@ -179,6 +196,15 @@ function EventSelector({
 		onChange(selected.includes(event) ? selected.filter((e) => e !== event) : [...selected, event]);
 	};
 
+	const toggleGroup = (events: string[]) => {
+		const groupSelected = events.every((event) => selected.includes(event));
+		if (groupSelected) {
+			onChange(selected.filter((event) => !events.includes(event)));
+			return;
+		}
+		onChange([...new Set([...selected, ...events])]);
+	};
+
 	return (
 		<div className="space-y-3">
 			<div className="flex items-center gap-2">
@@ -189,7 +215,19 @@ function EventSelector({
 			</div>
 			{EVENT_GROUPS.map((group) => (
 				<div key={group.label} className="space-y-1.5">
-					<Text className="text-xs font-semibold text-muted uppercase tracking-wider">{group.label}</Text>
+					<div className="flex items-center gap-2">
+						<Checkbox
+							checked={group.events.every((event) => selected.includes(event))}
+							onCheckedChange={() => toggleGroup(group.events)}
+							id={`group-${group.label}`}
+						/>
+						<label
+							htmlFor={`group-${group.label}`}
+							className="text-xs font-semibold text-muted uppercase tracking-wider cursor-pointer"
+						>
+							{group.label}
+						</label>
+					</div>
 					<div className="grid grid-cols-2 gap-1.5 pl-2">
 						{group.events.map((event) => (
 							<div key={event} className="flex items-center gap-2">

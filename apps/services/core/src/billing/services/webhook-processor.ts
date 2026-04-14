@@ -9,6 +9,7 @@ import { createLogger, serializeError } from "@nube-auth/shared";
 import type { PaymentDetails } from "../adapters/types.js";
 import { licenseManager } from "./license-manager.js";
 import { createPurchaseRecords } from "./purchases.js";
+import { fireWebhookEvent } from "../../utils/outbound-events.js";
 
 const log = createLogger("webhook-processor");
 
@@ -146,6 +147,22 @@ async function handleSubscriptionCancellation(paymentDetails: PaymentDetails, pr
 			},
 			"License canceled due to subscription cancellation"
 		);
+
+		try {
+			await fireWebhookEvent(db, license.app_id, "subscription.canceled", {
+				subscriptionId: paymentDetails.subscriptionId || null,
+				licenseId: license.public_id,
+				status: "canceled",
+				provider,
+				canceledAt: new Date().toISOString(),
+				reason: "provider_webhook",
+			});
+		} catch (webhookEventError) {
+			log.error(
+				{ err: serializeError(webhookEventError as Error), subscriptionId: paymentDetails.subscriptionId },
+				"Failed to emit subscription.canceled outbound event",
+			);
+		}
 	} catch (error) {
 		log.error(
 			{
@@ -244,6 +261,26 @@ async function handleFailedPayment(paymentDetails: PaymentDetails, provider: str
 			"License suspended due to failed payment"
 		);
 
+		if (paymentDetails.subscriptionId) {
+			try {
+				await fireWebhookEvent(db, license.app_id, "subscription.payment_failed", {
+					subscriptionId: paymentDetails.subscriptionId,
+					licenseId: license.public_id,
+					status: "past_due",
+					provider,
+					failedAt: new Date().toISOString(),
+					gracePeriodEnd: gracePeriodEnd.toISOString(),
+					amountCents: paymentDetails.amount,
+					currency: paymentDetails.currency,
+				});
+			} catch (webhookEventError) {
+				log.error(
+					{ err: serializeError(webhookEventError as Error), subscriptionId: paymentDetails.subscriptionId },
+					"Failed to emit subscription.payment_failed outbound event",
+				);
+			}
+		}
+
 		// TODO: Send email notification to user about failed payment
 	} catch (error) {
 		log.error(
@@ -310,6 +347,26 @@ async function handleRefund(paymentDetails: PaymentDetails, provider: string): P
 			},
 			"License refunded"
 		);
+
+		if (paymentDetails.subscriptionId) {
+			try {
+				await fireWebhookEvent(db, license.app_id, "subscription.refunded", {
+					subscriptionId: paymentDetails.subscriptionId,
+					licenseId: license.public_id,
+					status: "refunded",
+					provider,
+					refundedAt: new Date().toISOString(),
+					amountCents: paymentDetails.amount,
+					currency: paymentDetails.currency,
+					transactionId: paymentDetails.transactionId,
+				});
+			} catch (webhookEventError) {
+				log.error(
+					{ err: serializeError(webhookEventError as Error), subscriptionId: paymentDetails.subscriptionId },
+					"Failed to emit subscription.refunded outbound event",
+				);
+			}
+		}
 
 		// TODO: Send email notification to user about refund
 	} catch (error) {

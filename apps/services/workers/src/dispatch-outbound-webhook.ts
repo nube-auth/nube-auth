@@ -93,7 +93,7 @@ export async function dispatchOutboundWebhook(data: DispatchOutboundWebhookJobDa
 
 	if (deliveries.length === 0) return;
 
-	await Promise.allSettled(
+	const results = await Promise.all(
 		deliveries.map(async (wh) => {
 			const logPublicId = id.outboundWebhookLog();
 			let logStatus: "success" | "failed" = "failed";
@@ -144,6 +144,13 @@ export async function dispatchOutboundWebhook(data: DispatchOutboundWebhookJobDa
 				duration_ms: durationMs ?? undefined,
 				error_message: errorMessage ?? undefined,
 			});
+
+			return logStatus === "success";
 		}),
 	);
+
+	const failedCount = results.filter((ok) => !ok).length;
+	if (failedCount > 0) {
+		throw new Error(`Outbound webhook dispatch failed for ${failedCount}/${deliveries.length} endpoint(s)`);
+	}
 }
