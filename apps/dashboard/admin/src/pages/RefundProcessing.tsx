@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useBillingPurchases, useBillingRefunds, useCreateRefund } from "../hooks/api";
 import { useToast } from "../components/Toast";
-import { Heading, Text, Card, CardBody, Button, Alert, Chip, Label, Input, EmptyState, DataTable, DataTableRow, TableHeader, TableHead, TableBody, TableCell } from "@nube-auth/components";
+import { Heading, Text, Card, CardBody, Button, Alert, Chip, Label, Input, EmptyState, DataTable, DataTableRow, TableHeader, TableHead, TableBody, TableCell, Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbButton } from "@nube-auth/components";
 import { Select } from "../components/Select";
 
 export function RefundProcessingPage() {
@@ -202,6 +203,18 @@ export function RefundProcessingPage() {
 
 	return (
 		<div>
+			{/* Breadcrumb */}
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/billing" />}>Billing</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Refunds</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
+
 			<div className="mb-6 flex justify-between items-center">
 				<div>
 					<Heading level={1} size="lg">Refund Processing</Heading>

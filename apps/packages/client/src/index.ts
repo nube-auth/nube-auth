@@ -45,5 +45,11 @@ export type {
 	WebhookPlanDeletedData,
 	WebhookOAuthConnectedData,
 	WebhookOAuthDisconnectedData,
+	WebhookSubscriptionCreatedData,
+	WebhookSubscriptionRenewedData,
+	WebhookSubscriptionCanceledData,
+	WebhookSubscriptionPaymentFailedData,
+	WebhookSubscriptionRefundedData,
+	WebhookSubscriptionResumedData,
 } from "./types";
 export { pingpong, pingpongFetch } from "./pingpong";

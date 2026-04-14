@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useWebhookLogs, useWebhookDetail, useRetryWebhook } from "../hooks/api";
 import {
 	Heading,
@@ -16,6 +17,10 @@ import {
 	TableHead,
 	TableBody,
 	TableCell,
+	Breadcrumb,
+	BreadcrumbList,
+	BreadcrumbItem,
+	BreadcrumbButton,
 } from "@nube-auth/components";
 import { Select } from "../components/Select";
 
@@ -242,6 +247,18 @@ export function WebhookMonitoringPage() {
 
 	return (
 		<div>
+			{/* Breadcrumb */}
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/billing" />}>Billing</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Webhook Monitoring</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
+
 			<div className="mb-6">
 				<Heading level={1} size="lg" className="mb-2">Webhook Monitoring</Heading>
 				<Text className="text-text-secondary">Monitor webhook deliveries and troubleshoot integration issues</Text>

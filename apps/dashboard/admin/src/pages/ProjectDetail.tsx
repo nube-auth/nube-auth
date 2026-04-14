@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
 	Alert,
 	Avatar,
@@ -23,6 +23,10 @@ import {
 	TableHead,
 	TableHeader,
 	Text,
+	Breadcrumb,
+	BreadcrumbList,
+	BreadcrumbItem,
+	BreadcrumbButton,
 } from "@nube-auth/components";
 import { getIconById } from "../components/IconPicker";
 import { useProject, useProjectApps, useProjectMembers, useProjectStats } from "../hooks/api";
@@ -54,6 +58,18 @@ export function ProjectDetailPage() {
 
 	return (
 		<div className="space-y-6">
+			{/* Breadcrumb */}
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton active>{project.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
+
 			{/* Project Header Card */}
 			<Card>
 				<CardBody>

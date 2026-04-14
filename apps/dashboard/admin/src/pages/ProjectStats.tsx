@@ -8,7 +8,9 @@ import {
 	Card,
 	CardBody,
 	Breadcrumb,
-	BreadcrumbSeparator,
+	BreadcrumbList,
+	BreadcrumbItem,
+	BreadcrumbButton,
 } from "@nube-auth/components";
 
 export function ProjectStatsPage() {
@@ -31,19 +33,19 @@ export function ProjectStatsPage() {
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
-			<div className="mb-6">
-				<Breadcrumb>
-					<Link to="/projects">
-						Projects
-					</Link>
-					/
-					<Link to={`/projects/${projectId}`}>
-						{project.name}
-					</Link>
-					/
-					<Text>Statistics</Text>
-				</Breadcrumb>
-			</div>
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Statistics</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
 
 			{/* Page Header */}
 			<div className="mb-8">

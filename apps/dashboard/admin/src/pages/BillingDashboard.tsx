@@ -21,6 +21,10 @@ import {
 	TabsList,
 	TabsPanel,
 	Text,
+	Breadcrumb,
+	BreadcrumbList,
+	BreadcrumbItem,
+	BreadcrumbButton,
 } from "@nube-auth/components";
 
 export function BillingDashboardPage() {
@@ -73,11 +77,13 @@ export function BillingDashboardPage() {
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
-			<div className="mb-6">
-				<div className="flex gap-2 items-center text-[13px] text-text-tertiary">
-					<span className="text-text-primary">Billing</span>
-				</div>
-			</div>
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Billing</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
 
 			{/* Page Header */}
 			<div className="mb-8 flex justify-between items-center">

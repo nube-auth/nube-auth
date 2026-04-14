@@ -30,7 +30,9 @@ import {
 	TableBody,
 	TableCell,
 	Breadcrumb,
-	BreadcrumbSeparator,
+	BreadcrumbList,
+	BreadcrumbItem,
+	BreadcrumbButton,
 } from "@nube-auth/components";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
@@ -397,19 +399,19 @@ export default function ProjectPaymentProvidersPage() {
 	return (
 		<div className="page">
 			{/* Breadcrumb */}
-			<div className="mb-6">
-				<Breadcrumb>
-					<Link to="/projects">
-						Projects
-					</Link>
-					/
-					<Link to={`/projects/${projectId}`}>
-						{project?.name}
-					</Link>
-					/
-					<Text>Payment Providers</Text>
-				</Breadcrumb>
-			</div>
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project?.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Payment Providers</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
 
 			{/* Page Header */}
 			<div className="flex justify-between items-center mb-8">

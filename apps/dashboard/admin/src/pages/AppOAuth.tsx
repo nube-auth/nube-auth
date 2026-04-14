@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import {
 	Icon,
 	IconType,
@@ -11,6 +11,7 @@ import {
 	CardBody,
 	Button,
 	Chip,
+	Breadcrumb,
 	BreadcrumbList,
 	BreadcrumbItem,
 	BreadcrumbButton,
@@ -85,31 +86,22 @@ export default function AppOAuthPage() {
 	return (
 		<div className="space-y-6">
 			{/* Breadcrumb */}
-			<BreadcrumbList>
-				<BreadcrumbItem>
-					<BreadcrumbButton onClick={() => navigate("/projects")}>
-						Projects
-					</BreadcrumbButton>
-				</BreadcrumbItem>
-				<BreadcrumbItem>
-					<BreadcrumbButton onClick={() => navigate(`/projects/${projectId}`)}>
-						{project?.name}
-					</BreadcrumbButton>
-				</BreadcrumbItem>
-				<BreadcrumbItem>
-					<BreadcrumbButton onClick={() => navigate(`/projects/${projectId}/apps`)}>
-						Apps
-					</BreadcrumbButton>
-				</BreadcrumbItem>
-				<BreadcrumbItem>
-					<BreadcrumbButton onClick={() => navigate(`/projects/${projectId}/apps/${appId}`)}>
-						{app.name}
-					</BreadcrumbButton>
-				</BreadcrumbItem>
-				<BreadcrumbItem>
-					<BreadcrumbButton active>OAuth</BreadcrumbButton>
-				</BreadcrumbItem>
-			</BreadcrumbList>
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project?.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>{app.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton active>OAuth</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
 
 			{/* Page Header */}
 			<div className="flex justify-between items-center">

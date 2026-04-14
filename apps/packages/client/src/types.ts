@@ -249,7 +249,13 @@ export type WebhookEventName =
 	| "plan.updated"
 	| "plan.deleted"
 	| "oauth.connected"
-	| "oauth.disconnected";
+	| "oauth.disconnected"
+	| "subscription.created"
+	| "subscription.renewed"
+	| "subscription.canceled"
+	| "subscription.payment_failed"
+	| "subscription.refunded"
+	| "subscription.resumed";
 
 /** Outer envelope wrapping every webhook delivery. */
 export interface WebhookEnvelope<E extends WebhookEventName = WebhookEventName> {
@@ -431,6 +437,89 @@ export interface WebhookOAuthDisconnectedData {
 	disconnectedAt: string;
 }
 
+export interface WebhookSubscriptionCreatedData {
+	subscriptionId: string;
+	licenseId: string;
+	appId: string;
+	userId: string;
+	planId: string;
+	status: string;
+	billingInterval: string | null;
+	billingPeriodStart: string | null;
+	billingPeriodEnd: string | null;
+	nextBillingDate: string | null;
+	transactionId: string | null;
+	amountCents: number;
+	currency: string;
+}
+
+export interface WebhookSubscriptionRenewedData {
+	subscriptionId: string;
+	licenseId: string;
+	appId: string;
+	userId: string;
+	planId: string;
+	status: string;
+	billingInterval: string | null;
+	billingPeriodStart: string | null;
+	billingPeriodEnd: string | null;
+	nextBillingDate: string | null;
+	transactionId: string | null;
+	amountCents: number;
+	currency: string;
+}
+
+export interface WebhookSubscriptionCanceledData {
+	subscriptionId: string | null;
+	licenseId: string | null;
+	userId: string | null;
+	status: string;
+	/** When true the subscription stays active until the end of the billing period. */
+	cancelAtPeriodEnd?: boolean;
+	canceledAt: string;
+	/** ISO-8601 date until which the user retains access (when cancelAtPeriodEnd is true). */
+	accessUntil?: string | null;
+	/** Why the subscription was canceled, e.g. "user_canceled" or "provider_webhook". */
+	reason: string;
+	/** Payment provider that originated the cancellation (when triggered via webhook). */
+	provider?: string;
+}
+
+export interface WebhookSubscriptionPaymentFailedData {
+	subscriptionId: string | null;
+	licenseId: string;
+	status: string;
+	/** Payment provider name. */
+	provider: string;
+	failedAt: string;
+	/** ISO-8601 end of the grace period before the subscription is suspended. */
+	gracePeriodEnd: string;
+	amountCents: number;
+	currency: string;
+}
+
+export interface WebhookSubscriptionRefundedData {
+	subscriptionId: string | null;
+	licenseId: string;
+	status: string;
+	/** Payment provider name. */
+	provider: string;
+	refundedAt: string;
+	amountCents: number;
+	currency: string;
+	transactionId: string | null;
+}
+
+export interface WebhookSubscriptionResumedData {
+	subscriptionId: string;
+	licenseId: string | null;
+	userId: string;
+	status: string;
+	resumedAt: string;
+	/** What triggered the resume: "user_action" or "admin". */
+	source: string;
+}
+
 /**
  * Maps every `WebhookEventName` to its corresponding payload interface.
  * Used to type the `data` field of `WebhookEnvelope<E>` generically.
@@ -457,6 +546,12 @@ export interface WebhookEventData {
 	"plan.deleted": WebhookPlanDeletedData;
 	"oauth.connected": WebhookOAuthConnectedData;
 	"oauth.disconnected": WebhookOAuthDisconnectedData;
+	"subscription.created": WebhookSubscriptionCreatedData;
+	"subscription.renewed": WebhookSubscriptionRenewedData;
+	"subscription.canceled": WebhookSubscriptionCanceledData;
+	"subscription.payment_failed": WebhookSubscriptionPaymentFailedData;
+	"subscription.refunded": WebhookSubscriptionRefundedData;
+	"subscription.resumed": WebhookSubscriptionResumedData;
 }
 
 // ---------------------------------------------------------------------------

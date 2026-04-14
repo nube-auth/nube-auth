@@ -13,6 +13,7 @@ import {
 	TabsList,
 	TabsItem,
 	TabsPanel,
+	Breadcrumb,
 	BreadcrumbList,
 	BreadcrumbItem,
 	BreadcrumbButton,
@@ -47,26 +48,22 @@ export function AppDevelopersPage() {
 	return (
 		<div className="space-y-6">
 			{/* Breadcrumb */}
-			<BreadcrumbList>
-				<BreadcrumbItem>
-					<BreadcrumbButton onClick={() => navigate("/projects")}>
-						Projects
-					</BreadcrumbButton>
-				</BreadcrumbItem>
-				<BreadcrumbItem>
-					<BreadcrumbButton onClick={() => navigate(`/projects/${projectId}`)}>
-						{project.name}
-					</BreadcrumbButton>
-				</BreadcrumbItem>
-				<BreadcrumbItem>
-					<BreadcrumbButton onClick={() => navigate(`/projects/${projectId}/apps/${appId}`)}>
-						{app.name}
-					</BreadcrumbButton>
-				</BreadcrumbItem>
-				<BreadcrumbItem>
-					<BreadcrumbButton active>Integration Guide</BreadcrumbButton>
-				</BreadcrumbItem>
-			</BreadcrumbList>
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>{app.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Integration Guide</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
 
 			{/* Page Header */}
 			<div>

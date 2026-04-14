@@ -21,6 +21,7 @@ import {
 	Label,
 	Chip,
 	Checkbox,
+	Breadcrumb,
 	BreadcrumbList,
 	BreadcrumbItem,
 	BreadcrumbButton,
@@ -437,18 +438,22 @@ export function AppWebhooksPage() {
 	return (
 		<div className="space-y-6">
 			{/* Breadcrumb */}
-			<BreadcrumbList>
-				<BreadcrumbItem>
-					<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
-				</BreadcrumbItem>
-				<BreadcrumbItem>
-					<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
-				</BreadcrumbItem>
-				<BreadcrumbItem>
-					<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>{app.name}</BreadcrumbButton>
-				</BreadcrumbItem>
-				<BreadcrumbItem>Webhooks</BreadcrumbItem>
-			</BreadcrumbList>
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>{project.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>{app.name}</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Webhooks</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
 
 			{/* Header */}
 			<div className="flex items-center justify-between">

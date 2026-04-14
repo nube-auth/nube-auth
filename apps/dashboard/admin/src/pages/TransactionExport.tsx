@@ -15,7 +15,12 @@ import {
 	TableHead,
 	TableBody,
 	TableCell,
+	Breadcrumb,
+	BreadcrumbList,
+	BreadcrumbItem,
+	BreadcrumbButton,
 } from "@nube-auth/components";
+import { Link } from "react-router-dom";
 import { Select } from "../components/Select";
 import { useState } from "react";
 import { useBillingTransactions } from "../hooks/api";
@@ -154,8 +159,19 @@ export function TransactionExportPage() {
 
 	return (
 		<div>
+			{/* Breadcrumb */}
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/billing" />}>Billing</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Transaction Export</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
+
 			<div className="mb-6">
-				<Heading level={1} size="lg">Transaction Export</Heading>
 				<Text className="m-0 text-text-secondary">Export and analyze transaction history in CSV or JSON format</Text>
 			</div>
 
