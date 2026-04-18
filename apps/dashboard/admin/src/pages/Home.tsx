@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import {
 	Icon,
 	IconType,
+	type IconTypeName,
 	Button,
 	Card,
 	CardBody,
@@ -38,7 +39,7 @@ function StatCard({
 
 interface QuickActionProps {
 	to: string;
-	icon: IconType;
+	icon: IconTypeName;
 	title: string;
 	description: string;
 }
@@ -81,7 +82,7 @@ export function HomePage() {
 				{userLoading ? (
 					<div className="h-8 w-48 bg-border rounded animate-pulse" />
 				) : (
-					<Heading level={1} size="xl" className="font-bold">
+					<Heading level={1} size="lg" className="font-bold">
 						Welcome back, {firstName}
 					</Heading>
 				)}
@@ -160,8 +161,8 @@ export function HomePage() {
 							</Heading>
 							<Text className="text-muted">Create your first project to get started with Nube Auth.</Text>
 						</div>
-						<Button variant="primary" size="md" asChild>
-							<Link to="/projects/new">Create Project</Link>
+					<Button variant="primary" size="md" render={<Link to="/projects/new" />}>
+						Create Project
 						</Button>
 					</CardBody>
 				</Card>

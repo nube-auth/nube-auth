@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import {
 	Icon,
 	IconType,
+	type IconTypeName,
 	Card,
 	CardBody,
 	Heading,
@@ -12,7 +13,7 @@ import { useMe } from "../hooks/api";
 
 interface NavCardProps {
 	to: string;
-	icon: IconType;
+	icon: IconTypeName;
 	title: string;
 	description: string;
 }
@@ -33,7 +34,7 @@ function NavCard({ to, icon, title, description }: NavCardProps) {
 					<Text className="text-muted text-sm leading-relaxed">{description}</Text>
 					<div className="flex items-center gap-1 mt-1 text-primary text-sm font-medium">
 						<span>Go to {title}</span>
-						<Icon icon={IconType.ChevronRight} size={14} />
+						<Icon icon={IconType.ArrowRight} size={14} />
 					</div>
 				</CardBody>
 			</Card>
@@ -57,7 +58,7 @@ export function HomePage() {
 					</div>
 				) : (
 					<>
-						<Heading level={1} size="xl" className="font-bold">
+						<Heading level={1} size="lg" className="font-bold">
 							Welcome back, {firstName}
 						</Heading>
 						{user?.email && (
