@@ -373,6 +373,53 @@ export function AppSettingsPage() {
 							</CardBody>
 						</Card>
 
+						<Card>
+							<CardBody className="space-y-5">
+								<div>
+									<Heading level={3} size="sm">
+										CORS Origins
+									</Heading>
+									<Text className="text-muted-foreground text-sm mt-1">
+										Origins permitted to make cross-origin requests to your app's API
+									</Text>
+								</div>
+
+								<div className="space-y-3">
+									{(formData.corsOrigins || []).map((origin: string, index: number) => (
+										<div key={`corsOrigin-${index}`} className="flex gap-2">
+											<Input
+												className="flex-1"
+												type="url"
+												value={origin}
+												onChange={(e) =>
+													handleArrayFieldChange("corsOrigins", index, e.target.value)
+												}
+												placeholder="https://myapp.com"
+											/>
+											<Button
+												type="button"
+												variant="danger"
+												size="sm"
+												onClick={() => removeArrayField("corsOrigins", index)}
+											>
+												Remove
+											</Button>
+										</div>
+									))}
+								</div>
+
+								<Button
+									type="button"
+									variant="secondary"
+									size="sm"
+									onClick={() => addArrayField("corsOrigins")}
+								>
+									<Icon icon={IconType.Add} size={14} />
+									Add CORS Origin
+								</Button>
+							</CardBody>
+						</Card>
+
 						<div className="flex gap-3">
 							<Button type="submit" disabled={isSaving || updateAppMutation.isPending}>
 								{isSaving || updateAppMutation.isPending ? "Saving..." : "Save Changes"}

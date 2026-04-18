@@ -45,7 +45,7 @@ export interface StateStore {
 // --- In-memory default store ---
 class InMemoryStateStore implements StateStore {
 	private store = new Map<string, StateData>();
-	private timers = new Map<string, ReturnType<typeof setTimeout>>();
+	private timers = new Map<string, ReturnType<typeof globalThis.setTimeout>>();
 
 	async get(key: string): Promise<StateData | null> {
 		return this.store.get(key) ?? null;
@@ -54,7 +54,7 @@ class InMemoryStateStore implements StateStore {
 	async set(key: string, value: StateData, ttlMs: number): Promise<void> {
 		this.store.set(key, value);
 		// Auto-cleanup after TTL
-		const timer = setTimeout(() => {
+		const timer = globalThis.setTimeout(() => {
 			this.store.delete(key);
 			this.timers.delete(key);
 		}, ttlMs);
@@ -65,7 +65,7 @@ class InMemoryStateStore implements StateStore {
 		this.store.delete(key);
 		const timer = this.timers.get(key);
 		if (timer) {
-			clearTimeout(timer);
+			globalThis.clearTimeout(timer);
 			this.timers.delete(key);
 		}
 	}

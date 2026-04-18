@@ -11,6 +11,8 @@ import { csrfProtection } from "./middleware/csrf";
 import { httpLogger } from "./middleware/logger";
 import { rateLimitPresets } from "./middleware/rateLimit";
 import { adminRoutes } from "./routes/admin";
+import { allowedHostsMiddleware } from "./middleware/allowedHosts";
+import { getAppSecuritySettings } from "./lib/appSecuritySettings";
 import { appCatalogRoutes } from "./routes/appCatalog";
 import { authRoutes } from "./routes/auth";
 import { debugRoutes } from "./routes/debug";
@@ -167,14 +169,13 @@ app.use("*", async (c, next) => {
 		return next();
 	}
 
-	// Slow path: look up per-app CORS origins from the database.
+	// Slow path: look up per-app CORS origins from cache (read-through to DB, 5 min TTL).
 	// appResolverMiddleware must have already run and set appId in context.
 	const appId = (c as any).get("appId") as string | undefined;
 	if (appId) {
 		try {
-			const db = getDb();
-			const appRecord = await appQueries.findByPublicId(db, appId);
-			const corsOrigins: string[] = (appRecord?.security_settings as any)?.corsOrigins ?? [];
+			const settings = await getAppSecuritySettings(appId);
+			const corsOrigins = settings?.corsOrigins ?? [];
 			if (corsOrigins.some((p) => originMatchesPattern(origin, p))) {
 				setHeaders(origin);
 				if (c.req.method === "OPTIONS") return c.body(null, 204);
@@ -190,6 +191,11 @@ app.use("*", async (c, next) => {
 	if (c.req.method === "OPTIONS") return c.body(null, 204);
 	return next();
 });
+
+// Allowed Hosts — server-side enforcement of per-app allowedHosts on auth/me routes.
+// Complements CORS by validating the caller's hostname even for non-browser clients.
+// Skipped when app has no allowedHosts configured (opt-in).
+app.use("*", allowedHostsMiddleware);
 
 // HTTP request logging
 app.use("*", httpLogger(log));
