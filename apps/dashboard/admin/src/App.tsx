@@ -38,6 +38,8 @@ import { ProjectStatsPage } from "./pages/ProjectStats";
 import ProjectsPage from "./pages/Projects";
 import { CreateProjectPage } from "./pages/CreateProject";
 import { ProjectTeamPage } from "./pages/ProjectTeam";
+import { HomePage } from "./pages/Home";
+import { RootPage } from "./pages/Root";
 import { pingpong } from "./lib/pingpong";
 
 const queryClient = new QueryClient();
@@ -66,7 +68,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 	}
 
 	if (!user) {
-		return <Navigate to="/login" replace />;
+		return <Navigate to="/" replace />;
 	}
 
 	const cycleTheme = () => {
@@ -342,7 +344,15 @@ function App() {
 									</ProtectedLayout>
 								}
 							/>
-							<Route path="/" element={<Navigate to="/projects" replace />} />
+							<Route path="/" element={<RootPage />} />
+							<Route
+								path="/home"
+								element={
+									<ProtectedLayout>
+										<HomePage />
+									</ProtectedLayout>
+								}
+							/>
 							<Route path="*" element={<NotFoundPage />} />
 						</Routes>
 					</ThemeWrapper>

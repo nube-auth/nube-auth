@@ -52,8 +52,8 @@ export function LoginPage() {
 						}
 					}
 
-					// Already authenticated, go to projects
-					navigate("/projects", { replace: true });
+					// Already authenticated, go to home
+					navigate("/home", { replace: true });
 					return;
 				}
 
@@ -74,7 +74,7 @@ export function LoginPage() {
 		setStatus("redirecting");
 		const inviteCode = searchParams.get("invite") || "";
 		// After successful auth, redirect to projects (or handle invite flow)
-		const returnTo = inviteCode ? `/login?invite=${inviteCode}` : "/projects";
+		const returnTo = inviteCode ? `/login?invite=${inviteCode}` : "/";
 		const gatewayAuthUrl = `${config.gatewayUrl}/v1/auth/start?provider=google&audience=admin&return_to=${encodeURIComponent(returnTo)}&invite=${encodeURIComponent(inviteCode)}`;
 		window.location.href = gatewayAuthUrl;
 	};

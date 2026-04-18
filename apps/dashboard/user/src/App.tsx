@@ -5,6 +5,8 @@ import { config } from "./config";
 import { useAuth } from "./hooks/api";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LoginPage } from "./pages/Login";
+import { RootPage } from "./pages/Root";
+import { HomePage } from "./pages/Home";
 import { ProfilePage } from "./pages/Profile";
 import { SessionsPage } from "./pages/Sessions";
 import { SecurityPage } from "./pages/Security";
@@ -33,7 +35,7 @@ function ProtectedLayout({
 	}
 
 	if (!isAuthenticated) {
-		return <Navigate to="/login" replace />;
+		return <Navigate to="/" replace />;
 	}
 
 	const cycleTheme = () => {
@@ -106,7 +108,15 @@ function App() {
 						</ProtectedLayout>
 					}
 				/>
-				<Route path="/" element={<Navigate to="/profile" replace />} />
+				<Route path="/" element={<RootPage />} />
+			<Route
+				path="/home"
+				element={
+					<ProtectedLayout theme={theme} setTheme={setTheme}>
+						<HomePage />
+					</ProtectedLayout>
+				}
+			/>
 				<Route path="*" element={<NotFoundPage />} />
 			</Routes>
 			</ErrorBoundary>
