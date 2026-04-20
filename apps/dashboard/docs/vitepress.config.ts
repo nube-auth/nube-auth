@@ -3,6 +3,7 @@ import { defineConfig } from 'vitepress'
 const envTag = process.env.VITE_ENV_TAG || 'BETA';
 
 export default defineConfig({
+  outDir: 'dist',
   title: 'Nube Auth',
   description: 'Authentication, session management, and licensing for modern applications',
   head: [
