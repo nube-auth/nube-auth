@@ -1,0 +1,12 @@
+{
+	// Cloudflare Pages configuration for the docs site (VitePress static).
+	// CF Pages project settings (set in dashboard):
+	//   Root directory:   apps/dashboard/docs
+	//   Build command:    cd ../../../ && pnpm install && pnpm build --filter=@nube-auth/dashboard-docs
+	//   Install command:  (leave blank — handled in build command above)
+	// Environment variables to set in CF Pages dashboard:
+	//   VITE_ENV_TAG = (your value, e.g. "BETA")
+	"name": "nube-auth-docs",
+	"pages_build_output_dir": "dist",
+	"compatibility_date": "2026-04-20"
+}

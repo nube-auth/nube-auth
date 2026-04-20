@@ -1,0 +1,10 @@
+{
+	// Cloudflare Pages configuration for the home/marketing site (Astro static).
+	// CF Pages project settings (set in dashboard):
+	//   Root directory:   apps/dashboard/home
+	//   Build command:    cd ../../../ && pnpm install && pnpm build --filter=@nube-auth/dashboard-home
+	//   Install command:  (leave blank — handled in build command above)
+	"name": "nube-auth-home",
+	"pages_build_output_dir": "dist",
+	"compatibility_date": "2026-04-20"
+}

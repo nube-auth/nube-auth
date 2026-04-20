@@ -1,0 +1,15 @@
+{
+	// Cloudflare Pages configuration for the admin dashboard SPA.
+	// CF Pages project settings (set in dashboard):
+	//   Root directory:   apps/dashboard/admin
+	//   Build command:    cd ../../../ && pnpm install && pnpm build --filter=@nube-auth/dashboard-admin
+	//   Install command:  (leave blank — handled in build command above)
+	// Environment variables to set in CF Pages dashboard:
+	//   VITE_GATEWAY_URL        = https://api.nubeauth.com
+	//   VITE_HOME_URL           = https://nubeauth.com
+	//   VITE_DOCS_URL           = https://docs.nubeauth.com
+	//   VITE_COOKIE_NAMESPACE   = (your value)
+	"name": "nube-auth-admin",
+	"pages_build_output_dir": "dist",
+	"compatibility_date": "2026-04-20"
+}

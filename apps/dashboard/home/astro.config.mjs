@@ -1,4 +1,3 @@
-import vercel from "@astrojs/vercel/static";
 import tailwind from "@astrojs/tailwind";
 import { defineConfig } from "astro/config";
 
@@ -9,11 +8,6 @@ export default defineConfig({
 		tailwind(),
 	],
 	output: "static",
-	adapter: vercel({
-		webAnalytics: {
-			enabled: true,
-		},
-	}),
 	server: {
 		port: 4321,
 	},
