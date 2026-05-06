@@ -93,8 +93,10 @@ FROM shared_builder AS workers_builder
 COPY apps/services/core/ ./apps/services/core/
 COPY apps/services/workers/ ./apps/services/workers/
 
-RUN pnpm --filter @nube-auth/workers build \
- && pnpm --filter @nube-auth/workers deploy --prod /deploy-workers
+RUN pnpm --filter @nube-auth/core build \
+ && pnpm --filter @nube-auth/workers build \
+ && pnpm --filter @nube-auth/workers deploy --prod /deploy-workers \
+ && cp -r apps/services/core/dist /deploy-workers/node_modules/@nube-auth/core/
 
 # ── Stage 6: build admin dashboard ────────────────────────────────────────────
 FROM shared_builder AS admin_builder
