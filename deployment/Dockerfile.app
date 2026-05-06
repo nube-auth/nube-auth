@@ -67,8 +67,8 @@ RUN pnpm --filter @nube-auth/cache build \
  && pnpm --filter @nube-auth/auth build \
  && pnpm --filter @nube-auth/db build \
  && pnpm --filter @nube-auth/queue build \
- && pnpm --filter @nube-auth/react build \
  && pnpm --filter @nube-auth/client build \
+ && pnpm --filter @nube-auth/react build \
  && pnpm --filter @nube-auth/components build
 
 # ── Stage 3: build core + extract prod bundle ─────────────────────────────────
