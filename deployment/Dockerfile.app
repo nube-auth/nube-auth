@@ -62,9 +62,9 @@ FROM installer AS shared_builder
 COPY tsconfig.json ./
 COPY apps/packages/ ./apps/packages/
 
-RUN pnpm --filter @nube-auth/shared build \
+RUN pnpm --filter @nube-auth/cache build \
+ && pnpm --filter @nube-auth/shared build \
  && pnpm --filter @nube-auth/auth build \
- && pnpm --filter @nube-auth/cache build \
  && pnpm --filter @nube-auth/db build \
  && pnpm --filter @nube-auth/queue build \
  && pnpm --filter @nube-auth/react build \
