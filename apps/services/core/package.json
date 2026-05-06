@@ -5,7 +5,10 @@
 	"type": "module",
 	"main": "dist/index.js",
 	"exports": {
-		".": "./dist/index.js"
+		".": "./dist/index.js",
+		"./billing/services/*": "./src/billing/services/*.ts",
+		"./billing/adapters/*": "./src/billing/adapters/*.ts",
+		"./utils/*": "./src/utils/*.ts"
 	},
 	"scripts": {
 		"dev": "dotenv -e ../../../.env.local -- tsx watch src/index.ts",

@@ -33,7 +33,7 @@ export async function setupSyncLicenseWorker(): Promise<Worker<SyncLicenseJobDat
 
 	// Dynamically import licenseManager to avoid circular dependencies
 	const { licenseManager } = await import(
-		"../../core/src/billing/services/license-manager.js"
+		"@nube-auth/core/billing/services/license-manager"
 	);
 
 	return new BullWorker<SyncLicenseJobData>(

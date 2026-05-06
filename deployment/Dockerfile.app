@@ -90,6 +90,7 @@ RUN pnpm --filter @nube-auth/gateway build \
 # ── Stage 5: build workers + extract prod bundle ──────────────────────────────
 FROM shared_builder AS workers_builder
 
+COPY apps/services/core/ ./apps/services/core/
 COPY apps/services/workers/ ./apps/services/workers/
 
 RUN pnpm --filter @nube-auth/workers build \
