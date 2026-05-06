@@ -1,5 +1,6 @@
 import { activationQueries, appQueries, appUserQueries, auditLogQueries, getDb, licenseQueries, planQueries, projectMemberQueries, projectQueries, sessionQueries, subscriptionQueries, userQueries } from "@nube-auth/db";
 import { createId, createLogger, CreateAppRequestSchema, idPatterns, serializeError } from "@nube-auth/shared";
+import { cache } from "@nube-auth/cache";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { randomBytes } from "node:crypto";
@@ -448,6 +449,12 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 		if (Object.keys(securityUpdates).length > 0) {
 			updated = await appQueries.updateSecuritySettings(db, app.id, securityUpdates);
 		}
+
+		// Invalidate the gateway's cached security settings so CORS and allowedHosts
+		// enforcement picks up the new values immediately.
+		cache.delete(`app-security-settings:${app.public_id}`).catch((err) => {
+			log.warn({ err: serializeError(err as Error), appId: app.public_id }, "Failed to invalidate app security settings cache");
+		});
 
 		// Get project for response
 		const projectForResponse = await projectQueries.findById(db, updated.project_id);
