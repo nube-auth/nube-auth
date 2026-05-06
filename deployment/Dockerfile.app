@@ -181,7 +181,7 @@ COPY --from=workers_builder /deploy-workers /app/workers
 # Built dashboard static files
 COPY --from=admin_builder /app/apps/dashboard/admin/dist                    /var/www/admin
 COPY --from=user_builder  /app/apps/dashboard/user/dist                     /var/www/user
-COPY --from=home_builder  /app/apps/dashboard/home/.vercel/output/static    /var/www/home
+COPY --from=home_builder  /app/apps/dashboard/home/dist    /var/www/home
 COPY --from=docs_builder  /app/apps/dashboard/docs/.vitepress/dist          /var/www/docs
 
 # ── Runtime env defaults ──────────────────────────────────────────────────────
