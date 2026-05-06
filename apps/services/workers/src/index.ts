@@ -133,36 +133,50 @@ export function getWorkers(): Worker[] {
  * Starts all workers when this entrypoint runs.
  */
 async function main(): Promise<void> {
-	try {
-		await initializeWorkers();
+	// Start health server immediately so Railway health checks pass during init
+	const port = Number(process.env.PORT ?? 8080);
+	let initialized = false;
+	let initError: Error | null = null;
 
-		// Minimal HTTP server so Railway health checks and nginx proxy have an endpoint
-		const port = Number(process.env.PORT ?? 8080);
-		const server = createServer(async (req, res) => {
-			if (req.url === "/health") {
-				const redisOk = healthQueueClient ? await healthQueueClient.ping() : false;
-				const status = redisOk ? "ok" : "degraded";
-				const code = redisOk ? 200 : 503;
+	const server = createServer(async (req, res) => {
+		if (req.url === "/health") {
+			if (!initialized) {
 				const body = JSON.stringify({
 					service: "workers",
-					status,
-					redis: redisOk ? "ok" : "unreachable",
-					workers: workers.length,
+					status: initError ? "error" : "starting",
+					workers: 0,
 					timestamp: new Date().toISOString(),
 				});
-				res.writeHead(code, { "Content-Type": "application/json" });
+				res.writeHead(initError ? 503 : 200, { "Content-Type": "application/json" });
 				res.end(body);
-			} else {
-				res.writeHead(404);
-				res.end();
+				return;
 			}
-		});
-		server.listen(port, () => {
-			log.info({ port }, "Workers health server running");
-		});
+			const redisOk = healthQueueClient ? await healthQueueClient.ping() : false;
+			const body = JSON.stringify({
+				service: "workers",
+				status: redisOk ? "ok" : "degraded",
+				redis: redisOk ? "ok" : "unreachable",
+				workers: workers.length,
+				timestamp: new Date().toISOString(),
+			});
+			res.writeHead(redisOk ? 200 : 503, { "Content-Type": "application/json" });
+			res.end(body);
+		} else {
+			res.writeHead(404);
+			res.end();
+		}
+	});
 
+	server.listen(port, () => {
+		log.info({ port }, "Workers health server running");
+	});
+
+	try {
+		await initializeWorkers();
+		initialized = true;
 		log.info("Workers service is running");
 	} catch (error) {
+		initError = error as Error;
 		log.error(
 			{ error: (error as Error).message },
 			"Workers service failed to start",
