@@ -24,24 +24,6 @@
 #   ${SUBDOMAIN_PREFIX}doc/documents.${DOMAIN} → ${SUBDOMAIN_PREFIX}docs.${DOMAIN}
 # ─────────────────────────────────────────────────────────────────────────────
 
-# ── Default server — Railway health checks & unmatched hosts ─────────────────
-# Railway's health check hits the container's .up.railway.app URL which doesn't
-# match any named vhost. This block catches it and returns 200 on /health.
-server {
-    listen 8080 default_server;
-    server_name _;
-
-    location /health {
-        access_log off;
-        return 200 "ok\n";
-        add_header Content-Type text/plain;
-    }
-
-    location / {
-        return 444;
-    }
-}
-
 # ── Bare apex → ${SUBDOMAIN_PREFIX}home.${DOMAIN} ────────────────────────────
 # Prod: nubeauth.com DNS points to Vercel — this block is dead code.
 # Staging: if bare apex reaches Railway, redirect once to the flattened home host.
