@@ -40,7 +40,7 @@ echo "[entrypoint] SUBDOMAIN_PREFIX : '${SUBDOMAIN_PREFIX}'"
 
 envsubst '${DOMAIN} ${SUBDOMAIN_PREFIX} ${GATEWAY_INTERNAL_URL} ${CORE_INTERNAL_URL} ${WORKERS_INTERNAL_URL} ${NGINX_RESOLVER}' \
   < /etc/nginx/templates/subdomains.conf.template \
-  > /etc/nginx/conf.d/default.conf
+  > /etc/nginx/http.d/default.conf
 
 echo "[entrypoint] nginx config rendered — starting supervisord"
 exec supervisord -c /etc/supervisord.conf
