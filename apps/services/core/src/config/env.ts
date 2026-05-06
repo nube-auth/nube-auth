@@ -18,7 +18,7 @@ export interface Environment {
 	SESSION_SECRET: string;
 	S2S_SECRET: string;
 	REDIS_URL: string;
-	RESEND_API_KEY: string;
+	EMAIL_API_KEY: string;
 	SEND_EMAILS: boolean;
 	PAYMENT_CONFIGS_KEY: string;
 	EMAIL_FROM: string;
@@ -58,7 +58,7 @@ function getEnvironment(): Environment {
 		"SESSION_SECRET",
 		"S2S_SECRET",
 		"REDIS_URL",
-		"RESEND_API_KEY",
+		"EMAIL_API_KEY",
 		"PAYMENT_CONFIGS_KEY",
 	];
 
@@ -84,7 +84,7 @@ function getEnvironment(): Environment {
 		SESSION_SECRET: process.env["SESSION_SECRET"]!,
 		S2S_SECRET: process.env["S2S_SECRET"]!,
 		REDIS_URL: process.env["REDIS_URL"]!,
-		RESEND_API_KEY: process.env["RESEND_API_KEY"]!,
+		EMAIL_API_KEY: process.env["EMAIL_API_KEY"]!,
 		SEND_EMAILS: process.env["SEND_EMAILS"] === "true",
 		EMAIL_FROM: process.env["EMAIL_FROM"] ?? "noreply@localhost",
 		ADMIN_DASHBOARD_URL: process.env["ADMIN_DASHBOARD_URL"] ?? "http://localhost:5174",

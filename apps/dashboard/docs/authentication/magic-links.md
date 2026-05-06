@@ -59,7 +59,7 @@ EMAIL_PROVIDER=resend  # or 'sendgrid', 'smtp'
 EMAIL_FROM=auth@yourdomain.com
 
 # Resend
-RESEND_API_KEY=your-api-key
+EMAIL_API_KEY=your-api-key
 
 # SendGrid
 SENDGRID_API_KEY=your-api-key

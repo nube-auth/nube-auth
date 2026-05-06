@@ -14,7 +14,7 @@ const log = createLogger("email-routes");
 // Initialize email service
 const emailService = createEmailService({
 	sendEmails: env.SEND_EMAILS,
-	resendApiKey: env.RESEND_API_KEY,
+	resendApiKey: env.EMAIL_API_KEY,
 	useMailpit: env.IS_DEVELOPMENT,
 	smtpHost: env.SMTP_HOST,
 	smtpPort: env.SMTP_PORT,

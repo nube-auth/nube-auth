@@ -134,7 +134,7 @@ DATABASE_URL=postgresql://user:password@localhost:5432/nube-auth
 REDIS_URL=redis://localhost:6379
 
 # Email
-RESEND_API_KEY=your_resend_api_key
+EMAIL_API_KEY=your_EMAIL_API_KEY
 
 # Encryption (32-byte hex string)
 ENCRYPTION_KEY=your_64_character_hex_string

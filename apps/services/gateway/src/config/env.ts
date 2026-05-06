@@ -7,7 +7,7 @@ export interface Env {
 	GATEWAY_PORT: number;
 	DATABASE_URL: string;
 	REDIS_URL: string;
-	RESEND_API_KEY: string;
+	EMAIL_API_KEY: string;
 	CORE_URL: string;
 	S2S_SECRET: string;
 	X_NUBE_AUTH_SERVICE_TOKEN: string;
@@ -48,7 +48,7 @@ export interface Env {
 const requiredEnvVars = [
 	"DATABASE_URL",
 	"REDIS_URL",
-	"RESEND_API_KEY",
+	"EMAIL_API_KEY",
 	"ENCRYPTION_KEY",
 	"CORE_URL",
 	"S2S_SECRET",
@@ -83,7 +83,7 @@ function validateEnv(): Env {
 		GATEWAY_PORT: parseInt(process.env["GATEWAY_PORT"] ?? process.env["PORT"] ?? "8080", 10),
 		DATABASE_URL: process.env["DATABASE_URL"]!,
 		REDIS_URL: process.env["REDIS_URL"]!,
-		RESEND_API_KEY: process.env["RESEND_API_KEY"]!,
+		EMAIL_API_KEY: process.env["EMAIL_API_KEY"]!,
 		CORE_URL: process.env["CORE_URL"]!,
 		S2S_SECRET: process.env["S2S_SECRET"]!,
 		X_NUBE_AUTH_SERVICE_TOKEN: process.env["X_NUBE_AUTH_SERVICE_TOKEN"]!,

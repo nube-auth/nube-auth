@@ -72,7 +72,7 @@ GITHUB_CLIENT_SECRET=xxx
 |----------|----------|---------|-------------|
 | `EMAIL_PROVIDER` | No | - | Email provider (`resend`, `sendgrid`) |
 | `EMAIL_FROM` | No | - | From address for emails |
-| `RESEND_API_KEY` | No | - | Resend API key |
+| `EMAIL_API_KEY` | No | - | Resend API key |
 | `SENDGRID_API_KEY` | No | - | SendGrid API key |
 
 ## Licensing
@@ -128,7 +128,7 @@ SESSION_ROLLING=true
 # Email
 EMAIL_PROVIDER=resend
 EMAIL_FROM=auth@yourdomain.com
-RESEND_API_KEY=re_xxx
+EMAIL_API_KEY=re_xxx
 
 # Security
 CORS_ORIGINS=https://yourdomain.com,https://app.yourdomain.com
