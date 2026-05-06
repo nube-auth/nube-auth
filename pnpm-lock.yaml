@@ -298,6 +298,34 @@ importers:
         specifier: ^6.0.2
         version: 6.0.2
 
+  apps/packages/billing:
+    dependencies:
+      '@nube-auth/db':
+        specifier: workspace:*
+        version: link:../db
+      '@nube-auth/queue':
+        specifier: workspace:*
+        version: link:../queue
+      '@nube-auth/shared':
+        specifier: workspace:*
+        version: link:../shared
+      dodopayments:
+        specifier: ^2.21.0
+        version: 2.21.0
+      stripe:
+        specifier: ^17.3.0
+        version: 17.7.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.0
+        version: 20.19.27
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@6.0.2)(yaml@2.8.2)
+      typescript:
+        specifier: ^6.0.2
+        version: 6.0.2
+
   apps/packages/cache:
     dependencies:
       redis:
@@ -607,9 +635,9 @@ importers:
 
   apps/services/workers:
     dependencies:
-      '@nube-auth/core':
+      '@nube-auth/billing':
         specifier: workspace:*
-        version: link:../core
+        version: link:../../packages/billing
       '@nube-auth/db':
         specifier: workspace:*
         version: link:../../packages/db

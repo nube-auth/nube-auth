@@ -26,8 +26,8 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 	const queueClient = new QueueClient();
 
 	// Dynamically import webhook handler to avoid circular dependencies
-	const { processWebhook } = await import("@nube-auth/core/billing/services/webhook-handler");  
-	const { WebhookLoggingService } = await import("@nube-auth/core/billing/services/webhook-logging");
+	const { processWebhook } = await import("@nube-auth/billing");  
+	const { WebhookLoggingService } = await import("@nube-auth/billing");
 
 	return new BullWorker<ProcessWebhookJobData>(
 		"billing",

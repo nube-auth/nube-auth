@@ -39,6 +39,7 @@ COPY apps/packages/auth/package.json        ./apps/packages/auth/
 COPY apps/packages/cache/package.json       ./apps/packages/cache/
 COPY apps/packages/db/package.json          ./apps/packages/db/
 COPY apps/packages/queue/package.json       ./apps/packages/queue/
+COPY apps/packages/billing/package.json     ./apps/packages/billing/
 COPY apps/packages/react/package.json       ./apps/packages/react/
 COPY apps/packages/client/package.json      ./apps/packages/client/
 COPY apps/packages/components/package.json  ./apps/packages/components/
@@ -67,6 +68,7 @@ RUN pnpm --filter @nube-auth/cache build \
  && pnpm --filter @nube-auth/auth build \
  && pnpm --filter @nube-auth/db build \
  && pnpm --filter @nube-auth/queue build \
+ && pnpm --filter @nube-auth/billing build \
  && pnpm --filter @nube-auth/client build \
  && pnpm --filter @nube-auth/react build \
  && pnpm --filter @nube-auth/components build
@@ -90,13 +92,10 @@ RUN pnpm --filter @nube-auth/gateway build \
 # ── Stage 5: build workers + extract prod bundle ──────────────────────────────
 FROM shared_builder AS workers_builder
 
-COPY apps/services/core/ ./apps/services/core/
 COPY apps/services/workers/ ./apps/services/workers/
 
-RUN pnpm --filter @nube-auth/core build \
- && pnpm --filter @nube-auth/workers build \
- && pnpm --filter @nube-auth/workers deploy --prod /deploy-workers \
- && cp -r apps/services/core/dist /deploy-workers/node_modules/@nube-auth/core/
+RUN pnpm --filter @nube-auth/workers build \
+ && pnpm --filter @nube-auth/workers deploy --prod /deploy-workers
 
 # ── Stage 6: build admin dashboard ────────────────────────────────────────────
 FROM shared_builder AS admin_builder
