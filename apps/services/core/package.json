@@ -4,6 +4,7 @@
 	"description": "Authoritative identity, session, and licensing service for Nube Auth",
 	"type": "module",
 	"main": "dist/index.js",
+	"files": ["dist"],
 	"exports": {
 		".": "./dist/index.js",
 		"./billing/services/*": "./dist/billing/services/*.js",
