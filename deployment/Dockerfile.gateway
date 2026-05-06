@@ -32,15 +32,15 @@ COPY apps/packages/ ./apps/packages/
 COPY apps/services/gateway/ ./apps/services/gateway/
 
 # Build shared packages in dependency order, then the service
-RUN pnpm --filter @proofa/shared build \
- && pnpm --filter @proofa/auth build \
- && pnpm --filter @proofa/cache build \
- && pnpm --filter @proofa/db build \
- && pnpm --filter @proofa/queue build \
- && pnpm --filter @proofa/gateway build
+RUN pnpm --filter @nube-auth/cache build \
+ && pnpm --filter @nube-auth/shared build \
+ && pnpm --filter @nube-auth/auth build \
+ && pnpm --filter @nube-auth/db build \
+ && pnpm --filter @nube-auth/queue build \
+ && pnpm --filter @nube-auth/gateway build
 
 # Extract minimal production bundle (respects "files" in each package.json)
-RUN pnpm --filter @proofa/gateway deploy --prod /deploy
+RUN pnpm --filter @nube-auth/gateway deploy --prod /deploy
 
 # ── Stage 3: production image ─────────────────────────────────────────────────
 FROM node:22-alpine AS runner
@@ -51,5 +51,8 @@ COPY --from=builder /deploy .
 ENV NODE_ENV=production
 ENV GATEWAY_PORT=8080
 EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD wget -qO- http://localhost:8080/health || exit 1
 
 CMD ["node", "dist/index.js"]
