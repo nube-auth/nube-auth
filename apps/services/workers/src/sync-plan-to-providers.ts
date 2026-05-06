@@ -14,8 +14,8 @@ import { eq } from "@nube-auth/db";
 import { createId } from "@nube-auth/shared";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import { QueueClient } from "@nube-auth/queue";
-import { createProviderAdapter } from "@nube-auth/core/billing/adapters/index";
-import { decryptString } from "@nube-auth/core/utils/encryption";
+import { createProviderAdapter } from "@nube-auth/billing";
+import { decryptString } from "@nube-auth/billing";
 
 const log = createLogger("sync-plan-worker");
 

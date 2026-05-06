@@ -9,7 +9,7 @@ import { createLogger, serializeError } from "@nube-auth/shared";
 import type { PaymentDetails } from "../adapters/types.js";
 import { licenseManager } from "./license-manager.js";
 import { createPurchaseRecords } from "./purchases.js";
-import { fireWebhookEvent } from "../../utils/outbound-events.js";
+import { fireWebhookEvent } from "../outbound-events.js";
 
 const log = createLogger("webhook-processor");
 

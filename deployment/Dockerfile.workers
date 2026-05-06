@@ -20,7 +20,7 @@ COPY apps/packages/shared/package.json   ./apps/packages/shared/
 COPY apps/packages/auth/package.json     ./apps/packages/auth/
 COPY apps/packages/db/package.json       ./apps/packages/db/
 COPY apps/packages/queue/package.json    ./apps/packages/queue/
-COPY apps/services/core/package.json     ./apps/services/core/
+COPY apps/packages/billing/package.json  ./apps/packages/billing/
 COPY apps/services/workers/package.json  ./apps/services/workers/
 
 RUN pnpm install --frozen-lockfile
@@ -29,7 +29,6 @@ RUN pnpm install --frozen-lockfile
 FROM installer AS builder
 
 COPY apps/packages/ ./apps/packages/
-COPY apps/services/core/ ./apps/services/core/
 COPY apps/services/workers/ ./apps/services/workers/
 
 RUN pnpm --filter @nube-auth/cache build \
@@ -37,11 +36,10 @@ RUN pnpm --filter @nube-auth/cache build \
  && pnpm --filter @nube-auth/auth build \
  && pnpm --filter @nube-auth/db build \
  && pnpm --filter @nube-auth/queue build \
- && pnpm --filter @nube-auth/core build \
+ && pnpm --filter @nube-auth/billing build \
  && pnpm --filter @nube-auth/workers build
 
-RUN pnpm --filter @nube-auth/workers deploy --prod /deploy \
- && cp -r apps/services/core/dist /deploy/node_modules/@nube-auth/core/
+RUN pnpm --filter @nube-auth/workers deploy --prod /deploy
 
 # ── Stage 3: production image ─────────────────────────────────────────────────
 FROM node:22-alpine AS runner

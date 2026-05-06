@@ -15,7 +15,7 @@
 		"test": "vitest"
 	},
 	"dependencies": {
-		"@nube-auth/core": "workspace:*",
+		"@nube-auth/billing": "workspace:*",
 		"@nube-auth/db": "workspace:*",
 		"@nube-auth/queue": "workspace:*",
 		"@nube-auth/shared": "workspace:*",
