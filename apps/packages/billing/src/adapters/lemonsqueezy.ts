@@ -136,7 +136,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 				throw new Error(`LemonSqueezy API error: ${response.status} ${errorText}`);
 			}
 
-			const checkout: LemonSqueezyCheckout = await response.json();
+			const checkout = (await response.json()) as LemonSqueezyCheckout;
 
 			this.log.info(
 				{
@@ -370,7 +370,8 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 				throw new Error(`LemonSqueezy API error: ${response.status} ${errorText}`);
 			}
 
-			const subscription = await response.json();
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const subscription = (await response.json()) as any;
 			const attrs = subscription.data.attributes;
 
 			return {
@@ -423,7 +424,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 				throw new Error(`LemonSqueezy API error: ${response.status} ${errorText}`);
 			}
 
-			const product: LemonSqueezyProduct = await response.json();
+			const product = (await response.json()) as LemonSqueezyProduct;
 
 			this.log.info(
 				{
@@ -483,7 +484,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 				throw new Error(`LemonSqueezy API error: ${response.status} ${errorText}`);
 			}
 
-			const variant: LemonSqueezyVariant = await response.json();
+			const variant = (await response.json()) as LemonSqueezyVariant;
 
 			this.log.info(
 				{
