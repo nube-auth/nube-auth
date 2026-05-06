@@ -1,0 +1,16 @@
+deployment/Dockerfile.dashboards
+  h_7a2f4c8f0473b8 131
+deployment/docker-entrypoint.sh
+  h_7a2f4c8f0473b8 43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "c12325d4d5d9ca1cfe19f39444ca894d6e4d02f6",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}
