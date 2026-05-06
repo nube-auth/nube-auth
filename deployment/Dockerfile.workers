@@ -40,7 +40,8 @@ RUN pnpm --filter @nube-auth/cache build \
  && pnpm --filter @nube-auth/core build \
  && pnpm --filter @nube-auth/workers build
 
-RUN pnpm --filter @nube-auth/workers deploy --prod /deploy
+RUN pnpm --filter @nube-auth/workers deploy --prod /deploy \
+ && cp -r apps/services/core/dist /deploy/node_modules/@nube-auth/core/
 
 # ── Stage 3: production image ─────────────────────────────────────────────────
 FROM node:22-alpine AS runner
