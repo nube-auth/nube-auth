@@ -195,9 +195,9 @@ COPY --from=docs_builder  /app/apps/dashboard/docs/.vitepress/dist          /var
 ENV NODE_ENV=production \
     CORE_PORT=3003 \
     GATEWAY_PORT=3004 \
-    GATEWAY_INTERNAL_URL=http://localhost:3004 \
-    CORE_INTERNAL_URL=http://localhost:3003 \
-    WORKERS_INTERNAL_URL=http://localhost:1
+    GATEWAY_INTERNAL_URL=http://127.0.0.1:3004 \
+    CORE_INTERNAL_URL=http://127.0.0.1:3003 \
+    WORKERS_INTERNAL_URL=http://127.0.0.1:1
 
 EXPOSE 8080
 
