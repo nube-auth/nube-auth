@@ -1,0 +1,21 @@
+deployment/Dockerfile.app
+  s_3b19b4e5c9259a::t_aa4e9fefbaa176 198-200
+deployment/docker-entrypoint.app.sh
+  s_3b19b4e5c9259a::t_aa4e9fefbaa176 16-17,19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "8c7c438df5ac7a0f260935261573fc2f6cc25498",
+  "prompts": {},
+  "sessions": {
+    "s_3b19b4e5c9259a": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "c8821ba0-54f3-41b9-9cea-ccb8ce1af14e",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}
