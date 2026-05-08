@@ -38,7 +38,8 @@ echo "[entrypoint] GATEWAY_INTERNAL : ${GATEWAY_INTERNAL_URL}"
 echo "[entrypoint] CORE_INTERNAL    : ${CORE_INTERNAL_URL}"
 echo "[entrypoint] SUBDOMAIN_PREFIX : '${SUBDOMAIN_PREFIX}'"
 
-envsubst '${DOMAIN} ${SUBDOMAIN_PREFIX} ${GATEWAY_INTERNAL_URL} ${CORE_INTERNAL_URL} ${WORKERS_INTERNAL_URL} ${NGINX_RESOLVER}' \
+# App template uses direct proxy_pass — no NGINX_RESOLVER needed.
+envsubst '${DOMAIN} ${SUBDOMAIN_PREFIX} ${GATEWAY_INTERNAL_URL} ${CORE_INTERNAL_URL} ${WORKERS_INTERNAL_URL}' \
   < /etc/nginx/templates/subdomains.conf.template \
   > /etc/nginx/http.d/default.conf
 
