@@ -9,6 +9,8 @@ import {
 	userQueries,
 } from "@nube-auth/db";
 import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
+import { cache } from "@nube-auth/cache";
+import { fireWebhookEvent } from "../../../utils/outbound-events.js";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -60,6 +62,15 @@ function formatLicense(
 		createdAt: new Date(license.created_at).toISOString(),
 		updatedAt: new Date(license.updated_at).toISOString(),
 	};
+}
+
+/**
+ * Bust gateway cache entries for a user+app license so the next
+ * GET /v1/license/:appId and GET /v1/me/subscription return fresh data.
+ */
+function bustLicenseCache(userPublicId: string, appPublicId: string): void {
+	cache.delete(`gateway:license:${userPublicId}:${appPublicId}`).catch(() => {});
+	cache.delete(`gateway:sub:${userPublicId}:${appPublicId}`).catch(() => {});
 }
 
 // ---------------------------------------------------------------------------
@@ -144,6 +155,28 @@ licenseManagementRouter.post("/grant", async (c: Context) => {
 			{ licenseId: license.public_id, userId: validated.userId, appId },
 			"License granted by admin",
 		);
+
+		try {
+			await fireWebhookEvent(db, app.id, "license.created", {
+				licenseId: license.public_id,
+				userId: user.public_id,
+				status: "active",
+				plan: { planId: plan.public_id, name: plan.name, slug: plan.slug },
+				validUntil: license.valid_until
+					? new Date(license.valid_until).toISOString()
+					: null,
+				maxActivations: license.max_activations,
+				source: validated.source,
+				grantedAt: new Date().toISOString(),
+			});
+		} catch (webhookError) {
+			log.error(
+				{ err: serializeError(webhookError as Error), licenseId: license.public_id },
+				"Failed to fire license.created webhook",
+			);
+		}
+
+		bustLicenseCache(user.public_id, appId);
 
 		return c.json(
 			{
@@ -419,6 +452,51 @@ licenseManagementRouter.patch("/:licenseId", async (c: Context) => {
 
 		log.info({ licenseId, changeType }, "License updated by admin");
 
+		try {
+			const licenseUser = await userQueries.findById(db, license.user_id);
+			const updatedPlan = await planQueries.findById(db, updated.plan_id);
+			let webhookEvent: string | null = null;
+
+			if (validated.planId !== undefined) {
+				// Determine upgrade vs downgrade by comparing display_order
+				const oldPlan = await planQueries.findById(db, license.plan_id);
+				const oldOrder = oldPlan?.display_order ?? 0;
+				const newOrder = updatedPlan?.display_order ?? 0;
+				webhookEvent = newOrder >= oldOrder ? "license.upgraded" : "license.downgraded";
+			} else if (validated.status === "canceled") {
+				webhookEvent = "license.canceled";
+			} else if (validated.status === "active" && license.status !== "active") {
+				webhookEvent = "license.reactivated";
+			} else if (validated.status === "expired") {
+				webhookEvent = "license.expired";
+			}
+
+			if (webhookEvent) {
+				await fireWebhookEvent(db, app.id, webhookEvent, {
+					licenseId: updated.public_id,
+					userId: licenseUser?.public_id ?? null,
+					status: updated.status,
+					plan: updatedPlan
+						? { planId: updatedPlan.public_id, name: updatedPlan.name, slug: updatedPlan.slug }
+						: null,
+					validUntil: updated.valid_until
+						? new Date(updated.valid_until).toISOString()
+						: null,
+					source: "admin_manual",
+					changedAt: new Date().toISOString(),
+				});
+			}
+		} catch (webhookError) {
+			log.error(
+				{ err: serializeError(webhookError as Error), licenseId },
+				"Failed to fire license update webhook",
+			);
+		}
+
+		// Bust gateway cache so next GET /v1/license/:appId returns fresh data
+		const licenseOwner = await userQueries.findById(db, license.user_id);
+		if (licenseOwner) bustLicenseCache(licenseOwner.public_id, appId);
+
 		return c.json({
 			licenseId: updated.public_id,
 			status: updated.status,
@@ -487,6 +565,29 @@ licenseManagementRouter.delete("/:licenseId", async (c: Context) => {
 		});
 
 		log.info({ licenseId, appId }, "License revoked by admin");
+
+		try {
+			const licenseUser = await userQueries.findById(db, license.user_id);
+			await fireWebhookEvent(db, app.id, "license.canceled", {
+				licenseId: license.public_id,
+				userId: licenseUser?.public_id ?? null,
+				status: freePlan ? "active" : "canceled",
+				plan: freePlan
+					? { planId: freePlan.public_id, name: freePlan.name, slug: freePlan.slug }
+					: null,
+				source: "admin_manual",
+				revokedAt: new Date().toISOString(),
+			});
+		} catch (webhookError) {
+			log.error(
+				{ err: serializeError(webhookError as Error), licenseId },
+				"Failed to fire license.canceled webhook",
+			);
+		}
+
+		// Bust gateway cache so next GET /v1/license/:appId returns fresh data
+		const revokedUser = await userQueries.findById(db, license.user_id);
+		if (revokedUser) bustLicenseCache(revokedUser.public_id, appId);
 
 		return c.json({
 			message: freePlan

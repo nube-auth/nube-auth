@@ -17,8 +17,8 @@
  */
 
 import { Hono } from "hono";
-import { getDb, planQueries, priceQueries } from "@nube-auth/db";
-import { createLogger, serializeError } from "@nube-auth/shared";
+import { getDb, planQueries, priceQueries, userQueries, licenseQueries, subscriptionQueries, appQueries } from "@nube-auth/db";
+import { createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { appSecretMiddleware } from "../middleware/appSecret.js";
 
@@ -117,5 +117,138 @@ appCatalogRoutes.get("/:appId/plans/:planId/prices", async (c: Context) => {
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get prices error");
 		return c.json({ error: "Failed to get prices" }, 500);
+	}
+});
+
+/**
+ * GET /v1/app/:appId/users/:userId/license
+ *
+ * Server-to-server: fetch a user's license and plan status for this app.
+ * Authenticated with the app's clientSecret.
+ *
+ * Usage:
+ *   GET /v1/app/APP0.../users/USER0.../license
+ *   Authorization: Bearer <NUBE_APP_SECRET>
+ *
+ * Response:
+ * {
+ *   licenseId: string,
+ *   status: "active" | "expired" | "canceled" | "suspended",
+ *   source: string | null,
+ *   maxActivations: number | null,
+ *   validFrom: number,        // Unix timestamp (seconds)
+ *   validUntil: number | null,
+ *   plan: {
+ *     planId: string,
+ *     slug: string,
+ *     name: string,
+ *     features: Record<string, unknown>,
+ *   } | null,
+ *   subscription: {
+ *     status: string,
+ *     billingInterval: string | null,
+ *     periodEnd: string | null,
+ *   } | null,
+ * }
+ */
+appCatalogRoutes.get("/:appId/users/:userId/license", async (c: Context) => {
+	try {
+		const resolvedApp = c.get("resolvedApp") as { id: number; public_id: string };
+		const userPublicId = c.req.param("userId");
+
+		if (!idPatterns.user.test(userPublicId)) {
+			return c.json({ error: "Invalid userId" }, 400);
+		}
+
+		const db = getDb();
+
+		const user = await userQueries.findByPublicId(db, userPublicId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		const license = await licenseQueries.findByUserAndApp(db, user.id, resolvedApp.id);
+		if (!license) {
+			return c.json({ error: "No license found for this user" }, 404);
+		}
+
+		// Resolve plan via price chain then direct plan_id
+		const price = license.price_id ? await priceQueries.findById(db, license.price_id) : null;
+		const plan = price
+			? await planQueries.findById(db, price.plan_id)
+			: await planQueries.findById(db, license.plan_id);
+
+		// Attach subscription info if one exists
+		const subscription = await subscriptionQueries.findActiveByUserAndApp(db, user.id, resolvedApp.id);
+
+		return c.json({
+			licenseId: license.public_id,
+			status: license.status,
+			source: license.source ?? null,
+			maxActivations: license.max_activations ?? null,
+			validFrom: Math.floor(license.created_at.getTime() / 1000),
+			validUntil: license.valid_until ? Math.floor(new Date(license.valid_until).getTime() / 1000) : null,
+			plan: plan
+				? {
+						planId: plan.public_id,
+						slug: plan.slug,
+						name: plan.name,
+						features: (plan.features as Record<string, unknown>) ?? {},
+					}
+				: null,
+			subscription: subscription
+				? {
+						status: subscription.status,
+						billingInterval: subscription.billing_interval ?? null,
+						periodEnd: subscription.billing_period_end
+							? new Date(subscription.billing_period_end).toISOString()
+							: null,
+					}
+				: null,
+		});
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "S2S get user license error");
+		return c.json({ error: "Failed to get user license" }, 500);
+	}
+});
+
+/**
+ * GET /v1/app/:appId/users/:userId
+ *
+ * Server-to-server: fetch basic profile for a user in the context of this app.
+ * Authenticated with the app's clientSecret.
+ *
+ * Returns only data the app is entitled to see — no internal IDs,
+ * no cross-app data.
+ *
+ * Usage:
+ *   GET /v1/app/APP0.../users/USER0...
+ *   Authorization: Bearer <NUBE_APP_SECRET>
+ */
+appCatalogRoutes.get("/:appId/users/:userId", async (c: Context) => {
+	try {
+		const userPublicId = c.req.param("userId");
+
+		if (!idPatterns.user.test(userPublicId)) {
+			return c.json({ error: "Invalid userId" }, 400);
+		}
+
+		const db = getDb();
+		const user = await userQueries.findByPublicId(db, userPublicId);
+		if (!user) {
+			return c.json({ error: "User not found" }, 404);
+		}
+
+		return c.json({
+			userId: user.public_id,
+			email: user.primary_email,
+			name: user.name ?? null,
+			avatarUrl: user.avatar_url ?? null,
+			emailVerified: user.primary_email_verified ?? false,
+			createdAt: new Date(user.created_at).toISOString(),
+		});
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "S2S get user error");
+		return c.json({ error: "Failed to get user" }, 500);
 	}
 });
