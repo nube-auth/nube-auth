@@ -700,13 +700,16 @@ export const licenseQueries = {
 	},
 
 	async upsert(db: DbClient, userId: number, appId: number, data: Partial<typeof licenses.$inferInsert>) {
-		const existing = await licenseQueries.findByUserAndApp(db, userId, appId);
+		// Use findAnyByUserAndApp so soft-deleted records are found too.
+		// Without this, upsert tries INSERT on a soft-deleted row and hits the
+		// unique(user_id, app_id) constraint → 500.
+		const existing = await licenseQueries.findAnyByUserAndApp(db, userId, appId);
 		const now = new Date();
 
 		if (existing) {
 			const results = await db
 				.update(licenses)
-				.set({ ...data, updated_at: now })
+				.set({ ...data, deleted_at: null, updated_at: now })
 				.where(and(eq(licenses.user_id, userId), eq(licenses.app_id, appId)))
 				.returning();
 			return results[0]!;
