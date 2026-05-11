@@ -10,6 +10,13 @@
  *
  * Usage from a control plane:
  *   GET /v1/app/:appId/plans
+ *   GET /v1/app/:appId/plans/:planId/prices
+ *   GET /v1/app/:appId/users                   — bulk user+license sync (paginated)
+ *   GET /v1/app/:appId/users/:userId            — single user profile
+ *   GET /v1/app/:appId/users/:userId/license    — single user license
+ *   Authorization: Bearer <NUBE_APP_SECRET>
+ * Usage from a control plane:
+ *   GET /v1/app/:appId/plans
  *   Authorization: Bearer <NUBE_APP_SECRET>
  *
  *   GET /v1/app/:appId/plans/:planId/prices
@@ -117,6 +124,116 @@ appCatalogRoutes.get("/:appId/plans/:planId/prices", async (c: Context) => {
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get prices error");
 		return c.json({ error: "Failed to get prices" }, 500);
+	}
+});
+
+/**
+ * GET /v1/app/:appId/users
+ *
+ * Server-to-server: paginated list of all users registered with this app,
+ * each entry includes the user's current license and plan status.
+ * Intended for a full initial sync or a periodic re-sync.
+ *
+ * Query params:
+ *   limit  — records per page (default 100, max 500)
+ *   page   — 1-based page number (default 1)
+ *
+ * Response:
+ * {
+ *   users: [{
+ *     userId: string,
+ *     email: string,
+ *     name: string | null,
+ *     emailVerified: boolean,
+ *     createdAt: string,
+ *     license: {
+ *       licenseId: string,
+ *       status: string,
+ *       source: string | null,
+ *       maxActivations: number | null,
+ *       validFrom: number,
+ *       validUntil: number | null,
+ *       plan: { planId, slug, name, features } | null,
+ *     } | null,
+ *   }],
+ *   total: number,
+ *   page: number,
+ *   limit: number,
+ *   hasMore: boolean,
+ * }
+ */
+appCatalogRoutes.get("/:appId/users", async (c: Context) => {
+	try {
+		const resolvedApp = c.get("resolvedApp") as { id: number; public_id: string };
+
+		const limit = Math.min(Math.max(1, parseInt(c.req.query("limit") ?? "100", 10) || 100), 500);
+		const page = Math.max(1, parseInt(c.req.query("page") ?? "1", 10) || 1);
+		const offset = (page - 1) * limit;
+
+		const db = getDb();
+
+		// Single query for all licenses belonging to this app
+		const allLicenses = await licenseQueries.findByAppId(db, resolvedApp.id);
+		const total = allLicenses.length;
+		const paginated = allLicenses.slice(offset, offset + limit);
+
+		if (paginated.length === 0) {
+			return c.json({ users: [], total, page, limit, hasMore: false });
+		}
+
+		// Batch-resolve unique users and plans to avoid N+1
+		const uniqueUserIds = [...new Set(paginated.map((l) => l.user_id))];
+		const uniquePlanIds = [...new Set(paginated.map((l) => l.plan_id))];
+
+		const [userRows, planRows] = await Promise.all([
+			Promise.all(uniqueUserIds.map((id) => userQueries.findById(db, id))),
+			Promise.all(uniquePlanIds.map((id) => planQueries.findById(db, id))),
+		]);
+
+		const userMap = new Map(userRows.filter(Boolean).map((u) => [u!.id, u!]));
+		const planMap = new Map(planRows.filter(Boolean).map((p) => [p!.id, p!]));
+
+		const users = paginated.map((license) => {
+			const user = userMap.get(license.user_id);
+			const plan = planMap.get(license.plan_id);
+
+			return {
+				userId: user?.public_id ?? null,
+				email: user?.primary_email ?? null,
+				name: user?.name ?? null,
+				emailVerified: user?.primary_email_verified ?? false,
+				createdAt: user ? new Date(user.created_at).toISOString() : null,
+				license: {
+					licenseId: license.public_id,
+					status: license.status,
+					source: license.source ?? null,
+					maxActivations: license.max_activations ?? null,
+					validFrom: Math.floor(license.created_at.getTime() / 1000),
+					validUntil: license.valid_until
+						? Math.floor(new Date(license.valid_until).getTime() / 1000)
+						: null,
+					plan: plan
+						? {
+								planId: plan.public_id,
+								slug: plan.slug,
+								name: plan.name,
+								features: (plan.features as Record<string, unknown>) ?? {},
+							}
+						: null,
+				},
+			};
+		});
+
+		return c.json({
+			users,
+			total,
+			page,
+			limit,
+			hasMore: offset + limit < total,
+		});
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "S2S list users error");
+		return c.json({ error: "Failed to list users" }, 500);
 	}
 });
 
