@@ -103,12 +103,21 @@ licenseRoutes.get("/:appId", async (c: Context) => {
 			: await planQueries.findById(db, license.plan_id);
 
 		const result = {
-			public_id: license.public_id,
-			app_id: app.public_id,
-			plan: plan?.slug ?? "",
+			licenseId: license.public_id,
+			appId: app.public_id,
 			status: license.status as "active" | "expired" | "canceled" | "suspended",
-			valid_from: Math.floor(license.created_at.getTime() / 1000),
-			valid_until: license.valid_until ? Math.floor(new Date(license.valid_until).getTime() / 1000) : null,
+			source: license.source ?? null,
+			maxActivations: license.max_activations ?? null,
+			validFrom: Math.floor(license.created_at.getTime() / 1000),
+			validUntil: license.valid_until ? Math.floor(new Date(license.valid_until).getTime() / 1000) : null,
+			plan: plan
+				? {
+						planId: plan.public_id,
+						slug: plan.slug,
+						name: plan.name,
+						features: (plan.features as Record<string, unknown>) ?? {},
+					}
+				: null,
 		};
 
 		await cache.set(cacheKey, result, CACHE_TTL);

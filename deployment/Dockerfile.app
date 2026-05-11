@@ -171,8 +171,9 @@ COPY deployment/supervisord.conf /etc/supervisord.conf
 COPY deployment/docker-entrypoint.app.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-# nginx subdomain routing template (same as Dockerfile.dashboards)
-COPY deployment/nginx/subdomains.conf.template /etc/nginx/templates/subdomains.conf.template
+# App-specific nginx template: uses direct proxy_pass (no resolver/set pattern)
+# since all services are co-located on 127.0.0.1 in this container.
+COPY deployment/nginx/subdomains-app.conf.template /etc/nginx/templates/subdomains.conf.template
 
 # Built Node.js service bundles
 COPY --from=core_builder    /deploy-core    /app/core
@@ -195,9 +196,9 @@ COPY --from=docs_builder  /app/apps/dashboard/docs/.vitepress/dist          /var
 ENV NODE_ENV=production \
     CORE_PORT=3003 \
     GATEWAY_PORT=3004 \
-    GATEWAY_INTERNAL_URL=http://localhost:3004 \
-    CORE_INTERNAL_URL=http://localhost:3003 \
-    WORKERS_INTERNAL_URL=http://localhost:1
+    GATEWAY_INTERNAL_URL=http://127.0.0.1:3004 \
+    CORE_INTERNAL_URL=http://127.0.0.1:3003 \
+    WORKERS_INTERNAL_URL=http://127.0.0.1:1
 
 EXPOSE 8080
 

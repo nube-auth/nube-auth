@@ -13,10 +13,10 @@ set -e
 # In this combined container all Node services run on localhost.
 # Dockerfile ENV provides sensible defaults; Railway vars can override if needed.
 export SUBDOMAIN_PREFIX="${SUBDOMAIN_PREFIX:-}"
-export GATEWAY_INTERNAL_URL="${GATEWAY_INTERNAL_URL:-http://localhost:3004}"
-export CORE_INTERNAL_URL="${CORE_INTERNAL_URL:-http://localhost:3003}"
+export GATEWAY_INTERNAL_URL="${GATEWAY_INTERNAL_URL:-http://127.0.0.1:3004}"
+export CORE_INTERNAL_URL="${CORE_INTERNAL_URL:-http://127.0.0.1:3003}"
 # Workers has no public HTTP traffic; dummy value suppresses nginx upstream errors.
-export WORKERS_INTERNAL_URL="${WORKERS_INTERNAL_URL:-http://localhost:1}"
+export WORKERS_INTERNAL_URL="${WORKERS_INTERNAL_URL:-http://127.0.0.1:1}"
 
 # Detect the system DNS resolver so nginx can re-resolve variable hostnames at
 # runtime.  Even for localhost targets the resolver directive must be present.
@@ -38,7 +38,8 @@ echo "[entrypoint] GATEWAY_INTERNAL : ${GATEWAY_INTERNAL_URL}"
 echo "[entrypoint] CORE_INTERNAL    : ${CORE_INTERNAL_URL}"
 echo "[entrypoint] SUBDOMAIN_PREFIX : '${SUBDOMAIN_PREFIX}'"
 
-envsubst '${DOMAIN} ${SUBDOMAIN_PREFIX} ${GATEWAY_INTERNAL_URL} ${CORE_INTERNAL_URL} ${WORKERS_INTERNAL_URL} ${NGINX_RESOLVER}' \
+# App template uses direct proxy_pass — no NGINX_RESOLVER needed.
+envsubst '${DOMAIN} ${SUBDOMAIN_PREFIX} ${GATEWAY_INTERNAL_URL} ${CORE_INTERNAL_URL} ${WORKERS_INTERNAL_URL}' \
   < /etc/nginx/templates/subdomains.conf.template \
   > /etc/nginx/http.d/default.conf
 
