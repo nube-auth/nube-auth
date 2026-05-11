@@ -1,0 +1,20 @@
+apps/services/gateway/src/routes/appCatalog.ts
+  s_095529879648c2::t_4862c46be79e13 131-239
+  s_095529879648c2::t_a51fa545ee72d6 13-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "b6e5d3dca518930db6c85e10101d4ffebd9ebc45",
+  "prompts": {},
+  "sessions": {
+    "s_095529879648c2": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "1babda16-28de-4f89-b607-2898d31663f3",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}
