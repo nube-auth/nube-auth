@@ -4,7 +4,7 @@
  * (enforced by the s2sAuthMiddleware mounted in index.ts).
  */
 
-import { getDb, userQueries } from "@nube-auth/db";
+import { getDb, userQueries, appUserQueries } from "@nube-auth/db";
 import { createId, createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 
@@ -35,26 +35,32 @@ s2sRoutes.post("/users/provision", async (c) => {
 		}
 
 		const db = getDb();
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const s2sApp = c.get("s2sApp") as any;
 
-		// Idempotent upsert: find existing user by email first
-		const existing = await userQueries.findByEmail(db, body.email);
-		if (existing) {
-			log.debug({ email: body.email, userId: existing.public_id }, "Provision: returning existing user");
-			return c.json({ ok: true, data: { userId: existing.public_id } });
+		// 1. Find or create user by email
+		let user = await userQueries.findByEmail(db, body.email);
+		let created = false;
+
+		if (!user) {
+			const publicId = createId("user");
+			user = await userQueries.create(db, {
+				public_id: publicId,
+				primary_email: body.email.toLowerCase(),
+				primary_email_verified: true,
+				name: body.name ?? null,
+				avatar_url: body.avatarUrl ?? null,
+			});
+			created = true;
+			log.info({ email: body.email, userId: publicId }, "Provision: created new user");
+		} else {
+			log.debug({ email: body.email, userId: user.public_id }, "Provision: returning existing user");
 		}
 
-		// Create new user
-		const publicId = createId("user");
-		await userQueries.create(db, {
-			public_id: publicId,
-			primary_email: body.email.toLowerCase(),
-			primary_email_verified: true,
-			name: body.name ?? null,
-			avatar_url: body.avatarUrl ?? null,
-		});
+		// 2. Ensure app_users link exists (upsert bumps last_seen_at on repeat calls)
+		await appUserQueries.upsert(db, s2sApp.id, user.id);
 
-		log.info({ email: body.email, userId: publicId }, "Provision: created new user");
-		return c.json({ ok: true, data: { userId: publicId } }, 201);
+		return c.json({ ok: true, data: { userId: user.public_id } }, created ? 201 : 200);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Provision user error");
 		return c.json({ ok: false, error: "Failed to provision user" }, 500);
