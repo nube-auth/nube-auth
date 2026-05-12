@@ -10,6 +10,8 @@ import type {
 	PkceOAuthStart,
 	Plan,
 	Price,
+	ProvisionUserOptions,
+	ProvisionUserResult,
 	Session,
 	SubscriptionStatus,
 	TokenExchangeResult,
@@ -514,6 +516,35 @@ export class NubeAuthClient {
 					code: options.code,
 					priceId: options.priceId,
 					appId,
+				}),
+			});
+		},
+	};
+
+	// ---------------------------------------------------------------------------
+	// Users — S2S provisioning (requires s2sToken in config)
+	// ---------------------------------------------------------------------------
+
+	public users = {
+		/**
+		 * Idempotently provision a NubeAuth user from an external identity provider.
+		 * If a user with the given email already exists, returns their existing userId.
+		 * If not, creates a new user and returns the new userId.
+		 *
+		 * Requires `s2sToken` to be set in the client config.
+		 *
+		 * @example
+		 * const client = new NubeAuthClient({ gatewayUrl, s2sToken });
+		 * const { data } = await client.users.provision({ email, name, avatarUrl });
+		 * // data.userId === "USER0..."
+		 */
+		provision: async (options: ProvisionUserOptions): Promise<{ ok: true; data: ProvisionUserResult }> => {
+			return this.request<{ ok: true; data: ProvisionUserResult }>("/v1/s2s/users/provision", {
+				method: "POST",
+				body: JSON.stringify({
+					email: options.email,
+					...(options.name !== undefined && { name: options.name }),
+					...(options.avatarUrl !== undefined && { avatarUrl: options.avatarUrl }),
 				}),
 			});
 		},

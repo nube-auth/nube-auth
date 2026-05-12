@@ -20,6 +20,9 @@ export type {
 	CheckoutSession,
 	ValidatePromoOptions,
 	ValidatePromoResult,
+	// S2S provisioning types
+	ProvisionUserOptions,
+	ProvisionUserResult,
 	// Webhook types
 	WebhookEventName,
 	WebhookEnvelope,
