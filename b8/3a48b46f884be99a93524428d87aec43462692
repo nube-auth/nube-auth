@@ -1,0 +1,29 @@
+apps/services/gateway/src/middleware/auth.ts
+  s_55f69f7b1db49b::t_9579b565258db3 48-49
+apps/packages/client/src/types.ts
+  s_55f69f7b1db49b::t_4921a048b22f56 671-690
+apps/packages/client/src/index.ts
+  s_55f69f7b1db49b::t_61c30b5b2fdd11 23-25
+apps/packages/client/src/client.ts
+  s_55f69f7b1db49b::t_abe9d4c00506f5 13-14,523-547
+apps/services/core/src/routes/v1/admin/apps.ts
+  s_55f69f7b1db49b::t_ead70aaf5fd2c1 749-936
+apps/services/gateway/src/index.ts
+  s_55f69f7b1db49b::t_6910509648df32 22-23,233-235
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "b83a48b46f884be99a93524428d87aec43462692",
+  "prompts": {},
+  "sessions": {
+    "s_55f69f7b1db49b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "7e74285d-ec0e-435d-aa9d-b9a6318dd5d0",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}
