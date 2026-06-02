@@ -1,0 +1,19 @@
+deployment/docker-entrypoint.sh
+  s_5045e23a8e9549::t_2dee50f643f709 43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "1e29640cc1445a4abe2919ac2d625d7487ba1531",
+  "prompts": {},
+  "sessions": {
+    "s_5045e23a8e9549": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "4490740b-cdac-4dc9-b4cc-3cbe6b1866aa",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}

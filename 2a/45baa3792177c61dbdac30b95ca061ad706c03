@@ -1,0 +1,30 @@
+apps/dashboard/home/src/pages/privacy.astro
+  4343bb04abb2627b 3-4,7-42,44-46,48,56-57,60,65,67,74,81-82,85,94-96,103-104,107,115-116,120-122,129-130,133-134,137,143-144,148-149,153-154,158-159,162-163,168
+deployment/nginx/dashboards.conf
+  4343bb04abb2627b 26-27,30-35
+deployment/nginx/subdomains.conf.template
+  4343bb04abb2627b 25-26,29,32-34,36-43
+apps/dashboard/home/src/pages/terms.astro
+  4343bb04abb2627b 3-4,7-42,44-46,48,56-57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.20",
+  "base_commit_sha": "2a45baa3792177c61dbdac30b95ca061ad706c03",
+  "prompts": {
+    "4343bb04abb2627b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "411dba86-83ca-498d-aeea-eeb318940c6a",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 146,
+      "total_deletions": 47,
+      "accepted_lines": 144,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/dd2019bf372b32d271210304393c5fbbb2bb10c56fef54600d7e9478315d1454"
+    }
+  }
+}

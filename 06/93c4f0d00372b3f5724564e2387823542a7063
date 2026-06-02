@@ -1,0 +1,19 @@
+apps/services/core/package.json
+  s_5045e23a8e9549::t_a9198cbadedc48 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "0693c4f0d00372b3f5724564e2387823542a7063",
+  "prompts": {},
+  "sessions": {
+    "s_5045e23a8e9549": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "4490740b-cdac-4dc9-b4cc-3cbe6b1866aa",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}

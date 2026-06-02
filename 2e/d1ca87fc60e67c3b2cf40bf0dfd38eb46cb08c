@@ -1,0 +1,20 @@
+apps/services/gateway/src/routes/s2s.ts
+  s_55f69f7b1db49b::t_0b1308d999d16f 38-39,41-57,60-63
+  s_55f69f7b1db49b::t_a4f03b451f7760 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "2ed1ca87fc60e67c3b2cf40bf0dfd38eb46cb08c",
+  "prompts": {},
+  "sessions": {
+    "s_55f69f7b1db49b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "7e74285d-ec0e-435d-aa9d-b9a6318dd5d0",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}

@@ -1,0 +1,44 @@
+apps/dashboard/admin/src/hooks/api.ts
+  ca0797480df5063e 144-164
+apps/services/core/src/routes/v1/admin/index.ts
+  351020bd6da3ac9f 21
+apps/dashboard/admin/src/pages/Projects.tsx
+  ca0797480df5063e 30,165,171,177,188,242,247,252,254,260
+  351020bd6da3ac9f 3
+apps/services/core/src/routes/v1/admin/stats.ts
+  351020bd6da3ac9f 18-87
+  ca0797480df5063e 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.6",
+  "base_commit_sha": "accb1b6d998c47555d309b43b5f98a664deaf0e9",
+  "prompts": {
+    "351020bd6da3ac9f": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "bb71da80-1907-4c7f-85c6-f3afd893b747",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 93,
+      "total_deletions": 39,
+      "accepted_lines": 82,
+      "overriden_lines": 0
+    },
+    "ca0797480df5063e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6a3cebda-12e4-4b70-bcc0-c715a02f1d6b",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 142,
+      "total_deletions": 30,
+      "accepted_lines": 37,
+      "overriden_lines": 0
+    }
+  }
+}

@@ -1,0 +1,34 @@
+apps/dashboard/admin/vercel.json
+  4343bb04abb2627b 7-8,12,21-28,34
+apps/dashboard/docs/vercel.json
+  4343bb04abb2627b 6-36
+apps/dashboard/home/vercel.json
+  4343bb04abb2627b 5-39
+deployment/Dockerfile.dashboards
+  4343bb04abb2627b 3,5-6,8-10,12-13,16,21,24
+deployment/nginx/subdomains.conf.template
+  4343bb04abb2627b 2-5,15-20,23-24,32-33,36,38,43-45,50-52,57-59,89,143,152,156-157,163-164,170-171
+apps/dashboard/user/vercel.json
+  4343bb04abb2627b 7-8,21-28,34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.20",
+  "base_commit_sha": "4a5931549c343ad8d0374fb23415f361ff8f3ef2",
+  "prompts": {
+    "4343bb04abb2627b": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "411dba86-83ca-498d-aeea-eeb318940c6a",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 275,
+      "total_deletions": 119,
+      "accepted_lines": 274,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/9a7245f9c72683fd8d3135c5d0eebdf859ae04678aa9293b3a53009871b4b228"
+    }
+  }
+}

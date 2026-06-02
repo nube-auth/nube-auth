@@ -1,0 +1,44 @@
+apps/dashboard/docs/src/content/docs/authentication/magic-links.md
+  h_d60f3499e5a1c3 62
+apps/services/core/src/routes/v1/admin/members.ts
+  h_d60f3499e5a1c3 21
+apps/services/gateway/.env.example
+  h_d60f3499e5a1c3 27
+deployment/supervisord.conf
+  h_d60f3499e5a1c3 1-73
+.env.example
+  h_d60f3499e5a1c3 98
+apps/services/core/.env.example
+  h_d60f3499e5a1c3 34
+apps/services/gateway/src/config/env.ts
+  h_d60f3499e5a1c3 10,51,86
+apps/dashboard/docs/src/content/docs/self-hosting/environment.md
+  h_d60f3499e5a1c3 75,131
+deployment/docker-entrypoint.app.sh
+  h_d60f3499e5a1c3 1-46
+apps/services/core/src/routes/v1/email/index.ts
+  h_d60f3499e5a1c3 17
+deployment/Dockerfile.app
+  h_d60f3499e5a1c3 1-205
+apps/services/gateway/src/services/email.ts
+  h_d60f3499e5a1c3 13
+apps/services/core/src/config/env.ts
+  h_d60f3499e5a1c3 21,61,87
+apps/dashboard/docs/authentication/magic-links.md
+  h_d60f3499e5a1c3 62
+apps/dashboard/docs/self-hosting/environment.md
+  h_d60f3499e5a1c3 75,131
+apps/services/gateway/README.md
+  h_d60f3499e5a1c3 137
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "debcbc248122492cec664555796e79c30c088483",
+  "prompts": {},
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

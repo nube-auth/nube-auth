@@ -1,0 +1,29 @@
+apps/services/gateway/src/routes/appCatalog.ts
+  s_095529879648c2::t_28f3b68f88f023 20-21
+  s_095529879648c2::t_b11d72ed02ae6f 122-254
+apps/services/core/src/routes/v1/admin/license-management.ts
+  s_095529879648c2::t_62a98e37f779a0 67-75,159-179
+  s_095529879648c2::t_18b4af5a954199 455-495
+  s_095529879648c2::t_081a74a9b9843e 569-586,591
+  s_095529879648c2::t_a99ec4b618bd45 496-499,587-588
+  s_095529879648c2::t_5f1e657ee7e9ce 589-590
+  s_095529879648c2::t_5c9476bca2b232 12
+apps/services/gateway/src/routes/license.ts
+  s_095529879648c2::t_2a687d9e042763 106-107,109-120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "948270289f704a67337780f1fde1bf46b184472e",
+  "prompts": {},
+  "sessions": {
+    "s_095529879648c2": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "1babda16-28de-4f89-b607-2898d31663f3",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}

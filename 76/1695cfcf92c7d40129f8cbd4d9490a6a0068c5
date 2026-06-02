@@ -1,0 +1,77 @@
+apps/packages/billing/src/services/purchases.ts
+  s_5045e23a8e9549::t_ae42d8b69b9742 1-526
+apps/packages/billing/tsconfig.json
+  h_7a2f4c8f0473b8 1-8
+apps/packages/billing/src/services/webhook-handler.ts
+  s_5045e23a8e9549::t_ae42d8b69b9742 1-195
+apps/packages/billing/package.json
+  h_7a2f4c8f0473b8 1-33
+apps/services/workers/src/sync-plan-to-providers.ts
+  s_5045e23a8e9549::t_5c4d5b66279489 17-18
+apps/packages/billing/src/services/webhook-logging.ts
+  s_5045e23a8e9549::t_ae42d8b69b9742 1-246
+apps/packages/billing/src/encryption.ts
+  h_7a2f4c8f0473b8 1-88
+apps/services/workers/package.json
+  s_5045e23a8e9549::t_a9f54704948bc0 18
+apps/packages/billing/src/queue.ts
+  s_5045e23a8e9549::t_92ce27221e7868 1-161
+apps/packages/billing/src/adapters/lemonsqueezy.ts
+  s_5045e23a8e9549::t_f4b2134bee1513 1-653
+apps/packages/billing/src/adapters/dodo.ts
+  s_5045e23a8e9549::t_f4b2134bee1513 1-483
+apps/services/workers/src/sync-license.ts
+  s_5045e23a8e9549::t_cbf9b42460f4e2 36
+apps/packages/billing/tsup.config.ts
+  h_7a2f4c8f0473b8 1-10
+apps/services/workers/src/process-refund.ts
+  h_7a2f4c8f0473b8 16-17
+apps/services/core/src/billing/services/webhook-processor.ts
+  s_5045e23a8e9549::t_3a45285f25d116 119
+apps/packages/billing/src/adapters/types.ts
+  s_5045e23a8e9549::t_53c0b8f78f6d11 1-195
+apps/packages/billing/src/services/webhook-processor.ts
+  s_5045e23a8e9549::t_3a45285f25d116 119
+  s_5045e23a8e9549::t_ae42d8b69b9742 1-118,120-457
+deployment/Dockerfile.workers
+  s_5045e23a8e9549::t_ca98abd1a1dd43 23,39,42
+apps/packages/billing/src/adapters/stripe.ts
+  s_5045e23a8e9549::t_f4b2134bee1513 1-591
+apps/packages/billing/src/adapters/factory.ts
+  s_5045e23a8e9549::t_f4b2134bee1513 1-62
+deployment/Dockerfile.app
+  h_7a2f4c8f0473b8 42,71,97-98
+pnpm-lock.yaml
+  ai_agent 301-328,638,640
+apps/packages/billing/src/adapters/index.ts
+  s_5045e23a8e9549::t_f4b2134bee1513 1-9
+apps/packages/billing/src/index.ts
+  h_7a2f4c8f0473b8 1-33
+apps/packages/billing/src/services/license-manager.ts
+  s_5045e23a8e9549::t_ae42d8b69b9742 1-377
+apps/packages/billing/src/outbound-events.ts
+  s_5045e23a8e9549::t_92ce27221e7868 1-44
+apps/services/workers/src/process-webhook.ts
+  s_5045e23a8e9549::t_0b06d2061a88ba 29-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "761695cfcf92c7d40129f8cbd4d9490a6a0068c5",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_5045e23a8e9549": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "4490740b-cdac-4dc9-b4cc-3cbe6b1866aa",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}

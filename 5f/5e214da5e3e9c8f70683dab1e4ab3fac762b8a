@@ -1,0 +1,16 @@
+apps/packages/billing/tsconfig.json
+  h_7a2f4c8f0473b8 3-16,18-19
+apps/packages/billing/src/adapters/lemonsqueezy.ts
+  h_7a2f4c8f0473b8 139,373-374,427,487
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "5f5e214da5e3e9c8f70683dab1e4ab3fac762b8a",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}

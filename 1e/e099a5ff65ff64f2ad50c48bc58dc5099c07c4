@@ -1,0 +1,19 @@
+apps/packages/db/src/queries.ts
+  s_3b19b4e5c9259a::t_0dff2d81ae6218 703-706,712
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "1ee099a5ff65ff64f2ad50c48bc58dc5099c07c4",
+  "prompts": {},
+  "sessions": {
+    "s_3b19b4e5c9259a": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "c8821ba0-54f3-41b9-9cea-ccb8ce1af14e",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}

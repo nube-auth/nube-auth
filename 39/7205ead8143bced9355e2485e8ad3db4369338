@@ -1,0 +1,18 @@
+deployment/Dockerfile.workers
+  ai_agent 18,20,23,32,35-41,43,52-56
+deployment/Dockerfile.core
+  ai_agent 31-36,38,50-51
+deployment/Dockerfile.gateway
+  ai_agent 35-40,43,55-56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "397205ead8143bced9355e2485e8ad3db4369338",
+  "prompts": {},
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

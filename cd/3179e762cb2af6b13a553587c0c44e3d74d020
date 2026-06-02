@@ -1,0 +1,68 @@
+apps/services/core/src/billing/services/webhook-logging.ts
+  ca0797480df5063e 4,7-29,31-53,56-73,77-94,97-120,122-142
+apps/services/core/src/routes/v1/billing/checkout.ts
+  ca0797480df5063e 22,127-130
+apps/services/core/src/billing/queue.ts
+  ca0797480df5063e 61,111-125
+apps/packages/db/src/queries.ts
+  ca0797480df5063e 1030-1041
+apps/services/core/src/routes/v1/admin/prices.ts
+  ca0797480df5063e 17,144-148
+apps/services/core/src/billing/adapters/stripe.ts
+  ca0797480df5063e 13,16,496-514
+apps/services/gateway/src/routes/payments.ts
+  ca0797480df5063e 3-5,9-11,13-14,20-56,58-104,106-109
+apps/services/core/src/billing/adapters/lemonsqueezy.ts
+  ca0797480df5063e 17,21,514-517
+apps/services/core/src/routes/v1/billing/refunds-clean.ts
+  ca0797480df5063e 11-12,15-17,23-25,28-93,95-126,128-132,134,136-150,153-183,186-224,227-258,260-264
+apps/services/workers/src/process-webhook.ts
+  ca0797480df5063e 17
+apps/services/core/src/routes/v1/admin/plans.ts
+  351020bd6da3ac9f 16
+  ca0797480df5063e 129-133
+apps/services/core/src/billing/adapters/types.ts
+  ca0797480df5063e 115
+apps/services/core/src/billing/services/webhook-handler.ts
+  351020bd6da3ac9f 23
+  ca0797480df5063e 4-6,27-30,36-42,44-45,48-49,53-54,60-65,67,69-76,78-80,82,84-91,93-95,97-99,101-103,105-106,109-117,120-127,129-136,138,144-147,149
+apps/services/core/src/routes/v1/billing/webhooks.ts
+  ca0797480df5063e 38-46,52,54
+apps/services/core/src/routes/v1/billing/index.ts
+  351020bd6da3ac9f 22-24,186-189
+apps/services/core/src/billing/adapters/dodo.ts
+  ca0797480df5063e 4,9-10,30,36-39,43-44,48-57,59,61-64,68-69,73-74,78-79,86-88,92-96,100-103,106-108,113-114,121,127,129,131-132,134-135,137-138,141-143,145-152,155-157,164-165,171-176,178-220,222-223,227-232,238,245,249,251-255,258-261,264,271-273,277,280-285,287,291-292,296-297,302,309-312,316-319,322-343,348-349,352,356,358-359,369,376,378-404,410,412-413,415
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.7",
+  "base_commit_sha": "cd3179e762cb2af6b13a553587c0c44e3d74d020",
+  "prompts": {
+    "351020bd6da3ac9f": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "bb71da80-1907-4c7f-85c6-f3afd893b747",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 9,
+      "total_deletions": 22,
+      "accepted_lines": 9,
+      "overriden_lines": 0
+    },
+    "ca0797480df5063e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6a3cebda-12e4-4b70-bcc0-c715a02f1d6b",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 945,
+      "total_deletions": 477,
+      "accepted_lines": 893,
+      "overriden_lines": 6
+    }
+  }
+}

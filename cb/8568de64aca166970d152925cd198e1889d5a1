@@ -1,0 +1,42 @@
+apps/services/workers/src/sync-plan-to-providers.ts
+  b9b9567d4b04a9ac 254
+apps/services/workers/src/sync-plan-worker.ts
+  b9b9567d4b04a9ac 26
+apps/services/core/src/billing/queue.ts
+  b9b9567d4b04a9ac 118-121,124
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.17",
+  "base_commit_sha": "cb8568de64aca166970d152925cd198e1889d5a1",
+  "prompts": {
+    "9f96d675df0e1435": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "0ee53b3d-dca0-4d50-add0-c1af1fa298d9",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 369,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/b2b365b5cc79023b7cf8652d9cfaeae51f0475991d9ac19f904efd9980940a3b"
+    },
+    "b9b9567d4b04a9ac": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "f22f2aa8-a742-47d6-b3fc-e3b85c1e0840",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 7,
+      "total_deletions": 6,
+      "accepted_lines": 7,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/4bc79b15dfef0a54c2916515d9914b3639b41ff9b81a361bc302ed3d365ef4cb"
+    }
+  }
+}

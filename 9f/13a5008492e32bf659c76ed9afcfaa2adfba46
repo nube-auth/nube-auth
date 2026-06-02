@@ -1,0 +1,34 @@
+apps/dashboard/admin/src/pages/Login.tsx
+  h_d60f3499e5a1c3 55-56,77
+apps/dashboard/admin/src/pages/Home.tsx
+  h_d60f3499e5a1c3 1-171
+apps/dashboard/user/src/pages/NotFound.tsx
+  h_d60f3499e5a1c3 1-2,5-6,8-19,22-24,27-39
+apps/dashboard/home/src/pages/404.astro
+  h_d60f3499e5a1c3 25-107
+apps/dashboard/user/src/App.tsx
+  h_d60f3499e5a1c3 8-9,38,111-113,115-117
+apps/dashboard/docs/.vitepress/theme/components/NotFound.vue
+  h_d60f3499e5a1c3 4,10-11,17-105
+apps/dashboard/user/src/pages/Root.tsx
+  h_d60f3499e5a1c3 1-156
+apps/dashboard/admin/src/App.tsx
+  h_d60f3499e5a1c3 41-42,71,347,349,351-353
+apps/dashboard/user/src/pages/Home.tsx
+  h_d60f3499e5a1c3 1-101
+apps/dashboard/admin/src/pages/Root.tsx
+  h_d60f3499e5a1c3 1-158
+apps/dashboard/admin/src/pages/NotFound.tsx
+  h_d60f3499e5a1c3 1-2,5-6,8-24,26-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "9f13a5008492e32bf659c76ed9afcfaa2adfba46",
+  "prompts": {},
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}

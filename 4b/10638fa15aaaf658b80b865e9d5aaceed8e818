@@ -1,0 +1,84 @@
+scripts/docker-local.sh
+  c121032fb7aa01cb 4
+apps/dashboard/admin/package.json
+  c121032fb7aa01cb 11
+apps/services/workers/package.json
+  c121032fb7aa01cb 13
+apps/dashboard/user/vercel.json
+  c121032fb7aa01cb 16-46,49
+README.md
+  c121032fb7aa01cb 71-74,259-260,300,318-322,325,327,330,332-336
+apps/services/core/package.json
+  c121032fb7aa01cb 13
+docs/DEPLOYMENT.md
+  c121032fb7aa01cb 1-10,14-34,36-156,160-183
+docs/PAYMENTS.md
+  c121032fb7aa01cb 391-392
+SETUP.md
+  c121032fb7aa01cb 24,116,119
+apps/services/gateway/package.json
+  c121032fb7aa01cb 10-11
+docs/README.md
+  88eda398c2ceb706 31,33-34,36-37,55,64-65
+.github/copilot-instructions.md
+  c121032fb7aa01cb 674,676-679
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.10",
+  "base_commit_sha": "4b10638fa15aaaf658b80b865e9d5aaceed8e818",
+  "prompts": {
+    "351020bd6da3ac9f": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "bb71da80-1907-4c7f-85c6-f3afd893b747",
+        "model": "copilot/auto"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 15,
+      "total_deletions": 20,
+      "accepted_lines": 5,
+      "overriden_lines": 0
+    },
+    "88eda398c2ceb706": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "13a1c7d5-a85e-4ca9-9cc3-bb0db55277ef",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 9,
+      "total_deletions": 7,
+      "accepted_lines": 9,
+      "overriden_lines": 0
+    },
+    "c121032fb7aa01cb": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "c22c69d7-61b4-4970-bf43-da9bcdab7f28",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 410,
+      "total_deletions": 62,
+      "accepted_lines": 396,
+      "overriden_lines": 7
+    },
+    "ca0797480df5063e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "6a3cebda-12e4-4b70-bcc0-c715a02f1d6b",
+        "model": "copilot/claude-opus-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manir@gmail.com>",
+      "messages": [],
+      "total_additions": 17,
+      "total_deletions": 22,
+      "accepted_lines": 5,
+      "overriden_lines": 0
+    }
+  }
+}

@@ -1,0 +1,26 @@
+apps/dashboard/admin/src/pages/AppSetup.tsx
+  553d97324ef36351 733-740
+apps/dashboard/admin/src/hooks/api.ts
+  553d97324ef36351 328
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.22",
+  "base_commit_sha": "97a7765b61b349bed8dcfb0bab9e74ce970b6c94",
+  "prompts": {
+    "553d97324ef36351": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5c50c261-943e-4200-90dd-4b989d11189b",
+        "model": "claude-4.6-sonnet-medium-thinking"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages": [],
+      "total_additions": 9,
+      "total_deletions": 8,
+      "accepted_lines": 9,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/f9f26fd9d80b87947213b544b0230575ed90398616a9fbab5acdbb8cc10c9e58"
+    }
+  }
+}

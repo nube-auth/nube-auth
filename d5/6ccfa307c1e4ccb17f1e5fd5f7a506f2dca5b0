@@ -1,0 +1,16 @@
+apps/dashboard/docs/vercel.json
+  h_d60f3499e5a1c3 5
+apps/dashboard/docs/vitepress.config.ts
+  h_d60f3499e5a1c3 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "d56ccfa307c1e4ccb17f1e5fd5f7a506f2dca5b0",
+  "prompts": {},
+  "humans": {
+    "h_d60f3499e5a1c3": {
+      "author": "Devendra Pratap Singh"
+    }
+  }
+}
