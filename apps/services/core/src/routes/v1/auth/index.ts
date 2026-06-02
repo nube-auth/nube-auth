@@ -527,7 +527,7 @@ router.post("/exchange", async (c: Context) => {
 			await sessionQueries.updateLastSeenAndExpiry(db, session.id, now, updatedExpiresAt);
 		}
 
-		log.info({ userId: user.public_id, sessionId: `${sessionId.substring(0, 8)}...` }, "Session exchange successful");
+		log.debug({ userId: user.public_id, sessionId: `${sessionId.substring(0, 8)}...` }, "Session exchange successful");
 		return c.json({
 			userId: user.public_id,
 			email: user.primary_email,

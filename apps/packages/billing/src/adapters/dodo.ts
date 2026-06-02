@@ -161,7 +161,9 @@ export class DodoAdapter implements PaymentProviderAdapter {
 				return this.extractFromSubscription(data, "succeeded");
 			}
 			if (event.type === "subscription.updated" || event.type === "subscription.plan_changed") {
-				return this.extractFromSubscription(data, "succeeded");
+				// These events are state changes and don't always indicate a completed charge.
+				// Actual money movement should be handled by payment.* or subscription.renewed events.
+				return null;
 			}
 			if (event.type === "subscription.cancelled" || event.type === "subscription.expired") {
 				return this.extractFromSubscription(data, "canceled");
@@ -192,9 +194,12 @@ export class DodoAdapter implements PaymentProviderAdapter {
 	): PaymentDetails {
 		const customer = data["customer"] as { customer_id?: string; email?: string } | undefined;
 		const metadata = (data["metadata"] as Record<string, string>) ?? {};
+		const totalAmount = Number(data["total_amount"] ?? 0);
+		const taxAmount = Number(data["tax"] ?? 0);
+		const preTaxAmount = Number(data["pre_tax_amount"] ?? (Number.isFinite(totalAmount) && Number.isFinite(taxAmount) ? totalAmount - taxAmount : totalAmount));
 		return {
 			transactionId: String(data["payment_id"] ?? ""),
-			amount: Number(data["total_amount"] ?? 0),
+			amount: preTaxAmount,
 			currency: String(data["currency"] ?? "usd").toLowerCase(),
 			status,
 			customerId: customer?.customer_id ?? "",

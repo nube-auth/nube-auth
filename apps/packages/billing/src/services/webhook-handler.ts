@@ -69,11 +69,22 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 				const credentialsJson = decryptString(providerConfig.credentials);
 				decryptedCredentials = JSON.parse(credentialsJson);
 			} catch (error) {
+				if (providerConfig.provider === "dodo" && providerConfig.webhook_secret) {
+					// Dodo verification uses webhook secret only; allow verification to proceed
+					// even if encrypted API credentials are stale/corrupted.
+					decryptedCredentials = {
+						apiKey: "webhook-verification-only",
+						webhookSecret: providerConfig.webhook_secret,
+						environment: providerConfig.environment === "production" ? "live_mode" : "test_mode",
+					};
+					log.warn({ configId: providerConfig.public_id }, "Failed to decrypt credentials, using Dodo webhook secret fallback");
+				} else {
 				log.warn(
 					{ err: serializeError(error as Error), configId: providerConfig.public_id },
 					"Failed to decrypt credentials, skipping config"
 				);
 				continue;
+				}
 			}
 
 			// Add environment field for Dodo
