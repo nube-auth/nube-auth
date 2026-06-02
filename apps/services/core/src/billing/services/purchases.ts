@@ -350,6 +350,12 @@ export async function createPurchaseRecords(
 				metadata: paymentDetails.metadata || {},
 				transaction_date: new Date(),
 			})
+			// Idempotency guard: if a duplicate webhook arrives for the same provider transaction,
+			// return the existing record instead of throwing a unique-constraint violation.
+			.onConflictDoUpdate({
+				target: [payment_transactions.provider_config_id, payment_transactions.provider_transaction_id],
+				set: { notes: sql`COALESCE(${payment_transactions.notes}, '') || ' (duplicate webhook)'` },
+			})
 			.returning();
 
 		if (!paymentTransaction) {

@@ -210,14 +210,23 @@ export class DodoAdapter implements PaymentProviderAdapter {
 	): PaymentDetails {
 		const customer = data["customer"] as { customer_id?: string; email?: string } | undefined;
 		const metadata = (data["metadata"] as Record<string, string>) ?? {};
+		const subscriptionId = String(data["subscription_id"] ?? "");
+		// Each renewal has a unique previous_billing_date (start of the billing cycle just charged).
+		// Using it as a suffix makes provider_transaction_id unique per renewal, preventing
+		// the unique(provider_config_id, provider_transaction_id) constraint from failing
+		// when the same subscription is renewed multiple times.
+		const previousBillingDate = data["previous_billing_date"] as string | undefined;
+		const transactionId = previousBillingDate
+			? `${subscriptionId}_${previousBillingDate}`
+			: subscriptionId;
 		return {
-			transactionId: String(data["subscription_id"] ?? ""),
+			transactionId,
 			amount: Number(data["recurring_pre_tax_amount"] ?? 0),
 			currency: String(data["currency"] ?? "usd").toLowerCase(),
 			status,
 			customerId: customer?.customer_id ?? "",
 			customerEmail: customer?.email ?? "",
-			subscriptionId: String(data["subscription_id"] ?? ""),
+			subscriptionId: subscriptionId,
 			productId: String(data["product_id"] ?? ""),
 			metadata,
 		};
