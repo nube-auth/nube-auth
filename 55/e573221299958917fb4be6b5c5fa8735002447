@@ -1,0 +1,24 @@
+apps/services/workers/src/sync-plan-to-providers.ts
+  s_037b0fe259a65f::t_3982cd3e619f17 107-133,176-201,205-206,223,243,287
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "55e573221299958917fb4be6b5c5fa8735002447",
+  "prompts": {},
+  "humans": {
+    "h_7a2f4c8f0473b8": {
+      "author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_037b0fe259a65f": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "4eaaa771-1328-4303-9378-ca8699f71986",
+        "model": "gpt-5-mini"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>"
+    }
+  }
+}
