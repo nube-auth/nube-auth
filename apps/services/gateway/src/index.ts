@@ -19,6 +19,8 @@ import { debugRoutes } from "./routes/debug";
 import { licenseRoutes } from "./routes/license";
 import { meRoutes } from "./routes/me";
 import { paymentsRoutes } from "./routes/payments";
+import { s2sRoutes } from "./routes/s2s";
+import { s2sAuthMiddleware } from "./middleware/s2s";
 
 // Initialize cache with the validated Redis URL from env.ts before any cache operations
 initCache(env.REDIS_URL);
@@ -228,6 +230,9 @@ app.route("/v1/admin", adminRoutes);
 app.route("/v1/app", appCatalogRoutes);
 app.route("/v1/payment", paymentsRoutes);
 app.route("/v1/license", licenseRoutes);
+// S2S routes — protected by X-Nube-Service-Token header
+app.use("/v1/s2s/*", s2sAuthMiddleware);
+app.route("/v1/s2s", s2sRoutes);
 // Debug routes only available in non-production environments
 if (process.env["NODE_ENV"] !== "production") {
 	app.route("/v1/debug", debugRoutes);

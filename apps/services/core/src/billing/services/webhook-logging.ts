@@ -64,9 +64,25 @@ export class WebhookLoggingService {
 					status: "not_started",
 					metadata: params.metadata ?? null,
 				})
+				.onConflictDoNothing({
+					target: [webhook_logs.provider, webhook_logs.event_id],
+				})
 				.returning({ id: webhook_logs.id });
 
-			return record?.id ?? 0;
+			if (record?.id) return record.id;
+
+			if (params.eventId) {
+				const existing = await db.query.webhook_logs.findFirst({
+					where: and(
+						eq(webhook_logs.provider, params.provider),
+						eq(webhook_logs.event_id, params.eventId),
+					),
+					columns: { id: true },
+				});
+				if (existing?.id) return existing.id;
+			}
+
+			return 0;
 		} catch (error) {
 			log.error({ err: serializeError(error as Error) }, "Failed to create webhook log");
 			return 0;

@@ -442,6 +442,17 @@ export const appQueries = {
 		return results[0];
 	},
 
+	async findByServiceToken(db: DbClient, serviceToken: string) {
+		const results = await db
+			.select()
+			.from(apps)
+			.where(and(
+				sql`${apps.app_tokens}->>'serviceToken' = ${serviceToken}`,
+				isNull(apps.deleted_at),
+			));
+		return results[0];
+	},
+
 	async findByProjectAndSlug(db: DbClient, projectId: number, slug: string) {
 		const results = await db
 			.select()

@@ -36,7 +36,7 @@ export function httpLogger(log: pino.Logger) {
 		const duration = Date.now() - startTime;
 		const status = c.res.status;
 
-		const logLevel = status >= 500 ? "error" : status >= 400 ? "warn" : "info";
+		const logLevel = status >= 500 ? "error" : status >= 400 ? "warn" : "debug";
 		reqLog[logLevel]({ status, duration }, "Request completed");
 	};
 }

@@ -272,12 +272,13 @@ meRoutes.get("/subscription", async (c: Context) => {
                         }
                 } else {
                         // Walk subscription → price → plan to get the slug
-                        const price = await priceQueries.findById(db, subscription.price_id);
+                        const price = await priceQueries.findById(db, subscription.price_id ?? subscription.metadata?.priceId);
                         const plan = price ? await planQueries.findById(db, price.plan_id) : null;
 
                         result = {
                                 hasActivePlan: true,
                                 planSlug: plan?.slug ?? null,
+								priceId: price?.public_id ?? null,
                                 status: subscription.status,
                                 billingInterval: subscription.billing_interval,
                                 periodEnd: subscription.billing_period_end

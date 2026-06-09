@@ -668,3 +668,23 @@ export type ValidatePromoResult =
 				discountValue: number;
 			};
 	  };
+
+// ---------------------------------------------------------------------------
+// S2S — server-to-server user provisioning
+// ---------------------------------------------------------------------------
+
+/** Options for `users.provision()`. */
+export interface ProvisionUserOptions {
+	/** Primary email address of the user to provision. */
+	email: string;
+	/** Display name (optional). */
+	name?: string;
+	/** Avatar URL (optional). */
+	avatarUrl?: string;
+}
+
+/** Result of `users.provision()`. */
+export interface ProvisionUserResult {
+	/** NubeAuth public user ID (USER0...). */
+	userId: string;
+}

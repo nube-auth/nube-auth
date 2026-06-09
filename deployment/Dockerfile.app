@@ -29,7 +29,18 @@
 FROM node:22-alpine AS installer
 WORKDIR /app
 
-RUN apk update && apk add --no-cache git && npm install -g pnpm@9
+RUN set -eux; \
+        apk_retry() { \
+            for i in 1 2 3 4 5; do \
+                apk update && apk add --no-cache "$@" && return 0; \
+                echo "apk install failed (attempt ${i}/5), retrying..." >&2; \
+                sleep $((i * 2)); \
+            done; \
+            echo "apk install failed after 5 attempts: $*" >&2; \
+            return 1; \
+        }; \
+        apk_retry git; \
+        npm install -g pnpm@9
 
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 
@@ -159,10 +170,20 @@ RUN VITE_ENV_TAG=${VITE_ENV_TAG} \
 FROM node:22-alpine AS runner
 
 # nginx, supervisord (python3-based), gettext (envsubst)
-RUN apk add --no-cache nginx supervisor gettext \
- && mkdir -p /run/nginx /var/log/supervisor \
-              /var/www/admin /var/www/user /var/www/home /var/www/docs \
-              /etc/nginx/conf.d /etc/nginx/templates
+RUN set -eux; \
+        apk_retry() { \
+            for i in 1 2 3 4 5; do \
+                apk update && apk add --no-cache "$@" && return 0; \
+                echo "apk install failed (attempt ${i}/5), retrying..." >&2; \
+                sleep $((i * 2)); \
+            done; \
+            echo "apk install failed after 5 attempts: $*" >&2; \
+            return 1; \
+        }; \
+        apk_retry nginx supervisor gettext; \
+        mkdir -p /run/nginx /var/log/supervisor \
+                         /var/www/admin /var/www/user /var/www/home /var/www/docs \
+                         /etc/nginx/conf.d /etc/nginx/templates
 
 # Process supervisor config
 COPY deployment/supervisord.conf /etc/supervisord.conf

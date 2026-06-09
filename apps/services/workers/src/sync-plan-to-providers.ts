@@ -104,6 +104,33 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 		try {
 			log.info({ planId, provider: provider.provider }, "Syncing to provider");
 
+			// Idempotency: only create provider resources for prices that don't already
+			// have an active mapping in price_provider_refs for this provider config.
+			const existingRefsByPriceId = new Map<number, Awaited<ReturnType<typeof priceProviderRefQueries.findByPriceAndProvider>>>();
+			for (const priceRecord of activePrices) {
+				const existingRef = await priceProviderRefQueries.findByPriceAndProvider(db, priceRecord.id, provider.id);
+				existingRefsByPriceId.set(priceRecord.id, existingRef);
+			}
+
+			const pricesToCreate = activePrices.filter((priceRecord) => !existingRefsByPriceId.get(priceRecord.id));
+
+			if (pricesToCreate.length === 0) {
+				log.info(
+					{ planId, provider: provider.provider, pricesCount: activePrices.length },
+					"All active prices already synced for provider, skipping",
+				);
+				const existingProductId = activePrices
+					.map((p) => existingRefsByPriceId.get(p.id)?.external_product_id)
+					.find((v): v is string => typeof v === "string" && v.length > 0);
+
+				syncedProviders.push({
+					provider: provider.provider,
+					productId: existingProductId ?? "__already_synced__",
+					prices: [],
+				});
+				continue;
+			}
+
 			// Decrypt credentials
 			let credentials: unknown;
 			try {
@@ -146,22 +173,37 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 			nube_env: provider.environment ?? "production",
 		};
 
-		// Create product in provider
-		const product = await adapter.createProduct({
-			name: productName,
-			description: productDescription,
-			metadata: productMetadata,
-		});
+		// Reuse the existing provider product when available (Stripe), otherwise create one.
+		// For Dodo this value is typically null because each Dodo price is its own product.
+		const existingProductId = activePrices
+			.map((p) => existingRefsByPriceId.get(p.id)?.external_product_id)
+			.find((v): v is string => typeof v === "string" && v.length > 0);
 
-		log.info(
-			{ planId, provider: provider.provider, productId: product.productId },
-			"Product created in provider",
-		);
+		const productId = existingProductId
+			?? (
+				await adapter.createProduct({
+					name: productName,
+					description: productDescription,
+					metadata: productMetadata,
+				})
+			).productId;
+
+		if (!existingProductId) {
+			log.info(
+				{ planId, provider: provider.provider, productId },
+				"Product created in provider",
+			);
+		} else {
+			log.info(
+				{ planId, provider: provider.provider, productId },
+				"Reusing existing provider product",
+			);
+		}
 
 		const syncedPrices: Array<{ interval: string; priceId: string }> = [];
 
-		// Create a provider price for each active price record
-		for (const priceRecord of activePrices) {
+		// Create provider prices only for missing refs.
+		for (const priceRecord of pricesToCreate) {
 			try {
 			const billingInterval: "month" | "year" | "one_time" =
 				priceRecord.billing_type === "one_time"
@@ -178,7 +220,7 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 				const priceLabel = `${app.name} — ${plan.name} — ${intervalLabel} (${amountFormatted})`;
 
 				const providerPrice = await adapter.createPrice({
-					productId: product.productId,
+					productId,
 					amountCents: priceRecord.amount_cents,
 					currency: priceRecord.currency,
 					interval: billingInterval,
@@ -198,7 +240,7 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 					provider_config_id: provider.id,
 					provider: provider.provider,
 					external_price_id: providerPrice.priceId,
-					external_product_id: product.productId !== "__dodo_no_product__" ? product.productId : null,
+					external_product_id: productId !== "__dodo_no_product__" ? productId : null,
 				});
 
 				// Also keep the legacy external_price_id column in sync for backwards compatibility
@@ -242,7 +284,7 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 			if (syncedPrices.length > 0) {
 				syncedProviders.push({
 					provider: provider.provider,
-					productId: product.productId,
+					productId,
 					prices: syncedPrices,
 				});
 			} else {

@@ -45,7 +45,8 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 		c.req.path.startsWith("/v1/debug") ||
 		c.req.path.startsWith("/v1/payment/webhooks/") ||
 		c.req.path === "/v1/payment/validate-promo" ||
-		c.req.path.startsWith("/v1/app/")
+		c.req.path.startsWith("/v1/app/") ||
+		c.req.path.startsWith("/v1/s2s/")
 	) {
 		return next();
 	}
