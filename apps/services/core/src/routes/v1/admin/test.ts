@@ -12,7 +12,7 @@ import { normalizeEventType } from "../../../billing/services/webhook-simulator.
 import type { PaymentDetails } from "../../../billing/adapters/types.js";
 import { createProviderAdapter } from "../../../billing/adapters/factory.js";
 import { processWebhookEvent } from "../../../billing/services/webhook-processor.js";
-import { decryptString } from "../../../utils/encryption.js";
+import { decryptProviderCredentials } from "../../../utils/encryption.js";
 import { rateLimitMiddleware } from "../../../middleware/rateLimit.js";
 
 const log = createLogger("admin-test-routes");
@@ -275,8 +275,7 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 				}
 
 				log.info({ provider }, "Decrypting credentials");
-				const credentialsJson = decryptString(configToUse.credentials);
-				const decryptedCredentials = JSON.parse(credentialsJson);
+				const decryptedCredentials = decryptProviderCredentials(configToUse);
 				
 				// Add environment field for Dodo adapter (convert "test"/"production" to "test_mode"/"live_mode")
 				if (provider === "dodo" && configToUse.environment) {

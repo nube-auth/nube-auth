@@ -72,6 +72,9 @@ web_modules/
 !.env.example
 !.env.local.example
 
+# Payment encryption key history (append-only, contains sensitive keys)
+.payment-key-history.txt
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache

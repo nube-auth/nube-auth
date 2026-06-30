@@ -25,7 +25,7 @@ import {
 } from "@nube-auth/db";
 import type { Context } from "hono";
 import { createLogger, createId } from "@nube-auth/shared";
-import { encryptCredentials, decryptCredentials } from "../../../utils";
+import { encryptProviderCredentials, decryptProviderCredentials } from "../../../utils";
 
 const log = createLogger("admin-providers");
 const providersRouter = new Hono();
@@ -212,10 +212,10 @@ providersRouter.get("/:projectId/configs/:providerId/credentials", async (c: Con
 			return c.json({ error: "Provider configuration not found" }, 404);
 		}
 
-		// Decrypt credentials
+		// Decrypt credentials (supports DEK-wrapped and legacy)
 		let credentials: Record<string, string>;
 		try {
-			credentials = decryptCredentials(config.credentials);
+			credentials = decryptProviderCredentials(config);
 		} catch (e) {
 			log.error({ err: (e as Error).message, providerId }, "Decrypt credentials error");
 			return c.json({ error: "Failed to decrypt credentials" }, 500);
@@ -278,10 +278,10 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
 			return c.json({ error: accessCheck.error }, accessCheck.status);
 		}
 
-		// Create new config (credentials encrypted at rest)
-		let encryptedCredentials: string;
+		// Create new config with DEK-wrapped credentials
+		let sealedBundle: { sealed: string; wrappedDek: string };
 		try {
-			encryptedCredentials = encryptCredentials(body.credentials);
+			sealedBundle = encryptProviderCredentials(body.credentials);
 		} catch (e) {
 			log.error({ err: (e as Error).message }, "Encrypt credentials error");
 			return c.json({ error: "Server encryption not configured" }, 500);
@@ -292,7 +292,8 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
 			name: body.name ?? null,
 			provider: body.provider as PaymentProvider,
 			environment: body.environment as PaymentEnvironment,
-			credentials: encryptedCredentials,
+			credentials: sealedBundle.sealed,
+			credentials_dek: sealedBundle.wrappedDek,
 			webhook_secret: body.webhookSecret,
 			metadata: body.metadata,
 			is_active: true,
@@ -377,7 +378,9 @@ providersRouter.patch("/:projectId/configs/:providerId", async (c: Context) => {
 
 		if (body.credentials) {
 			try {
-				updateData.credentials = encryptCredentials(body.credentials);
+				const sealedBundle = encryptProviderCredentials(body.credentials);
+				updateData.credentials = sealedBundle.sealed;
+				updateData.credentials_dek = sealedBundle.wrappedDek;
 			} catch (e) {
 				log.error({ err: (e as Error).message }, "Encrypt credentials error");
 				return c.json({ error: "Server encryption not configured" }, 500);

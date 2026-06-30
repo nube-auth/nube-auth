@@ -9,7 +9,7 @@
 import { getDb, paymentProviderConfigQueries } from "@nube-auth/db";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import { createProviderAdapter } from "../adapters/index.js";
-import { decryptString } from "../../utils/encryption.js";
+import { decryptProviderCredentials } from "../../utils/encryption.js";
 import { processWebhookEvent } from "./webhook-processor.js";
 import { WebhookLoggingService } from "./webhook-logging.js";
 
@@ -66,8 +66,7 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 		for (const providerConfig of configs) {
 			let decryptedCredentials: unknown;
 			try {
-				const credentialsJson = decryptString(providerConfig.credentials);
-				decryptedCredentials = JSON.parse(credentialsJson);
+				decryptedCredentials = decryptProviderCredentials(providerConfig);
 			} catch (error) {
 				if (providerConfig.provider === "dodo" && providerConfig.webhook_secret) {
 					// Dodo verification uses webhook secret only; allow verification to proceed

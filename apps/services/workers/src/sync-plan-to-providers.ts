@@ -15,7 +15,7 @@ import { createId } from "@nube-auth/shared";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import { QueueClient } from "@nube-auth/queue";
 import { createProviderAdapter } from "@nube-auth/billing";
-import { decryptString } from "@nube-auth/billing";
+import { decryptProviderCredentials } from "@nube-auth/billing";
 
 const log = createLogger("sync-plan-worker");
 
@@ -78,6 +78,7 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 			public_id: true,
 			provider: true,
 			credentials: true,
+			credentials_dek: true,
 			environment: true,
 			webhook_secret: true,
 			is_active: true,
@@ -131,11 +132,10 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 				continue;
 			}
 
-			// Decrypt credentials
+// Decrypt credentials (supports DEK-wrapped and legacy)
 			let credentials: unknown;
 			try {
-				const credentialsJson = decryptString(provider.credentials);
-				credentials = JSON.parse(credentialsJson);
+				credentials = decryptProviderCredentials(provider);
 			} catch (error) {
 				log.error(
 					{ err: serializeError(error as Error), providerId: provider.public_id },

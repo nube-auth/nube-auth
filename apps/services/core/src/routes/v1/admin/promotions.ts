@@ -15,7 +15,7 @@ import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/s
 import { Hono } from "hono";
 import { z } from "zod";
 import { createProviderAdapter } from "../../../billing/adapters/index.js";
-import { decryptString } from "../../../utils/encryption.js";
+import { decryptProviderCredentials } from "../../../utils/encryption.js";
 
 /**
  * Sync a promotion to all active payment providers for a project.
@@ -82,8 +82,7 @@ async function syncPromotionToProviders(
 			// Decrypt credentials
 			let credentials: unknown;
 			try {
-				const credentialsJson = decryptString(provider.credentials);
-				credentials = JSON.parse(credentialsJson);
+				credentials = decryptProviderCredentials(provider);
 			} catch {
 				log.error({ providerId: provider.public_id }, "Failed to decrypt credentials for coupon sync");
 				continue;
@@ -468,8 +467,7 @@ promotionsRouter.delete("/:promoId", async (c) => {
 
 			let credentials: unknown;
 			try {
-				const credentialsJson = decryptString(config.credentials);
-				credentials = JSON.parse(credentialsJson);
+				credentials = decryptProviderCredentials(config);
 			} catch { continue; }
 
 			if (config.provider === "dodo" && config.environment) {

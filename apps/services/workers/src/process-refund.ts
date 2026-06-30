@@ -14,7 +14,7 @@ import { createLogger, serializeError } from "@nube-auth/shared";
 import { getDb, eq, and, purchases, payment_transactions } from "@nube-auth/db";
 import { payment_provider_configs } from "@nube-auth/db/schema";
 import { createProviderAdapter } from "@nube-auth/billing";
-import { decryptString } from "@nube-auth/billing";
+import { decryptProviderCredentials } from "@nube-auth/billing";
 
 const log = createLogger("process-refund-worker");
 
@@ -130,8 +130,7 @@ async function processRefundJob(job: Job<ProcessRefundJobData>): Promise<void> {
 
 		let credentials: unknown;
 		try {
-			const credentialsJson = decryptString(providerConfig.credentials);
-			credentials = JSON.parse(credentialsJson);
+			credentials = decryptProviderCredentials(providerConfig);
 		} catch (error) {
 			log.error(
 				{ err: serializeError(error as Error), providerConfigId: providerConfig.id },

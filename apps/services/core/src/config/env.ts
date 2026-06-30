@@ -21,6 +21,7 @@ export interface Environment {
 	EMAIL_API_KEY: string;
 	SEND_EMAILS: boolean;
 	PAYMENT_CONFIGS_KEY: string;
+	PAYMENT_CONFIGS_KEY_PREVIOUS?: string | undefined; // Optional fallback for zero-downtime key rotation
 	EMAIL_FROM: string;
 	ADMIN_DASHBOARD_URL: string;
 	// SMTP for local email testing (auto-enabled in development)
@@ -89,6 +90,7 @@ function getEnvironment(): Environment {
 		EMAIL_FROM: process.env["EMAIL_FROM"] ?? "noreply@localhost",
 		ADMIN_DASHBOARD_URL: process.env["ADMIN_DASHBOARD_URL"] ?? "http://localhost:5174",
 		PAYMENT_CONFIGS_KEY: process.env["PAYMENT_CONFIGS_KEY"]!,
+		PAYMENT_CONFIGS_KEY_PREVIOUS: process.env["PAYMENT_CONFIGS_KEY_PREVIOUS"] ?? undefined,
 		SMTP_HOST: process.env["SMTP_HOST"] ?? "localhost",
 		SMTP_PORT: parseInt(process.env["SMTP_PORT"] ?? "1025", 10),
 		LOG_LEVEL: (process.env["LOG_LEVEL"] as Environment["LOG_LEVEL"] | undefined) ?? "info",

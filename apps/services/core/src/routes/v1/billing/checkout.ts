@@ -12,7 +12,7 @@ import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
 import { createProviderAdapter } from "../../../billing/adapters/index.js";
-import { decryptString } from "../../../utils/encryption.js";
+import { decryptProviderCredentials } from "../../../utils/encryption.js";
 
 const log = createLogger("checkout-routes");
 
@@ -104,11 +104,10 @@ checkoutRoutes.post("/", async (c: Context) => {
 			return c.json({ error: "No active payment provider configuration found" }, 400);
 		}
 
-		// Decrypt credentials
+		// Decrypt credentials (supports DEK-wrapped and legacy)
 		let decryptedCredentials: unknown;
 		try {
-			const credentialsJson = decryptString(providerConfig.credentials);
-			decryptedCredentials = JSON.parse(credentialsJson);
+			decryptedCredentials = decryptProviderCredentials(providerConfig);
 		} catch (error) {
 			log.error(
 				{ err: serializeError(error as Error), providerId: providerConfig.id },

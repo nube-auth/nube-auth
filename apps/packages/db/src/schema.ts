@@ -464,7 +464,8 @@ export const payment_provider_configs = pgTable(
 		name: varchar("name", { length: 100 }), // Optional display name — allows multiple configs of same provider/env
 		provider: varchar("provider", { length: 50 }).notNull(), // 'stripe', 'lemonsqueezy', 'dodo'
 		environment: varchar("environment", { length: 20 }).notNull(), // 'test' or 'production'
-		credentials: text("credentials").notNull(), // Encrypted JSON
+		credentials: text("credentials").notNull(), // Encrypted JSON (sealed with DEK)
+		credentials_dek: text("credentials_dek"),     // Wrapped DEK (AES-256-GCM sealed with KEK)
 		webhook_secret: text("webhook_secret"),
 		is_active: boolean("is_active").notNull().default(true),
 		is_default: boolean("is_default").notNull().default(false),

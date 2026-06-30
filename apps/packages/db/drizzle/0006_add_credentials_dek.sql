@@ -1,0 +1,1 @@
+ALTER TABLE "payment_provider_configs" ADD COLUMN "credentials_dek" text;

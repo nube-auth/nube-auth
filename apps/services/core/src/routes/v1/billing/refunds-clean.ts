@@ -14,7 +14,7 @@ import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
 import { createProviderAdapter } from "../../../billing/adapters/index.js";
-import { decryptString } from "../../../utils/encryption.js";
+import { decryptProviderCredentials } from "../../../utils/encryption.js";
 
 const log = createLogger("refund-routes");
 
@@ -83,9 +83,8 @@ refundRoutes.post("/", async (c: Context) => {
 			return c.json({ error: "Provider configuration not found" }, 500);
 		}
 
-		// Decrypt credentials and create adapter
-		const credentialsJson = decryptString(providerConfig.credentials);
-		const decryptedCredentials = JSON.parse(credentialsJson);
+		// Decrypt credentials and create adapter (supports DEK-wrapped and legacy)
+		const decryptedCredentials = decryptProviderCredentials(providerConfig);
 		if (providerConfig.provider === "dodo" && providerConfig.environment) {
 			decryptedCredentials.environment = providerConfig.environment === "production" ? "live_mode" : "test_mode";
 			decryptedCredentials.webhookSecret = providerConfig.webhook_secret || decryptedCredentials.webhookSecret;
