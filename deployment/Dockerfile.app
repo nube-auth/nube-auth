@@ -166,10 +166,15 @@ ARG VITE_ENV_TAG=Staging
 RUN VITE_ENV_TAG=${VITE_ENV_TAG} \
     pnpm --filter @nube-auth/dashboard-docs build
 
+# ── Stage: fetch dhd ──────────────────────────────────────────────────────────
+FROM alpine:latest AS dhd_builder
+RUN apk add --no-cache curl ca-certificates
+RUN curl -fsSL https://daemonhound.dev/install.sh | sh
+
 # ── Stage 10: runtime — Node + nginx + supervisord ────────────────────────────
 FROM node:22-alpine AS runner
 
-# nginx, supervisord (python3-based), gettext (envsubst)
+# nginx, supervisord (python3-based), gettext (envsubst), git (for dhd clone)
 RUN set -eux; \
         apk_retry() { \
             for i in 1 2 3 4 5; do \
@@ -180,13 +185,19 @@ RUN set -eux; \
             echo "apk install failed after 5 attempts: $*" >&2; \
             return 1; \
         }; \
-        apk_retry nginx supervisor gettext; \
+        apk_retry nginx supervisor gettext git ca-certificates; \
         mkdir -p /run/nginx /var/log/supervisor \
                          /var/www/admin /var/www/user /var/www/home /var/www/docs \
                          /etc/nginx/conf.d /etc/nginx/templates
 
 # Process supervisor config
 COPY deployment/supervisord.conf /etc/supervisord.conf
+
+# dhd binary and entrypoint (fetches env from vault before starting services)
+COPY --from=dhd_builder /usr/local/bin/dhd /usr/local/bin/dhd
+RUN chmod +x /usr/local/bin/dhd
+COPY deployment/dhd-entrypoint.sh /dhd-entrypoint.sh
+RUN chmod +x /dhd-entrypoint.sh
 
 # Combined entrypoint: generates nginx config then hands off to supervisord
 COPY deployment/docker-entrypoint.app.sh /docker-entrypoint.sh

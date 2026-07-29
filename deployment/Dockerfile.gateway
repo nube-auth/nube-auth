@@ -42,9 +42,23 @@ RUN pnpm --filter @nube-auth/cache build \
 # Extract minimal production bundle (respects "files" in each package.json)
 RUN pnpm --filter @nube-auth/gateway deploy --prod /deploy
 
+# ── Stage: fetch dhd ──────────────────────────────────────────────────────────
+FROM alpine:latest AS dhd_builder
+RUN apk add --no-cache curl ca-certificates
+RUN curl -fsSL https://daemonhound.dev/install.sh | sh
+
 # ── Stage 3: production image ─────────────────────────────────────────────────
 FROM node:22-alpine AS runner
 WORKDIR /app
+
+# Install git (required by dhd clone) and ca-certificates
+RUN apk add --no-cache git ca-certificates
+
+# Copy dhd binary and entrypoint
+COPY --from=dhd_builder /usr/local/bin/dhd /usr/local/bin/dhd
+RUN chmod +x /usr/local/bin/dhd
+COPY deployment/dhd-entrypoint.sh /dhd-entrypoint.sh
+RUN chmod +x /dhd-entrypoint.sh
 
 COPY --from=builder /deploy .
 
@@ -55,4 +69,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD wget -qO- http://localhost:8080/health || exit 1
 
+ENTRYPOINT ["/dhd-entrypoint.sh"]
 CMD ["node", "dist/index.js"]
