@@ -2,7 +2,8 @@
 set -e
 
 # ── DaemonHound Secret Retrieval Entrypoint ──────────────────────────────────
-# Fetches .env.prod from the dhd vault, sources it, then execs the service.
+# Clones the dhd vault, reads a bootstrap shell script, sources it, then execs
+# the service. The vault should contain a bootstrap.sh file with export lines.
 #
 # Required (one of):
 #   DHD_AGE_KEY       - Age secret key for decrypting vault contents
@@ -13,7 +14,7 @@ set -e
 #
 # Optional:
 #   DHD_NAMESPACE     - Namespace to read from (default: github.com/nube-auth/nube-auth)
-#   DHD_FILE          - File to read (default: .env.prod)
+#   DHD_FILE          - Script to read (default: bootstrap.sh)
 #   DHD_VAULT_DIR     - Temp directory for vault clone (default: /tmp/dhd-vault)
 #   DHD_SKIP          - Set to "true" to skip vault fetch (for local dev)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -70,7 +71,7 @@ if [ -z "${DHD_VAULT_REMOTE:-}" ]; then
 fi
 
 DHD_NAMESPACE="${DHD_NAMESPACE:-github.com/nube-auth/nube-auth}"
-DHD_FILE="${DHD_FILE:-.env.prod}"
+DHD_FILE="${DHD_FILE:-bootstrap.sh}"
 DHD_VAULT_DIR="${DHD_VAULT_DIR:-/tmp/dhd-vault}"
 
 echo "[dhd] resolved: DHD_NAMESPACE=${DHD_NAMESPACE}"
@@ -114,12 +115,12 @@ fi
 CLONE_END=$(date +%s)
 echo "[dhd] vault cloned successfully in $((CLONE_END - CLONE_START))s"
 
-# ── Read env file from vault ─────────────────────────────────────────────────
+# ── Read and source bootstrap script ─────────────────────────────────────────
 echo "[dhd] reading ${DHD_NAMESPACE}:${DHD_FILE} from vault..."
 cd "$DHD_VAULT_DIR"
 
 READ_START=$(date +%s)
-RAW_OUTPUT=$(dhd read "${DHD_NAMESPACE}:${DHD_FILE}" 2>/dev/null) || {
+BOOTSTRAP=$(dhd read "${DHD_NAMESPACE}:${DHD_FILE}" 2>/dev/null) || {
   READ_END=$(date +%s)
   echo "[dhd] ERROR: failed to read ${DHD_NAMESPACE}:${DHD_FILE} after $((READ_END - READ_START))s" >&2
   echo "[dhd] check: namespace and file path exist in the vault" >&2
@@ -127,44 +128,22 @@ RAW_OUTPUT=$(dhd read "${DHD_NAMESPACE}:${DHD_FILE}" 2>/dev/null) || {
 }
 READ_END=$(date +%s)
 
-if [ -z "$RAW_OUTPUT" ]; then
+if [ -z "$BOOTSTRAP" ]; then
   echo "[dhd] ERROR: ${DHD_NAMESPACE}:${DHD_FILE} is empty or not found" >&2
   exit 1
 fi
 
-echo "[dhd] raw file read in $((READ_END - READ_START))s ($(printf '%s' "$RAW_OUTPUT" | wc -l) lines)"
+echo "[dhd] bootstrap script read in $((READ_END - READ_START))s ($(printf '%s' "$BOOTSTRAP" | wc -l) lines)"
 
-# Filter: keep only lines that look like env vars or comments/blank lines
-ENV_CONTENT=$(printf '%s\n' "$RAW_OUTPUT" | sed -n '/^[A-Za-z_][A-Za-z0-9_]*=/p;/^#/p;/^$/p')
-ENV_COUNT=$(printf '%s\n' "$ENV_CONTENT" | grep -c '^[A-Za-z_][A-Za-z0-9_]*=' || true)
+BOOTSTRAP_FILE=$(mktemp)
+trap 'rm -f "$BOOTSTRAP_FILE" "$IDENTITY_FILE"' EXIT
+printf '%s\n' "$BOOTSTRAP" > "$BOOTSTRAP_FILE"
 
-if [ -z "$ENV_CONTENT" ]; then
-  echo "[dhd] ERROR: no valid env-var lines found in ${DHD_NAMESPACE}:${DHD_FILE}" >&2
-  echo "[dhd] the file may be empty or contain no KEY=VALUE pairs" >&2
-  exit 1
-fi
-
-echo "[dhd] parsed ${ENV_COUNT} environment variables from vault file"
-
-# ── Export env vars ──────────────────────────────────────────────────────────
-# We export each KEY=VALUE line individually instead of sourcing the file,
-# because values may contain spaces or special chars that break `source`.
-ENV_FILE=$(mktemp)
-trap 'rm -f "$ENV_FILE" "$IDENTITY_FILE"' EXIT
-printf '%s\n' "$ENV_CONTENT" > "$ENV_FILE"
-
-echo "[dhd] exporting env vars from ${DHD_FILE}..."
-while IFS= read -r line; do
-  case "$line" in
-    ''|\#*) continue ;;
-    [A-Za-z_][A-Za-z0-9_]*=*)
-      key="${line%%=*}"
-      value="${line#*=}"
-      export "$key=$value"
-      ;;
-  esac
-done < "$ENV_FILE"
-echo "[dhd] env vars exported successfully"
+echo "[dhd] sourcing bootstrap script..."
+set -a
+. "$BOOTSTRAP_FILE"
+set +a
+echo "[dhd] bootstrap script sourced successfully"
 
 # ── Clean up ─────────────────────────────────────────────────────────────────
 rm -rf "$DHD_VAULT_DIR"

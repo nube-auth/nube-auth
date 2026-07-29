@@ -1,12 +1,13 @@
 #!/bin/sh
 # Nube Auth – entrypoint for Dockerfile.app (all-in-one staging container)
 #
-# 1. Optionally fetches .env.prod from DaemonHound vault
-# 2. Validates required env vars
-# 3. Sets localhost defaults for internal service URLs (all services run in-container)
-# 4. Detects system DNS resolver for nginx
-# 5. Renders the nginx config template
-# 6. Execs supervisord (which starts nginx + core + gateway + workers)
+# 1. Optionally fetches bootstrap.sh from DaemonHound vault
+# 2. Sources it (sets all env vars for this shell)
+# 3. Validates required env vars
+# 4. Sets localhost defaults for internal service URLs
+# 5. Detects system DNS resolver for nginx
+# 6. Renders the nginx config template
+# 7. Execs supervisord (which starts nginx + core + gateway + workers)
 set -e
 
 echo "[entrypoint] ============================================"
@@ -39,7 +40,7 @@ else
 fi
 
 # ── DaemonHound vault fetch (optional) ───────────────────────────────────────
-# If DHD_VAULT_REMOTE is set, fetch .env from the vault and source it.
+# If DHD_VAULT_REMOTE is set, fetch bootstrap.sh from the vault and source it.
 # All supervisord-managed processes will inherit this environment.
 # If not set, we skip gracefully — existing Railway services without dhd vars
 # will continue to work with their native env configuration.
@@ -53,7 +54,7 @@ echo "[entrypoint] config: DHD_AGE_KEY=${DHD_AGE_KEY:+<set, length ${#DHD_AGE_KE
 
 if [ -n "${DHD_VAULT_REMOTE:-}" ] && [ "${DHD_SKIP:-}" != "true" ]; then
   DHD_NAMESPACE="${DHD_NAMESPACE:-github.com/nube-auth/nube-auth}"
-  DHD_FILE="${DHD_FILE:-.env.prod}"
+  DHD_FILE="${DHD_FILE:-bootstrap.sh}"
   DHD_VAULT_DIR="${DHD_VAULT_DIR:-/tmp/dhd-vault}"
 
   echo "[entrypoint] resolved: DHD_NAMESPACE=${DHD_NAMESPACE}"
@@ -95,41 +96,26 @@ if [ -n "${DHD_VAULT_REMOTE:-}" ] && [ "${DHD_SKIP:-}" != "true" ]; then
       cd "$DHD_VAULT_DIR"
 
       READ_START=$(date +%s)
-      RAW_OUTPUT=$(dhd read "${DHD_NAMESPACE}:${DHD_FILE}" 2>/dev/null) || {
+      BOOTSTRAP=$(dhd read "${DHD_NAMESPACE}:${DHD_FILE}" 2>/dev/null) || {
         READ_END=$(date +%s)
         echo "[entrypoint] WARNING: failed to read ${DHD_NAMESPACE}:${DHD_FILE} after $((READ_END - READ_START))s" >&2
         echo "[entrypoint] proceeding without vault env — using Railway native variables" >&2
-        RAW_OUTPUT=""
+        BOOTSTRAP=""
       }
 
-      if [ -n "$RAW_OUTPUT" ]; then
+      if [ -n "$BOOTSTRAP" ]; then
         READ_END=$(date +%s)
-        echo "[entrypoint] raw file read in $((READ_END - READ_START))s ($(printf '%s' "$RAW_OUTPUT" | wc -l) lines)"
+        echo "[entrypoint] bootstrap script read in $((READ_END - READ_START))s ($(printf '%s' "$BOOTSTRAP" | wc -l) lines)"
 
-        # Filter dhd info lines; keep only env-var lines, comments, and blanks
-        ENV_CONTENT=$(printf '%s\n' "$RAW_OUTPUT" | sed -n '/^[A-Za-z_][A-Za-z0-9_]*=/p;/^#/p;/^$/p')
-        ENV_COUNT=$(printf '%s\n' "$ENV_CONTENT" | grep -c '^[A-Za-z_][A-Za-z0-9_]*=' || true)
+        BOOTSTRAP_FILE=$(mktemp)
+        printf '%s\n' "$BOOTSTRAP" > "$BOOTSTRAP_FILE"
 
-        if [ -n "$ENV_CONTENT" ]; then
-          ENV_FILE=$(mktemp)
-          printf '%s\n' "$ENV_CONTENT" > "$ENV_FILE"
-          echo "[entrypoint] parsed ${ENV_COUNT} environment variables — exporting into shell..."
-          while IFS= read -r line; do
-            case "$line" in
-              ''|\#*) continue ;;
-              [A-Za-z_][A-Za-z0-9_]*=*)
-                key="${line%%=*}"
-                value="${line#*=}"
-                export "$key=$value"
-                ;;
-            esac
-          done < "$ENV_FILE"
-          echo "[entrypoint] env vars exported successfully"
-          rm -f "$ENV_FILE"
-        else
-          echo "[entrypoint] WARNING: no valid env-var lines found in vault file" >&2
-          echo "[entrypoint] proceeding with Railway native variables only" >&2
-        fi
+        echo "[entrypoint] sourcing bootstrap script..."
+        set -a
+        . "$BOOTSTRAP_FILE"
+        set +a
+        echo "[entrypoint] bootstrap script sourced successfully"
+        rm -f "$BOOTSTRAP_FILE"
       fi
 
       rm -rf "$DHD_VAULT_DIR"
