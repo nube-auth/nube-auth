@@ -197,8 +197,8 @@ export function decryptProviderCredentials(
 			}
 			// Legacy: direct KEK encryption, no DEK
 			return JSON.parse(decryptString(config.credentials, key));
-		} catch {
-			if (key === previousKey) throw; // last key failed, propagate
+		} catch (error) {
+			if (key === previousKey) throw error; // last key failed, propagate
 			// primary key failed, try previous
 		}
 	}
