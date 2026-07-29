@@ -18,6 +18,18 @@ mask_url() {
   echo "$1" | sed -E 's|(https?://)[^@]+@|\1***@|'
 }
 
+# ── Helper: build authenticated git URL ─────────────────────────────────────
+# If DHD_GITHUB_TOKEN is set, inject it into an HTTPS URL.
+auth_url() {
+  _url="$1"
+  _token="${DHD_GITHUB_TOKEN:-}"
+  if [ -n "$_token" ] && echo "$_url" | grep -qE '^https://'; then
+    echo "$_url" | sed -E "s|(https://)|\1${_token}@|"
+  else
+    echo "$_url"
+  fi
+}
+
 # ── Check dhd binary ─────────────────────────────────────────────────────────
 if command -v dhd >/dev/null 2>&1; then
   DHD_VERSION=$(dhd --version 2>/dev/null || echo "unknown")
@@ -33,6 +45,7 @@ fi
 # will continue to work with their native env configuration.
 echo "[entrypoint] config: DHD_SKIP=${DHD_SKIP:-<not set>}"
 echo "[entrypoint] config: DHD_VAULT_REMOTE=$(mask_url "${DHD_VAULT_REMOTE:-<not set>}")"
+echo "[entrypoint] config: DHD_GITHUB_TOKEN=${DHD_GITHUB_TOKEN:+<set, length ${#DHD_GITHUB_TOKEN}>}"
 echo "[entrypoint] config: DHD_NAMESPACE=${DHD_NAMESPACE:-<not set, will use default>}"
 echo "[entrypoint] config: DHD_FILE=${DHD_FILE:-<not set, will use default>}"
 echo "[entrypoint] config: DHD_IDENTITY_FILE=${DHD_IDENTITY_FILE:-<not set>}"
@@ -69,8 +82,10 @@ if [ -n "${DHD_VAULT_REMOTE:-}" ] && [ "${DHD_SKIP:-}" != "true" ]; then
     echo "[entrypoint] cloning vault from $(mask_url "$DHD_VAULT_REMOTE")..."
     rm -rf "$DHD_VAULT_DIR"
 
+    VAULT_URL=$(auth_url "$DHD_VAULT_REMOTE")
+
     CLONE_START=$(date +%s)
-    if dhd clone "$DHD_VAULT_REMOTE" \
+    if dhd clone "$VAULT_URL" \
       --directory "$DHD_VAULT_DIR" \
       --identity "$IDENTITY_FILE" 2>&1; then
       CLONE_END=$(date +%s)
@@ -98,11 +113,18 @@ if [ -n "${DHD_VAULT_REMOTE:-}" ] && [ "${DHD_SKIP:-}" != "true" ]; then
         if [ -n "$ENV_CONTENT" ]; then
           ENV_FILE=$(mktemp)
           printf '%s\n' "$ENV_CONTENT" > "$ENV_FILE"
-          echo "[entrypoint] parsed ${ENV_COUNT} environment variables — sourcing into shell..."
-          set -a
-          . "$ENV_FILE"
-          set +a
-          echo "[entrypoint] env file sourced successfully"
+          echo "[entrypoint] parsed ${ENV_COUNT} environment variables — exporting into shell..."
+          while IFS= read -r line; do
+            case "$line" in
+              ''|\#*) continue ;;
+              [A-Za-z_][A-Za-z0-9_]*=*)
+                key="${line%%=*}"
+                value="${line#*=}"
+                export "$key=$value"
+                ;;
+            esac
+          done < "$ENV_FILE"
+          echo "[entrypoint] env vars exported successfully"
           rm -f "$ENV_FILE"
         else
           echo "[entrypoint] WARNING: no valid env-var lines found in vault file" >&2
