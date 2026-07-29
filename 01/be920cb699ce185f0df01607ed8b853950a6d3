@@ -1,0 +1,28 @@
+deployment/dhd-entrypoint.sh
+  s_e0fee73ba207bf::t_56c8233f251c5c 142-170
+deployment/docker-entrypoint.app.sh
+  s_e0fee73ba207bf::t_56c8233f251c5c 113-137
+scripts/generate-dhd-bootstrap.sh
+  s_e0fee73ba207bf::t_03082041251831 41-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "01be920cb699ce185f0df01607ed8b853950a6d3",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
