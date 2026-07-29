@@ -13,6 +13,11 @@ echo "[entrypoint] ============================================"
 echo "[entrypoint] Nube Auth All-in-One Entrypoint Starting"
 echo "[entrypoint] ============================================"
 
+# ── Helper: mask credentials in git URLs ────────────────────────────────────
+mask_url() {
+  echo "$1" | sed -E 's|(https?://)[^@]+@|\1***@|'
+}
+
 # ── Check dhd binary ─────────────────────────────────────────────────────────
 if command -v dhd >/dev/null 2>&1; then
   DHD_VERSION=$(dhd --version 2>/dev/null || echo "unknown")
@@ -27,7 +32,7 @@ fi
 # If not set, we skip gracefully — existing Railway services without dhd vars
 # will continue to work with their native env configuration.
 echo "[entrypoint] config: DHD_SKIP=${DHD_SKIP:-<not set>}"
-echo "[entrypoint] config: DHD_VAULT_REMOTE=${DHD_VAULT_REMOTE:-<not set>}"
+echo "[entrypoint] config: DHD_VAULT_REMOTE=$(mask_url "${DHD_VAULT_REMOTE:-<not set>}")"
 echo "[entrypoint] config: DHD_NAMESPACE=${DHD_NAMESPACE:-<not set, will use default>}"
 echo "[entrypoint] config: DHD_FILE=${DHD_FILE:-<not set, will use default>}"
 echo "[entrypoint] config: DHD_IDENTITY_FILE=${DHD_IDENTITY_FILE:-<not set>}"
@@ -49,7 +54,8 @@ if [ -n "${DHD_VAULT_REMOTE:-}" ] && [ "${DHD_SKIP:-}" != "true" ]; then
     echo "[entrypoint] identity source: DHD_IDENTITY_FILE=${IDENTITY_FILE}"
   elif [ -n "${DHD_AGE_KEY:-}" ]; then
     IDENTITY_FILE=$(mktemp)
-    printf '%s\n' "$DHD_AGE_KEY" > "$IDENTITY_FILE"
+    # Trim trailing newlines — Railway sometimes appends one to env vars
+    printf '%s' "$DHD_AGE_KEY" > "$IDENTITY_FILE"
     trap 'rm -f "$IDENTITY_FILE"' EXIT
     echo "[entrypoint] identity source: DHD_AGE_KEY (written to temp file)"
     echo "[entrypoint] identity temp file: ${IDENTITY_FILE}"
@@ -60,7 +66,7 @@ if [ -n "${DHD_VAULT_REMOTE:-}" ] && [ "${DHD_SKIP:-}" != "true" ]; then
   fi
 
   if [ "${DHD_SKIP:-}" != "true" ]; then
-    echo "[entrypoint] cloning vault from ${DHD_VAULT_REMOTE}..."
+    echo "[entrypoint] cloning vault from $(mask_url "$DHD_VAULT_REMOTE")..."
     rm -rf "$DHD_VAULT_DIR"
 
     CLONE_START=$(date +%s)

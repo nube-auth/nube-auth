@@ -22,6 +22,11 @@ echo "[dhd] ============================================"
 echo "[dhd] DaemonHound Vault Entrypoint Starting"
 echo "[dhd] ============================================"
 
+# ── Helper: mask credentials in git URLs ────────────────────────────────────
+mask_url() {
+  echo "$1" | sed -E 's|(https?://)[^@]+@|\1***@|'
+}
+
 # ── Check dhd binary ─────────────────────────────────────────────────────────
 if command -v dhd >/dev/null 2>&1; then
   DHD_VERSION=$(dhd --version 2>/dev/null || echo "unknown")
@@ -32,7 +37,7 @@ fi
 
 # ── Log configuration state ──────────────────────────────────────────────────
 echo "[dhd] config: DHD_SKIP=${DHD_SKIP:-<not set>}"
-echo "[dhd] config: DHD_VAULT_REMOTE=${DHD_VAULT_REMOTE:-<not set>}"
+echo "[dhd] config: DHD_VAULT_REMOTE=$(mask_url "${DHD_VAULT_REMOTE:-<not set>}")"
 echo "[dhd] config: DHD_NAMESPACE=${DHD_NAMESPACE:-<not set, will use default>}"
 echo "[dhd] config: DHD_FILE=${DHD_FILE:-<not set, will use default>}"
 echo "[dhd] config: DHD_IDENTITY_FILE=${DHD_IDENTITY_FILE:-<not set>}"
@@ -67,7 +72,8 @@ if [ -n "${DHD_IDENTITY_FILE:-}" ]; then
 elif [ -n "${DHD_AGE_KEY:-}" ]; then
   IDENTITY_FILE=$(mktemp)
   trap 'rm -f "$IDENTITY_FILE"' EXIT
-  printf '%s\n' "$DHD_AGE_KEY" > "$IDENTITY_FILE"
+  # Trim trailing newlines — Railway sometimes appends one to env vars
+  printf '%s' "$DHD_AGE_KEY" > "$IDENTITY_FILE"
   echo "[dhd] identity source: DHD_AGE_KEY (written to temp file)"
   echo "[dhd] identity temp file: ${IDENTITY_FILE}"
 else
@@ -77,7 +83,7 @@ else
 fi
 
 # ── Clone vault ──────────────────────────────────────────────────────────────
-echo "[dhd] cloning vault from ${DHD_VAULT_REMOTE}..."
+echo "[dhd] cloning vault from $(mask_url "$DHD_VAULT_REMOTE")..."
 echo "[dhd] clone destination: ${DHD_VAULT_DIR}"
 rm -rf "$DHD_VAULT_DIR"
 
