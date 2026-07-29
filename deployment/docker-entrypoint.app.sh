@@ -110,11 +110,31 @@ if [ -n "${DHD_VAULT_REMOTE:-}" ] && [ "${DHD_SKIP:-}" != "true" ]; then
         BOOTSTRAP_FILE=$(mktemp)
         printf '%s\n' "$BOOTSTRAP" > "$BOOTSTRAP_FILE"
 
-        echo "[entrypoint] sourcing bootstrap script..."
-        set -a
-        . "$BOOTSTRAP_FILE"
-        set +a
-        echo "[entrypoint] bootstrap script sourced successfully"
+        # Parse and export env vars (handles both .env and export formats)
+        echo "[entrypoint] parsing env vars from bootstrap file..."
+        ENV_COUNT=0
+        while IFS= read -r line; do
+          case "$line" in
+            ''|\#*) continue ;;                 # skip blank/comment lines
+            export\ *) line="${line#export }" ;; # strip leading "export "
+          esac
+
+          case "$line" in
+            [A-Za-z_][A-Za-z0-9_]*=*) ;;         # valid KEY=…
+            *) continue ;;                       # skip malformed lines
+          esac
+
+          key="${line%%=*}"
+          value="${line#*=}"
+
+          # strip surrounding quotes (both " and ')
+          value="${value%\"}"; value="${value#\"}"
+          value="${value%\'}"; value="${value#\'}"
+
+          export "$key=$value"
+          ENV_COUNT=$((ENV_COUNT + 1))
+        done < "$BOOTSTRAP_FILE"
+        echo "[entrypoint] exported ${ENV_COUNT} environment variables successfully"
         rm -f "$BOOTSTRAP_FILE"
       fi
 

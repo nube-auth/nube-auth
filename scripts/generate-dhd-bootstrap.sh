@@ -38,6 +38,8 @@ while IFS= read -r line || [ -n "$line" ]; do
   value="${value%\"}"
   value="${value#\"}"
 
-  # Output: export KEY="value" (always double-quoted, escapes internal quotes)
-  printf 'export %s="%s"\n' "$key" "$value"
+  # Output: export KEY="value" (always double-quoted, with proper escaping)
+  # Escape any existing double quotes inside the value
+  escaped_value=$(printf '%s' "$value" | sed 's/"/\\"/g')
+  printf 'export %s="%s"\n' "$key" "$escaped_value"
 done < "$ENV_FILE"

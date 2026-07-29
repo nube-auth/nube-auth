@@ -139,11 +139,35 @@ BOOTSTRAP_FILE=$(mktemp)
 trap 'rm -f "$BOOTSTRAP_FILE" "$IDENTITY_FILE"' EXIT
 printf '%s\n' "$BOOTSTRAP" > "$BOOTSTRAP_FILE"
 
-echo "[dhd] sourcing bootstrap script..."
-set -a
-. "$BOOTSTRAP_FILE"
-set +a
-echo "[dhd] bootstrap script sourced successfully"
+# ── Parse and export env vars ───────────────────────────────────────────────
+# The vault file may be either:
+#   1) raw .env  →  KEY=value
+#   2) bootstrap →  export KEY="value"
+# We handle both, strip quotes, and export safely with spaces in values.
+echo "[dhd] parsing env vars from bootstrap file..."
+ENV_COUNT=0
+while IFS= read -r line; do
+  case "$line" in
+    ''|\#*) continue ;;                 # skip blank/comment lines
+    export\ *) line="${line#export }" ;; # strip leading "export "
+  esac
+
+  case "$line" in
+    [A-Za-z_][A-Za-z0-9_]*=*) ;;         # valid KEY=…
+    *) continue ;;                       # skip malformed lines
+  esac
+
+  key="${line%%=*}"
+  value="${line#*=}"
+
+  # strip surrounding quotes (both " and ')
+  value="${value%\"}"; value="${value#\"}"
+  value="${value%\'}"; value="${value#\'}"
+
+  export "$key=$value"
+  ENV_COUNT=$((ENV_COUNT + 1))
+done < "$BOOTSTRAP_FILE"
+echo "[dhd] exported ${ENV_COUNT} environment variables successfully"
 
 # ── Clean up ─────────────────────────────────────────────────────────────────
 rm -rf "$DHD_VAULT_DIR"
