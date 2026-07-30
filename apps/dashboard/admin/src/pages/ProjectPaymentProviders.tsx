@@ -292,7 +292,7 @@ export default function ProjectPaymentProvidersPage() {
 									<code className="block text-11px font-mono text-text-primary overflow-x-auto p-2.5 bg-bg-secondary rounded border border-border select-all">
 										{`${config.gatewayUrl.replace(/\/$/, "")}/v1/payment/webhooks/dodo/${preGeneratedDodoId}`}
 									</code>
-									<p className="text-12px text-text-tertiary">
+									<p className="text-12px text-muted">
 										Register this URL in your Dodo dashboard first to receive a webhook secret, then
 										fill in all fields below.
 									</p>
@@ -321,7 +321,7 @@ export default function ProjectPaymentProvidersPage() {
 								</div>
 								<div className="space-y-1.5">
 									<Label>
-										Public Key <span className="text-text-tertiary font-400">(optional)</span>
+										Public Key <span className="text-muted font-400">(optional)</span>
 									</Label>
 									<Input
 										type="text"
@@ -338,7 +338,7 @@ export default function ProjectPaymentProvidersPage() {
 							<Label>
 								Webhook Secret{" "}
 								{!editingProvider && (
-									<span className="text-text-tertiary font-400">
+									<span className="text-muted font-400">
 										(optional — webhooks won't be verified without this)
 									</span>
 								)}
@@ -434,7 +434,7 @@ export default function ProjectPaymentProvidersPage() {
 					<Heading level={1} size="lg">
 						Payment Providers
 					</Heading>
-					<Text className="text-text-secondary">
+					<Text className="text-muted">
 						{providers?.length || 0} {providers?.length === 1 ? "provider" : "providers"} configured
 					</Text>
 				</div>
@@ -498,7 +498,7 @@ export default function ProjectPaymentProvidersPage() {
 
 							<div className="space-y-1.5">
 								<Label>
-									Name <span className="text-text-tertiary font-400">(optional)</span>
+									Name <span className="text-muted font-400">(optional)</span>
 								</Label>
 								<Input
 									type="text"
@@ -550,18 +550,18 @@ export default function ProjectPaymentProvidersPage() {
 							<DialogBody>
 								{/* Provider Info */}
 								<div className="mb-6">
-									<Text className="text-13px font-600 mb-3 uppercase text-text-tertiary">
+									<Text className="text-13px font-600 mb-3 uppercase text-muted">
 										Provider Info
 									</Text>
 									<div className="grid grid-cols-2 gap-4">
 										<div>
-											<div className="text-12px text-text-tertiary mb-1">Provider</div>
+											<div className="text-12px text-muted mb-1">Provider</div>
 											<div className="text-14px font-500 capitalize">
 												{detailProvider.provider}
 											</div>
 										</div>
 										<div>
-											<div className="text-12px text-text-tertiary mb-1">Environment</div>
+											<div className="text-12px text-muted mb-1">Environment</div>
 											<div>
 												<Chip
 													variant={
@@ -577,7 +577,7 @@ export default function ProjectPaymentProvidersPage() {
 										</div>
 										{detailProvider.name && (
 											<div className="col-span-2">
-												<div className="text-12px text-text-tertiary mb-1">Name</div>
+												<div className="text-12px text-muted mb-1">Name</div>
 												<div className="text-14px font-500">{detailProvider.name}</div>
 											</div>
 										)}
@@ -586,7 +586,7 @@ export default function ProjectPaymentProvidersPage() {
 
 								{/* Webhook URLs */}
 								<div className="mb-6">
-									<Text className="text-13px font-600 mb-3 uppercase text-text-tertiary">
+									<Text className="text-13px font-600 mb-3 uppercase text-muted">
 										Webhook Configuration
 									</Text>
 									{detailProvider.provider === "dodo" && !detailProvider.hasWebhookSecret && (
@@ -597,11 +597,11 @@ export default function ProjectPaymentProvidersPage() {
 										</Alert>
 									)}
 									<div className="bg-bg-secondary p-3 rounded-2 border border-border mb-3">
-										<div className="text-12px text-text-tertiary mb-1.5">Webhook URL</div>
+										<div className="text-12px text-muted mb-1.5">Webhook URL</div>
 										<code className="block text-12px font-mono text-text-primary overflow-x-auto p-2 bg-bg-primary rounded-1">
 											{`${config.gatewayUrl.replace(/\/$/, "")}/v1/payment/webhooks/${detailProvider.provider}/${detailProvider.id}`}
 										</code>
-										<div className="text-11px text-text-tertiary mt-2">
+										<div className="text-11px text-muted mt-2">
 											Configure this URL in your {detailProvider.provider} dashboard
 										</div>
 									</div>
@@ -609,16 +609,16 @@ export default function ProjectPaymentProvidersPage() {
 
 								{/* Status Info */}
 								<div className="mb-6">
-									<Text className="text-13px font-600 mb-3 uppercase text-text-tertiary">Status</Text>
+									<Text className="text-13px font-600 mb-3 uppercase text-muted">Status</Text>
 									<div className="grid grid-cols-2 gap-4">
 										<div>
-											<div className="text-12px text-text-tertiary mb-1">Status</div>
+											<div className="text-12px text-muted mb-1">Status</div>
 											<Chip variant={detailProvider.isActive ? "success" : "default"} size="sm">
 												{detailProvider.isActive ? "Active" : "Inactive"}
 											</Chip>
 										</div>
 										<div>
-											<div className="text-12px text-text-tertiary mb-1">Created</div>
+											<div className="text-12px text-muted mb-1">Created</div>
 											<div className="text-14px font-500">
 												{new Date(detailProvider.createdAt).toLocaleDateString()}
 											</div>
@@ -629,7 +629,7 @@ export default function ProjectPaymentProvidersPage() {
 								{/* Help Text */}
 								<div className="p-3 rounded-2 border-l-3 bg-info-bg border-l-info">
 									<div className="text-13px font-500 mb-1 text-info">💡 Tip</div>
-									<div className="text-12px text-text-secondary">
+									<div className="text-12px text-muted">
 										Keep your API keys and webhook secrets secure. Never share them publicly or
 										commit them to version control.
 									</div>
@@ -660,7 +660,7 @@ export default function ProjectPaymentProvidersPage() {
 					<CardBody className="py-12 px-6 text-center">
 						<div className="text-64px mb-4">💳</div>
 						<h2 className="text-20px font-600 mb-3 text-text-primary">No payment providers yet</h2>
-						<p className="text-14px text-text-tertiary mb-6 max-w-400px mx-auto">
+						<p className="text-14px text-muted mb-6 max-w-400px mx-auto">
 							Get started by adding your first payment provider to accept payments
 						</p>
 						<Button variant="primary" onClick={handleCreate}>
@@ -688,8 +688,8 @@ export default function ProjectPaymentProvidersPage() {
 										{provider.provider}
 									</Chip>
 								</TableCell>{" "}
-								<TableCell className="text-14px text-text-secondary">
-									{provider.name || <span className="text-text-tertiary">—</span>}
+								<TableCell className="text-14px text-muted">
+									{provider.name || <span className="text-muted">—</span>}
 								</TableCell>{" "}
 								<TableCell>
 									<Chip
@@ -710,10 +710,10 @@ export default function ProjectPaymentProvidersPage() {
 											Default
 										</Chip>
 									) : (
-										<span className="text-text-tertiary text-12px">—</span>
+										<span className="text-muted text-12px">—</span>
 									)}
 								</TableCell>
-								<TableCell className="text-14px text-text-secondary">
+								<TableCell className="text-14px text-muted">
 									{new Date(provider.createdAt).toLocaleDateString()}
 								</TableCell>
 								<TableCell className="text-right">

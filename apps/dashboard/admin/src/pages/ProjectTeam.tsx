@@ -109,7 +109,7 @@ export function ProjectTeamPage() {
 					<Heading level={1} size="lg">
 						Team Members
 					</Heading>
-					<Text className="text-text-muted mt-2">Manage team members and their roles for {project.name}</Text>
+					<Text className="text-muted mt-2">Manage team members and their roles for {project.name}</Text>
 				</div>
 				{canManageMembers && (
 					<Button onClick={() => setShowInviteModal(true)}>
@@ -155,7 +155,7 @@ export function ProjectTeamPage() {
 										<div className="text-sm font-medium text-text-primary">
 											{member.name || "Unknown User"}
 										</div>
-										<div className="text-xs text-text-secondary">{member.email}</div>
+										<div className="text-xs text-muted">{member.email}</div>
 									</div>
 								</div>
 							</TableCell>
@@ -172,7 +172,7 @@ export function ProjectTeamPage() {
 							<TableCell align="right">
 								<div className="flex gap-2 justify-end">
 									{member.role === "owner" && (
-										<span className="text-xs text-text-tertiary italic">Project Owner</span>
+										<span className="text-xs text-muted italic">Project Owner</span>
 									)}
 									{member.role !== "owner" && canManageMembers && (
 										<>
@@ -210,7 +210,7 @@ export function ProjectTeamPage() {
 										</>
 									)}
 									{member.role !== "owner" && !canManageMembers && (
-										<span className="text-xs text-text-tertiary italic">
+										<span className="text-xs text-muted italic">
 											{member.userId === currentUser?.id ? "You" : "Team Member"}
 										</span>
 									)}
@@ -248,7 +248,7 @@ export function ProjectTeamPage() {
 												<div className="text-sm font-medium text-text-primary">
 													{invitation.email}
 												</div>
-												<div className="text-xs text-text-tertiary">Pending signup</div>
+												<div className="text-xs text-muted">Pending signup</div>
 											</div>
 										</div>
 									</TableCell>
@@ -291,11 +291,11 @@ export function ProjectTeamPage() {
 					<DialogPopup>
 						<DialogHeader>
 							<DialogTitle>Edit Member Role</DialogTitle>
-							<Text className="text-text-muted mt-2">Change the role for this team member.</Text>
+							<Text className="text-muted mt-2">Change the role for this team member.</Text>
 						</DialogHeader>
 
 						<DialogBody>
-							<label htmlFor="edit-role" className="block text-sm font-semibold mb-2 text-text-secondary">
+							<label htmlFor="edit-role" className="block text-sm font-semibold mb-2 text-muted">
 								Role
 							</label>
 							<Select

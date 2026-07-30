@@ -224,7 +224,7 @@ export default function PaymentTestingPlayground() {
 				<Heading level={1} size="lg">
 					Payment Testing Playground
 				</Heading>
-				<Text className="mt-2 text-text-secondary">
+				<Text className="mt-2 text-muted">
 					Test payment flows against your existing projects, apps, users, and plans
 				</Text>
 				<div className="flex items-center mt-3 p-3 bg-orange-50 dark:bg-orange-900/10 rounded-lg border border-orange-200 dark:border-orange-800">
@@ -247,7 +247,7 @@ export default function PaymentTestingPlayground() {
 							<Heading level={2} size="lg" className="mb-4">
 								📋 Select Entities
 							</Heading>
-							<Text className="text-sm text-text-secondary mb-4">
+							<Text className="text-sm text-muted mb-4">
 								Choose which project, app, user, and plan to test with. Select "+ Create test..." to
 								auto-generate one.
 							</Text>
@@ -379,7 +379,7 @@ export default function PaymentTestingPlayground() {
 											<Text className="text-success font-semibold">
 												✓ Recommended for local testing
 											</Text>
-											<Text className="text-text-secondary mt-1">
+											<Text className="text-muted mt-1">
 												Instantly simulates webhook events without needing real provider
 												integration or ngrok.
 											</Text>
@@ -389,7 +389,7 @@ export default function PaymentTestingPlayground() {
 											<Text className="text-warning font-semibold">
 												⚠️ Requires webhook configuration
 											</Text>
-											<Text className="text-text-secondary mt-1">
+											<Text className="text-muted mt-1">
 												Provider must send webhooks to complete payments. In local development,
 												use ngrok or tunnel service to expose localhost. Payment will stay
 												"Processing" until webhook is received.
@@ -414,7 +414,7 @@ export default function PaymentTestingPlayground() {
 							</Button>
 
 							{!canStart && !session && (
-								<Text className="mt-2 text-xs text-text-tertiary text-center">
+								<Text className="mt-2 text-xs text-muted text-center">
 									Select a project, app, user, and plan to start
 								</Text>
 							)}
@@ -501,7 +501,7 @@ export default function PaymentTestingPlayground() {
 											Nube Auth. In local development, make sure your webhook URL is accessible
 											via ngrok or similar tunnel.
 										</Text>
-										<Text className="text-xs text-text-tertiary mt-2">
+										<Text className="text-xs text-muted mt-2">
 											💡 Tip: Use "Simulate" mode for instant local testing without webhook setup.
 										</Text>
 									</div>
@@ -516,7 +516,7 @@ export default function PaymentTestingPlayground() {
 											💳 Checkout Session
 										</Heading>
 										<div className="bg-bg-muted p-3 rounded border border-border">
-											<Text className="text-xs text-text-tertiary mb-1">Checkout URL</Text>
+											<Text className="text-xs text-muted mb-1">Checkout URL</Text>
 											<Text className="text-sm font-mono break-all">{session.checkoutUrl}</Text>
 										</div>
 										<div className="mt-3 flex gap-2">
@@ -550,28 +550,28 @@ export default function PaymentTestingPlayground() {
 									</Heading>
 									<div className="space-y-3 text-sm">
 										<div className="flex justify-between items-start">
-											<Text className="text-text-secondary">App</Text>
+											<Text className="text-muted">App</Text>
 											<div className="text-right">
 												<Text className="font-medium">{session.testData.app.name}</Text>
-												<Text className="text-xs text-text-tertiary font-mono">
+												<Text className="text-xs text-muted font-mono">
 													{session.testData.app.publicId}
 												</Text>
 											</div>
 										</div>
 										<div className="flex justify-between items-start">
-											<Text className="text-text-secondary">User</Text>
+											<Text className="text-muted">User</Text>
 											<div className="text-right">
 												<Text className="font-medium">{session.testData.user.email}</Text>
-												<Text className="text-xs text-text-tertiary font-mono">
+												<Text className="text-xs text-muted font-mono">
 													{session.testData.user.publicId}
 												</Text>
 											</div>
 										</div>
 										<div className="flex justify-between items-start">
-											<Text className="text-text-secondary">Plan</Text>
+											<Text className="text-muted">Plan</Text>
 											<div className="text-right">
 												<Text className="font-medium">{session.testData.plan.name}</Text>
-												<Text className="text-xs text-text-tertiary">
+												<Text className="text-xs text-muted">
 													${session.testData.plan.amount / 100}/
 													{session.testData.plan.interval}
 												</Text>
@@ -590,12 +590,12 @@ export default function PaymentTestingPlayground() {
 										</Heading>
 										<div className="space-y-2 text-sm">
 											<div className="flex justify-between">
-												<Text className="text-text-secondary">Status</Text>
+												<Text className="text-muted">Status</Text>
 												<Text
 													className={`font-semibold ${
 														sessionStatus.license.status === "active"
 															? "text-success"
-															: "text-text-secondary"
+															: "text-muted"
 													}`}
 												>
 													{sessionStatus.license.status === "active"
@@ -605,7 +605,7 @@ export default function PaymentTestingPlayground() {
 											</div>
 											{sessionStatus.license.validUntil && (
 												<div className="flex justify-between">
-													<Text className="text-text-secondary">Expires</Text>
+													<Text className="text-muted">Expires</Text>
 													<Text className="font-mono text-xs">
 														{new Date(
 															sessionStatus.license.validUntil,
@@ -633,7 +633,7 @@ export default function PaymentTestingPlayground() {
 												>
 													<div>
 														<Text className="font-mono text-xs">{txn.public_id}</Text>
-														<Text className="text-text-secondary text-xs">
+														<Text className="text-muted text-xs">
 															{txn.type} · {txn.provider}
 														</Text>
 													</div>
@@ -673,7 +673,7 @@ export default function PaymentTestingPlayground() {
 							)}
 
 							{/* Auto-refresh indicator */}
-							<div className="text-center text-xs text-text-tertiary">
+							<div className="text-center text-xs text-muted">
 								⏱️ Auto-refreshing every 2 seconds
 							</div>
 						</>
@@ -683,10 +683,10 @@ export default function PaymentTestingPlayground() {
 						<div className="bg-bg-muted rounded-lg border-2 border-dashed border-border p-12 text-center">
 							<div className="space-y-3">
 								<Text className="text-4xl">🧪</Text>
-								<Text className="text-text-secondary font-medium">
+								<Text className="text-muted font-medium">
 									Configure your test entities and click "Start Test Flow"
 								</Text>
-								<Text className="text-xs text-text-tertiary">
+								<Text className="text-xs text-muted">
 									Choose existing entities to test real flows, or create test ones
 								</Text>
 							</div>

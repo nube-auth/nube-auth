@@ -157,7 +157,7 @@ export function RefundProcessingPage() {
 											);
 											if (!purchase) return null;
 											return (
-												<div className="text-sm text-text-secondary">
+												<div className="text-sm text-muted">
 													<div className="mb-2">
 														<strong>App:</strong> {purchase.app?.name || "—"}
 													</div>
@@ -188,7 +188,7 @@ export function RefundProcessingPage() {
 										min="0"
 										required
 									/>
-									<div className="text-xs text-text-tertiary mt-1.5">
+									<div className="text-xs text-muted mt-1.5">
 										Partial refunds are supported. Enter the amount to refund.
 									</div>
 								</div>
@@ -254,7 +254,7 @@ export function RefundProcessingPage() {
 					<Heading level={1} size="lg">
 						Refund Processing
 					</Heading>
-					<Text className="m-0 text-text-secondary">Create and manage customer refunds</Text>
+					<Text className="m-0 text-muted">Create and manage customer refunds</Text>
 				</div>
 				<Button onClick={() => setActiveTab("create")} variant="primary">
 					+ Create Refund
@@ -344,7 +344,7 @@ export function RefundProcessingPage() {
 						<Heading level={2} size="lg" className="mb-3">
 							No refunds yet
 						</Heading>
-						<Text className="text-sm text-text-tertiary mb-6 max-w-[400px] mx-auto">
+						<Text className="text-sm text-muted mb-6 max-w-[400px] mx-auto">
 							Start by creating a refund for a customer purchase
 						</Text>
 						<Button onClick={() => setActiveTab("create")} variant="primary">
@@ -372,13 +372,13 @@ export function RefundProcessingPage() {
 									{formatCurrency(refund.amount, refund.currency)}
 								</TableCell>
 								<TableCell>{handleProviderBadge(refund.provider)}</TableCell>
-								<TableCell className="text-sm text-text-secondary capitalize">
+								<TableCell className="text-sm text-muted capitalize">
 									{refund.reason?.replace(/_/g, " ") || "—"}
 								</TableCell>
-								<TableCell className="text-sm text-text-secondary">
+								<TableCell className="text-sm text-muted">
 									{new Date(refund.created_at).toLocaleDateString()}
 								</TableCell>
-								<TableCell className="text-sm text-text-secondary">
+								<TableCell className="text-sm text-muted">
 									{refund.purchase?.app?.name || "—"}
 								</TableCell>
 							</DataTableRow>
@@ -390,7 +390,7 @@ export function RefundProcessingPage() {
 			{/* Pagination */}
 			{refundsQuery.data?.pagination && (
 				<div className="mt-6 flex items-center justify-between">
-					<div className="text-sm text-text-secondary">
+					<div className="text-sm text-muted">
 						Showing {filters.offset + 1} to{" "}
 						{Math.min(filters.offset + filters.limit, refundsQuery.data.pagination.total)} of{" "}
 						{refundsQuery.data.pagination.total}

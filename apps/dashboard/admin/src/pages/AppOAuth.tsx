@@ -113,7 +113,7 @@ export default function AppOAuthPage() {
 					<Heading level={1} size="lg">
 						OAuth Providers
 					</Heading>
-					<Text className="text-muted-foreground">
+					<Text className="text-muted">
 						Select which OAuth providers to enable for <strong>{app.name}</strong>
 					</Text>
 				</div>
@@ -139,7 +139,7 @@ export default function AppOAuthPage() {
 					<Icon icon={IconType.AlertCircle} size={20} className="text-primary shrink-0" />
 					<div>
 						<Text className="font-semibold text-primary mb-1">Platform-Level Configuration</Text>
-						<Text className="text-muted-foreground">
+						<Text className="text-muted">
 							OAuth credentials are managed at the platform level. Simply select which providers to enable
 							for your app.
 						</Text>
@@ -172,13 +172,13 @@ export default function AppOAuthPage() {
 											</h3>
 											<Chip size="sm">Platform</Chip>
 										</div>
-										<p className="text-sm text-muted-foreground m-0">Managed by Nube Auth</p>
+										<p className="text-sm text-muted m-0">Managed by Nube Auth</p>
 									</div>
 								</div>
 
 								<div className="flex items-center justify-between pt-4 border-t border-border">
 									<span
-										className={`text-sm font-medium ${isSelected ? "text-primary" : "text-muted-foreground"}`}
+										className={`text-sm font-medium ${isSelected ? "text-primary" : "text-muted"}`}
 									>
 										{isSelected ? "Enabled" : "Disabled"}
 									</span>

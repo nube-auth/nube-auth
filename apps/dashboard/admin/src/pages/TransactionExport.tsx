@@ -174,7 +174,7 @@ export function TransactionExportPage() {
 			</Breadcrumb>
 
 			<div className="mb-6">
-				<Text className="m-0 text-text-secondary">
+				<Text className="m-0 text-muted">
 					Export and analyze transaction history in CSV or JSON format
 				</Text>
 			</div>
@@ -206,14 +206,14 @@ export function TransactionExportPage() {
 									JSON (Data)
 								</Button>
 							</div>
-							<Text className="mt-3 text-xs text-text-tertiary">
+							<Text className="mt-3 text-xs text-muted">
 								Use CSV for spreadsheets and JSON for integrations or audits.
 							</Text>
 						</div>
 						<div className="rounded-md border border-border bg-surface-secondary p-4 flex flex-col justify-center">
-							<div className="text-xs text-text-tertiary mb-1">Current Format</div>
+							<div className="text-xs text-muted mb-1">Current Format</div>
 							<div className="text-2xl font-semibold text-text-primary">{exportFormat.toUpperCase()}</div>
-							<div className="text-xs text-text-tertiary mt-2">
+							<div className="text-xs text-muted mt-2">
 								{transactionsQuery.data?.data?.length || 0} rows selected for export
 							</div>
 						</div>
@@ -318,19 +318,19 @@ export function TransactionExportPage() {
 						<div className="p-3 bg-surface-secondary rounded-md">
 							<div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4">
 								<div>
-									<div className="text-xs text-text-tertiary mb-1">Total Transactions</div>
+									<div className="text-xs text-muted mb-1">Total Transactions</div>
 									<div className="text-lg font-semibold text-text-primary">
 										{transactionsQuery.data.pagination?.total || transactionsQuery.data.data.length}
 									</div>
 								</div>
 								<div>
-									<div className="text-xs text-text-tertiary mb-1">Ready to Export</div>
+									<div className="text-xs text-muted mb-1">Ready to Export</div>
 									<div className="text-lg font-semibold text-text-primary">
 										{transactionsQuery.data.data.length}
 									</div>
 								</div>
 								<div>
-									<div className="text-xs text-text-tertiary mb-1">Format</div>
+									<div className="text-xs text-muted mb-1">Format</div>
 									<div className="text-lg font-semibold text-text-primary">
 										{exportFormat.toUpperCase()}
 									</div>
@@ -365,7 +365,7 @@ export function TransactionExportPage() {
 						<Heading level={2} size="md" className="mb-2">
 							No transactions found
 						</Heading>
-						<Text className="text-sm text-text-tertiary">
+						<Text className="text-sm text-muted">
 							Adjust your filters to find transactions to export
 						</Text>
 					</div>
@@ -373,7 +373,7 @@ export function TransactionExportPage() {
 				footer={
 					transactionsQuery.data &&
 					transactionsQuery.data.data.length > 10 && (
-						<Text className="text-text-tertiary text-sm text-center">
+						<Text className="text-muted text-sm text-center">
 							Showing 10 of {transactionsQuery.data.data.length} transactions. Download to see all
 							records.
 						</Text>
@@ -393,7 +393,7 @@ export function TransactionExportPage() {
 					{(transactionsQuery.data?.data || []).slice(0, 10).map((txn) => (
 						<DataTableRow key={txn.id}>
 							<TableCell>
-								<Text className="text-text-secondary whitespace-nowrap">
+								<Text className="text-muted whitespace-nowrap">
 									{formatDate(txn.created_at)}
 								</Text>
 							</TableCell>

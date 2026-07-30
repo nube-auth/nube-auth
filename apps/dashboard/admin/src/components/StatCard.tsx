@@ -32,7 +32,7 @@ export function StatCard({
         <IconBox size="lg" variant="info-subtle" className="mb-4">
           <Icon icon={icon} />
         </IconBox>
-        <Heading size="sm" className="font-medium text-gray-600 dark:text-gray-400">
+        <Heading size="sm" className="font-medium text-muted">
           {title}
         </Heading>
         <Text className="text-4xl font-semibold mt-2">{value}</Text>
@@ -44,7 +44,7 @@ export function StatCard({
             >
               {changeType === 'increase' ? '↑' : '↓'} {change}
             </Chip>
-            <Text className="text-sm text-gray-500 dark:text-gray-400">
+            <Text className="text-sm text-muted">
               {subtitle}
             </Text>
           </div>

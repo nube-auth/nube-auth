@@ -178,7 +178,7 @@ export function ProfilePage() {
 									Verified
 								</Chip>
 							</div>
-							<Text className="text-sm text-text-muted mt-1">Email cannot be changed here.</Text>
+							<Text className="text-sm text-muted mt-1">Email cannot be changed here.</Text>
 						</Field>
 
 						<Field>
@@ -190,7 +190,7 @@ export function ProfilePage() {
 								onChange={(e) => setName(e.target.value)}
 								placeholder="Enter your name"
 							/>
-							<Text className="text-sm text-text-muted mt-1">
+							<Text className="text-sm text-muted mt-1">
 								This name is shown across the admin dashboard.
 							</Text>
 						</Field>
@@ -231,14 +231,14 @@ export function ProfilePage() {
 						<div className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
 							<div className="flex flex-col gap-1">
 								<Text className="text-sm font-medium">User ID</Text>
-								<Text className="text-sm text-text-muted">Public identifier</Text>
+								<Text className="text-sm text-muted">Public identifier</Text>
 							</div>
 							<code className="text-sm bg-accent px-2 py-1 rounded">{profile.id}</code>
 						</div>
 						<div className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
 							<div className="flex flex-col gap-1">
 								<Text className="text-sm font-medium">Account Created</Text>
-								<Text className="text-sm text-text-muted">When this admin account was created</Text>
+								<Text className="text-sm text-muted">When this admin account was created</Text>
 							</div>
 							<Text className="text-sm">{formatDate(createdAt)}</Text>
 						</div>

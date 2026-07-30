@@ -37,7 +37,7 @@ export class ErrorBoundary extends Component<Props, State> {
 						<Alert variant="danger">
 							<div>
 								<strong className="block mb-1">Something went wrong</strong>
-								<p className="text-sm text-text-secondary m-0">
+								<p className="text-sm text-muted m-0">
 									{this.state.error?.message ?? "An unexpected error occurred."}
 								</p>
 								<button

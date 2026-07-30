@@ -61,7 +61,7 @@ function AdminLanding() {
 					</div>
 
 					<h1 className="text-3xl font-bold tracking-tight mb-2">Admin Console</h1>
-					<p className="text-text-secondary text-base mb-10">
+					<p className="text-muted text-base mb-10">
 						Manage authentication projects, apps, users, and billing — all in one place.
 					</p>
 
@@ -77,7 +77,7 @@ function AdminLanding() {
 								className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border bg-card"
 							>
 								<Icon icon={icon} size={20} className="text-primary" />
-								<span className="text-text-secondary font-medium leading-tight">{label}</span>
+								<span className="text-muted font-medium leading-tight">{label}</span>
 							</div>
 						))}
 					</div>
@@ -113,7 +113,7 @@ function AdminLanding() {
 							href={`${config.homeUrl}/terms`}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="underline hover:text-text-secondary"
+							className="underline hover:text-muted"
 						>
 							Terms of Service
 						</a>{" "}
@@ -122,7 +122,7 @@ function AdminLanding() {
 							href={`${config.homeUrl}/privacy`}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="underline hover:text-text-secondary"
+							className="underline hover:text-muted"
 						>
 							Privacy Policy
 						</a>

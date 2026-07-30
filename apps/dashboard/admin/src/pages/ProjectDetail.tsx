@@ -89,17 +89,17 @@ export function ProjectDetailPage() {
 									</Chip>
 								</div>
 								{project.description && (
-									<Text className="text-text-secondary mb-4 max-w-2xl">{project.description}</Text>
+									<Text className="text-muted mb-4 max-w-2xl">{project.description}</Text>
 								)}
 								<div className="flex items-start gap-6">
 									<div>
-										<Text className="text-text-muted mb-1 uppercase font-medium text-xs">Slug</Text>
+										<Text className="text-muted mb-1 uppercase font-medium text-xs">Slug</Text>
 										<Chip variant="info" size="sm">
 											{project.slug}
 										</Chip>
 									</div>
 									<div>
-										<Text className="text-text-muted mb-1 uppercase font-medium text-xs">
+										<Text className="text-muted mb-1 uppercase font-medium text-xs">
 											Project ID
 										</Text>
 										<Chip variant="info" size="sm">
@@ -121,7 +121,7 @@ export function ProjectDetailPage() {
 							<Icon icon={IconType.Dashboard} size={20} />
 						</IconBox>
 						<Heading className="mb-1">{statsLoading ? "—" : stats?.totalApps || 0}</Heading>
-						<Text className="text-text-muted">Applications</Text>
+						<Text className="text-muted">Applications</Text>
 					</CardBody>
 				</Card>
 
@@ -131,7 +131,7 @@ export function ProjectDetailPage() {
 							<Icon icon={IconType.UserMultiple} size={20} />
 						</IconBox>
 						<Heading className="mb-1">{statsLoading ? "—" : stats?.totalUsers || 0}</Heading>
-						<Text className="text-text-muted">Total Users</Text>
+						<Text className="text-muted">Total Users</Text>
 					</CardBody>
 				</Card>
 
@@ -141,9 +141,9 @@ export function ProjectDetailPage() {
 							<Icon icon={IconType.Key} size={20} />
 						</IconBox>
 						<Heading className="mb-1">{statsLoading ? "—" : stats?.activeLicenses || 0}</Heading>
-						<Text className="text-text-muted">Active Licenses</Text>
+						<Text className="text-muted">Active Licenses</Text>
 						{!statsLoading && stats && (
-							<Text className="text-text-muted mt-1">{stats.totalLicenses} total</Text>
+							<Text className="text-muted mt-1">{stats.totalLicenses} total</Text>
 						)}
 					</CardBody>
 				</Card>
@@ -156,7 +156,7 @@ export function ProjectDetailPage() {
 						<Heading className="mb-1">
 							${statsLoading ? "—" : (stats?.totalRevenue || 0).toFixed(2)}
 						</Heading>
-						<Text className="text-text-muted">Revenue</Text>
+						<Text className="text-muted">Revenue</Text>
 					</CardBody>
 				</Card>
 			</div>
@@ -167,7 +167,7 @@ export function ProjectDetailPage() {
 					<CardHeader>
 						<div className="flex-1">
 							<CardTitle>Applications</CardTitle>
-							<Text className="text-text-muted">Apps registered under this project</Text>
+							<Text className="text-muted">Apps registered under this project</Text>
 						</div>
 					</CardHeader>
 					<CardBody>
@@ -223,7 +223,7 @@ export function ProjectDetailPage() {
 									</code>
 								</TableCell>
 								<TableCell>
-									<Text className="text-text-secondary">{app.sessionTtlDays || 30} days</Text>
+									<Text className="text-muted">{app.sessionTtlDays || 30} days</Text>
 								</TableCell>
 								<TableCell>
 									<Chip variant="success" size="sm">
@@ -245,7 +245,7 @@ export function ProjectDetailPage() {
 					<CardHeader>
 						<div>
 							<CardTitle>Team Members</CardTitle>
-							<Text className="text-text-muted">People with access to this project</Text>
+							<Text className="text-muted">People with access to this project</Text>
 						</div>
 					</CardHeader>
 					<CardBody>
@@ -258,7 +258,7 @@ export function ProjectDetailPage() {
 				<DataTable
 					header={<DataTableHeader title="Team Members" description="People with access to this project" />}
 					isEmpty={!members || members.length === 0}
-					emptyState={<Text className="text-center py-8 text-text-muted">No team members found</Text>}
+					emptyState={<Text className="text-center py-8 text-muted">No team members found</Text>}
 				>
 					<TableHeader>
 						<tr>
@@ -288,7 +288,7 @@ export function ProjectDetailPage() {
 									</Chip>
 								</TableCell>
 								<TableCell>
-									<Text className="text-text-secondary">
+									<Text className="text-muted">
 										{new Date(member.createdAt).toLocaleDateString()}
 									</Text>
 								</TableCell>

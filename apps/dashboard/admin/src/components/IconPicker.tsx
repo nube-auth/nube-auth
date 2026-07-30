@@ -162,7 +162,7 @@ export function IconPicker({ selectedIconId = "dashboard", onSelect, label = "Ic
 									<Icon 
 										icon={IconType.Search} 
 										size={16} 
-										className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" 
+										className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" 
 									/>
 									<Input
 										type="text"
@@ -184,7 +184,7 @@ export function IconPicker({ selectedIconId = "dashboard", onSelect, label = "Ic
 											className={`px-2.5 py-1 text-11px rounded-md transition-all ${
 												selectedCategory === category
 													? "bg-primary text-white"
-													: "bg-surface-secondary text-text-secondary hover:bg-surface-hover"
+														: "bg-surface-secondary text-muted hover:bg-surface-hover"
 											}`}
 										>
 											{category}
@@ -224,10 +224,10 @@ export function IconPicker({ selectedIconId = "dashboard", onSelect, label = "Ic
 													<Icon
 														icon={IconType[iconOption.iconName]}
 														size={20}
-														className={iconOption.id === selectedIconId ? "text-primary" : "text-text-secondary"}
+														className={iconOption.id === selectedIconId ? "text-primary" : "text-muted"}
 													/>
 												</div>
-												<span className="text-11px text-text-secondary text-center line-clamp-2">
+												<span className="text-11px text-muted text-center line-clamp-2">
 													{iconOption.name}
 												</span>
 											</button>
@@ -235,16 +235,16 @@ export function IconPicker({ selectedIconId = "dashboard", onSelect, label = "Ic
 									</div>
 								) : (
 									<div className="p-8 text-center">
-										<Icon icon={IconType.Search} size={32} className="text-text-tertiary mx-auto mb-2" />
-										<p className="text-13px text-text-secondary">No icons found</p>
-										<p className="text-11px text-text-tertiary mt-1">Try a different search term</p>
+									<Icon icon={IconType.Search} size={32} className="text-muted mx-auto mb-2" />
+									<p className="text-13px text-muted">No icons found</p>
+									<p className="text-11px text-muted mt-1">Try a different search term</p>
 									</div>
 								)}
 							</div>
 
 							{/* Footer */}
 							<div className="p-2 border-t border-card-border bg-surface-secondary text-center">
-								<p className="text-11px text-text-tertiary">
+								<p className="text-11px text-muted">
 									{filteredIcons.length} of {AVAILABLE_ICONS.length} icons
 								</p>
 							</div>

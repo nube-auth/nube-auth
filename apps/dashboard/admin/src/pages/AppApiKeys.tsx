@@ -185,7 +185,7 @@ export function AppApiKeysPage() {
 				<Heading level={1} size="lg">
 					API Keys
 				</Heading>
-				<Text className="text-muted-foreground mt-1">Manage your app's API credentials for integration</Text>
+				<Text className="text-muted mt-1">Manage your app's API credentials for integration</Text>
 			</div>
 
 			{/* Warning Banner */}
@@ -193,7 +193,7 @@ export function AppApiKeysPage() {
 				<Icon icon={IconType.AlertCircle} size={20} />
 				<div>
 					<Text className="font-semibold mb-1">Keep these keys secure!</Text>
-					<Text className="text-muted-foreground text-sm">
+					<Text className="text-muted text-sm">
 						Never expose these keys in client-side code or public repositories. Store them securely as
 						environment variables.
 					</Text>
@@ -203,11 +203,11 @@ export function AppApiKeysPage() {
 			{/* App ID Card */}
 			<Card>
 				<CardBody>
-					<Text className="text-sm font-semibold text-muted-foreground mb-2">App ID (Public)</Text>
+					<Text className="text-sm font-semibold text-muted mb-2">App ID (Public)</Text>
 					<code className="block w-full rounded-lg bg-muted/30 px-4 py-3 font-mono text-sm text-foreground break-all">
 						{app.id}
 					</code>
-					<Text className="text-xs text-muted-foreground mt-2">
+					<Text className="text-xs text-muted mt-2">
 						This is your public app identifier. Safe to use in client-side code.
 					</Text>
 					<div className="flex gap-2 mt-4">
@@ -221,11 +221,11 @@ export function AppApiKeysPage() {
 			{/* Client Secret Card */}
 			<Card>
 				<CardBody>
-					<Text className="text-sm font-semibold text-muted-foreground mb-2">Client Secret</Text>
+					<Text className="text-sm font-semibold text-muted mb-2">Client Secret</Text>
 					<code className="block w-full rounded-lg bg-muted/30 px-4 py-3 font-mono text-sm text-foreground break-all">
 						{showSecret && revealedKeys.clientSecret ? revealedKeys.clientSecret : app.clientSecret}
 					</code>
-					<Text className="text-xs text-muted-foreground mt-2">
+					<Text className="text-xs text-muted mt-2">
 						Used for server-to-server authentication. Keep this secret!
 					</Text>
 					<div className="flex gap-2 mt-4">
@@ -255,11 +255,11 @@ export function AppApiKeysPage() {
 			{/* Service Token Card */}
 			<Card>
 				<CardBody>
-					<Text className="text-sm font-semibold text-muted-foreground mb-2">Service Token</Text>
+					<Text className="text-sm font-semibold text-muted mb-2">Service Token</Text>
 					<code className="block w-full rounded-lg bg-muted/30 px-4 py-3 font-mono text-sm text-foreground break-all">
 						{showToken && revealedKeys.serviceToken ? revealedKeys.serviceToken : app.serviceToken}
 					</code>
-					<Text className="text-xs text-muted-foreground mt-2">
+					<Text className="text-xs text-muted mt-2">
 						Used for API calls from your backend. Keep this secret!
 					</Text>
 					<div className="flex gap-2 mt-4">
@@ -295,7 +295,7 @@ export function AppApiKeysPage() {
 						</IconBox>
 						<div>
 							<Text className="font-semibold mb-1">Integration Guide</Text>
-							<Text className="text-muted-foreground text-sm">
+							<Text className="text-muted text-sm">
 								Learn how to integrate Nube Auth into your application with code examples
 							</Text>
 						</div>

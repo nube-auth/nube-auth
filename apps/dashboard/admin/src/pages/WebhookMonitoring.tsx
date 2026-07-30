@@ -126,7 +126,7 @@ export function WebhookMonitoringPage() {
 								<Heading level={2} size="lg">
 									Webhook Event
 								</Heading>
-								<Text className="text-text-secondary mt-1">
+								<Text className="text-muted mt-1">
 									Complete delivery trace and payload diagnostics
 								</Text>
 							</div>
@@ -138,13 +138,13 @@ export function WebhookMonitoringPage() {
 
 						<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
 							<div className="rounded-lg bg-surface-secondary p-3">
-								<div className="text-11px uppercase tracking-wide text-text-tertiary mb-1">
+								<div className="text-11px uppercase tracking-wide text-muted mb-1">
 									Webhook ID
 								</div>
 								<code className="text-13px text-text-primary font-mono">{webhook.id}</code>
 							</div>
 							<div className="rounded-lg bg-surface-secondary p-3">
-								<div className="text-11px uppercase tracking-wide text-text-tertiary mb-1">
+								<div className="text-11px uppercase tracking-wide text-muted mb-1">
 									Event Type
 								</div>
 								<code className="text-13px text-text-primary font-mono uppercase">
@@ -152,7 +152,7 @@ export function WebhookMonitoringPage() {
 								</code>
 							</div>
 							<div className="rounded-lg bg-surface-secondary p-3">
-								<div className="text-11px uppercase tracking-wide text-text-tertiary mb-1">
+								<div className="text-11px uppercase tracking-wide text-muted mb-1">
 									Received
 								</div>
 								<div className="text-13px text-text-primary">
@@ -160,7 +160,7 @@ export function WebhookMonitoringPage() {
 								</div>
 							</div>
 							<div className="rounded-lg bg-surface-secondary p-3">
-								<div className="text-11px uppercase tracking-wide text-text-tertiary mb-1">
+								<div className="text-11px uppercase tracking-wide text-muted mb-1">
 									Duration
 								</div>
 								<div className="text-13px font-semibold text-text-primary">
@@ -187,7 +187,7 @@ export function WebhookMonitoringPage() {
 									</Heading>
 									<div className="space-y-2 text-13px">
 										<div className="flex justify-between gap-2">
-											<span className="text-text-tertiary">Started</span>
+											<span className="text-muted">Started</span>
 											<span className="text-text-primary text-right">
 												{webhook.processing_started_at
 													? new Date(webhook.processing_started_at).toLocaleString()
@@ -195,7 +195,7 @@ export function WebhookMonitoringPage() {
 											</span>
 										</div>
 										<div className="flex justify-between gap-2">
-											<span className="text-text-tertiary">Completed</span>
+											<span className="text-muted">Completed</span>
 											<span className="text-text-primary text-right">
 												{webhook.processing_completed_at
 													? new Date(webhook.processing_completed_at).toLocaleString()
@@ -211,13 +211,13 @@ export function WebhookMonitoringPage() {
 									</Heading>
 									<div className="space-y-2 text-13px">
 										<div className="flex justify-between gap-2">
-											<span className="text-text-tertiary">Retry Count</span>
+											<span className="text-muted">Retry Count</span>
 											<span className="text-text-primary font-semibold">
 												{webhook.retry_count}
 											</span>
 										</div>
 										<div className="flex justify-between gap-2">
-											<span className="text-text-tertiary">Last Retry</span>
+											<span className="text-muted">Last Retry</span>
 											<span className="text-text-primary text-right">
 												{webhook.last_retry_at
 													? new Date(webhook.last_retry_at).toLocaleString()
@@ -231,7 +231,7 @@ export function WebhookMonitoringPage() {
 									<Heading level={4} size="sm" className="mb-3">
 										Network
 									</Heading>
-									<div className="text-12px text-text-tertiary mb-1">IP Address</div>
+									<div className="text-12px text-muted mb-1">IP Address</div>
 									<code className="text-13px text-text-primary font-mono">
 										{webhook.ip_address || "unknown"}
 									</code>
@@ -254,11 +254,11 @@ export function WebhookMonitoringPage() {
 									<Heading level={4} size="sm" className="mb-3">
 										Request Headers
 									</Heading>
-									<div className="max-h-64 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-12px text-text-secondary">
+									<div className="max-h-64 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-12px text-muted">
 										{Object.entries(webhook.request_headers || {}).map(([key, value]) => (
 											<div key={key} className="mb-1">
 												<span className="text-primary font-semibold">{key}:</span>{" "}
-												<span className="text-text-secondary wrap-break-word">
+												<span className="text-muted wrap-break-word">
 													{String(value)}
 												</span>
 											</div>
@@ -271,7 +271,7 @@ export function WebhookMonitoringPage() {
 										<Heading level={4} size="sm" className="mb-3">
 											Signature
 										</Heading>
-										<div className="max-h-56 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-11px text-text-secondary wrap-break-word">
+										<div className="max-h-56 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-11px text-muted wrap-break-word">
 											{webhook.signature}
 										</div>
 									</div>
@@ -294,7 +294,7 @@ export function WebhookMonitoringPage() {
 									<Heading level={4} size="sm" className="mb-3">
 										Request Body
 									</Heading>
-									<div className="max-h-130 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-12px text-text-secondary">
+									<div className="max-h-130 overflow-y-auto bg-bg-primary rounded p-3 font-mono text-12px text-muted">
 										<pre className="m-0 whitespace-pre-wrap wrap-break-word">
 											{JSON.stringify(webhook.request_body, null, 2)}
 										</pre>
@@ -326,7 +326,7 @@ export function WebhookMonitoringPage() {
 				<Heading level={1} size="lg" className="mb-2">
 					Webhook Monitoring
 				</Heading>
-				<Text className="text-text-secondary">
+				<Text className="text-muted">
 					Monitor webhook deliveries and troubleshoot integration issues
 				</Text>
 			</div>
@@ -433,21 +433,21 @@ export function WebhookMonitoringPage() {
 							<DataTableRow key={webhook.id}>
 								<TableCell>{handleStatusBadge(webhook.status)}</TableCell>
 								<TableCell>
-									<Text className="font-mono text-sm text-text-secondary">{webhook.event_type}</Text>
+									<Text className="font-mono text-sm text-muted">{webhook.event_type}</Text>
 								</TableCell>
 								<TableCell>{handleProviderBadge(webhook.provider)}</TableCell>
 								<TableCell>
-									<Text className="text-text-secondary">
+									<Text className="text-muted">
 										{new Date(webhook.received_at).toLocaleString()}
 									</Text>
 								</TableCell>
 								<TableCell>
-									<Text className="text-text-secondary font-medium">
+									<Text className="text-muted font-medium">
 										{webhook.processing_duration_ms ? `${webhook.processing_duration_ms}ms` : "—"}
 									</Text>
 								</TableCell>
 								<TableCell>
-									<Text className="text-text-secondary font-medium">{webhook.retry_count}</Text>
+									<Text className="text-muted font-medium">{webhook.retry_count}</Text>
 								</TableCell>
 								<TableCell align="right">
 									<div className="flex justify-end gap-2">
@@ -491,7 +491,7 @@ export function WebhookMonitoringPage() {
 			{/* Pagination */}
 			{webhooksQuery.data?.pagination && (
 				<div className="mt-6 flex items-center justify-between">
-					<Text className="text-text-secondary">
+					<Text className="text-muted">
 						Showing {filters.offset + 1} to{" "}
 						{Math.min(filters.offset + filters.limit, webhooksQuery.data.pagination.total)} of{" "}
 						{webhooksQuery.data.pagination.total}

@@ -140,11 +140,11 @@ export function AppDetailPage() {
 									</Chip>
 								</div>
 								{app.description && (
-									<Text className="text-muted-foreground mb-4 max-w-2xl">{app.description}</Text>
+									<Text className="text-muted mb-4 max-w-2xl">{app.description}</Text>
 								)}
 								<div className="flex items-start gap-6">
 									<div>
-										<Text className="text-muted-foreground mb-1 uppercase font-medium text-xs">
+										<Text className="text-muted mb-1 uppercase font-medium text-xs">
 											Slug
 										</Text>
 										<Chip variant="info" size="sm">
@@ -152,7 +152,7 @@ export function AppDetailPage() {
 										</Chip>
 									</div>
 									<div>
-										<Text className="text-muted-foreground mb-1 uppercase font-medium text-xs">
+										<Text className="text-muted mb-1 uppercase font-medium text-xs">
 											App ID
 										</Text>
 										<Chip variant="info" size="sm">
@@ -175,7 +175,7 @@ export function AppDetailPage() {
 								<Icon icon={stat.icon} size={22} />
 							</IconBox>
 							<div>
-								<Text className="text-muted-foreground text-sm">{stat.label}</Text>
+								<Text className="text-muted text-sm">{stat.label}</Text>
 								<Heading level={3} size="lg">
 									{stat.value}
 								</Heading>
@@ -203,7 +203,7 @@ export function AppDetailPage() {
 								</IconBox>
 								<div>
 									<Text className="font-semibold mb-0.5">{action.label}</Text>
-									<Text className="text-muted-foreground text-sm">{action.description}</Text>
+									<Text className="text-muted text-sm">{action.description}</Text>
 								</div>
 							</CardBody>
 						</Card>

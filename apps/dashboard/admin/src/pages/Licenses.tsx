@@ -47,7 +47,7 @@ export function LicensesPage() {
 					<Heading level={1} size="lg">
 						Licenses
 					</Heading>
-					<Text className="text-text-secondary mt-2">View and manage your license keys</Text>
+					<Text className="text-muted mt-2">View and manage your license keys</Text>
 				</div>
 			</div>
 
@@ -55,7 +55,7 @@ export function LicensesPage() {
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 				<Card>
 					<CardBody className="p-4">
-						<Text className="text-xs uppercase tracking-wide text-text-tertiary">Total Licenses</Text>
+						<Text className="text-xs uppercase tracking-wide text-muted">Total Licenses</Text>
 						<Heading level={3} size="lg" className="mt-2 mb-0">
 							{licenses?.length || 0}
 						</Heading>
@@ -63,7 +63,7 @@ export function LicensesPage() {
 				</Card>
 				<Card>
 					<CardBody className="p-4">
-						<Text className="text-xs uppercase tracking-wide text-text-tertiary">Active</Text>
+						<Text className="text-xs uppercase tracking-wide text-muted">Active</Text>
 						<Heading level={3} size="lg" className="mt-2 mb-0 text-success">
 							{licenses?.filter((l) => l.status === "active").length || 0}
 						</Heading>
@@ -71,8 +71,8 @@ export function LicensesPage() {
 				</Card>
 				<Card>
 					<CardBody className="p-4">
-						<Text className="text-xs uppercase tracking-wide text-text-tertiary">Expired</Text>
-						<Heading level={3} size="lg" className="mt-2 mb-0 text-text-secondary">
+						<Text className="text-xs uppercase tracking-wide text-muted">Expired</Text>
+						<Heading level={3} size="lg" className="mt-2 mb-0 text-muted">
 							{licenses?.filter((l) => l.status !== "active").length || 0}
 						</Heading>
 					</CardBody>
@@ -118,7 +118,7 @@ export function LicensesPage() {
 									</div>
 								</TableCell>
 								<TableCell>
-									<Text className="text-text-secondary">{license.appId || "—"}</Text>
+									<Text className="text-muted">{license.appId || "—"}</Text>
 								</TableCell>
 								<TableCell>
 									<Chip variant="info" size="sm" className="capitalize">
@@ -141,7 +141,7 @@ export function LicensesPage() {
 									)}
 								</TableCell>
 								<TableCell>
-									<Text className="text-text-secondary">
+									<Text className="text-muted">
 										{expiryDate
 											? new Date(expiryDate).toLocaleDateString("en-US", {
 													year: "numeric",

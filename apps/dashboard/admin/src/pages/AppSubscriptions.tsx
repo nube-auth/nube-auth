@@ -151,7 +151,7 @@ export function AppSubscriptionsPage() {
 				<Heading level={1} size="lg">
 					Subscriptions
 				</Heading>
-				<Text className="text-muted-foreground mt-1">Manage recurring subscriptions for {app.name}</Text>
+				<Text className="text-muted mt-1">Manage recurring subscriptions for {app.name}</Text>
 			</div>
 
 			{/* Summary */}
@@ -182,7 +182,7 @@ export function AppSubscriptionsPage() {
 									/>
 								</IconBox>
 								<div>
-									<Text className="text-muted-foreground text-xs capitalize">
+									<Text className="text-muted text-xs capitalize">
 										{status.replace("_", " ")}
 									</Text>
 									<Heading level={4} size="sm">
@@ -210,7 +210,7 @@ export function AppSubscriptionsPage() {
 					]}
 				/>
 				<div className="flex-1" />
-				<Text className="text-muted-foreground text-sm">
+				<Text className="text-muted text-sm">
 					{subscriptions.length} subscription{subscriptions.length !== 1 ? "s" : ""}
 				</Text>
 			</div>
@@ -247,7 +247,7 @@ export function AppSubscriptionsPage() {
 											{sub.userName || sub.userEmail || "—"}
 										</Text>
 										{sub.userEmail && sub.userName && (
-											<Text className="text-xs text-muted-foreground">{sub.userEmail}</Text>
+											<Text className="text-xs text-muted">{sub.userEmail}</Text>
 										)}
 									</div>
 								</TableCell>
@@ -260,7 +260,7 @@ export function AppSubscriptionsPage() {
 											${(sub.price.amountCents / 100).toFixed(2)}/{sub.price.interval || "once"}
 										</Text>
 									) : (
-										<Text className="text-sm text-muted-foreground">—</Text>
+										<Text className="text-sm text-muted">—</Text>
 									)}
 								</TableCell>
 								<TableCell>
@@ -270,13 +270,13 @@ export function AppSubscriptionsPage() {
 								</TableCell>
 								<TableCell>
 									<div>
-										<Text className="text-xs text-muted-foreground">
+										<Text className="text-xs text-muted">
 											{sub.currentPeriodStart
 												? new Date(sub.currentPeriodStart).toLocaleDateString()
 												: "—"}
 										</Text>
 										{sub.currentPeriodEnd && (
-											<Text className="text-xs text-muted-foreground">
+											<Text className="text-xs text-muted">
 												→ {new Date(sub.currentPeriodEnd).toLocaleDateString()}
 											</Text>
 										)}

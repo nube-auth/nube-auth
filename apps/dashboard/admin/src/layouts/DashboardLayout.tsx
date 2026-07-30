@@ -115,7 +115,7 @@ export function DashboardLayout({ children, sidebar, topBar }: DashboardLayoutPr
         {/* Page content */}
         <div
           className={cn(
-            'min-h-[calc(100vh-4rem)] flex flex-col gap-6 px-4 xl:px-6 py-6',
+            'min-h-[calc(100vh-4rem)] flex flex-col gap-6 px-4 xl:px-6 py-6 max-w-7xl mx-auto',
           )}
         >
           {children}

@@ -74,7 +74,7 @@ export function AppDevelopersPage() {
 				<Heading level={1} size="lg">
 					Integration Guide
 				</Heading>
-				<Text className="text-muted-foreground">
+				<Text className="text-muted">
 					Learn how to integrate Nube Auth authentication into your application
 				</Text>
 			</div>
@@ -93,7 +93,7 @@ export function AppDevelopersPage() {
 					<Heading level={2} size="lg" className="text-xl font-bold mb-4">
 						Quick Start
 					</Heading>
-					<Text className="text-sm text-muted-foreground mb-6 leading-relaxed">
+					<Text className="text-sm text-muted mb-6 leading-relaxed">
 						Get started with Nube Auth in 5 minutes. This guide will walk you through the basic setup.
 					</Text>
 
@@ -136,7 +136,7 @@ export function AppDevelopersPage() {
 									Get your App ID
 								</Heading>
 							</div>
-							<Text className="text-sm text-muted-foreground mb-3">Your App ID is:</Text>
+							<Text className="text-sm text-muted mb-3">Your App ID is:</Text>
 							<code className="block py-3 px-4 bg-muted/30 rounded-lg text-sm font-mono text-foreground">
 								{app.id}
 							</code>
@@ -209,7 +209,7 @@ function YourComponent() {
 						<Heading level={3} size="md" className="text-base font-semibold mb-3">
 							Next Steps
 						</Heading>
-						<ul className="m-0 pl-5 text-sm text-muted-foreground leading-loose">
+						<ul className="m-0 pl-5 text-sm text-muted leading-loose">
 							<li>Check out framework-specific guides in the tabs above</li>
 							<li>Configure OAuth providers in your app settings</li>
 							<li>Set up backend verification for API routes</li>
@@ -227,7 +227,7 @@ function YourComponent() {
 					<Heading level={2} size="lg" className="text-xl font-bold mb-4">
 						React Integration
 					</Heading>
-					<Text className="text-sm text-muted-foreground mb-6 leading-relaxed">
+					<Text className="text-sm text-muted mb-6 leading-relaxed">
 						Complete guide for integrating Nube Auth into your React application.
 					</Text>
 
@@ -247,7 +247,7 @@ function YourComponent() {
 							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Setup Provider
 							</Heading>
-							<Text className="text-sm text-muted-foreground mb-3">
+							<Text className="text-sm text-muted mb-3">
 								Wrap your root component with the NubeAuthProvider:
 							</Text>
 							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
@@ -277,7 +277,7 @@ export default App;`}</code>
 							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								useAuth Hook
 							</Heading>
-							<Text className="text-sm text-muted-foreground mb-3">
+							<Text className="text-sm text-muted mb-3">
 								Access authentication state and methods:
 							</Text>
 							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
@@ -327,7 +327,7 @@ function Dashboard() {
 							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Protected Routes
 							</Heading>
-							<Text className="text-sm text-muted-foreground mb-3">
+							<Text className="text-sm text-muted mb-3">
 								Create a component to protect routes:
 							</Text>
 							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
@@ -363,7 +363,7 @@ function ProtectedRoute({ children }) {
 					<Heading level={2} size="lg" className="text-xl font-bold mb-4">
 						Next.js Integration
 					</Heading>
-					<Text className="text-sm text-muted-foreground mb-6 leading-relaxed">
+					<Text className="text-sm text-muted mb-6 leading-relaxed">
 						Complete guide for integrating Nube Auth into your Next.js application (App Router).
 					</Text>
 
@@ -439,7 +439,7 @@ export default function Dashboard() {
 							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Server-Side Verification
 							</Heading>
-							<Text className="text-sm text-muted-foreground mb-3">
+							<Text className="text-sm text-muted mb-3">
 								Verify sessions in Server Components or API Routes:
 							</Text>
 							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
@@ -467,7 +467,7 @@ export async function GET(request: Request) {
 					<Heading level={2} size="lg" className="text-xl font-bold mb-4">
 						Vanilla JavaScript
 					</Heading>
-					<Text className="text-sm text-muted-foreground mb-6 leading-relaxed">
+					<Text className="text-sm text-muted mb-6 leading-relaxed">
 						Use Nube Auth without any framework.
 					</Text>
 
@@ -555,7 +555,7 @@ checkAuth();`}</code>
 					<Heading level={2} size="lg" className="text-xl font-bold mb-4">
 						Backend Verification
 					</Heading>
-					<Text className="text-sm text-muted-foreground mb-6 leading-relaxed">
+					<Text className="text-sm text-muted mb-6 leading-relaxed">
 						Verify user sessions and protect your API endpoints.
 					</Text>
 
@@ -644,7 +644,7 @@ def protected_route():
 							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								API Keys
 							</Heading>
-							<Text className="text-sm text-muted-foreground mb-3">
+							<Text className="text-sm text-muted mb-3">
 								For server-to-server communication, use your Service Token:
 							</Text>
 							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
@@ -660,7 +660,7 @@ const response = await fetch('https://api.nubeauth.com/v1/users/by-email', {
 
 const user = await response.json();`}</code>
 							</pre>
-							<div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-md text-sm text-muted-foreground">
+							<div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-md text-sm text-muted">
 								<strong className="text-amber-500">Important:</strong> Never expose your Service Token
 								in client-side code!{" "}
 								<Link to={`/projects/${projectId}/apps/${appId}/api-keys`} className="text-primary">

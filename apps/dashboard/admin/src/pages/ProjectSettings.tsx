@@ -94,7 +94,7 @@ export function ProjectSettingsPage() {
 				<Heading level={1} size="lg">
 					Project Settings
 				</Heading>
-				<Text className="text-text-secondary">Manage your project configuration and preferences</Text>
+				<Text className="text-muted">Manage your project configuration and preferences</Text>
 			</div>
 
 			{/* Settings Content */}
@@ -114,14 +114,14 @@ export function ProjectSettingsPage() {
 
 							<div className="grid gap-6 md:grid-cols-2">
 								<div>
-									<Text className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
+									<Text className="text-12px text-muted mb-1.5 uppercase font-semibold tracking-wider">
 										Project Name
 									</Text>
 									<Text className="text-15px text-text-primary font-semibold">{project.name}</Text>
 								</div>
 
 								<div>
-									<Text className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
+									<Text className="text-12px text-muted mb-1.5 uppercase font-semibold tracking-wider">
 										Project Slug
 									</Text>
 									<Text className="text-15px text-text-primary font-semibold font-mono">
@@ -131,17 +131,17 @@ export function ProjectSettingsPage() {
 
 								{project.description && (
 									<div>
-										<Text className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
+										<Text className="text-12px text-muted mb-1.5 uppercase font-semibold tracking-wider">
 											Description
 										</Text>
-										<Text className="text-15px text-text-secondary leading-relaxed">
+										<Text className="text-15px text-muted leading-relaxed">
 											{project.description}
 										</Text>
 									</div>
 								)}
 
 								<div>
-									<Text className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
+									<Text className="text-12px text-muted mb-1.5 uppercase font-semibold tracking-wider">
 										Project ID
 									</Text>
 									<code className="inline-block py-2.5 px-3.5 rounded-lg text-13px font-mono text-text-primary font-semibold tracking-wider bg-surface-secondary border border-border">
@@ -150,7 +150,7 @@ export function ProjectSettingsPage() {
 								</div>
 
 								<div>
-									<Text className="text-12px text-text-tertiary mb-1.5 uppercase font-semibold tracking-wider">
+									<Text className="text-12px text-muted mb-1.5 uppercase font-semibold tracking-wider">
 										Created
 									</Text>
 									<Text className="text-15px text-text-primary">
@@ -173,7 +173,7 @@ export function ProjectSettingsPage() {
 							<Heading level={3} size="sm" className="mb-3 text-danger">
 								⚠️ Danger Zone
 							</Heading>
-							<Text className="text-text-secondary mb-5">
+							<Text className="text-muted mb-5">
 								These actions are permanent and cannot be undone.
 							</Text>
 
@@ -181,10 +181,10 @@ export function ProjectSettingsPage() {
 								<Heading level={4} size="sm" className="mb-2 text-danger">
 									Delete This Project
 								</Heading>
-								<Text className="text-13px text-text-secondary mb-4">
+								<Text className="text-13px text-muted mb-4">
 									Once you delete a project, there is no going back. This will:
 								</Text>
-								<ul className="text-13px text-text-secondary mb-4 pl-5">
+								<ul className="text-13px text-muted mb-4 pl-5">
 									<li>Delete all apps in this project</li>
 									<li>Remove all user data and sessions</li>
 									<li>Revoke all active licenses</li>
@@ -221,7 +221,7 @@ export function ProjectSettingsPage() {
 											required
 											placeholder="My Project"
 										/>
-										<Text className="text-12px text-text-tertiary mt-1.5">
+										<Text className="text-12px text-muted mt-1.5">
 											The display name for your project
 										</Text>
 									</div>
@@ -240,7 +240,7 @@ export function ProjectSettingsPage() {
 											pattern="[a-z0-9-]+"
 											placeholder="my-project"
 										/>
-										<Text className="text-12px text-text-tertiary mt-1.5">
+										<Text className="text-12px text-muted mt-1.5">
 											URL-friendly identifier (lowercase, hyphens only)
 										</Text>
 									</div>
@@ -256,7 +256,7 @@ export function ProjectSettingsPage() {
 											rows={3}
 											placeholder="A brief description of your project..."
 										/>
-										<Text className="text-12px text-text-tertiary mt-1.5">
+										<Text className="text-12px text-muted mt-1.5">
 											Optional description for internal reference
 										</Text>
 									</div>

@@ -103,7 +103,7 @@ export default function AppPaymentSettingsPage() {
 				<Heading level={1} size="lg">
 					Payment Provider
 				</Heading>
-				<Text className="text-text-secondary">
+				<Text className="text-muted">
 					Select one payment provider for {app.name}. Providers are configured at the project level.
 				</Text>
 			</div>
@@ -114,7 +114,7 @@ export default function AppPaymentSettingsPage() {
 					<Icon icon={IconType.AlertCircle} size={20} className="text-primary shrink-0" />
 					<div>
 						<Text className="mb-1 font-semibold text-primary">Project-Level Configuration</Text>
-						<Text className="text-text-secondary">
+						<Text className="text-muted">
 							Payment providers are configured at the project level. To add or modify providers, visit{" "}
 							<Link
 								to={`/projects/${projectId}/payment-providers`}
@@ -148,7 +148,7 @@ export default function AppPaymentSettingsPage() {
 									<Icon icon={IconType.CheckCircle} size={18} className="text-success" />
 									<div>
 										<Text className="font-medium text-text-primary">Selected Configuration</Text>
-										<Text className="text-sm text-text-secondary">
+										<Text className="text-sm text-muted">
 											{selectedProvider.name ||
 												`${selectedProvider.provider} (${selectedProvider.environment})`}
 										</Text>
@@ -194,7 +194,7 @@ export default function AppPaymentSettingsPage() {
 												</Chip>
 											)}
 										</div>
-										<div className="flex items-center gap-3 text-xs text-text-secondary">
+										<div className="flex items-center gap-3 text-xs text-muted">
 											<span className="capitalize">{provider.provider}</span>
 											{provider.name && provider.name !== provider.provider && (
 												<>
@@ -224,7 +224,7 @@ export default function AppPaymentSettingsPage() {
 						<Heading level={3} size="sm" className="mb-3">
 							Need to add or modify payment providers?
 						</Heading>
-						<Text className="mb-4 text-text-secondary">
+						<Text className="mb-4 text-muted">
 							Payment providers are managed at the project level. Visit the Payment Providers page to add
 							new providers or update existing ones.
 						</Text>

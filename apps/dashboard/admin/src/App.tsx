@@ -3,7 +3,7 @@ import React from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { ToastProvider } from "./components/Toast";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { Icon, IconType, Button, Heading, useTheme, ThemeToggle, Toast } from "@nube-auth/components";
+import { Icon, IconType, Button, Heading, Spinner, useTheme, ThemeToggle, Toast } from "@nube-auth/components";
 import config from "./config";
 import { useLogout, useMe } from "./hooks/api";
 import { DashboardLayout } from "./layouts/DashboardLayout";
@@ -60,8 +60,8 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 		return (
 			<div className="min-h-screen flex items-center justify-center">
 				<div className="text-center">
-					<div className="spinner mx-auto mb-4" />
-					<p className="text-text-secondary">Loading...</p>
+					<Spinner className="mx-auto mb-4" />
+					<p className="text-muted">Loading...</p>
 				</div>
 			</div>
 		);

@@ -21,7 +21,7 @@ export function NotFoundPage() {
 					</p>
 
 					<h1 className="text-2xl font-bold mt-2 mb-3">Page not found</h1>
-					<p className="text-text-secondary text-base mb-8">
+					<p className="text-muted text-base mb-8">
 						The page you're looking for doesn't exist or has been moved.
 					</p>
 

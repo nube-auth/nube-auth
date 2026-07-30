@@ -114,7 +114,7 @@ export function AppLicensesPage() {
 				<Heading level={1} size="lg">
 					Licenses & Plans
 				</Heading>
-				<Text className="text-muted-foreground mt-1">
+				<Text className="text-muted mt-1">
 					Manage plans, pricing, and user licenses for {app.name}
 				</Text>
 			</div>
@@ -261,7 +261,7 @@ function PlansTab({
 	return (
 		<div className="space-y-4">
 			<div className="flex justify-between items-center">
-				<Text className="text-muted-foreground">
+				<Text className="text-muted">
 					{plans.length} plan{plans.length !== 1 ? "s" : ""}
 				</Text>
 				<Button size="sm" onClick={openCreate}>
@@ -296,14 +296,14 @@ function PlansTab({
 												</Chip>
 											)}
 										</div>
-										<Text className="text-muted-foreground text-xs mb-1">{plan.slug}</Text>
+										<Text className="text-muted text-xs mb-1">{plan.slug}</Text>
 										<div className="flex items-center gap-1.5 mb-2">
-											<code className="text-xs font-mono text-muted-foreground bg-bg-subtle px-1.5 py-0.5 rounded">
+											<code className="text-xs font-mono text-muted bg-bg-subtle px-1.5 py-0.5 rounded">
 												{plan.planId}
 											</code>
 											<button
 												type="button"
-												className="text-muted-foreground hover:text-text-primary"
+												className="text-muted hover:text-text-primary"
 												title="Copy plan ID"
 												onClick={() => {
 													navigator.clipboard.writeText(plan.planId);
@@ -314,7 +314,7 @@ function PlansTab({
 											</button>
 										</div>
 										{plan.description && (
-											<Text className="text-muted-foreground text-sm mb-2">
+											<Text className="text-muted text-sm mb-2">
 												{plan.description}
 											</Text>
 										)}
@@ -335,7 +335,7 @@ function PlansTab({
 											</div>
 										)}
 										{plan.trialDays && (
-											<Text className="text-xs text-muted-foreground">
+											<Text className="text-xs text-muted">
 												{plan.trialDays}-day trial
 											</Text>
 										)}
@@ -430,7 +430,7 @@ function PlansTab({
 						</div>
 						<div>
 							<Label>Entitlements</Label>
-							<Text className="text-xs text-muted-foreground mb-2">
+							<Text className="text-xs text-muted mb-2">
 								Use <code>-1</code> for unlimited counts. Booleans control feature access; numbers set
 								limits.
 							</Text>
@@ -506,7 +506,7 @@ function PlansTab({
 										</Chip>
 										<button
 											type="button"
-											className="text-muted-foreground hover:text-text-primary text-xs"
+											className="text-muted hover:text-text-primary text-xs"
 											onClick={() => {
 												const updated = { ...planForm.features };
 												delete updated[key];
@@ -640,7 +640,7 @@ function PricesSection({
 			{isLoading ? (
 				<Spinner />
 			) : prices.length === 0 ? (
-				<Text className="text-muted-foreground text-sm py-4">
+				<Text className="text-muted text-sm py-4">
 					No prices yet. Add a price to enable purchases.
 				</Text>
 			) : (
@@ -655,7 +655,7 @@ function PricesSection({
 										{formatPrice(price.amountCents, price.currency)}
 									</Text>
 									{price.interval && (
-										<Text className="text-muted-foreground text-xs">/{price.interval}</Text>
+										<Text className="text-muted text-xs">/{price.interval}</Text>
 									)}
 								</div>
 								<div className="flex flex-wrap gap-1.5 mb-1.5">
@@ -666,14 +666,14 @@ function PricesSection({
 										{price.isActive ? "active" : "inactive"}
 									</Chip>
 								</div>
-								<Text className="text-muted-foreground text-xs">{price.currency.toUpperCase()}</Text>
+								<Text className="text-muted text-xs">{price.currency.toUpperCase()}</Text>
 								<div className="flex items-center gap-1 mt-1.5 min-w-0">
-									<code className="text-xs font-mono text-muted-foreground bg-bg-subtle px-1.5 py-0.5 rounded truncate flex-1 min-w-0">
+									<code className="text-xs font-mono text-muted bg-bg-subtle px-1.5 py-0.5 rounded truncate flex-1 min-w-0">
 										{price.priceId}
 									</code>
 									<button
 										type="button"
-										className="text-muted-foreground hover:text-text-primary shrink-0"
+										className="text-muted hover:text-text-primary shrink-0"
 										title="Copy price ID"
 										onClick={() => {
 											navigator.clipboard.writeText(price.priceId);
@@ -689,13 +689,13 @@ function PricesSection({
 										<span
 											className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSynced ? "bg-green-500" : "bg-yellow-500"}`}
 										/>
-										<Text className="text-xs text-muted-foreground">
+										<Text className="text-xs text-muted">
 											{isSynced ? price.externalProvider : "Not synced"}
 										</Text>
 									</div>
 									<button
 										type="button"
-										className="text-xs text-muted-foreground hover:text-text-primary disabled:opacity-40 flex items-center gap-1"
+										className="text-xs text-muted hover:text-text-primary disabled:opacity-40 flex items-center gap-1"
 										title="Sync to payment provider"
 										disabled={isSyncing}
 										onClick={() => handleSync(price.priceId)}
@@ -769,7 +769,7 @@ function PricesSection({
 						<div>
 							<Label>Amount</Label>
 							<div className="relative">
-								<span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm select-none pointer-events-none">
+								<span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm select-none pointer-events-none">
 									{CURRENCY_META[form.currency]?.symbol ?? form.currency.toUpperCase()}
 								</span>
 								<Input
@@ -783,7 +783,7 @@ function PricesSection({
 								/>
 							</div>
 							{form.amount && !isNaN(parseFloat(form.amount)) && (
-								<Text className="text-xs text-muted-foreground mt-1">
+								<Text className="text-xs text-muted mt-1">
 									= {formatPrice(Math.round(parseFloat(form.amount) * 100), form.currency)}
 								</Text>
 							)}
@@ -913,7 +913,7 @@ function LicensesTab({
 									/>
 								</IconBox>
 								<div>
-									<Text className="text-muted-foreground text-xs capitalize">{status}</Text>
+									<Text className="text-muted text-xs capitalize">{status}</Text>
 									<Heading level={4} size="sm">
 										{count}
 									</Heading>
@@ -984,15 +984,15 @@ function LicensesTab({
 											{lic.userName || lic.userEmail || "—"}
 										</Text>
 										{lic.userEmail && lic.userName && (
-											<Text className="text-xs text-muted-foreground">{lic.userEmail}</Text>
+											<Text className="text-xs text-muted">{lic.userEmail}</Text>
 										)}
 										<div className="flex items-center gap-1 mt-0.5">
-											<code className="text-xs font-mono text-muted-foreground">
+											<code className="text-xs font-mono text-muted">
 												{lic.licenseId}
 											</code>
 											<button
 												type="button"
-												className="text-muted-foreground hover:text-text-primary"
+												className="text-muted hover:text-text-primary"
 												title="Copy license ID"
 												onClick={() => {
 													navigator.clipboard.writeText(lic.licenseId);
@@ -1029,7 +1029,7 @@ function LicensesTab({
 									</Chip>
 								</TableCell>
 								<TableCell>
-									<Text className="text-sm text-muted-foreground">
+									<Text className="text-sm text-muted">
 										{lic.validUntil ? new Date(lic.validUntil).toLocaleDateString() : "—"}
 									</Text>
 								</TableCell>
@@ -1152,7 +1152,7 @@ function LicenseHistoryModal({ appId, licenseId, onClose }: { appId: string; lic
 							<Spinner />
 						</div>
 					) : history.length === 0 ? (
-						<Text className="text-muted-foreground text-center py-8">No history entries</Text>
+						<Text className="text-muted text-center py-8">No history entries</Text>
 					) : (
 						<div className="space-y-3 max-h-96 overflow-y-auto">
 							{history.map((entry) => (
@@ -1161,12 +1161,12 @@ function LicenseHistoryModal({ appId, licenseId, onClose }: { appId: string; lic
 										<Chip size="sm" variant="default">
 											{entry.changeType}
 										</Chip>
-										<Text className="text-xs text-muted-foreground">
+										<Text className="text-xs text-muted">
 											{new Date(entry.createdAt).toLocaleString()}
 										</Text>
 									</div>
 									{entry.oldValue && (
-										<Text className="text-xs text-muted-foreground">
+										<Text className="text-xs text-muted">
 											From:{" "}
 											{typeof entry.oldValue === "object"
 												? JSON.stringify(entry.oldValue)
@@ -1174,7 +1174,7 @@ function LicenseHistoryModal({ appId, licenseId, onClose }: { appId: string; lic
 										</Text>
 									)}
 									{entry.newValue && (
-										<Text className="text-xs text-muted-foreground">
+										<Text className="text-xs text-muted">
 											To:{" "}
 											{typeof entry.newValue === "object"
 												? JSON.stringify(entry.newValue)
@@ -1182,10 +1182,10 @@ function LicenseHistoryModal({ appId, licenseId, onClose }: { appId: string; lic
 										</Text>
 									)}
 									{entry.reason && (
-										<Text className="text-xs text-muted-foreground mt-1">{entry.reason}</Text>
+										<Text className="text-xs text-muted mt-1">{entry.reason}</Text>
 									)}
 									{entry.notes && (
-										<Text className="text-xs text-muted-foreground italic">{entry.notes}</Text>
+										<Text className="text-xs text-muted italic">{entry.notes}</Text>
 									)}
 								</div>
 							))}

@@ -261,7 +261,7 @@ export function AppUsersPage() {
 					<Heading size="lg" className="mb-2">
 						Users
 					</Heading>
-					<Text className="text-text-muted">Manage users and their licenses for {app.name}</Text>
+					<Text className="text-muted">Manage users and their licenses for {app.name}</Text>
 				</div>
 				<Button variant="primary" onClick={() => setShowInviteModal(true)}>
 					<Icon icon={IconType.UserAdd} size={16} />
@@ -315,7 +315,7 @@ export function AppUsersPage() {
 			{!usersLoading && filteredUsers.length === 0 && users.length > 0 && (
 				<Card>
 					<CardBody className="text-center py-10">
-						<Text className="text-text-muted">No users found matching your search criteria.</Text>
+						<Text className="text-muted">No users found matching your search criteria.</Text>
 					</CardBody>
 				</Card>
 			)}
@@ -367,7 +367,7 @@ export function AppUsersPage() {
 									</Chip>
 								</TableCell>
 								<TableCell align="center">
-									<Text className="text-text-secondary">
+									<Text className="text-muted">
 										{new Date(user.createdAt * 1000).toLocaleDateString()}
 									</Text>
 								</TableCell>
@@ -389,7 +389,7 @@ export function AppUsersPage() {
 																? "text-danger"
 																: isExpiringSoon
 																	? "text-warning"
-																	: "text-text-secondary"
+																	: "text-muted"
 														}
 													>
 														{new Date(user.licenseValidUntil * 1000).toLocaleDateString()}
@@ -408,7 +408,7 @@ export function AppUsersPage() {
 											);
 										})()
 									) : (
-										<Text className="text-text-tertiary">Lifetime</Text>
+										<Text className="text-muted">Lifetime</Text>
 									)}
 								</TableCell>
 								<TableCell align="right">
@@ -511,7 +511,7 @@ export function AppUsersPage() {
 					<DialogPopup>
 						<DialogHeader>
 							<DialogTitle>Edit User License</DialogTitle>
-							<Text className="text-text-muted mt-2">
+							<Text className="text-muted mt-2">
 								Update license plan and status for {editingUser.name || editingUser.email}
 							</Text>
 						</DialogHeader>
@@ -526,7 +526,7 @@ export function AppUsersPage() {
 
 							<div className="space-y-4">
 								<div>
-									<label className="block text-sm font-semibold text-text-secondary mb-2">
+									<label className="block text-sm font-semibold text-muted mb-2">
 										License Plan
 									</label>
 									<Select
@@ -556,7 +556,7 @@ export function AppUsersPage() {
 								</div>
 
 								<div>
-									<label className="block text-sm font-semibold text-text-secondary mb-2">
+									<label className="block text-sm font-semibold text-muted mb-2">
 										Status
 									</label>
 									<Select

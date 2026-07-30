@@ -252,7 +252,7 @@ export function AppPromotionsPage() {
 					<Heading level={1} size="lg">
 						Promotions
 					</Heading>
-					<Text className="text-muted-foreground mt-1">Manage discounts and promo codes for {app.name}</Text>
+					<Text className="text-muted mt-1">Manage discounts and promo codes for {app.name}</Text>
 				</div>
 				<Button onClick={openCreate}>
 					<Icon icon={IconType.Add} size={16} />
@@ -290,7 +290,7 @@ export function AppPromotionsPage() {
 											</Chip>
 										</div>
 										{promo.description && (
-											<Text className="text-muted-foreground text-sm mb-2">
+											<Text className="text-muted text-sm mb-2">
 												{promo.description}
 											</Text>
 										)}
@@ -303,7 +303,7 @@ export function AppPromotionsPage() {
 												))}
 											</div>
 										)}
-										<div className="flex gap-4 text-xs text-muted-foreground">
+										<div className="flex gap-4 text-xs text-muted">
 											{promo.startsAt && (
 												<span>Starts: {new Date(promo.startsAt).toLocaleDateString()}</span>
 											)}
@@ -414,7 +414,7 @@ export function AppPromotionsPage() {
 												</TableBody>
 											</Table>
 										) : (
-											<Text className="text-muted-foreground text-sm py-4">No codes yet</Text>
+											<Text className="text-muted text-sm py-4">No codes yet</Text>
 										)}
 									</div>
 								)}
@@ -468,12 +468,12 @@ export function AppPromotionsPage() {
 									placeholder={form.discountType === "percent" ? "20" : "500"}
 								/>
 								{form.discountValue && form.discountType === "percent" && (
-									<Text className="text-xs text-muted-foreground mt-1">
+									<Text className="text-xs text-muted mt-1">
 										{form.discountValue}% off
 									</Text>
 								)}
 								{form.discountValue && form.discountType === "fixed" && (
-									<Text className="text-xs text-muted-foreground mt-1">
+									<Text className="text-xs text-muted mt-1">
 										= ${(parseInt(form.discountValue, 10) / 100).toFixed(2)} off
 									</Text>
 								)}
@@ -518,7 +518,7 @@ export function AppPromotionsPage() {
 								<Label>
 									Plans <span className="text-destructive">*</span>
 								</Label>
-								<Text className="text-xs text-muted-foreground mb-2">
+								<Text className="text-xs text-muted mb-2">
 									Select which plans this promotion applies to
 								</Text>
 								<div
@@ -542,7 +542,7 @@ export function AppPromotionsPage() {
 										))}
 								</div>
 								{form.planIds.length > 0 && (
-									<Text className="text-xs text-muted-foreground mt-1">
+									<Text className="text-xs text-muted mt-1">
 										Applies to:{" "}
 										{plansData.plans
 											.filter((p: V2Plan) => form.planIds.includes(p.planId))

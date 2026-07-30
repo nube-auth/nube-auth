@@ -211,7 +211,7 @@ export function AppSetupPage() {
 						<Heading level={1} size="lg" className="mb-2">
 							Create New Application
 						</Heading>
-						<Text className="text-text-secondary">
+						<Text className="text-muted">
 							Configure your application's authentication settings and OAuth providers.
 						</Text>
 
@@ -225,7 +225,7 @@ export function AppSetupPage() {
 										className={`w-9 h-9 rounded-full border-2 font-semibold cursor-pointer text-14px transition-all ${
 											step >= num
 												? "bg-primary border-primary text-white"
-												: "bg-transparent border-border-secondary text-text-secondary"
+												: "bg-transparent border-border-secondary text-muted"
 										}`}
 									>
 										{num}
@@ -359,7 +359,7 @@ export function AppSetupPage() {
 																	<div className="text-15px font-semibold text-text-primary mb-1">
 																		{provider.name}
 																	</div>
-																	<div className="text-12px text-text-secondary">
+																	<div className="text-12px text-muted">
 																		Platform managed
 																	</div>
 																</div>
@@ -544,13 +544,13 @@ export function AppSetupPage() {
 											</h3>
 											<div className="flex flex-col gap-2 text-13px">
 												<div className="flex justify-between">
-													<span className="text-text-tertiary">App Name:</span>
+													<span className="text-muted">App Name:</span>
 													<span className="text-text-primary font-medium">
 														{formData.name}
 													</span>
 												</div>
 												<div className="flex justify-between">
-													<span className="text-text-tertiary">OAuth Providers:</span>
+													<span className="text-muted">OAuth Providers:</span>
 													<span className="text-text-primary font-medium">
 														{formData.enabledProviders.length > 0
 															? formData.enabledProviders
@@ -564,13 +564,13 @@ export function AppSetupPage() {
 													</span>
 												</div>
 												<div className="flex justify-between">
-													<span className="text-text-tertiary">Redirect URIs:</span>
+													<span className="text-muted">Redirect URIs:</span>
 													<span className="text-text-primary font-medium">
 														{formData.redirectUris.filter((uri) => uri.trim()).length}
 													</span>
 												</div>
 												<div className="flex justify-between">
-													<span className="text-text-tertiary">Session TTL:</span>
+													<span className="text-muted">Session TTL:</span>
 													<span className="text-text-primary font-medium">
 														{formData.sessionTtlDays} days
 													</span>
@@ -624,7 +624,7 @@ export function AppSetupPage() {
 												<h3 className="text-14px font-semibold mb-4 text-text-primary">
 													Default License Plan
 												</h3>
-												<Text className="text-13px text-text-tertiary mb-5">
+												<Text className="text-13px text-muted mb-5">
 													This plan will be automatically assigned to new users upon signup.
 												</Text>
 
@@ -804,7 +804,7 @@ export function AppSetupPage() {
 											>
 												{createAppMutation.isPending ? (
 													<span className="flex items-center gap-2">
-														<div className="spinner w-4 h-4" />
+													<Spinner className="w-4 h-4" />
 														Creating...
 													</span>
 												) : (
@@ -833,7 +833,7 @@ export function AppSetupPage() {
 								<Heading level={2} size="lg" className="mb-5">
 									Login Preview
 								</Heading>
-								<Text className="text-text-tertiary mb-6">
+								<Text className="text-muted mb-6">
 									This is what users will see when they login to your app
 								</Text>
 								{/* Mock Login Card */}
@@ -848,7 +848,7 @@ export function AppSetupPage() {
 										{formData.name || "My Application"}
 									</h3>
 									{formData.description && (
-										<Text className="text-13px text-text-secondary mb-6 leading-relaxed">
+										<Text className="text-13px text-muted mb-6 leading-relaxed">
 											{formData.description}
 										</Text>
 									)}
@@ -877,14 +877,14 @@ export function AppSetupPage() {
 										</div>
 									) : (
 										<div className="p-6 bg-surface-secondary rounded-lg border border-dashed border-border-primary mt-6">
-											<Text className="text-13px text-text-tertiary m-0">
+											<Text className="text-13px text-muted m-0">
 												No OAuth providers enabled
 											</Text>
 										</div>
 									)}
 
 									{/* Footer Text */}
-									<Text className="text-11px text-text-tertiary mt-6 leading-relaxed">
+									<Text className="text-11px text-muted mt-6 leading-relaxed">
 										By continuing, you agree to the Terms of Service and Privacy Policy
 									</Text>
 								</div>
@@ -896,7 +896,7 @@ export function AppSetupPage() {
 										size={16}
 										className="text-primary shrink-0 mt-0.5"
 									/>
-									<Text className="text-12px text-text-secondary m-0 leading-relaxed">
+									<Text className="text-12px text-muted m-0 leading-relaxed">
 										This preview shows the login screen with your app's branding and selected OAuth
 										providers
 									</Text>

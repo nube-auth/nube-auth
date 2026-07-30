@@ -62,7 +62,7 @@ export function OnboardingPage() {
 					<Heading level={1} size="lg">
 						Welcome to Nube Auth
 					</Heading>
-					<Text className="text-text-secondary mt-2">Get started by creating your first project</Text>
+					<Text className="text-muted mt-2">Get started by creating your first project</Text>
 				</div>
 			</div>
 
@@ -77,7 +77,7 @@ export function OnboardingPage() {
 							<Heading level={2} size="lg" className="mb-3">
 								Create your first project
 							</Heading>
-							<Text className="text-text-secondary mb-6 leading-relaxed">
+							<Text className="text-muted mb-6 leading-relaxed">
 								Set up authentication for your application in minutes. Nube Auth handles user
 								management, OAuth providers, sessions, and more so you can focus on building your
 								product.
@@ -253,7 +253,7 @@ const user = await auth.getUser();`}
 										value={formData.slug}
 										onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
 									/>
-									<Text className="text-text-tertiary mt-1.5">
+									<Text className="text-muted mt-1.5">
 										Auto-generated from project name. Use only letters, numbers, and hyphens.
 									</Text>
 								</Label>

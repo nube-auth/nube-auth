@@ -91,7 +91,7 @@ export function BillingDashboardPage() {
 					<Heading size="lg" className="mb-2">
 						Billing Dashboard
 					</Heading>
-					<Text className="text-text-muted">Monitor payments, subscriptions, and financial metrics</Text>
+					<Text className="text-muted">Monitor payments, subscriptions, and financial metrics</Text>
 				</div>
 
 				{/* Date Range Filters */}
@@ -101,7 +101,7 @@ export function BillingDashboardPage() {
 						value={dateRange.start || ""}
 						onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
 					/>
-					<Text className="text-text-muted">to</Text>
+					<Text className="text-muted">to</Text>
 					<Input
 						type="date"
 						value={dateRange.end || ""}
@@ -125,14 +125,14 @@ export function BillingDashboardPage() {
 					<div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-5 mb-8">
 						<Card>
 							<CardBody>
-								<Text className="text-text-muted mb-2 font-semibold uppercase tracking-wider">
+								<Text className="text-muted mb-2 font-semibold uppercase tracking-wider">
 									Total Revenue
 								</Text>
 								<Heading size="lg" className="mb-0">
 									{formatCurrency(stats?.revenue.total || 0)}
 								</Heading>
 								{stats?.transactions.total && (
-									<Text className="text-text-muted mt-2">
+									<Text className="text-muted mt-2">
 										{stats.transactions.total} transactions
 									</Text>
 								)}
@@ -141,14 +141,14 @@ export function BillingDashboardPage() {
 
 						<Card>
 							<CardBody>
-								<Text className="text-text-muted mb-2 font-semibold uppercase tracking-wider">
+								<Text className="text-muted mb-2 font-semibold uppercase tracking-wider">
 									Refunds
 								</Text>
 								<Heading size="lg" className="mb-0 text-danger">
 									{formatCurrency(stats?.refunds.total || 0)}
 								</Heading>
 								{stats?.refunds.percentage && (
-									<Text className="text-text-muted mt-2">
+									<Text className="text-muted mt-2">
 										{stats.refunds.percentage.toFixed(2)}% of revenue
 									</Text>
 								)}
@@ -157,7 +157,7 @@ export function BillingDashboardPage() {
 
 						<Card>
 							<CardBody>
-								<Text className="text-text-muted mb-2 font-semibold uppercase tracking-wider">
+								<Text className="text-muted mb-2 font-semibold uppercase tracking-wider">
 									Active Subscriptions
 								</Text>
 								<Heading size="lg" className="mb-0">
@@ -168,7 +168,7 @@ export function BillingDashboardPage() {
 
 						<Card>
 							<CardBody>
-								<Text className="text-text-muted mb-2 font-semibold uppercase tracking-wider">
+								<Text className="text-muted mb-2 font-semibold uppercase tracking-wider">
 									Webhook Health
 								</Text>
 								<Heading size="lg" className="mb-0">
@@ -192,7 +192,7 @@ export function BillingDashboardPage() {
 									{Object.entries(stats.revenue.by_provider).map(([provider, amount]) => (
 										<Card key={provider}>
 											<CardBody>
-												<Text className="text-text-muted mb-2 font-medium capitalize">
+												<Text className="text-muted mb-2 font-medium capitalize">
 													{provider === "lemon_squeezy"
 														? "LemonSqueezy"
 														: provider === "paddle"
@@ -221,7 +221,7 @@ export function BillingDashboardPage() {
 									{Object.entries(stats.revenue.by_type).map(([type, amount]) => (
 										<Card key={type}>
 											<CardBody>
-												<Text className="text-text-muted mb-2 font-medium capitalize">
+												<Text className="text-muted mb-2 font-medium capitalize">
 													{type}
 												</Text>
 												<Heading size="md" className="mb-0">
@@ -253,11 +253,11 @@ export function BillingDashboardPage() {
 									header={<DataTableHeader title="Recent Purchases" />}
 									isEmpty={purchasesData.data.length === 0}
 									emptyState={
-										<Text className="text-center py-10 text-text-muted">No purchases found</Text>
+										<Text className="text-center py-10 text-muted">No purchases found</Text>
 									}
 									footer={
 										purchasesData.pagination && (
-											<Text className="text-text-muted">
+											<Text className="text-muted">
 												Showing {purchasesData.data.length} of {purchasesData.pagination.total}{" "}
 												purchases
 												{purchasesData.pagination.hasMore && " (more available)"}
@@ -313,11 +313,11 @@ export function BillingDashboardPage() {
 									header={<DataTableHeader title="Recent Transactions" />}
 									isEmpty={transactionsData.data.length === 0}
 									emptyState={
-										<Text className="text-center py-10 text-text-muted">No transactions found</Text>
+										<Text className="text-center py-10 text-muted">No transactions found</Text>
 									}
 									footer={
 										transactionsData.pagination && (
-											<Text className="text-text-muted">
+											<Text className="text-muted">
 												Showing {transactionsData.data.length} of{" "}
 												{transactionsData.pagination.total} transactions
 												{transactionsData.pagination.hasMore && " (more available)"}
@@ -375,7 +375,7 @@ export function BillingDashboardPage() {
 									<Heading size="md" className="mb-2">
 										Billing Overview
 									</Heading>
-									<Text className="text-text-muted max-w-md mx-auto">
+									<Text className="text-muted max-w-md mx-auto">
 										Monitor your payment metrics and transaction history. Use the tabs above to view
 										detailed purchases and transactions from LemonSqueezy and Paddle.
 									</Text>

@@ -187,7 +187,7 @@ export function AppSettingsPage() {
 				<Heading level={1} size="lg">
 					App Settings
 				</Heading>
-				<Text className="text-muted-foreground mt-1">Configure your application settings and preferences</Text>
+				<Text className="text-muted mt-1">Configure your application settings and preferences</Text>
 			</div>
 
 			{/* Tabs */}
@@ -221,7 +221,7 @@ export function AppSettingsPage() {
 										required
 										placeholder="My Awesome App"
 									/>
-									<Text className="text-muted-foreground text-xs">
+									<Text className="text-muted text-xs">
 										The public name of your application
 									</Text>
 								</div>
@@ -240,7 +240,7 @@ export function AppSettingsPage() {
 										pattern="[a-z0-9-]+"
 										placeholder="my-awesome-app"
 									/>
-									<Text className="text-muted-foreground text-xs">
+									<Text className="text-muted text-xs">
 										URL-friendly identifier (lowercase, hyphens only)
 									</Text>
 								</div>
@@ -255,7 +255,7 @@ export function AppSettingsPage() {
 										rows={3}
 										placeholder="A brief description of your application..."
 									/>
-									<Text className="text-muted-foreground text-xs">
+									<Text className="text-muted text-xs">
 										Optional description for internal reference
 									</Text>
 								</div>
@@ -286,7 +286,7 @@ export function AppSettingsPage() {
 									<Heading level={3} size="sm">
 										Redirect URIs
 									</Heading>
-									<Text className="text-muted-foreground text-sm mt-1">
+									<Text className="text-muted text-sm mt-1">
 										Allowed callback URLs after successful authentication
 									</Text>
 								</div>
@@ -333,7 +333,7 @@ export function AppSettingsPage() {
 									<Heading level={3} size="sm">
 										Allowed Hosts
 									</Heading>
-									<Text className="text-muted-foreground text-sm mt-1">
+									<Text className="text-muted text-sm mt-1">
 										Domains allowed to make requests to your app
 									</Text>
 								</div>
@@ -379,7 +379,7 @@ export function AppSettingsPage() {
 									<Heading level={3} size="sm">
 										CORS Origins
 									</Heading>
-									<Text className="text-muted-foreground text-sm mt-1">
+									<Text className="text-muted text-sm mt-1">
 										Origins permitted to make cross-origin requests to your app's API
 									</Text>
 								</div>
@@ -456,7 +456,7 @@ export function AppSettingsPage() {
 										max={120}
 										required
 									/>
-									<Text className="text-muted-foreground text-xs">
+									<Text className="text-muted text-xs">
 										Duration to lock accounts after failed login attempts (5-120 minutes)
 									</Text>
 								</div>
@@ -473,7 +473,7 @@ export function AppSettingsPage() {
 										max={60}
 										required
 									/>
-									<Text className="text-muted-foreground text-xs">
+									<Text className="text-muted text-xs">
 										How long to cache user session data (1-60 minutes)
 									</Text>
 								</div>
@@ -490,7 +490,7 @@ export function AppSettingsPage() {
 										max={1000}
 										required
 									/>
-									<Text className="text-muted-foreground text-xs">
+									<Text className="text-muted text-xs">
 										Maximum API requests per minute per user (10-1000)
 									</Text>
 								</div>
@@ -525,7 +525,7 @@ export function AppSettingsPage() {
 								<Heading level={3} size="sm" className="text-danger">
 									Danger Zone
 								</Heading>
-								<Text className="text-muted-foreground text-sm mt-1">
+								<Text className="text-muted text-sm mt-1">
 									These actions are permanent and cannot be undone.
 								</Text>
 							</div>
@@ -533,11 +533,11 @@ export function AppSettingsPage() {
 							<div className="rounded-lg border border-danger/25 bg-danger/10 p-5 space-y-4">
 								<div>
 									<Text className="font-semibold text-danger text-sm">Delete This App</Text>
-									<Text className="text-muted-foreground text-sm mt-1">
+									<Text className="text-muted text-sm mt-1">
 										Once you delete an app, there is no going back. This will:
 									</Text>
 								</div>
-								<ul className="text-muted-foreground text-sm list-disc pl-5 space-y-1">
+								<ul className="text-muted text-sm list-disc pl-5 space-y-1">
 									<li>Delete all user data and sessions</li>
 									<li>Revoke all active licenses</li>
 									<li>Remove all API keys and integrations</li>

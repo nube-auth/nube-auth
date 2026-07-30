@@ -54,14 +54,14 @@ export function ProjectStatsPage() {
 				<Heading level={1} size="lg">
 					Project Statistics
 				</Heading>
-				<Text className="text-text-secondary">View detailed analytics and insights for {project.name}</Text>
+				<Text className="text-muted">View detailed analytics and insights for {project.name}</Text>
 			</div>
 
 			{/* Stats Cards */}
 			<div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-5 mb-8">
 				<Card>
 					<CardBody>
-						<Text className="text-13px text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
+						<Text className="text-13px text-muted mb-2 font-semibold uppercase tracking-wider">
 							Total Apps
 						</Text>
 						<Text className="text-32px font-bold text-text-primary">{stats?.totalApps || 0}</Text>
@@ -70,7 +70,7 @@ export function ProjectStatsPage() {
 
 				<Card>
 					<CardBody>
-						<Text className="text-13px text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
+						<Text className="text-13px text-muted mb-2 font-semibold uppercase tracking-wider">
 							Total Users
 						</Text>
 						<Text className="text-32px font-bold text-text-primary">{stats?.totalUsers || 0}</Text>
@@ -79,7 +79,7 @@ export function ProjectStatsPage() {
 
 				<Card>
 					<CardBody>
-						<Text className="text-13px text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
+						<Text className="text-13px text-muted mb-2 font-semibold uppercase tracking-wider">
 							Active Licenses
 						</Text>
 						<Text className="text-32px font-bold text-text-primary">{stats?.activeLicenses || 0}</Text>
@@ -88,7 +88,7 @@ export function ProjectStatsPage() {
 
 				<Card>
 					<CardBody>
-						<Text className="text-13px text-text-tertiary mb-2 font-semibold uppercase tracking-wider">
+						<Text className="text-13px text-muted mb-2 font-semibold uppercase tracking-wider">
 							Total Revenue
 						</Text>
 						<Text className="text-32px font-bold text-text-primary">
@@ -96,7 +96,7 @@ export function ProjectStatsPage() {
 						</Text>
 						{stats?.revenueByCurrency &&
 							Object.keys(stats.revenueByCurrency).filter((c) => c !== "usd").length > 0 && (
-								<Text className="text-11px text-text-tertiary mt-1">
+								<Text className="text-11px text-muted mt-1">
 									+
 									{Object.entries(stats.revenueByCurrency)
 										.filter(([c]) => c !== "usd")
@@ -115,7 +115,7 @@ export function ProjectStatsPage() {
 					<Heading level={2} size="lg" className="mb-2">
 						Advanced Analytics Coming Soon
 					</Heading>
-					<Text className="text-text-secondary max-w-[480px] mx-auto">
+					<Text className="text-muted max-w-[480px] mx-auto">
 						We're working on detailed charts, user growth trends, retention analytics, and more. Stay tuned
 						for updates!
 					</Text>

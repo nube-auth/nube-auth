@@ -142,7 +142,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 			<DialogPopup className="max-w-[900px] w-full">
 				<DialogHeader>
 					<DialogTitle>Invite User</DialogTitle>
-					<Text className="text-text-secondary text-sm mt-1">Send an invitation or grant access to an existing user</Text>
+					<Text className="text-muted text-sm mt-1">Send an invitation or grant access to an existing user</Text>
 				</DialogHeader>
 
 				<DialogBody>
@@ -176,7 +176,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 							disabled={loading}
 							placeholder="user@example.com"
 						/>
-						<Text className="text-xs text-text-tertiary mt-1.5">We'll check if this user exists before sending an invitation</Text>
+						<Text className="text-xs text-muted mt-1.5">We'll check if this user exists before sending an invitation</Text>
 					</div>
 
 					<div className="mb-5">
@@ -190,7 +190,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 							/>
 							<div className="flex-1">
 								<div className="text-14px font-semibold text-text-primary">Grant License</div>
-								<div className="text-12px text-text-secondary mt-0.5">Automatically grant a license when the user signs up</div>
+								<div className="text-12px text-muted mt-0.5">Automatically grant a license when the user signs up</div>
 							</div>
 						</label>
 					</div>
@@ -238,11 +238,11 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 										placeholder="Leave empty for no expiry"
 										min="1"
 									/>
-									<span className="absolute right-3 top-1/2 -translate-y-1/2 text-13px text-text-tertiary pointer-events-none">
+									<span className="absolute right-3 top-1/2 -translate-y-1/2 text-13px text-muted pointer-events-none">
 										days
 									</span>
 								</div>
-								<Text className="text-xs text-text-tertiary mt-1.5">
+								<Text className="text-xs text-muted mt-1.5">
 									Leave empty for lifetime access. Set a number of days for time-limited licenses.
 								</Text>
 							</div>
