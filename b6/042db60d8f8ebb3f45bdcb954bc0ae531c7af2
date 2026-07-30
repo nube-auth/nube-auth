@@ -1,0 +1,117 @@
+apps/dashboard/admin/src/pages/TransactionExport.tsx
+  s_7af4312913410e::t_fef3895a42d50c 177,209,214,216,321,327,333,368,376,396
+apps/dashboard/admin/src/pages/NotFound.tsx
+  s_7af4312913410e::t_866e8f16f65721 24
+apps/dashboard/admin/src/pages/BillingDashboard.tsx
+  s_7af4312913410e::t_fef3895a42d50c 104,128,135,144,151,160,171,195,224,256,260,316,320,378
+  s_7af4312913410e::t_866e8f16f65721 94
+apps/dashboard/admin/src/pages/AppLicenses.tsx
+  s_7af4312913410e::t_fef3895a42d50c 117,264,299,301,306,317,338,433,509,643,658,669,671,676,692,698,772,786,916,987,990,995,1032,1155,1164,1169,1177,1185,1188
+apps/dashboard/admin/src/pages/AppSetup.tsx
+  s_7af4312913410e::t_fef3895a42d50c 214,228,362,547,553,567,573,627,836,851,880,887,899
+  s_7af4312913410e::t_585cb3228a985b 807
+apps/dashboard/admin/src/pages/PaymentTestingPlayground.tsx
+  s_7af4312913410e::t_fef3895a42d50c 227,250,382,392,417,504,519,553,556,562,565,571,574,593,598,608,636,676,686,689
+apps/dashboard/admin/ADMIN_UI_AUDIT.md
+  h_95aea6b4aa8772 1-460
+apps/dashboard/admin/src/pages/ProjectPaymentProviders.tsx
+  s_7af4312913410e::t_fef3895a42d50c 295,324,341,437,501,553,558,564,580,589,600,604,612,615,621,632,663,691-692,713,716
+apps/dashboard/admin/src/index.css
+  s_7af4312913410e::t_7c5acae6040c0c 1-224
+  s_7af4312913410e::t_6b8d1addf194e0 280-284
+  s_7af4312913410e::t_0bd5a43be62d0e 265-279,285
+  s_7af4312913410e::t_7b60ee325870c4 225-264
+apps/dashboard/admin/src/pages/AppDevelopers.tsx
+  s_7af4312913410e::t_fef3895a42d50c 77,96,139,212,230,250,280,330,366,442,470,558,647,663
+apps/dashboard/admin/src/components/IconPicker.tsx
+  s_7af4312913410e::t_2a0fb51006e5db 230
+  s_7af4312913410e::t_af1c5779cac0d7 187
+  s_7af4312913410e::t_91932e1fed0250 238-240
+  s_7af4312913410e::t_782fdb4a379445 247
+  s_7af4312913410e::t_d19383876d6507 165
+  s_7af4312913410e::t_4ab05a7acfd3d6 227
+apps/dashboard/admin/src/pages/AppSettings.tsx
+  s_7af4312913410e::t_fef3895a42d50c 190,224,243,258,289,336,382,459,476,493,528,536,540
+apps/dashboard/admin/src/pages/Onboarding.tsx
+  s_7af4312913410e::t_866e8f16f65721 65,80
+  s_7af4312913410e::t_fef3895a42d50c 256
+apps/dashboard/admin/src/pages/ProjectStats.tsx
+  s_7af4312913410e::t_fef3895a42d50c 64,73,82,91,99,118
+  s_7af4312913410e::t_866e8f16f65721 57
+apps/dashboard/admin/src/pages/AppPaymentSettings.tsx
+  s_7af4312913410e::t_fef3895a42d50c 106,117,151,197,227
+apps/dashboard/admin/src/pages/WebhookMonitoring.tsx
+  s_7af4312913410e::t_fef3895a42d50c 129,141,147,155,163,190,198,214,220,234,257,261,274,297,329,436,440,445,450,494
+apps/dashboard/admin/src/pages/Profile.tsx
+  s_7af4312913410e::t_fef3895a42d50c 181,193,234,241
+apps/dashboard/admin/src/pages/AppApiKeys.tsx
+  s_7af4312913410e::t_fef3895a42d50c 188,196,206,210,224,228,258,262,298
+apps/dashboard/admin/src/pages/AppSubscriptions.tsx
+  s_7af4312913410e::t_fef3895a42d50c 154,185,213,250,263,273,279
+apps/dashboard/admin/src/pages/ProjectTeam.tsx
+  s_7af4312913410e::t_fef3895a42d50c 112,158,175,213,251,294,298
+apps/dashboard/admin/src/components/StatCard.tsx
+  s_7af4312913410e::t_4a87e3a2648541 47
+  s_7af4312913410e::t_c47d0650bf335c 35
+apps/dashboard/admin/src/pages/Licenses.tsx
+  s_7af4312913410e::t_fef3895a42d50c 58,66,74-75,121,144
+  s_7af4312913410e::t_866e8f16f65721 50
+apps/dashboard/admin/src/layouts/DashboardLayout.tsx
+  s_7af4312913410e::t_fd411380da145b 118
+apps/dashboard/admin/src/components/InviteUserModal.tsx
+  s_7af4312913410e::t_4007932b214b2a 145
+  s_7af4312913410e::t_56b2dc86e5d367 179
+  s_7af4312913410e::t_27aeb1f3cdc6fa 193
+  s_7af4312913410e::t_97cb65fe948dad 245
+  s_7af4312913410e::t_2a4f3bd2e0c995 241
+apps/dashboard/admin/src/main.tsx
+  s_7af4312913410e::t_8b6aea04fe031d 5
+apps/dashboard/admin/src/pages/RefundProcessing.tsx
+  s_7af4312913410e::t_fef3895a42d50c 160,191,257,347,375,378,381,393
+apps/dashboard/admin/src/pages/ProjectDetail.tsx
+  s_7af4312913410e::t_866e8f16f65721 92
+  s_7af4312913410e::t_fef3895a42d50c 96,102,124,134,144,146,159,170,226,248,261,291
+apps/dashboard/admin/src/components/ErrorBoundary.tsx
+  s_7af4312913410e::t_b45ae2a056e9e3 40
+apps/dashboard/admin/src/pages/AppUsers.tsx
+  s_7af4312913410e::t_fef3895a42d50c 264,318,370,392,411,514,529,559
+apps/dashboard/admin/src/App.tsx
+  s_7af4312913410e::t_609797fbdb8627 63-64
+  s_7af4312913410e::t_e634f172e0f1ce 6
+apps/dashboard/admin/src/pages/ProjectSettings.tsx
+  s_7af4312913410e::t_fef3895a42d50c 117,124,134,137,144,153,176,184,187,224,243,259
+  s_7af4312913410e::t_866e8f16f65721 97
+apps/dashboard/admin/src/pages/CreateProject.tsx
+  s_7af4312913410e::t_866e8f16f65721 61
+  s_7af4312913410e::t_fef3895a42d50c 84,100,123,148,165,172,179,191
+apps/dashboard/admin/src/pages/Root.tsx
+  s_7af4312913410e::t_fef3895a42d50c 80,116,125
+  s_7af4312913410e::t_866e8f16f65721 64
+apps/dashboard/admin/src/pages/AppOAuth.tsx
+  s_7af4312913410e::t_fef3895a42d50c 116,142,175,181
+apps/dashboard/admin/src/pages/AppPromotions.tsx
+  s_7af4312913410e::t_fef3895a42d50c 255,293,306,417,471,476,521,545
+apps/dashboard/admin/src/pages/AppDetail.tsx
+  s_7af4312913410e::t_fef3895a42d50c 143,147,155,178,206
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "b6042db60d8f8ebb3f45bdcb954bc0ae531c7af2",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_7af4312913410e": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "60fba4a9-a32e-4d5b-ad46-6785f253ea0a",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
