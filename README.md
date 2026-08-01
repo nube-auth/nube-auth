@@ -107,10 +107,10 @@ pnpm install
 
 ```bash
 # Start PostgreSQL and Redis with Docker
-docker compose -f deployment/docker-compose.yml up -d postgres redis
+docker compose -f nube-scripts/deploy/docker/docker-compose.yml up -d postgres redis
 
 # Verify services are running
-docker compose -f deployment/docker-compose.yml ps
+docker compose -f nube-scripts/deploy/docker/docker-compose.yml ps
 ```
 
 ### 3. Configure Environment
@@ -177,7 +177,7 @@ nube-auth/
 ├── docs/
 │   ├── security/         # Security Documentation
 │   └── guides/           # Development Guides
-└── deployment/           # Dockerfiles + docker-compose for local infra & Railway
+└── nube-scripts/       # Deployment configs, scripts, docs, Dockerfiles, docker-compose
 ```
 
 ## 🛠️ Development

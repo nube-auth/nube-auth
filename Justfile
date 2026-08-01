@@ -1,1 +1,1 @@
-nube-scripts/scripts/Justfile
+nube-scripts/dev/Justfile
