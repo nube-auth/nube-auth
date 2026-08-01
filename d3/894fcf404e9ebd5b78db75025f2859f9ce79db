@@ -1,0 +1,175 @@
+apps/services/core/src/utils/encryption.ts
+  s_e0fee73ba207bf::t_9abf7744a6e8b1 251-257
+apps/packages/db/src/utils/jsonb.ts
+  s_e0fee73ba207bf::t_1026469d5f8bd9 113-132,135-136,154-157,162-163,187-188,194-195,204,211-215
+apps/packages/cache/src/client.ts
+  h_95aea6b4aa8772 2,4,57,77,89,104,118,128,145,156,166,176,186,197,208,218,228,242,268,317,329,340,350,374,387,398,431,465
+  s_e0fee73ba207bf::t_6c4a0fe3f2c395 3
+apps/services/core/src/utils/crypto.ts
+  s_e0fee73ba207bf::t_4a523b6539301d 22,25-27
+apps/packages/auth/tsconfig.json
+  s_e0fee73ba207bf::t_138d09e2cafc18 7
+  s_e0fee73ba207bf::t_9b0ff87b325fa8 4
+apps/services/gateway/src/routes/debug.ts
+  s_e0fee73ba207bf::t_70424dccb0edc8 211-213,225-226
+apps/services/core/src/routes/v1/admin/promotions.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 296,327,356,441,465
+  s_e0fee73ba207bf::t_44df57d758e558 481
+  s_e0fee73ba207bf::t_23217795253197 482
+apps/services/core/src/billing/services/provider-selector.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 64
+apps/services/core/src/utils/outbound-events.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 30
+apps/services/gateway/src/index.ts
+  s_e0fee73ba207bf::t_770e705d88e708 199-200,303-304
+  s_e0fee73ba207bf::t_44df57d758e558 151
+  s_e0fee73ba207bf::t_22554c300b7fee 5,29-30
+  s_e0fee73ba207bf::t_4a721af3d5cf3d 49-50,57-59,61-69
+  s_e0fee73ba207bf::t_b3d9ae25a5a139 153
+  s_e0fee73ba207bf::t_4c2bbcb14bec68 31
+apps/services/core/src/routes/v1/admin/subscriptions.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 95,97,100,103,139,141,144,147
+apps/services/core/src/middleware/auth.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 66
+  s_e0fee73ba207bf::t_4a523b6539301d 5,32
+apps/services/core/src/routes/v1/billing/refunds-clean.ts
+  s_e0fee73ba207bf::t_adbccae4f09126 90
+  s_e0fee73ba207bf::t_9abf7744a6e8b1 89
+apps/services/core/src/routes/v1/admin/global-licenses.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 40
+apps/services/core/src/middleware/s2s.ts
+  s_e0fee73ba207bf::t_44df57d758e558 48
+  s_e0fee73ba207bf::t_23217795253197 49
+apps/services/gateway/src/routes/payments.ts
+  s_e0fee73ba207bf::t_8becbccfa39d1f 171-172
+apps/services/gateway/src/routes/s2s.ts
+  s_e0fee73ba207bf::t_e3820431b67a90 39,61
+apps/services/core/src/routes/v1/admin/members.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 55,327
+apps/services/gateway/src/routes/me.ts
+  s_e0fee73ba207bf::t_295b4fd3d132e9 251
+  s_e0fee73ba207bf::t_9e2471f425359c 259,261,263,276-277
+  s_e0fee73ba207bf::t_49a77f6b2a19fe 275
+  s_e0fee73ba207bf::t_4db10869b50e4e 288-295
+  s_e0fee73ba207bf::t_87d4364786dfbe 278-287
+apps/services/core/src/routes/v1/admin/apps.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 315,415,460,535,600,606
+apps/services/workers/src/index.ts
+  s_e0fee73ba207bf::t_aa81a08856e84f 135
+  s_e0fee73ba207bf::t_e81affd0ed6440 12,82,179
+apps/services/gateway/src/routes/appCatalog.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 195-196,299,301-302
+  s_e0fee73ba207bf::t_e81affd0ed6440 169-176
+apps/services/gateway/src/routes/auth.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 255
+apps/services/core/src/routes/v1/auth/index.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 276,376,422,496,506
+apps/services/core/src/routes/v1/admin/providers.ts
+  s_e0fee73ba207bf::t_68cc5194eb4378 219-220,231,285-286,322,384-385,421
+apps/packages/billing/src/outbound-events.ts
+  s_e0fee73ba207bf::t_a2360ddedfd62b 30
+apps/services/workers/src/sync-plan-to-providers.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 59
+apps/services/core/src/utils/license.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 37
+tsconfig.json
+  s_e0fee73ba207bf::t_4a5d8453c9becf 14-15
+apps/packages/db/src/index.ts
+  s_e0fee73ba207bf::t_770e705d88e708 23
+apps/packages/billing/src/services/purchases.ts
+  s_e0fee73ba207bf::t_a2360ddedfd62b 316,320
+apps/packages/auth/src/adapters/google.ts
+  s_e0fee73ba207bf::t_23217795253197 120
+  s_e0fee73ba207bf::t_44df57d758e558 119
+apps/services/core/src/routes/v1/admin/license-management.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 234-235,237,279,321-322,324,456-457,462,497,570,589
+apps/services/core/src/index.ts
+  s_e0fee73ba207bf::t_17548e58004e51 5,22-23
+  s_e0fee73ba207bf::t_770e705d88e708 107-108,120-121
+  s_e0fee73ba207bf::t_4a721af3d5cf3d 38-39
+  s_e0fee73ba207bf::t_e6f142cfeec9a4 24
+apps/packages/shared/src/utils/credentials.ts
+  s_e0fee73ba207bf::t_063bb4f7f2bdcf 4
+  s_e0fee73ba207bf::t_6e6eb7b738e5c5 121,123,125,133,135,137
+  s_e0fee73ba207bf::t_23217795253197 1
+  s_e0fee73ba207bf::t_12f4bc85dfd5ee 35,37,43-44,51,53,59-60
+  s_e0fee73ba207bf::t_170225ae2ec0d8 5
+apps/services/core/src/routes/v1/admin/billing.ts
+  s_e0fee73ba207bf::t_0c943f8e0af75e 161-162
+  s_e0fee73ba207bf::t_9e2471f425359c 314-316,346-348,381,535,537,585
+  s_e0fee73ba207bf::t_a52ce890e9fbec 8,32-36,40-41,62-63,65,82-94,112-130,146-160,163-164
+  s_e0fee73ba207bf::t_9f35ccde0cb6fa 37-39
+  s_e0fee73ba207bf::t_c799d97730e601 64
+apps/services/core/src/routes/v1/billing/index.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 70,105
+apps/services/core/src/routes/v1/admin/test.ts
+  s_e0fee73ba207bf::t_6d651badcb2427 360
+  s_e0fee73ba207bf::t_9e2471f425359c 450,454,608,612
+  s_e0fee73ba207bf::t_9abf7744a6e8b1 282,284,287
+  s_e0fee73ba207bf::t_309ac1c28842a1 283
+apps/services/core/src/routes/v1/subscription/index.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 52,55,58
+apps/services/gateway/src/routes/license.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 100,102-103
+apps/services/gateway/src/middleware/allowedHosts.ts
+  s_e0fee73ba207bf::t_295b4fd3d132e9 48
+  s_e0fee73ba207bf::t_44df57d758e558 80
+  s_e0fee73ba207bf::t_8becbccfa39d1f 82
+apps/packages/billing/src/services/webhook-handler.ts
+  s_e0fee73ba207bf::t_a2360ddedfd62b 49
+apps/packages/shared/src/utils/encryption.ts
+  s_e0fee73ba207bf::t_0d974ee997f971 26,59
+apps/services/core/src/routes/v1/billing/checkout.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 80
+apps/packages/auth/src/session.ts
+  s_e0fee73ba207bf::t_4a523b6539301d 3-12,17-20
+  s_e0fee73ba207bf::t_202ddbf6527e55 76-77,81-83
+  s_e0fee73ba207bf::t_ecd83cf9ba6a4a 84
+apps/services/core/src/billing/services/purchases.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 316,320
+apps/services/core/src/routes/v1/admin/routing-rules.ts
+  s_e0fee73ba207bf::t_9e970b7cca095e 248,251
+  s_e0fee73ba207bf::t_9e2471f425359c 74,121,201
+  s_e0fee73ba207bf::t_fd9908bbfa643b 176,179
+  s_e0fee73ba207bf::t_3dc6dfc1b0d7f3 292,294
+  s_e0fee73ba207bf::t_7a1fe3c0e71b18 109,111
+  s_e0fee73ba207bf::t_76ee6edda8528e 62,64
+apps/services/gateway/src/lib/appSecuritySettings.ts
+  s_e0fee73ba207bf::t_8becbccfa39d1f 46
+  s_e0fee73ba207bf::t_770e705d88e708 44-45,60,62
+apps/services/core/src/routes/v1/license/index.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 62,64,376
+apps/services/gateway/src/utils/token.ts
+  s_e0fee73ba207bf::t_4a523b6539301d 32,35-37
+apps/services/core/src/routes/v1/admin/stats.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 143,243
+  s_e0fee73ba207bf::t_9abf7744a6e8b1 130-134,136
+apps/services/core/src/billing/services/webhook-handler.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 49
+apps/packages/auth/src/index.ts
+  s_e0fee73ba207bf::t_784be0b9603867 20
+apps/packages/db/src/queries.ts
+  s_e0fee73ba207bf::t_9e2471f425359c 43,98,189,275,343,429,677,940,1021,1163,1246,1355,1462,1677,1741,1923,2003,2239,2457
+  s_e0fee73ba207bf::t_a2360ddedfd62b 250,482,987
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "d3894fcf404e9ebd5b78db75025f2859f9ce79db",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
