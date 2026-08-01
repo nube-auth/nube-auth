@@ -45,7 +45,7 @@ function hostMatchesPattern(hostname: string, pattern: string): boolean {
 	return false;
 }
 
-export async function allowedHostsMiddleware(c: Context, next: Next): Promise<Response | undefined> {
+export async function allowedHostsMiddleware(c: Context, next: Next) {
 	const appId = (c as any).get("appId") as string | undefined;
 	if (!appId) return next();
 
@@ -77,9 +77,9 @@ export async function allowedHostsMiddleware(c: Context, next: Next): Promise<Re
 			log.warn({ appId, hostname, path }, "Request blocked: host not in allowedHosts");
 			return c.json({ error: "Origin not allowed" }, 403) as unknown as Response;
 		}
-	} catch (err) {
+	} catch (error) {
 		// Fail open — don't block legitimate requests on transient errors.
-		log.error({ err: serializeError(err as Error), appId }, "allowedHosts: failed to look up settings");
+		log.error({ err: serializeError(error as Error), appId }, "allowedHosts: failed to look up settings");
 	}
 
 	return next();

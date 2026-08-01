@@ -1,4 +1,7 @@
+import { createLogger, serializeError } from "./logger.js";
 import { decrypt, encrypt, maskSecret } from "./encryption.js";
+
+const log = createLogger("credentials");
 
 /**
  * Credential encryption utilities specifically for OAuth and payment providers
@@ -29,32 +32,32 @@ export interface PaymentCredentials {
 /**
  * Encrypt OAuth credentials for storage
  */
-export function encryptOAuthCredentials(credentials: OAuthCredentials): string {
+export function encryptOAuthCredentials(credentials: OAuthCredentials, encryptionKey: string): string {
 	const json = JSON.stringify(credentials);
-	return encrypt(json);
+	return encrypt(json, encryptionKey);
 }
 
 /**
  * Decrypt OAuth credentials from storage
  */
-export function decryptOAuthCredentials(encryptedCredentials: string): OAuthCredentials {
-	const json = decrypt(encryptedCredentials);
+export function decryptOAuthCredentials(encryptedCredentials: string, encryptionKey: string): OAuthCredentials {
+	const json = decrypt(encryptedCredentials, encryptionKey);
 	return JSON.parse(json) as OAuthCredentials;
 }
 
 /**
  * Encrypt payment credentials for storage
  */
-export function encryptPaymentCredentials(credentials: PaymentCredentials): string {
+export function encryptPaymentCredentials(credentials: PaymentCredentials, encryptionKey: string): string {
 	const json = JSON.stringify(credentials);
-	return encrypt(json);
+	return encrypt(json, encryptionKey);
 }
 
 /**
  * Decrypt payment credentials from storage
  */
-export function decryptPaymentCredentials(encryptedCredentials: string): PaymentCredentials {
-	const json = decrypt(encryptedCredentials);
+export function decryptPaymentCredentials(encryptedCredentials: string, encryptionKey: string): PaymentCredentials {
+	const json = decrypt(encryptedCredentials, encryptionKey);
 	return JSON.parse(json) as PaymentCredentials;
 }
 
@@ -115,11 +118,11 @@ export function validatePaymentCredentials(credentials: unknown): credentials is
 /**
  * Safely try to decrypt credentials, return null if fails
  */
-export function safeDecryptOAuthCredentials(encryptedCredentials: string): OAuthCredentials | null {
+export function safeDecryptOAuthCredentials(encryptedCredentials: string, encryptionKey: string): OAuthCredentials | null {
 	try {
-		return decryptOAuthCredentials(encryptedCredentials);
+		return decryptOAuthCredentials(encryptedCredentials, encryptionKey);
 	} catch (error) {
-		console.error("Failed to decrypt OAuth credentials:", error);
+		log.error({ err: serializeError(error as Error) }, "Failed to decrypt OAuth credentials");
 		return null;
 	}
 }
@@ -127,11 +130,11 @@ export function safeDecryptOAuthCredentials(encryptedCredentials: string): OAuth
 /**
  * Safely try to decrypt credentials, return null if fails
  */
-export function safeDecryptPaymentCredentials(encryptedCredentials: string): PaymentCredentials | null {
+export function safeDecryptPaymentCredentials(encryptedCredentials: string, encryptionKey: string): PaymentCredentials | null {
 	try {
-		return decryptPaymentCredentials(encryptedCredentials);
+		return decryptPaymentCredentials(encryptedCredentials, encryptionKey);
 	} catch (error) {
-		console.error("Failed to decrypt payment credentials:", error);
+		log.error({ err: serializeError(error as Error) }, "Failed to decrypt payment credentials");
 		return null;
 	}
 }

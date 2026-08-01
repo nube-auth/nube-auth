@@ -116,8 +116,8 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
 						: JSON.stringify(response.body);
 					rawData = JSON.parse(bodyStr);
 					log.debug({ parsed: true }, "Parsed response body");
-				} catch (e) {
-					log.error({ body: response.body, parseError: e instanceof Error ? e.message : String(e) }, "Failed to parse body");
+				} catch (error) {
+					log.error({ body: response.body, parseError: error instanceof Error ? error.message : String(error) }, "Failed to parse body");
 					throw new Error(`Failed to parse token response: ${response.body}`);
 				}
 			}

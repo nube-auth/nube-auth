@@ -92,15 +92,15 @@ subscriptionsRouter.get("/", async (c: Context) => {
 
 		const results = await Promise.all(
 			filtered.map(async (sub) => {
-				const user = await userQueries.findById(db, sub.user_id);
+				const user = await userQueries.findByInternalId_(db, sub.user_id);
 				const license = sub.license_id
-					? await licenseQueries.findById(db, sub.license_id)
+					? await licenseQueries.findByInternalId_(db, sub.license_id)
 					: null;
 				const plan = license
-					? await planQueries.findById(db, license.plan_id)
+					? await planQueries.findByInternalId_(db, license.plan_id)
 					: null;
 				const price = sub.price_id
-					? await priceQueries.findById(db, sub.price_id)
+					? await priceQueries.findByInternalId_(db, sub.price_id)
 					: null;
 				return formatSubscription(sub, { user, plan, price });
 			}),
@@ -136,15 +136,15 @@ subscriptionsRouter.get("/:subId", async (c: Context) => {
 		if (!sub || sub.app_id !== app.id)
 			return c.json({ error: "Subscription not found" }, 404);
 
-		const user = await userQueries.findById(db, sub.user_id);
+		const user = await userQueries.findByInternalId_(db, sub.user_id);
 		const license = sub.license_id
-			? await licenseQueries.findById(db, sub.license_id)
+			? await licenseQueries.findByInternalId_(db, sub.license_id)
 			: null;
 		const plan = license
-			? await planQueries.findById(db, license.plan_id)
+			? await planQueries.findByInternalId_(db, license.plan_id)
 			: null;
 		const price = sub.price_id
-			? await priceQueries.findById(db, sub.price_id)
+			? await priceQueries.findByInternalId_(db, sub.price_id)
 			: null;
 
 		return c.json(formatSubscription(sub, { user, plan, price }));

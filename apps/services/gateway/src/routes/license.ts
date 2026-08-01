@@ -97,10 +97,10 @@ licenseRoutes.get("/:appId", async (c: Context) => {
 		}
 
 		// Resolve plan slug via price chain, falling back to direct plan_id
-		const price = license.price_id ? await priceQueries.findById(db, license.price_id) : null;
+		const price = license.price_id ? await priceQueries.findByInternalId_(db, license.price_id) : null;
 		const plan = price
-			? await planQueries.findById(db, price.plan_id)
-			: await planQueries.findById(db, license.plan_id);
+			? await planQueries.findByInternalId_(db, price.plan_id)
+			: await planQueries.findByInternalId_(db, license.plan_id);
 
 		const result = {
 			licenseId: license.public_id,

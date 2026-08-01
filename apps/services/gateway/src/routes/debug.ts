@@ -208,6 +208,9 @@ debugRoutes.get("/test-getcookie", (c: Context) => {
 		}
 	});
 	
+	const adminCookie = cookies[ADMIN_SESSION_COOKIE];
+	const userCookie = cookies[USER_SESSION_COOKIE];
+	
 	return c.json({
 		rawCookieHeader: `${rawCookieHeader.substring(0, 100)}...`,
 		cookieNames: {
@@ -219,8 +222,8 @@ debugRoutes.get("/test-getcookie", (c: Context) => {
 			userSession: userSessionFromGetCookie ? `${userSessionFromGetCookie.substring(0, 20)}...` : null,
 		},
 		manualParsing: {
-			[ADMIN_SESSION_COOKIE]: cookies[ADMIN_SESSION_COOKIE] ? `${cookies[ADMIN_SESSION_COOKIE].substring(0, 20)}...` : null,
-			[USER_SESSION_COOKIE]: cookies[USER_SESSION_COOKIE] ? `${cookies[USER_SESSION_COOKIE].substring(0, 20)}...` : null,
+			[ADMIN_SESSION_COOKIE]: adminCookie ? `${adminCookie.substring(0, 20)}...` : null,
+			[USER_SESSION_COOKIE]: userCookie ? `${userCookie.substring(0, 20)}...` : null,
 		},
 	});
 });

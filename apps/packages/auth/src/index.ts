@@ -17,6 +17,7 @@ export * from "./schemas/index.js";
 
 // Session management
 export {
+	configureSessionSecret,
 	createSessionCookie,
 	getSessionTTL,
 	isSessionExpired,

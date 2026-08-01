@@ -11,8 +11,8 @@
 		"noEmit": true,
 		"paths": {
 			"@nube-auth/auth": ["./apps/packages/auth/src"],
-			"@nube-auth/auth/*": ["./apps/packages/auth/src/*"],
-			"@nube-auth/cache": ["./apps/packages/cache/src"],
+			"@nube-auth/auth/*": ["./apps/packages/auth/src/*"],		"@nube-auth/billing": ["./apps/packages/billing/src"],
+		"@nube-auth/billing/*": ["./apps/packages/billing/src/*"],			"@nube-auth/cache": ["./apps/packages/cache/src"],
 			"@nube-auth/cache/*": ["./apps/packages/cache/src/*"],
 			"@nube-auth/client": ["./apps/packages/client/src"],
 			"@nube-auth/client/*": ["./apps/packages/client/src/*"],

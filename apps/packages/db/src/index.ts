@@ -20,7 +20,7 @@ export function createDbClient() {
 		// Only log protocol, host, and database name - no credentials
 		const sanitized = `${parsed.protocol}//${parsed.host}${parsed.pathname}`;
 		console.log(`Connecting to database: ${sanitized}`);
-	} catch (_error) {
+	} catch (error) {
 		// Fallback if URL parsing fails
 		console.log("Connecting to database...");
 	}

@@ -29,21 +29,10 @@ export function hashToken(token: string): string {
 }
 
 /**
- * Verify token against hash
+ * Verify token against hash using constant-time comparison
  */
 export function verifyToken(token: string, hash: string): boolean {
-	return hashToken(token) === hash;
-}
-
-/**
- * Generate JWT-like token structure for validation
- * Note: For production, use a proper JWT library
- */
-export function generateValidationToken(data: Record<string, any>, secret: string): string {
-	const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
-	const payload = Buffer.from(JSON.stringify(data)).toString("base64url");
-
-	const signature = crypto.createHmac("sha256", secret).update(`${header}.${payload}`).digest("base64url");
-
-	return `${header}.${payload}.${signature}`;
+	const computed = hashToken(token);
+	if (computed.length !== hash.length) return false;
+	return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(hash));
 }

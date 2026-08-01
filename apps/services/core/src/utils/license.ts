@@ -34,7 +34,7 @@ export async function ensureLicenseForApp(
 			return;
 		}
 
-		const plan = await planQueries.findById(db, planSettings.defaultPlanId);
+		const plan = await planQueries.findByInternalId_(db, planSettings.defaultPlanId);
 		if (!plan || plan.app_id !== app.id || plan.status !== "active" || plan.deleted_at) {
 			log.warn(
 				{ appId: appPublicId, planId: planSettings.defaultPlanId },

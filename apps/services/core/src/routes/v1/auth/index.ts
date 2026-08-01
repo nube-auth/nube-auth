@@ -273,7 +273,7 @@ router.get("/callback/:provider", async (c: Context) => {
 
 							// Grant license if specified in invitation
 							if (invitation.plan_id) {
-								const plan = await planQueries.findById(db, invitation.plan_id);
+								const plan = await planQueries.findByInternalId_(db, invitation.plan_id);
 								if (plan) {
 									const now = new Date();
 									let validUntil = null;
@@ -373,7 +373,7 @@ router.get("/callback/:provider", async (c: Context) => {
 			}
 		} else {
 			log.debug({ userId }, "User already exists, fetching user data");
-			await userQueries.findById(db, userId);
+			await userQueries.findByInternalId_(db, userId);
 		}
 
 		// Auto-provision license for the app on first login (if app_id provided)
@@ -419,7 +419,7 @@ router.get("/callback/:provider", async (c: Context) => {
 
 		// Fire outbound webhook events (fire-and-forget)
 		if (appInternalId !== undefined) {
-			const user = await userQueries.findById(db, userId);
+			const user = await userQueries.findByInternalId_(db, userId);
 			if (user) {
 				if (isNewUser) {
 					await fireWebhookEvent(db, appInternalId, "user.registered", {
@@ -493,7 +493,7 @@ router.post("/exchange", async (c: Context) => {
 			return c.json({ error: "Session revoked" }, 401);
 		}
 
-		const user = await userQueries.findById(db, session.user_id);
+		const user = await userQueries.findByInternalId_(db, session.user_id);
 
 		if (!user) {
 			log.warn({ userId: session.user_id }, "User not found");
@@ -503,7 +503,7 @@ router.post("/exchange", async (c: Context) => {
 		// Get per-app session TTL from app's security settings
 		let sessionTtlSeconds = env.CORE_SESSION_TTL_SECONDS; // Default fallback
 		if (session.app_id) {
-			const app = await appQueries.findById(db, session.app_id);
+			const app = await appQueries.findByInternalId_(db, session.app_id);
 			if (app?.security_settings) {
 				const securitySettings = app.security_settings as any;
 				const sessionTtlDays = securitySettings.sessionTtlDays;

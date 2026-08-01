@@ -45,8 +45,8 @@ export async function s2sMiddleware(c: Context, next: Next): Promise<Response | 
 				log.warn({ path: c.req.path }, "Invalid S2S token");
 				return c.json({ error: "Invalid S2S token" }, 401);
 			}
-		} catch (err) {
-			log.warn({ err: serializeError(err as Error), path: c.req.path }, "S2S token comparison failed");
+		} catch (error) {
+			log.warn({ err: serializeError(error as Error), path: c.req.path }, "S2S token comparison failed");
 			return c.json({ error: "Invalid S2S token" }, 401);
 		}
 

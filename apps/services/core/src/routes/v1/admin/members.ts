@@ -52,7 +52,7 @@ membersRouter.get("/:projectId/members", async (c: Context) => {
 
 		const membersList = await Promise.all(
 			members.map(async (member) => {
-				const user = await userQueries.findById(db, member.user_id);
+				const user = await userQueries.findByInternalId_(db, member.user_id);
 				return {
 					id: member.public_id,
 					userId: user?.public_id || "unknown",
@@ -324,7 +324,7 @@ membersRouter.patch("/:projectId/members/:memberId", async (c: Context) => {
 
 		// Audit log: role changed
 		try {
-			const targetUser = await userQueries.findById(db, memberToUpdate.user_id);
+			const targetUser = await userQueries.findByInternalId_(db, memberToUpdate.user_id);
 			await auditLogQueries.create(db, {
 				public_id: createId("auditLog"),
 				user_id: requestingUser.id,

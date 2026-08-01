@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import { initCache, pingCache, cache } from "@nube-auth/cache";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import { getDb, appQueries } from "@nube-auth/db";
+import { configureSessionSecret } from "@nube-auth/auth";
 import { Hono } from "hono";
 import { env } from "./config/env";
 import { secureHeaders } from "hono/secure-headers";
@@ -25,6 +26,9 @@ import { s2sAuthMiddleware } from "./middleware/s2s";
 // Initialize cache with the validated Redis URL from env.ts before any cache operations
 initCache(env.REDIS_URL);
 
+// Configure session secret before any auth operations
+configureSessionSecret(env.SESSION_SECRET);
+
 const log = createLogger("gateway");
 const app = new Hono();
 
@@ -42,18 +46,27 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 // Derive the root domain from GATEWAY_PUBLIC_URL for wildcard subdomain matching.
-// e.g. "https://s-api.nubeauth.com" → ".nubeauth.com"
+// Only allows ONE level of subdomain below the base domain.
+// e.g. GATEWAY_PUBLIC_URL="https://s-api.nubeauth.com" → allows *.nubeauth.com
 function getAllowedOriginOrNull(origin: string): string | null {
 	if (!origin) return "*";
 	if (allowedOrigins.includes(origin)) return origin;
-	// Allow any subdomain of the gateway's own base domain (derived from GATEWAY_PUBLIC_URL).
-	// With flattened staging hosts like s-api.nubeauth.com, this still allows *.nubeauth.com.
 	try {
 		const gatewayHost = new URL(env.GATEWAY_PUBLIC_URL).hostname;
 		const parts = gatewayHost.split(".");
-		for (let i = 1; i < parts.length - 1; i++) {
+		// For domain like api.nubeauth.com → base = nubeauth.com → allow *.nubeauth.com
+		// For domain like nubeauth.com → base = nubeauth.com → allow *.nubeauth.com
+		for (let i = 1; i < parts.length; i++) {
 			const suffix = "." + parts.slice(i).join(".");
-			if (origin.endsWith(suffix)) return origin;
+			if (origin.endsWith(suffix)) {
+				// Ensure origin is exactly one level deeper than suffix
+				// e.g. origin=dashboard.nubeauth.com, suffix=.nubeauth.com → ok
+				// e.g. origin=evil.dashboard.nubeauth.com, suffix=.nubeauth.com → block
+				const originParts = origin.replace(/https?:\/\//, "").split(".");
+				const suffixParts = suffix.replace(/^\./, "").split(".");
+				const depthDiff = originParts.length - suffixParts.length;
+				if (depthDiff === 1) return origin;
+			}
 		}
 	} catch {
 		// ignore invalid URL
@@ -135,9 +148,9 @@ app.use("*", async (c, next) => {
 					(c as any).set("trustedBackend", true);
 					log.debug({ appId }, "Trusted backend authenticated via app secret");
 				}
-			} catch (err) {
+			} catch (error) {
 				// Non-fatal — request proceeds without trustedBackend privileges
-				log.warn({ err: err instanceof Error ? err.message : String(err), appId }, "App secret validation error");
+				log.warn({ err: error instanceof Error ? error.message : String(error), appId }, "App secret validation error");
 			}
 		}
 	}
@@ -183,8 +196,8 @@ app.use("*", async (c, next) => {
 				if (c.req.method === "OPTIONS") return c.body(null, 204);
 				return next();
 			}
-		} catch (err) {
-			log.error({ err, appId }, "CORS: failed to look up app origins");
+		} catch (error) {
+			log.error({ err: error, appId }, "CORS: failed to look up app origins");
 		}
 	}
 
@@ -287,8 +300,8 @@ try {
 	} else {
 		log.warn("Redis not reachable at startup — will retry on first request");
 	}
-} catch (err) {
-	log.warn({ err: serializeError(err as Error) }, "Redis ping failed at startup");
+} catch (error) {
+	log.warn({ err: serializeError(error as Error) }, "Redis ping failed at startup");
 }
 
 // Start server

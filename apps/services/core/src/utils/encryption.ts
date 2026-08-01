@@ -248,12 +248,13 @@ export function decryptCredentials(encrypted: string, key?: Buffer): Record<stri
  */
 export function wipeString(str: string): void {
 	if (typeof str !== "string") return;
-	try {
-		// @ts-expect-error - accessing internal buffer
-		if (str.buffer) {
-			crypto.randomFillSync(str.buffer);
+	// @ts-expect-error - accessing internal V8 string buffer
+	const buf = str.buffer as ArrayBufferLike | undefined;
+	if (buf && typeof crypto !== "undefined") {
+		try {
+			crypto.randomFillSync(new Uint8Array(buf));
+		} catch {
+			// Ignore errors - this is best effort
 		}
-	} catch {
-		// Ignore errors - this is best effort
 	}
 }

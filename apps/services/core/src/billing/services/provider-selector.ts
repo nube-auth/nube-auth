@@ -61,7 +61,7 @@ export async function selectProvider(appId: number, context: SelectionContext) {
 			const conditions = rule.conditions as unknown as Record<string, any>;
 			if (matchesConditions(context, conditions)) {
 				if (shouldRouteTraffic(rule.traffic_percentage, context.userId)) {
-					const provider = await paymentProviderConfigQueries.findById(db, rule.provider_config_id);
+					const provider = await paymentProviderConfigQueries.findByInternalId_(db, rule.provider_config_id);
 
 					if (!provider) {
 						log.warn(

@@ -41,9 +41,9 @@ export async function getAppSecuritySettings(appId: string): Promise<AppSecurity
 
 		await cache.set(cacheKey, result, CACHE_TTL_SECONDS);
 		return result;
-	} catch (err) {
-		log.error({ err: serializeError(err as Error), appId }, "Failed to fetch app security settings");
-		throw err;
+	} catch (error) {
+		log.error({ err: serializeError(error as Error), appId }, "Failed to fetch app security settings");
+		throw error;
 	}
 }
 
@@ -57,8 +57,8 @@ export async function invalidateAppSecuritySettings(appId: string): Promise<void
 	try {
 		await cache.delete(cacheKey);
 		log.debug({ appId }, "Invalidated app security settings cache");
-	} catch (err) {
+	} catch (error) {
 		// Non-fatal — stale cache will expire within TTL
-		log.warn({ err: serializeError(err as Error), appId }, "Failed to invalidate app security settings cache");
+		log.warn({ err: serializeError(error as Error), appId }, "Failed to invalidate app security settings cache");
 	}
 }

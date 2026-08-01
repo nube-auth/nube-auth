@@ -279,12 +279,12 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 				
 				// Add environment field for Dodo adapter (convert "test"/"production" to "test_mode"/"live_mode")
 				if (provider === "dodo" && configToUse.environment) {
-					decryptedCredentials.environment = configToUse.environment === "production" ? "live_mode" : "test_mode";
-					decryptedCredentials.webhookSecret = configToUse.webhook_secret || decryptedCredentials.webhookSecret;
-					log.info({ environment: decryptedCredentials.environment }, "Added environment to Dodo credentials");
+					decryptedCredentials["environment"] = configToUse.environment === "production" ? "live_mode" : "test_mode";
+					decryptedCredentials["webhookSecret"] = configToUse.webhook_secret || decryptedCredentials["webhookSecret"] || "";
+					log.info({ environment: decryptedCredentials["environment"] }, "Added environment to Dodo credentials");
 				}
 				
-				log.info({ provider, hasApiKey: !!decryptedCredentials.apiKey }, "Creating provider adapter");
+				log.info({ provider, hasApiKey: !!decryptedCredentials["apiKey"] }, "Creating provider adapter");
 				const adapter = createProviderAdapter(provider, decryptedCredentials);
 
 				// If the price has a fake/test external_price_id, create a real product on the provider
@@ -356,14 +356,8 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 					planId: selectedPlan.public_id,
 				}, "Failed to create checkout session");
 				
-				// Also log to console for immediate visibility during dev
-				console.error("=== Live Mode Checkout Failed ===");
-				console.error("Provider:", provider);
-				console.error("Error:", error);
-				console.error("Serialized:", serializedError);
-				
 				return c.json({
-					error: `Failed to create checkout session with ${provider}: ${(error as Error).message || "Unknown error"}. Check that your test credentials are configured correctly.`,
+					error: `Failed to create checkout session with ${provider}. Check that your test credentials are configured correctly.`,
 					details: env.IS_DEVELOPMENT ? serializedError : undefined,
 				}, 500);
 			}
@@ -453,11 +447,11 @@ router.post("/simulate-webhook", testRateLimit, async (c: Context) => {
 
 		// Get test app and user
 		const testApp = session.test_app_id 
-			? await appQueries.findById(db, session.test_app_id)
+			? await appQueries.findByInternalId_(db, session.test_app_id)
 			: null;
 			
 		const testUser = session.test_user_id
-			? await userQueries.findById(db, session.test_user_id)
+			? await userQueries.findByInternalId_(db, session.test_user_id)
 			: null;
 
 		if (!testApp || !testUser) {
@@ -611,11 +605,11 @@ router.get("/status/:sessionId", async (c: Context) => {
 
 		// Get test app and user data
 		const testApp = session.test_app_id 
-			? await appQueries.findById(db, session.test_app_id)
+			? await appQueries.findByInternalId_(db, session.test_app_id)
 			: null;
 			
 		const testUser = session.test_user_id
-			? await userQueries.findById(db, session.test_user_id)
+			? await userQueries.findByInternalId_(db, session.test_user_id)
 			: null;
 
 		// Get transactions for test user/app

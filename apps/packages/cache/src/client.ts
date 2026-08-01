@@ -1,4 +1,7 @@
 import { createClient, type RedisClientType } from "redis";
+import { createLogger, serializeError } from "@nube-auth/shared";
+
+const log = createLogger("cache");
 
 /**
  * Session entitlements stored in Redis.
@@ -51,7 +54,7 @@ async function getRedisClient(): Promise<RedisClientType> {
 	redisInstance.on("error", (err) => {
 		// Suppressed during auto-reconnect cycles — node-redis will retry per reconnectStrategy
 		if ((err as NodeJS.ErrnoException).code !== "ECONNREFUSED" && err.name !== "SocketClosedUnexpectedlyError") {
-			console.error("Redis Client Error:", err);
+			log.error({ err: serializeError(err) }, "Redis Client Error");
 		}
 	});
 
@@ -71,7 +74,7 @@ export const cache = {
 			if (!value) return null;
 			return JSON.parse(value) as T;
 		} catch (error) {
-			console.error(`Cache get error for key ${key}:`, error);
+			log.error({ key, err: serializeError(error as Error) }, "Cache get error");
 			return null;
 		}
 	},
@@ -83,7 +86,7 @@ export const cache = {
 			const values = await client.mGet(keys);
 			return values.map((v) => (v ? (JSON.parse(v) as T) : null));
 		} catch (error) {
-			console.error(`Cache getMany error:`, error);
+			log.error({ err: serializeError(error as Error) }, "Cache getMany error");
 			return keys.map(() => null);
 		}
 	},
@@ -98,7 +101,7 @@ export const cache = {
 				await client.set(key, serialized);
 			}
 		} catch (error) {
-			console.error(`Cache set error for key ${key}:`, error);
+			log.error({ key, err: serializeError(error as Error) }, "Cache set error");
 		}
 	},
 
@@ -112,7 +115,7 @@ export const cache = {
 			});
 			return result === "OK";
 		} catch (error) {
-			console.error(`Cache setNX error for key ${key}:`, error);
+			log.error({ key, err: serializeError(error as Error) }, "Cache setNX error");
 			return false;
 		}
 	},
@@ -122,7 +125,7 @@ export const cache = {
 			const client = await getRedisClient();
 			await client.del(key);
 		} catch (error) {
-			console.error(`Cache delete error for key ${key}:`, error);
+			log.error({ key, err: serializeError(error as Error) }, "Cache delete error");
 		}
 	},
 
@@ -139,7 +142,7 @@ export const cache = {
 			if (value === null || value === undefined) return null;
 			return JSON.parse(value) as T;
 		} catch (error) {
-			console.error(`Cache getAndDelete error for key ${key}:`, error);
+			log.error({ key, err: serializeError(error as Error) }, "Cache getAndDelete error");
 			return null;
 		}
 	},
@@ -150,7 +153,7 @@ export const cache = {
 			const client = await getRedisClient();
 			await client.del(keys);
 		} catch (error) {
-			console.error(`Cache deleteMany error:`, error);
+			log.error({ err: serializeError(error as Error) }, "Cache deleteMany error");
 		}
 	},
 
@@ -160,7 +163,7 @@ export const cache = {
 			const result = await client.exists(key);
 			return result === 1;
 		} catch (error) {
-			console.error(`Cache exists error for key ${key}:`, error);
+			log.error({ key, err: serializeError(error as Error) }, "Cache exists error");
 			return false;
 		}
 	},
@@ -170,7 +173,7 @@ export const cache = {
 			const client = await getRedisClient();
 			return await client.incrBy(key, by);
 		} catch (error) {
-			console.error(`Cache increment error for key ${key}:`, error);
+			log.error({ key, err: serializeError(error as Error) }, "Cache increment error");
 			return 0;
 		}
 	},
@@ -180,7 +183,7 @@ export const cache = {
 			const client = await getRedisClient();
 			return await client.decrBy(key, by);
 		} catch (error) {
-			console.error(`Cache decrement error for key ${key}:`, error);
+			log.error({ key, err: serializeError(error as Error) }, "Cache decrement error");
 			return 0;
 		}
 	},
@@ -191,7 +194,7 @@ export const cache = {
 			const result = await client.expire(key, seconds);
 			return result;
 		} catch (error) {
-			console.error(`Cache expire error for key ${key}:`, error);
+			log.error({ key, err: serializeError(error as Error) }, "Cache expire error");
 			return false;
 		}
 	},
@@ -202,7 +205,7 @@ export const cache = {
 			const result = await client.expire(key, seconds);
 			return result;
 		} catch (error) {
-			console.error(`Cache setTTL error for key ${key}:`, error);
+			log.error({ key, err: serializeError(error as Error) }, "Cache setTTL error");
 			return false;
 		}
 	},
@@ -212,7 +215,7 @@ export const cache = {
 			const client = await getRedisClient();
 			return await client.ttl(key);
 		} catch (error) {
-			console.error(`Cache ttl error for key ${key}:`, error);
+			log.error({ key, err: serializeError(error as Error) }, "Cache ttl error");
 			return -1;
 		}
 	},
@@ -222,7 +225,7 @@ export const cache = {
 			const client = await getRedisClient();
 			return await client.keys(pattern);
 		} catch (error) {
-			console.error(`Cache keys error for pattern ${pattern}:`, error);
+			log.error({ pattern, err: serializeError(error as Error) }, "Cache keys error");
 			return [];
 		}
 	},
@@ -236,7 +239,7 @@ export const cache = {
 			});
 			return { cursor: result.cursor, keys: result.keys };
 		} catch (error) {
-			console.error(`Cache scan error:`, error);
+			log.error({ err: serializeError(error as Error) }, "Cache scan error");
 			return { cursor: 0, keys: [] };
 		}
 	},
@@ -262,7 +265,7 @@ export const cache = {
 				}
 			} while (cursor !== 0);
 		} catch (error) {
-			console.error(`Cache clear error:`, error);
+			log.error({ err: serializeError(error as Error) }, "Cache clear error");
 		}
 	},
 
@@ -311,7 +314,7 @@ export const rateLimit = {
 
 			return count <= limit;
 		} catch (error) {
-			console.error(`Rate limit check error:`, error);
+			log.error({ err: serializeError(error as Error) }, "Rate limit check error");
 			return true; // Allow on error to prevent breaking auth
 		}
 	},
@@ -323,7 +326,7 @@ export const rateLimit = {
 			const count = await client.get(key);
 			return count ? Number.parseInt(count, 10) : 0;
 		} catch (error) {
-			console.error(`Rate limit getCount error:`, error);
+			log.error({ err: serializeError(error as Error) }, "Rate limit getCount error");
 			return 0;
 		}
 	},
@@ -334,7 +337,7 @@ export const rateLimit = {
 			const key = this.getBucketKey(identifier, bucket);
 			await client.del(key);
 		} catch (error) {
-			console.error(`Rate limit reset error:`, error);
+			log.error({ err: serializeError(error as Error) }, "Rate limit reset error");
 		}
 	},
 
@@ -344,7 +347,7 @@ export const rateLimit = {
 			const key = this.getBucketKey(identifier, bucket);
 			return await client.ttl(key);
 		} catch (error) {
-			console.error(`Rate limit getTTL error:`, error);
+			log.error({ err: serializeError(error as Error) }, "Rate limit getTTL error");
 			return -1;
 		}
 	},
@@ -368,7 +371,7 @@ export const sessionStore = {
 			const sessionData = { userId, appId, metadata, entitlements };
 			await client.setEx(key, ttlSeconds, JSON.stringify(sessionData));
 		} catch (error) {
-			console.error(`Session store setAppSession error:`, error);
+			log.error({ sessionId, err: serializeError(error as Error) }, "Session store setAppSession error");
 		}
 	},
 
@@ -381,7 +384,7 @@ export const sessionStore = {
 			const session = await client.get(key);
 			return session ? JSON.parse(session) : null;
 		} catch (error) {
-			console.error(`Session store getAppSession error:`, error);
+			log.error({ sessionId, err: serializeError(error as Error) }, "Session store getAppSession error");
 			return null;
 		}
 	},
@@ -392,7 +395,7 @@ export const sessionStore = {
 			const key = `session:app:${sessionId}`;
 			await client.del(key);
 		} catch (error) {
-			console.error(`Session store revokeAppSession error:`, error);
+			log.error({ sessionId, err: serializeError(error as Error) }, "Session store revokeAppSession error");
 		}
 	},
 
@@ -425,7 +428,7 @@ export const sessionStore = {
 
 			return { deletedCount, cursor: 0 };
 		} catch (error) {
-			console.error(`Session store revokeUserSessions error:`, error);
+			log.error({ userId, err: serializeError(error as Error) }, "Session store revokeUserSessions error");
 			return { deletedCount: 0, cursor: 0 };
 		}
 	},
@@ -459,7 +462,7 @@ export const sessionStore = {
 
 			return sessions;
 		} catch (error) {
-			console.error(`Session store getUserSessions error:`, error);
+			log.error({ userId, err: serializeError(error as Error) }, "Session store getUserSessions error");
 			return [];
 		}
 	},

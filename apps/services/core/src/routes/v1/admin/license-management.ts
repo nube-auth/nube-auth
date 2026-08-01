@@ -231,10 +231,10 @@ licenseManagementRouter.get("/", async (c: Context) => {
 
 		const results = await Promise.all(
 			filtered.map(async (license) => {
-				const user = await userQueries.findById(db, license.user_id);
-				const plan = await planQueries.findById(db, license.plan_id);
+				const user = await userQueries.findByInternalId_(db, license.user_id);
+				const plan = await planQueries.findByInternalId_(db, license.plan_id);
 				const price = license.price_id
-					? await priceQueries.findById(db, license.price_id)
+					? await priceQueries.findByInternalId_(db, license.price_id)
 					: null;
 				return formatLicense(license, { app, user, plan, price });
 			}),
@@ -276,7 +276,7 @@ licenseManagementRouter.get("/summary", async (c: Context) => {
 				(sourceCounts[license.source] ?? 0) + 1;
 			uniqueUsers.add(license.user_id);
 
-			const plan = await planQueries.findById(db, license.plan_id);
+			const plan = await planQueries.findByInternalId_(db, license.plan_id);
 			if (plan) {
 				planCounts[plan.slug] = (planCounts[plan.slug] ?? 0) + 1;
 			}
@@ -318,10 +318,10 @@ licenseManagementRouter.get("/:licenseId", async (c: Context) => {
 		if (!license || license.app_id !== app.id)
 			return c.json({ error: "License not found" }, 404);
 
-		const user = await userQueries.findById(db, license.user_id);
-		const plan = await planQueries.findById(db, license.plan_id);
+		const user = await userQueries.findByInternalId_(db, license.user_id);
+		const plan = await planQueries.findByInternalId_(db, license.plan_id);
 		const price = license.price_id
-			? await priceQueries.findById(db, license.price_id)
+			? await priceQueries.findByInternalId_(db, license.price_id)
 			: null;
 
 		const activeCount = await activationQueries.countActiveByLicenseId(
@@ -453,13 +453,13 @@ licenseManagementRouter.patch("/:licenseId", async (c: Context) => {
 		log.info({ licenseId, changeType }, "License updated by admin");
 
 		try {
-			const licenseUser = await userQueries.findById(db, license.user_id);
-			const updatedPlan = await planQueries.findById(db, updated.plan_id);
+			const licenseUser = await userQueries.findByInternalId_(db, license.user_id);
+			const updatedPlan = await planQueries.findByInternalId_(db, updated.plan_id);
 			let webhookEvent: string | null = null;
 
 			if (validated.planId !== undefined) {
 				// Determine upgrade vs downgrade by comparing display_order
-				const oldPlan = await planQueries.findById(db, license.plan_id);
+				const oldPlan = await planQueries.findByInternalId_(db, license.plan_id);
 				const oldOrder = oldPlan?.display_order ?? 0;
 				const newOrder = updatedPlan?.display_order ?? 0;
 				webhookEvent = newOrder >= oldOrder ? "license.upgraded" : "license.downgraded";
@@ -494,7 +494,7 @@ licenseManagementRouter.patch("/:licenseId", async (c: Context) => {
 		}
 
 		// Bust gateway cache so next GET /v1/license/:appId returns fresh data
-		const licenseOwner = await userQueries.findById(db, license.user_id);
+		const licenseOwner = await userQueries.findByInternalId_(db, license.user_id);
 		if (licenseOwner) bustLicenseCache(licenseOwner.public_id, appId);
 
 		return c.json({
@@ -567,7 +567,7 @@ licenseManagementRouter.delete("/:licenseId", async (c: Context) => {
 		log.info({ licenseId, appId }, "License revoked by admin");
 
 		try {
-			const licenseUser = await userQueries.findById(db, license.user_id);
+			const licenseUser = await userQueries.findByInternalId_(db, license.user_id);
 			await fireWebhookEvent(db, app.id, "license.canceled", {
 				licenseId: license.public_id,
 				userId: licenseUser?.public_id ?? null,
@@ -586,7 +586,7 @@ licenseManagementRouter.delete("/:licenseId", async (c: Context) => {
 		}
 
 		// Bust gateway cache so next GET /v1/license/:appId returns fresh data
-		const revokedUser = await userQueries.findById(db, license.user_id);
+		const revokedUser = await userQueries.findByInternalId_(db, license.user_id);
 		if (revokedUser) bustLicenseCache(revokedUser.public_id, appId);
 
 		return c.json({

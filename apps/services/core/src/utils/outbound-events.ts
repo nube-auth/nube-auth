@@ -27,7 +27,7 @@ export async function fireWebhookEvent(
 	event: string,
 	data: Record<string, unknown>,
 ): Promise<void> {
-	const app = await appQueries.findById(db, appId);
+	const app = await appQueries.findByInternalId_(db, appId);
 	if (!app) return;
 
 	const payload: Record<string, unknown> = {

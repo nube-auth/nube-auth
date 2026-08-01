@@ -19,10 +19,12 @@ export function hashToken(token: string): string {
 }
 
 /**
- * Verify a token against its hash
+ * Verify a token against its hash using constant-time comparison
  */
 export function verifyTokenHash(token: string, hash: string): boolean {
-	return hashToken(token) === hash;
+	const computed = hashToken(token);
+	if (computed.length !== hash.length) return false;
+	return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(hash));
 }
 
 /**

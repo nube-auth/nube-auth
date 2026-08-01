@@ -1,10 +1,23 @@
 import * as crypto from "node:crypto";
 
+let _sessionSecret: string | undefined;
+
+/**
+ * Configure the session secret at service startup.
+ * Must be called before any session operations.
+ */
+export function configureSessionSecret(secret: string): void {
+	_sessionSecret = secret;
+}
+
 /**
  * Get the session secret from environment
  */
 function getSessionSecret(): string {
-	return process.env['SESSION_SECRET']!;
+	if (!_sessionSecret) {
+		throw new Error("Session secret not configured. Call configureSessionSecret() at service startup.");
+	}
+	return _sessionSecret;
 }
 
 /**
@@ -60,10 +73,14 @@ export function signSessionId(sessionId: string): string {
  * Verify signed session ID using constant-time comparison
  */
 export function verifySessionId(signed: string): string {
-	const [sessionId, hmac] = signed.split(".");
-	if (!sessionId || !hmac) {
+	// Constant-time format validation: exactly one dot, 64-char hex HMAC
+	if (!/^[^.]+\.[a-f0-9]{64}$/i.test(signed)) {
 		throw new Error("Invalid session format");
 	}
+
+	const dotIndex = signed.indexOf(".");
+	const sessionId = signed.substring(0, dotIndex);
+	const hmac = signed.substring(dotIndex + 1);
 
 	const secret = getSessionSecret();
 	const expectedHmac = crypto.createHmac("sha256", secret).update(sessionId).digest("hex");

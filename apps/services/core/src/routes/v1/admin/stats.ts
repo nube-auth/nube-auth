@@ -127,21 +127,20 @@ statsRouter.get("/:projectId/stats", async (c: Context) => {
 
 	// Fetch all licenses per app up-front (single pass) — used both for plan ID
 	// collection and for the per-app aggregation loop below, avoiding a double-fetch.
-	const licensesByApp = new Map(
-		await Promise.all(
-			apps.map(async (a) => [
-				a.id,
-				(await licenseQueries.findByAppId(db, a.id)).filter((l) => !l.is_test),
-			] as [number, (typeof licensesByApp extends Map<number, infer V> ? V : never)]),
-		),
+	const licenseEntries = await Promise.all(
+		apps.map(async (a) => [
+			a.id,
+			(await licenseQueries.findByAppId(db, a.id)).filter((l) => !l.is_test),
+		] as [number, Awaited<ReturnType<typeof licenseQueries.findByAppId>>]),
 	);
+	const licensesByApp = new Map(licenseEntries);
 
 	// Gather unique plan IDs from the already-fetched licenses
 	const planIds = [...new Set(
 		[...licensesByApp.values()].flat().map((l) => l.plan_id),
 	)];
 	const planMap = new Map(
-		(await Promise.all(planIds.map((id) => planQueries.findById(db, id))))
+		(await Promise.all(planIds.map((id) => planQueries.findByInternalId_(db, id))))
 			.filter(Boolean)
 			.map((p) => [p!.id, p!]),
 	);
@@ -241,7 +240,7 @@ statsRouter.get("/:projectId/apps/:appId/stats", async (c: Context) => {
 	// Pre-fetch all referenced plans in one pass to avoid N+1 per license
 	const planIds = [...new Set(licenses.map((l) => l.plan_id))];
 	const planMap = new Map(
-		(await Promise.all(planIds.map((id) => planQueries.findById(db, id))))
+		(await Promise.all(planIds.map((id) => planQueries.findByInternalId_(db, id))))
 			.filter(Boolean)
 			.map((p) => [p!.id, p!]),
 	);

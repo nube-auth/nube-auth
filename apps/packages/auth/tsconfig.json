@@ -1,9 +1,10 @@
 {
 	"compilerOptions": {
 		"target": "ES2020",
-		"lib": ["ES2020"],
+		"lib": ["ES2020", "DOM"],
 		"module": "ESNext",
 		"moduleResolution": "bundler",
+		"types": ["node"],
 		"outDir": "./dist",
 		"rootDir": "./src",
 		"noEmit": false,

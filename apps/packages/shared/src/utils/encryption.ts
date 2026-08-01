@@ -13,21 +13,6 @@ const KEY_LENGTH = 32;
 const ITERATIONS = 100000;
 
 /**
- * Get encryption key from environment variable
- * In production, this should be a strong random key stored securely
- */
-function getEncryptionKey(): string {
-	const key = process.env['ENCRYPTION_KEY'];
-	if (!key) {
-		throw new Error("ENCRYPTION_KEY environment variable is not set");
-	}
-	if (key.length < 32) {
-		throw new Error("ENCRYPTION_KEY must be at least 32 characters long");
-	}
-	return key;
-}
-
-/**
  * Derive a key from the encryption key using PBKDF2
  */
 function deriveKey(password: string, salt: Buffer): Buffer {
@@ -38,12 +23,10 @@ function deriveKey(password: string, salt: Buffer): Buffer {
  * Encrypt a string value
  * Returns a base64-encoded string containing: salt:iv:tag:encrypted_data
  */
-export function encrypt(plaintext: string): string {
+export function encrypt(plaintext: string, encryptionKey: string): string {
 	if (!plaintext) {
 		return "";
 	}
-
-	const encryptionKey = getEncryptionKey();
 
 	// Generate random salt and IV
 	const salt = crypto.randomBytes(SALT_LENGTH);
@@ -73,12 +56,10 @@ export function encrypt(plaintext: string): string {
  * Decrypt an encrypted string
  * Expects a base64-encoded string containing: salt:iv:tag:encrypted_data
  */
-export function decrypt(encryptedData: string): string {
+export function decrypt(encryptedData: string, encryptionKey: string): string {
 	if (!encryptedData) {
 		return "";
 	}
-
-	const encryptionKey = getEncryptionKey();
 
 	// Decode from base64
 	const combined = Buffer.from(encryptedData, "base64");

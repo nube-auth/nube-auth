@@ -46,7 +46,7 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 			configs = config ? [config] : [];
 		} else if (params.providerConfigId != null && params.providerConfigId > 0) {
 			// Specific config requested by internal id (legacy path)
-			const config = await paymentProviderConfigQueries.findById(db, params.providerConfigId);
+			const config = await paymentProviderConfigQueries.findByInternalId_(db, params.providerConfigId);
 			configs = config ? [config] : [];
 		} else {
 			// Find all active configs for this provider

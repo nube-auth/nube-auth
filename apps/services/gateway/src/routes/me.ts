@@ -248,7 +248,7 @@ meRoutes.get("/subscription", async (c: Context) => {
 
                 const subscription = await subscriptionQueries.findActiveByUserAndApp(db, user.id, app.id);
 
-                let result: object;
+let result: Record<string, unknown>;
 
                 if (!subscription) {
                         // No subscription row — fall back to licenses table (covers one-time purchases)
@@ -256,11 +256,11 @@ meRoutes.get("/subscription", async (c: Context) => {
                         if (!license || license.status !== "active") {
                                 result = { hasActivePlan: false, planSlug: null, status: null, billingInterval: null, periodEnd: null };
                         } else {
-                                const licensePrice = license.price_id ? await priceQueries.findById(db, license.price_id) : null;
+                                const licensePrice = license.price_id ? await priceQueries.findByInternalId_(db, license.price_id) : null;
                                 const licensePlan = licensePrice
-                                        ? await planQueries.findById(db, licensePrice.plan_id)
+                                        ? await planQueries.findByInternalId_(db, licensePrice.plan_id)
                                         : license.plan_id
-                                                ? await planQueries.findById(db, license.plan_id)
+                                                ? await planQueries.findByInternalId_(db, license.plan_id)
                                                 : null;
                                 result = {
                                         hasActivePlan: true,
@@ -272,29 +272,27 @@ meRoutes.get("/subscription", async (c: Context) => {
                         }
                 } else {
                         // Walk subscription → price → plan to get the slug
-                        const price = await priceQueries.findById(db, subscription.price_id ?? subscription.metadata?.priceId);
-                        const plan = price ? await planQueries.findById(db, price.plan_id) : null;
-
-                        result = {
-                                hasActivePlan: true,
-                                planSlug: plan?.slug ?? null,
-								priceId: price?.public_id ?? null,
-                                status: subscription.status,
-                                billingInterval: subscription.billing_interval,
-                                periodEnd: subscription.billing_period_end
-                                        ? new Date(subscription.billing_period_end).toISOString()
-                                        : null,
-                        };
-                }
-
-                await cache.set(cacheKey, result, CACHE_TTL);
-                return c.json(result);
-        } catch (error) {
-                log.error({ err: serializeError(error as Error) }, "Subscription check error:");
-                return c.json({ error: "Failed to fetch subscription" }, 500);
-        }
-});
-
+					const subMeta = (subscription.metadata as Record<string, unknown> | null) ?? {};
+					const price = await priceQueries.findByInternalId_(db, subscription.price_id ?? (subMeta["priceId"] as number | undefined));
+					const plan = price ? await planQueries.findByInternalId_(db, price.plan_id) : null;
+					result = {
+						hasActivePlan: true,
+						planSlug: plan?.slug ?? null,
+						priceId: price?.public_id ?? null,
+						status: subscription.status,
+						billingInterval: subscription.billing_interval,
+						periodEnd: subscription.billing_period_end
+							? new Date(subscription.billing_period_end).toISOString()
+							: null,
+					};
+			}
+			await cache.set(cacheKey, result, CACHE_TTL);
+			return c.json(result);
+		} catch (error) {
+			log.error({ err: serializeError(error as Error) }, "Subscription check error:");
+			return c.json({ error: "Failed to fetch subscription" }, 500);
+		}
+	});
 /**
  * POST /v1/me/subscription/cancel
  *

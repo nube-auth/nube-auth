@@ -252,7 +252,7 @@ async function buildEntitlements(userPublicId: string, audience: "user" | "admin
 
 	for (const membership of memberships) {
 		// Get project public_id
-		const project = await projectQueries.findById(db, membership.project_id);
+		const project = await projectQueries.findByInternalId_(db, membership.project_id);
 		if (!project) continue;
 
 		// Get apps for this project

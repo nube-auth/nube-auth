@@ -293,7 +293,7 @@ promotionsRouter.post("/", async (c) => {
 	const planTargets = await promotionPlanQueries.findByPromotionId(db, promo.id);
 	const planItems: { planId: string; name: string }[] = [];
 	for (const pt of planTargets) {
-		const plan = await planQueries.findById(db, pt.plan_id);
+		const plan = await planQueries.findByInternalId_(db, pt.plan_id);
 		if (plan) planItems.push({ planId: plan.public_id, name: plan.name });
 	}
 
@@ -324,7 +324,7 @@ promotionsRouter.get("/", async (c) => {
 		const planTargets = await promotionPlanQueries.findByPromotionId(db, promo.id);
 		const planItems: { planId: string; name: string }[] = [];
 		for (const pt of planTargets) {
-			const plan = await planQueries.findById(db, pt.plan_id);
+			const plan = await planQueries.findByInternalId_(db, pt.plan_id);
 			if (plan) planItems.push({ planId: plan.public_id, name: plan.name });
 		}
 		const codes = await promotionCodeQueries.findByPromotionId(db, promo.id);
@@ -353,7 +353,7 @@ promotionsRouter.get("/:promoId", async (c) => {
 	const planTargets = await promotionPlanQueries.findByPromotionId(db, promo.id);
 	const planItems: { planId: string; name: string }[] = [];
 	for (const pt of planTargets) {
-		const plan = await planQueries.findById(db, pt.plan_id);
+		const plan = await planQueries.findByInternalId_(db, pt.plan_id);
 		if (plan) planItems.push({ planId: plan.public_id, name: plan.name });
 	}
 
@@ -438,7 +438,7 @@ promotionsRouter.patch("/:promoId", async (c) => {
 	const planTargets = await promotionPlanQueries.findByPromotionId(db, promo.id);
 	const planItems: { planId: string; name: string }[] = [];
 	for (const pt of planTargets) {
-		const plan = await planQueries.findById(db, pt.plan_id);
+		const plan = await planQueries.findByInternalId_(db, pt.plan_id);
 		if (plan) planItems.push({ planId: plan.public_id, name: plan.name });
 	}
 
@@ -462,7 +462,7 @@ promotionsRouter.delete("/:promoId", async (c) => {
 	const refs = await promotionProviderRefQueries.findByPromotionId(db, promo.id);
 	for (const ref of refs) {
 		try {
-			const config = await paymentProviderConfigQueries.findById(db, ref.provider_config_id);
+			const config = await paymentProviderConfigQueries.findByInternalId_(db, ref.provider_config_id);
 			if (!config || !config.is_active) continue;
 
 			let credentials: unknown;
@@ -478,8 +478,8 @@ promotionsRouter.delete("/:promoId", async (c) => {
 			const adapter = createProviderAdapter(config.provider, credentials);
 			await adapter.deleteCoupon(ref.provider_coupon_id);
 			await promotionProviderRefQueries.deactivate(db, ref.id);
-		} catch (err) {
-			log.error({ err: serializeError(err as Error), refId: ref.public_id }, "Failed to delete provider coupon on deactivation");
+		} catch (error) {
+			log.error({ err: serializeError(error as Error), refId: ref.public_id }, "Failed to delete provider coupon on deactivation");
 		}
 	}
 

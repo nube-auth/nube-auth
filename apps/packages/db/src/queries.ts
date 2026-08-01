@@ -40,7 +40,7 @@ import { buildJsonbMergeClause, createJsonbUpdateChain } from "./utils/jsonb.js"
  * User queries
  */
 export const userQueries = {
-	async findById(db: DbClient, userId: number) {
+	async findByInternalId_(db: DbClient, userId: number) {
 		const results = await db.select().from(users).where(eq(users.id, userId));
 		return results[0];
 	},
@@ -95,7 +95,7 @@ export const identityQueries = {
  * Session queries
  */
 export const sessionQueries = {
-	async findById(db: DbClient, sessionId: number) {
+	async findByInternalId_(db: DbClient, sessionId: number) {
 		const results = await db.select().from(sessions).where(eq(sessions.id, sessionId));
 		return results[0];
 	},
@@ -186,7 +186,7 @@ export const sessionQueries = {
  * Project queries
  */
 export const projectQueries = {
-	async findById(db: DbClient, projectId: number) {
+	async findByInternalId_(db: DbClient, projectId: number) {
 		const results = await db
 			.select()
 			.from(projects)
@@ -247,7 +247,7 @@ export const projectQueries = {
 	},
 
 	async delete(db: DbClient, projectId: number) {
-		const project = await this.findById(db, projectId);
+		const project = await this.findByInternalId_(db, projectId);
 		if (!project) return null;
 
 		const now = new Date();
@@ -272,7 +272,7 @@ export const projectQueries = {
  * ProjectMember queries
  */
 export const projectMemberQueries = {
-	async findById(db: DbClient, id: number) {
+	async findByInternalId_(db: DbClient, id: number) {
 		const results = await db.select().from(project_members).where(eq(project_members.id, id));
 		return results[0];
 	},
@@ -340,7 +340,7 @@ export const projectMemberQueries = {
  * Project Invitation queries
  */
 export const projectInvitationQueries = {
-	async findById(db: DbClient, id: number) {
+	async findByInternalId_(db: DbClient, id: number) {
 		const results = await db.select().from(project_invitations).where(eq(project_invitations.id, id));
 		return results[0];
 	},
@@ -426,7 +426,7 @@ export const projectInvitationQueries = {
  * App queries
  */
 export const appQueries = {
-	async findById(db: DbClient, appId: number) {
+	async findByInternalId_(db: DbClient, appId: number) {
 		const results = await db
 			.select()
 			.from(apps)
@@ -479,7 +479,7 @@ export const appQueries = {
 	},
 
 	async delete(db: DbClient, appId: number) {
-		const app = await this.findById(db, appId);
+		const app = await this.findByInternalId_(db, appId);
 		if (!app) return null;
 
 		const now = new Date();
@@ -674,7 +674,7 @@ export const licenseQueries = {
 		return results[0];
 	},
 
-	async findById(db: DbClient, id: number) {
+	async findByInternalId_(db: DbClient, id: number) {
 		const results = await db
 			.select()
 			.from(licenses)
@@ -937,7 +937,7 @@ export const planQueries = {
 		return results[0];
 	},
 
-	async findById(db: DbClient, id: number) {
+	async findByInternalId_(db: DbClient, id: number) {
 		const results = await db
 			.select()
 			.from(plans)
@@ -984,7 +984,7 @@ export const planQueries = {
 	},
 
 	async delete(db: DbClient, planId: number) {
-		const plan = await this.findById(db, planId);
+		const plan = await this.findByInternalId_(db, planId);
 		if (!plan) return null;
 
 		const now = new Date();
@@ -1018,7 +1018,7 @@ export const planQueries = {
  * Payment Provider Config queries
  */
 export const paymentProviderConfigQueries = {
-	async findById(db: DbClient, configId: number) {
+	async findByInternalId_(db: DbClient, configId: number) {
 		const results = await db
 			.select()
 			.from(payment_provider_configs)
@@ -1160,7 +1160,7 @@ export const routingRuleQueries = {
 	/**
 	 * Find routing rule by ID
 	 */
-	async findById(db: DbClient, ruleId: number) {
+	async findByInternalId_(db: DbClient, ruleId: number) {
 		const results = await db
 			.select()
 			.from(payment_routing_rules)
@@ -1243,7 +1243,7 @@ export const testSessionQueries = {
 		return results[0]!;
 	},
 
-	async findById(db: DbClient, sessionId: number) {
+	async findByInternalId_(db: DbClient, sessionId: number) {
 		const results = await db
 			.select()
 			.from(test_sessions)
@@ -1352,7 +1352,7 @@ export const priceQueries = {
 		return results[0];
 	},
 
-	async findById(db: DbClient, id: number) {
+	async findByInternalId_(db: DbClient, id: number) {
 		const results = await db
 			.select()
 			.from(prices)
@@ -1459,7 +1459,7 @@ export const subscriptionQueries = {
 		return results[0];
 	},
 
-	async findById(db: DbClient, id: number) {
+	async findByInternalId_(db: DbClient, id: number) {
 		const results = await db
 			.select()
 			.from(subscriptions)
@@ -1674,7 +1674,7 @@ export const promotionQueries = {
 		return results[0];
 	},
 
-	async findById(db: DbClient, id: number) {
+	async findByInternalId_(db: DbClient, id: number) {
 		const results = await db
 			.select()
 			.from(promotions)
@@ -1738,7 +1738,7 @@ export const promotionCodeQueries = {
 		return results[0]!;
 	},
 
-	async findById(db: DbClient, codeId: number) {
+	async findByInternalId_(db: DbClient, codeId: number) {
 		const results = await db
 			.select()
 			.from(promotion_codes)
@@ -1920,7 +1920,7 @@ export const purchaseQueries = {
 		return results[0];
 	},
 
-	async findById(db: DbClient, id: number) {
+	async findByInternalId_(db: DbClient, id: number) {
 		const results = await db
 			.select()
 			.from(purchases)
@@ -2000,7 +2000,7 @@ export const paymentTransactionQueries = {
 		return results[0];
 	},
 
-	async findById(db: DbClient, id: number) {
+	async findByInternalId_(db: DbClient, id: number) {
 		const results = await db
 			.select()
 			.from(payment_transactions)
@@ -2236,7 +2236,7 @@ export const webhookLogQueries = {
 		return results[0];
 	},
 
-	async findById(db: DbClient, id: number) {
+	async findByInternalId_(db: DbClient, id: number) {
 		const results = await db
 			.select()
 			.from(webhook_logs)
@@ -2454,7 +2454,7 @@ export const priceProviderRefQueries = {
  * App Webhook queries
  */
 export const appWebhookQueries = {
-	async findById(db: DbClient, id: number) {
+	async findByInternalId_(db: DbClient, id: number) {
 		const results = await db.select().from(app_webhooks).where(eq(app_webhooks.id, id));
 		return results[0];
 	},

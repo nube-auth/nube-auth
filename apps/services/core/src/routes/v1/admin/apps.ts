@@ -312,7 +312,7 @@ appsRouter.get("/:projectId/apps/:appId", async (c: Context) => {
 		}
 
 		// Get project for response
-		const project = await projectQueries.findById(db, app.project_id);
+		const project = await projectQueries.findByInternalId_(db, app.project_id);
 		if (!project) {
 			return c.json({ error: "Project not found" }, 404);
 		}
@@ -412,7 +412,7 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 		}
 
 		// Check authorization
-		const project = await projectQueries.findById(db, app.project_id);
+		const project = await projectQueries.findByInternalId_(db, app.project_id);
 		if (project) {
 			const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
 			const userMember = member?.[0];
@@ -457,7 +457,7 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 		});
 
 		// Get project for response
-		const projectForResponse = await projectQueries.findById(db, updated.project_id);
+		const projectForResponse = await projectQueries.findByInternalId_(db, updated.project_id);
 		if (!projectForResponse) {
 			return c.json({ error: "Project not found" }, 404);
 		}
@@ -532,7 +532,7 @@ appsRouter.delete("/:projectId/apps/:appId", async (c: Context) => {
 		}
 
 		// Check authorization
-		const project = await projectQueries.findById(db, app.project_id);
+		const project = await projectQueries.findByInternalId_(db, app.project_id);
 		if (project) {
 			const member = await projectMemberQueries.findByProjectAndUser(db, project.id, user.id);
 			const userMember = member?.[0];
@@ -597,13 +597,13 @@ appsRouter.get("/:projectId/apps/:appId/users", async (c: Context) => {
 		const planIds = [...new Set(appLicenses.map((l) => l.plan_id))];
 		const planMap = new Map<number, { name: string; slug: string }>();
 		for (const planId of planIds) {
-			const plan = await planQueries.findById(db, planId);
+			const plan = await planQueries.findByInternalId_(db, planId);
 			if (plan) planMap.set(planId, { name: plan.name, slug: plan.slug });
 		}
 
 		const usersList = await Promise.all(
 			appUserRows.map(async (row) => {
-				const user = await userQueries.findById(db, row.user_id);
+				const user = await userQueries.findByInternalId_(db, row.user_id);
 				if (!user) return null;
 
 				const license = licenseByUserId.get(user.id);

@@ -36,7 +36,7 @@ s2sRoutes.post("/users/provision", async (c) => {
 
 		const db = getDb();
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const s2sApp = c.get("s2sApp") as any;
+		const s2sApp = (c as any).get("s2sApp") as Record<string, unknown>;
 
 		// 1. Find or create user by email
 		let user = await userQueries.findByEmail(db, body.email);
@@ -58,7 +58,7 @@ s2sRoutes.post("/users/provision", async (c) => {
 		}
 
 		// 2. Ensure app_users link exists (upsert bumps last_seen_at on repeat calls)
-		await appUserQueries.upsert(db, s2sApp.id, user.id);
+		await appUserQueries.upsert(db, s2sApp["id"] as number, user.id);
 
 		return c.json({ ok: true, data: { userId: user.public_id } }, created ? 201 : 200);
 	} catch (error) {

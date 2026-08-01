@@ -59,9 +59,9 @@ router.get("/validate", async (c: Context) => {
 		const isExpired =
 			license.valid_until && new Date(license.valid_until) < now;
 
-		const plan = await planQueries.findById(db, license.plan_id);
+		const plan = await planQueries.findByInternalId_(db, license.plan_id);
 		const price = license.price_id
-			? await priceQueries.findById(db, license.price_id)
+			? await priceQueries.findByInternalId_(db, license.price_id)
 			: null;
 		const activeCount = await activationQueries.countActiveByLicenseId(
 			db,
@@ -373,7 +373,7 @@ router.get("/check", async (c: Context) => {
 			// Non-fatal — don't fail the entire check if heartbeat fails
 		}
 
-		const plan = await planQueries.findById(db, license.plan_id);
+		const plan = await planQueries.findByInternalId_(db, license.plan_id);
 
 		log.info(
 			{ licenseId: licensePublicId.substring(0, 12), appId: appPublicId, plan: plan?.slug },

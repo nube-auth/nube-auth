@@ -9,7 +9,7 @@
  * - Sets up SYNC_PLAN worker
  */
 
-import { createLogger } from "@nube-auth/shared";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import { createServer } from "node:http";
 import { QueueClient } from "@nube-auth/queue";
 import type { Worker } from "bullmq";
@@ -79,9 +79,7 @@ export async function initializeWorkers(): Promise<void> {
 		worker.on("error", (err) => {
 			log.error(
 				{
-					error: err.message || String(err),
-					code: (err as NodeJS.ErrnoException).code,
-					stack: err.stack,
+					err: serializeError(err as Error),
 				},
 				"Worker encountered error",
 			);
@@ -134,7 +132,7 @@ export function getWorkers(): Worker[] {
  */
 async function main(): Promise<void> {
 	// Start health server immediately so Railway health checks pass during init
-	const port = Number(process.env.PORT ?? 8080);
+	const port = Number(process.env["PORT"] ?? 8080);
 	let initialized = false;
 	let initError: Error | null = null;
 
@@ -178,7 +176,7 @@ async function main(): Promise<void> {
 	} catch (error) {
 		initError = error as Error;
 		log.error(
-			{ error: (error as Error).message },
+			{ err: serializeError(error as Error) },
 			"Workers service failed to start",
 		);
 		process.exit(1);

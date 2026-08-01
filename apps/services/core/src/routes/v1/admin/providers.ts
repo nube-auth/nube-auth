@@ -216,8 +216,8 @@ providersRouter.get("/:projectId/configs/:providerId/credentials", async (c: Con
 		let credentials: Record<string, string>;
 		try {
 			credentials = decryptProviderCredentials(config);
-		} catch (e) {
-			log.error({ err: (e as Error).message, providerId }, "Decrypt credentials error");
+		} catch (error) {
+			log.error({ err: (error as Error).message, providerId }, "Decrypt credentials error");
 			return c.json({ error: "Failed to decrypt credentials" }, 500);
 		}
 
@@ -228,7 +228,7 @@ providersRouter.get("/:projectId/configs/:providerId/credentials", async (c: Con
 			credentials,
 			webhookSecret: config.webhook_secret,
 		});
-	} catch (_error) {
+	} catch (error) {
 		// Never log error object that might contain credentials
 		log.error({ projectId, providerId }, "Failed to get provider credentials");
 		return c.json({ error: "Failed to get provider credentials" }, 500);
@@ -282,8 +282,8 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
 		let sealedBundle: { sealed: string; wrappedDek: string };
 		try {
 			sealedBundle = encryptProviderCredentials(body.credentials);
-		} catch (e) {
-			log.error({ err: (e as Error).message }, "Encrypt credentials error");
+		} catch (error) {
+			log.error({ err: (error as Error).message }, "Encrypt credentials error");
 			return c.json({ error: "Server encryption not configured" }, 500);
 		}
 		const newConfig = await paymentProviderConfigQueries.create(db, {
@@ -319,7 +319,7 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
 			},
 			201,
 		);
-	} catch (_error) {
+	} catch (error) {
 		// Never log request body or error details that might contain credentials
 		log.error({ projectId, provider }, "Failed to create payment provider");
 		return c.json({ error: "Failed to create payment provider" }, 500);
@@ -381,8 +381,8 @@ providersRouter.patch("/:projectId/configs/:providerId", async (c: Context) => {
 				const sealedBundle = encryptProviderCredentials(body.credentials);
 				updateData.credentials = sealedBundle.sealed;
 				updateData.credentials_dek = sealedBundle.wrappedDek;
-			} catch (e) {
-				log.error({ err: (e as Error).message }, "Encrypt credentials error");
+			} catch (error) {
+				log.error({ err: (error as Error).message }, "Encrypt credentials error");
 				return c.json({ error: "Server encryption not configured" }, 500);
 			}
 		}
@@ -418,7 +418,7 @@ providersRouter.patch("/:projectId/configs/:providerId", async (c: Context) => {
 			metadata: updated.metadata,
 			updatedAt: updated.updated_at,
 		});
-	} catch (_error) {
+	} catch (error) {
 		// Never log request body or error details that might contain credentials
 		log.error({ projectId, providerId }, "Failed to update payment provider");
 		return c.json({ error: "Failed to update payment provider" }, 500);

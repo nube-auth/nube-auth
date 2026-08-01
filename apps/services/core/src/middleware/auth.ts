@@ -2,6 +2,7 @@ import type { Context, Next } from "hono";
 import { getSignedCookie } from "hono/cookie";
 import { getDb, sessionQueries, userQueries } from "@nube-auth/db";
 import { createLogger, serializeError, idPatterns } from "@nube-auth/shared";
+import { env } from "../config/env";
 
 const log = createLogger("auth-middleware");
 
@@ -28,7 +29,7 @@ export async function authMiddleware(c: Context, next: Next): Promise<Response |
 
 		// Check for session in header (S2S) or signed cookie
 		const sessionHeader = c.req.header("x-nube-session-id");
-		const sessionCookie = await getSignedCookie(c, "session_secret", "sessionId");
+		const sessionCookie = await getSignedCookie(c, env.SESSION_SECRET, "sessionId");
 		const sessionPublicId = sessionHeader || sessionCookie;
 
 		if (!sessionPublicId) {
@@ -62,7 +63,7 @@ export async function authMiddleware(c: Context, next: Next): Promise<Response |
 		}
 
 		// Lookup user
-		const user = await userQueries.findById(db, session.user_id);
+		const user = await userQueries.findByInternalId_(db, session.user_id);
 
 		if (!user) {
 			log.error({ sessionPublicId, userId: session.user_id }, "User not found for valid session");

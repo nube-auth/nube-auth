@@ -56,7 +56,7 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 	}
 
 	// Get app
-	const app = await appQueries.findById(db, plan.app_id);
+	const app = await appQueries.findByInternalId_(db, plan.app_id);
 	if (!app) {
 		log.error({ planId, appId: plan.app_id }, "App not found");
 		throw new Error(`App not found for plan: ${planId}`);

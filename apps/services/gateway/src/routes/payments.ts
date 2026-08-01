@@ -168,8 +168,8 @@ paymentsRoutes.all("/*", async (c: Context) => {
 		// of a specific app).
 		if (method === "POST" && path.endsWith("/checkout") && body && typeof body === "object" && !Array.isArray(body)) {
 			const checkoutBody = body as Record<string, unknown>;
-			checkoutBody.userId = auth.userId;
-			checkoutBody.customerEmail = auth.email;
+			checkoutBody["userId"] = auth.userId;
+			checkoutBody["customerEmail"] = auth.email;
 		}
 
 		const url = new URL(coreUrl);

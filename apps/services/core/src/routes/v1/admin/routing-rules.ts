@@ -59,9 +59,9 @@ const TestRoutingSchema = z.object({
  */
 app.get("/:appId", async (c) => {
 	try {
-		const appId = parseInt(c.req.param("appId"), 10);
+		const appId = Number(c.req.param("appId"));
 
-		if (Number.isNaN(appId)) {
+		if (!Number.isFinite(appId) || !Number.isInteger(appId) || appId < 1) {
 			return c.json({ error: "Invalid app ID" }, 400);
 		}
 
@@ -71,7 +71,7 @@ app.get("/:appId", async (c) => {
 		// Join with provider configs to include provider info
 		const enrichedRules = await Promise.all(
 			rules.map(async (rule: any) => {
-				const provider = await paymentProviderConfigQueries.findById(db, rule.provider_config_id);
+				const provider = await paymentProviderConfigQueries.findByInternalId_(db, rule.provider_config_id);
 				return {
 					ruleId: rule.public_id,
 					name: rule.name,
@@ -106,9 +106,9 @@ app.get("/:appId", async (c) => {
  */
 app.post("/:appId", async (c) => {
 	try {
-		const appId = parseInt(c.req.param("appId"), 10);
+		const appId = Number(c.req.param("appId"));
 
-		if (Number.isNaN(appId)) {
+		if (!Number.isFinite(appId) || !Number.isInteger(appId) || appId < 1) {
 			return c.json({ error: "Invalid app ID" }, 400);
 		}
 
@@ -118,7 +118,7 @@ app.post("/:appId", async (c) => {
 		const db = getDb();
 
 		// Verify provider config exists and belongs to same app
-		const providerConfig = await paymentProviderConfigQueries.findById(db, validated.provider_config_id);
+		const providerConfig = await paymentProviderConfigQueries.findByInternalId_(db, validated.provider_config_id);
 		if (!providerConfig) {
 			return c.json({ error: "Provider config not found" }, 404);
 		}
@@ -173,10 +173,10 @@ app.post("/:appId", async (c) => {
  */
 app.put("/:appId/:ruleId", async (c) => {
 	try {
-		const appId = parseInt(c.req.param("appId"), 10);
+		const appId = Number(c.req.param("appId"));
 		const rulePublicId = c.req.param("ruleId");
 
-		if (Number.isNaN(appId)) {
+		if (!Number.isFinite(appId) || !Number.isInteger(appId) || appId < 1) {
 			return c.json({ error: "Invalid app ID" }, 400);
 		}
 
@@ -198,7 +198,7 @@ app.put("/:appId/:ruleId", async (c) => {
 
 		// If changing provider, verify it exists
 		if (validated.provider_config_id) {
-			const providerConfig = await paymentProviderConfigQueries.findById(db, validated.provider_config_id);
+			const providerConfig = await paymentProviderConfigQueries.findByInternalId_(db, validated.provider_config_id);
 			if (!providerConfig) {
 				return c.json({ error: "Provider config not found" }, 404);
 			}
@@ -245,10 +245,10 @@ app.put("/:appId/:ruleId", async (c) => {
  */
 app.delete("/:appId/:ruleId", async (c) => {
 	try {
-		const appId = parseInt(c.req.param("appId"), 10);
+		const appId = Number(c.req.param("appId"));
 		const rulePublicId = c.req.param("ruleId");
 
-		if (Number.isNaN(appId)) {
+		if (!Number.isFinite(appId) || !Number.isInteger(appId) || appId < 1) {
 			return c.json({ error: "Invalid app ID" }, 400);
 		}
 
@@ -289,9 +289,9 @@ app.delete("/:appId/:ruleId", async (c) => {
  */
 app.post("/:appId/test", async (c) => {
 	try {
-		const appId = parseInt(c.req.param("appId"), 10);
+		const appId = Number(c.req.param("appId"));
 
-		if (Number.isNaN(appId)) {
+		if (!Number.isFinite(appId) || !Number.isInteger(appId) || appId < 1) {
 			return c.json({ error: "Invalid app ID" }, 400);
 		}
 

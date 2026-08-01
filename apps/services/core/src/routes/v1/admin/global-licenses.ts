@@ -37,7 +37,7 @@ globalLicensesRouter.get("/", async (c) => {
 		for (const app of apps) {
 			const appLicenses = await licenseQueries.findByAppId(db, app.id);
 			for (const lic of appLicenses) {
-				const plan = lic.plan_id ? await planQueries.findById(db, lic.plan_id) : undefined;
+				const plan = lic.plan_id ? await planQueries.findByInternalId_(db, lic.plan_id) : undefined;
 				allLicenses.push(formatLicenseDTO(lic, { app, plan }));
 			}
 		}

@@ -86,8 +86,8 @@ refundRoutes.post("/", async (c: Context) => {
 		// Decrypt credentials and create adapter (supports DEK-wrapped and legacy)
 		const decryptedCredentials = decryptProviderCredentials(providerConfig);
 		if (providerConfig.provider === "dodo" && providerConfig.environment) {
-			decryptedCredentials.environment = providerConfig.environment === "production" ? "live_mode" : "test_mode";
-			decryptedCredentials.webhookSecret = providerConfig.webhook_secret || decryptedCredentials.webhookSecret;
+		decryptedCredentials["environment"] = providerConfig.environment === "production" ? "live_mode" : "test_mode";
+		decryptedCredentials["webhookSecret"] = providerConfig.webhook_secret || decryptedCredentials["webhookSecret"] || "";
 		}
 		const adapter = createProviderAdapter(providerConfig.provider, decryptedCredentials);
 

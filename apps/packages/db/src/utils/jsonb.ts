@@ -110,9 +110,30 @@ interface JsonbUpdateOp<T = any> {
 	value: T; // The new value at this path
 }
 
+// ── Path Validation ─────────────────────────────────────────────────────────────
+
+const PATH_PART_REGEX = /^[a-zA-Z0-9_\-]+$/;
+
+function validatePathPart(part: string, context: string): void {
+	if (!PATH_PART_REGEX.test(part)) {
+		throw new Error(
+			`Invalid JSONB path segment "${part}" in ${context}. Only alphanumeric, underscore, and hyphen are allowed.`,
+		);
+	}
+}
+
+function validatePath(path: string, context: string): string[] {
+	const parts = path.split(".");
+	for (const part of parts) {
+		validatePathPart(part, context);
+	}
+	return parts;
+}
+
 /**
  * Build PostgreSQL JSONB set operation for a single path
- * Uses jsonb_set for deep updates with full type safety
+ * Uses jsonb_set for deep updates with full type safety.
+ * Paths are validated to prevent SQL injection.
  *
  * @example
  * ```typescript
@@ -130,14 +151,16 @@ export function buildJsonbSetClause<
 	column: TColumn,
 	operation: JsonbUpdateOp,
 ): SQL {
-	const pathArray = operation.path.split(".").map((p) => `"${p}"`).join(", ");
-	const valueStr = JSON.stringify(operation.value);
-	return sql`jsonb_set(${column}, '{${sql.raw(pathArray)}}', ${sql.raw(`'${valueStr}'::jsonb`)})`;
+	const pathParts = validatePath(operation.path, "buildJsonbSetClause");
+	const pathArray = pathParts.map((p) => `"${p}"`).join(", ");
+	// Use to_jsonb for safe value binding instead of raw string interpolation
+	return sql`jsonb_set(${column}, '{${sql.raw(pathArray)}}', to_jsonb(${operation.value}))`;
 }
 
 /**
  * Build PostgreSQL JSONB delete operation for a path
- * Uses #- operator to remove keys/subtrees atomically
+ * Uses #- operator to remove keys/subtrees atomically.
+ * Paths are validated to prevent SQL injection.
  *
  * ⚠️ Important: This uses the #- operator which removes the key entirely.
  * For removing array elements, this is a footgun - use setArrayIndex(null) instead.
@@ -161,13 +184,15 @@ export function buildJsonbDeleteClause<
 ): SQL {
 	// Path array for #- operator: {oauth,github} not {"oauth","github"}
 	// PostgreSQL #- expects an array literal without quotes around each element
-	const pathArray = path.split(".").join(",");
+	const pathParts = validatePath(path, "buildJsonbDeleteClause");
+	const pathArray = pathParts.join(",");
 	return sql`${column} #- '{${sql.raw(pathArray)}}'`;
 }
 
 /**
  * Build PostgreSQL JSONB merge operation for multiple updates
- * Uses || operator for shallow merges at the top level
+ * Uses || operator for shallow merges at the top level.
+ * Keys are validated to prevent SQL injection.
  *
  * @example
  * ```typescript
@@ -176,15 +201,18 @@ export function buildJsonbDeleteClause<
  *   redirectUris: ["new.com"],
  *   rateLimit: 500
  * })
- * // Generates: security_settings || '{"redirectUris": [...], "rateLimit": 500}'::jsonb
+ * // Generates: security_settings || to_jsonb({...})
  * ```
  */
 export function buildJsonbMergeClause<T extends Record<string, any>>(
 	column: PgColumn<ColumnBaseConfig<"json", "PgJsonb">, any, any>,
 	updates: Partial<T>,
 ): SQL {
-	const valueStr = JSON.stringify(updates);
-	return sql`${column} || ${sql.raw(`'${valueStr}'::jsonb`)}`;
+	// Validate all keys to prevent injection through object keys
+	for (const key of Object.keys(updates)) {
+		validatePathPart(key, "buildJsonbMergeClause key");
+	}
+	return sql`${column} || to_jsonb(${updates})`;
 }
 
 /**

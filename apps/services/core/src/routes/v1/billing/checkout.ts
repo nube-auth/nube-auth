@@ -77,7 +77,7 @@ checkoutRoutes.post("/", async (c: Context) => {
 		}
 
 		// Resolve app → project_id, then find the active provider config
-		const app = await appQueries.findById(db, price.app_id);
+		const app = await appQueries.findByInternalId_(db, price.app_id);
 
 		if (!app) {
 			log.error({ appId: price.app_id }, "App referenced by price not found");

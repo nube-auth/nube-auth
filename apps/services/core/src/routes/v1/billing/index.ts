@@ -67,7 +67,7 @@ billingRoutes.post("/validate-promo", async (c) => {
 		return c.json({ valid: false, reason: "code_not_found" });
 	}
 
-	const promo = await promotionQueries.findById(db, promoCode.promotion_id);
+	const promo = await promotionQueries.findByInternalId_(db, promoCode.promotion_id);
 	if (!promo) {
 		return c.json({ valid: false, reason: "promotion_not_found" });
 	}
@@ -102,7 +102,7 @@ billingRoutes.post("/validate-promo", async (c) => {
 	if (!price || price.app_id !== app.id) {
 		return c.json({ valid: false, reason: "price_not_found" });
 	}
-	const plan = await planQueries.findById(db, price.plan_id);
+	const plan = await planQueries.findByInternalId_(db, price.plan_id);
 	if (!plan) {
 		return c.json({ valid: false, reason: "plan_not_found" });
 	}

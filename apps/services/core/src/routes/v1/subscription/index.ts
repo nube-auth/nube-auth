@@ -49,13 +49,13 @@ router.get("/", async (c: Context) => {
 		}
 
 		const license = sub.license_id
-			? await licenseQueries.findById(db, sub.license_id)
+			? await licenseQueries.findByInternalId_(db, sub.license_id)
 			: null;
 		const plan = license
-			? await planQueries.findById(db, license.plan_id)
+			? await planQueries.findByInternalId_(db, license.plan_id)
 			: null;
 		const price = sub.price_id
-			? await priceQueries.findById(db, sub.price_id)
+			? await priceQueries.findByInternalId_(db, sub.price_id)
 			: null;
 
 		return c.json({

@@ -166,8 +166,14 @@ appCatalogRoutes.get("/:appId/users", async (c: Context) => {
 	try {
 		const resolvedApp = c.get("resolvedApp") as { id: number; public_id: string };
 
-		const limit = Math.min(Math.max(1, parseInt(c.req.query("limit") ?? "100", 10) || 100), 500);
-		const page = Math.max(1, parseInt(c.req.query("page") ?? "1", 10) || 1);
+		const limitRaw = Number(c.req.query("limit") ?? "100");
+		const limit = Number.isFinite(limitRaw) && Number.isInteger(limitRaw)
+			? Math.min(Math.max(1, limitRaw), 500)
+			: 100;
+		const pageRaw = Number(c.req.query("page") ?? "1");
+		const page = Number.isFinite(pageRaw) && Number.isInteger(pageRaw) && pageRaw > 0
+			? pageRaw
+			: 1;
 		const offset = (page - 1) * limit;
 
 		const db = getDb();
@@ -186,8 +192,8 @@ appCatalogRoutes.get("/:appId/users", async (c: Context) => {
 		const uniquePlanIds = [...new Set(paginated.map((l) => l.plan_id))];
 
 		const [userRows, planRows] = await Promise.all([
-			Promise.all(uniqueUserIds.map((id) => userQueries.findById(db, id))),
-			Promise.all(uniquePlanIds.map((id) => planQueries.findById(db, id))),
+			Promise.all(uniqueUserIds.map((id) => userQueries.findByInternalId_(db, id))),
+			Promise.all(uniquePlanIds.map((id) => planQueries.findByInternalId_(db, id))),
 		]);
 
 		const userMap = new Map(userRows.filter(Boolean).map((u) => [u!.id, u!]));
@@ -290,10 +296,10 @@ appCatalogRoutes.get("/:appId/users/:userId/license", async (c: Context) => {
 		}
 
 		// Resolve plan via price chain then direct plan_id
-		const price = license.price_id ? await priceQueries.findById(db, license.price_id) : null;
+		const price = license.price_id ? await priceQueries.findByInternalId_(db, license.price_id) : null;
 		const plan = price
-			? await planQueries.findById(db, price.plan_id)
-			: await planQueries.findById(db, license.plan_id);
+			? await planQueries.findByInternalId_(db, price.plan_id)
+			: await planQueries.findByInternalId_(db, license.plan_id);
 
 		// Attach subscription info if one exists
 		const subscription = await subscriptionQueries.findActiveByUserAndApp(db, user.id, resolvedApp.id);

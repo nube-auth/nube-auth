@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import { runMigrations } from "@nube-auth/db";
 import { initCache, pingCache } from "@nube-auth/cache";
 import { createLogger, serializeError } from "@nube-auth/shared";
+import { configureSessionSecret } from "@nube-auth/auth";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { env } from "./config/env";
@@ -18,6 +19,9 @@ import { subscriptionRoutes } from "./routes/v1/subscription";
 // Initialize cache with the validated Redis URL from env.ts before any cache operations
 initCache(env.REDIS_URL);
 
+// Configure session secret before any auth operations
+configureSessionSecret(env.SESSION_SECRET);
+
 const log = createLogger("core");
 const app = new Hono();
 
@@ -31,8 +35,8 @@ app.use(
 		origin: (origin: string | undefined) => {
 			// Allow requests with no origin (e.g., same-origin, server-to-server)
 			if (!origin) return "*";
-			// Allow localhost for development
-			if (origin.startsWith("http://localhost:")) return origin;
+			// Allow localhost ONLY in development mode
+			if (env.IS_DEVELOPMENT && origin.startsWith("http://localhost:")) return origin;
 			// Allow any subdomain of the deployment domain (derived from CORE_PUBLIC_URL).
 			// e.g. CORE_PUBLIC_URL=https://s-api.example.com → allows *.example.com
 			if (env.CORE_PUBLIC_URL) {
@@ -100,8 +104,8 @@ app.onError((err, c) => {
 try {
 	await runMigrations();
 	isReady.db = true;
-} catch (err) {
-	log.error({ err: serializeError(err as Error) }, "Database migration failed — exiting");
+} catch (error) {
+	log.error({ err: serializeError(error as Error) }, "Database migration failed — exiting");
 	process.exit(1);
 }
 
@@ -113,8 +117,8 @@ try {
 	} else {
 		log.warn("Redis not reachable at startup — will retry on first request");
 	}
-} catch (err) {
-	log.warn({ err: serializeError(err as Error) }, "Redis ping failed at startup");
+} catch (error) {
+	log.warn({ err: serializeError(error as Error) }, "Redis ping failed at startup");
 }
 
 // Start server

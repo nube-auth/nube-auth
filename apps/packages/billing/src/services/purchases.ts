@@ -313,11 +313,11 @@ export async function createPurchaseRecords(
 		let promoCodeRow: { id: number; promotion_id: number; code: string } | undefined;
 		let discountAppliedCents = 0;
 		if (purchase.promotion_code_id) {
-			promoCodeRow = await promotionCodeQueries.findById(db, purchase.promotion_code_id) as typeof promoCodeRow;
+			promoCodeRow = await promotionCodeQueries.findByInternalId_(db, purchase.promotion_code_id) as typeof promoCodeRow;
 		}
 
 		if (promoCodeRow) {
-			const promo = await promotionQueries.findById(db, promoCodeRow.promotion_id);
+			const promo = await promotionQueries.findByInternalId_(db, promoCodeRow.promotion_id);
 			if (promo && price) {
 				discountAppliedCents = promo.discount_type === "percent"
 					? Math.round((price.amount_cents * promo.discount_value) / 100)

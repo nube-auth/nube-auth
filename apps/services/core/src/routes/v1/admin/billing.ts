@@ -5,6 +5,7 @@ import {
 	paymentProviderConfigQueries,
 	paymentTransactionQueries,
 	purchaseQueries,
+	purchases,
 	sql,
 	subscriptions,
 	userQueries,
@@ -28,7 +29,16 @@ export const billingRouter = new Hono();
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatPurchase(purchase: any, extras?: { app?: any; user?: any; providerConfig?: any }) {
+type PurchaseRow = typeof purchases.$inferSelect;
+
+function formatPurchase(
+	purchase: PurchaseRow,
+	extras?: {
+		app?: { public_id: string; name: string | null } | null | undefined;
+		user?: { public_id: string; primary_email: string | null } | null | undefined;
+		providerConfig?: { provider: string } | null | undefined;
+	},
+) {
 	return {
 		id: purchase.public_id,
 		app_id: extras?.app?.public_id ?? null,
@@ -49,7 +59,10 @@ function formatPurchase(purchase: any, extras?: { app?: any; user?: any; provide
 	};
 }
 
-function formatTransaction(tx: any, extras?: { purchase?: any }) {
+function formatTransaction(
+	tx: { public_id: string; type: string; status: string; amount_cents: number | null; currency: string | null; provider: string | null; created_at: Date | string; transaction_date: Date | string | null },
+	extras?: { purchase?: { public_id: string; status: string } | null | undefined },
+) {
 	return {
 		id: tx.public_id,
 		purchase_id: extras?.purchase?.public_id ?? null,
@@ -66,7 +79,19 @@ function formatTransaction(tx: any, extras?: { purchase?: any }) {
 	};
 }
 
-function formatWebhookLog(wh: any) {
+function formatWebhookLog(wh: {
+	public_id: string;
+	provider: string | null;
+	event_type: string | null;
+	event_id: string | null;
+	status: string | null;
+	ip_address: string | null;
+	processing_duration_ms: number | null;
+	error_message: string | null;
+	retry_count: number | null;
+	received_at: Date | string;
+	processing_completed_at: Date | string | null;
+}) {
 	return {
 		id: wh.public_id,
 		provider: wh.provider,
@@ -84,7 +109,25 @@ function formatWebhookLog(wh: any) {
 	};
 }
 
-function formatWebhookDetail(wh: any) {
+function formatWebhookDetail(wh: {
+	public_id: string;
+	provider: string | null;
+	event_type: string | null;
+	event_id: string | null;
+	status: string | null;
+	ip_address: string | null;
+	processing_duration_ms: number | null;
+	error_message: string | null;
+	retry_count: number | null;
+	received_at: Date | string;
+	processing_completed_at: Date | string | null;
+	request_body: unknown;
+	request_headers: unknown;
+	signature: string | null;
+	error_stack: string | null;
+	processing_started_at: Date | string | null;
+	last_retry_at: Date | string | null;
+}) {
 	return {
 		...formatWebhookLog(wh),
 		request_body: wh.request_body,
@@ -100,7 +143,25 @@ function formatWebhookDetail(wh: any) {
 	};
 }
 
-function formatRefund(tx: any, extras?: { purchase?: any; purchaseApp?: any }) {
+function formatRefund(
+	tx: {
+		public_id: string;
+		provider: string | null;
+		amount_cents: number | null;
+		currency: string | null;
+		status: string | null;
+		description: string | null;
+		notes: string | null;
+		created_at: Date | string;
+		resolved_at: Date | string | null;
+		provider_transaction_id: string | null;
+		dispute_reason: string | null;
+	},
+	extras?: {
+		purchase?: PurchaseRow | null | undefined;
+		purchaseApp?: { public_id: string; name: string | null } | null | undefined;
+	},
+) {
 	return {
 		id: tx.public_id,
 		provider: tx.provider,
@@ -250,9 +311,9 @@ billingRouter.get("/purchases", async (c) => {
 		const data = await Promise.all(
 			items.map(async (p) => {
 				const [app, user, providerConfig] = await Promise.all([
-					appQueries.findById(db, p.app_id),
-					userQueries.findById(db, p.subject_id),
-					paymentProviderConfigQueries.findById(db, p.provider_config_id),
+					appQueries.findByInternalId_(db, p.app_id),
+					userQueries.findByInternalId_(db, p.subject_id),
+					paymentProviderConfigQueries.findByInternalId_(db, p.provider_config_id),
 				]);
 				return formatPurchase(p, { app, user, providerConfig });
 			}),
@@ -282,9 +343,9 @@ billingRouter.get("/purchases/:purchaseId", async (c) => {
 		}
 
 		const [app, user, providerConfig] = await Promise.all([
-			appQueries.findById(db, purchase.app_id),
-			userQueries.findById(db, purchase.subject_id),
-			paymentProviderConfigQueries.findById(db, purchase.provider_config_id),
+			appQueries.findByInternalId_(db, purchase.app_id),
+			userQueries.findByInternalId_(db, purchase.subject_id),
+			paymentProviderConfigQueries.findByInternalId_(db, purchase.provider_config_id),
 		]);
 
 		return c.json({ data: formatPurchase(purchase, { app, user, providerConfig }) });
@@ -317,7 +378,7 @@ billingRouter.get("/transactions", async (c) => {
 		// Enrich with purchase info
 		const data = await Promise.all(
 			items.map(async (tx) => {
-				const purchase = await purchaseQueries.findById(db, tx.purchase_id);
+				const purchase = await purchaseQueries.findByInternalId_(db, tx.purchase_id);
 				return formatTransaction(tx, { purchase });
 			}),
 		);
@@ -471,9 +532,9 @@ billingRouter.get("/refunds", async (c) => {
 		// Enrich with purchase info
 		const refunds = await Promise.all(
 			items.map(async (tx) => {
-				const purchase = await purchaseQueries.findById(db, tx.purchase_id);
+				const purchase = await purchaseQueries.findByInternalId_(db, tx.purchase_id);
 				const purchaseApp = purchase
-					? await appQueries.findById(db, purchase.app_id)
+					? await appQueries.findByInternalId_(db, purchase.app_id)
 					: undefined;
 				return formatRefund(tx, { purchase, purchaseApp });
 			}),
@@ -521,7 +582,7 @@ billingRouter.post("/refunds", async (c) => {
 		}
 
 		// Get provider config for provider name
-		const providerConfig = await paymentProviderConfigQueries.findById(
+		const providerConfig = await paymentProviderConfigQueries.findByInternalId_(
 			db,
 			purchase.provider_config_id,
 		);
