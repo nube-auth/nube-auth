@@ -1,0 +1,31 @@
+.env.example
+  s_e0fee73ba207bf::t_80540b5a22a12a 2,4,42,70,92,97,99,109,111-122,125,147
+  s_e0fee73ba207bf::t_f7e1f6e118ab99 74,77-82
+  s_e0fee73ba207bf::t_b03dcd45360275 83
+README.md
+  s_e0fee73ba207bf::t_17119176f554ef 110,113
+  s_e0fee73ba207bf::t_d6ad80da4c5bee 180
+Justfile
+  s_e0fee73ba207bf::t_3a8b2586d96c9e 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "ee01a1219f7641a042f9af56b1976dea1b3471f0",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
