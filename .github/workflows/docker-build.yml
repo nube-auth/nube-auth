@@ -1,0 +1,276 @@
+name: Build Docker Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Branch to build from
+        required: true
+        default: trunk
+        type: choice
+        options:
+          - trunk
+          - staging
+      build_type:
+        description: What to build (multi-select)
+        required: true
+        default: individual-backend
+        type: choice
+        options:
+          - individual-backend
+          - full-frontend
+          - combined
+      push_images:
+        description: Push to registry?
+        required: true
+        default: false
+        type: boolean
+      registry:
+        description: Container registry
+        required: false
+        default: ghcr.io/nube-auth
+        type: string
+
+env:
+  REGISTRY: ${{ inputs.registry || 'ghcr.io/nube-auth' }}
+  PLATFORMS: linux/amd64,linux/arm64
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════
+  # Individual Backend Images
+  # ═══════════════════════════════════════════════════════════════════════
+  build-core:
+    name: Build Core
+    runs-on: ubuntu-latest
+    if: inputs.build_type == 'individual-backend'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to registry
+        if: inputs.push_images
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/nube-auth-core
+          tags: |
+            type=raw,value=${{ inputs.branch }}
+            type=sha,prefix=${{ inputs.branch }}-
+            type=raw,value=latest,enable=${{ inputs.branch == 'trunk' }}
+
+      - name: Build (and push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: nube-scripts/deploy/docker/Dockerfile.core
+          platforms: ${{ env.PLATFORMS }}
+          push: ${{ inputs.push_images }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=core-${{ inputs.branch }}
+          cache-to: type=gha,mode=max,scope=core-${{ inputs.branch }}
+
+  build-gateway:
+    name: Build Gateway
+    runs-on: ubuntu-latest
+    if: inputs.build_type == 'individual-backend'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to registry
+        if: inputs.push_images
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/nube-auth-gateway
+          tags: |
+            type=raw,value=${{ inputs.branch }}
+            type=sha,prefix=${{ inputs.branch }}-
+            type=raw,value=latest,enable=${{ inputs.branch == 'trunk' }}
+
+      - name: Build (and push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: nube-scripts/deploy/docker/Dockerfile.gateway
+          platforms: ${{ env.PLATFORMS }}
+          push: ${{ inputs.push_images }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=gateway-${{ inputs.branch }}
+          cache-to: type=gha,mode=max,scope=gateway-${{ inputs.branch }}
+
+  build-workers:
+    name: Build Workers
+    runs-on: ubuntu-latest
+    if: inputs.build_type == 'individual-backend'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to registry
+        if: inputs.push_images
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/nube-auth-workers
+          tags: |
+            type=raw,value=${{ inputs.branch }}
+            type=sha,prefix=${{ inputs.branch }}-
+            type=raw,value=latest,enable=${{ inputs.branch == 'trunk' }}
+
+      - name: Build (and push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: nube-scripts/deploy/docker/Dockerfile.workers
+          platforms: ${{ env.PLATFORMS }}
+          push: ${{ inputs.push_images }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=workers-${{ inputs.branch }}
+          cache-to: type=gha,mode=max,scope=workers-${{ inputs.branch }}
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # Full Frontend Images (Dashboards)
+  # ═══════════════════════════════════════════════════════════════════════
+  build-dashboards:
+    name: Build Dashboards
+    runs-on: ubuntu-latest
+    if: inputs.build_type == 'full-frontend'
+    strategy:
+      matrix:
+        dashboard:
+          - name: admin
+            dockerfile: Dockerfile.dashboard-admin
+            image: nube-auth-dashboard-admin
+          - name: user
+            dockerfile: Dockerfile.dashboard-user
+            image: nube-auth-dashboard-user
+          - name: home
+            dockerfile: Dockerfile.dashboard-home
+            image: nube-auth-dashboard-home
+          - name: docs
+            dockerfile: Dockerfile.dashboard-docs
+            image: nube-auth-dashboard-docs
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to registry
+        if: inputs.push_images
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ matrix.dashboard.image }}
+          tags: |
+            type=raw,value=${{ inputs.branch }}
+            type=sha,prefix=${{ inputs.branch }}-
+            type=raw,value=latest,enable=${{ inputs.branch == 'trunk' }}
+
+      - name: Build (and push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: nube-scripts/deploy/docker/${{ matrix.dashboard.dockerfile }}
+          platforms: ${{ env.PLATFORMS }}
+          push: ${{ inputs.push_images }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.dashboard.name }}-${{ inputs.branch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.dashboard.name }}-${{ inputs.branch }}
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # Combined All-in-One Image
+  # ═══════════════════════════════════════════════════════════════════════
+  build-combined:
+    name: Build Combined (All-in-One)
+    runs-on: ubuntu-latest
+    if: inputs.build_type == 'combined'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to registry
+        if: inputs.push_images
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/nube-auth-app
+          tags: |
+            type=raw,value=${{ inputs.branch }}
+            type=sha,prefix=${{ inputs.branch }}-
+            type=raw,value=latest,enable=${{ inputs.branch == 'trunk' }}
+
+      - name: Build (and push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: nube-scripts/deploy/docker/Dockerfile.app
+          platforms: ${{ env.PLATFORMS }}
+          push: ${{ inputs.push_images }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=app-${{ inputs.branch }}
+          cache-to: type=gha,mode=max,scope=app-${{ inputs.branch }}
