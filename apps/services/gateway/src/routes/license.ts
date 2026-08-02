@@ -5,16 +5,16 @@
  * The server (Core) is the sole source of truth for plan/feature data.
  */
 
-import { Hono } from "hono";
 import { pingpong } from "@nube-auth/auth";
-import { getDb, userQueries, appQueries, licenseQueries, planQueries, priceQueries } from "@nube-auth/db";
 import { cache } from "@nube-auth/cache";
+import { appQueries, getDb, licenseQueries, planQueries, priceQueries, userQueries } from "@nube-auth/db";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
+import { Hono } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
+import { CACHE_TTL } from "../config/constants";
 import { env } from "../config/env";
 import { getAuth } from "../middleware/auth";
-import { CACHE_TTL } from "../config/constants";
 
 const log = createLogger("license-routes");
 

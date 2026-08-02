@@ -1,65 +1,65 @@
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { ConfirmModal } from "../components/ConfirmModal";
 import {
-	Icon,
-	IconType,
-	Spinner,
 	Alert,
-	Heading,
-	Text,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
 	Button,
 	Card,
 	CardBody,
+	Checkbox,
+	Chip,
 	DataTable,
 	DataTableRow,
-	EmptyState,
 	Dialog,
-	DialogPopup,
-	DialogHeader,
-	DialogTitle,
 	DialogBody,
 	DialogFooter,
-	Input,
-	Textarea,
-	Label,
-	Chip,
+	DialogHeader,
+	DialogPopup,
+	DialogTitle,
+	EmptyState,
+	Heading,
+	Icon,
 	IconBox,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbButton,
-	TableHeader,
+	IconType,
+	Input,
+	Label,
+	Spinner,
 	TableBody,
-	TableHead,
 	TableCell,
-	Checkbox,
+	TableHead,
+	TableHeader,
 	Tabs,
-	TabsList,
 	TabsItem,
+	TabsList,
 	TabsPanel,
+	Text,
+	Textarea,
 } from "@nube-auth/components";
+import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { ConfirmModal } from "../components/ConfirmModal";
 
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
-import { useApp, useProject } from "../hooks/api";
 import {
-	useV2Plans,
+	useApp,
 	useCreateV2Plan,
-	useUpdateV2Plan,
-	useDeleteV2Plan,
-	useV2Prices,
 	useCreateV2Price,
-	useSyncPrice,
-	useV2Licenses,
-	useV2LicenseSummary,
+	useDeleteV2Plan,
 	useGrantV2License,
-	useUpdateV2License,
+	useProject,
 	useRevokeV2License,
+	useSyncPrice,
+	useUpdateV2License,
+	useUpdateV2Plan,
 	useV2LicenseHistory,
-	type V2Plan,
-	type V2Price,
+	useV2LicenseSummary,
+	useV2Licenses,
+	useV2Plans,
+	useV2Prices,
 	type V2License,
+	type V2Plan,
 } from "../hooks/api";
 
 export function AppLicensesPage() {
@@ -114,9 +114,7 @@ export function AppLicensesPage() {
 				<Heading level={1} size="lg">
 					Licenses & Plans
 				</Heading>
-				<Text className="text-muted mt-1">
-					Manage plans, pricing, and user licenses for {app.name}
-				</Text>
+				<Text className="text-muted mt-1">Manage plans, pricing, and user licenses for {app.name}</Text>
 			</div>
 
 			<Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -314,9 +312,7 @@ function PlansTab({
 											</button>
 										</div>
 										{plan.description && (
-											<Text className="text-muted text-sm mb-2">
-												{plan.description}
-											</Text>
+											<Text className="text-muted text-sm mb-2">{plan.description}</Text>
 										)}
 										{Object.keys(plan.features).length > 0 && (
 											<div className="flex flex-wrap gap-1.5 mb-2">
@@ -335,9 +331,7 @@ function PlansTab({
 											</div>
 										)}
 										{plan.trialDays && (
-											<Text className="text-xs text-muted">
-												{plan.trialDays}-day trial
-											</Text>
+											<Text className="text-xs text-muted">{plan.trialDays}-day trial</Text>
 										)}
 									</div>
 									<div className="flex gap-2">
@@ -604,7 +598,7 @@ function PricesSection({
 
 	const handleCreate = async () => {
 		const parsed = parseFloat(form.amount);
-		if (!form.amount || isNaN(parsed) || parsed < 0) {
+		if (!form.amount || Number.isNaN(parsed) || parsed < 0) {
 			showToast("Enter a valid amount", "error");
 			return;
 		}
@@ -640,9 +634,7 @@ function PricesSection({
 			{isLoading ? (
 				<Spinner />
 			) : prices.length === 0 ? (
-				<Text className="text-muted text-sm py-4">
-					No prices yet. Add a price to enable purchases.
-				</Text>
+				<Text className="text-muted text-sm py-4">No prices yet. Add a price to enable purchases.</Text>
 			) : (
 				<div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
 					{prices.map((price) => {
@@ -654,9 +646,7 @@ function PricesSection({
 									<Text className="font-semibold">
 										{formatPrice(price.amountCents, price.currency)}
 									</Text>
-									{price.interval && (
-										<Text className="text-muted text-xs">/{price.interval}</Text>
-									)}
+									{price.interval && <Text className="text-muted text-xs">/{price.interval}</Text>}
 								</div>
 								<div className="flex flex-wrap gap-1.5 mb-1.5">
 									<Chip size="sm" variant="default">
@@ -782,7 +772,7 @@ function PricesSection({
 									className="pl-8"
 								/>
 							</div>
-							{form.amount && !isNaN(parseFloat(form.amount)) && (
+							{form.amount && !Number.isNaN(parseFloat(form.amount)) && (
 								<Text className="text-xs text-muted mt-1">
 									= {formatPrice(Math.round(parseFloat(form.amount) * 100), form.currency)}
 								</Text>
@@ -823,7 +813,7 @@ function LicensesTab({
 	});
 	const { data: summary } = useV2LicenseSummary(appId);
 	const grantLicense = useGrantV2License(appId);
-	const updateLicense = useUpdateV2License(appId);
+	const _updateLicense = useUpdateV2License(appId);
 	const revokeLicense = useRevokeV2License(appId);
 	const { data: plansData } = useV2Plans(appId);
 
@@ -987,9 +977,7 @@ function LicensesTab({
 											<Text className="text-xs text-muted">{lic.userEmail}</Text>
 										)}
 										<div className="flex items-center gap-1 mt-0.5">
-											<code className="text-xs font-mono text-muted">
-												{lic.licenseId}
-											</code>
+											<code className="text-xs font-mono text-muted">{lic.licenseId}</code>
 											<button
 												type="button"
 												className="text-muted hover:text-text-primary"
@@ -1181,12 +1169,8 @@ function LicenseHistoryModal({ appId, licenseId, onClose }: { appId: string; lic
 												: entry.newValue}
 										</Text>
 									)}
-									{entry.reason && (
-										<Text className="text-xs text-muted mt-1">{entry.reason}</Text>
-									)}
-									{entry.notes && (
-										<Text className="text-xs text-muted italic">{entry.notes}</Text>
-									)}
+									{entry.reason && <Text className="text-xs text-muted mt-1">{entry.reason}</Text>}
+									{entry.notes && <Text className="text-xs text-muted italic">{entry.notes}</Text>}
 								</div>
 							))}
 						</div>

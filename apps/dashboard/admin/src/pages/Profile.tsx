@@ -1,27 +1,27 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState, type FormEvent } from "react";
-import { pingpong } from "../lib/pingpong";
-import config from "../config";
-import { useMe } from "../hooks/api";
 import {
-	Icon,
-	IconType,
-	Spinner,
 	Alert,
+	Button,
 	Card,
+	CardBody,
 	CardHeader,
 	CardTitle,
-	CardBody,
-	Field,
 	Chip,
-	Heading,
-	Text,
-	Label,
+	Field,
+	Icon,
+	IconType,
+	InfoGrid,
 	Input,
-	Button,
+	Label,
+	ProfileHeader,
+	Spinner,
+	Text,
 } from "@nube-auth/components";
-import { ProfileHeader, InfoGrid } from "@nube-auth/components";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { type FormEvent, useEffect, useState } from "react";
 import { PageLoader } from "../components/PageLoader";
+import config from "../config";
+import { useMe } from "../hooks/api";
+import { pingpong } from "../lib/pingpong";
 
 // Helper to normalize headers to Record<string, string>
 function normalizeHeaders(headers?: HeadersInit): Record<string, string> {

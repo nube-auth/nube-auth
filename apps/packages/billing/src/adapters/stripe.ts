@@ -1,12 +1,12 @@
 /**
  * Stripe Payment Provider Adapter
- * 
+ *
  * Implements PaymentProviderAdapter for Stripe.
  * Handles checkout session creation, webhook processing, and subscription management.
  */
 
-import Stripe from "stripe";
 import { createLogger, serializeError } from "@nube-auth/shared";
+import Stripe from "stripe";
 import type {
 	CheckoutSession,
 	CreateCheckoutParams,
@@ -86,7 +86,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 					customerId: params.customerId,
 					mode: params.mode,
 				},
-				"Stripe checkout session created"
+				"Stripe checkout session created",
 			);
 
 			const result: CheckoutSession = {
@@ -105,7 +105,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 					err: serializeError(error as Error),
 					customerId: params.customerId,
 				},
-				"Failed to create Stripe checkout session"
+				"Failed to create Stripe checkout session",
 			);
 			throw error;
 		}
@@ -116,11 +116,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 	 */
 	async verifyWebhook(signature: string, rawBody: string): Promise<WebhookEvent | null> {
 		try {
-			const event = this.stripe.webhooks.constructEvent(
-				rawBody,
-				signature,
-				this.webhookSecret
-			);
+			const event = this.stripe.webhooks.constructEvent(rawBody, signature, this.webhookSecret);
 
 			this.log.debug({ eventType: event.type, eventId: event.id }, "Webhook verified");
 
@@ -131,10 +127,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 				rawBody,
 			};
 		} catch (error) {
-			this.log.error(
-				{ err: serializeError(error as Error) },
-				"Webhook signature verification failed"
-			);
+			this.log.error({ err: serializeError(error as Error) }, "Webhook signature verification failed");
 			return null;
 		}
 	}
@@ -153,15 +146,16 @@ export class StripeAdapter implements PaymentProviderAdapter {
 					expand: ["line_items", "subscription"],
 				});
 
-			// payment_intent can be a string ID, an expanded object, or null (e.g. free trials)
-			const paymentIntentId = typeof fullSession.payment_intent === "string"
-				? fullSession.payment_intent
-				: (fullSession.payment_intent as { id?: string } | null)?.id ?? fullSession.id;
+				// payment_intent can be a string ID, an expanded object, or null (e.g. free trials)
+				const paymentIntentId =
+					typeof fullSession.payment_intent === "string"
+						? fullSession.payment_intent
+						: ((fullSession.payment_intent as { id?: string } | null)?.id ?? fullSession.id);
 
-			const result: PaymentDetails = {
-				transactionId: paymentIntentId,
-				amount: fullSession.amount_total || 0, // Minor units (cents/paise/etc.) — do NOT divide
-				currency: fullSession.currency || "usd",
+				const result: PaymentDetails = {
+					transactionId: paymentIntentId,
+					amount: fullSession.amount_total || 0, // Minor units (cents/paise/etc.) — do NOT divide
+					currency: fullSession.currency || "usd",
 					status: fullSession.payment_status === "paid" ? "succeeded" : "pending",
 					customerId: fullSession.customer as string,
 					customerEmail: fullSession.customer_email || "",
@@ -181,7 +175,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 						amount: result.amount,
 						customerId: result.customerId,
 					},
-					"Payment details extracted from checkout session"
+					"Payment details extracted from checkout session",
 				);
 
 				return result;
@@ -191,15 +185,16 @@ export class StripeAdapter implements PaymentProviderAdapter {
 			if (event.type === "invoice.payment_succeeded") {
 				const invoice = event.data as Stripe.Invoice;
 
-			const invoicePaymentIntentId = typeof invoice.payment_intent === "string"
-				? invoice.payment_intent
-				: (invoice.payment_intent as { id?: string } | null)?.id ?? invoice.id;
+				const invoicePaymentIntentId =
+					typeof invoice.payment_intent === "string"
+						? invoice.payment_intent
+						: ((invoice.payment_intent as { id?: string } | null)?.id ?? invoice.id);
 
-			const result: PaymentDetails = {
-				transactionId: invoicePaymentIntentId,
-				amount: invoice.amount_paid || 0, // Minor units — do NOT divide
-				currency: invoice.currency,
-				status: invoice.status === "paid" ? "succeeded" : invoice.status === "open" ? "pending" : "failed",
+				const result: PaymentDetails = {
+					transactionId: invoicePaymentIntentId,
+					amount: invoice.amount_paid || 0, // Minor units — do NOT divide
+					currency: invoice.currency,
+					status: invoice.status === "paid" ? "succeeded" : invoice.status === "open" ? "pending" : "failed",
 					customerId: invoice.customer as string,
 					customerEmail: invoice.customer_email || "",
 				};
@@ -217,25 +212,25 @@ export class StripeAdapter implements PaymentProviderAdapter {
 						transactionId: result.transactionId,
 						subscriptionId: result.subscriptionId,
 					},
-					"Payment details extracted from invoice"
+					"Payment details extracted from invoice",
 				);
 
 				return result;
 			}
 
-		// Handle customer.subscription.deleted (subscription canceled)
-		if (event.type === "customer.subscription.deleted") {
-			const subscription = event.data as Stripe.Subscription;
+			// Handle customer.subscription.deleted (subscription canceled)
+			if (event.type === "customer.subscription.deleted") {
+				const subscription = event.data as Stripe.Subscription;
 
-			const result: PaymentDetails = {
-				transactionId: subscription.id, // Use subscription ID as transaction reference
-				amount: 0,
-				currency: subscription.items.data[0]?.price?.currency ?? "usd",
-				status: "canceled",
-				customerId: subscription.customer as string,
-				customerEmail: "", // Email not available in subscription event
-				subscriptionId: subscription.id,
-			};
+				const result: PaymentDetails = {
+					transactionId: subscription.id, // Use subscription ID as transaction reference
+					amount: 0,
+					currency: subscription.items.data[0]?.price?.currency ?? "usd",
+					status: "canceled",
+					customerId: subscription.customer as string,
+					customerEmail: "", // Email not available in subscription event
+					subscriptionId: subscription.id,
+				};
 
 				if (subscription.metadata) {
 					result.metadata = subscription.metadata as Record<string, string>;
@@ -246,7 +241,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 						subscriptionId: subscription.id,
 						customerId: subscription.customer,
 					},
-					"Subscription cancellation detected"
+					"Subscription cancellation detected",
 				);
 
 				return result;
@@ -256,15 +251,16 @@ export class StripeAdapter implements PaymentProviderAdapter {
 			if (event.type === "invoice.payment_failed") {
 				const invoice = event.data as Stripe.Invoice;
 
-			const failedInvoicePaymentIntentId = typeof invoice.payment_intent === "string"
-				? invoice.payment_intent
-				: (invoice.payment_intent as { id?: string } | null)?.id ?? invoice.id;
+				const failedInvoicePaymentIntentId =
+					typeof invoice.payment_intent === "string"
+						? invoice.payment_intent
+						: ((invoice.payment_intent as { id?: string } | null)?.id ?? invoice.id);
 
-			const result: PaymentDetails = {
-				transactionId: failedInvoicePaymentIntentId,
-				amount: invoice.amount_due || 0, // Minor units — do NOT divide
-				currency: invoice.currency,
-				status: "failed",
+				const result: PaymentDetails = {
+					transactionId: failedInvoicePaymentIntentId,
+					amount: invoice.amount_due || 0, // Minor units — do NOT divide
+					currency: invoice.currency,
+					status: "failed",
 					customerId: invoice.customer as string,
 					customerEmail: invoice.customer_email || "",
 				};
@@ -283,7 +279,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 						subscriptionId: result.subscriptionId,
 						amount: result.amount,
 					},
-					"Payment failure detected"
+					"Payment failure detected",
 				);
 
 				return result;
@@ -293,11 +289,11 @@ export class StripeAdapter implements PaymentProviderAdapter {
 			if (event.type === "charge.refunded") {
 				const charge = event.data as Stripe.Charge;
 
-			const result: PaymentDetails = {
-				transactionId: charge.id,
-				amount: charge.amount_refunded || 0, // Minor units — do NOT divide
-				currency: charge.currency,
-				status: "refunded",
+				const result: PaymentDetails = {
+					transactionId: charge.id,
+					amount: charge.amount_refunded || 0, // Minor units — do NOT divide
+					currency: charge.currency,
+					status: "refunded",
 					customerId: charge.customer as string,
 					customerEmail: charge.billing_details?.email || "",
 				};
@@ -312,25 +308,25 @@ export class StripeAdapter implements PaymentProviderAdapter {
 						amountRefunded: result.amount,
 						customerId: result.customerId,
 					},
-					"Refund detected"
+					"Refund detected",
 				);
 
 				return result;
 			}
 
-		// Handle customer.subscription.updated (subscription modified)
-		if (event.type === "customer.subscription.updated") {
-			const subscription = event.data as Stripe.Subscription;
+			// Handle customer.subscription.updated (subscription modified)
+			if (event.type === "customer.subscription.updated") {
+				const subscription = event.data as Stripe.Subscription;
 
-			const result: PaymentDetails = {
-				transactionId: subscription.id,
-				amount: 0,
-				currency: subscription.items.data[0]?.price?.currency ?? "usd",
-				status: "pending",
-				customerId: subscription.customer as string,
-				customerEmail: "",
-				subscriptionId: subscription.id,
-			};
+				const result: PaymentDetails = {
+					transactionId: subscription.id,
+					amount: 0,
+					currency: subscription.items.data[0]?.price?.currency ?? "usd",
+					status: "pending",
+					customerId: subscription.customer as string,
+					customerEmail: "",
+					subscriptionId: subscription.id,
+				};
 
 				if (subscription.metadata) {
 					result.metadata = subscription.metadata as Record<string, string>;
@@ -341,7 +337,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 						subscriptionId: subscription.id,
 						status: subscription.status,
 					},
-					"Subscription update detected"
+					"Subscription update detected",
 				);
 
 				return result;
@@ -355,7 +351,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 					err: serializeError(error as Error),
 					eventType: event.type,
 				},
-				"Failed to extract payment details"
+				"Failed to extract payment details",
 			);
 			return null;
 		}
@@ -382,7 +378,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 					subscriptionId,
 					immediate,
 				},
-				"Failed to cancel subscription"
+				"Failed to cancel subscription",
 			);
 			throw error;
 		}
@@ -408,7 +404,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 					err: serializeError(error as Error),
 					subscriptionId,
 				},
-				"Failed to get subscription"
+				"Failed to get subscription",
 			);
 			return null;
 		}
@@ -417,9 +413,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 	/**
 	 * Map Stripe subscription status to our standard status
 	 */
-	private mapStripeStatus(
-		status: Stripe.Subscription.Status
-	): SubscriptionDetails["status"] {
+	private mapStripeStatus(status: Stripe.Subscription.Status): SubscriptionDetails["status"] {
 		switch (status) {
 			case "active":
 				return "active";
@@ -437,7 +431,9 @@ export class StripeAdapter implements PaymentProviderAdapter {
 	/**
 	 * Create a product in Stripe
 	 */
-	async createProduct(params: import("./types.js").CreateProductParams): Promise<import("./types.js").CreateProductResult> {
+	async createProduct(
+		params: import("./types.js").CreateProductParams,
+	): Promise<import("./types.js").CreateProductResult> {
 		try {
 			const product = await this.stripe.products.create({
 				name: params.name,
@@ -445,10 +441,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 				...(params.metadata && { metadata: params.metadata }),
 			});
 
-			this.log.info(
-				{ productId: product.id, name: params.name },
-				"Stripe product created"
-			);
+			this.log.info({ productId: product.id, name: params.name }, "Stripe product created");
 
 			return {
 				productId: product.id,
@@ -457,7 +450,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 		} catch (error) {
 			this.log.error(
 				{ err: serializeError(error as Error), name: params.name },
-				"Failed to create Stripe product"
+				"Failed to create Stripe product",
 			);
 			throw error;
 		}
@@ -497,7 +490,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 					amount: params.amountCents,
 					interval: params.interval,
 				},
-				"Stripe price created"
+				"Stripe price created",
 			);
 
 			return {
@@ -514,7 +507,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 					productId: params.productId,
 					amount: params.amountCents,
 				},
-				"Failed to create Stripe price"
+				"Failed to create Stripe price",
 			);
 			throw error;
 		}
@@ -526,28 +519,33 @@ export class StripeAdapter implements PaymentProviderAdapter {
 	 * directly to checkout as discounts:[{coupon:id}] — no Stripe PromotionCode object
 	 * is created because Nube manages its own code strings.
 	 */
-	async createCoupon(params: import("./types.js").CreateCouponParams): Promise<import("./types.js").CreateCouponResult> {
+	async createCoupon(
+		params: import("./types.js").CreateCouponParams,
+	): Promise<import("./types.js").CreateCouponResult> {
 		try {
-		const coupon = await this.stripe.coupons.create({
-			name: params.name,
-			...(params.discountType === "percent"
-				? { percent_off: params.discountValue }
-				: { amount_off: params.discountValue, currency: params.currency ?? "usd" }),
-			duration: "once",
-			...(params.maxRedemptions && { max_redemptions: params.maxRedemptions }),
-			...(params.expiresAt && { redeem_by: Math.floor(params.expiresAt.getTime() / 1000) }),
-			...(params.metadata && { metadata: params.metadata }),
-			// Restrict to specific Stripe product IDs if provided (applies_to takes product IDs, not price IDs)
-			...(params.restrictedToProductIds?.length && {
-				applies_to: { products: params.restrictedToProductIds },
-			}),
-		});
+			const coupon = await this.stripe.coupons.create({
+				name: params.name,
+				...(params.discountType === "percent"
+					? { percent_off: params.discountValue }
+					: { amount_off: params.discountValue, currency: params.currency ?? "usd" }),
+				duration: "once",
+				...(params.maxRedemptions && { max_redemptions: params.maxRedemptions }),
+				...(params.expiresAt && { redeem_by: Math.floor(params.expiresAt.getTime() / 1000) }),
+				...(params.metadata && { metadata: params.metadata }),
+				// Restrict to specific Stripe product IDs if provided (applies_to takes product IDs, not price IDs)
+				...(params.restrictedToProductIds?.length && {
+					applies_to: { products: params.restrictedToProductIds },
+				}),
+			});
 
 			this.log.info({ couponId: coupon.id, name: params.name }, "Stripe coupon created");
 
 			return { couponId: coupon.id, objectType: "coupon" };
 		} catch (error) {
-			this.log.error({ err: serializeError(error as Error), name: params.name }, "Failed to create Stripe coupon");
+			this.log.error(
+				{ err: serializeError(error as Error), name: params.name },
+				"Failed to create Stripe coupon",
+			);
 			throw error;
 		}
 	}
@@ -583,7 +581,7 @@ export class StripeAdapter implements PaymentProviderAdapter {
 		} catch (error) {
 			this.log.error(
 				{ err: serializeError(error as Error), paymentId: params.paymentId },
-				"Failed to create Stripe refund"
+				"Failed to create Stripe refund",
 			);
 			throw error;
 		}

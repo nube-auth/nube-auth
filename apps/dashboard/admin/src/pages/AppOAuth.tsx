@@ -1,21 +1,20 @@
-import { useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
 import {
-	Icon,
-	IconType,
-	Spinner,
 	Alert,
-	Text,
-	Heading,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
+	Button,
 	Card,
 	CardBody,
-	Button,
 	Chip,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbButton,
+	Heading,
+	Icon,
+	IconType,
+	Text,
 } from "@nube-auth/components";
+import { useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { PageLoader } from "../components/PageLoader";
 import { useToast } from "../components/Toast";
 import { useApp, useProject, useUpdateApp } from "../hooks/api";
@@ -27,7 +26,7 @@ const AVAILABLE_PROVIDERS = [
 
 export default function AppOAuthPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
-	const navigate = useNavigate();
+	const _navigate = useNavigate();
 	const { showToast } = useToast();
 
 	const { data: app, isLoading: appLoading, error: appError } = useApp(projectId!, appId!);
@@ -54,7 +53,7 @@ export default function AppOAuthPage() {
 			await updateAppMutation.mutateAsync({ enabledProviders: selectedProviders });
 			showToast("OAuth providers updated successfully", "success");
 			setIsEditing(false);
-		} catch (error) {
+		} catch (_error) {
 			showToast("Failed to update OAuth providers", "error");
 		}
 	};

@@ -1,23 +1,23 @@
-import { useLicenses } from "../hooks/api";
 import {
-	Icon,
-	IconType,
-	Spinner,
 	Alert,
-	Heading,
-	Text,
+	Card,
+	CardBody,
+	Chip,
 	DataTable,
 	DataTableHeader,
 	DataTableRow,
-	Chip,
-	Card,
-	CardBody,
-	TableHeader,
-	TableHead,
+	EmptyState,
+	Heading,
+	Icon,
+	IconType,
+	Spinner,
 	TableBody,
 	TableCell,
-	EmptyState,
+	TableHead,
+	TableHeader,
+	Text,
 } from "@nube-auth/components";
+import { useLicenses } from "../hooks/api";
 
 export function LicensesPage() {
 	const { data: licenses, isLoading, error } = useLicenses();

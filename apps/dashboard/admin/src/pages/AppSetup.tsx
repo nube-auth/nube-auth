@@ -1,36 +1,35 @@
+import {
+	Alert,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
+	Button,
+	Card,
+	CardBody,
+	Checkbox,
+	Field,
+	FieldDescription,
+	FieldLabel,
+	Heading,
+	Icon,
+	IconType,
+	Input,
+	Label,
+	Select,
+	SelectItem,
+	SelectPopup,
+	SelectTrigger,
+	SelectValue,
+	Spinner,
+	Text,
+	Textarea,
+} from "@nube-auth/components";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import {
-	Icon,
-	IconType,
-	Spinner,
-	Alert,
-	Heading,
-	Text,
-	Card,
-	CardBody,
-	Label,
-	Field,
-	FieldLabel,
-	FieldDescription,
-	Input,
-	Textarea,
-	Button,
-	Checkbox,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbButton,
-	BreadcrumbSeparator,
-	Select,
-	SelectTrigger,
-	SelectValue,
-	SelectPopup,
-	SelectItem,
-} from "@nube-auth/components";
-import { PageLoader } from "../components/PageLoader";
 import { IconPicker } from "../components/IconPicker";
+import { PageLoader } from "../components/PageLoader";
 import { useCreateApp, useProject } from "../hooks/api";
 
 const AVAILABLE_PROVIDERS = [
@@ -804,7 +803,7 @@ export function AppSetupPage() {
 											>
 												{createAppMutation.isPending ? (
 													<span className="flex items-center gap-2">
-													<Spinner className="w-4 h-4" />
+														<Spinner className="w-4 h-4" />
 														Creating...
 													</span>
 												) : (
@@ -877,9 +876,7 @@ export function AppSetupPage() {
 										</div>
 									) : (
 										<div className="p-6 bg-surface-secondary rounded-lg border border-dashed border-border-primary mt-6">
-											<Text className="text-13px text-muted m-0">
-												No OAuth providers enabled
-											</Text>
+											<Text className="text-13px text-muted m-0">No OAuth providers enabled</Text>
 										</div>
 									)}
 

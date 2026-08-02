@@ -7,13 +7,19 @@
  * Mounted at: /v1/admin/apps/:appId/plans/:planId/prices
  */
 
+import { appQueries, auditLogQueries, eq, getDb, planQueries, priceQueries, userQueries } from "@nube-auth/db";
+import { prices } from "@nube-auth/db/schema";
+import {
+	BILLING_INTERVALS,
+	BILLING_TYPES,
+	createLogger,
+	id,
+	SUPPORTED_CURRENCIES,
+	serializeError,
+} from "@nube-auth/shared";
+import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
-import { getDb, appQueries, planQueries, priceQueries, userQueries, auditLogQueries } from "@nube-auth/db";
-import { prices } from "@nube-auth/db/schema";
-import { eq } from "@nube-auth/db";
-import type { Context } from "hono";
-import { createLogger, serializeError, id, BILLING_TYPES, BILLING_INTERVALS, SUPPORTED_CURRENCIES } from "@nube-auth/shared";
 import { enqueuePlanSync } from "../../../billing/queue.js";
 
 const log = createLogger("admin-prices");
@@ -27,29 +33,42 @@ const billingTypeValues = Object.values(BILLING_TYPES) as [string, ...string[]];
 const billingIntervalValues = Object.values(BILLING_INTERVALS) as [string, ...string[]];
 
 // Validation schemas
-const CreatePriceSchema = z.object({
-	billingType: z.enum(billingTypeValues),
-	interval: z.enum(billingIntervalValues).optional().nullable(),
-	amountCents: z.number().int().nonnegative(),
-	currency: z.string().transform((v) => v.toLowerCase()).pipe(z.enum(SUPPORTED_CURRENCIES)).default("usd"),
-	durationDays: z.number().int().positive().optional().nullable(),
-	trialEnabled: z.boolean().optional().default(false),
-	trialDays: z.number().int().positive().optional().nullable(),
-	externalProvider: z.string().max(50).optional().nullable(),
-	externalPriceId: z.string().max(255).optional().nullable(),
-}).refine((data) => {
-	// Recurring prices must have an interval
-	if (data.billingType === "recurring" && !data.interval) {
-		return false;
-	}
-	return true;
-}, { message: "Recurring prices require an interval (month or year)" }).refine((data) => {
-	// Trial only makes sense for recurring prices
-	if (data.trialEnabled && data.billingType !== "recurring") {
-		return false;
-	}
-	return true;
-}, { message: "Trials are only available for recurring prices" });
+const CreatePriceSchema = z
+	.object({
+		billingType: z.enum(billingTypeValues),
+		interval: z.enum(billingIntervalValues).optional().nullable(),
+		amountCents: z.number().int().nonnegative(),
+		currency: z
+			.string()
+			.transform((v) => v.toLowerCase())
+			.pipe(z.enum(SUPPORTED_CURRENCIES))
+			.default("usd"),
+		durationDays: z.number().int().positive().optional().nullable(),
+		trialEnabled: z.boolean().optional().default(false),
+		trialDays: z.number().int().positive().optional().nullable(),
+		externalProvider: z.string().max(50).optional().nullable(),
+		externalPriceId: z.string().max(255).optional().nullable(),
+	})
+	.refine(
+		(data) => {
+			// Recurring prices must have an interval
+			if (data.billingType === "recurring" && !data.interval) {
+				return false;
+			}
+			return true;
+		},
+		{ message: "Recurring prices require an interval (month or year)" },
+	)
+	.refine(
+		(data) => {
+			// Trial only makes sense for recurring prices
+			if (data.trialEnabled && data.billingType !== "recurring") {
+				return false;
+			}
+			return true;
+		},
+		{ message: "Trials are only available for recurring prices" },
+	);
 
 // Only non-immutable fields can be updated
 const UpdatePriceSchema = z.object({
@@ -104,20 +123,23 @@ pricesRouter.post("/", async (c: Context) => {
 		const plan = await planQueries.findByPublicId(db, planId);
 		if (!plan || plan.app_id !== app.id) return c.json({ error: "Plan not found" }, 404);
 
-		const [price] = await db.insert(prices).values({
-			public_id: id.price(),
-			plan_id: plan.id,
-			app_id: app.id,
-			billing_type: validated.billingType,
-			interval: validated.interval ?? null,
-			amount_cents: validated.amountCents,
-			currency: validated.currency,
-			duration_days: validated.durationDays ?? null,
-			trial_enabled: validated.trialEnabled,
-			trial_days: validated.trialDays ?? null,
-			external_provider: validated.externalProvider ?? null,
-			external_price_id: validated.externalPriceId ?? null,
-		}).returning();
+		const [price] = await db
+			.insert(prices)
+			.values({
+				public_id: id.price(),
+				plan_id: plan.id,
+				app_id: app.id,
+				billing_type: validated.billingType,
+				interval: validated.interval ?? null,
+				amount_cents: validated.amountCents,
+				currency: validated.currency,
+				duration_days: validated.durationDays ?? null,
+				trial_enabled: validated.trialEnabled,
+				trial_days: validated.trialDays ?? null,
+				external_provider: validated.externalProvider ?? null,
+				external_price_id: validated.externalPriceId ?? null,
+			})
+			.returning();
 
 		if (!price) return c.json({ error: "Failed to create price" }, 500);
 
@@ -244,14 +266,18 @@ pricesRouter.patch("/:priceId", async (c: Context) => {
 		const existingPrice = await priceQueries.findByPublicId(db, priceId);
 		if (!existingPrice || existingPrice.plan_id !== plan.id) return c.json({ error: "Price not found" }, 404);
 
-		const [updatedPrice] = await db.update(prices).set({
-			trial_enabled: validated.trialEnabled,
-			trial_days: validated.trialDays,
-			external_provider: validated.externalProvider,
-			external_price_id: validated.externalPriceId,
-			is_active: validated.isActive,
-			updated_at: new Date(),
-		}).where(eq(prices.id, existingPrice.id)).returning();
+		const [updatedPrice] = await db
+			.update(prices)
+			.set({
+				trial_enabled: validated.trialEnabled,
+				trial_days: validated.trialDays,
+				external_provider: validated.externalProvider,
+				external_price_id: validated.externalPriceId,
+				is_active: validated.isActive,
+				updated_at: new Date(),
+			})
+			.where(eq(prices.id, existingPrice.id))
+			.returning();
 
 		if (!updatedPrice) return c.json({ error: "Failed to update price" }, 500);
 

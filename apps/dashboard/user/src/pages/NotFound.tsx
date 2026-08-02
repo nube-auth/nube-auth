@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router-dom";
 import { Button, Icon, IconType } from "@nube-auth/components";
+import { useNavigate } from "react-router-dom";
 
 export function NotFoundPage() {
 	const navigate = useNavigate();
@@ -16,9 +16,7 @@ export function NotFoundPage() {
 			<main className="flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
 				<div className="w-full max-w-md">
 					{/* Large 404 */}
-					<p className="text-[120px] font-black leading-none tracking-tighter text-border select-none">
-						404
-					</p>
+					<p className="text-[120px] font-black leading-none tracking-tighter text-border select-none">404</p>
 
 					<h1 className="text-2xl font-bold mt-2 mb-3">Page not found</h1>
 					<p className="text-text-secondary text-base mb-8">

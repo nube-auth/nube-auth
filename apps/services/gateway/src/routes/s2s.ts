@@ -4,7 +4,7 @@
  * (enforced by the s2sAuthMiddleware mounted in index.ts).
  */
 
-import { getDb, userQueries, appUserQueries } from "@nube-auth/db";
+import { appUserQueries, getDb, userQueries } from "@nube-auth/db";
 import { createId, createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 

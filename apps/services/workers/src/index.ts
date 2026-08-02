@@ -9,16 +9,16 @@
  * - Sets up SYNC_PLAN worker
  */
 
-import { createLogger, serializeError } from "@nube-auth/shared";
 import { createServer } from "node:http";
 import { QueueClient } from "@nube-auth/queue";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Worker } from "bullmq";
+import { setupDispatchOutboundWebhookWorker } from "./dispatch-outbound-webhook-worker.js";
 import { setupProcessPaymentWorker } from "./process-payment.js";
+import { startProcessRefundWorker } from "./process-refund.js";
 import { setupProcessWebhookWorker } from "./process-webhook.js";
 import { setupSyncLicenseWorker } from "./sync-license.js";
-import { startProcessRefundWorker } from "./process-refund.js";
 import { setupSyncPlanWorker } from "./sync-plan-worker.js";
-import { setupDispatchOutboundWebhookWorker } from "./dispatch-outbound-webhook-worker.js";
 import { startWebhookRescueCron } from "./webhook-rescue-cron.js";
 
 const log = createLogger("worker-manager");
@@ -58,10 +58,7 @@ export async function initializeWorkers(): Promise<void> {
 		workers = [paymentWorker, webhookWorker, licenseWorker, refundWorker, syncPlanWorker, outboundWebhookWorker];
 		webhookRescueTimer = startWebhookRescueCron();
 
-		log.info(
-			{ workerCount: workers.length },
-			"Workers initialized successfully",
-		);
+		log.info({ workerCount: workers.length }, "Workers initialized successfully");
 
 		// Handle worker errors
 		workers.forEach((worker) => {
@@ -76,20 +73,17 @@ export async function initializeWorkers(): Promise<void> {
 				);
 			});
 
-		worker.on("error", (err) => {
-			log.error(
-				{
-					err: serializeError(err as Error),
-				},
-				"Worker encountered error",
-			);
-		});
+			worker.on("error", (err) => {
+				log.error(
+					{
+						err: serializeError(err as Error),
+					},
+					"Worker encountered error",
+				);
+			});
 		});
 	} catch (error) {
-		log.error(
-			{ err: error, error: (error as Error).message || String(error) },
-			"Failed to initialize workers",
-		);
+		log.error({ err: error, error: (error as Error).message || String(error) }, "Failed to initialize workers");
 		throw error;
 	}
 }
@@ -112,10 +106,7 @@ export async function shutdownWorkers(): Promise<void> {
 
 		log.info("Workers shut down successfully");
 	} catch (error) {
-		log.error(
-			{ error: (error as Error).message },
-			"Error during worker shutdown",
-		);
+		log.error({ error: (error as Error).message }, "Error during worker shutdown");
 	}
 }
 
@@ -175,10 +166,7 @@ async function main(): Promise<void> {
 		log.info("Workers service is running");
 	} catch (error) {
 		initError = error as Error;
-		log.error(
-			{ err: serializeError(error as Error) },
-			"Workers service failed to start",
-		);
+		log.error({ err: serializeError(error as Error) }, "Workers service failed to start");
 		process.exit(1);
 	}
 }

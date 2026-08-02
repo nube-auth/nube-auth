@@ -5,17 +5,8 @@
  * re-enqueues them to the billing queue for processing.
  */
 
+import { and, asc, eq, getDb, inArray, lte, sql, webhook_logs } from "@nube-auth/db";
 import { QueueClient } from "@nube-auth/queue";
-import {
-	and,
-	asc,
-	eq,
-	getDb,
-	inArray,
-	lte,
-	sql,
-	webhook_logs,
-} from "@nube-auth/db";
 import { createLogger, serializeError } from "@nube-auth/shared";
 
 const log = createLogger("webhook-rescue-cron");
@@ -25,12 +16,7 @@ const RESCUE_STALE_MS = Number(process.env["WEBHOOK_RESCUE_STALE_MS"] || 1_800_0
 const RESCUE_BATCH_SIZE = Number(process.env["WEBHOOK_RESCUE_BATCH_SIZE"] || 25);
 const RESCUE_MAX_RETRIES = Number(process.env["WEBHOOK_RESCUE_MAX_RETRIES"] || 5);
 
-const RETRYABLE_STATUSES = [
-	"not_started",
-	"picked",
-	"failed",
-	"skipped",
-] as const;
+const RETRYABLE_STATUSES = ["not_started", "picked", "failed", "skipped"] as const;
 
 interface RescueCandidate {
 	id: number;
@@ -147,10 +133,7 @@ async function rescueWebhookLogs(): Promise<void> {
 			rescuedCount += 1;
 		}
 
-		log.info(
-			{ rescuedCount, scannedCount: candidates.length },
-			"Webhook rescue cron re-enqueued stuck webhooks",
-		);
+		log.info({ rescuedCount, scannedCount: candidates.length }, "Webhook rescue cron re-enqueued stuck webhooks");
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Webhook rescue cron run failed");
 	}

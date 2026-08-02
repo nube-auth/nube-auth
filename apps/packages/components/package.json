@@ -1,56 +1,56 @@
 {
-  "name": "@nube-auth/components",
-  "version": "0.1.0",
-  "description": "Shared components, styles, and design system for Nube Auth dashboards and applications",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./components/*": {
-      "import": "./dist/components/*.js",
-      "types": "./dist/components/*.d.ts"
-    },
-    "./theme.css": "./src/styles/theme.css",
-    "./selia-theme.css": "./selia-theme.css",
-    "./tailwind.css": "./src/styles/tailwind.css",
-    "./styles": "./src/styles/tailwind.css",
-    "./styles/theme.css": "./src/styles/theme.css",
-    "./styles/selia-theme.css": "./selia-theme.css",
-    "./styles/selia.css": "./src/styles/selia.css",
-    "./styles/tailwind.css": "./src/styles/tailwind.css"
-  },
-  "files": [
-    "dist",
-    "src",
-    "*.css",
-    "*.ts"
-  ],
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "clean": "rm -rf dist"
-  },
-  "dependencies": {
-    "@base-ui/react": "^1.0.0-alpha.8",
-    "@hugeicons/core-free-icons": "^3.1.1",
-    "@hugeicons/react": "^1.1.4",
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.0.0",
-    "tailwind-merge": "^2.0.0",
-    "tailwindcss": "^4.1.18",
-    "typescript": "^6.0.2"
-  },
-  "devDependencies": {
-    "selia": "^0.2.3"
-  },
-  "peerDependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
-  }
+	"name": "@nube-auth/components",
+	"version": "0.1.0",
+	"description": "Shared components, styles, and design system for Nube Auth dashboards and applications",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		},
+		"./components/*": {
+			"import": "./dist/components/*.js",
+			"types": "./dist/components/*.d.ts"
+		},
+		"./theme.css": "./src/styles/theme.css",
+		"./selia-theme.css": "./selia-theme.css",
+		"./tailwind.css": "./src/styles/tailwind.css",
+		"./styles": "./src/styles/tailwind.css",
+		"./styles/theme.css": "./src/styles/theme.css",
+		"./styles/selia-theme.css": "./selia-theme.css",
+		"./styles/selia.css": "./src/styles/selia.css",
+		"./styles/tailwind.css": "./src/styles/tailwind.css"
+	},
+	"files": [
+		"dist",
+		"src",
+		"*.css",
+		"*.ts"
+	],
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"clean": "rm -rf dist"
+	},
+	"dependencies": {
+		"@base-ui/react": "^1.0.0-alpha.8",
+		"@hugeicons/core-free-icons": "^3.1.1",
+		"@hugeicons/react": "^1.1.4",
+		"@types/react": "^18.0.0",
+		"@types/react-dom": "^18.0.0",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.0.0",
+		"tailwind-merge": "^2.0.0",
+		"tailwindcss": "^4.1.18",
+		"typescript": "^6.0.2"
+	},
+	"devDependencies": {
+		"selia": "^0.2.3"
+	},
+	"peerDependencies": {
+		"react": "^18.0.0",
+		"react-dom": "^18.0.0"
+	}
 }

@@ -5,8 +5,8 @@
  * Documentation: https://docs.lemonsqueezy.com/api
  */
 
-import { createLogger, serializeError } from "@nube-auth/shared";
 import crypto from "node:crypto";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import type {
 	CheckoutSession,
 	CreateCheckoutParams,
@@ -101,7 +101,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 							email: params.customerEmail,
 							custom: params.metadata || {},
 							// Prefer the resolved provider coupon id (our internal LS discount code)
-					discount_code: params.providerCoupon?.id || params.promoCode || undefined,
+							discount_code: params.providerCoupon?.id || params.promoCode || undefined,
 						},
 					},
 					relationships: {
@@ -143,7 +143,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 					checkoutId: checkout.data.id,
 					variantId: params.productId,
 				},
-				"LemonSqueezy checkout created"
+				"LemonSqueezy checkout created",
 			);
 
 			return {
@@ -159,7 +159,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 					err: serializeError(error as Error),
 					variantId: params.productId,
 				},
-				"Failed to create LemonSqueezy checkout"
+				"Failed to create LemonSqueezy checkout",
 			);
 			throw error;
 		}
@@ -193,7 +193,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 				{
 					err: serializeError(error as Error),
 				},
-				"Failed to verify LemonSqueezy webhook"
+				"Failed to verify LemonSqueezy webhook",
 			);
 			return null;
 		}
@@ -210,99 +210,99 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 				attributes: Record<string, unknown>;
 			};
 
-		// Handle order_created event (successful payment)
-		if (event.type === "order_created") {
-			const attrs = payload.attributes;
+			// Handle order_created event (successful payment)
+			if (event.type === "order_created") {
+				const attrs = payload.attributes;
 
-			return {
-				transactionId: payload.id,
-				amount: Number(attrs["total"]), // Minor units (cents) — do NOT divide
-				currency: String(attrs["currency"] || "usd").toLowerCase(),
-				status: String(attrs["status"]) === "paid" ? "succeeded" : "pending",
-				customerId: String(attrs["customer_id"] || ""),
-				customerEmail: String(attrs["user_email"] || ""),
-				metadata: (attrs["custom_data"] as Record<string, string>) || {},
-			};
-		}
+				return {
+					transactionId: payload.id,
+					amount: Number(attrs["total"]), // Minor units (cents) — do NOT divide
+					currency: String(attrs["currency"] || "usd").toLowerCase(),
+					status: String(attrs["status"]) === "paid" ? "succeeded" : "pending",
+					customerId: String(attrs["customer_id"] || ""),
+					customerEmail: String(attrs["user_email"] || ""),
+					metadata: (attrs["custom_data"] as Record<string, string>) || {},
+				};
+			}
 
-		// Handle subscription_created event
-		if (event.type === "subscription_created") {
-			const attrs = payload.attributes;
+			// Handle subscription_created event
+			if (event.type === "subscription_created") {
+				const attrs = payload.attributes;
 
-			return {
-				transactionId: payload.id,
-				amount: 0,
-				currency: String(attrs["currency"] || "usd").toLowerCase(),
-				status: "succeeded",
-				customerId: String(attrs["customer_id"] || ""),
-				customerEmail: String(attrs["user_email"] || ""),
-				subscriptionId: payload.id,
-				metadata: (attrs["custom_data"] as Record<string, string>) || {},
-			};
-		}
+				return {
+					transactionId: payload.id,
+					amount: 0,
+					currency: String(attrs["currency"] || "usd").toLowerCase(),
+					status: "succeeded",
+					customerId: String(attrs["customer_id"] || ""),
+					customerEmail: String(attrs["user_email"] || ""),
+					subscriptionId: payload.id,
+					metadata: (attrs["custom_data"] as Record<string, string>) || {},
+				};
+			}
 
-		// Handle subscription_updated event
-		if (event.type === "subscription_updated") {
-			const attrs = payload.attributes;
+			// Handle subscription_updated event
+			if (event.type === "subscription_updated") {
+				const attrs = payload.attributes;
 
-			return {
-				transactionId: payload.id,
-				amount: 0,
-				currency: String(attrs["currency"] || "usd").toLowerCase(),
-				status: String(attrs["status"]) === "active" ? "succeeded" : "pending",
-				customerId: String(attrs["customer_id"] || ""),
-				customerEmail: String(attrs["user_email"] || ""),
-				subscriptionId: payload.id,
-				metadata: (attrs["custom_data"] as Record<string, string>) || {},
-			};
-		}
+				return {
+					transactionId: payload.id,
+					amount: 0,
+					currency: String(attrs["currency"] || "usd").toLowerCase(),
+					status: String(attrs["status"]) === "active" ? "succeeded" : "pending",
+					customerId: String(attrs["customer_id"] || ""),
+					customerEmail: String(attrs["user_email"] || ""),
+					subscriptionId: payload.id,
+					metadata: (attrs["custom_data"] as Record<string, string>) || {},
+				};
+			}
 
-		// Handle subscription_cancelled event
-		if (event.type === "subscription_cancelled") {
-			const attrs = payload.attributes;
+			// Handle subscription_cancelled event
+			if (event.type === "subscription_cancelled") {
+				const attrs = payload.attributes;
 
-			return {
-				transactionId: payload.id,
-				amount: 0,
-				currency: String(attrs["currency"] || "usd").toLowerCase(),
-				status: "canceled",
-				customerId: String(attrs["customer_id"] || ""),
-				customerEmail: String(attrs["user_email"] || ""),
-				subscriptionId: payload.id,
-				metadata: (attrs["custom_data"] as Record<string, string>) || {},
-			};
-		}
+				return {
+					transactionId: payload.id,
+					amount: 0,
+					currency: String(attrs["currency"] || "usd").toLowerCase(),
+					status: "canceled",
+					customerId: String(attrs["customer_id"] || ""),
+					customerEmail: String(attrs["user_email"] || ""),
+					subscriptionId: payload.id,
+					metadata: (attrs["custom_data"] as Record<string, string>) || {},
+				};
+			}
 
-		// Handle subscription_payment_failed event
-		if (event.type === "subscription_payment_failed") {
-			const attrs = payload.attributes;
+			// Handle subscription_payment_failed event
+			if (event.type === "subscription_payment_failed") {
+				const attrs = payload.attributes;
 
-			return {
-				transactionId: payload.id,
-			amount: Number(attrs["amount"] || 0), // Minor units — do NOT divide
-			currency: String(attrs["currency"] || "usd").toLowerCase(),
-			status: "failed",
-				customerId: String(attrs["customer_id"] || ""),
-				customerEmail: String(attrs["user_email"] || ""),
-				subscriptionId: String(attrs["subscription_id"] || ""),
-				metadata: (attrs["custom_data"] as Record<string, string>) || {},
-			};
-		}
+				return {
+					transactionId: payload.id,
+					amount: Number(attrs["amount"] || 0), // Minor units — do NOT divide
+					currency: String(attrs["currency"] || "usd").toLowerCase(),
+					status: "failed",
+					customerId: String(attrs["customer_id"] || ""),
+					customerEmail: String(attrs["user_email"] || ""),
+					subscriptionId: String(attrs["subscription_id"] || ""),
+					metadata: (attrs["custom_data"] as Record<string, string>) || {},
+				};
+			}
 
-		// Handle subscription_payment_refunded event
-		if (event.type === "subscription_payment_refunded") {
-			const attrs = payload.attributes;
+			// Handle subscription_payment_refunded event
+			if (event.type === "subscription_payment_refunded") {
+				const attrs = payload.attributes;
 
-			return {
-				transactionId: payload.id,
-			amount: Number(attrs["refunded_amount"] || 0), // Minor units — do NOT divide
-			currency: String(attrs["currency"] || "usd").toLowerCase(),
-			status: "refunded",
-				customerId: String(attrs["customer_id"] || ""),
-				customerEmail: String(attrs["user_email"] || ""),
-				metadata: (attrs["custom_data"] as Record<string, string>) || {},
-			};
-		}
+				return {
+					transactionId: payload.id,
+					amount: Number(attrs["refunded_amount"] || 0), // Minor units — do NOT divide
+					currency: String(attrs["currency"] || "usd").toLowerCase(),
+					status: "refunded",
+					customerId: String(attrs["customer_id"] || ""),
+					customerEmail: String(attrs["user_email"] || ""),
+					metadata: (attrs["custom_data"] as Record<string, string>) || {},
+				};
+			}
 
 			this.log.debug({ eventType: event.type }, "LemonSqueezy event type not handled");
 			return null;
@@ -312,7 +312,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 					err: serializeError(error as Error),
 					eventType: event.type,
 				},
-				"Failed to extract LemonSqueezy payment details"
+				"Failed to extract LemonSqueezy payment details",
 			);
 			return null;
 		}
@@ -343,7 +343,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 					err: serializeError(error as Error),
 					subscriptionId,
 				},
-				"Failed to cancel LemonSqueezy subscription"
+				"Failed to cancel LemonSqueezy subscription",
 			);
 			throw error;
 		}
@@ -386,7 +386,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 					err: serializeError(error as Error),
 					subscriptionId,
 				},
-				"Failed to get LemonSqueezy subscription"
+				"Failed to get LemonSqueezy subscription",
 			);
 			return null;
 		}
@@ -430,7 +430,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 					productId: product.data.id,
 					name: params.name,
 				},
-				"LemonSqueezy product created"
+				"LemonSqueezy product created",
 			);
 
 			return {
@@ -443,7 +443,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 					err: serializeError(error as Error),
 					name: params.name,
 				},
-				"Failed to create LemonSqueezy product"
+				"Failed to create LemonSqueezy product",
 			);
 			throw error;
 		}
@@ -457,14 +457,20 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 			const variantData = {
 				data: {
 					type: "variants",
-				attributes: {
-					product_id: Number.parseInt(params.productId, 10),
-					// Use the rich label from the sync worker; fall back to interval name only
-					name: params.label ?? (params.interval === "one_time" ? "One-time" : params.interval === "month" ? "Monthly" : "Yearly"),
-					price: params.amountCents,
-					interval: params.interval === "one_time" ? null : params.interval,
-					interval_count: params.interval === "one_time" ? null : 1,
-				},
+					attributes: {
+						product_id: Number.parseInt(params.productId, 10),
+						// Use the rich label from the sync worker; fall back to interval name only
+						name:
+							params.label ??
+							(params.interval === "one_time"
+								? "One-time"
+								: params.interval === "month"
+									? "Monthly"
+									: "Yearly"),
+						price: params.amountCents,
+						interval: params.interval === "one_time" ? null : params.interval,
+						interval_count: params.interval === "one_time" ? null : 1,
+					},
 				},
 			};
 
@@ -492,7 +498,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 					price: params.amountCents,
 					interval: params.interval,
 				},
-				"LemonSqueezy variant created"
+				"LemonSqueezy variant created",
 			);
 
 			return {
@@ -509,7 +515,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 					productId: params.productId,
 					amountCents: params.amountCents,
 				},
-				"Failed to create LemonSqueezy variant"
+				"Failed to create LemonSqueezy variant",
 			);
 			throw error;
 		}
@@ -531,7 +537,10 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 	async createCoupon(params: CreateCouponParams): Promise<CreateCouponResult> {
 		try {
 			// Generate a stable internal code from the promotion name (max 50 chars for LS)
-			const internalCode = `NUBE-${params.name.toUpperCase().replace(/[^A-Z0-9]/g, "").substring(0, 30)}-${Date.now().toString(36).toUpperCase()}`;
+			const internalCode = `NUBE-${params.name
+				.toUpperCase()
+				.replace(/[^A-Z0-9]/g, "")
+				.substring(0, 30)}-${Date.now().toString(36).toUpperCase()}`;
 
 			const hasProductRestriction = !!params.restrictedToProductIds?.length;
 			const discountData = {
@@ -541,9 +550,10 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 						store_id: Number.parseInt(this.storeId, 10),
 						name: params.name,
 						code: internalCode,
-						amount: params.discountType === "percent"
-							? params.discountValue
-							: Math.round(params.discountValue / 100), // LS uses dollars for fixed
+						amount:
+							params.discountType === "percent"
+								? params.discountValue
+								: Math.round(params.discountValue / 100), // LS uses dollars for fixed
 						amount_type: params.discountType === "percent" ? "percent" : "fixed",
 						is_limited_to_products: hasProductRestriction,
 						is_limited_redemptions: !!params.maxRedemptions,
@@ -579,13 +589,16 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 				throw new Error(`LemonSqueezy API error: ${response.status} ${errorText}`);
 			}
 
-			const result = await response.json() as { data: { id: string } };
+			const result = (await response.json()) as { data: { id: string } };
 			this.log.info({ discountId: result.data.id, code: internalCode }, "LemonSqueezy discount created");
 
 			// Store the code string (not the ID) — LS checkout uses code strings
 			return { couponId: internalCode, objectType: "discount" };
 		} catch (error) {
-			this.log.error({ err: serializeError(error as Error), name: params.name }, "Failed to create LemonSqueezy discount");
+			this.log.error(
+				{ err: serializeError(error as Error), name: params.name },
+				"Failed to create LemonSqueezy discount",
+			);
 			throw error;
 		}
 	}
@@ -611,7 +624,7 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 				throw new Error(`LemonSqueezy API error: ${listResponse.status}`);
 			}
 
-			const list = await listResponse.json() as { data: Array<{ id: string }> };
+			const list = (await listResponse.json()) as { data: Array<{ id: string }> };
 			if (!list.data.length) {
 				this.log.warn({ discountCode }, "LemonSqueezy discount not found — skipping delete");
 				return;
@@ -628,7 +641,10 @@ export class LemonSqueezyAdapter implements PaymentProviderAdapter {
 
 			this.log.info({ discountCode, discountId }, "LemonSqueezy discount deleted");
 		} catch (error) {
-			this.log.error({ err: serializeError(error as Error), discountCode }, "Failed to delete LemonSqueezy discount");
+			this.log.error(
+				{ err: serializeError(error as Error), discountCode },
+				"Failed to delete LemonSqueezy discount",
+			);
 			throw error;
 		}
 	}

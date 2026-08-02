@@ -1,7 +1,7 @@
+import { pingpong } from "@nube-auth/auth";
 import type { User } from "@nube-auth/shared";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import { env } from "../config/env";
-import { pingpong } from "@nube-auth/auth";
 
 const log = createLogger("core-client");
 

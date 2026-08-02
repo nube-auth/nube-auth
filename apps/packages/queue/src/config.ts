@@ -9,13 +9,13 @@
  */
 export function getRedisConfig() {
 	// If REDIS_HOST is explicitly set, use individual vars
-	if (process.env['REDIS_HOST']) {
+	if (process.env["REDIS_HOST"]) {
 		return {
-			host: process.env['REDIS_HOST'],
-			port: parseInt(process.env['REDIS_PORT'] || "6379", 10),
-			password: process.env['REDIS_PASSWORD'],
-			db: parseInt(process.env['REDIS_DB'] || "0", 10),
-			username: process.env['REDIS_USERNAME'],
+			host: process.env["REDIS_HOST"],
+			port: parseInt(process.env["REDIS_PORT"] || "6379", 10),
+			password: process.env["REDIS_PASSWORD"],
+			db: parseInt(process.env["REDIS_DB"] || "0", 10),
+			username: process.env["REDIS_USERNAME"],
 			maxRetriesPerRequest: null,
 			enableReadyCheck: false,
 			enableOfflineQueue: false,
@@ -23,7 +23,7 @@ export function getRedisConfig() {
 	}
 
 	// Fall back to parsing REDIS_URL (e.g. Railway sets this as a connection string)
-	const redisUrl = process.env['REDIS_URL'];
+	const redisUrl = process.env["REDIS_URL"];
 	if (redisUrl) {
 		try {
 			const parsed = new URL(redisUrl);
@@ -32,7 +32,7 @@ export function getRedisConfig() {
 				port: parsed.port ? parseInt(parsed.port, 10) : 6379,
 				password: parsed.password || undefined,
 				username: parsed.username || undefined,
-				db: parseInt(process.env['REDIS_DB'] || "0", 10),
+				db: parseInt(process.env["REDIS_DB"] || "0", 10),
 				maxRetriesPerRequest: null,
 				enableReadyCheck: false,
 				enableOfflineQueue: false,
@@ -46,7 +46,7 @@ export function getRedisConfig() {
 		host: "localhost",
 		port: 6379,
 		password: undefined,
-		db: parseInt(process.env['REDIS_DB'] || "0", 10),
+		db: parseInt(process.env["REDIS_DB"] || "0", 10),
 		username: undefined,
 		maxRetriesPerRequest: null,
 		enableReadyCheck: false,
@@ -59,7 +59,7 @@ export function getRedisConfig() {
  */
 export function getWorkerConfig() {
 	return {
-		concurrency: parseInt(process.env['WORKER_CONCURRENCY'] || "10", 10),
+		concurrency: parseInt(process.env["WORKER_CONCURRENCY"] || "10", 10),
 		autorun: true,
 		settings: {
 			lockDuration: 30000,
@@ -76,8 +76,8 @@ export function getWorkerConfig() {
  */
 export function getHealthCheckConfig() {
 	return {
-		interval: parseInt(process.env['HEALTH_CHECK_INTERVAL'] || "30000", 10), // 30 seconds
-		timeout: parseInt(process.env['HEALTH_CHECK_TIMEOUT'] || "5000", 10), // 5 seconds
+		interval: parseInt(process.env["HEALTH_CHECK_INTERVAL"] || "30000", 10), // 30 seconds
+		timeout: parseInt(process.env["HEALTH_CHECK_TIMEOUT"] || "5000", 10), // 5 seconds
 		redisCheckEnabled: true,
 		queueStatsEnabled: true,
 	};

@@ -5,10 +5,10 @@
  * Checkout and other routes require authentication.
  */
 
-import { Hono } from "hono";
 import { pingpong } from "@nube-auth/auth";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
+import { Hono } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { env } from "../config/env";
 import { getAuth } from "../middleware/auth";
@@ -26,7 +26,9 @@ function buildWebhookForwardHeaders(c: Context): Record<string, string> {
 		"X-Nube-S2S-Token": env.S2S_SECRET,
 	};
 	const signatureHeaders = [
-		"webhook-id", "webhook-signature", "webhook-timestamp", // Dodo / Standard Webhooks
+		"webhook-id",
+		"webhook-signature",
+		"webhook-timestamp", // Dodo / Standard Webhooks
 		"stripe-signature",
 		"x-signature",
 		"x-webhook-signature",
@@ -166,7 +168,13 @@ paymentsRoutes.all("/*", async (c: Context) => {
 		// session so callers cannot claim a different identity. appId is left to the
 		// caller (needed for cases where the web dashboard triggers checkout on behalf
 		// of a specific app).
-		if (method === "POST" && path.endsWith("/checkout") && body && typeof body === "object" && !Array.isArray(body)) {
+		if (
+			method === "POST" &&
+			path.endsWith("/checkout") &&
+			body &&
+			typeof body === "object" &&
+			!Array.isArray(body)
+		) {
 			const checkoutBody = body as Record<string, unknown>;
 			checkoutBody["userId"] = auth.userId;
 			checkoutBody["customerEmail"] = auth.email;

@@ -1,22 +1,21 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { useApp, useAppStats, useProject } from "../hooks/api";
 import {
-	Icon,
-	IconType,
-	Spinner,
 	Alert,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
 	Card,
 	CardBody,
-	Heading,
-	Text,
-	Button,
 	Chip,
+	Heading,
+	Icon,
 	IconBox,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbButton,
+	IconType,
+	Spinner,
+	Text,
 } from "@nube-auth/components";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { useApp, useAppStats, useProject } from "../hooks/api";
 
 export function AppDetailPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -144,17 +143,13 @@ export function AppDetailPage() {
 								)}
 								<div className="flex items-start gap-6">
 									<div>
-										<Text className="text-muted mb-1 uppercase font-medium text-xs">
-											Slug
-										</Text>
+										<Text className="text-muted mb-1 uppercase font-medium text-xs">Slug</Text>
 										<Chip variant="info" size="sm">
 											{app.slug}
 										</Chip>
 									</div>
 									<div>
-										<Text className="text-muted mb-1 uppercase font-medium text-xs">
-											App ID
-										</Text>
+										<Text className="text-muted mb-1 uppercase font-medium text-xs">App ID</Text>
 										<Chip variant="info" size="sm">
 											{app.id}
 										</Chip>

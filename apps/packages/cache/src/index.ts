@@ -1,10 +1,10 @@
 // Re-export client and helpers
 export {
 	cache,
+	initCache,
+	pingCache,
 	rateLimit,
 	sessionStore,
-	pingCache,
-	initCache,
 } from "./client.js";
 
 // Re-export constants

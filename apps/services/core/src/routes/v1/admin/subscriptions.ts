@@ -45,25 +45,13 @@ function formatSubscription(sub: any, extras?: { user?: any; plan?: any; price?:
 		status: sub.status,
 		provider: sub.provider,
 		billingInterval: sub.billing_interval,
-		billingPeriodStart: sub.billing_period_start
-			? new Date(sub.billing_period_start).toISOString()
-			: null,
-		billingPeriodEnd: sub.billing_period_end
-			? new Date(sub.billing_period_end).toISOString()
-			: null,
-		nextBillingDate: sub.next_billing_date
-			? new Date(sub.next_billing_date).toISOString()
-			: null,
+		billingPeriodStart: sub.billing_period_start ? new Date(sub.billing_period_start).toISOString() : null,
+		billingPeriodEnd: sub.billing_period_end ? new Date(sub.billing_period_end).toISOString() : null,
+		nextBillingDate: sub.next_billing_date ? new Date(sub.next_billing_date).toISOString() : null,
 		cancelAtPeriodEnd: sub.cancel_at_period_end,
-		canceledAt: sub.canceled_at
-			? new Date(sub.canceled_at).toISOString()
-			: null,
-		trialStart: sub.trial_start
-			? new Date(sub.trial_start).toISOString()
-			: null,
-		trialEnd: sub.trial_end
-			? new Date(sub.trial_end).toISOString()
-			: null,
+		canceledAt: sub.canceled_at ? new Date(sub.canceled_at).toISOString() : null,
+		trialStart: sub.trial_start ? new Date(sub.trial_start).toISOString() : null,
+		trialEnd: sub.trial_end ? new Date(sub.trial_end).toISOString() : null,
 		amountCents: sub.amount_cents,
 		currency: sub.currency,
 		createdAt: new Date(sub.created_at).toISOString(),
@@ -86,32 +74,21 @@ subscriptionsRouter.get("/", async (c: Context) => {
 
 		const allSubs = await subscriptionQueries.findByAppId(db, app.id);
 
-		const filtered = statusFilter
-			? allSubs.filter((s) => s.status === statusFilter)
-			: allSubs;
+		const filtered = statusFilter ? allSubs.filter((s) => s.status === statusFilter) : allSubs;
 
 		const results = await Promise.all(
 			filtered.map(async (sub) => {
 				const user = await userQueries.findByInternalId_(db, sub.user_id);
-				const license = sub.license_id
-					? await licenseQueries.findByInternalId_(db, sub.license_id)
-					: null;
-				const plan = license
-					? await planQueries.findByInternalId_(db, license.plan_id)
-					: null;
-				const price = sub.price_id
-					? await priceQueries.findByInternalId_(db, sub.price_id)
-					: null;
+				const license = sub.license_id ? await licenseQueries.findByInternalId_(db, sub.license_id) : null;
+				const plan = license ? await planQueries.findByInternalId_(db, license.plan_id) : null;
+				const price = sub.price_id ? await priceQueries.findByInternalId_(db, sub.price_id) : null;
 				return formatSubscription(sub, { user, plan, price });
 			}),
 		);
 
 		return c.json({ subscriptions: results, total: results.length });
 	} catch (error) {
-		log.error(
-			{ err: serializeError(error as Error) },
-			"List subscriptions error",
-		);
+		log.error({ err: serializeError(error as Error) }, "List subscriptions error");
 		return c.json({ error: "Failed to list subscriptions" }, 500);
 	}
 });
@@ -125,34 +102,23 @@ subscriptionsRouter.get("/:subId", async (c: Context) => {
 		const appId = c.req.param("appId");
 		const subId = c.req.param("subId");
 
-		if (!idPatterns.subscription.test(subId))
-			return c.json({ error: "Invalid subscriptionId" }, 400);
+		if (!idPatterns.subscription.test(subId)) return c.json({ error: "Invalid subscriptionId" }, 400);
 
 		const db = getDb();
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) return c.json({ error: "App not found" }, 404);
 
 		const sub = await subscriptionQueries.findByPublicId(db, subId);
-		if (!sub || sub.app_id !== app.id)
-			return c.json({ error: "Subscription not found" }, 404);
+		if (!sub || sub.app_id !== app.id) return c.json({ error: "Subscription not found" }, 404);
 
 		const user = await userQueries.findByInternalId_(db, sub.user_id);
-		const license = sub.license_id
-			? await licenseQueries.findByInternalId_(db, sub.license_id)
-			: null;
-		const plan = license
-			? await planQueries.findByInternalId_(db, license.plan_id)
-			: null;
-		const price = sub.price_id
-			? await priceQueries.findByInternalId_(db, sub.price_id)
-			: null;
+		const license = sub.license_id ? await licenseQueries.findByInternalId_(db, sub.license_id) : null;
+		const plan = license ? await planQueries.findByInternalId_(db, license.plan_id) : null;
+		const price = sub.price_id ? await priceQueries.findByInternalId_(db, sub.price_id) : null;
 
 		return c.json(formatSubscription(sub, { user, plan, price }));
 	} catch (error) {
-		log.error(
-			{ err: serializeError(error as Error) },
-			"Get subscription error",
-		);
+		log.error({ err: serializeError(error as Error) }, "Get subscription error");
 		return c.json({ error: "Failed to get subscription" }, 500);
 	}
 });
@@ -173,8 +139,7 @@ subscriptionsRouter.patch("/:subId", async (c: Context) => {
 		const body = await c.req.json();
 		const validated = AdminUpdateSubSchema.parse(body);
 
-		if (!idPatterns.subscription.test(subId))
-			return c.json({ error: "Invalid subscriptionId" }, 400);
+		if (!idPatterns.subscription.test(subId)) return c.json({ error: "Invalid subscriptionId" }, 400);
 
 		const adminUserId = c.req.header("X-Nube-User-Id");
 		if (!adminUserId) return c.json({ error: "Unauthorized" }, 401);
@@ -184,8 +149,7 @@ subscriptionsRouter.patch("/:subId", async (c: Context) => {
 		if (!app) return c.json({ error: "App not found" }, 404);
 
 		const sub = await subscriptionQueries.findByPublicId(db, subId);
-		if (!sub || sub.app_id !== app.id)
-			return c.json({ error: "Subscription not found" }, 404);
+		if (!sub || sub.app_id !== app.id) return c.json({ error: "Subscription not found" }, 404);
 
 		const now = new Date();
 		const updateData: Record<string, unknown> = {};
@@ -202,10 +166,7 @@ subscriptionsRouter.patch("/:subId", async (c: Context) => {
 				break;
 			case "resume":
 				if (sub.status !== "paused" && sub.status !== "canceled")
-					return c.json(
-						{ error: "Can only resume paused or canceled subscriptions" },
-						400,
-					);
+					return c.json({ error: "Can only resume paused or canceled subscriptions" }, 400);
 				updateData["status"] = "active";
 				updateData["canceled_at"] = null;
 				updateData["cancel_at_period_end"] = false;
@@ -238,26 +199,17 @@ subscriptionsRouter.patch("/:subId", async (c: Context) => {
 			}
 		}
 
-		log.info(
-			{ subId, action: validated.action, appId },
-			"Subscription updated by admin",
-		);
+		log.info({ subId, action: validated.action, appId }, "Subscription updated by admin");
 
 		return c.json({
 			subscriptionId: updated.public_id,
 			status: updated.status,
-			canceledAt: updated.canceled_at
-				? new Date(updated.canceled_at).toISOString()
-				: null,
+			canceledAt: updated.canceled_at ? new Date(updated.canceled_at).toISOString() : null,
 			updatedAt: new Date(updated.updated_at).toISOString(),
 		});
 	} catch (error) {
-		if (error instanceof z.ZodError)
-			return c.json({ error: "Invalid request", details: error.issues }, 400);
-		log.error(
-			{ err: serializeError(error as Error) },
-			"Admin subscription update error",
-		);
+		if (error instanceof z.ZodError) return c.json({ error: "Invalid request", details: error.issues }, 400);
+		log.error({ err: serializeError(error as Error) }, "Admin subscription update error");
 		return c.json({ error: "Failed to update subscription" }, 500);
 	}
 });

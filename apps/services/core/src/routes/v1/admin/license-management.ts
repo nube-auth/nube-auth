@@ -1,3 +1,4 @@
+import { cache } from "@nube-auth/cache";
 import {
 	activationQueries,
 	appQueries,
@@ -9,11 +10,10 @@ import {
 	userQueries,
 } from "@nube-auth/db";
 import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
-import { cache } from "@nube-auth/cache";
-import { fireWebhookEvent } from "../../../utils/outbound-events.js";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
+import { fireWebhookEvent } from "../../../utils/outbound-events.js";
 
 const log = createLogger("admin-license-routes");
 
@@ -27,10 +27,7 @@ export const licenseManagementRouter = new Hono();
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatLicense(
-	license: any,
-	extras?: { app?: any; user?: any; plan?: any; price?: any },
-) {
+function formatLicense(license: any, extras?: { app?: any; user?: any; plan?: any; price?: any }) {
 	return {
 		licenseId: license.public_id,
 		appId: extras?.app?.public_id,
@@ -54,9 +51,7 @@ function formatLicense(
 			: undefined,
 		status: license.status,
 		source: license.source,
-		validUntil: license.valid_until
-			? new Date(license.valid_until).toISOString()
-			: null,
+		validUntil: license.valid_until ? new Date(license.valid_until).toISOString() : null,
 		maxActivations: license.max_activations,
 		isTest: license.is_test,
 		createdAt: new Date(license.created_at).toISOString(),
@@ -105,8 +100,7 @@ licenseManagementRouter.post("/grant", async (c: Context) => {
 		if (!user) return c.json({ error: "User not found" }, 404);
 
 		const plan = await planQueries.findByPublicId(db, validated.planId);
-		if (!plan || plan.app_id !== app.id)
-			return c.json({ error: "Plan not found for this app" }, 404);
+		if (!plan || plan.app_id !== app.id) return c.json({ error: "Plan not found for this app" }, 404);
 
 		let priceRow: any = null;
 		if (validated.priceId) {
@@ -117,9 +111,7 @@ licenseManagementRouter.post("/grant", async (c: Context) => {
 
 		let validUntil: Date | null = null;
 		if (validated.durationDays) {
-			validUntil = new Date(
-				Date.now() + validated.durationDays * 24 * 60 * 60 * 1000,
-			);
+			validUntil = new Date(Date.now() + validated.durationDays * 24 * 60 * 60 * 1000);
 		}
 
 		const license = await licenseQueries.upsert(db, user.id, app.id, {
@@ -151,10 +143,7 @@ licenseManagementRouter.post("/grant", async (c: Context) => {
 			notes: validated.note ?? null,
 		});
 
-		log.info(
-			{ licenseId: license.public_id, userId: validated.userId, appId },
-			"License granted by admin",
-		);
+		log.info({ licenseId: license.public_id, userId: validated.userId, appId }, "License granted by admin");
 
 		try {
 			await fireWebhookEvent(db, app.id, "license.created", {
@@ -162,9 +151,7 @@ licenseManagementRouter.post("/grant", async (c: Context) => {
 				userId: user.public_id,
 				status: "active",
 				plan: { planId: plan.public_id, name: plan.name, slug: plan.slug },
-				validUntil: license.valid_until
-					? new Date(license.valid_until).toISOString()
-					: null,
+				validUntil: license.valid_until ? new Date(license.valid_until).toISOString() : null,
 				maxActivations: license.max_activations,
 				source: validated.source,
 				grantedAt: new Date().toISOString(),
@@ -188,21 +175,15 @@ licenseManagementRouter.post("/grant", async (c: Context) => {
 					slug: plan.slug,
 				},
 				source: license.source,
-				validUntil: license.valid_until
-					? new Date(license.valid_until).toISOString()
-					: null,
+				validUntil: license.valid_until ? new Date(license.valid_until).toISOString() : null,
 				maxActivations: license.max_activations,
 				createdAt: new Date(license.created_at).toISOString(),
 			},
 			201,
 		);
 	} catch (error) {
-		if (error instanceof z.ZodError)
-			return c.json({ error: "Invalid request", details: error.issues }, 400);
-		log.error(
-			{ err: serializeError(error as Error) },
-			"Grant license error",
-		);
+		if (error instanceof z.ZodError) return c.json({ error: "Invalid request", details: error.issues }, 400);
+		log.error({ err: serializeError(error as Error) }, "Grant license error");
 		return c.json({ error: "Failed to grant license" }, 500);
 	}
 });
@@ -233,19 +214,14 @@ licenseManagementRouter.get("/", async (c: Context) => {
 			filtered.map(async (license) => {
 				const user = await userQueries.findByInternalId_(db, license.user_id);
 				const plan = await planQueries.findByInternalId_(db, license.plan_id);
-				const price = license.price_id
-					? await priceQueries.findByInternalId_(db, license.price_id)
-					: null;
+				const price = license.price_id ? await priceQueries.findByInternalId_(db, license.price_id) : null;
 				return formatLicense(license, { app, user, plan, price });
 			}),
 		);
 
 		return c.json({ licenses: results, total: results.length });
 	} catch (error) {
-		log.error(
-			{ err: serializeError(error as Error) },
-			"List licenses error",
-		);
+		log.error({ err: serializeError(error as Error) }, "List licenses error");
 		return c.json({ error: "Failed to list licenses" }, 500);
 	}
 });
@@ -270,10 +246,8 @@ licenseManagementRouter.get("/summary", async (c: Context) => {
 		const uniqueUsers = new Set<number>();
 
 		for (const license of allLicenses) {
-			statusCounts[license.status] =
-				(statusCounts[license.status] ?? 0) + 1;
-			sourceCounts[license.source] =
-				(sourceCounts[license.source] ?? 0) + 1;
+			statusCounts[license.status] = (statusCounts[license.status] ?? 0) + 1;
+			sourceCounts[license.source] = (sourceCounts[license.source] ?? 0) + 1;
 			uniqueUsers.add(license.user_id);
 
 			const plan = await planQueries.findByInternalId_(db, license.plan_id);
@@ -290,10 +264,7 @@ licenseManagementRouter.get("/summary", async (c: Context) => {
 			planCounts,
 		});
 	} catch (error) {
-		log.error(
-			{ err: serializeError(error as Error) },
-			"License summary error",
-		);
+		log.error({ err: serializeError(error as Error) }, "License summary error");
 		return c.json({ error: "Failed to get license summary" }, 500);
 	}
 });
@@ -307,27 +278,20 @@ licenseManagementRouter.get("/:licenseId", async (c: Context) => {
 		const appId = c.req.param("appId");
 		const licenseId = c.req.param("licenseId");
 
-		if (!idPatterns.license.test(licenseId))
-			return c.json({ error: "Invalid licenseId" }, 400);
+		if (!idPatterns.license.test(licenseId)) return c.json({ error: "Invalid licenseId" }, 400);
 
 		const db = getDb();
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) return c.json({ error: "App not found" }, 404);
 
 		const license = await licenseQueries.findByPublicId(db, licenseId);
-		if (!license || license.app_id !== app.id)
-			return c.json({ error: "License not found" }, 404);
+		if (!license || license.app_id !== app.id) return c.json({ error: "License not found" }, 404);
 
 		const user = await userQueries.findByInternalId_(db, license.user_id);
 		const plan = await planQueries.findByInternalId_(db, license.plan_id);
-		const price = license.price_id
-			? await priceQueries.findByInternalId_(db, license.price_id)
-			: null;
+		const price = license.price_id ? await priceQueries.findByInternalId_(db, license.price_id) : null;
 
-		const activeCount = await activationQueries.countActiveByLicenseId(
-			db,
-			license.id,
-		);
+		const activeCount = await activationQueries.countActiveByLicenseId(db, license.id);
 
 		const result = formatLicense(license, { app, user, plan, price });
 		return c.json({
@@ -336,10 +300,7 @@ licenseManagementRouter.get("/:licenseId", async (c: Context) => {
 			metadata: license.metadata,
 		});
 	} catch (error) {
-		log.error(
-			{ err: serializeError(error as Error) },
-			"Get license error",
-		);
+		log.error({ err: serializeError(error as Error) }, "Get license error");
 		return c.json({ error: "Failed to get license" }, 500);
 	}
 });
@@ -349,9 +310,7 @@ licenseManagementRouter.get("/:licenseId", async (c: Context) => {
 // ---------------------------------------------------------------------------
 
 const UpdateLicenseSchema = z.object({
-	status: z
-		.enum(["active", "trialing", "expired", "canceled", "suspended"])
-		.optional(),
+	status: z.enum(["active", "trialing", "expired", "canceled", "suspended"]).optional(),
 	planId: z.string().regex(idPatterns.plan).optional(),
 	validUntil: z.number().nullable().optional(),
 	maxActivations: z.number().int().positive().nullable().optional(),
@@ -365,8 +324,7 @@ licenseManagementRouter.patch("/:licenseId", async (c: Context) => {
 		const body = await c.req.json();
 		const validated = UpdateLicenseSchema.parse(body);
 
-		if (!idPatterns.license.test(licenseId))
-			return c.json({ error: "Invalid licenseId" }, 400);
+		if (!idPatterns.license.test(licenseId)) return c.json({ error: "Invalid licenseId" }, 400);
 
 		const adminUserId = c.req.header("X-Nube-User-Id");
 		if (!adminUserId) return c.json({ error: "Unauthorized" }, 401);
@@ -376,8 +334,7 @@ licenseManagementRouter.patch("/:licenseId", async (c: Context) => {
 		if (!app) return c.json({ error: "App not found" }, 404);
 
 		const license = await licenseQueries.findByPublicId(db, licenseId);
-		if (!license || license.app_id !== app.id)
-			return c.json({ error: "License not found" }, 404);
+		if (!license || license.app_id !== app.id) return c.json({ error: "License not found" }, 404);
 
 		const oldSnapshot: Record<string, unknown> = {
 			status: license.status,
@@ -395,20 +352,16 @@ licenseManagementRouter.patch("/:licenseId", async (c: Context) => {
 
 		if (validated.planId !== undefined) {
 			const newPlan = await planQueries.findByPublicId(db, validated.planId);
-			if (!newPlan || newPlan.app_id !== app.id)
-				return c.json({ error: "Plan not found for this app" }, 404);
+			if (!newPlan || newPlan.app_id !== app.id) return c.json({ error: "Plan not found for this app" }, 404);
 			updateData["plan_id"] = newPlan.id;
 			changeType = "plan_changed";
 		}
 
 		if (validated.validUntil !== undefined) {
-			updateData["valid_until"] = validated.validUntil
-				? new Date(validated.validUntil)
-				: null;
+			updateData["valid_until"] = validated.validUntil ? new Date(validated.validUntil) : null;
 			if (!validated.status && !validated.planId) {
 				changeType =
-					validated.validUntil &&
-					validated.validUntil > (license.valid_until?.getTime() ?? 0)
+					validated.validUntil && validated.validUntil > (license.valid_until?.getTime() ?? 0)
 						? "expiry_extended"
 						: "expiry_reduced";
 			}
@@ -422,14 +375,9 @@ licenseManagementRouter.patch("/:licenseId", async (c: Context) => {
 			return c.json({ error: "No valid fields to update" }, 400);
 		}
 
-		const updateResults = await licenseQueries.update(
-			db,
-			license.id,
-			updateData,
-		);
+		const updateResults = await licenseQueries.update(db, license.id, updateData);
 		const updated = updateResults[0];
-		if (!updated)
-			return c.json({ error: "Failed to update license" }, 500);
+		if (!updated) return c.json({ error: "Failed to update license" }, 500);
 
 		// Write history
 		const adminUser = await userQueries.findByPublicId(db, adminUserId);
@@ -479,9 +427,7 @@ licenseManagementRouter.patch("/:licenseId", async (c: Context) => {
 					plan: updatedPlan
 						? { planId: updatedPlan.public_id, name: updatedPlan.name, slug: updatedPlan.slug }
 						: null,
-					validUntil: updated.valid_until
-						? new Date(updated.valid_until).toISOString()
-						: null,
+					validUntil: updated.valid_until ? new Date(updated.valid_until).toISOString() : null,
 					source: "admin_manual",
 					changedAt: new Date().toISOString(),
 				});
@@ -500,19 +446,13 @@ licenseManagementRouter.patch("/:licenseId", async (c: Context) => {
 		return c.json({
 			licenseId: updated.public_id,
 			status: updated.status,
-			validUntil: updated.valid_until
-				? new Date(updated.valid_until).toISOString()
-				: null,
+			validUntil: updated.valid_until ? new Date(updated.valid_until).toISOString() : null,
 			maxActivations: updated.max_activations,
 			updatedAt: new Date(updated.updated_at).toISOString(),
 		});
 	} catch (error) {
-		if (error instanceof z.ZodError)
-			return c.json({ error: "Invalid request", details: error.issues }, 400);
-		log.error(
-			{ err: serializeError(error as Error) },
-			"Update license error",
-		);
+		if (error instanceof z.ZodError) return c.json({ error: "Invalid request", details: error.issues }, 400);
+		log.error({ err: serializeError(error as Error) }, "Update license error");
 		return c.json({ error: "Failed to update license" }, 500);
 	}
 });
@@ -526,8 +466,7 @@ licenseManagementRouter.delete("/:licenseId", async (c: Context) => {
 		const appId = c.req.param("appId");
 		const licenseId = c.req.param("licenseId");
 
-		if (!idPatterns.license.test(licenseId))
-			return c.json({ error: "Invalid licenseId" }, 400);
+		if (!idPatterns.license.test(licenseId)) return c.json({ error: "Invalid licenseId" }, 400);
 
 		const adminUserId = c.req.header("X-Nube-User-Id");
 		if (!adminUserId) return c.json({ error: "Unauthorized" }, 401);
@@ -537,8 +476,7 @@ licenseManagementRouter.delete("/:licenseId", async (c: Context) => {
 		if (!app) return c.json({ error: "App not found" }, 404);
 
 		const license = await licenseQueries.findByPublicId(db, licenseId);
-		if (!license || license.app_id !== app.id)
-			return c.json({ error: "License not found" }, 404);
+		if (!license || license.app_id !== app.id) return c.json({ error: "License not found" }, 404);
 
 		// Try to transition to free plan; fall back to soft delete
 		const freePlan = await planQueries.findByAppAndSlug(db, app.id, "free");
@@ -572,9 +510,7 @@ licenseManagementRouter.delete("/:licenseId", async (c: Context) => {
 				licenseId: license.public_id,
 				userId: licenseUser?.public_id ?? null,
 				status: freePlan ? "active" : "canceled",
-				plan: freePlan
-					? { planId: freePlan.public_id, name: freePlan.name, slug: freePlan.slug }
-					: null,
+				plan: freePlan ? { planId: freePlan.public_id, name: freePlan.name, slug: freePlan.slug } : null,
 				source: "admin_manual",
 				revokedAt: new Date().toISOString(),
 			});
@@ -590,20 +526,13 @@ licenseManagementRouter.delete("/:licenseId", async (c: Context) => {
 		if (revokedUser) bustLicenseCache(revokedUser.public_id, appId);
 
 		return c.json({
-			message: freePlan
-				? "License revoked — transitioned to free plan"
-				: "License revoked",
+			message: freePlan ? "License revoked — transitioned to free plan" : "License revoked",
 			licenseId,
 			status: freePlan ? "active" : "deleted",
-			plan: freePlan
-				? { planId: freePlan.public_id, slug: "free" }
-				: null,
+			plan: freePlan ? { planId: freePlan.public_id, slug: "free" } : null,
 		});
 	} catch (error) {
-		log.error(
-			{ err: serializeError(error as Error) },
-			"Revoke license error",
-		);
+		log.error({ err: serializeError(error as Error) }, "Revoke license error");
 		return c.json({ error: "Failed to revoke license" }, 500);
 	}
 });
@@ -617,21 +546,16 @@ licenseManagementRouter.get("/:licenseId/history", async (c: Context) => {
 		const appId = c.req.param("appId");
 		const licenseId = c.req.param("licenseId");
 
-		if (!idPatterns.license.test(licenseId))
-			return c.json({ error: "Invalid licenseId" }, 400);
+		if (!idPatterns.license.test(licenseId)) return c.json({ error: "Invalid licenseId" }, 400);
 
 		const db = getDb();
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) return c.json({ error: "App not found" }, 404);
 
 		const license = await licenseQueries.findByPublicId(db, licenseId);
-		if (!license || license.app_id !== app.id)
-			return c.json({ error: "License not found" }, 404);
+		if (!license || license.app_id !== app.id) return c.json({ error: "License not found" }, 404);
 
-		const history = await licenseHistoryQueries.findByLicenseId(
-			db,
-			license.id,
-		);
+		const history = await licenseHistoryQueries.findByLicenseId(db, license.id);
 
 		const entries = history.map((h) => ({
 			historyId: h.public_id,
@@ -646,10 +570,7 @@ licenseManagementRouter.get("/:licenseId/history", async (c: Context) => {
 
 		return c.json({ history: entries, total: entries.length });
 	} catch (error) {
-		log.error(
-			{ err: serializeError(error as Error) },
-			"Get license history error",
-		);
+		log.error({ err: serializeError(error as Error) }, "Get license history error");
 		return c.json({ error: "Failed to get license history" }, 500);
 	}
 });

@@ -61,7 +61,7 @@ membersRouter.get("/:projectId/members", async (c: Context) => {
 					role: member.role,
 					createdAt: new Date(member.created_at).toISOString(),
 				};
-			})
+			}),
 		);
 
 		return c.json({
@@ -118,11 +118,7 @@ membersRouter.post("/:projectId/members", async (c: Context) => {
 		}
 
 		// Check authorization: must be owner or admin
-		const requestingMember = await projectMemberQueries.findByProjectAndUser(
-			db,
-			project.id,
-			requestingUser.id
-		);
+		const requestingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
 		const requestingUserMember = requestingMember?.[0];
 		if (!requestingUserMember || (requestingUserMember.role !== "owner" && requestingUserMember.role !== "admin")) {
 			return c.json({ error: "Forbidden - only owner or admin can invite members" }, 403);
@@ -171,7 +167,7 @@ membersRouter.post("/:projectId/members", async (c: Context) => {
 					role: newMember.role,
 					joinedAt: new Date(newMember.created_at).toISOString(),
 				},
-				201
+				201,
 			);
 		}
 
@@ -234,7 +230,7 @@ membersRouter.post("/:projectId/members", async (c: Context) => {
 				expiresAt: new Date(invitation.expires_at).toISOString(),
 				createdAt: new Date(invitation.created_at).toISOString(),
 			},
-			201
+			201,
 		);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Invite member error");
@@ -286,11 +282,7 @@ membersRouter.patch("/:projectId/members/:memberId", async (c: Context) => {
 		}
 
 		// Check authorization: must be owner
-		const requestingMember = await projectMemberQueries.findByProjectAndUser(
-			db,
-			project.id,
-			requestingUser.id
-		);
+		const requestingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
 		const requestingUserMember = requestingMember?.[0];
 		if (!requestingUserMember || requestingUserMember.role !== "owner") {
 			return c.json({ error: "Forbidden - only owner can change member roles" }, 403);
@@ -316,7 +308,10 @@ membersRouter.patch("/:projectId/members/:memberId", async (c: Context) => {
 
 		// Can't make someone owner if they're not already owner
 		if (role === "owner" && memberToUpdate.role !== "owner") {
-			return c.json({ error: "Cannot promote to owner. Owner can only be changed through project transfer" }, 400);
+			return c.json(
+				{ error: "Cannot promote to owner. Owner can only be changed through project transfer" },
+				400,
+			);
 		}
 
 		// Update member
@@ -391,11 +386,7 @@ membersRouter.delete("/:projectId/members/:memberId", async (c: Context) => {
 		}
 
 		// Check authorization: must be owner or admin
-		const requestingMember = await projectMemberQueries.findByProjectAndUser(
-			db,
-			project.id,
-			requestingUser.id
-		);
+		const requestingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
 		const requestingUserMember = requestingMember?.[0];
 		if (!requestingUserMember || (requestingUserMember.role !== "owner" && requestingUserMember.role !== "admin")) {
 			return c.json({ error: "Forbidden - only owner or admin can remove members" }, 403);
@@ -522,11 +513,7 @@ membersRouter.delete("/:projectId/invitations/:invitationId", async (c: Context)
 		}
 
 		// Check authorization: must be owner or admin
-		const requestingMember = await projectMemberQueries.findByProjectAndUser(
-			db,
-			project.id,
-			requestingUser.id
-		);
+		const requestingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
 		const requestingUserMember = requestingMember?.[0];
 		if (!requestingUserMember || (requestingUserMember.role !== "owner" && requestingUserMember.role !== "admin")) {
 			return c.json({ error: "Forbidden - only owner or admin can cancel invitations" }, 403);

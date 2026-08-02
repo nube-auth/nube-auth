@@ -6,9 +6,7 @@
 function getCsrfToken(): string | null {
 	const namespace = (import.meta.env.VITE_COOKIE_NAMESPACE || "").trim();
 	const cookieName = namespace ? `nube_${namespace}_csrf_token` : "nube_csrf_token";
-	const cookie = document.cookie
-		.split("; ")
-		.find((entry) => entry.startsWith(`${cookieName}=`));
+	const cookie = document.cookie.split("; ").find((entry) => entry.startsWith(`${cookieName}=`));
 
 	return cookie ? decodeURIComponent(cookie.slice(cookieName.length + 1)) : null;
 }

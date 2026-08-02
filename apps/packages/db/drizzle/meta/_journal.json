@@ -1,55 +1,55 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1772773119091,
-      "tag": "0000_cloudy_gladiator",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1774262927437,
-      "tag": "0001_great_speed",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1774263114534,
-      "tag": "0002_gifted_deadpool",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1774853078323,
-      "tag": "0003_fantastic_kylun",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1775653045991,
-      "tag": "0004_wooden_retro_girl",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1775997324185,
-      "tag": "0005_gifted_martin_li",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1750943800000,
-      "tag": "0006_add_credentials_dek",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "postgresql",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "7",
+			"when": 1772773119091,
+			"tag": "0000_cloudy_gladiator",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1774262927437,
+			"tag": "0001_great_speed",
+			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1774263114534,
+			"tag": "0002_gifted_deadpool",
+			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1774853078323,
+			"tag": "0003_fantastic_kylun",
+			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1775653045991,
+			"tag": "0004_wooden_retro_girl",
+			"breakpoints": true
+		},
+		{
+			"idx": 5,
+			"version": "7",
+			"when": 1775997324185,
+			"tag": "0005_gifted_martin_li",
+			"breakpoints": true
+		},
+		{
+			"idx": 6,
+			"version": "7",
+			"when": 1750943800000,
+			"tag": "0006_add_credentials_dek",
+			"breakpoints": true
+		}
+	]
 }

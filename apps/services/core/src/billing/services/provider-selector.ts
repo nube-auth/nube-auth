@@ -183,7 +183,7 @@ function shouldRouteTraffic(percentage: number, userId?: string): boolean {
 	// Consistent hashing based on userId for A/B testing
 	if (userId) {
 		const hash = simpleHash(userId);
-		return (hash % 100) < percentage;
+		return hash % 100 < percentage;
 	}
 
 	// Random if no userId
@@ -206,11 +206,7 @@ function simpleHash(str: string): number {
  * Helper to create a default catch-all routing rule for an app
  * Used when app is created or first provider is configured
  */
-export async function createDefaultRoutingRule(
-	appId: number,
-	providerConfigId: number,
-	name = "Default Provider",
-) {
+export async function createDefaultRoutingRule(appId: number, providerConfigId: number, name = "Default Provider") {
 	const db = getDb();
 
 	const { createId } = await import("@nube-auth/shared");

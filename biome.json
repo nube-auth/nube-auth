@@ -7,7 +7,15 @@
 	},
 	"files": {
 		"ignoreUnknown": true,
-		"includes": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.json", "**/*.mjs"]
+		"includes": [
+			"**/*.ts",
+			"**/*.tsx",
+			"**/*.js",
+			"**/*.jsx",
+			"**/*.json",
+			"**/*.mjs",
+			"!!**/nube-scripts/docs/extension-templates"
+		]
 	},
 	"formatter": {
 		"enabled": true,
@@ -47,7 +55,8 @@
 				"useKeyWithClickEvents": "off",
 				"noAutofocus": "off",
 				"useKeyWithMouseEvents": "off",
-				"useValidAnchor": "warn"
+				"useValidAnchor": "warn",
+				"useSemanticElements": "warn"
 			}
 		}
 	},

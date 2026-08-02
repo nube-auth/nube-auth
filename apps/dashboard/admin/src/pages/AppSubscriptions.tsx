@@ -1,43 +1,42 @@
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
 import {
-	Icon,
-	IconType,
-	Spinner,
 	Alert,
-	Heading,
-	Text,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
 	Button,
 	Card,
 	CardBody,
+	Chip,
 	DataTable,
 	DataTableRow,
-	EmptyState,
 	Dialog,
-	DialogPopup,
-	DialogHeader,
-	DialogTitle,
 	DialogBody,
 	DialogFooter,
-	Chip,
+	DialogHeader,
+	DialogPopup,
+	DialogTitle,
+	EmptyState,
+	Heading,
+	Icon,
 	IconBox,
-	Label,
+	IconType,
 	Input,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbButton,
-	TableHeader,
+	Label,
+	Spinner,
 	TableBody,
-	TableHead,
 	TableCell,
+	TableHead,
+	TableHeader,
+	Text,
 } from "@nube-auth/components";
+import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
 
 import { PageLoader } from "../components/PageLoader";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
-import { useApp, useProject } from "../hooks/api";
-import { useV2Subscriptions, useV2SubscriptionAction, type V2Subscription } from "../hooks/api";
+import { useApp, useProject, useV2SubscriptionAction, useV2Subscriptions, type V2Subscription } from "../hooks/api";
 
 export function AppSubscriptionsPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -182,9 +181,7 @@ export function AppSubscriptionsPage() {
 									/>
 								</IconBox>
 								<div>
-									<Text className="text-muted text-xs capitalize">
-										{status.replace("_", " ")}
-									</Text>
+									<Text className="text-muted text-xs capitalize">{status.replace("_", " ")}</Text>
 									<Heading level={4} size="sm">
 										{count}
 									</Heading>

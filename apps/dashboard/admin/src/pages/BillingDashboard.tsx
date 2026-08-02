@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { useBillingPurchases, useBillingStats, useBillingTransactions } from "../hooks/api";
 import {
-	Chip,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
 	Button,
 	Card,
 	CardBody,
-	CardHeader,
+	Chip,
 	DataTable,
 	DataTableHeader,
 	DataTableRow,
@@ -21,11 +22,9 @@ import {
 	TabsList,
 	TabsPanel,
 	Text,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbButton,
 } from "@nube-auth/components";
+import { useState } from "react";
+import { useBillingPurchases, useBillingStats, useBillingTransactions } from "../hooks/api";
 
 export function BillingDashboardPage() {
 	const [dateRange, setDateRange] = useState<{ start?: string; end?: string }>({});
@@ -132,18 +131,14 @@ export function BillingDashboardPage() {
 									{formatCurrency(stats?.revenue.total || 0)}
 								</Heading>
 								{stats?.transactions.total && (
-									<Text className="text-muted mt-2">
-										{stats.transactions.total} transactions
-									</Text>
+									<Text className="text-muted mt-2">{stats.transactions.total} transactions</Text>
 								)}
 							</CardBody>
 						</Card>
 
 						<Card>
 							<CardBody>
-								<Text className="text-muted mb-2 font-semibold uppercase tracking-wider">
-									Refunds
-								</Text>
+								<Text className="text-muted mb-2 font-semibold uppercase tracking-wider">Refunds</Text>
 								<Heading size="lg" className="mb-0 text-danger">
 									{formatCurrency(stats?.refunds.total || 0)}
 								</Heading>
@@ -221,9 +216,7 @@ export function BillingDashboardPage() {
 									{Object.entries(stats.revenue.by_type).map(([type, amount]) => (
 										<Card key={type}>
 											<CardBody>
-												<Text className="text-muted mb-2 font-medium capitalize">
-													{type}
-												</Text>
+												<Text className="text-muted mb-2 font-medium capitalize">{type}</Text>
 												<Heading size="md" className="mb-0">
 													{formatCurrency(amount as number)}
 												</Heading>

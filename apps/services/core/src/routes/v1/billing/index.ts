@@ -16,14 +16,14 @@ import {
 	promotionRedemptionQueries,
 	userQueries,
 } from "@nube-auth/db";
-import { createLogger, idPatterns, serializeError } from "@nube-auth/shared";
+import { createLogger, idPatterns } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { z } from "zod";
 import { checkoutRoutes } from "./checkout.js";
-import { webhookRoutes } from "./webhooks.js";
 import { refundRoutes } from "./refunds-clean.js";
+import { webhookRoutes } from "./webhooks.js";
 
-const log = createLogger("billing-routes");
+const _log = createLogger("billing-routes");
 
 export const billingRoutes = new Hono();
 

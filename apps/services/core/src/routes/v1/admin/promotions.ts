@@ -1,15 +1,15 @@
 import {
 	appQueries,
 	getDb,
+	paymentProviderConfigQueries,
 	planQueries,
-	priceQueries,
 	priceProviderRefQueries,
+	priceQueries,
 	promotionCodeQueries,
 	promotionPlanQueries,
 	promotionProviderRefQueries,
 	promotionQueries,
 	promotionRedemptionQueries,
-	paymentProviderConfigQueries,
 } from "@nube-auth/db";
 import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
@@ -23,7 +23,15 @@ import { decryptProviderCredentials } from "../../../utils/encryption.js";
  * Safe to call multiple times — skips providers that already have an active ref.
  */
 async function syncPromotionToProviders(
-	promo: { id: number; public_id: string; name: string; discount_type: string; discount_value: number; max_redemptions: number | null; ends_at: Date | null },
+	promo: {
+		id: number;
+		public_id: string;
+		name: string;
+		discount_type: string;
+		discount_value: number;
+		max_redemptions: number | null;
+		ends_at: Date | null;
+	},
 	projectId: number,
 ): Promise<void> {
 	const db = getDb();
@@ -50,9 +58,10 @@ async function syncPromotionToProviders(
 							refsByProviderConfigId.set(ref.provider_config_id, { provider: ref.provider, ids: [] });
 						}
 						// Stripe: use external_product_id (prod_xxx); others: use external_price_id
-						const idToUse = ref.provider === "stripe" && ref.external_product_id
-							? ref.external_product_id
-							: ref.external_price_id;
+						const idToUse =
+							ref.provider === "stripe" && ref.external_product_id
+								? ref.external_product_id
+								: ref.external_price_id;
 						const entry = refsByProviderConfigId.get(ref.provider_config_id)!;
 						if (!entry.ids.includes(idToUse)) entry.ids.push(idToUse);
 					}
@@ -151,7 +160,10 @@ export const promotionsRouter = new Hono();
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatPromotion(promo: any, extras?: { plans?: { planId: string; name: string }[]; codes?: any[]; providerRefs?: any[] }) {
+function formatPromotion(
+	promo: any,
+	extras?: { plans?: { planId: string; name: string }[]; codes?: any[]; providerRefs?: any[] },
+) {
 	return {
 		promotionId: promo.public_id,
 		name: promo.name,
@@ -257,7 +269,7 @@ promotionsRouter.post("/", async (c) => {
 	const db = getDb();
 
 	// Resolve plan internal IDs if planIds provided
-	let planInternalIds: number[] = [];
+	const planInternalIds: number[] = [];
 	if (data.planIds && data.planIds.length > 0) {
 		for (const planPublicId of data.planIds) {
 			if (!idPatterns.plan.test(planPublicId)) {
@@ -299,7 +311,10 @@ promotionsRouter.post("/", async (c) => {
 
 	// Auto-sync coupon to all active payment providers (non-blocking)
 	syncPromotionToProviders(promo, app.project_id).catch((err) =>
-		log.error({ err: serializeError(err as Error), promotionId: promo.public_id }, "Background provider sync failed"),
+		log.error(
+			{ err: serializeError(err as Error), promotionId: promo.public_id },
+			"Background provider sync failed",
+		),
 	);
 
 	return c.json(formatPromotion(promo, { plans: planItems }), 201);
@@ -328,10 +343,12 @@ promotionsRouter.get("/", async (c) => {
 			if (plan) planItems.push({ planId: plan.public_id, name: plan.name });
 		}
 		const codes = await promotionCodeQueries.findByPromotionId(db, promo.id);
-		items.push(formatPromotion(promo, {
-			plans: planItems,
-			codes: codes.map(formatCode),
-		}));
+		items.push(
+			formatPromotion(promo, {
+				plans: planItems,
+				codes: codes.map(formatCode),
+			}),
+		);
 	}
 
 	return c.json({ promotions: items });
@@ -363,11 +380,13 @@ promotionsRouter.get("/:promoId", async (c) => {
 	// Fetch provider refs
 	const refs = await promotionProviderRefQueries.findByPromotionId(db, promo.id);
 
-	return c.json(formatPromotion(promo, {
-		plans: planItems,
-		codes: codes.map(formatCode),
-		providerRefs: refs.map(formatProviderRef),
-	}));
+	return c.json(
+		formatPromotion(promo, {
+			plans: planItems,
+			codes: codes.map(formatCode),
+			providerRefs: refs.map(formatProviderRef),
+		}),
+	);
 });
 
 /**
@@ -377,7 +396,10 @@ const updatePromoSchema = z.object({
 	name: z.string().min(1).max(255).optional(),
 	startsAt: z.coerce.date().optional(),
 	endsAt: z.coerce.date().nullable().optional(),
-	allowedIntervals: z.array(z.enum(["month", "year"])).nullable().optional(),
+	allowedIntervals: z
+		.array(z.enum(["month", "year"]))
+		.nullable()
+		.optional(),
 	isNewCustomersOnly: z.boolean().optional(),
 	maxRedemptions: z.number().int().positive().nullable().optional(),
 	isActive: z.boolean().optional(),
@@ -414,13 +436,12 @@ promotionsRouter.patch("/:promoId", async (c) => {
 	if (data.maxRedemptions !== undefined) updateData["max_redemptions"] = data.maxRedemptions;
 	if (data.isActive !== undefined) updateData["is_active"] = data.isActive;
 
-	const updated = Object.keys(updateData).length > 0
-		? await promotionQueries.update(db, promo.id, updateData)
-		: promo;
+	const updated =
+		Object.keys(updateData).length > 0 ? await promotionQueries.update(db, promo.id, updateData) : promo;
 
 	// Update plan targeting if provided
 	if (data.planIds !== undefined) {
-		let planInternalIds: number[] = [];
+		const planInternalIds: number[] = [];
 		for (const planPublicId of data.planIds) {
 			if (!idPatterns.plan.test(planPublicId)) {
 				return c.json({ error: `Invalid plan ID: ${planPublicId}` }, 400);
@@ -468,7 +489,9 @@ promotionsRouter.delete("/:promoId", async (c) => {
 			let credentials: unknown;
 			try {
 				credentials = decryptProviderCredentials(config);
-			} catch { continue; }
+			} catch {
+				continue;
+			}
 
 			if (config.provider === "dodo" && config.environment) {
 				(credentials as any).environment = config.environment === "production" ? "live_mode" : "test_mode";
@@ -479,7 +502,10 @@ promotionsRouter.delete("/:promoId", async (c) => {
 			await adapter.deleteCoupon(ref.provider_coupon_id);
 			await promotionProviderRefQueries.deactivate(db, ref.id);
 		} catch (error) {
-			log.error({ err: serializeError(error as Error), refId: ref.public_id }, "Failed to delete provider coupon on deactivation");
+			log.error(
+				{ err: serializeError(error as Error), refId: ref.public_id },
+				"Failed to delete provider coupon on deactivation",
+			);
 		}
 	}
 
@@ -518,7 +544,11 @@ promotionsRouter.post("/:promoId/sync-to-providers", async (c) => {
  * POST /:promoId/codes — Create code for promotion
  */
 const createCodeSchema = z.object({
-	code: z.string().min(1).max(50).transform((v) => v.toUpperCase()),
+	code: z
+		.string()
+		.min(1)
+		.max(50)
+		.transform((v) => v.toUpperCase()),
 	maxUses: z.number().int().positive().optional(),
 });
 

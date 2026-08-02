@@ -3,17 +3,34 @@
  * Admin-only endpoints for testing payment flows without manual setup
  */
 
-import { getDb, eq, and, desc, inArray, testSessionQueries, userQueries, appQueries, planQueries, priceQueries, projectQueries, projectMemberQueries, paymentProviderConfigQueries, purchases, payment_transactions, webhook_logs, prices } from "@nube-auth/db";
-import { createId, createLogger, serializeError, publicId } from "@nube-auth/shared";
+import {
+	appQueries,
+	desc,
+	eq,
+	getDb,
+	inArray,
+	payment_transactions,
+	paymentProviderConfigQueries,
+	planQueries,
+	priceQueries,
+	prices,
+	projectMemberQueries,
+	projectQueries,
+	purchases,
+	testSessionQueries,
+	userQueries,
+	webhook_logs,
+} from "@nube-auth/db";
+import { createId, createLogger, publicId, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
-import { env } from "../../../config/env.js";
-import { normalizeEventType } from "../../../billing/services/webhook-simulator.js";
-import type { PaymentDetails } from "../../../billing/adapters/types.js";
 import { createProviderAdapter } from "../../../billing/adapters/factory.js";
+import type { PaymentDetails } from "../../../billing/adapters/types.js";
 import { processWebhookEvent } from "../../../billing/services/webhook-processor.js";
-import { decryptProviderCredentials } from "../../../utils/encryption.js";
+import { normalizeEventType } from "../../../billing/services/webhook-simulator.js";
+import { env } from "../../../config/env.js";
 import { rateLimitMiddleware } from "../../../middleware/rateLimit.js";
+import { decryptProviderCredentials } from "../../../utils/encryption.js";
 
 const log = createLogger("admin-test-routes");
 const router = new Hono();
@@ -46,15 +63,15 @@ async function validateTestModeCredentials(provider: string, mode: string): Prom
 		const apiKey = env.STRIPE_SECRET_KEY;
 		return apiKey?.startsWith("sk_test_") || false;
 	}
-	
+
 	if (provider === "lemonsqueezy" || provider === "lemon_squeezy") {
 		return true; // Placeholder - implement proper check
 	}
-	
+
 	if (provider === "dodo") {
 		return true; // Placeholder - implement proper check
 	}
-	
+
 	return false;
 }
 
@@ -66,7 +83,14 @@ async function validateTestModeCredentials(provider: string, mode: string): Prom
 router.post("/initialize", testRateLimit, async (c: Context) => {
 	try {
 		const body = await c.req.json();
-		const { provider, mode = "simulate", projectId, appId, userId, planId } = body as {
+		const {
+			provider,
+			mode = "simulate",
+			projectId,
+			appId,
+			userId,
+			planId,
+		} = body as {
 			provider?: "stripe" | "lemonsqueezy" | "dodo";
 			mode?: "simulate" | "live";
 			projectId?: string;
@@ -108,9 +132,12 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 		const isTestMode = await validateTestModeCredentials(provider, mode);
 		if (!isTestMode) {
 			log.error({ provider }, "Production credentials not allowed in test playground");
-			return c.json({ 
-				error: "Production credentials not allowed in test playground. Please configure test/sandbox credentials." 
-			}, 403);
+			return c.json(
+				{
+					error: "Production credentials not allowed in test playground. Please configure test/sandbox credentials.",
+				},
+				403,
+			);
 		}
 
 		// Look up the selected project
@@ -250,8 +277,11 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 		let checkoutUrl: string | undefined;
 		if (mode === "live") {
 			try {
-				log.info({ provider, projectId: testProject.public_id, planId: selectedPlan.public_id }, "Starting live mode checkout creation");
-				
+				log.info(
+					{ provider, projectId: testProject.public_id, planId: selectedPlan.public_id },
+					"Starting live mode checkout creation",
+				);
+
 				// Need a real provider config with encrypted credentials
 				const liveConfigs = await paymentProviderConfigQueries.findByProjectAndProvider(
 					db,
@@ -261,69 +291,93 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 				);
 
 				const configToUse = liveConfigs ?? providerConfig;
-				
-				log.info({ 
-					hasConfig: !!configToUse, 
-					isPlaceholder: configToUse?.credentials === "test-playground-no-real-credentials",
-					configId: configToUse?.public_id 
-				}, "Provider config lookup result");
+
+				log.info(
+					{
+						hasConfig: !!configToUse,
+						isPlaceholder: configToUse?.credentials === "test-playground-no-real-credentials",
+						configId: configToUse?.public_id,
+					},
+					"Provider config lookup result",
+				);
 
 				if (!configToUse || configToUse.credentials === "test-playground-no-real-credentials") {
-					return c.json({
-						error: "Live mode requires a configured payment provider with real test credentials. Add provider credentials in Project → Payment Providers first.",
-					}, 400);
+					return c.json(
+						{
+							error: "Live mode requires a configured payment provider with real test credentials. Add provider credentials in Project → Payment Providers first.",
+						},
+						400,
+					);
 				}
 
 				log.info({ provider }, "Decrypting credentials");
 				const decryptedCredentials = decryptProviderCredentials(configToUse);
-				
+
 				// Add environment field for Dodo adapter (convert "test"/"production" to "test_mode"/"live_mode")
 				if (provider === "dodo" && configToUse.environment) {
-					decryptedCredentials["environment"] = configToUse.environment === "production" ? "live_mode" : "test_mode";
-					decryptedCredentials["webhookSecret"] = configToUse.webhook_secret || decryptedCredentials["webhookSecret"] || "";
-					log.info({ environment: decryptedCredentials["environment"] }, "Added environment to Dodo credentials");
+					decryptedCredentials["environment"] =
+						configToUse.environment === "production" ? "live_mode" : "test_mode";
+					decryptedCredentials["webhookSecret"] =
+						configToUse.webhook_secret || decryptedCredentials["webhookSecret"] || "";
+					log.info(
+						{ environment: decryptedCredentials["environment"] },
+						"Added environment to Dodo credentials",
+					);
 				}
-				
+
 				log.info({ provider, hasApiKey: !!decryptedCredentials["apiKey"] }, "Creating provider adapter");
 				const adapter = createProviderAdapter(provider, decryptedCredentials);
 
 				// If the price has a fake/test external_price_id, create a real product on the provider
 				if (!testPrice.external_price_id || testPrice.external_price_id.startsWith("test_price_")) {
-					log.info({ 
-						provider, 
-						planName: selectedPlan.name, 
-						priceId: testPrice.public_id,
-						currentExternalId: testPrice.external_price_id 
-					}, "Creating real product on provider for live mode");
+					log.info(
+						{
+							provider,
+							planName: selectedPlan.name,
+							priceId: testPrice.public_id,
+							currentExternalId: testPrice.external_price_id,
+						},
+						"Creating real product on provider for live mode",
+					);
 
 					const product = await adapter.createProduct({
 						name: selectedPlan.name,
 						description: selectedPlan.description ?? `Test plan: ${selectedPlan.name}`,
 					});
-					
+
 					log.info({ productId: product.productId, provider }, "Product created, now creating price");
 
 					const providerPrice = await adapter.createPrice({
 						productId: product.productId,
 						amountCents: testPrice.amount_cents,
 						currency: testPrice.currency,
-					interval: testPrice.billing_type === "one_time"
-						? "one_time"
-						: (testPrice.interval as "month" | "year") ?? "month",
+						interval:
+							testPrice.billing_type === "one_time"
+								? "one_time"
+								: ((testPrice.interval as "month" | "year") ?? "month"),
 					});
-					
+
 					log.info({ priceId: providerPrice.priceId, provider }, "Price created, updating DB");
 
 					// Update the price record with the real external ID
-					await db.update(prices).set({
-						external_price_id: providerPrice.priceId,
-						updated_at: new Date(),
-					}).where(eq(prices.id, testPrice.id));
+					await db
+						.update(prices)
+						.set({
+							external_price_id: providerPrice.priceId,
+							updated_at: new Date(),
+						})
+						.where(eq(prices.id, testPrice.id));
 
 					testPrice = { ...testPrice, external_price_id: providerPrice.priceId };
-					log.info({ productId: product.productId, priceId: providerPrice.priceId, provider }, "Created real product and price on provider");
+					log.info(
+						{ productId: product.productId, priceId: providerPrice.priceId, provider },
+						"Created real product and price on provider",
+					);
 				} else {
-					log.info({ externalPriceId: testPrice.external_price_id, provider }, "Using existing external price ID");
+					log.info(
+						{ externalPriceId: testPrice.external_price_id, provider },
+						"Using existing external price ID",
+					);
 				}
 
 				log.info({ provider, productId: testPrice.external_price_id }, "Creating checkout session");
@@ -346,20 +400,29 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 				});
 
 				checkoutUrl = checkoutSession.checkoutUrl;
-				log.info({ checkoutUrl, provider, sessionId: checkoutSession.sessionId }, "Created real checkout session");
+				log.info(
+					{ checkoutUrl, provider, sessionId: checkoutSession.sessionId },
+					"Created real checkout session",
+				);
 			} catch (error) {
 				const serializedError = serializeError(error as Error);
-				log.error({ 
-					err: serializedError,
-					provider,
-					projectId: testProject.public_id,
-					planId: selectedPlan.public_id,
-				}, "Failed to create checkout session");
-				
-				return c.json({
-					error: `Failed to create checkout session with ${provider}. Check that your test credentials are configured correctly.`,
-					details: env.IS_DEVELOPMENT ? serializedError : undefined,
-				}, 500);
+				log.error(
+					{
+						err: serializedError,
+						provider,
+						projectId: testProject.public_id,
+						planId: selectedPlan.public_id,
+					},
+					"Failed to create checkout session",
+				);
+
+				return c.json(
+					{
+						error: `Failed to create checkout session with ${provider}. Check that your test credentials are configured correctly.`,
+						details: env.IS_DEVELOPMENT ? serializedError : undefined,
+					},
+					500,
+				);
 			}
 		}
 
@@ -378,37 +441,42 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 			expires_at: expiresAt,
 		});
 
-		log.info({ 
-			sessionId: testSession.public_id,
-			provider,
-			mode,
-			adminId: adminUser.public_id
-		}, "Created test session");
-
-		return c.json({
-			sessionId: testSession.public_id,
-			testData: {
-				app: {
-					id: testApp.public_id,
-					name: testApp.name,
-					publicId: testApp.public_id,
-				},
-				user: {
-					id: testUser.public_id,
-					email: testUser.primary_email,
-					publicId: testUser.public_id,
-				},
-				plan: {
-					id: selectedPlan.slug,
-					name: selectedPlan.name,
-					amount: testPrice.amount_cents,
-					interval: testPrice.interval || "one_time",
-				},
+		log.info(
+			{
+				sessionId: testSession.public_id,
+				provider,
+				mode,
+				adminId: adminUser.public_id,
 			},
-			checkoutUrl,
-			expiresAt: expiresAt.toISOString(),
-		}, 201);
+			"Created test session",
+		);
 
+		return c.json(
+			{
+				sessionId: testSession.public_id,
+				testData: {
+					app: {
+						id: testApp.public_id,
+						name: testApp.name,
+						publicId: testApp.public_id,
+					},
+					user: {
+						id: testUser.public_id,
+						email: testUser.primary_email,
+						publicId: testUser.public_id,
+					},
+					plan: {
+						id: selectedPlan.slug,
+						name: selectedPlan.name,
+						amount: testPrice.amount_cents,
+						interval: testPrice.interval || "one_time",
+					},
+				},
+				checkoutUrl,
+				expiresAt: expiresAt.toISOString(),
+			},
+			201,
+		);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Failed to initialize test session");
 		return c.json({ error: "Failed to initialize test session" }, 500);
@@ -446,13 +514,9 @@ router.post("/simulate-webhook", testRateLimit, async (c: Context) => {
 		}
 
 		// Get test app and user
-		const testApp = session.test_app_id 
-			? await appQueries.findByInternalId_(db, session.test_app_id)
-			: null;
-			
-		const testUser = session.test_user_id
-			? await userQueries.findByInternalId_(db, session.test_user_id)
-			: null;
+		const testApp = session.test_app_id ? await appQueries.findByInternalId_(db, session.test_app_id) : null;
+
+		const testUser = session.test_user_id ? await userQueries.findByInternalId_(db, session.test_user_id) : null;
 
 		if (!testApp || !testUser) {
 			return c.json({ error: "Test app or user not found" }, 400);
@@ -482,11 +546,14 @@ router.post("/simulate-webhook", testRateLimit, async (c: Context) => {
 			return c.json({ error: "Provider config not found. Re-initialize test session." }, 400);
 		}
 
-		log.info({
-			sessionId: session.public_id,
-			provider: session.provider,
-			eventType: normalizedEventType,
-		}, "Simulating webhook event");
+		log.info(
+			{
+				sessionId: session.public_id,
+				provider: session.provider,
+				eventType: normalizedEventType,
+			},
+			"Simulating webhook event",
+		);
 
 		// Map event type to PaymentDetails status
 		const statusMap: Record<string, "succeeded" | "failed" | "canceled" | "refunded"> = {
@@ -524,18 +591,19 @@ router.post("/simulate-webhook", testRateLimit, async (c: Context) => {
 				eventType: normalizedEventType,
 			});
 
-			log.info({
-				sessionId: session.public_id,
-				eventType,
-				status: paymentStatus,
-			}, "Webhook event processed successfully");
+			log.info(
+				{
+					sessionId: session.public_id,
+					eventType,
+					status: paymentStatus,
+				},
+				"Webhook event processed successfully",
+			);
 
 			// Query the actual results from the database
 			const license = await db.query.licenses.findFirst({
-				where: (licenses, { and: andOp, eq: eqCol }) => andOp(
-					eqCol(licenses.user_id, testUser.id),
-					eqCol(licenses.app_id, testApp.id),
-				),
+				where: (licenses, { and: andOp, eq: eqCol }) =>
+					andOp(eqCol(licenses.user_id, testUser.id), eqCol(licenses.app_id, testApp.id)),
 				orderBy: (licenses, { desc: descOp }) => [descOp(licenses.created_at)],
 			});
 
@@ -553,30 +621,38 @@ router.post("/simulate-webhook", testRateLimit, async (c: Context) => {
 					timestamp: new Date().toISOString(),
 				},
 				result: {
-					purchase: latestPurchase ? {
-						id: latestPurchase.public_id,
-						status: latestPurchase.status,
-					} : null,
-					license: license ? {
-						id: license.public_id,
-						status: license.status,
-						validUntil: license.valid_until?.toISOString() ?? null,
-					} : null,
+					purchase: latestPurchase
+						? {
+								id: latestPurchase.public_id,
+								status: latestPurchase.status,
+							}
+						: null,
+					license: license
+						? {
+								id: license.public_id,
+								status: license.status,
+								validUntil: license.valid_until?.toISOString() ?? null,
+							}
+						: null,
 				},
 			});
-
 		} catch (error) {
-			log.error({ 
-				err: serializeError(error as Error),
-				sessionId: session.public_id 
-			}, "Failed to process simulated webhook");
-			
-			return c.json({ 
-				error: "Failed to process webhook event",
-				details: (error as Error).message 
-			}, 500);
-		}
+			log.error(
+				{
+					err: serializeError(error as Error),
+					sessionId: session.public_id,
+				},
+				"Failed to process simulated webhook",
+			);
 
+			return c.json(
+				{
+					error: "Failed to process webhook event",
+					details: (error as Error).message,
+				},
+				500,
+			);
+		}
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Failed to simulate webhook");
 		return c.json({ error: "Failed to simulate webhook" }, 500);
@@ -590,7 +666,7 @@ router.post("/simulate-webhook", testRateLimit, async (c: Context) => {
 router.get("/status/:sessionId", async (c: Context) => {
 	try {
 		const sessionId = c.req.param("sessionId");
-		
+
 		if (!sessionId) {
 			return c.json({ error: "Missing sessionId" }, 400);
 		}
@@ -604,16 +680,20 @@ router.get("/status/:sessionId", async (c: Context) => {
 		}
 
 		// Get test app and user data
-		const testApp = session.test_app_id 
-			? await appQueries.findByInternalId_(db, session.test_app_id)
-			: null;
-			
-		const testUser = session.test_user_id
-			? await userQueries.findByInternalId_(db, session.test_user_id)
-			: null;
+		const testApp = session.test_app_id ? await appQueries.findByInternalId_(db, session.test_app_id) : null;
+
+		const testUser = session.test_user_id ? await userQueries.findByInternalId_(db, session.test_user_id) : null;
 
 		// Get transactions for test user/app
-		let transactions: { public_id: string; status: string; amount_cents: number; currency: string; type: string; provider: string; created_at: Date }[] = [];
+		let transactions: {
+			public_id: string;
+			status: string;
+			amount_cents: number;
+			currency: string;
+			type: string;
+			provider: string;
+			created_at: Date;
+		}[] = [];
 		if (testApp) {
 			const appPurchases = await db
 				.select({ id: purchases.id, public_id: purchases.public_id })
@@ -637,21 +717,25 @@ router.get("/status/:sessionId", async (c: Context) => {
 					.orderBy(desc(payment_transactions.created_at));
 			}
 		}
-		
+
 		// Get license for test user/app (if exists)
 		let license = null;
 		if (testUser && testApp) {
 			license = await db.query.licenses.findFirst({
-				where: (licenses, { and: andOp, eq: eqCol }) => andOp(
-					eqCol(licenses.user_id, testUser.id),
-					eqCol(licenses.app_id, testApp.id)
-				),
+				where: (licenses, { and: andOp, eq: eqCol }) =>
+					andOp(eqCol(licenses.user_id, testUser.id), eqCol(licenses.app_id, testApp.id)),
 				orderBy: (licenses, { desc: descOp }) => [descOp(licenses.created_at)],
 			});
 		}
 
 		// Get webhook events related to this test app
-		let webhookEvents: { public_id: string; event_type: string; status: string; provider: string; received_at: Date }[] = [];
+		let webhookEvents: {
+			public_id: string;
+			event_type: string;
+			status: string;
+			provider: string;
+			received_at: Date;
+		}[] = [];
 		if (testApp) {
 			webhookEvents = await db
 				.select({
@@ -683,31 +767,36 @@ router.get("/status/:sessionId", async (c: Context) => {
 			provider: session.provider,
 			checkoutUrl: session.checkout_url,
 			testData: {
-				app: testApp ? {
-					id: testApp.public_id,
-					name: testApp.name,
-					publicId: testApp.public_id,
-				} : null,
-				user: testUser ? {
-					id: testUser.public_id,
-					email: testUser.primary_email,
-					publicId: testUser.public_id,
-				} : null,
+				app: testApp
+					? {
+							id: testApp.public_id,
+							name: testApp.name,
+							publicId: testApp.public_id,
+						}
+					: null,
+				user: testUser
+					? {
+							id: testUser.public_id,
+							email: testUser.primary_email,
+							publicId: testUser.public_id,
+						}
+					: null,
 				plan: {
 					id: session.plan_id,
 					name: planName,
 				},
 			},
 			transactions,
-			license: license ? {
-				id: license.public_id,
-				status: license.status,
-				validUntil: license.valid_until?.toISOString() ?? null,
-			} : null,
+			license: license
+				? {
+						id: license.public_id,
+						status: license.status,
+						validUntil: license.valid_until?.toISOString() ?? null,
+					}
+				: null,
 			webhookEvents,
 			expiresAt: session.expires_at.toISOString(),
 		});
-
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Failed to get test session status");
 		return c.json({ error: "Failed to get session status" }, 500);
@@ -746,10 +835,13 @@ router.delete("/cleanup", async (c: Context) => {
 			const result = await testSessionQueries.cleanupTestData(db, 24);
 			const deletedSessions = await testSessionQueries.deleteExpired(db);
 
-			log.info({
-				...result,
-				sessions: deletedSessions.length,
-			}, "Cleaned up test data");
+			log.info(
+				{
+					...result,
+					sessions: deletedSessions.length,
+				},
+				"Cleaned up test data",
+			);
 
 			return c.json({
 				success: true,
@@ -761,7 +853,6 @@ router.delete("/cleanup", async (c: Context) => {
 		}
 
 		return c.json({ error: "Must provide sessionId or all=true" }, 400);
-
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Failed to cleanup test data");
 		return c.json({ error: "Failed to cleanup test data" }, 500);
@@ -779,7 +870,7 @@ router.get("/providers", async (c: Context) => {
 				name: "stripe",
 				status: "available",
 				testMode: true,
-						webhookUrl: `${env.API_BASE_URL || "http://localhost:3003"}/v1/payment/webhooks/stripe`,
+				webhookUrl: `${env.API_BASE_URL || "http://localhost:3003"}/v1/payment/webhooks/stripe`,
 				credentials: {
 					publicKey: `${env.STRIPE_PUBLISHABLE_KEY?.substring(0, 20)}****`,
 					hasSecretKey: !!env.STRIPE_SECRET_KEY,
@@ -789,7 +880,7 @@ router.get("/providers", async (c: Context) => {
 				name: "lemonsqueezy",
 				status: "available",
 				testMode: true,
-						webhookUrl: `${env.API_BASE_URL || "http://localhost:3003"}/v1/payment/webhooks/lemonsqueezy`,
+				webhookUrl: `${env.API_BASE_URL || "http://localhost:3003"}/v1/payment/webhooks/lemonsqueezy`,
 				credentials: {
 					hasApiKey: !!env.LEMONSQUEEZY_API_KEY,
 				},
@@ -806,7 +897,6 @@ router.get("/providers", async (c: Context) => {
 		];
 
 		return c.json({ providers });
-
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Failed to get providers");
 		return c.json({ error: "Failed to get providers" }, 500);

@@ -5,17 +5,16 @@
  * Pricing lives on the prices table, exposed via nested /:planId/prices routes.
  */
 
+import { appQueries, auditLogQueries, eq, getDb, planQueries, priceQueries, userQueries } from "@nube-auth/db";
+import { plans } from "@nube-auth/db/schema";
+import { createLogger, id, serializeError } from "@nube-auth/shared";
+import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
-import { getDb, appQueries, planQueries, priceQueries, userQueries, auditLogQueries } from "@nube-auth/db";
-import { plans } from "@nube-auth/db/schema";
-import { eq } from "@nube-auth/db";
-import type { Context } from "hono";
-import { createLogger, serializeError, id } from "@nube-auth/shared";
-import { pricesRouter } from "./prices.js";
 import { enqueuePlanSync } from "../../../billing/queue.js";
-import { generatePlanSlug } from "../../../utils/slug.js";
 import { fireWebhookEvent } from "../../../utils/outbound-events.js";
+import { generatePlanSlug } from "../../../utils/slug.js";
+import { pricesRouter } from "./prices.js";
 
 const log = createLogger("admin-plans");
 const plansRouter = new Hono();
@@ -31,9 +30,17 @@ const CreatePlanSchema = z.object({
 	name: z.string().min(1).max(255),
 	// slug is optional — if omitted, server auto-generates as "{appSlug}-{planName}"
 	// with a random postfix to resolve collisions
-	slug: z.string().min(1).max(100).regex(/^[a-z0-9-_]+$/).optional(),
+	slug: z
+		.string()
+		.min(1)
+		.max(100)
+		.regex(/^[a-z0-9-_]+$/)
+		.optional(),
 	description: z.string().optional(),
-	features: z.record(z.string(), z.union([z.boolean(), z.number().int().min(-1), z.string()])).optional().default({}),
+	features: z
+		.record(z.string(), z.union([z.boolean(), z.number().int().min(-1), z.string()]))
+		.optional()
+		.default({}),
 	displayOrder: z.number().int().nonnegative().optional().default(0),
 	isActive: z.boolean().optional().default(true),
 	isDefault: z.boolean().optional().default(false),
@@ -51,19 +58,23 @@ const UpdatePlanSchema = z.object({
 
 // Helpers
 
-function formatPlan(plan: {
-	id: number;
-	public_id: string;
-	name: string;
-	slug: string;
-	description: string | null;
-	features: unknown;
-	status: string;
-	display_order: number;
-	is_active: boolean;
-	created_at: Date;
-	updated_at: Date;
-}, appPublicId: string, defaultPlanId?: number | null) {
+function formatPlan(
+	plan: {
+		id: number;
+		public_id: string;
+		name: string;
+		slug: string;
+		description: string | null;
+		features: unknown;
+		status: string;
+		display_order: number;
+		is_active: boolean;
+		created_at: Date;
+		updated_at: Date;
+	},
+	appPublicId: string,
+	defaultPlanId?: number | null,
+) {
 	return {
 		planId: plan.public_id,
 		appId: appPublicId,
@@ -188,7 +199,8 @@ plansRouter.get("/", async (c: Context) => {
 
 		const planSettings = app.plan_settings as any;
 		// Normalize to number — old data may have stored a string (public ID) here
-		const defaultPlanId: number | null = typeof planSettings?.defaultPlanId === "number" ? planSettings.defaultPlanId : null;
+		const defaultPlanId: number | null =
+			typeof planSettings?.defaultPlanId === "number" ? planSettings.defaultPlanId : null;
 
 		const plansList = includeInactive
 			? await planQueries.findByAppId(db, app.id)
@@ -240,7 +252,8 @@ plansRouter.get("/:planId", async (c: Context) => {
 
 		const planSettings = app.plan_settings as any;
 		// Normalize to number — old data may have stored a string (public ID) here
-		const defaultPlanId: number | null = typeof planSettings?.defaultPlanId === "number" ? planSettings.defaultPlanId : null;
+		const defaultPlanId: number | null =
+			typeof planSettings?.defaultPlanId === "number" ? planSettings.defaultPlanId : null;
 
 		const planPrices = await priceQueries.findActiveByPlanId(db, plan.id);
 
@@ -311,7 +324,8 @@ plansRouter.patch("/:planId", async (c: Context) => {
 			// Clear defaultPlanId only if this plan was the current default
 			const planSettings = app.plan_settings as any;
 			// Normalize to number to handle old string data
-			const currentDefaultId = typeof planSettings?.defaultPlanId === "number" ? planSettings.defaultPlanId : null;
+			const currentDefaultId =
+				typeof planSettings?.defaultPlanId === "number" ? planSettings.defaultPlanId : null;
 			if (currentDefaultId === updatedPlan.id) {
 				await appQueries.updatePlanSettings(db, app.id, { defaultPlanId: null });
 			}
@@ -331,11 +345,17 @@ plansRouter.patch("/:planId", async (c: Context) => {
 			ip_address: c.req.header("X-Forwarded-For") || c.req.header("X-Real-IP") || null,
 		});
 
-		const updatedDefaultPlanId = validated.isDefault === true
-			? updatedPlan.id
-			: validated.isDefault === false && (typeof (app.plan_settings as any)?.defaultPlanId === "number" ? (app.plan_settings as any).defaultPlanId : null) === updatedPlan.id
-				? null
-				: typeof (app.plan_settings as any)?.defaultPlanId === "number" ? (app.plan_settings as any).defaultPlanId : null;
+		const updatedDefaultPlanId =
+			validated.isDefault === true
+				? updatedPlan.id
+				: validated.isDefault === false &&
+						(typeof (app.plan_settings as any)?.defaultPlanId === "number"
+							? (app.plan_settings as any).defaultPlanId
+							: null) === updatedPlan.id
+					? null
+					: typeof (app.plan_settings as any)?.defaultPlanId === "number"
+						? (app.plan_settings as any).defaultPlanId
+						: null;
 
 		// Fire outbound webhook event
 		await fireWebhookEvent(db, app.id, "plan.updated", {

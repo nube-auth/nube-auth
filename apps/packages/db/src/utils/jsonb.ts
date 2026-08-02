@@ -1,6 +1,6 @@
 import type { ColumnBaseConfig } from "drizzle-orm";
-import type { PgColumn, PgTable } from "drizzle-orm/pg-core";
 import { SQL, StringChunk, sql } from "drizzle-orm";
+import type { PgColumn, PgTable } from "drizzle-orm/pg-core";
 
 /**
  * Type utilities for type-safe nested path access in JSONB columns
@@ -26,7 +26,10 @@ import { SQL, StringChunk, sql } from "drizzle-orm";
  */
 type NestedKeyOf<ObjectType> = {
 	[Key in keyof ObjectType & (number | string)]: ObjectType[Key] extends Array<infer ArrayType>
-		? `${Key}.${number}` | `${Key}` | (ArrayType extends object ? `${Key}.${number}.${NestedKeyOf<ArrayType>}` : never)
+		?
+				| `${Key}.${number}`
+				| `${Key}`
+				| (ArrayType extends object ? `${Key}.${number}.${NestedKeyOf<ArrayType>}` : never)
 		: ObjectType[Key] extends object
 			? `${Key}.${NestedKeyOf<ObjectType[Key]>}` | `${Key}`
 			: `${Key}`;
@@ -59,11 +62,8 @@ export type AtPath<T, Path extends string> = _AtPath<T, Path>;
 /**
  * Extract the data type from a PgColumn with JSONB
  */
-type ExtractJsonbData<T> = T extends PgColumn<infer Config, any, any>
-	? Config extends { data: infer Data }
-		? Data
-		: never
-	: never;
+type ExtractJsonbData<T> =
+	T extends PgColumn<infer Config, any, any> ? (Config extends { data: infer Data } ? Data : never) : never;
 
 /**
  * Generic JSONB field extractor - creates SQL for accessing nested JSONB paths
@@ -81,10 +81,7 @@ type ExtractJsonbData<T> = T extends PgColumn<infer Config, any, any>
 export function jsonbField<
 	TColumn extends PgColumn<ColumnBaseConfig<"json", "PgJsonb">, any, any>,
 	TPath extends NestedKeyOf<ExtractJsonbData<TColumn>>, // Used for type inference
->(
-	column: TColumn,
-	path: TPath,
-): SQL<AtPath<ExtractJsonbData<TColumn>, TPath>> {
+>(column: TColumn, path: TPath): SQL<AtPath<ExtractJsonbData<TColumn>, TPath>> {
 	const pathParts = path.split(".");
 	let sql_str = "";
 
@@ -112,7 +109,7 @@ interface JsonbUpdateOp<T = any> {
 
 // ── Path Validation ─────────────────────────────────────────────────────────────
 
-const PATH_PART_REGEX = /^[a-zA-Z0-9_\-]+$/;
+const PATH_PART_REGEX = /^[a-zA-Z0-9_-]+$/;
 
 function validatePathPart(part: string, context: string): void {
 	if (!PATH_PART_REGEX.test(part)) {
@@ -145,9 +142,7 @@ function validatePath(path: string, context: string): string[] {
  * // Generates: jsonb_set(security_settings, '{redirectUris}', to_jsonb(["new.com"]))
  * ```
  */
-export function buildJsonbSetClause<
-	TColumn extends PgColumn<ColumnBaseConfig<"json", "PgJsonb">, any, any>,
->(
+export function buildJsonbSetClause<TColumn extends PgColumn<ColumnBaseConfig<"json", "PgJsonb">, any, any>>(
 	column: TColumn,
 	operation: JsonbUpdateOp,
 ): SQL {
@@ -176,9 +171,7 @@ export function buildJsonbSetClause<
  * // Generates: security_settings #- '{oauth}'
  * ```
  */
-export function buildJsonbDeleteClause<
-	TColumn extends PgColumn<ColumnBaseConfig<"json", "PgJsonb">, any, any>,
->(
+export function buildJsonbDeleteClause<TColumn extends PgColumn<ColumnBaseConfig<"json", "PgJsonb">, any, any>>(
 	column: TColumn,
 	path: string,
 ): SQL {
@@ -245,7 +238,7 @@ export class JsonbUpdateChain<
 
 	/**
 	 * Add a set operation for a specific path
-	 * 
+	 *
 	 * ⚠️ Warning: Path cannot contain numeric segments (array indices).
 	 * Numeric indices like "redirectUris.0" will not update array elements safely.
 	 * Instead, replace the entire array atomically:
@@ -261,11 +254,11 @@ export class JsonbUpdateChain<
 		if (hasNumericSegment) {
 			throw new Error(
 				`Cannot update array element by index: "${path}". ` +
-				`Array mutations are unsafe in JSONB. ` +
-				`Replace the entire array instead: .set("${segments[0]}", [...])`
+					`Array mutations are unsafe in JSONB. ` +
+					`Replace the entire array instead: .set("${segments[0]}", [...])`,
 			);
 		}
-		
+
 		this.operations.push({ path, value });
 		return this;
 	}
@@ -273,11 +266,11 @@ export class JsonbUpdateChain<
 	/**
 	 * Delete a key or subtree from a specific path
 	 * Uses PostgreSQL #- operator atomically
-	 * 
+	 *
 	 * ⚠️ Warning: This removes the key entirely, including nested objects.
 	 * For arrays, this is a footgun - it will shift array indices.
 	 * Use setArrayIndex(path, index, null) for array elements instead.
-	 * 
+	 *
 	 * @example
 	 * ```typescript
 	 * chain.delete("oauth.github")  // Remove entire GitHub config
@@ -291,11 +284,11 @@ export class JsonbUpdateChain<
 		if (hasNumericSegment) {
 			throw new Error(
 				`Cannot delete array element by index: "${path}". ` +
-				`Array mutations are unsafe in JSONB. ` +
-				`Use setArrayIndex(path, index, null) or rebuild the array instead.`
+					`Array mutations are unsafe in JSONB. ` +
+					`Use setArrayIndex(path, index, null) or rebuild the array instead.`,
 			);
 		}
-		
+
 		this.deleteOps.push(path);
 		return this;
 	}
@@ -329,11 +322,11 @@ export class JsonbUpdateChain<
 
 		// Apply all delete operations last
 		for (const path of this.deleteOps) {
-			const pathArray = path.split(".").map((p) => `"${p}"`).join(",");
-			currentExpr = new SQL([
-				currentExpr,
-				new StringChunk(` #- '{${pathArray}}'`),
-			]);
+			const pathArray = path
+				.split(".")
+				.map((p) => `"${p}"`)
+				.join(",");
+			currentExpr = new SQL([currentExpr, new StringChunk(` #- '{${pathArray}}'`)]);
 		}
 
 		return currentExpr as SQL;
@@ -343,16 +336,16 @@ export class JsonbUpdateChain<
 /**
  * Factory function to create a JSONB update chain
  */
-export function createJsonbUpdateChain<
-	TColumn extends PgColumn<ColumnBaseConfig<"json", "PgJsonb">, any, any>,
->(column: TColumn): JsonbUpdateChain<TColumn> {
+export function createJsonbUpdateChain<TColumn extends PgColumn<ColumnBaseConfig<"json", "PgJsonb">, any, any>>(
+	column: TColumn,
+): JsonbUpdateChain<TColumn> {
 	return new JsonbUpdateChain(column);
 }
 
 /**
  * Atomic JSONB update using PostgreSQL operators
  * No read-modify-write cycle - entirely database-side
- * 
+ *
  * @deprecated - Use query helpers (appQueries.*) or individual functions directly
  *
  * Usage in query helpers:
@@ -387,8 +380,7 @@ export function atomicJsonbUpdate<
 ) {
 	return {
 		merge: (partialData: Record<string, any>) => buildJsonbMergeClause(column, partialData),
-		set: (path: string, value: any) =>
-			buildJsonbSetClause(column, { path, value }),
+		set: (path: string, value: any) => buildJsonbSetClause(column, { path, value }),
 		chain: () => createJsonbUpdateChain(column),
 	};
 }
@@ -404,10 +396,7 @@ export function atomicJsonbUpdate<
  * const merged = buildJsonbMergeClause(apps.security_settings, validatedSettings);
  * ```
  */
-export function validateAndBuildJsonbUpdate<T>(
-	data: unknown,
-	schema: { parse: (data: unknown) => T },
-): T {
+export function validateAndBuildJsonbUpdate<T>(data: unknown, schema: { parse: (data: unknown) => T }): T {
 	// Schema will throw on validation error
 	return schema.parse(data);
 }

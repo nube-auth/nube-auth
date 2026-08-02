@@ -1,20 +1,8 @@
+import { Button, Card, CardBody, Field, Heading, Input, Label, Text, Textarea } from "@nube-auth/components";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCreateProject } from "../hooks/api";
 import { IconPicker } from "../components/IconPicker";
-import {
-	Button,
-	Card,
-	CardBody,
-	CardHeader,
-	CardTitle,
-	Field,
-	Heading,
-	Input,
-	Label,
-	Text,
-	Textarea,
-} from "@nube-auth/components";
+import { useCreateProject } from "../hooks/api";
 
 export function CreateProjectPage() {
 	const navigate = useNavigate();
@@ -120,9 +108,7 @@ export function CreateProjectPage() {
 								onChange={(e) => setFormData({ ...formData, description: e.target.value })}
 								rows={4}
 							/>
-							<Text className="text-muted mt-2">
-								You can change this anytime in project settings.
-							</Text>
+							<Text className="text-muted mt-2">You can change this anytime in project settings.</Text>
 						</Field>
 						{/* Action Buttons */}
 						<div className="flex items-center gap-3 pt-6">

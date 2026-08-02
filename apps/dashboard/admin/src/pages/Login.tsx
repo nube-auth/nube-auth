@@ -1,9 +1,9 @@
+import { AuthLoginCard } from "@nube-auth/components";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { pingpong } from "../lib/pingpong";
-import { useMe } from "../hooks/api";
-import { AuthLoginCard } from "@nube-auth/components";
 import config from "../config";
+import { useMe } from "../hooks/api";
+import { pingpong } from "../lib/pingpong";
 
 type AuthStatus = "idle" | "checking" | "redirecting" | "processing" | "error";
 

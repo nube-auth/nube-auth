@@ -1,5 +1,5 @@
-import { Component, type ErrorInfo, type ReactNode } from "react";
 import { Alert } from "@nube-auth/components";
+import { Component, type ErrorInfo, type ReactNode } from "react";
 
 interface Props {
 	children: ReactNode;

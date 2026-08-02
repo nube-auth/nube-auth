@@ -5,9 +5,7 @@ import { OTP_LENGTH } from "@nube-auth/shared";
  * Generate a cryptographically secure random 6-digit OTP
  */
 export function generateOTP(): string {
-	return crypto.randomInt(0, 1000000)
-		.toString()
-		.padStart(OTP_LENGTH, "0");
+	return crypto.randomInt(0, 1000000).toString().padStart(OTP_LENGTH, "0");
 }
 
 /**

@@ -1,40 +1,39 @@
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
 import {
+	Alert,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
+	Button,
+	Chip,
+	DataTable,
+	DataTableRow,
+	Dialog,
+	DialogBody,
+	DialogFooter,
+	DialogHeader,
+	DialogPopup,
+	DialogTitle,
+	EmptyState,
+	Heading,
 	Icon,
 	IconType,
 	Spinner,
-	Alert,
-	Heading,
-	Text,
-	Button,
-	Chip,
-	EmptyState,
-	Dialog,
-	DialogPopup,
-	DialogHeader,
-	DialogTitle,
-	DialogBody,
-	DialogFooter,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbButton,
-	BreadcrumbSeparator,
-	DataTable,
-	DataTableRow,
-	TableHeader,
-	TableHead,
 	TableBody,
 	TableCell,
+	TableHead,
+	TableHeader,
+	Text,
 } from "@nube-auth/components";
+import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { InviteTeamMemberModal } from "../components/InviteTeamMemberModal";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
 import {
-	useMe,
 	useCancelInvitation,
+	useMe,
 	useProject,
 	useProjectInvitations,
 	useProjectMembers,

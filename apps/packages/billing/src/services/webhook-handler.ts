@@ -1,6 +1,6 @@
 /**
  * Webhook Handler Service
- * 
+ *
  * Processes payment provider webhooks and creates database records.
  * Iterates through all active provider configs for the given provider
  * and attempts verification with each until one succeeds.
@@ -10,8 +10,8 @@ import { getDb, paymentProviderConfigQueries } from "@nube-auth/db";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import { createProviderAdapter } from "../adapters/index.js";
 import { decryptProviderCredentials } from "../encryption.js";
-import { processWebhookEvent } from "./webhook-processor.js";
 import { WebhookLoggingService } from "./webhook-logging.js";
+import { processWebhookEvent } from "./webhook-processor.js";
 
 const log = createLogger("webhook-handler");
 
@@ -76,20 +76,25 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 						webhookSecret: providerConfig.webhook_secret,
 						environment: providerConfig.environment === "production" ? "live_mode" : "test_mode",
 					};
-					log.warn({ configId: providerConfig.public_id }, "Failed to decrypt credentials, using Dodo webhook secret fallback");
+					log.warn(
+						{ configId: providerConfig.public_id },
+						"Failed to decrypt credentials, using Dodo webhook secret fallback",
+					);
 				} else {
-				log.warn(
-					{ err: serializeError(error as Error), configId: providerConfig.public_id },
-					"Failed to decrypt credentials, skipping config"
-				);
-				continue;
+					log.warn(
+						{ err: serializeError(error as Error), configId: providerConfig.public_id },
+						"Failed to decrypt credentials, skipping config",
+					);
+					continue;
 				}
 			}
 
 			// Add environment field for Dodo
 			if (providerConfig.provider === "dodo" && providerConfig.environment) {
-				(decryptedCredentials as any).environment = providerConfig.environment === "production" ? "live_mode" : "test_mode";
-				(decryptedCredentials as any).webhookSecret = providerConfig.webhook_secret || (decryptedCredentials as any).webhookSecret;
+				(decryptedCredentials as any).environment =
+					providerConfig.environment === "production" ? "live_mode" : "test_mode";
+				(decryptedCredentials as any).webhookSecret =
+					providerConfig.webhook_secret || (decryptedCredentials as any).webhookSecret;
 			}
 
 			const adapter = createProviderAdapter(providerConfig.provider, decryptedCredentials);
@@ -107,7 +112,10 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 				continue;
 			}
 
-			log.info({ eventType: event.type, eventId: event.id, configId: providerConfig.public_id }, "Webhook verified");
+			log.info(
+				{ eventType: event.type, eventId: event.id, configId: providerConfig.public_id },
+				"Webhook verified",
+			);
 
 			await WebhookLoggingService.markProcessingStarted(webhookLogId ?? 0, {
 				eventType: event.type,
@@ -122,11 +130,11 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 			if (event.id) {
 				const alreadyProcessed = await WebhookLoggingService.isEventProcessed(params.provider, event.id);
 				if (alreadyProcessed) {
-					log.info({ eventId: event.id, provider: params.provider }, "Webhook event already processed, skipping");
-					await WebhookLoggingService.markSkipped(
-						webhookLogId ?? 0,
-						`Duplicate event skipped: ${event.id}`,
+					log.info(
+						{ eventId: event.id, provider: params.provider },
+						"Webhook event already processed, skipping",
 					);
+					await WebhookLoggingService.markSkipped(webhookLogId ?? 0, `Duplicate event skipped: ${event.id}`);
 					return true;
 				}
 			}
@@ -167,7 +175,7 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 					transactionId: paymentDetails.transactionId,
 					status: paymentDetails.status,
 				},
-				"Webhook event processed successfully"
+				"Webhook event processed successfully",
 			);
 
 			return true;
@@ -176,7 +184,7 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 		// None of the configs verified the webhook
 		log.warn(
 			{ provider: params.provider, configCount: configs.length },
-			"Webhook verification failed for all provider configs"
+			"Webhook verification failed for all provider configs",
 		);
 		await WebhookLoggingService.markSignatureFailed(
 			webhookLogId ?? 0,

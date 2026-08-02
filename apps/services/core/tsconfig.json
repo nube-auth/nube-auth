@@ -1,5 +1,4 @@
 {
-	"extends": "../../../tsconfig.json",
 	"compilerOptions": {
 		/* Strict mode */
 		"strict": true,
@@ -10,7 +9,8 @@
 		"noUncheckedIndexedAccess": true,
 		"noImplicitOverride": true,
 		"exactOptionalPropertyTypes": true,
-		"forceConsistentCasingInFileNames": true
+		"forceConsistentCasingInFileNames": true,
+		"skipLibCheck": true
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "dist", "**/*.test.ts"]

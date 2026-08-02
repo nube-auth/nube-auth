@@ -92,9 +92,7 @@ export function rateLimitMiddleware(options: RateLimitOptions) {
 		} catch (error) {
 			// Fail closed on sensitive auth/email endpoints to prevent brute force
 			const path = c.req.path;
-			const isSensitive = path.startsWith("/v1/auth") ||
-				path.startsWith("/v1/email") ||
-				path.includes("/login");
+			const isSensitive = path.startsWith("/v1/auth") || path.startsWith("/v1/email") || path.includes("/login");
 
 			if (isSensitive) {
 				log.error({ err: error, path }, "Rate limit Redis failure on auth endpoint — blocking request");

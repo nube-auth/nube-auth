@@ -1,7 +1,3 @@
-import { useState } from "react";
-import { useInviteTeamMember } from "../hooks/api";
-import { Select } from "./Select";
-import { useToast } from "./Toast";
 import {
 	Button,
 	Dialog,
@@ -13,6 +9,10 @@ import {
 	Input,
 	Label,
 } from "@nube-auth/components";
+import { useState } from "react";
+import { useInviteTeamMember } from "../hooks/api";
+import { Select } from "./Select";
+import { useToast } from "./Toast";
 
 interface InviteTeamMemberModalProps {
 	projectId: string;
@@ -63,7 +63,9 @@ export function InviteTeamMemberModal({ projectId, onClose }: InviteTeamMemberMo
 
 					<form id="invite-team-member" onSubmit={handleSubmit}>
 						<div className="mb-5">
-							<Label htmlFor="email" className="font-semibold">Email Address *</Label>
+							<Label htmlFor="email" className="font-semibold">
+								Email Address *
+							</Label>
 							<Input
 								id="email"
 								type="email"
@@ -75,7 +77,9 @@ export function InviteTeamMemberModal({ projectId, onClose }: InviteTeamMemberMo
 						</div>
 
 						<div className="mb-7">
-							<Label htmlFor="role" className="font-semibold">Role *</Label>
+							<Label htmlFor="role" className="font-semibold">
+								Role *
+							</Label>
 							<Select
 								value={role}
 								onChange={(value) => setRole(value)}
@@ -85,18 +89,14 @@ export function InviteTeamMemberModal({ projectId, onClose }: InviteTeamMemberMo
 								]}
 							/>
 							<p className="text-xs mt-1.5" style={{ color: "var(--dimmed)" }}>
-								<strong>Admin:</strong> Can manage apps, users, and invite members. <strong>Member:</strong> Read-only access.
+								<strong>Admin:</strong> Can manage apps, users, and invite members.{" "}
+								<strong>Member:</strong> Read-only access.
 							</p>
 						</div>
 					</form>
 				</DialogBody>
 				<DialogFooter>
-					<Button
-						type="button"
-						variant="outline"
-						onClick={onClose}
-						disabled={inviteMutation.isPending}
-					>
+					<Button type="button" variant="outline" onClick={onClose} disabled={inviteMutation.isPending}>
 						Cancel
 					</Button>
 					<Button type="submit" form="invite-team-member" disabled={inviteMutation.isPending}>

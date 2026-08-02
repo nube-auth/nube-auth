@@ -4,21 +4,10 @@
  * Future-ready for RabbitMQ migration
  */
 
-import { Queue, Worker, type Job } from "bullmq";
+import { type Job, Queue, Worker } from "bullmq";
 import Redis from "ioredis";
-import type {
-	QueueName,
-	AllJobData,
-	JobResult,
-	WorkerOptions,
-	QueueConnectionOptions,
-} from "./types";
-import {
-	DEFAULT_REDIS_CONFIG,
-	JOB_RETRY_CONFIG,
-	JOB_TIMEOUT_CONFIG,
-	DEFAULT_WORKER_OPTIONS,
-} from "./constants";
+import { DEFAULT_REDIS_CONFIG, DEFAULT_WORKER_OPTIONS, JOB_RETRY_CONFIG, JOB_TIMEOUT_CONFIG } from "./constants";
+import type { AllJobData, JobResult, QueueConnectionOptions, QueueName, WorkerOptions } from "./types";
 
 /**
  * Queue client wrapper
@@ -41,9 +30,7 @@ export class QueueClient {
 	/**
 	 * Get or create a queue by name
 	 */
-	public getQueue<T extends AllJobData = AllJobData>(
-		queueName: QueueName | string
-	): Queue<T> {
+	public getQueue<T extends AllJobData = AllJobData>(queueName: QueueName | string): Queue<T> {
 		if (!this.queues.has(queueName)) {
 			const queue = new Queue<T>(queueName, {
 				connection: this.redisConnection,
@@ -79,7 +66,7 @@ export class QueueClient {
 			jobId?: string;
 			removeOnComplete?: boolean | { age: number };
 			removeOnFail?: boolean | { age: number };
-		}
+		},
 	): Promise<Job<T>> {
 		const queue = this.getQueue<T>(queueName);
 		const retryConfig = (JOB_RETRY_CONFIG as any)[queueName] || {
@@ -100,7 +87,7 @@ export class QueueClient {
 	 */
 	public async addJobs<T extends AllJobData = AllJobData>(
 		queueName: QueueName | string,
-		jobs: Array<{ data: T; options?: any }>
+		jobs: Array<{ data: T; options?: any }>,
 	): Promise<Job<T>[]> {
 		const queue = this.getQueue<T>(queueName);
 		const retryConfig = (JOB_RETRY_CONFIG as any)[queueName] || {
@@ -115,8 +102,8 @@ export class QueueClient {
 					backoff: retryConfig.backoff,
 					timeout: (JOB_TIMEOUT_CONFIG as any)[queueName] || 30000,
 					...job.options,
-				})
-			)
+				}),
+			),
 		);
 	}
 
@@ -125,7 +112,7 @@ export class QueueClient {
 	 */
 	public async getJob<T extends AllJobData = AllJobData>(
 		queueName: QueueName | string,
-		jobId: string
+		jobId: string,
 	): Promise<Job<T> | undefined> {
 		const queue = this.getQueue<T>(queueName);
 		return queue.getJob(jobId);
@@ -170,15 +157,11 @@ export class QueueClient {
 		options?: {
 			status?: "completed" | "failed" | "delayed" | "active" | "wait";
 			olderThan?: number;
-		}
+		},
 	): Promise<string[]> {
 		const queue = this.getQueue(queueName);
 
-		return queue.clean(
-			options?.olderThan || 0,
-			10000,
-			options?.status || "completed"
-		);
+		return queue.clean(options?.olderThan || 0, 10000, options?.status || "completed");
 	}
 
 	/**
@@ -196,9 +179,7 @@ export class QueueClient {
 	 * Close all queues
 	 */
 	public async closeAllQueues(): Promise<void> {
-		const promises = Array.from(this.queues.keys()).map((name) =>
-			this.closeQueue(name)
-		);
+		const promises = Array.from(this.queues.keys()).map((name) => this.closeQueue(name));
 		await Promise.all(promises);
 	}
 
@@ -228,10 +209,7 @@ export class QueueClient {
 		try {
 			if (this.redisConnection.status !== "ready") {
 				await new Promise<void>((resolve, reject) => {
-					const timer = setTimeout(
-						() => reject(new Error("Redis connection timeout")),
-						timeoutMs,
-					);
+					const timer = setTimeout(() => reject(new Error("Redis connection timeout")), timeoutMs);
 					this.redisConnection.once("ready", () => {
 						clearTimeout(timer);
 						resolve();
@@ -273,7 +251,7 @@ export class WorkerClient {
 	public createWorker<T extends AllJobData = AllJobData>(
 		queueName: QueueName | string,
 		processor: (job: Job<T>) => Promise<JobResult>,
-		options?: Partial<WorkerOptions>
+		options?: Partial<WorkerOptions>,
 	): Worker<T, JobResult> {
 		const workerOptions = {
 			...DEFAULT_WORKER_OPTIONS,
@@ -306,10 +284,7 @@ export class WorkerClient {
 		});
 
 		worker.on("failed", (job: Job | undefined, err: Error) => {
-			console.error(
-				`[Worker] ${queueName} job ${job?.id} failed:`,
-				err.message
-			);
+			console.error(`[Worker] ${queueName} job ${job?.id} failed:`, err.message);
 		});
 
 		worker.on("completed", (job: Job) => {
@@ -343,9 +318,7 @@ export class WorkerClient {
 	 * Close all workers
 	 */
 	public async closeAllWorkers(): Promise<void> {
-		const promises = Array.from(this.workers.keys()).map((name) =>
-			this.closeWorker(name)
-		);
+		const promises = Array.from(this.workers.keys()).map((name) => this.closeWorker(name));
 		await Promise.all(promises);
 	}
 

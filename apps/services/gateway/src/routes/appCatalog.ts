@@ -23,10 +23,10 @@
  *   Authorization: Bearer <NUBE_APP_SECRET>
  */
 
-import { Hono } from "hono";
-import { getDb, planQueries, priceQueries, userQueries, licenseQueries, subscriptionQueries, appQueries } from "@nube-auth/db";
+import { getDb, licenseQueries, planQueries, priceQueries, subscriptionQueries, userQueries } from "@nube-auth/db";
 import { createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
+import { Hono } from "hono";
 import { appSecretMiddleware } from "../middleware/appSecret.js";
 
 const log = createLogger("app-catalog-routes");
@@ -167,13 +167,10 @@ appCatalogRoutes.get("/:appId/users", async (c: Context) => {
 		const resolvedApp = c.get("resolvedApp") as { id: number; public_id: string };
 
 		const limitRaw = Number(c.req.query("limit") ?? "100");
-		const limit = Number.isFinite(limitRaw) && Number.isInteger(limitRaw)
-			? Math.min(Math.max(1, limitRaw), 500)
-			: 100;
+		const limit =
+			Number.isFinite(limitRaw) && Number.isInteger(limitRaw) ? Math.min(Math.max(1, limitRaw), 500) : 100;
 		const pageRaw = Number(c.req.query("page") ?? "1");
-		const page = Number.isFinite(pageRaw) && Number.isInteger(pageRaw) && pageRaw > 0
-			? pageRaw
-			: 1;
+		const page = Number.isFinite(pageRaw) && Number.isInteger(pageRaw) && pageRaw > 0 ? pageRaw : 1;
 		const offset = (page - 1) * limit;
 
 		const db = getDb();
@@ -215,9 +212,7 @@ appCatalogRoutes.get("/:appId/users", async (c: Context) => {
 					source: license.source ?? null,
 					maxActivations: license.max_activations ?? null,
 					validFrom: Math.floor(license.created_at.getTime() / 1000),
-					validUntil: license.valid_until
-						? Math.floor(new Date(license.valid_until).getTime() / 1000)
-						: null,
+					validUntil: license.valid_until ? Math.floor(new Date(license.valid_until).getTime() / 1000) : null,
 					plan: plan
 						? {
 								planId: plan.public_id,

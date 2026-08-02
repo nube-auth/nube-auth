@@ -1,24 +1,23 @@
-import { useState } from "react";
 import {
-	Icon,
-	IconType,
-	Heading,
-	Text,
 	Button,
-	Chip,
 	Card,
 	CardBody,
+	Chip,
 	Dialog,
-	DialogTrigger,
-	DialogPopup,
-	DialogHeader,
-	DialogTitle,
 	DialogBody,
 	DialogFooter,
-	Label,
+	DialogHeader,
+	DialogPopup,
+	DialogTitle,
+	Heading,
+	Icon,
+	IconType,
 	Input,
+	Label,
+	Text,
 	Textarea,
 } from "@nube-auth/components";
+import { useState } from "react";
 import { useCreateProject } from "../hooks/api";
 
 export function OnboardingPage() {

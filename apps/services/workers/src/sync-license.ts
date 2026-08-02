@@ -9,12 +9,11 @@
  * - Edge cases where webhook processing partially succeeded
  */
 
-import { createLogger, serializeError } from "@nube-auth/shared";
-import type { Worker } from "bullmq";
-import { QueueClient } from "@nube-auth/queue";
-import { getDb, eq, purchases, plans, licenses } from "@nube-auth/db";
+import { eq, getDb, licenseQueries, purchases } from "@nube-auth/db";
 import { prices as pricesTable } from "@nube-auth/db/schema";
-import { licenseQueries } from "@nube-auth/db";
+import { QueueClient } from "@nube-auth/queue";
+import { createLogger } from "@nube-auth/shared";
+import type { Worker } from "bullmq";
 
 const log = createLogger("sync-license-worker");
 
@@ -32,19 +31,14 @@ export async function setupSyncLicenseWorker(): Promise<Worker<SyncLicenseJobDat
 	const queueClient = new QueueClient();
 
 	// Dynamically import licenseManager to avoid circular dependencies
-	const { licenseManager } = await import(
-		"@nube-auth/billing"
-	);
+	const { licenseManager } = await import("@nube-auth/billing");
 
 	return new BullWorker<SyncLicenseJobData>(
 		"SYNC_LICENSE",
 		async (job) => {
 			const { purchaseId, appId, subjectType, subjectId } = job.data;
 
-			log.info(
-				{ jobId: job.id, purchaseId, appId, subjectType, subjectId },
-				"Syncing license for purchase",
-			);
+			log.info({ jobId: job.id, purchaseId, appId, subjectType, subjectId }, "Syncing license for purchase");
 
 			const db = getDb();
 
@@ -60,10 +54,7 @@ export async function setupSyncLicenseWorker(): Promise<Worker<SyncLicenseJobDat
 			}
 
 			if (purchase.status !== "completed") {
-				log.warn(
-					{ purchaseId, status: purchase.status },
-					"Skipping license sync — purchase not completed",
-				);
+				log.warn({ purchaseId, status: purchase.status }, "Skipping license sync — purchase not completed");
 				return { success: true, skipped: true, reason: "purchase_not_completed" };
 			}
 
@@ -80,13 +71,14 @@ export async function setupSyncLicenseWorker(): Promise<Worker<SyncLicenseJobDat
 				throw new Error(`Price not found for purchase: ${purchaseId}`);
 			}
 
-		// 3. Calculate expiry — one_time purchases are always permanent (2099-12-31)
-		const ONE_TIME_EXPIRY = new Date('2099-12-31T23:59:59.000Z');
-		const validUntil: Date = price.billing_type === 'one_time'
-			? ONE_TIME_EXPIRY
-			: price.duration_days
-				? new Date(Date.now() + price.duration_days * 24 * 60 * 60 * 1000)
-				: ONE_TIME_EXPIRY;
+			// 3. Calculate expiry — one_time purchases are always permanent (2099-12-31)
+			const ONE_TIME_EXPIRY = new Date("2099-12-31T23:59:59.000Z");
+			const validUntil: Date =
+				price.billing_type === "one_time"
+					? ONE_TIME_EXPIRY
+					: price.duration_days
+						? new Date(Date.now() + price.duration_days * 24 * 60 * 60 * 1000)
+						: ONE_TIME_EXPIRY;
 
 			// 4. Check if license already exists (idempotent)
 			const existingLicense = await licenseQueries.findByUserAndApp(db, subjectId, appId);

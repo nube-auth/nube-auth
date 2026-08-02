@@ -1,1 +1,1 @@
-export { ProfileHeader, type ProfileHeaderProps } from './profile-header';
+export { ProfileHeader, type ProfileHeaderProps } from "./profile-header";

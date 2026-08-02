@@ -10,7 +10,7 @@
 			"dependsOn": ["^build"]
 		},
 		"build": {
-			"dependsOn": ["^build", "typecheck"],
+			"dependsOn": ["^build"],
 			"outputs": ["dist/**", ".next/**", ".astro/**"],
 			"cache": true
 		},
@@ -22,7 +22,6 @@
 			"cache": true
 		},
 		"typecheck": {
-			"dependsOn": ["^build"],
 			"cache": true
 		},
 		"format": {

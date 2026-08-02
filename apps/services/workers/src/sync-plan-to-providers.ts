@@ -1,6 +1,6 @@
 /**
  * Plan Sync Worker (v2)
- * 
+ *
  * Syncs plan prices to all configured payment providers:
  * 1. Creates product in provider (Stripe, LemonSqueezy, etc.)
  * 2. Creates provider prices for each active price
@@ -8,14 +8,11 @@
  * 4. Implements retry logic with exponential backoff
  */
 
-import { getDb, planQueries, appQueries, priceQueries, priceProviderRefQueries, prices } from "@nube-auth/db";
+import { createProviderAdapter, decryptProviderCredentials } from "@nube-auth/billing";
+import { appQueries, eq, getDb, planQueries, priceProviderRefQueries, priceQueries, prices } from "@nube-auth/db";
 import { payment_provider_configs } from "@nube-auth/db/schema";
-import { eq } from "@nube-auth/db";
-import { createId } from "@nube-auth/shared";
-import { createLogger, serializeError } from "@nube-auth/shared";
 import { QueueClient } from "@nube-auth/queue";
-import { createProviderAdapter } from "@nube-auth/billing";
-import { decryptProviderCredentials } from "@nube-auth/billing";
+import { createId, createLogger, serializeError } from "@nube-auth/shared";
 
 const log = createLogger("sync-plan-worker");
 
@@ -107,9 +104,16 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 
 			// Idempotency: only create provider resources for prices that don't already
 			// have an active mapping in price_provider_refs for this provider config.
-			const existingRefsByPriceId = new Map<number, Awaited<ReturnType<typeof priceProviderRefQueries.findByPriceAndProvider>>>();
+			const existingRefsByPriceId = new Map<
+				number,
+				Awaited<ReturnType<typeof priceProviderRefQueries.findByPriceAndProvider>>
+			>();
 			for (const priceRecord of activePrices) {
-				const existingRef = await priceProviderRefQueries.findByPriceAndProvider(db, priceRecord.id, provider.id);
+				const existingRef = await priceProviderRefQueries.findByPriceAndProvider(
+					db,
+					priceRecord.id,
+					provider.id,
+				);
 				existingRefsByPriceId.set(priceRecord.id, existingRef);
 			}
 
@@ -132,7 +136,7 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 				continue;
 			}
 
-// Decrypt credentials (supports DEK-wrapped and legacy)
+			// Decrypt credentials (supports DEK-wrapped and legacy)
 			let credentials: unknown;
 			try {
 				credentials = decryptProviderCredentials(provider);
@@ -154,105 +158,100 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 				(credentials as any).webhookSecret = provider.webhook_secret || (credentials as any).webhookSecret;
 			}
 
-		// Create adapter
-		const adapter = createProviderAdapter(provider.provider, credentials);
+			// Create adapter
+			const adapter = createProviderAdapter(provider.provider, credentials);
 
-		// ── Naming convention ─────────────────────────────────────────────────────
-		// Product:  "[App Name] — [Plan Name]"  e.g. "Pingpong — Pro"
-		// Description prefix: "[nube:<app-slug>/<plan-slug>]" for easy grepping
-		// Price label: "[Plan Name] — [Interval] ([CURRENCY] [Amount])"
-		//              e.g. "Pro — Monthly (USD 9.99)", "Pro — Lifetime (INR 4999.00)"
-		// ─────────────────────────────────────────────────────────────────────────
-		const productName = `${app.name} — ${plan.name}`;
-		const productDescription = `[nube:${app.slug}/${plan.slug}]${plan.description ? ` ${plan.description}` : ""}`;
-		const productMetadata: Record<string, string> = {
-			nube_app_id: app.public_id,
-			nube_app_slug: app.slug,
-			nube_plan_id: plan.public_id,
-			nube_plan_slug: plan.slug,
-			nube_env: provider.environment ?? "production",
-		};
+			// ── Naming convention ─────────────────────────────────────────────────────
+			// Product:  "[App Name] — [Plan Name]"  e.g. "Pingpong — Pro"
+			// Description prefix: "[nube:<app-slug>/<plan-slug>]" for easy grepping
+			// Price label: "[Plan Name] — [Interval] ([CURRENCY] [Amount])"
+			//              e.g. "Pro — Monthly (USD 9.99)", "Pro — Lifetime (INR 4999.00)"
+			// ─────────────────────────────────────────────────────────────────────────
+			const productName = `${app.name} — ${plan.name}`;
+			const productDescription = `[nube:${app.slug}/${plan.slug}]${plan.description ? ` ${plan.description}` : ""}`;
+			const productMetadata: Record<string, string> = {
+				nube_app_id: app.public_id,
+				nube_app_slug: app.slug,
+				nube_plan_id: plan.public_id,
+				nube_plan_slug: plan.slug,
+				nube_env: provider.environment ?? "production",
+			};
 
-		// Reuse the existing provider product when available (Stripe), otherwise create one.
-		// For Dodo this value is typically null because each Dodo price is its own product.
-		const existingProductId = activePrices
-			.map((p) => existingRefsByPriceId.get(p.id)?.external_product_id)
-			.find((v): v is string => typeof v === "string" && v.length > 0);
+			// Reuse the existing provider product when available (Stripe), otherwise create one.
+			// For Dodo this value is typically null because each Dodo price is its own product.
+			const existingProductId = activePrices
+				.map((p) => existingRefsByPriceId.get(p.id)?.external_product_id)
+				.find((v): v is string => typeof v === "string" && v.length > 0);
 
-		const productId = existingProductId
-			?? (
-				await adapter.createProduct({
-					name: productName,
-					description: productDescription,
-					metadata: productMetadata,
-				})
-			).productId;
-
-		if (!existingProductId) {
-			log.info(
-				{ planId, provider: provider.provider, productId },
-				"Product created in provider",
-			);
-		} else {
-			log.info(
-				{ planId, provider: provider.provider, productId },
-				"Reusing existing provider product",
-			);
-		}
-
-		const syncedPrices: Array<{ interval: string; priceId: string }> = [];
-
-		// Create provider prices only for missing refs.
-		for (const priceRecord of pricesToCreate) {
-			try {
-			const billingInterval: "month" | "year" | "one_time" =
-				priceRecord.billing_type === "one_time"
-					? "one_time"
-					: (priceRecord.interval as "month" | "year");
-
-			const intervalLabel =
-				billingInterval === "one_time"
-					? "One-time"
-					: billingInterval === "month"
-						? "Monthly"
-						: "Yearly";
-				const amountFormatted = `${priceRecord.currency.toUpperCase()} ${(priceRecord.amount_cents / 100).toFixed(2)}`;
-				const priceLabel = `${app.name} — ${plan.name} — ${intervalLabel} (${amountFormatted})`;
-
-				const providerPrice = await adapter.createPrice({
-					productId,
-					amountCents: priceRecord.amount_cents,
-					currency: priceRecord.currency,
-					interval: billingInterval,
-					label: priceLabel,
-					metadata: {
-						nube_app_id: app.public_id,
-						nube_plan_id: plan.public_id,
-						nube_price_id: priceRecord.public_id,
-						nube_env: provider.environment ?? "production",
-					},
-				});
-
-				// Store external ref in price_provider_refs (supports multiple providers per price)
-				await priceProviderRefQueries.upsert(db, {
-					public_id: createId("priceProviderRef"),
-					price_id: priceRecord.id,
-					provider_config_id: provider.id,
-					provider: provider.provider,
-					external_price_id: providerPrice.priceId,
-					external_product_id: productId !== "__dodo_no_product__" ? productId : null,
-				});
-
-				// Also keep the legacy external_price_id column in sync for backwards compatibility
-				// (queries that still use prices.external_price_id will work for single-provider setups)
-				await db
-					.update(prices)
-					.set({
-						external_provider: provider.provider,
-						external_price_id: providerPrice.priceId,
-						updated_at: new Date(),
+			const productId =
+				existingProductId ??
+				(
+					await adapter.createProduct({
+						name: productName,
+						description: productDescription,
+						metadata: productMetadata,
 					})
-					.where(eq(prices.id, priceRecord.id));
+				).productId;
+
+			if (!existingProductId) {
+				log.info({ planId, provider: provider.provider, productId }, "Product created in provider");
+			} else {
+				log.info({ planId, provider: provider.provider, productId }, "Reusing existing provider product");
+			}
+
+			const syncedPrices: Array<{ interval: string; priceId: string }> = [];
+
+			// Create provider prices only for missing refs.
+			for (const priceRecord of pricesToCreate) {
+				try {
+					const billingInterval: "month" | "year" | "one_time" =
+						priceRecord.billing_type === "one_time"
+							? "one_time"
+							: (priceRecord.interval as "month" | "year");
+
+					const intervalLabel =
+						billingInterval === "one_time"
+							? "One-time"
+							: billingInterval === "month"
+								? "Monthly"
+								: "Yearly";
+					const amountFormatted = `${priceRecord.currency.toUpperCase()} ${(priceRecord.amount_cents / 100).toFixed(2)}`;
+					const priceLabel = `${app.name} — ${plan.name} — ${intervalLabel} (${amountFormatted})`;
+
+					const providerPrice = await adapter.createPrice({
+						productId,
+						amountCents: priceRecord.amount_cents,
+						currency: priceRecord.currency,
+						interval: billingInterval,
+						label: priceLabel,
+						metadata: {
+							nube_app_id: app.public_id,
+							nube_plan_id: plan.public_id,
+							nube_price_id: priceRecord.public_id,
+							nube_env: provider.environment ?? "production",
+						},
+					});
+
+					// Store external ref in price_provider_refs (supports multiple providers per price)
+					await priceProviderRefQueries.upsert(db, {
+						public_id: createId("priceProviderRef"),
+						price_id: priceRecord.id,
+						provider_config_id: provider.id,
+						provider: provider.provider,
+						external_price_id: providerPrice.priceId,
+						external_product_id: productId !== "__dodo_no_product__" ? productId : null,
+					});
+
+					// Also keep the legacy external_price_id column in sync for backwards compatibility
+					// (queries that still use prices.external_price_id will work for single-provider setups)
+					await db
+						.update(prices)
+						.set({
+							external_provider: provider.provider,
+							external_price_id: providerPrice.priceId,
+							updated_at: new Date(),
+						})
+						.where(eq(prices.id, priceRecord.id));
 
 					log.info(
 						{
@@ -335,18 +334,13 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 			const delays = [0, 5, 30, 120, 1440]; // minutes: 0, 5min, 30min, 2hr, 24hr
 			const delayMinutes = delays[retryCount] ?? 0;
 
-			log.info(
-				{ planId, retryCount: retryCount + 1, delayMinutes },
-				"Scheduling retry for failed providers",
-			);
+			log.info({ planId, retryCount: retryCount + 1, delayMinutes }, "Scheduling retry for failed providers");
 
 			const queueClient = new QueueClient();
 			const queue = queueClient.getQueue("sync-plan");
-			await queue.add(
-				"sync-plan-to-providers",
-				{ planId, retryCount: retryCount + 1 } as any,
-				{ delay: delayMinutes * 60 * 1000 },
-			);
+			await queue.add("sync-plan-to-providers", { planId, retryCount: retryCount + 1 } as any, {
+				delay: delayMinutes * 60 * 1000,
+			});
 		} else {
 			log.error({ planId }, "Max retries reached, giving up on plan sync");
 			await sendSyncFailureNotification(plan.public_id, failedProviders);
@@ -360,25 +354,13 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 	return result;
 }
 
-async function sendSyncSuccessNotification(
-	planId: string,
-	synced: SyncResult["synced"],
-): Promise<void> {
-	log.info(
-		{ planId, providers: synced.map((s) => s.provider) },
-		"Plan sync successful - notification sent",
-	);
+async function sendSyncSuccessNotification(planId: string, synced: SyncResult["synced"]): Promise<void> {
+	log.info({ planId, providers: synced.map((s) => s.provider) }, "Plan sync successful - notification sent");
 	// TODO(@devendra): Implement actual notification (email, webhook, etc.)
 }
 
-async function sendSyncFailureNotification(
-	planId: string,
-	failed: SyncResult["failed"],
-): Promise<void> {
-	log.error(
-		{ planId, failures: failed },
-		"Plan sync failed after max retries - notification sent",
-	);
+async function sendSyncFailureNotification(planId: string, failed: SyncResult["failed"]): Promise<void> {
+	log.error({ planId, failures: failed }, "Plan sync failed after max retries - notification sent");
 	// TODO(@devendra): Implement actual notification (email, webhook, etc.)
 }
 

@@ -1,4 +1,4 @@
-import { appQueries, getDb, licenseQueries, planQueries } from "@nube-auth/db";
+import { getDb, licenseQueries, planQueries } from "@nube-auth/db";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 
@@ -16,9 +16,7 @@ function formatLicenseDTO(license: any, extras?: { app?: any; plan?: any }) {
 		appId: extras?.app?.public_id ?? null,
 		plan: extras?.plan?.name ?? "unknown",
 		status: license.status,
-		validUntil: license.valid_until
-			? new Date(license.valid_until).toISOString()
-			: null,
+		validUntil: license.valid_until ? new Date(license.valid_until).toISOString() : null,
 		createdAt: new Date(license.created_at).toISOString(),
 	};
 }

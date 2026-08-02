@@ -4,11 +4,11 @@ import type { SessionEntitlements } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
+import { ADMIN_INACTIVITY_TIMEOUT, SESSION_TTL } from "../config/constants";
 import { env } from "../config/env";
 import { coreClient } from "../lib/core-client";
-import { loggers, serializeError } from "../utils/logger";
-import { SESSION_TTL, ADMIN_INACTIVITY_TIMEOUT } from "../config/constants";
 import { ADMIN_SESSION_COOKIE, USER_SESSION_COOKIE } from "../utils/cookieNames";
+import { loggers, serializeError } from "../utils/logger";
 
 /**
  * Auth context with user and session info
@@ -108,12 +108,15 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 	const cookieValue = getCookie(c, cookieName);
 
 	if (!cookieValue) {
-		loggers.auth.warn({
-			path: c.req.path,
-			cookieName,
-			allCookies: c.req.header("cookie") || "none",
-			isAdminRoute,
-		}, "No cookie found - returning 401");
+		loggers.auth.warn(
+			{
+				path: c.req.path,
+				cookieName,
+				allCookies: c.req.header("cookie") || "none",
+				isAdminRoute,
+			},
+			"No cookie found - returning 401",
+		);
 		return c.json({ error: "Unauthorized" }, 401);
 	}
 
@@ -122,10 +125,13 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 		const sessionId = parseSessionCookie(cookieValue);
 
 		if (!sessionId) {
-			loggers.auth.error({
-				cookieValue: cookieValue ? `${cookieValue.substring(0, 20)}...` : null,
-				cookieLength: cookieValue?.length,
-			}, "Failed to parse session cookie - returning 401");
+			loggers.auth.error(
+				{
+					cookieValue: cookieValue ? `${cookieValue.substring(0, 20)}...` : null,
+					cookieLength: cookieValue?.length,
+				},
+				"Failed to parse session cookie - returning 401",
+			);
 			return c.json({ error: "Invalid session" }, 401);
 		}
 
@@ -174,14 +180,24 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 				);
 				// Clear the expired admin session
 				await sessionStore.revokeAppSession(sessionId);
-				return c.json({ error: "Admin session expired due to inactivity", code: "ADMIN_INACTIVITY_TIMEOUT" }, 401);
+				return c.json(
+					{ error: "Admin session expired due to inactivity", code: "ADMIN_INACTIVITY_TIMEOUT" },
+					401,
+				);
 			}
 
 			// Update last activity timestamp for admin sessions
-			await sessionStore.setAppSession(sessionId, appSession.userId, appSession.appId, ADMIN_INACTIVITY_TIMEOUT, {
-				...appSession.metadata,
-				lastActivityAt: Date.now(),
-			}, appSession.entitlements);
+			await sessionStore.setAppSession(
+				sessionId,
+				appSession.userId,
+				appSession.appId,
+				ADMIN_INACTIVITY_TIMEOUT,
+				{
+					...appSession.metadata,
+					lastActivityAt: Date.now(),
+				},
+				appSession.entitlements,
+			);
 		}
 
 		// Refresh gateway session TTL on access (rolling TTL for app session)

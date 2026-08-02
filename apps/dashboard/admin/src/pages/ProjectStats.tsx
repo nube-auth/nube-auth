@@ -1,17 +1,17 @@
-import { Link, useParams } from "react-router-dom";
-import { useProject, useProjectStats } from "../hooks/api";
 import {
-	Spinner,
 	Alert,
-	Text,
-	Heading,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
 	Card,
 	CardBody,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbButton,
+	Heading,
+	Spinner,
+	Text,
 } from "@nube-auth/components";
+import { Link, useParams } from "react-router-dom";
+import { useProject, useProjectStats } from "../hooks/api";
 
 export function ProjectStatsPage() {
 	const { projectId } = useParams<{ projectId: string }>();

@@ -6,12 +6,10 @@
 function getCsrfToken(): string | null {
 	const namespace = (import.meta.env.VITE_COOKIE_NAMESPACE || "").trim();
 	const cookieName = namespace ? `nube_${namespace}_csrf_token` : "nube_csrf_token";
-	const cookie = document.cookie
-		.split("; ")
-		.find((entry) => entry.startsWith(`${cookieName}=`));
+	const cookie = document.cookie.split("; ").find((entry) => entry.startsWith(`${cookieName}=`));
 
 	const token = cookie ? decodeURIComponent(cookie.slice(cookieName.length + 1)) : null;
-	
+
 	// Debug logging
 	if (import.meta.env.DEV) {
 		console.log(`[CSRF] Looking for cookie: ${cookieName}, Found:`, !!token, {
@@ -21,7 +19,7 @@ function getCsrfToken(): string | null {
 			tokenPreview: token ? token.substring(0, 20) : null,
 		});
 	}
-	
+
 	return token;
 }
 

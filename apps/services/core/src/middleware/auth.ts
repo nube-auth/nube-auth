@@ -1,7 +1,7 @@
+import { getDb, sessionQueries, userQueries } from "@nube-auth/db";
+import { createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context, Next } from "hono";
 import { getSignedCookie } from "hono/cookie";
-import { getDb, sessionQueries, userQueries } from "@nube-auth/db";
-import { createLogger, serializeError, idPatterns } from "@nube-auth/shared";
 import { env } from "../config/env";
 
 const log = createLogger("auth-middleware");
@@ -18,7 +18,7 @@ export interface AuthenticatedContext {
 /**
  * Core session validation middleware
  * Validates session from X-Nube-Session-Id header (S2S calls) or signed cookie
- * 
+ *
  * Security: Session must exist, be unexpired, and belong to a valid user
  * Tracking: https://github.com/0xdps/nube-auth/issues/42
  */
@@ -83,7 +83,10 @@ export async function authMiddleware(c: Context, next: Next): Promise<Response |
 
 		// Update last_seen_at asynchronously (don't block request)
 		sessionQueries.updateLastSeen(db, session.id, now).catch((err) => {
-			log.error({ err: serializeError(err as Error), sessionId: session.id }, "Failed to update session last_seen_at");
+			log.error(
+				{ err: serializeError(err as Error), sessionId: session.id },
+				"Failed to update session last_seen_at",
+			);
 		});
 
 		await next();

@@ -1,13 +1,13 @@
 {
-  "framework": "vite",
-  "paths": {
-    "workdir": "./src/",
-    "components": "./src/components/selia/ui",
-    "css": "./tailwind.css",
-    "utils": "./src/utils/cn.ts"
-  },
-  "imports": {
-    "utils": "../../../utils/cn",
-    "components": "@nube-auth/components/selia"
-  }
+	"framework": "vite",
+	"paths": {
+		"workdir": "./src/",
+		"components": "./src/components/selia/ui",
+		"css": "./tailwind.css",
+		"utils": "./src/utils/cn.ts"
+	},
+	"imports": {
+		"utils": "../../../utils/cn",
+		"components": "@nube-auth/components/selia"
+	}
 }

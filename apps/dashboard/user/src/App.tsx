@@ -1,22 +1,22 @@
+import { Button, Icon, IconType, Spinner, ThemeToggle, useTheme } from "@nube-auth/components";
 import type React from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
-import { Spinner, useTheme, ThemeToggle, Button, Icon, IconType } from "@nube-auth/components";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { config } from "./config";
 import { useAuth } from "./hooks/api";
-import { ErrorBoundary } from "./components/ErrorBoundary";
-import { LoginPage } from "./pages/Login";
-import { RootPage } from "./pages/Root";
 import { HomePage } from "./pages/Home";
-import { ProfilePage } from "./pages/Profile";
-import { SessionsPage } from "./pages/Sessions";
-import { SecurityPage } from "./pages/Security";
+import { LoginPage } from "./pages/Login";
 import { NotFoundPage } from "./pages/NotFound";
+import { ProfilePage } from "./pages/Profile";
+import { RootPage } from "./pages/Root";
+import { SecurityPage } from "./pages/Security";
+import { SessionsPage } from "./pages/Sessions";
 
-function ProtectedLayout({ 
-	children, 
-	theme, 
-	setTheme 
-}: { 
+function ProtectedLayout({
+	children,
+	theme,
+	setTheme,
+}: {
 	children: React.ReactNode;
 	theme: "light" | "dark" | "system";
 	setTheme: (theme: "light" | "dark" | "system") => void;
@@ -61,7 +61,7 @@ function ProtectedLayout({
 					<Button
 						variant="outline"
 						size="sm"
-						onClick={() => window.open(config.homeUrl, '_blank', 'noopener,noreferrer')}
+						onClick={() => window.open(config.homeUrl, "_blank", "noopener,noreferrer")}
 					>
 						<Icon icon={IconType.Home} size={16} />
 						Home
@@ -78,47 +78,47 @@ function ProtectedLayout({
 function App() {
 	// Initialize theme for all pages (including login)
 	const { theme, setTheme } = useTheme();
-	
+
 	return (
 		<BrowserRouter>
 			<ErrorBoundary>
-			<Routes>
-				<Route path="/login" element={<LoginPage />} />
-				<Route
-					path="/profile"
-					element={
-						<ProtectedLayout theme={theme} setTheme={setTheme}>
-							<ProfilePage />
-						</ProtectedLayout>
-					}
-				/>
-				<Route
-					path="/sessions"
-					element={
-						<ProtectedLayout theme={theme} setTheme={setTheme}>
-							<SessionsPage />
-						</ProtectedLayout>
-					}
-				/>
-				<Route
-					path="/security"
-					element={
-						<ProtectedLayout theme={theme} setTheme={setTheme}>
-							<SecurityPage />
-						</ProtectedLayout>
-					}
-				/>
-				<Route path="/" element={<RootPage />} />
-			<Route
-				path="/home"
-				element={
-					<ProtectedLayout theme={theme} setTheme={setTheme}>
-						<HomePage />
-					</ProtectedLayout>
-				}
-			/>
-				<Route path="*" element={<NotFoundPage />} />
-			</Routes>
+				<Routes>
+					<Route path="/login" element={<LoginPage />} />
+					<Route
+						path="/profile"
+						element={
+							<ProtectedLayout theme={theme} setTheme={setTheme}>
+								<ProfilePage />
+							</ProtectedLayout>
+						}
+					/>
+					<Route
+						path="/sessions"
+						element={
+							<ProtectedLayout theme={theme} setTheme={setTheme}>
+								<SessionsPage />
+							</ProtectedLayout>
+						}
+					/>
+					<Route
+						path="/security"
+						element={
+							<ProtectedLayout theme={theme} setTheme={setTheme}>
+								<SecurityPage />
+							</ProtectedLayout>
+						}
+					/>
+					<Route path="/" element={<RootPage />} />
+					<Route
+						path="/home"
+						element={
+							<ProtectedLayout theme={theme} setTheme={setTheme}>
+								<HomePage />
+							</ProtectedLayout>
+						}
+					/>
+					<Route path="*" element={<NotFoundPage />} />
+				</Routes>
 			</ErrorBoundary>
 		</BrowserRouter>
 	);

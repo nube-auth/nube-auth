@@ -159,13 +159,8 @@ export class NubeAuthClient {
 				.replace(/\+/g, "-")
 				.replace(/\//g, "_")
 				.replace(/=/g, "");
-			const hashBuffer = await crypto.subtle.digest(
-				"SHA-256",
-				new TextEncoder().encode(codeVerifier),
-			);
-			const codeChallenge = btoa(
-				String.fromCharCode(...new Uint8Array(hashBuffer)),
-			)
+			const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(codeVerifier));
+			const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(hashBuffer)))
 				.replace(/\+/g, "-")
 				.replace(/\//g, "_")
 				.replace(/=/g, "");
@@ -212,10 +207,8 @@ export class NubeAuthClient {
 			options?: { appId?: string; codeVerifier?: string } | string,
 		): Promise<TokenExchangeResult> => {
 			// Accept legacy positional string for backward compat: exchangeCode(code, appId)
-			const resolvedAppId =
-				typeof options === "string" ? options : (options?.appId ?? this.appId);
-			const codeVerifier =
-				typeof options === "object" ? options?.codeVerifier : undefined;
+			const resolvedAppId = typeof options === "string" ? options : (options?.appId ?? this.appId);
+			const codeVerifier = typeof options === "object" ? options?.codeVerifier : undefined;
 
 			if (!resolvedAppId) {
 				throw new NubeAuthError(
@@ -335,7 +328,7 @@ export class NubeAuthClient {
 				method: "GET",
 				headers: {
 					"Content-Type": "application/json",
-					"Authorization": `Bearer ${this.appSecret}`,
+					Authorization: `Bearer ${this.appSecret}`,
 				},
 				credentials: "omit" as any,
 			});
@@ -369,7 +362,7 @@ export class NubeAuthClient {
 				method: "GET",
 				headers: {
 					"Content-Type": "application/json",
-					"Authorization": `Bearer ${this.appSecret}`,
+					Authorization: `Bearer ${this.appSecret}`,
 				},
 				credentials: "omit" as any,
 			});

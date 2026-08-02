@@ -9,9 +9,9 @@
  * jobs from accumulating in the PROCESS_PAYMENT queue.
  */
 
+import { QueueClient } from "@nube-auth/queue";
 import { createLogger } from "@nube-auth/shared";
 import type { Worker } from "bullmq";
-import { QueueClient } from "@nube-auth/queue";
 
 const log = createLogger("process-payment-worker");
 

@@ -33,7 +33,7 @@ webhookRoutes.use(
 async function handleIncomingWebhook(c: Context, providerConfigPublicId?: string) {
 	try {
 		const provider = c.req.param("provider");
-		
+
 		// Get signature from various header formats used by different providers
 		// For Dodo: pack Standard Webhooks headers (webhook-id, webhook-signature, webhook-timestamp) as JSON
 		let signature: string;
@@ -44,7 +44,8 @@ async function handleIncomingWebhook(c: Context, providerConfigPublicId?: string
 				"webhook-timestamp": c.req.header("webhook-timestamp") ?? "",
 			});
 		} else {
-			signature = c.req.header("stripe-signature") || // Stripe
+			signature =
+				c.req.header("stripe-signature") || // Stripe
 				c.req.header("x-signature") || // LemonSqueezy
 				c.req.header("x-webhook-signature") || // Generic
 				c.req.header("paddle-signature") || // Paddle
@@ -134,9 +135,7 @@ async function handleIncomingWebhook(c: Context, providerConfigPublicId?: string
  * POST /v1/billing/webhooks/:provider/:configId
  * Config-scoped webhook — pins verification to a specific payment_provider_config (CFG0...).
  */
-webhookRoutes.post("/:provider/:configId", (c: Context) =>
-	handleIncomingWebhook(c, c.req.param("configId")),
-);
+webhookRoutes.post("/:provider/:configId", (c: Context) => handleIncomingWebhook(c, c.req.param("configId")));
 
 /**
  * POST /v1/billing/webhooks/:provider

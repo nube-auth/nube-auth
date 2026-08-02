@@ -3,12 +3,12 @@
  * Only for development - helps troubleshoot authentication issues
  */
 
+import { parseSessionCookie } from "@nube-auth/auth";
+import { sessionStore } from "@nube-auth/cache";
 import { createLogger } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { getCookie } from "hono/cookie";
-import { sessionStore } from "@nube-auth/cache";
-import { parseSessionCookie } from "@nube-auth/auth";
 import { ADMIN_SESSION_COOKIE, CSRF_TOKEN_COOKIE, USER_SESSION_COOKIE } from "../utils/cookieNames";
 
 const log = createLogger("debug-routes");
@@ -97,7 +97,10 @@ debugRoutes.post("/session-check", async (c: Context) => {
 			return c.json(
 				{
 					error: "No sessionCookie provided in request body",
-					example: { sessionCookie: "d558d86b5e2c753358c1d23aad3b76bc5f63ce0536941926183faad4d2159b83.f5021ec8bc9561f1511a7bd8536a32671360d2459d9ce2b5afabce946939ce3b" },
+					example: {
+						sessionCookie:
+							"d558d86b5e2c753358c1d23aad3b76bc5f63ce0536941926183faad4d2159b83.f5021ec8bc9561f1511a7bd8536a32671360d2459d9ce2b5afabce946939ce3b",
+					},
 				},
 				400,
 			);
@@ -110,7 +113,8 @@ debugRoutes.post("/session-check", async (c: Context) => {
 		if (!sessionId) {
 			return c.json({
 				error: "Failed to parse session cookie",
-				details: "Cookie signature validation failed - cookie may be corrupted or from a different session secret",
+				details:
+					"Cookie signature validation failed - cookie may be corrupted or from a different session secret",
 				cookie: `${sessionCookie.substring(0, 20)}...`,
 			});
 		}
@@ -153,7 +157,8 @@ debugRoutes.post("/session-check", async (c: Context) => {
 		if (!coreSession) {
 			return c.json({
 				error: "Core session exchange failed",
-				details: "Core returned null when exchanging session - session may be expired in Core database or Core service is unreachable",
+				details:
+					"Core returned null when exchanging session - session may be expired in Core database or Core service is unreachable",
 				coreSessionId: `${coreSessionId.substring(0, 8)}...`,
 			});
 		}
@@ -194,11 +199,11 @@ debugRoutes.post("/session-check", async (c: Context) => {
  */
 debugRoutes.get("/test-getcookie", (c: Context) => {
 	const rawCookieHeader = c.req.header("cookie") || "";
-	
+
 	// Try to get with getCookie
 	const adminSessionFromGetCookie = getCookie(c, ADMIN_SESSION_COOKIE);
 	const userSessionFromGetCookie = getCookie(c, USER_SESSION_COOKIE);
-	
+
 	// Manual parsing
 	const cookies: Record<string, string> = {};
 	rawCookieHeader.split(";").forEach((cookie) => {
@@ -207,10 +212,10 @@ debugRoutes.get("/test-getcookie", (c: Context) => {
 			cookies[name] = value;
 		}
 	});
-	
+
 	const adminCookie = cookies[ADMIN_SESSION_COOKIE];
 	const userCookie = cookies[USER_SESSION_COOKIE];
-	
+
 	return c.json({
 		rawCookieHeader: `${rawCookieHeader.substring(0, 100)}...`,
 		cookieNames: {

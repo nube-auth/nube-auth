@@ -1,27 +1,27 @@
+import {
+	Alert,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
+	Button,
+	Card,
+	CardBody,
+	Heading,
+	Input,
+	Label,
+	Text,
+	Textarea,
+} from "@nube-auth/components";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ConfirmModal } from "../components/ConfirmModal";
+import { PageLoader } from "../components/PageLoader";
 import { useToast } from "../components/Toast";
 import config from "../config";
-import { csrfHeaders } from "../lib/csrf";
 import { useProject, useUpdateProject } from "../hooks/api";
+import { csrfHeaders } from "../lib/csrf";
 import { pingpong } from "../lib/pingpong";
-import {
-	Alert,
-	Text,
-	Heading,
-	Card,
-	CardBody,
-	Button,
-	Label,
-	Input,
-	Textarea,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbButton,
-} from "@nube-auth/components";
-import { PageLoader } from "../components/PageLoader";
 
 export function ProjectSettingsPage() {
 	const { projectId } = useParams<{ projectId: string }>();
@@ -173,9 +173,7 @@ export function ProjectSettingsPage() {
 							<Heading level={3} size="sm" className="mb-3 text-danger">
 								⚠️ Danger Zone
 							</Heading>
-							<Text className="text-muted mb-5">
-								These actions are permanent and cannot be undone.
-							</Text>
+							<Text className="text-muted mb-5">These actions are permanent and cannot be undone.</Text>
 
 							<div className="p-5 bg-danger-bg/20 rounded-lg border border-border">
 								<Heading level={4} size="sm" className="mb-2 text-danger">
@@ -293,7 +291,7 @@ export function ProjectSettingsPage() {
 				onClose={() => setShowDeleteModal(false)}
 				onConfirm={async () => {
 					try {
-						const response = await pingpong(`${config.gatewayUrl}/v1/admin/projects/${projectId}`, {
+						const _response = await pingpong(`${config.gatewayUrl}/v1/admin/projects/${projectId}`, {
 							method: "DELETE",
 							credentials: "include",
 							headers: csrfHeaders(),

@@ -1,35 +1,34 @@
+import {
+	Alert,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
+	Button,
+	Card,
+	CardBody,
+	Heading,
+	Icon,
+	IconType,
+	Input,
+	Label,
+	Tabs,
+	TabsItem,
+	TabsList,
+	TabsPanel,
+	Text,
+	Textarea,
+} from "@nube-auth/components";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ConfirmModal } from "../components/ConfirmModal";
+import { PageLoader } from "../components/PageLoader";
 import { useToast } from "../components/Toast";
 import config from "../config";
-import { csrfHeaders } from "../lib/csrf";
 import { useApp, useProject, useUpdateApp } from "../hooks/api";
+import { csrfHeaders } from "../lib/csrf";
 import { pingpong } from "../lib/pingpong";
 import type { App } from "../types/admin";
-import {
-	Icon,
-	IconType,
-	Spinner,
-	Alert,
-	Heading,
-	Text,
-	Tabs,
-	TabsList,
-	TabsItem,
-	TabsPanel,
-	Card,
-	CardBody,
-	Label,
-	Input,
-	Textarea,
-	Button,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbButton,
-} from "@nube-auth/components";
-import { PageLoader } from "../components/PageLoader";
 
 export function AppSettingsPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -221,9 +220,7 @@ export function AppSettingsPage() {
 										required
 										placeholder="My Awesome App"
 									/>
-									<Text className="text-muted text-xs">
-										The public name of your application
-									</Text>
+									<Text className="text-muted text-xs">The public name of your application</Text>
 								</div>
 
 								<div className="space-y-1.5">
@@ -558,7 +555,7 @@ export function AppSettingsPage() {
 				onClose={() => setShowDeleteModal(false)}
 				onConfirm={async () => {
 					try {
-						const response = await pingpong(
+						const _response = await pingpong(
 							`${config.gatewayUrl}/v1/admin/projects/${projectId}/apps/${appId}`,
 							{
 								method: "DELETE",

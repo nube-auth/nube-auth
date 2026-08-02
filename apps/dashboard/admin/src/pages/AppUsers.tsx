@@ -1,51 +1,48 @@
+import {
+	Alert,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
+	Button,
+	Card,
+	CardBody,
+	Chip,
+	DataTable,
+	DataTableRow,
+	Dialog,
+	DialogBody,
+	DialogFooter,
+	DialogHeader,
+	DialogPopup,
+	DialogTitle,
+	EmptyState,
+	Heading,
+	Icon,
+	IconType,
+	Input,
+	Menu,
+	MenuItem,
+	MenuPopup,
+	MenuSeparator,
+	MenuTrigger,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	Text,
+} from "@nube-auth/components";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { csrfHeaders } from "../lib/csrf";
-import {
-	Icon,
-	IconType,
-	Button,
-	Spinner,
-	Alert,
-	Heading,
-	Text,
-	Input,
-	Chip,
-	Avatar,
-	Card,
-	CardBody,
-	DataTable,
-	DataTableRow,
-	TableHeader,
-	TableHead,
-	TableBody,
-	TableCell,
-	Dialog,
-	DialogPopup,
-	DialogHeader,
-	DialogTitle,
-	DialogBody,
-	DialogFooter,
-	EmptyState,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbButton,
-	Menu,
-	MenuTrigger,
-	MenuPopup,
-	MenuItem,
-	MenuSeparator,
-} from "@nube-auth/components";
-
-import { PageLoader } from "../components/PageLoader";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { InviteUserModal } from "../components/InviteUserModal";
+import { PageLoader } from "../components/PageLoader";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
 import config from "../config";
 import { useApp, useAppUsers, useProject, useRemoveAppUser, useRenewLicense } from "../hooks/api";
+import { csrfHeaders } from "../lib/csrf";
 import { pingpong } from "../lib/pingpong";
 
 export function AppUsersPage() {
@@ -86,12 +83,12 @@ export function AppUsersPage() {
 			}
 
 			setPlans(response.data?.plans || []);
-		} catch (err) {
+		} catch (_err) {
 			showToast("Failed to fetch plans", "error");
 		} finally {
 			setPlansLoading(false);
 		}
-	}, [projectId, appId]);
+	}, [projectId, appId, showToast]);
 
 	// Fetch plans when editing user
 	useEffect(() => {
@@ -526,9 +523,7 @@ export function AppUsersPage() {
 
 							<div className="space-y-4">
 								<div>
-									<label className="block text-sm font-semibold text-muted mb-2">
-										License Plan
-									</label>
+									<label className="block text-sm font-semibold text-muted mb-2">License Plan</label>
 									<Select
 										value={editLicensePlan?.toString() || ""}
 										onChange={(value) => setEditLicensePlan(Number(value))}
@@ -556,9 +551,7 @@ export function AppUsersPage() {
 								</div>
 
 								<div>
-									<label className="block text-sm font-semibold text-muted mb-2">
-										Status
-									</label>
+									<label className="block text-sm font-semibold text-muted mb-2">Status</label>
 									<Select
 										value={editLicenseStatus}
 										onChange={(value) => setEditLicenseStatus(value)}

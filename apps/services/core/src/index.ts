@@ -1,8 +1,8 @@
 import { serve } from "@hono/node-server";
-import { runMigrations } from "@nube-auth/db";
-import { initCache, pingCache } from "@nube-auth/cache";
-import { createLogger, serializeError } from "@nube-auth/shared";
 import { configureSessionSecret } from "@nube-auth/auth";
+import { initCache, pingCache } from "@nube-auth/cache";
+import { runMigrations } from "@nube-auth/db";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { env } from "./config/env";
@@ -44,16 +44,24 @@ app.use(
 					const coreHost = new URL(env.CORE_PUBLIC_URL).hostname;
 					const parts = coreHost.split(".");
 					for (let i = 1; i < parts.length - 1; i++) {
-						const suffix = "." + parts.slice(i).join(".");
+						const suffix = `.${parts.slice(i).join(".")}`;
 						if (origin.endsWith(suffix)) return origin;
 					}
-				} catch { }
+				} catch {}
 			}
 			return null;
 		},
 		credentials: true,
 		allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-		allowHeaders: ["Content-Type", "Authorization", "X-Nube-Service-Token", "X-Nube-S2S-Token", "X-Nube-User-Id", "X-Nube-Session-Id", "X-Nube-Project-Id"],
+		allowHeaders: [
+			"Content-Type",
+			"Authorization",
+			"X-Nube-Service-Token",
+			"X-Nube-S2S-Token",
+			"X-Nube-User-Id",
+			"X-Nube-Session-Id",
+			"X-Nube-Project-Id",
+		],
 		exposeHeaders: ["Set-Cookie"],
 	}),
 );

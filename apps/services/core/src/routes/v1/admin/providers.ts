@@ -1,6 +1,6 @@
 /**
  * Payment Provider Admin Routes (Project-Level)
- * 
+ *
  * Manages payment provider configurations per project:
  * - List available and configured providers
  * - Create new provider configurations with encrypted credentials
@@ -12,20 +12,25 @@
  * Apps can then select which project-level provider they want to use.
  */
 
-import { Hono } from "hono";
-import { z } from "zod";
-import { and, eq, getDb, paymentProviderConfigQueries, projectQueries, userQueries, } from "@nube-auth/db";
 import {
+	and,
+	eq,
+	getDb,
 	payment_provider_configs,
+	payment_transactions,
+	paymentProviderConfigQueries,
 	price_provider_refs,
+	projectQueries,
 	promotion_provider_refs,
 	purchases,
-	payment_transactions,
 	subscriptions,
+	userQueries,
 } from "@nube-auth/db";
+import { createId, createLogger } from "@nube-auth/shared";
 import type { Context } from "hono";
-import { createLogger, createId } from "@nube-auth/shared";
-import { encryptProviderCredentials, decryptProviderCredentials } from "../../../utils";
+import { Hono } from "hono";
+import { z } from "zod";
+import { decryptProviderCredentials, encryptProviderCredentials } from "../../../utils";
 
 const log = createLogger("admin-providers");
 const providersRouter = new Hono();
@@ -183,7 +188,7 @@ providersRouter.get("/:projectId/configs/:providerId", async (c: Context) => {
 /**
  * Get decrypted credentials for a provider (INTERNAL USE ONLY)
  * GET /providers/:projectId/configs/:providerId/credentials
- * 
+ *
  * SECURITY: This endpoint returns decrypted credentials and should only be called
  * by internal services (webhooks, payment processing). Consider adding IP allowlist
  * or service-to-service auth token in production.
@@ -228,7 +233,7 @@ providersRouter.get("/:projectId/configs/:providerId/credentials", async (c: Con
 			credentials,
 			webhookSecret: config.webhook_secret,
 		});
-	} catch (error) {
+	} catch (_error) {
 		// Never log error object that might contain credentials
 		log.error({ projectId, providerId }, "Failed to get provider credentials");
 		return c.json({ error: "Failed to get provider credentials" }, 500);
@@ -259,7 +264,10 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
 			metadata: z.record(z.string(), z.any()).optional(),
 			// Optional client-supplied public ID (e.g. pre-generated for Dodo single-step setup).
 			// Must match CFG0 format; if omitted, one is generated server-side.
-			publicId: z.string().regex(/^CFG0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/).optional(),
+			publicId: z
+				.string()
+				.regex(/^CFG0[0-9a-hjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTVWXYZ]{9}$/)
+				.optional(),
 		});
 		const parse = CreateSchema.safeParse(await c.req.json());
 		if (!parse.success) {
@@ -319,7 +327,7 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
 			},
 			201,
 		);
-	} catch (error) {
+	} catch (_error) {
 		// Never log request body or error details that might contain credentials
 		log.error({ projectId, provider }, "Failed to create payment provider");
 		return c.json({ error: "Failed to create payment provider" }, 500);
@@ -418,7 +426,7 @@ providersRouter.patch("/:projectId/configs/:providerId", async (c: Context) => {
 			metadata: updated.metadata,
 			updatedAt: updated.updated_at,
 		});
-	} catch (error) {
+	} catch (_error) {
 		// Never log request body or error details that might contain credentials
 		log.error({ projectId, providerId }, "Failed to update payment provider");
 		return c.json({ error: "Failed to update payment provider" }, 500);
@@ -469,7 +477,10 @@ providersRouter.delete("/:projectId/configs/:providerId", async (c: Context) => 
 			.where(eq(payment_transactions.provider_config_id, config.id))
 			.limit(1);
 		if (linkedTx) {
-			return c.json({ error: "Cannot delete provider: payment transactions are linked to this configuration" }, 409);
+			return c.json(
+				{ error: "Cannot delete provider: payment transactions are linked to this configuration" },
+				409,
+			);
 		}
 
 		const [linkedSub] = await db
@@ -478,7 +489,10 @@ providersRouter.delete("/:projectId/configs/:providerId", async (c: Context) => 
 			.where(eq(subscriptions.provider_config_id, config.id))
 			.limit(1);
 		if (linkedSub) {
-			return c.json({ error: "Cannot delete provider: active subscriptions are linked to this configuration" }, 409);
+			return c.json(
+				{ error: "Cannot delete provider: active subscriptions are linked to this configuration" },
+				409,
+			);
 		}
 
 		// If this is the default provider, promote another before deleting

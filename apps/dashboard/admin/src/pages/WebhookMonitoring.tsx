@@ -1,28 +1,28 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useWebhookLogs, useWebhookDetail, useRetryWebhook } from "../hooks/api";
 import {
-	Heading,
-	Text,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
 	Button,
 	Card,
 	CardBody,
-	Label,
-	Input,
 	Chip,
-	EmptyState,
 	DataTable,
 	DataTableRow,
-	TableHeader,
-	TableHead,
+	EmptyState,
+	Heading,
+	Input,
+	Label,
 	TableBody,
 	TableCell,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbButton,
+	TableHead,
+	TableHeader,
+	Text,
 } from "@nube-auth/components";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Select } from "../components/Select";
+import { useRetryWebhook, useWebhookDetail, useWebhookLogs } from "../hooks/api";
 
 export function WebhookMonitoringPage() {
 	const [activeTab, setActiveTab] = useState<"logs" | "detail">("logs");
@@ -126,9 +126,7 @@ export function WebhookMonitoringPage() {
 								<Heading level={2} size="lg">
 									Webhook Event
 								</Heading>
-								<Text className="text-muted mt-1">
-									Complete delivery trace and payload diagnostics
-								</Text>
+								<Text className="text-muted mt-1">Complete delivery trace and payload diagnostics</Text>
 							</div>
 							<div className="flex items-center gap-2">
 								{handleProviderBadge(webhook.provider)}
@@ -138,31 +136,23 @@ export function WebhookMonitoringPage() {
 
 						<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
 							<div className="rounded-lg bg-surface-secondary p-3">
-								<div className="text-11px uppercase tracking-wide text-muted mb-1">
-									Webhook ID
-								</div>
+								<div className="text-11px uppercase tracking-wide text-muted mb-1">Webhook ID</div>
 								<code className="text-13px text-text-primary font-mono">{webhook.id}</code>
 							</div>
 							<div className="rounded-lg bg-surface-secondary p-3">
-								<div className="text-11px uppercase tracking-wide text-muted mb-1">
-									Event Type
-								</div>
+								<div className="text-11px uppercase tracking-wide text-muted mb-1">Event Type</div>
 								<code className="text-13px text-text-primary font-mono uppercase">
 									{webhook.event_type}
 								</code>
 							</div>
 							<div className="rounded-lg bg-surface-secondary p-3">
-								<div className="text-11px uppercase tracking-wide text-muted mb-1">
-									Received
-								</div>
+								<div className="text-11px uppercase tracking-wide text-muted mb-1">Received</div>
 								<div className="text-13px text-text-primary">
 									{new Date(webhook.received_at).toLocaleString()}
 								</div>
 							</div>
 							<div className="rounded-lg bg-surface-secondary p-3">
-								<div className="text-11px uppercase tracking-wide text-muted mb-1">
-									Duration
-								</div>
+								<div className="text-11px uppercase tracking-wide text-muted mb-1">Duration</div>
 								<div className="text-13px font-semibold text-text-primary">
 									{webhook.processing_duration_ms ? `${webhook.processing_duration_ms}ms` : "—"}
 								</div>
@@ -258,9 +248,7 @@ export function WebhookMonitoringPage() {
 										{Object.entries(webhook.request_headers || {}).map(([key, value]) => (
 											<div key={key} className="mb-1">
 												<span className="text-primary font-semibold">{key}:</span>{" "}
-												<span className="text-muted wrap-break-word">
-													{String(value)}
-												</span>
+												<span className="text-muted wrap-break-word">{String(value)}</span>
 											</div>
 										))}
 									</div>
@@ -315,7 +303,7 @@ export function WebhookMonitoringPage() {
 				<BreadcrumbList>
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to="/billing" />}>Billing</BreadcrumbButton>
-				</BreadcrumbItem>
+					</BreadcrumbItem>
 					<BreadcrumbItem>
 						<BreadcrumbButton active>Webhook Monitoring</BreadcrumbButton>
 					</BreadcrumbItem>
@@ -326,9 +314,7 @@ export function WebhookMonitoringPage() {
 				<Heading level={1} size="lg" className="mb-2">
 					Webhook Monitoring
 				</Heading>
-				<Text className="text-muted">
-					Monitor webhook deliveries and troubleshoot integration issues
-				</Text>
+				<Text className="text-muted">Monitor webhook deliveries and troubleshoot integration issues</Text>
 			</div>
 
 			{/* Filters */}
@@ -437,9 +423,7 @@ export function WebhookMonitoringPage() {
 								</TableCell>
 								<TableCell>{handleProviderBadge(webhook.provider)}</TableCell>
 								<TableCell>
-									<Text className="text-muted">
-										{new Date(webhook.received_at).toLocaleString()}
-									</Text>
+									<Text className="text-muted">{new Date(webhook.received_at).toLocaleString()}</Text>
 								</TableCell>
 								<TableCell>
 									<Text className="text-muted font-medium">

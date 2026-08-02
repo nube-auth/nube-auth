@@ -1,20 +1,19 @@
-import React from "react";
 import {
-	Icon,
-	IconType,
+	Alert,
+	Button,
 	Card,
+	CardBody,
 	CardHeader,
 	CardTitle,
-	CardBody,
-	Button,
-	Alert,
 	Chip,
-	Spinner,
+	Icon,
+	IconType,
+	InfoGrid,
+	ProfileHeader,
 } from "@nube-auth/components";
-import { ProfileHeader, InfoGrid } from "@nube-auth/components";
+import { PageLoader } from "../components/PageLoader";
 import { TabNavigation } from "../components/TabNavigation";
 import { useMe } from "../hooks/api";
-import { PageLoader } from "../components/PageLoader";
 
 export function SecurityPage() {
 	const { user, isLoading } = useMe();
@@ -51,7 +50,11 @@ export function SecurityPage() {
 				name={user.name || user.email || "User"}
 				email={user.email || ""}
 				meta={`Member since ${new Date(user.createdAt).toLocaleDateString()}`}
-				avatar={<div className="size-16 rounded-full bg-primary text-white grid place-items-center font-semibold ring-2 ring-card-border/80 shadow-sm">{initials}</div>}
+				avatar={
+					<div className="size-16 rounded-full bg-primary text-white grid place-items-center font-semibold ring-2 ring-card-border/80 shadow-sm">
+						{initials}
+					</div>
+				}
 			/>
 
 			{/* Security Stats */}
@@ -59,9 +62,35 @@ export function SecurityPage() {
 				<CardBody className="py-6">
 					<InfoGrid
 						items={[
-							{ label: "Security Level", value: (<span className="inline-flex items-center gap-2"><Icon icon={IconType.Shield} size={16} /><Chip variant="info" size="sm">Standard</Chip></span>) },
-							{ label: "Two-Factor Auth", value: (<span className="inline-flex items-center gap-2"><Chip variant="warning" size="sm">Not Enabled</Chip></span>) },
-							{ label: "Password", value: (<Chip variant="success" size="sm">Secure</Chip>) },
+							{
+								label: "Security Level",
+								value: (
+									<span className="inline-flex items-center gap-2">
+										<Icon icon={IconType.Shield} size={16} />
+										<Chip variant="info" size="sm">
+											Standard
+										</Chip>
+									</span>
+								),
+							},
+							{
+								label: "Two-Factor Auth",
+								value: (
+									<span className="inline-flex items-center gap-2">
+										<Chip variant="warning" size="sm">
+											Not Enabled
+										</Chip>
+									</span>
+								),
+							},
+							{
+								label: "Password",
+								value: (
+									<Chip variant="success" size="sm">
+										Secure
+									</Chip>
+								),
+							},
 							{ label: "Connected Apps", value: "0 apps" },
 						]}
 						columns={4}
@@ -114,7 +143,7 @@ export function SecurityPage() {
 			<Card>
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2">
-					<Icon icon={IconType.Flash} size={18} />
+						<Icon icon={IconType.Flash} size={18} />
 						Connected Applications
 					</CardTitle>
 				</CardHeader>

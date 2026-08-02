@@ -1,5 +1,5 @@
-import { appQueries, licenseQueries, planQueries, priceQueries, type Database } from "@nube-auth/db";
-import { createId, createLogger, serializeError, type PlanSettings } from "@nube-auth/shared";
+import { appQueries, type Database, licenseQueries, planQueries, priceQueries } from "@nube-auth/db";
+import { createId, createLogger, type PlanSettings, serializeError } from "@nube-auth/shared";
 
 const log = createLogger("license-utils");
 
@@ -10,11 +10,7 @@ const ONE_DAY_MS = 24 * 60 * 60 * 1000;
  * Uses the app's defaultPlanId from plan_settings JSONB.
  * No-op if the user already has a license, or if the app has no default plan.
  */
-export async function ensureLicenseForApp(
-	db: Database,
-	userId: number,
-	appPublicId?: string,
-): Promise<void> {
+export async function ensureLicenseForApp(db: Database, userId: number, appPublicId?: string): Promise<void> {
 	if (!appPublicId) return;
 
 	try {

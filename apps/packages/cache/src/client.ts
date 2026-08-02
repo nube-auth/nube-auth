@@ -1,5 +1,5 @@
-import { createClient, type RedisClientType } from "redis";
 import { createLogger, serializeError } from "@nube-auth/shared";
+import { createClient, type RedisClientType } from "redis";
 
 const log = createLogger("cache");
 
@@ -36,7 +36,9 @@ async function getRedisClient(): Promise<RedisClientType> {
 
 	const url = configuredRedisUrl;
 	if (!url) {
-		throw new Error("Cache not initialized: call initCache(redisUrl) at service startup before using @nube-auth/cache");
+		throw new Error(
+			"Cache not initialized: call initCache(redisUrl) at service startup before using @nube-auth/cache",
+		);
 	}
 
 	redisInstance = createClient({
@@ -375,9 +377,12 @@ export const sessionStore = {
 		}
 	},
 
-	async getAppSession(
-		sessionId: string,
-	): Promise<{ userId: string; appId: string; metadata?: Record<string, unknown>; entitlements?: SessionEntitlements } | null> {
+	async getAppSession(sessionId: string): Promise<{
+		userId: string;
+		appId: string;
+		metadata?: Record<string, unknown>;
+		entitlements?: SessionEntitlements;
+	} | null> {
 		try {
 			const client = await getRedisClient();
 			const key = `session:app:${sessionId}`;

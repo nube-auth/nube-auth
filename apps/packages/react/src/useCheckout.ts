@@ -49,8 +49,7 @@ export interface UseCheckoutOptions {
 	onError?: (error: Error) => void;
 }
 
-export interface StartCheckoutOptions
-	extends Omit<CreateCheckoutOptions, "promoCode"> {
+export interface StartCheckoutOptions extends Omit<CreateCheckoutOptions, "promoCode"> {
 	/**
 	 * Override the auto promo code for this specific checkout call.
 	 * If provided, takes precedence over the `autoPromoCode` from hook options.

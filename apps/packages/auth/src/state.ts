@@ -103,7 +103,10 @@ export async function createOAuthState(options: CreateStateOptions): Promise<str
 /**
  * Validate an OAuth state token
  */
-export async function validateOAuthState(state: string | undefined | null, expectedProvider: string): Promise<ValidateStateResult> {
+export async function validateOAuthState(
+	state: string | undefined | null,
+	expectedProvider: string,
+): Promise<ValidateStateResult> {
 	if (!state) {
 		return { valid: false, error: "Missing state parameter" };
 	}
@@ -138,7 +141,10 @@ export async function validateOAuthState(state: string | undefined | null, expec
  * Consume and validate OAuth state in one operation.
  * Throws on invalid state for easy error handling.
  */
-export async function consumeOAuthState(state: string | undefined | null, expectedProvider: string): Promise<StateData> {
+export async function consumeOAuthState(
+	state: string | undefined | null,
+	expectedProvider: string,
+): Promise<StateData> {
 	const result = await validateOAuthState(state, expectedProvider);
 
 	if (!result.valid) {

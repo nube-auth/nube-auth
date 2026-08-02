@@ -1,19 +1,20 @@
 import { serve } from "@hono/node-server";
-import { initCache, pingCache, cache } from "@nube-auth/cache";
-import { createLogger, serializeError } from "@nube-auth/shared";
-import { getDb, appQueries } from "@nube-auth/db";
 import { configureSessionSecret } from "@nube-auth/auth";
+import { cache, initCache, pingCache } from "@nube-auth/cache";
+import { appQueries, getDb } from "@nube-auth/db";
+import { createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
-import { env } from "./config/env";
 import { secureHeaders } from "hono/secure-headers";
-import { authMiddleware } from "./middleware/auth";
+import { env } from "./config/env";
+import { getAppSecuritySettings } from "./lib/appSecuritySettings";
+import { allowedHostsMiddleware } from "./middleware/allowedHosts";
 import { appResolverMiddleware } from "./middleware/appResolver";
+import { authMiddleware } from "./middleware/auth";
 import { csrfProtection } from "./middleware/csrf";
 import { httpLogger } from "./middleware/logger";
 import { rateLimitPresets } from "./middleware/rateLimit";
+import { s2sAuthMiddleware } from "./middleware/s2s";
 import { adminRoutes } from "./routes/admin";
-import { allowedHostsMiddleware } from "./middleware/allowedHosts";
-import { getAppSecuritySettings } from "./lib/appSecuritySettings";
 import { appCatalogRoutes } from "./routes/appCatalog";
 import { authRoutes } from "./routes/auth";
 import { debugRoutes } from "./routes/debug";
@@ -21,7 +22,6 @@ import { licenseRoutes } from "./routes/license";
 import { meRoutes } from "./routes/me";
 import { paymentsRoutes } from "./routes/payments";
 import { s2sRoutes } from "./routes/s2s";
-import { s2sAuthMiddleware } from "./middleware/s2s";
 
 // Initialize cache with the validated Redis URL from env.ts before any cache operations
 initCache(env.REDIS_URL);
@@ -57,7 +57,7 @@ function getAllowedOriginOrNull(origin: string): string | null {
 		// For domain like api.nubeauth.com → base = nubeauth.com → allow *.nubeauth.com
 		// For domain like nubeauth.com → base = nubeauth.com → allow *.nubeauth.com
 		for (let i = 1; i < parts.length; i++) {
-			const suffix = "." + parts.slice(i).join(".");
+			const suffix = `.${parts.slice(i).join(".")}`;
 			if (origin.endsWith(suffix)) {
 				// Ensure origin is exactly one level deeper than suffix
 				// e.g. origin=dashboard.nubeauth.com, suffix=.nubeauth.com → ok
@@ -102,7 +102,8 @@ app.use(
 );
 
 const CORS_ALLOW_METHODS = "GET, POST, PUT, PATCH, DELETE, OPTIONS";
-const CORS_ALLOW_HEADERS = "Content-Type, Authorization, X-Nube-Service-Token, X-Nube-CSRF-Token, X-Nube-S2S-Token, X-Nube-Project-Id";
+const CORS_ALLOW_HEADERS =
+	"Content-Type, Authorization, X-Nube-Service-Token, X-Nube-CSRF-Token, X-Nube-S2S-Token, X-Nube-Project-Id";
 
 function originMatchesPattern(origin: string, pattern: string): boolean {
 	// Bare wildcard — allow any origin (we still echo the exact origin,
@@ -150,7 +151,10 @@ app.use("*", async (c, next) => {
 				}
 			} catch (error) {
 				// Non-fatal — request proceeds without trustedBackend privileges
-				log.warn({ err: error instanceof Error ? error.message : String(error), appId }, "App secret validation error");
+				log.warn(
+					{ err: error instanceof Error ? error.message : String(error), appId },
+					"App secret validation error",
+				);
 			}
 		}
 	}

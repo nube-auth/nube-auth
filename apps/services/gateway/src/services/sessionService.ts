@@ -84,11 +84,11 @@ export const sessionService = {
 			session.requestCount = (session.requestCount || 0) + 1;
 			session.lastIpAddress = currentIpAddress;
 			session.lastUserAgent = currentUserAgent;
-			
+
 			// ROLLING TTL: Extend expiry on every request
 			const newExpiresAt = new Date(Date.now() + SESSION_TTL * 1000);
 			session.expiresAt = newExpiresAt.toISOString();
-			
+
 			// Re-save with extended TTL
 			await cache.set(key, session, SESSION_TTL);
 

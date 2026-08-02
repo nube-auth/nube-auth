@@ -1,14 +1,5 @@
+import { Card, CardBody, Heading, Icon, IconType, type IconTypeName, Spinner, Text } from "@nube-auth/components";
 import { Link } from "react-router-dom";
-import {
-	Icon,
-	IconType,
-	type IconTypeName,
-	Card,
-	CardBody,
-	Heading,
-	Text,
-	Spinner,
-} from "@nube-auth/components";
 import { useMe } from "../hooks/api";
 
 interface NavCardProps {
@@ -61,14 +52,10 @@ export function HomePage() {
 						<Heading level={1} size="lg" className="font-bold">
 							Welcome back, {firstName}
 						</Heading>
-						{user?.email && (
-							<Text className="text-muted mt-1">{user.email}</Text>
-						)}
+						{user?.email && <Text className="text-muted mt-1">{user.email}</Text>}
 					</>
 				)}
-				<Text className="text-muted mt-2">
-					Manage your account, sessions, and security settings.
-				</Text>
+				<Text className="text-muted mt-2">Manage your account, sessions, and security settings.</Text>
 			</div>
 
 			{/* Navigation cards */}

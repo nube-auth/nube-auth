@@ -8,8 +8,8 @@
  * - GET /billing/purchases/:purchaseId/can-refund - Check refund eligibility
  */
 
-import { getDb, eq, and, payment_transactions, purchases, payment_provider_configs } from "@nube-auth/db";
-import { createLogger, serializeError, id } from "@nube-auth/shared";
+import { and, eq, getDb, payment_provider_configs, payment_transactions, purchases } from "@nube-auth/db";
+import { createLogger, id, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -64,10 +64,7 @@ refundRoutes.post("/", async (c: Context) => {
 
 		// Check for existing refund
 		const existingRefund = await db.query.payment_transactions.findFirst({
-			where: and(
-				eq(payment_transactions.purchase_id, purchase.id),
-				eq(payment_transactions.type, "refund"),
-			),
+			where: and(eq(payment_transactions.purchase_id, purchase.id), eq(payment_transactions.type, "refund")),
 		});
 
 		if (existingRefund) {
@@ -86,8 +83,10 @@ refundRoutes.post("/", async (c: Context) => {
 		// Decrypt credentials and create adapter (supports DEK-wrapped and legacy)
 		const decryptedCredentials = decryptProviderCredentials(providerConfig);
 		if (providerConfig.provider === "dodo" && providerConfig.environment) {
-		decryptedCredentials["environment"] = providerConfig.environment === "production" ? "live_mode" : "test_mode";
-		decryptedCredentials["webhookSecret"] = providerConfig.webhook_secret || decryptedCredentials["webhookSecret"] || "";
+			decryptedCredentials["environment"] =
+				providerConfig.environment === "production" ? "live_mode" : "test_mode";
+			decryptedCredentials["webhookSecret"] =
+				providerConfig.webhook_secret || decryptedCredentials["webhookSecret"] || "";
 		}
 		const adapter = createProviderAdapter(providerConfig.provider, decryptedCredentials);
 
@@ -121,10 +120,7 @@ refundRoutes.post("/", async (c: Context) => {
 			.returning();
 
 		// Update purchase status
-		await db
-			.update(purchases)
-			.set({ status: "refunded" })
-			.where(eq(purchases.id, purchase.id));
+		await db.update(purchases).set({ status: "refunded" }).where(eq(purchases.id, purchase.id));
 
 		log.info(
 			{
@@ -163,10 +159,7 @@ refundRoutes.get("/:id/status", async (c: Context) => {
 		const db = getDb();
 
 		const refundTx = await db.query.payment_transactions.findFirst({
-			where: and(
-				eq(payment_transactions.public_id, refundPublicId),
-				eq(payment_transactions.type, "refund"),
-			),
+			where: and(eq(payment_transactions.public_id, refundPublicId), eq(payment_transactions.type, "refund")),
 		});
 
 		if (!refundTx) {
@@ -213,12 +206,7 @@ refundRoutes.get("/purchase/:purchaseId", async (c: Context) => {
 				createdAt: payment_transactions.created_at,
 			})
 			.from(payment_transactions)
-			.where(
-				and(
-					eq(payment_transactions.purchase_id, purchase.id),
-					eq(payment_transactions.type, "refund"),
-				),
-			);
+			.where(and(eq(payment_transactions.purchase_id, purchase.id), eq(payment_transactions.type, "refund")));
 
 		return c.json({ refunds });
 	} catch (error) {
@@ -250,10 +238,7 @@ refundRoutes.get("/purchase/:purchaseId/can-refund", async (c: Context) => {
 
 		// Check for existing refund
 		const existingRefund = await db.query.payment_transactions.findFirst({
-			where: and(
-				eq(payment_transactions.purchase_id, purchase.id),
-				eq(payment_transactions.type, "refund"),
-			),
+			where: and(eq(payment_transactions.purchase_id, purchase.id), eq(payment_transactions.type, "refund")),
 		});
 
 		if (existingRefund) {

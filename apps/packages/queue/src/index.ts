@@ -5,7 +5,7 @@
  */
 
 import { QueueClient as QueueClientClass } from "./client";
-import type { QueueName, AllJobData } from "./types";
+import type { AllJobData, QueueName } from "./types";
 
 // Global queue instance
 let queueInstance: QueueClientClass | null = null;
@@ -23,78 +23,71 @@ export function getQueueClient(): QueueClientClass {
 /**
  * Get a queue by name
  */
-export function getQueue<T extends AllJobData = AllJobData>(
-	queueName: QueueName | string
-) {
+export function getQueue<T extends AllJobData = AllJobData>(queueName: QueueName | string) {
 	return getQueueClient().getQueue<T>(queueName);
 }
 
+// Re-export BullMQ types for convenience
+export type { Job, Queue, Worker } from "bullmq";
 export {
 	QueueClient,
-	WorkerClient,
 	QueueManager,
+	WorkerClient,
 } from "./client";
-
-export type {
-	BaseJobData,
-	ProcessPaymentJob,
-	ReconcilePaymentJob,
-	HandleRefundJob,
-	SyncLicenseJob,
-	PaymentJobData,
-	ProcessWebhookJob,
-	RetryWebhookJob,
-	WebhookJobData,
-	SendEmailJob,
-	SendBatchEmailJob,
-	EmailJobData,
-	SendNotificationJob,
-	NotificationJobData,
-	GenerateReportJob,
-	ExportDataJob,
-	CleanupJob,
-	AsyncTaskJobData,
-	AllJobData,
-	JobResult,
-	WorkerOptions,
-	QueueConnectionOptions,
-} from "./types";
-
-// Export enums and QueueName value (not type)
-export {
-	QueueName,
-	PaymentJobType,
-	WebhookJobType,
-	EmailJobType,
-	NotificationJobType,
-	AsyncTaskType,
-} from "./types";
-
 export {
 	DEFAULT_REDIS_CONFIG,
+	DEFAULT_WORKER_OPTIONS,
+	HEALTH_CHECK_CONFIG,
+	JOB_EVENTS,
+	JOB_PRIORITY,
 	JOB_RETRY_CONFIG,
 	JOB_TIMEOUT_CONFIG,
-	JOB_PRIORITY,
-	DEFAULT_WORKER_OPTIONS,
 	QUEUE_DEFAULT_OPTIONS,
-	JOB_EVENTS,
-	WORKER_EVENTS,
 	QUEUE_NAMES,
-	HEALTH_CHECK_CONFIG,
+	WORKER_EVENTS,
 } from "./constants";
+export type {
+	EmailJobHandler,
+	PaymentJobHandler,
+	WebhookJobHandler,
+} from "./jobs";
 
 export {
+	EmailJobHandlers,
 	JobUtils,
 	PaymentJobHandlers,
 	WebhookJobHandlers,
-	EmailJobHandlers,
 } from "./jobs";
-
 export type {
-	PaymentJobHandler,
-	WebhookJobHandler,
-	EmailJobHandler,
-} from "./jobs";
-
-// Re-export BullMQ types for convenience
-export type { Queue, Worker, Job } from "bullmq";
+	AllJobData,
+	AsyncTaskJobData,
+	BaseJobData,
+	CleanupJob,
+	EmailJobData,
+	ExportDataJob,
+	GenerateReportJob,
+	HandleRefundJob,
+	JobResult,
+	NotificationJobData,
+	PaymentJobData,
+	ProcessPaymentJob,
+	ProcessWebhookJob,
+	QueueConnectionOptions,
+	ReconcilePaymentJob,
+	RetryWebhookJob,
+	SendBatchEmailJob,
+	SendEmailJob,
+	SendNotificationJob,
+	SyncLicenseJob,
+	WebhookJobData,
+	WorkerOptions,
+} from "./types";
+// Export enums and QueueName value (not type)
+export {
+	AsyncTaskType,
+	EmailJobType,
+	NotificationJobType,
+	PaymentJobType,
+	QueueName,
+	WebhookJobType,
+} from "./types";

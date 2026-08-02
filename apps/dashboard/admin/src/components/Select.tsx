@@ -1,12 +1,12 @@
-import type React from "react";
 import {
-	Select as SeliaSelect,
+	SelectItem,
+	SelectList,
+	SelectPopup,
 	SelectTrigger,
 	SelectValue,
-	SelectPopup,
-	SelectList,
-	SelectItem,
+	Select as SeliaSelect,
 } from "@nube-auth/components";
+import type React from "react";
 
 interface SelectOption {
 	value: string;

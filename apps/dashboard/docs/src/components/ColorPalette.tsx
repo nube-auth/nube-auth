@@ -1,319 +1,315 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 interface ColorSwatchProps {
-  name: string;
-  variable: string;
-  value: string;
-  description?: string;
-  contrast?: string;
+	name: string;
+	variable: string;
+	value: string;
+	description?: string;
+	contrast?: string;
 }
 
 interface ColorSectionProps {
-  title: string;
-  description?: string;
-  colors: ColorSwatchProps[];
+	title: string;
+	description?: string;
+	colors: ColorSwatchProps[];
 }
 
 const ColorSwatch = ({ name, variable, value, description, contrast }: ColorSwatchProps) => {
-  const [copied, setCopied] = useState(false);
+	const [copied, setCopied] = useState(false);
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+	const copyToClipboard = (text: string) => {
+		navigator.clipboard.writeText(text);
+		setCopied(true);
+		setTimeout(() => setCopied(false), 2000);
+	};
 
-  return (
-    <div className="color-swatch">
-      <div 
-        className="color-preview" 
-        style={{ background: value }}
-        onClick={() => copyToClipboard(variable)}
-      >
-        {copied && <span className="copied-badge">Copied!</span>}
-      </div>
-      <div className="color-info">
-        <div className="color-name">{name}</div>
-        <code className="color-variable" onClick={() => copyToClipboard(variable)}>
-          {variable}
-        </code>
-        <div className="color-value">{value}</div>
-        {description && <div className="color-description">{description}</div>}
-        {contrast && (
-          <div className="color-contrast">
-            <span className="contrast-badge">WCAG {contrast}</span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+	return (
+		<div className="color-swatch">
+			<div className="color-preview" style={{ background: value }} onClick={() => copyToClipboard(variable)}>
+				{copied && <span className="copied-badge">Copied!</span>}
+			</div>
+			<div className="color-info">
+				<div className="color-name">{name}</div>
+				<code className="color-variable" onClick={() => copyToClipboard(variable)}>
+					{variable}
+				</code>
+				<div className="color-value">{value}</div>
+				{description && <div className="color-description">{description}</div>}
+				{contrast && (
+					<div className="color-contrast">
+						<span className="contrast-badge">WCAG {contrast}</span>
+					</div>
+				)}
+			</div>
+		</div>
+	);
 };
 
 const ColorSection = ({ title, description, colors }: ColorSectionProps) => (
-  <div className="color-section">
-    <div className="section-header">
-      <h3>{title}</h3>
-      {description && <p>{description}</p>}
-    </div>
-    <div className="color-grid">
-      {colors.map((color) => (
-        <ColorSwatch key={color.variable} {...color} />
-      ))}
-    </div>
-  </div>
+	<div className="color-section">
+		<div className="section-header">
+			<h3>{title}</h3>
+			{description && <p>{description}</p>}
+		</div>
+		<div className="color-grid">
+			{colors.map((color) => (
+				<ColorSwatch key={color.variable} {...color} />
+			))}
+		</div>
+	</div>
 );
 
 export default function ColorPalette() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+	const [theme, setTheme] = useState<"light" | "dark">("light");
 
-  const primaryColors: ColorSwatchProps[] = [
-    {
-      name: 'Primary',
-      variable: '--primary',
-      value: '#5B5FC7',
-      description: 'Main brand color, CTAs, active states',
-      contrast: 'AA'
-    },
-    {
-      name: 'Primary Hover',
-      variable: '--primary-hover',
-      value: '#464AB0',
-      description: 'Hover state for primary elements',
-      contrast: 'AA'
-    },
-    {
-      name: 'Primary Light',
-      variable: '--primary-light',
-      value: '#E8E9FA',
-      description: 'Backgrounds, subtle highlights',
-      contrast: 'AAA'
-    },
-    {
-      name: 'Primary Border',
-      variable: '--primary-border',
-      value: '#A5A8E5',
-      description: 'Borders and outlines',
-      contrast: 'AA'
-    },
-  ];
+	const primaryColors: ColorSwatchProps[] = [
+		{
+			name: "Primary",
+			variable: "--primary",
+			value: "#5B5FC7",
+			description: "Main brand color, CTAs, active states",
+			contrast: "AA",
+		},
+		{
+			name: "Primary Hover",
+			variable: "--primary-hover",
+			value: "#464AB0",
+			description: "Hover state for primary elements",
+			contrast: "AA",
+		},
+		{
+			name: "Primary Light",
+			variable: "--primary-light",
+			value: "#E8E9FA",
+			description: "Backgrounds, subtle highlights",
+			contrast: "AAA",
+		},
+		{
+			name: "Primary Border",
+			variable: "--primary-border",
+			value: "#A5A8E5",
+			description: "Borders and outlines",
+			contrast: "AA",
+		},
+	];
 
-  const secondaryColors: ColorSwatchProps[] = [
-    {
-      name: 'Secondary',
-      variable: '--secondary',
-      value: '#0EA5E9',
-      description: 'Links, informational elements',
-      contrast: 'AA'
-    },
-    {
-      name: 'Accent',
-      variable: '--accent',
-      value: '#8B5CF6',
-      description: 'Special features, premium badges',
-      contrast: 'AA'
-    },
-  ];
+	const secondaryColors: ColorSwatchProps[] = [
+		{
+			name: "Secondary",
+			variable: "--secondary",
+			value: "#0EA5E9",
+			description: "Links, informational elements",
+			contrast: "AA",
+		},
+		{
+			name: "Accent",
+			variable: "--accent",
+			value: "#8B5CF6",
+			description: "Special features, premium badges",
+			contrast: "AA",
+		},
+	];
 
-  const semanticColors: ColorSwatchProps[] = [
-    {
-      name: 'Success',
-      variable: '--success',
-      value: '#059669',
-      description: 'Positive actions, verified states',
-      contrast: 'AA'
-    },
-    {
-      name: 'Success Background',
-      variable: '--success-bg',
-      value: '#D1FAE5',
-      description: 'Success alert backgrounds',
-      contrast: 'AAA'
-    },
-    {
-      name: 'Warning',
-      variable: '--warning',
-      value: '#D97706',
-      description: 'Cautions, important notices',
-      contrast: 'AA'
-    },
-    {
-      name: 'Warning Background',
-      variable: '--warning-bg',
-      value: '#FEF3C7',
-      description: 'Warning alert backgrounds',
-      contrast: 'AAA'
-    },
-    {
-      name: 'Danger',
-      variable: '--danger',
-      value: '#DC2626',
-      description: 'Destructive actions, errors',
-      contrast: 'AA'
-    },
-    {
-      name: 'Danger Background',
-      variable: '--danger-bg',
-      value: '#FEE2E2',
-      description: 'Error alert backgrounds',
-      contrast: 'AAA'
-    },
-    {
-      name: 'Info',
-      variable: '--info',
-      value: '#0EA5E9',
-      description: 'Helpful information, tips',
-      contrast: 'AA'
-    },
-    {
-      name: 'Info Background',
-      variable: '--info-bg',
-      value: '#E0F2FE',
-      description: 'Info alert backgrounds',
-      contrast: 'AAA'
-    },
-  ];
+	const semanticColors: ColorSwatchProps[] = [
+		{
+			name: "Success",
+			variable: "--success",
+			value: "#059669",
+			description: "Positive actions, verified states",
+			contrast: "AA",
+		},
+		{
+			name: "Success Background",
+			variable: "--success-bg",
+			value: "#D1FAE5",
+			description: "Success alert backgrounds",
+			contrast: "AAA",
+		},
+		{
+			name: "Warning",
+			variable: "--warning",
+			value: "#D97706",
+			description: "Cautions, important notices",
+			contrast: "AA",
+		},
+		{
+			name: "Warning Background",
+			variable: "--warning-bg",
+			value: "#FEF3C7",
+			description: "Warning alert backgrounds",
+			contrast: "AAA",
+		},
+		{
+			name: "Danger",
+			variable: "--danger",
+			value: "#DC2626",
+			description: "Destructive actions, errors",
+			contrast: "AA",
+		},
+		{
+			name: "Danger Background",
+			variable: "--danger-bg",
+			value: "#FEE2E2",
+			description: "Error alert backgrounds",
+			contrast: "AAA",
+		},
+		{
+			name: "Info",
+			variable: "--info",
+			value: "#0EA5E9",
+			description: "Helpful information, tips",
+			contrast: "AA",
+		},
+		{
+			name: "Info Background",
+			variable: "--info-bg",
+			value: "#E0F2FE",
+			description: "Info alert backgrounds",
+			contrast: "AAA",
+		},
+	];
 
-  const lightNeutrals: ColorSwatchProps[] = [
-    {
-      name: 'Background Base',
-      variable: '--bg-base',
-      value: '#FAFBFC',
-      description: 'Page background',
-    },
-    {
-      name: 'Background Surface',
-      variable: '--bg-surface',
-      value: '#FFFFFF',
-      description: 'Cards, modals, dropdowns',
-    },
-    {
-      name: 'Background Muted',
-      variable: '--bg-muted',
-      value: '#F1F3F5',
-      description: 'Subtle backgrounds, hover states',
-    },
-    {
-      name: 'Text Primary',
-      variable: '--text-primary',
-      value: '#18181B',
-      description: 'Main text content',
-      contrast: 'AAA'
-    },
-    {
-      name: 'Text Secondary',
-      variable: '--text-secondary',
-      value: '#52525B',
-      description: 'Supporting text, labels',
-      contrast: 'AA'
-    },
-    {
-      name: 'Text Tertiary',
-      variable: '--text-tertiary',
-      value: '#A1A1AA',
-      description: 'Placeholder, disabled text',
-      contrast: 'AA'
-    },
-    {
-      name: 'Border Default',
-      variable: '--border',
-      value: '#E4E4E7',
-      description: 'Default borders',
-    },
-  ];
+	const lightNeutrals: ColorSwatchProps[] = [
+		{
+			name: "Background Base",
+			variable: "--bg-base",
+			value: "#FAFBFC",
+			description: "Page background",
+		},
+		{
+			name: "Background Surface",
+			variable: "--bg-surface",
+			value: "#FFFFFF",
+			description: "Cards, modals, dropdowns",
+		},
+		{
+			name: "Background Muted",
+			variable: "--bg-muted",
+			value: "#F1F3F5",
+			description: "Subtle backgrounds, hover states",
+		},
+		{
+			name: "Text Primary",
+			variable: "--text-primary",
+			value: "#18181B",
+			description: "Main text content",
+			contrast: "AAA",
+		},
+		{
+			name: "Text Secondary",
+			variable: "--text-secondary",
+			value: "#52525B",
+			description: "Supporting text, labels",
+			contrast: "AA",
+		},
+		{
+			name: "Text Tertiary",
+			variable: "--text-tertiary",
+			value: "#A1A1AA",
+			description: "Placeholder, disabled text",
+			contrast: "AA",
+		},
+		{
+			name: "Border Default",
+			variable: "--border",
+			value: "#E4E4E7",
+			description: "Default borders",
+		},
+	];
 
-  const darkNeutrals: ColorSwatchProps[] = [
-    {
-      name: 'Background Base',
-      variable: '--bg-base',
-      value: '#0B0F19',
-      description: 'Page background (deep navy)',
-    },
-    {
-      name: 'Background Surface',
-      variable: '--bg-surface',
-      value: '#12172A',
-      description: 'Cards, elevated elements',
-    },
-    {
-      name: 'Background Muted',
-      variable: '--bg-muted',
-      value: '#1A1F35',
-      description: 'Subtle backgrounds',
-    },
-    {
-      name: 'Text Primary',
-      variable: '--text-primary',
-      value: '#F8FAFC',
-      description: 'Main text content',
-      contrast: 'AAA'
-    },
-    {
-      name: 'Text Secondary',
-      variable: '--text-secondary',
-      value: '#CBD5E1',
-      description: 'Supporting text, labels',
-      contrast: 'AA'
-    },
-    {
-      name: 'Text Tertiary',
-      variable: '--text-tertiary',
-      value: '#94A3B8',
-      description: 'Placeholder, disabled text',
-      contrast: 'AA'
-    },
-    {
-      name: 'Border Default',
-      variable: '--border',
-      value: 'rgba(203, 213, 225, 0.12)',
-      description: 'Default borders (12% white)',
-    },
-  ];
+	const darkNeutrals: ColorSwatchProps[] = [
+		{
+			name: "Background Base",
+			variable: "--bg-base",
+			value: "#0B0F19",
+			description: "Page background (deep navy)",
+		},
+		{
+			name: "Background Surface",
+			variable: "--bg-surface",
+			value: "#12172A",
+			description: "Cards, elevated elements",
+		},
+		{
+			name: "Background Muted",
+			variable: "--bg-muted",
+			value: "#1A1F35",
+			description: "Subtle backgrounds",
+		},
+		{
+			name: "Text Primary",
+			variable: "--text-primary",
+			value: "#F8FAFC",
+			description: "Main text content",
+			contrast: "AAA",
+		},
+		{
+			name: "Text Secondary",
+			variable: "--text-secondary",
+			value: "#CBD5E1",
+			description: "Supporting text, labels",
+			contrast: "AA",
+		},
+		{
+			name: "Text Tertiary",
+			variable: "--text-tertiary",
+			value: "#94A3B8",
+			description: "Placeholder, disabled text",
+			contrast: "AA",
+		},
+		{
+			name: "Border Default",
+			variable: "--border",
+			value: "rgba(203, 213, 225, 0.12)",
+			description: "Default borders (12% white)",
+		},
+	];
 
-  return (
-    <div className="color-palette-wrapper" data-theme={theme}>
-      <div className="palette-controls">
-        <div className="theme-toggle">
-          <button
-            className={`toggle-btn ${theme === 'light' ? 'active' : ''}`}
-            onClick={() => setTheme('light')}
-          >
-            ☀️ Light
-          </button>
-          <button
-            className={`toggle-btn ${theme === 'dark' ? 'active' : ''}`}
-            onClick={() => setTheme('dark')}
-          >
-            🌙 Dark
-          </button>
-        </div>
-        <p className="palette-hint">Click any color to copy its CSS variable</p>
-      </div>
+	return (
+		<div className="color-palette-wrapper" data-theme={theme}>
+			<div className="palette-controls">
+				<div className="theme-toggle">
+					<button
+						className={`toggle-btn ${theme === "light" ? "active" : ""}`}
+						onClick={() => setTheme("light")}
+					>
+						☀️ Light
+					</button>
+					<button
+						className={`toggle-btn ${theme === "dark" ? "active" : ""}`}
+						onClick={() => setTheme("dark")}
+					>
+						🌙 Dark
+					</button>
+				</div>
+				<p className="palette-hint">Click any color to copy its CSS variable</p>
+			</div>
 
-      <ColorSection
-        title="Primary Colors"
-        description="Core brand identity, main CTAs, and active states"
-        colors={primaryColors}
-      />
+			<ColorSection
+				title="Primary Colors"
+				description="Core brand identity, main CTAs, and active states"
+				colors={primaryColors}
+			/>
 
-      <ColorSection
-        title="Secondary & Accent"
-        description="Supporting colors for variety and emphasis"
-        colors={secondaryColors}
-      />
+			<ColorSection
+				title="Secondary & Accent"
+				description="Supporting colors for variety and emphasis"
+				colors={secondaryColors}
+			/>
 
-      <ColorSection
-        title="Semantic Colors"
-        description="Colors with specific meaning for user feedback"
-        colors={semanticColors}
-      />
+			<ColorSection
+				title="Semantic Colors"
+				description="Colors with specific meaning for user feedback"
+				colors={semanticColors}
+			/>
 
-      <ColorSection
-        title={theme === 'light' ? 'Light Mode Neutrals' : 'Dark Mode Neutrals'}
-        description="Foundation colors for backgrounds, text, and borders"
-        colors={theme === 'light' ? lightNeutrals : darkNeutrals}
-      />
+			<ColorSection
+				title={theme === "light" ? "Light Mode Neutrals" : "Dark Mode Neutrals"}
+				description="Foundation colors for backgrounds, text, and borders"
+				colors={theme === "light" ? lightNeutrals : darkNeutrals}
+			/>
 
-      <style>{`
+			<style>{`
         .color-palette-wrapper {
           padding: 24px 0;
         }
@@ -561,6 +557,6 @@ export default function ColorPalette() {
           }
         }
       `}</style>
-    </div>
-  );
+		</div>
+	);
 }

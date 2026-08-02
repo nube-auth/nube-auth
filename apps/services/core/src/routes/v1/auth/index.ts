@@ -14,12 +14,12 @@ import {
 	userQueries,
 } from "@nube-auth/db";
 import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
-import { ensureLicenseForApp } from "../../../utils/license";
-import { fireWebhookEvent } from "../../../utils/outbound-events.js";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { env } from "../../../config/env";
-import { getClientIp, getClientCountry } from "../../../middleware/rateLimit";
+import { getClientCountry, getClientIp } from "../../../middleware/rateLimit";
+import { ensureLicenseForApp } from "../../../utils/license";
+import { fireWebhookEvent } from "../../../utils/outbound-events.js";
 
 const log = createLogger("auth-routes");
 const router = new Hono();
@@ -83,8 +83,16 @@ router.get("/start", async (c: Context) => {
 			if (appId) {
 				const db = getDb();
 				const app = await appQueries.findByPublicId(db, appId);
-				const rawUris = (app?.security_settings as Record<string, unknown> | null)?.['redirectUris'] as string[] | undefined;
-				const normalizeUri = (uri: string) => { try { return new URL(uri).href; } catch { return uri; } };
+				const rawUris = (app?.security_settings as Record<string, unknown> | null)?.["redirectUris"] as
+					| string[]
+					| undefined;
+				const normalizeUri = (uri: string) => {
+					try {
+						return new URL(uri).href;
+					} catch {
+						return uri;
+					}
+				};
 				const appRedirectUris = rawUris?.map(normalizeUri);
 				const normalizedRedirectUri = normalizeUri(redirectUri);
 				appAllowed = appRedirectUris?.includes(normalizedRedirectUri) ?? false;
@@ -136,7 +144,7 @@ router.get("/start", async (c: Context) => {
 		// Redirect to OAuth provider
 		return c.redirect(authUrl);
 	} catch (error) {
-	log.error({ err: serializeError(error as Error) }, "Auth start error");
+		log.error({ err: serializeError(error as Error) }, "Auth start error");
 		return c.json({ error: "Failed to start auth" }, 500);
 	}
 });
@@ -207,13 +215,13 @@ router.get("/callback/:provider", async (c: Context) => {
 			});
 		}
 
-			// Reconstruct the callback URL that was registered with the OAuth provider
+		// Reconstruct the callback URL that was registered with the OAuth provider
 		const storedCallbackBase = storedState.oauthCallbackBase ?? env.CORE_PUBLIC_URL;
 		const coreCallbackUrl = `${storedCallbackBase}/v1/auth/callback/${provider}`;
 
 		log.debug({ provider, codePreview: code?.substring(0, 8) }, "Exchanging OAuth code for tokens");
 		const token = await adapter.exchangeCodeForTokens(code, coreCallbackUrl);
-		
+
 		log.debug({ provider, hasIdToken: !!(token as any).idToken }, "Fetching user profile");
 		// For OpenID Connect (Google), prefer idToken; fallback to accessToken for other providers
 		const tokenForProfile = (token as any).idToken || token.accessToken;
@@ -241,7 +249,7 @@ router.get("/callback/:provider", async (c: Context) => {
 			const newUser = await userQueries.create(db, userData);
 			userId = newUser.id;
 			log.debug({ userId, email: profile.email }, "User created");
-			
+
 			// Create identity
 			const identityData = {
 				public_id: createId("identity"),
@@ -299,7 +307,10 @@ router.get("/callback/:provider", async (c: Context) => {
 						}
 					}
 				} catch (invitationError) {
-					log.error({ err: serializeError(invitationError as Error), appId: storedState.appId }, "Error processing app invitations");
+					log.error(
+						{ err: serializeError(invitationError as Error), appId: storedState.appId },
+						"Error processing app invitations",
+					);
 					// Don't fail signup if invitation processing fails
 				}
 			}
@@ -368,7 +379,10 @@ router.get("/callback/:provider", async (c: Context) => {
 					}
 				}
 			} catch (projectInvitationError) {
-				log.error({ err: serializeError(projectInvitationError as Error), invite: storedState.invite }, "Error processing project invitations");
+				log.error(
+					{ err: serializeError(projectInvitationError as Error), invite: storedState.invite },
+					"Error processing project invitations",
+				);
 				// Don't fail signup if invitation processing fails
 			}
 		} else {
@@ -393,7 +407,10 @@ router.get("/callback/:provider", async (c: Context) => {
 				await appUserQueries.upsert(db, appInternalId, userId);
 			} catch (appUserError) {
 				// Non-fatal: log and continue, session creation should not fail
-				log.error({ err: serializeError(appUserError as Error), appId: storedState.appId }, "Failed to upsert app_user");
+				log.error(
+					{ err: serializeError(appUserError as Error), appId: storedState.appId },
+					"Failed to upsert app_user",
+				);
 			}
 		}
 
@@ -452,7 +469,10 @@ router.get("/callback/:provider", async (c: Context) => {
 		log.info({ redirectUri: storedState.redirectUri, provider }, "Redirecting to Gateway callback");
 		return c.redirect(redirectUrl.toString());
 	} catch (error) {
-		log.error({ err: serializeError(error as Error), provider, stack: error instanceof Error ? error.stack : undefined }, "Auth callback error");
+		log.error(
+			{ err: serializeError(error as Error), provider, stack: error instanceof Error ? error.stack : undefined },
+			"Auth callback error",
+		);
 		// Redirect back with error
 		const redirectUrl = new URL(storedState.redirectUri);
 		redirectUrl.searchParams.set("error", "auth_failed");
@@ -469,7 +489,10 @@ router.post("/exchange", async (c: Context) => {
 		const { sessionId } = await c.req.json();
 
 		if (!sessionId || !idPatterns.session.test(sessionId)) {
-			log.warn({ sessionId, isValid: sessionId ? idPatterns.session.test(sessionId) : false }, "Invalid session format");
+			log.warn(
+				{ sessionId, isValid: sessionId ? idPatterns.session.test(sessionId) : false },
+				"Invalid session format",
+			);
 			return c.json({ error: "Invalid session" }, 400);
 		}
 
@@ -527,7 +550,10 @@ router.post("/exchange", async (c: Context) => {
 			await sessionQueries.updateLastSeenAndExpiry(db, session.id, now, updatedExpiresAt);
 		}
 
-		log.debug({ userId: user.public_id, sessionId: `${sessionId.substring(0, 8)}...` }, "Session exchange successful");
+		log.debug(
+			{ userId: user.public_id, sessionId: `${sessionId.substring(0, 8)}...` },
+			"Session exchange successful",
+		);
 		return c.json({
 			userId: user.public_id,
 			email: user.primary_email,
@@ -537,7 +563,10 @@ router.post("/exchange", async (c: Context) => {
 			sessionTtlSeconds, // Return TTL so Gateway knows how long to cache
 		});
 	} catch (error) {
-		log.error({ err: serializeError(error as Error), stack: error instanceof Error ? error.stack : undefined }, "Auth exchange error");
+		log.error(
+			{ err: serializeError(error as Error), stack: error instanceof Error ? error.stack : undefined },
+			"Auth exchange error",
+		);
 		return c.json({ error: "Failed to exchange session" }, 500);
 	}
 });

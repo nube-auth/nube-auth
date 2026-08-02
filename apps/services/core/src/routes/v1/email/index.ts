@@ -1,12 +1,27 @@
 import { generateOTP, hashOTP, verifyOTP } from "@nube-auth/auth";
 import { rateLimit } from "@nube-auth/cache";
-import { appQueries, appUserQueries, emailVerificationQueries, getDb, identityQueries, sessionQueries, userQueries } from "@nube-auth/db";
-import { createId, createLogger, serializeError, OTP_LENGTH, OTP_LOCKOUT_MINUTES, OTP_MAX_ATTEMPTS } from "@nube-auth/shared";
+import {
+	appQueries,
+	appUserQueries,
+	emailVerificationQueries,
+	getDb,
+	identityQueries,
+	sessionQueries,
+	userQueries,
+} from "@nube-auth/db";
+import {
+	createId,
+	createLogger,
+	OTP_LENGTH,
+	OTP_LOCKOUT_MINUTES,
+	OTP_MAX_ATTEMPTS,
+	serializeError,
+} from "@nube-auth/shared";
 import { createEmailService } from "@nube-auth/shared/email";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { env } from "../../../config/env";
-import { getClientIp, getClientCountry } from "../../../middleware/rateLimit";
+import { getClientCountry, getClientIp } from "../../../middleware/rateLimit";
 import { ensureLicenseForApp } from "../../../utils/license";
 
 const log = createLogger("email-routes");
@@ -226,7 +241,10 @@ router.post("/verify", async (c: Context) => {
 				const resolvedApp = await appQueries.findByPublicId(db, appId);
 				appInternalId = resolvedApp?.id;
 			} catch (appLookupError) {
-				log.error({ err: serializeError(appLookupError as Error), appId }, "Failed to resolve app for email login");
+				log.error(
+					{ err: serializeError(appLookupError as Error), appId },
+					"Failed to resolve app for email login",
+				);
 			}
 		}
 

@@ -20,27 +20,28 @@ export function createLogger(
 ) {
 	// Check if running in Node.js or browser
 	const isNode = typeof process !== "undefined" && process.versions && process.versions.node;
-	const isProduction = isNode ? process.env['NODE_ENV'] === "production" : false;
+	const isProduction = isNode ? process.env["NODE_ENV"] === "production" : false;
 	const level = options.level ?? (isProduction ? "info" : "debug");
 	const pretty = options.pretty ?? !isProduction;
 
-	const transport = pretty && isNode
-		? {
-				target: "pino-pretty",
-				options: {
-					colorize: true,
-					translateTime: "SYS:standard",
-					ignore: "pid,hostname",
-				},
-			}
-		: undefined;
+	const transport =
+		pretty && isNode
+			? {
+					target: "pino-pretty",
+					options: {
+						colorize: true,
+						translateTime: "SYS:standard",
+						ignore: "pid,hostname",
+					},
+				}
+			: undefined;
 
 	return pino({
 		name,
 		level,
 		...(transport && { transport }),
 		base: {
-			env: isNode ? (process.env['NODE_ENV'] ?? "development") : "browser",
+			env: isNode ? (process.env["NODE_ENV"] ?? "development") : "browser",
 		},
 		formatters: {
 			level: (label) => ({ level: label }),

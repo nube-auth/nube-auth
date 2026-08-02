@@ -1,14 +1,14 @@
 /**
  * Encryption utilities for sensitive data
- * 
+ *
  * Uses AES-256-GCM for authenticated encryption with DEK-wrapping (Envelope Encryption):
- * 
+ *
  *   KEK (Key Encryption Key) = PAYMENT_CONFIGS_KEY env var (32-byte hex)
  *   DEK (Data Encryption Key) = random 32 bytes, unique per row
- *   
+ *
  *   credentials          = AES-256-GCM(plaintext, DEK)     — stored in DB
  *   credentials_dek      = AES-256-GCM-WRAP(DEK, KEK)      — stored in DB
- * 
+ *
  * Key rotation only re-wraps DEKs — credentials column never changes.
  * Old KEKs can be deleted immediately after re-wrapping completes.
  */
@@ -51,10 +51,7 @@ export function parseKey(keyHex: string): Buffer {
 function aesEncrypt(plaintext: string, key: Buffer): string {
 	const iv = crypto.randomBytes(12);
 	const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
-	const ciphertext = Buffer.concat([
-		cipher.update(Buffer.from(plaintext, "utf8")),
-		cipher.final(),
-	]);
+	const ciphertext = Buffer.concat([cipher.update(Buffer.from(plaintext, "utf8")), cipher.final()]);
 	const tag = cipher.getAuthTag();
 	return [iv.toString("base64"), tag.toString("base64"), ciphertext.toString("base64")].join(".");
 }
@@ -118,7 +115,7 @@ export function rewrappedDEK(wrappedDek: string, oldKek: Buffer, newKek: Buffer)
 
 /**
  * Seal (encrypt) a string using DEK-wrapping.
- * 
+ *
  * @returns { sealed: encrypted data, wrappedDek: wrapped DEK }
  */
 export function seal(plaintext: string, kek: Buffer, dek?: Buffer): { sealed: string; wrappedDek: string } {
@@ -161,11 +158,11 @@ export function unsealCredentials(sealed: string, wrappedDek: string, kek: Buffe
 /**
  * Decrypt a payment provider config's credentials.
  * Supports both DEK-wrapped (new) and direct KEK (legacy) rows transparently.
- * 
+ *
  * Tries PRIMARY key first, then PREVIOUS key (if set) for zero-downtime rotation.
  * This means you can rotate keys without any decrypt failures during the gap
  * between re-wrapping DEKs and restarting services.
- * 
+ *
  * @param config - Row with credentials (encrypted) and credentials_dek (wrapped DEK, null for legacy)
  * @param kek - Optional override KEK (defaults to PAYMENT_CONFIGS_KEY env var)
  */
@@ -175,9 +172,7 @@ export function decryptProviderCredentials(
 ): Record<string, string> {
 	const primaryKey = kek ?? getEncryptionKey();
 	const previousKeyHex = env.PAYMENT_CONFIGS_KEY_PREVIOUS;
-	const previousKey = previousKeyHex && previousKeyHex.length === 64
-		? parseKey(previousKeyHex)
-		: null;
+	const previousKey = previousKeyHex && previousKeyHex.length === 64 ? parseKey(previousKeyHex) : null;
 
 	const keys = previousKey ? [primaryKey, previousKey] : [primaryKey];
 
@@ -200,7 +195,7 @@ export function decryptProviderCredentials(
 /**
  * Encrypt a payment provider config's credentials.
  * Always uses DEK-wrapping.
- * 
+ *
  * @param credentials - Plaintext credentials object
  * @param kek - Optional override KEK
  * @returns { sealed (→ credentials column), wrappedDek (→ credentials_dek column) }

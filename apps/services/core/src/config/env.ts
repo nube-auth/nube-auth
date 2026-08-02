@@ -95,7 +95,10 @@ function getEnvironment(): Environment {
 		SMTP_PORT: parseInt(process.env["SMTP_PORT"] ?? "1025", 10),
 		LOG_LEVEL: (process.env["LOG_LEVEL"] as Environment["LOG_LEVEL"] | undefined) ?? "info",
 		CORE_SESSION_TTL_SECONDS: parseInt(process.env["CORE_SESSION_TTL_SECONDS"] ?? String(365 * 24 * 60 * 60), 10), // 365 days
-		SESSION_REFRESH_THRESHOLD_SECONDS: parseInt(process.env["SESSION_REFRESH_THRESHOLD_SECONDS"] ?? String(30 * 24 * 60 * 60), 10), // 30 days
+		SESSION_REFRESH_THRESHOLD_SECONDS: parseInt(
+			process.env["SESSION_REFRESH_THRESHOLD_SECONDS"] ?? String(30 * 24 * 60 * 60),
+			10,
+		), // 30 days
 		// TTL overrides (in seconds) - production defaults
 		SESSION_TTL_SECONDS: parseInt(process.env["SESSION_TTL_SECONDS"] ?? String(7 * 24 * 60 * 60), 10), // 7 days
 		JWT_TTL_SECONDS: parseInt(process.env["JWT_TTL_SECONDS"] ?? "3600", 10), // 1 hour
@@ -108,7 +111,10 @@ function getEnvironment(): Environment {
 		MAX_EMAIL_ATTEMPTS: parseInt(process.env["MAX_EMAIL_ATTEMPTS"] ?? "3", 10),
 		MAX_OAUTH_ATTEMPTS: parseInt(process.env["MAX_OAUTH_ATTEMPTS"] ?? "3", 10),
 		// Allowed redirect origins for OAuth
-		ALLOWED_REDIRECT_ORIGINS: (process.env["ALLOWED_REDIRECT_ORIGINS"] ?? "http://localhost:3004,http://localhost:5173,http://localhost:5174")
+		ALLOWED_REDIRECT_ORIGINS: (
+			process.env["ALLOWED_REDIRECT_ORIGINS"] ??
+			"http://localhost:3004,http://localhost:5173,http://localhost:5174"
+		)
 			.split(",")
 			.map((s) => s.trim())
 			.filter(Boolean),

@@ -1,25 +1,25 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useProjects, useProjectsStats } from "../hooks/api";
 import {
-	Icon,
-	IconType,
-	Button,
-	Spinner,
 	Alert,
+	Button,
 	Card,
 	CardBody,
+	Chip,
 	DataTable,
 	DataTableRow,
-	TableHeader,
-	TableHead,
+	Heading,
+	Icon,
+	IconType,
+	Spinner,
 	TableBody,
 	TableCell,
-	Heading,
+	TableHead,
+	TableHeader,
 	Text,
-	Chip,
 } from "@nube-auth/components";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { getIconById } from "../components/IconPicker";
+import { useProjects, useProjectsStats } from "../hooks/api";
 import type { Project } from "../types/admin";
 
 type ViewMode = "grid" | "table";

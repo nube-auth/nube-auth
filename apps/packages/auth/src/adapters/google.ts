@@ -1,8 +1,8 @@
-import { GoogleTokenResponseSchema, GoogleUserInfoSchema } from "../schemas/index.js";
-import type { OAuthAdapter, OAuthProfile } from "../types/index.js";
-import { pingpongFetch } from "../pingpong.js";
 import { createLogger } from "@nube-auth/shared";
 import * as jose from "jose";
+import { pingpongFetch } from "../pingpong.js";
+import { GoogleTokenResponseSchema, GoogleUserInfoSchema } from "../schemas/index.js";
+import type { OAuthAdapter, OAuthProfile } from "../types/index.js";
 
 const log = createLogger("google-oauth-adapter");
 
@@ -13,10 +13,7 @@ const GOOGLE_ISSUERS = ["https://accounts.google.com", "accounts.google.com"];
  * Verify and decode a Google id_token using JWKS
  * Validates signature, audience, issuer, and expiry
  */
-async function verifyGoogleIdToken(
-	idToken: string,
-	clientId: string,
-): Promise<Record<string, unknown>> {
+async function verifyGoogleIdToken(idToken: string, clientId: string): Promise<Record<string, unknown>> {
 	const jwks = jose.createRemoteJWKSet(new URL(GOOGLE_JWKS_URL));
 	const { payload } = await jose.jwtVerify(idToken, jwks, {
 		audience: clientId,
@@ -101,35 +98,42 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
 
 			// Get response data - handle both response.data and manual JSON parsing
 			let rawData = response.data;
-			log.debug({ 
-				hasData: !!rawData, 
-				dataType: typeof rawData,
-				hasBody: !!response.body,
-				bodyType: typeof response.body
-			}, "Checking response data");
+			log.debug(
+				{
+					hasData: !!rawData,
+					dataType: typeof rawData,
+					hasBody: !!response.body,
+					bodyType: typeof response.body,
+				},
+				"Checking response data",
+			);
 
 			if (!rawData && response.body) {
 				// Fallback: manually parse if response.data not available
 				try {
-					const bodyStr = typeof response.body === 'string' 
-						? response.body
-						: JSON.stringify(response.body);
+					const bodyStr = typeof response.body === "string" ? response.body : JSON.stringify(response.body);
 					rawData = JSON.parse(bodyStr);
 					log.debug({ parsed: true }, "Parsed response body");
 				} catch (error) {
-					log.error({ body: response.body, parseError: error instanceof Error ? error.message : String(error) }, "Failed to parse body");
+					log.error(
+						{ body: response.body, parseError: error instanceof Error ? error.message : String(error) },
+						"Failed to parse body",
+					);
 					throw new Error(`Failed to parse token response: ${response.body}`);
 				}
 			}
 
-			log.debug({ 
-				rawData,
-				keys: rawData ? Object.keys(rawData) : null,
-				hasAccessToken: !!rawData?.access_token,
-				accessTokenType: typeof rawData?.access_token,
-				accessTokenLength: typeof rawData?.access_token === 'string' ? rawData.access_token.length : null,
-				hasIdToken: !!rawData?.id_token
-			}, "Token response data");
+			log.debug(
+				{
+					rawData,
+					keys: rawData ? Object.keys(rawData) : null,
+					hasAccessToken: !!rawData?.access_token,
+					accessTokenType: typeof rawData?.access_token,
+					accessTokenLength: typeof rawData?.access_token === "string" ? rawData.access_token.length : null,
+					hasIdToken: !!rawData?.id_token,
+				},
+				"Token response data",
+			);
 
 			const data = GoogleTokenResponseSchema.parse(rawData);
 
@@ -152,26 +156,29 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
 	async fetchUserProfile(idTokenOrAccessToken: string): Promise<OAuthProfile> {
 		try {
 			// For OpenID Connect, if it looks like a JWT (has dots), verify and decode it
-			if (idTokenOrAccessToken.includes('.')) {
+			if (idTokenOrAccessToken.includes(".")) {
 				log.debug({ tokenPrefix: idTokenOrAccessToken.substring(0, 20) }, "Verifying id_token JWT");
 				const decoded = await verifyGoogleIdToken(idTokenOrAccessToken, this.clientId);
-				
-				log.debug({ 
-					keys: Object.keys(decoded),
-					hasEmail: !!decoded['email'],
-					hasSub: !!decoded['sub']
-				}, "Verified id_token");
+
+				log.debug(
+					{
+						keys: Object.keys(decoded),
+						hasEmail: !!decoded["email"],
+						hasSub: !!decoded["sub"],
+					},
+					"Verified id_token",
+				);
 
 				// Reject unverified emails
-				if (decoded['email_verified'] !== true) {
+				if (decoded["email_verified"] !== true) {
 					throw new Error("Google email not verified");
 				}
 
 				const data = GoogleUserInfoSchema.parse({
-					sub: decoded['sub'],
-					email: decoded['email'],
-					name: decoded['name'],
-					picture: decoded['picture'],
+					sub: decoded["sub"],
+					email: decoded["email"],
+					name: decoded["name"],
+					picture: decoded["picture"],
 				});
 
 				return {
@@ -183,11 +190,14 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
 			}
 
 			// Fallback: if not a JWT, use the userinfo endpoint with access token
-			log.debug({ 
-				tokenType: typeof idTokenOrAccessToken,
-				tokenLength: idTokenOrAccessToken?.length,
-				tokenPrefix: idTokenOrAccessToken?.substring(0, 20),
-			}, "Fetching user profile with access token");
+			log.debug(
+				{
+					tokenType: typeof idTokenOrAccessToken,
+					tokenLength: idTokenOrAccessToken?.length,
+					tokenPrefix: idTokenOrAccessToken?.substring(0, 20),
+				},
+				"Fetching user profile with access token",
+			);
 
 			const response = await pingpongFetch(this.userInfoEndpoint, {
 				headers: {
@@ -195,17 +205,23 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
 				},
 			});
 
-			log.debug({ 
-				status: response.status, 
-				ok: response.ok?.(),
-			}, "User profile response received");
+			log.debug(
+				{
+					status: response.status,
+					ok: response.ok?.(),
+				},
+				"User profile response received",
+			);
 
 			if (!response.ok()) {
 				const errorText = response.body;
-				log.error({ 
-					status: response.status, 
-					errorText,
-				}, "Failed to fetch user profile");
+				log.error(
+					{
+						status: response.status,
+						errorText,
+					},
+					"Failed to fetch user profile",
+				);
 				throw new Error(`Failed to fetch user profile: ${response.status} ${errorText}`);
 			}
 
@@ -214,9 +230,7 @@ export class GoogleOAuthAdapter implements OAuthAdapter {
 			if (!rawData && response.body) {
 				// Fallback: manually parse if response.data not available
 				try {
-					const bodyStr = typeof response.body === 'string' 
-						? response.body
-						: JSON.stringify(response.body);
+					const bodyStr = typeof response.body === "string" ? response.body : JSON.stringify(response.body);
 					rawData = JSON.parse(bodyStr);
 				} catch (_e) {
 					throw new Error(`Failed to parse user profile response: ${response.body}`);

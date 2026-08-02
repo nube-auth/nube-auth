@@ -1,5 +1,5 @@
-import { createContext, type ReactNode, useContext } from "react";
 import { toastManager } from "@nube-auth/components";
+import { createContext, type ReactNode, useContext } from "react";
 
 interface ToastContextType {
 	showToast: (message: string, type?: "success" | "error" | "info" | "warning") => void;
@@ -20,9 +20,5 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 		toastManager.add({ title: message, type });
 	};
 
-	return (
-		<ToastContext.Provider value={{ showToast }}>
-			{children}
-		</ToastContext.Provider>
-	);
+	return <ToastContext.Provider value={{ showToast }}>{children}</ToastContext.Provider>;
 }

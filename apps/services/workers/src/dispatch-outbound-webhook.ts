@@ -12,8 +12,8 @@
  */
 
 import { createHmac, randomUUID } from "node:crypto";
-import { createLogger, serializeError, id } from "@nube-auth/shared";
-import { appWebhookQueries, outboundWebhookLogQueries, getDb } from "@nube-auth/db";
+import { appWebhookQueries, getDb, outboundWebhookLogQueries } from "@nube-auth/db";
+import { createLogger, id, serializeError } from "@nube-auth/shared";
 
 const log = createLogger("dispatch-outbound-webhook");
 

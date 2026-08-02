@@ -44,11 +44,7 @@ router.get("/validate", async (c: Context) => {
 			return c.json({ valid: false, reason: "app_not_found" });
 		}
 
-		const license = await licenseQueries.findByUserAndApp(
-			db,
-			user.id,
-			app.id,
-		);
+		const license = await licenseQueries.findByUserAndApp(db, user.id, app.id);
 
 		if (!license) {
 			return c.json({ valid: false, reason: "no_license" });
@@ -56,17 +52,11 @@ router.get("/validate", async (c: Context) => {
 
 		// Check expiry
 		const now = new Date();
-		const isExpired =
-			license.valid_until && new Date(license.valid_until) < now;
+		const isExpired = license.valid_until && new Date(license.valid_until) < now;
 
 		const plan = await planQueries.findByInternalId_(db, license.plan_id);
-		const price = license.price_id
-			? await priceQueries.findByInternalId_(db, license.price_id)
-			: null;
-		const activeCount = await activationQueries.countActiveByLicenseId(
-			db,
-			license.id,
-		);
+		const price = license.price_id ? await priceQueries.findByInternalId_(db, license.price_id) : null;
+		const activeCount = await activationQueries.countActiveByLicenseId(db, license.id);
 
 		const licensePayload: Record<string, unknown> = {
 			licenseId: license.public_id,
@@ -87,9 +77,7 @@ router.get("/validate", async (c: Context) => {
 						amountCents: price.amount_cents,
 					}
 				: null,
-			validUntil: license.valid_until
-				? new Date(license.valid_until).toISOString()
-				: null,
+			validUntil: license.valid_until ? new Date(license.valid_until).toISOString() : null,
 			activations: {
 				current: activeCount,
 				max: license.max_activations,
@@ -130,10 +118,7 @@ router.get("/validate", async (c: Context) => {
 
 		return c.json({ valid: true, license: licensePayload });
 	} catch (error) {
-		log.error(
-			{ err: serializeError(error as Error) },
-			"License validation error",
-		);
+		log.error({ err: serializeError(error as Error) }, "License validation error");
 		return c.json({ error: "Failed to validate license" }, 500);
 	}
 });
@@ -165,24 +150,13 @@ router.post("/activate", async (c: Context) => {
 		const app = await appQueries.findByPublicId(db, validated.appId);
 		if (!app) return c.json({ error: "App not found" }, 404);
 
-		const license = await licenseQueries.findByUserAndApp(
-			db,
-			user.id,
-			app.id,
-		);
-		if (
-			!license ||
-			(license.status !== "active" && license.status !== "trialing")
-		) {
+		const license = await licenseQueries.findByUserAndApp(db, user.id, app.id);
+		if (!license || (license.status !== "active" && license.status !== "trialing")) {
 			return c.json({ error: "No active license found" }, 403);
 		}
 
 		// Check if already activated on this device
-		const existing = await activationQueries.findByLicenseAndDevice(
-			db,
-			license.id,
-			validated.deviceId,
-		);
+		const existing = await activationQueries.findByLicenseAndDevice(db, license.id, validated.deviceId);
 		if (existing) {
 			// Refresh last_seen
 			await activationQueries.updateLastSeen(db, existing.id);
@@ -196,10 +170,7 @@ router.post("/activate", async (c: Context) => {
 
 		// Check max activations limit
 		if (license.max_activations !== null) {
-			const activeCount = await activationQueries.countActiveByLicenseId(
-				db,
-				license.id,
-			);
+			const activeCount = await activationQueries.countActiveByLicenseId(db, license.id);
 			if (activeCount >= license.max_activations) {
 				return c.json(
 					{
@@ -218,10 +189,7 @@ router.post("/activate", async (c: Context) => {
 			device_id: validated.deviceId,
 			device_name: validated.deviceName ?? null,
 			device_type: validated.deviceType ?? null,
-			ip_address:
-				c.req.header("X-Forwarded-For") ||
-				c.req.header("X-Real-IP") ||
-				null,
+			ip_address: c.req.header("X-Forwarded-For") || c.req.header("X-Real-IP") || null,
 			user_agent: c.req.header("User-Agent") ?? null,
 			last_seen_at: new Date(),
 		});
@@ -245,12 +213,8 @@ router.post("/activate", async (c: Context) => {
 			201,
 		);
 	} catch (error) {
-		if (error instanceof z.ZodError)
-			return c.json({ error: "Invalid request", details: error.issues }, 400);
-		log.error(
-			{ err: serializeError(error as Error) },
-			"Device activation error",
-		);
+		if (error instanceof z.ZodError) return c.json({ error: "Invalid request", details: error.issues }, 400);
+		log.error({ err: serializeError(error as Error) }, "Device activation error");
 		return c.json({ error: "Failed to activate device" }, 500);
 	}
 });
@@ -280,18 +244,10 @@ router.post("/deactivate", async (c: Context) => {
 		const app = await appQueries.findByPublicId(db, validated.appId);
 		if (!app) return c.json({ error: "App not found" }, 404);
 
-		const license = await licenseQueries.findByUserAndApp(
-			db,
-			user.id,
-			app.id,
-		);
+		const license = await licenseQueries.findByUserAndApp(db, user.id, app.id);
 		if (!license) return c.json({ error: "License not found" }, 404);
 
-		const deactivated = await activationQueries.deactivateByDevice(
-			db,
-			license.id,
-			validated.deviceId,
-		);
+		const deactivated = await activationQueries.deactivateByDevice(db, license.id, validated.deviceId);
 
 		if (!deactivated) {
 			return c.json({ error: "No active activation for this device" }, 404);
@@ -310,12 +266,8 @@ router.post("/deactivate", async (c: Context) => {
 			deviceId: validated.deviceId,
 		});
 	} catch (error) {
-		if (error instanceof z.ZodError)
-			return c.json({ error: "Invalid request", details: error.issues }, 400);
-		log.error(
-			{ err: serializeError(error as Error) },
-			"Device deactivation error",
-		);
+		if (error instanceof z.ZodError) return c.json({ error: "Invalid request", details: error.issues }, 400);
+		log.error({ err: serializeError(error as Error) }, "Device deactivation error");
 		return c.json({ error: "Failed to deactivate device" }, 500);
 	}
 });
@@ -384,12 +336,8 @@ router.get("/check", async (c: Context) => {
 			valid: true,
 			license: {
 				licenseId: license.public_id,
-				plan: plan
-					? { slug: plan.slug, name: plan.name, features: plan.features }
-					: null,
-				validUntil: license.valid_until
-					? new Date(license.valid_until).toISOString()
-					: null,
+				plan: plan ? { slug: plan.slug, name: plan.name, features: plan.features } : null,
+				validUntil: license.valid_until ? new Date(license.valid_until).toISOString() : null,
 			},
 		});
 	} catch (error) {

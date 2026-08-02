@@ -46,11 +46,13 @@ export class DodoAdapter implements PaymentProviderAdapter {
 	async createCheckout(params: CreateCheckoutParams): Promise<CheckoutSession> {
 		try {
 			// billing_currency activates Dodo's Adaptive Currency feature so the
-		// customer sees and pays in the price's native currency (e.g. INR via UPI).
-		// Without this, Dodo defaults to USD display regardless of the product price currency.
-		type DodoBillingCurrency = NonNullable<Parameters<typeof this.client.checkoutSessions.create>[0]["billing_currency"]>;
+			// customer sees and pays in the price's native currency (e.g. INR via UPI).
+			// Without this, Dodo defaults to USD display regardless of the product price currency.
+			type DodoBillingCurrency = NonNullable<
+				Parameters<typeof this.client.checkoutSessions.create>[0]["billing_currency"]
+			>;
 
-		const session = await this.client.checkoutSessions.create({
+			const session = await this.client.checkoutSessions.create({
 				product_cart: [
 					{
 						product_id: params.productId,
@@ -71,15 +73,13 @@ export class DodoAdapter implements PaymentProviderAdapter {
 				...(params.billingCurrency
 					? { billing_currency: params.billingCurrency.toUpperCase() as DodoBillingCurrency }
 					: {}),
-				...(params.trialPeriodDays
-					? { subscription_data: { trial_period_days: params.trialPeriodDays } }
-					: {}),
+				...(params.trialPeriodDays ? { subscription_data: { trial_period_days: params.trialPeriodDays } } : {}),
 				// Prefer the resolved provider coupon id (our internal Dodo discount code)
-			...(params.providerCoupon
-				? { discount_code: params.providerCoupon.id }
-				: params.promoCode
-					? { discount_code: params.promoCode }
-					: {}),
+				...(params.providerCoupon
+					? { discount_code: params.providerCoupon.id }
+					: params.promoCode
+						? { discount_code: params.promoCode }
+						: {}),
 			});
 
 			this.log.info(
@@ -127,10 +127,7 @@ export class DodoAdapter implements PaymentProviderAdapter {
 				rawBody,
 			};
 		} catch (error) {
-			this.log.error(
-				{ err: serializeError(error as Error) },
-				"Dodo webhook verification failed",
-			);
+			this.log.error({ err: serializeError(error as Error) }, "Dodo webhook verification failed");
 			return null;
 		}
 	}
@@ -188,15 +185,15 @@ export class DodoAdapter implements PaymentProviderAdapter {
 		}
 	}
 
-	private extractFromPayment(
-		data: Record<string, unknown>,
-		status: PaymentDetails["status"],
-	): PaymentDetails {
+	private extractFromPayment(data: Record<string, unknown>, status: PaymentDetails["status"]): PaymentDetails {
 		const customer = data["customer"] as { customer_id?: string; email?: string } | undefined;
 		const metadata = (data["metadata"] as Record<string, string>) ?? {};
 		const totalAmount = Number(data["total_amount"] ?? 0);
 		const taxAmount = Number(data["tax"] ?? 0);
-		const preTaxAmount = Number(data["pre_tax_amount"] ?? (Number.isFinite(totalAmount) && Number.isFinite(taxAmount) ? totalAmount - taxAmount : totalAmount));
+		const preTaxAmount = Number(
+			data["pre_tax_amount"] ??
+				(Number.isFinite(totalAmount) && Number.isFinite(taxAmount) ? totalAmount - taxAmount : totalAmount),
+		);
 		return {
 			transactionId: String(data["payment_id"] ?? ""),
 			amount: preTaxAmount,
@@ -209,10 +206,7 @@ export class DodoAdapter implements PaymentProviderAdapter {
 		};
 	}
 
-	private extractFromSubscription(
-		data: Record<string, unknown>,
-		status: PaymentDetails["status"],
-	): PaymentDetails {
+	private extractFromSubscription(data: Record<string, unknown>, status: PaymentDetails["status"]): PaymentDetails {
 		const customer = data["customer"] as { customer_id?: string; email?: string } | undefined;
 		const metadata = (data["metadata"] as Record<string, string>) ?? {};
 		const subscriptionId = String(data["subscription_id"] ?? "");
@@ -221,9 +215,7 @@ export class DodoAdapter implements PaymentProviderAdapter {
 		// the unique(provider_config_id, provider_transaction_id) constraint from failing
 		// when the same subscription is renewed multiple times.
 		const previousBillingDate = data["previous_billing_date"] as string | undefined;
-		const transactionId = previousBillingDate
-			? `${subscriptionId}_${previousBillingDate}`
-			: subscriptionId;
+		const transactionId = previousBillingDate ? `${subscriptionId}_${previousBillingDate}` : subscriptionId;
 		return {
 			transactionId,
 			amount: Number(data["recurring_pre_tax_amount"] ?? 0),
@@ -291,10 +283,7 @@ export class DodoAdapter implements PaymentProviderAdapter {
 			if (err.status === 404) {
 				return null;
 			}
-			this.log.error(
-				{ err: serializeError(error as Error), subscriptionId },
-				"Failed to get Dodo subscription",
-			);
+			this.log.error({ err: serializeError(error as Error), subscriptionId }, "Failed to get Dodo subscription");
 			return null;
 		}
 	}
@@ -305,10 +294,7 @@ export class DodoAdapter implements PaymentProviderAdapter {
 	 * Returning a sentinel so the sync worker can proceed to createPrice calls.
 	 */
 	async createProduct(params: CreateProductParams): Promise<CreateProductResult> {
-		this.log.info(
-			{ name: params.name },
-			"Dodo: skipping createProduct (each price is its own Dodo product)",
-		);
+		this.log.info({ name: params.name }, "Dodo: skipping createProduct (each price is its own Dodo product)");
 		return { productId: "__dodo_no_product__", name: params.name };
 	}
 
@@ -327,15 +313,17 @@ export class DodoAdapter implements PaymentProviderAdapter {
 			};
 
 			// Dodo's SDK type for currency — cast required because the SDK uses a
-		// branded string union. We validate currency upstream via CurrencyCodeSchema.
-		type DodoCurrency = Parameters<typeof this.client.products.create>[0]["price"]["currency"];
-		const dodoCurrency = params.currency.toUpperCase() as DodoCurrency;
+			// branded string union. We validate currency upstream via CurrencyCodeSchema.
+			type DodoCurrency = Parameters<typeof this.client.products.create>[0]["price"]["currency"];
+			const dodoCurrency = params.currency.toUpperCase() as DodoCurrency;
 
-		// Use the rich label from the sync worker (e.g. "Pro — Monthly (USD 9.99)").
-		// In Dodo each "price" is its own product, so the label becomes the product name.
-		const priceName = params.label ?? `${params.currency.toUpperCase()} ${(params.amountCents / 100).toFixed(2)} ${params.interval}`;
+			// Use the rich label from the sync worker (e.g. "Pro — Monthly (USD 9.99)").
+			// In Dodo each "price" is its own product, so the label becomes the product name.
+			const priceName =
+				params.label ??
+				`${params.currency.toUpperCase()} ${(params.amountCents / 100).toFixed(2)} ${params.interval}`;
 
-		const product = await this.client.products.create({
+			const product = await this.client.products.create({
 				name: priceName,
 				price: isRecurring
 					? {
@@ -400,14 +388,20 @@ export class DodoAdapter implements PaymentProviderAdapter {
 	 * Product restriction: pass params.restrictedToProductIds to limit which
 	 * Dodo products (= our external_price_id values) the discount applies to.
 	 */
-	async createCoupon(params: import("./types.js").CreateCouponParams): Promise<import("./types.js").CreateCouponResult> {
+	async createCoupon(
+		params: import("./types.js").CreateCouponParams,
+	): Promise<import("./types.js").CreateCouponResult> {
 		try {
-			const internalCode = `NUBE-${params.name.toUpperCase().replace(/[^A-Z0-9]/g, "").substring(0, 25)}-${Date.now().toString(36).toUpperCase()}`;
+			const internalCode = `NUBE-${params.name
+				.toUpperCase()
+				.replace(/[^A-Z0-9]/g, "")
+				.substring(0, 25)}-${Date.now().toString(36).toUpperCase()}`;
 
 			// Dodo percentage amounts are in basis points (100 basis points = 1%)
-			const amount = params.discountType === "percent"
-				? params.discountValue * 100  // e.g. 10% → 1000 basis points
-				: params.discountValue;       // flat: already in USD cents
+			const amount =
+				params.discountType === "percent"
+					? params.discountValue * 100 // e.g. 10% → 1000 basis points
+					: params.discountValue; // flat: already in USD cents
 
 			const discount = await this.client.discounts.create({
 				name: params.name,
@@ -423,7 +417,10 @@ export class DodoAdapter implements PaymentProviderAdapter {
 
 			return { couponId: internalCode, objectType: "discount" };
 		} catch (error) {
-			this.log.error({ err: serializeError(error as Error), name: params.name }, "Failed to create Dodo discount");
+			this.log.error(
+				{ err: serializeError(error as Error), name: params.name },
+				"Failed to create Dodo discount",
+			);
 			throw error;
 		}
 	}
@@ -458,10 +455,7 @@ export class DodoAdapter implements PaymentProviderAdapter {
 				...(params.reason ? { reason: params.reason } : {}),
 			});
 
-			this.log.info(
-				{ refundId: refund.refund_id, paymentId: params.paymentId },
-				"Dodo refund created",
-			);
+			this.log.info({ refundId: refund.refund_id, paymentId: params.paymentId }, "Dodo refund created");
 
 			return {
 				refundId: refund.refund_id,

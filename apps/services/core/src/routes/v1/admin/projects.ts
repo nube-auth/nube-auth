@@ -123,7 +123,12 @@ projectsRouter.get("/users/:userId/projects", async (c: Context) => {
  */
 projectsRouter.post("/", async (c: Context) => {
 	try {
-		const { name, slug: rawSlug, description, icon } = (await c.req.json()) as {
+		const {
+			name,
+			slug: rawSlug,
+			description,
+			icon,
+		} = (await c.req.json()) as {
 			name?: string;
 			slug?: string;
 			description?: string;
@@ -157,13 +162,13 @@ projectsRouter.post("/", async (c: Context) => {
 			slug = slugify(rawSlug);
 			const existing = await projectQueries.findBySlug(db, slug);
 			if (existing) {
-				return c.json({ error: "A project with this slug already exists. Please choose a different one." }, 409);
+				return c.json(
+					{ error: "A project with this slug already exists. Please choose a different one." },
+					409,
+				);
 			}
 		} else {
-			slug = await generateProjectSlug(
-				(s) => projectQueries.findBySlug(db, s).then(Boolean),
-				name,
-			);
+			slug = await generateProjectSlug((s) => projectQueries.findBySlug(db, s).then(Boolean), name);
 		}
 
 		// Create project in transaction
@@ -216,7 +221,7 @@ projectsRouter.post("/", async (c: Context) => {
 				createdAt: new Date(project.created_at).toISOString(),
 				updatedAt: new Date(project.updated_at).toISOString(),
 			},
-			201
+			201,
 		);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Create project error");

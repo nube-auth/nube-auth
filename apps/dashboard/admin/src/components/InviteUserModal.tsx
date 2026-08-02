@@ -1,10 +1,25 @@
+import {
+	Alert,
+	Button,
+	Checkbox,
+	Dialog,
+	DialogBody,
+	DialogFooter,
+	DialogHeader,
+	DialogPopup,
+	DialogTitle,
+	Icon,
+	IconType,
+	Input,
+	Label,
+	Text,
+	Textarea,
+} from "@nube-auth/components";
 import { useCallback, useEffect, useState } from "react";
-import { Icon, IconType, Input, Textarea, Button, Checkbox, Label, Dialog, DialogPopup, DialogHeader, DialogTitle, DialogBody, DialogFooter, Alert, Heading, Text } from "@nube-auth/components";
-
-import { Select } from "./Select";
 import config from "../config";
 import { csrfHeaders } from "../lib/csrf";
 import { pingpong } from "../lib/pingpong";
+import { Select } from "./Select";
 
 interface InviteUserModalProps {
 	isOpen: boolean;
@@ -38,13 +53,10 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 	const fetchPlans = useCallback(async () => {
 		setPlansLoading(true);
 		try {
-			const response = await pingpong(
-				`${config.gatewayUrl}/v1/admin/projects/${projectId}/apps/${appId}/plans`,
-				{
-					method: "GET",
-					credentials: "include",
-				},
-			);
+			const response = await pingpong(`${config.gatewayUrl}/v1/admin/projects/${projectId}/apps/${appId}/plans`, {
+				method: "GET",
+				credentials: "include",
+			});
 
 			if (!response.ok()) {
 				throw new Error("Failed to fetch plans");
@@ -58,7 +70,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 					setPlanId(firstPlan.id);
 				}
 			}
-		} catch (err) {
+		} catch (_err) {
 			setError("Failed to load plans. Please try again.");
 		} finally {
 			setPlansLoading(false);
@@ -138,146 +150,148 @@ export function InviteUserModal({ isOpen, onClose, onSuccess, projectId, appId }
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
+		<Dialog
+			open={isOpen}
+			onOpenChange={(open) => {
+				if (!open) handleClose();
+			}}
+		>
 			<DialogPopup className="max-w-[900px] w-full">
 				<DialogHeader>
 					<DialogTitle>Invite User</DialogTitle>
-					<Text className="text-muted text-sm mt-1">Send an invitation or grant access to an existing user</Text>
+					<Text className="text-muted text-sm mt-1">
+						Send an invitation or grant access to an existing user
+					</Text>
 				</DialogHeader>
 
 				<DialogBody>
-				{/* Success Message */}
-				{success && (
-					<Alert variant="success" className="mb-5">
-						<Icon icon={IconType.Check} size={20} className="text-success shrink-0" />
-						{success.message}
-					</Alert>
-				)}
-
-				{/* Error Message */}
-				{error && (
-					<Alert variant="danger" className="mb-5">
-						<Icon icon={IconType.AlertCircle} size={20} className="text-danger shrink-0" />
-						{error}
-					</Alert>
-				)}
-
-				{/* Form */}
-				<form id="invite-form" onSubmit={handleSubmit}>
-					<div className="mb-5">
-						<Label>
-							Email Address <span className="text-danger">*</span>
-						</Label>
-						<Input
-							type="email"
-							required
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							disabled={loading}
-							placeholder="user@example.com"
-						/>
-						<Text className="text-xs text-muted mt-1.5">We'll check if this user exists before sending an invitation</Text>
-					</div>
-
-					<div className="mb-5">
-						<label
-							className={`flex items-center gap-2.5 p-3 rounded-lg border transition-all duration-200 ${loading ? "cursor-not-allowed" : "cursor-pointer"} ${grantLicense ? "bg-primary-light border-primary" : "bg-content-bg border-card-border"}`}
-						>
-							<Checkbox
-								checked={grantLicense}
-								onCheckedChange={(checked) => setGrantLicense(!!checked)}
-								disabled={loading}
-							/>
-							<div className="flex-1">
-								<div className="text-14px font-semibold text-text-primary">Grant License</div>
-								<div className="text-12px text-muted mt-0.5">Automatically grant a license when the user signs up</div>
-							</div>
-						</label>
-					</div>
-
-					{/* License Plan Select */}
-					{grantLicense && (
-						<>
-							<div className="mb-5">
-								<Label>
-									License Plan <span className="text-danger">*</span>
-								</Label>
-								<Select
-									value={planId?.toString() || ""}
-									onChange={(value) => setPlanId(Number(value))}
-									options={
-										plansLoading
-											? [{ value: "", label: "Loading plans..." }]
-											: plans.length === 0
-												? [{ value: "", label: "No plans available" }]
-												: plans.map((plan) => ({
-														value: plan.id.toString(),
-														label: `${plan.name}${
-															plan.monthlyPrice !== null && plan.monthlyPrice > 0
-																? ` ($${(plan.monthlyPrice / 100).toFixed(2)}/mo)`
-																: plan.yearlyPrice !== null && plan.yearlyPrice > 0
-																	? ` ($${(plan.yearlyPrice / 100).toFixed(2)}/yr)`
-																	: " (Free)"
-														}`,
-													}))
-									}
-									disabled={loading || plansLoading}
-								/>
-							</div>
-
-							<div className="mb-5">
-								<Label>
-									License Duration <span className="text-11px font-normal">(Optional)</span>
-								</Label>
-								<div className="relative">
-									<Input
-										type="number"
-										value={licenseDuration}
-										onChange={(e) => setLicenseDuration(e.target.value)}
-										disabled={loading}
-										placeholder="Leave empty for no expiry"
-										min="1"
-									/>
-									<span className="absolute right-3 top-1/2 -translate-y-1/2 text-13px text-muted pointer-events-none">
-										days
-									</span>
-								</div>
-								<Text className="text-xs text-muted mt-1.5">
-									Leave empty for lifetime access. Set a number of days for time-limited licenses.
-								</Text>
-							</div>
-						</>
+					{/* Success Message */}
+					{success && (
+						<Alert variant="success" className="mb-5">
+							<Icon icon={IconType.Check} size={20} className="text-success shrink-0" />
+							{success.message}
+						</Alert>
 					)}
 
-					<div className="mb-2">
-						<Label>
-							Custom Message <span className="text-11px font-normal">(Optional)</span>
-						</Label>
-						<Textarea
-							value={customMessage}
-							onChange={(e) => setCustomMessage(e.target.value)}
-							disabled={loading}
-							placeholder="Add a personal message to the invitation..."
-							rows={3}
-						/>
-					</div>
-				</form>
+					{/* Error Message */}
+					{error && (
+						<Alert variant="danger" className="mb-5">
+							<Icon icon={IconType.AlertCircle} size={20} className="text-danger shrink-0" />
+							{error}
+						</Alert>
+					)}
+
+					{/* Form */}
+					<form id="invite-form" onSubmit={handleSubmit}>
+						<div className="mb-5">
+							<Label>
+								Email Address <span className="text-danger">*</span>
+							</Label>
+							<Input
+								type="email"
+								required
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								disabled={loading}
+								placeholder="user@example.com"
+							/>
+							<Text className="text-xs text-muted mt-1.5">
+								We'll check if this user exists before sending an invitation
+							</Text>
+						</div>
+
+						<div className="mb-5">
+							<label
+								className={`flex items-center gap-2.5 p-3 rounded-lg border transition-all duration-200 ${loading ? "cursor-not-allowed" : "cursor-pointer"} ${grantLicense ? "bg-primary-light border-primary" : "bg-content-bg border-card-border"}`}
+							>
+								<Checkbox
+									checked={grantLicense}
+									onCheckedChange={(checked) => setGrantLicense(!!checked)}
+									disabled={loading}
+								/>
+								<div className="flex-1">
+									<div className="text-14px font-semibold text-text-primary">Grant License</div>
+									<div className="text-12px text-muted mt-0.5">
+										Automatically grant a license when the user signs up
+									</div>
+								</div>
+							</label>
+						</div>
+
+						{/* License Plan Select */}
+						{grantLicense && (
+							<>
+								<div className="mb-5">
+									<Label>
+										License Plan <span className="text-danger">*</span>
+									</Label>
+									<Select
+										value={planId?.toString() || ""}
+										onChange={(value) => setPlanId(Number(value))}
+										options={
+											plansLoading
+												? [{ value: "", label: "Loading plans..." }]
+												: plans.length === 0
+													? [{ value: "", label: "No plans available" }]
+													: plans.map((plan) => ({
+															value: plan.id.toString(),
+															label: `${plan.name}${
+																plan.monthlyPrice !== null && plan.monthlyPrice > 0
+																	? ` ($${(plan.monthlyPrice / 100).toFixed(2)}/mo)`
+																	: plan.yearlyPrice !== null && plan.yearlyPrice > 0
+																		? ` ($${(plan.yearlyPrice / 100).toFixed(2)}/yr)`
+																		: " (Free)"
+															}`,
+														}))
+										}
+										disabled={loading || plansLoading}
+									/>
+								</div>
+
+								<div className="mb-5">
+									<Label>
+										License Duration <span className="text-11px font-normal">(Optional)</span>
+									</Label>
+									<div className="relative">
+										<Input
+											type="number"
+											value={licenseDuration}
+											onChange={(e) => setLicenseDuration(e.target.value)}
+											disabled={loading}
+											placeholder="Leave empty for no expiry"
+											min="1"
+										/>
+										<span className="absolute right-3 top-1/2 -translate-y-1/2 text-13px text-muted pointer-events-none">
+											days
+										</span>
+									</div>
+									<Text className="text-xs text-muted mt-1.5">
+										Leave empty for lifetime access. Set a number of days for time-limited licenses.
+									</Text>
+								</div>
+							</>
+						)}
+
+						<div className="mb-2">
+							<Label>
+								Custom Message <span className="text-11px font-normal">(Optional)</span>
+							</Label>
+							<Textarea
+								value={customMessage}
+								onChange={(e) => setCustomMessage(e.target.value)}
+								disabled={loading}
+								placeholder="Add a personal message to the invitation..."
+								rows={3}
+							/>
+						</div>
+					</form>
 				</DialogBody>
 
 				<DialogFooter>
-					<Button
-						variant="secondary"
-						onClick={handleClose}
-						disabled={loading}
-					>
+					<Button variant="secondary" onClick={handleClose} disabled={loading}>
 						Cancel
 					</Button>
-					<Button
-						variant="primary"
-						type="submit"
-						form="invite-form"
-						disabled={loading || !email}
-					>
+					<Button variant="primary" type="submit" form="invite-form" disabled={loading || !email}>
 						{loading ? (
 							<>
 								<Icon icon={IconType.Refresh} size={16} className="animate-spin" />

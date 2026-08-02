@@ -1,1 +1,1 @@
-export { SessionCard, type SessionCardProps } from './session-card';
+export { SessionCard, type SessionCardProps } from "./session-card";

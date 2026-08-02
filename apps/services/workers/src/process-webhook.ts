@@ -4,9 +4,9 @@
  * Handles async webhook event processing
  */
 
+import { QueueClient } from "@nube-auth/queue";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Worker } from "bullmq";
-import { QueueClient } from "@nube-auth/queue";
 
 const log = createLogger("process-webhook-worker");
 
@@ -26,7 +26,7 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 	const queueClient = new QueueClient();
 
 	// Dynamically import webhook handler to avoid circular dependencies
-	const { processWebhook } = await import("@nube-auth/billing");  
+	const { processWebhook } = await import("@nube-auth/billing");
 	const { WebhookLoggingService } = await import("@nube-auth/billing");
 
 	return new BullWorker<ProcessWebhookJobData>(
@@ -48,7 +48,7 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 						ipAddress: job.data.ipAddress,
 						webhookLogId: job.data.webhookLogId,
 					},
-					"Processing webhook"
+					"Processing webhook",
 				);
 
 				const success = await processWebhook({
@@ -57,7 +57,9 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 					signature: job.data.signature,
 					...(job.data.webhookLogId != null ? { webhookLogId: job.data.webhookLogId } : {}),
 					...(job.data.providerConfigId != null ? { providerConfigId: job.data.providerConfigId } : {}),
-					...(job.data.providerConfigPublicId ? { providerConfigPublicId: job.data.providerConfigPublicId } : {}),
+					...(job.data.providerConfigPublicId
+						? { providerConfigPublicId: job.data.providerConfigPublicId }
+						: {}),
 				});
 
 				if (!success) {
@@ -69,7 +71,7 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 						jobId: job.id,
 						provider: job.data.provider,
 					},
-					"Webhook processed successfully"
+					"Webhook processed successfully",
 				);
 
 				return { success: true };
@@ -80,7 +82,7 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 						jobId: job.id,
 						provider: job.data.provider,
 					},
-					"Webhook processing failed"
+					"Webhook processing failed",
 				);
 				throw error;
 			}
@@ -88,6 +90,6 @@ export async function setupProcessWebhookWorker(): Promise<Worker<ProcessWebhook
 		{
 			connection: queueClient.getConnectionOptions(),
 			concurrency: 5,
-		}
+		},
 	);
 }

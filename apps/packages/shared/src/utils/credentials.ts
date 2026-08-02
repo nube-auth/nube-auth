@@ -95,7 +95,7 @@ export function validateOAuthCredentials(credentials: unknown): credentials is O
 		return false;
 	}
 	const creds = credentials as Record<string, unknown>;
-	return typeof creds['client_id'] === "string" && typeof creds['client_secret'] === "string";
+	return typeof creds["client_id"] === "string" && typeof creds["client_secret"] === "string";
 }
 
 /**
@@ -108,17 +108,20 @@ export function validatePaymentCredentials(credentials: unknown): credentials is
 	const creds = credentials as Record<string, unknown>;
 	// At least one field should be present
 	return (
-		typeof creds['api_key'] === "string" ||
-		typeof creds['secret_key'] === "string" ||
-		typeof creds['publishable_key'] === "string" ||
-		typeof creds['store_id'] === "string"
+		typeof creds["api_key"] === "string" ||
+		typeof creds["secret_key"] === "string" ||
+		typeof creds["publishable_key"] === "string" ||
+		typeof creds["store_id"] === "string"
 	);
 }
 
 /**
  * Safely try to decrypt credentials, return null if fails
  */
-export function safeDecryptOAuthCredentials(encryptedCredentials: string, encryptionKey: string): OAuthCredentials | null {
+export function safeDecryptOAuthCredentials(
+	encryptedCredentials: string,
+	encryptionKey: string,
+): OAuthCredentials | null {
 	try {
 		return decryptOAuthCredentials(encryptedCredentials, encryptionKey);
 	} catch (error) {
@@ -130,7 +133,10 @@ export function safeDecryptOAuthCredentials(encryptedCredentials: string, encryp
 /**
  * Safely try to decrypt credentials, return null if fails
  */
-export function safeDecryptPaymentCredentials(encryptedCredentials: string, encryptionKey: string): PaymentCredentials | null {
+export function safeDecryptPaymentCredentials(
+	encryptedCredentials: string,
+	encryptionKey: string,
+): PaymentCredentials | null {
 	try {
 		return decryptPaymentCredentials(encryptedCredentials, encryptionKey);
 	} catch (error) {

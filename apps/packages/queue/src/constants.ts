@@ -3,7 +3,7 @@
  * Default settings for BullMQ queues and workers
  */
 
-import { getRedisConfig, getWorkerConfig, getHealthCheckConfig } from "./config.js";
+import { getHealthCheckConfig, getRedisConfig, getWorkerConfig } from "./config.js";
 
 /**
  * Default Redis connection settings

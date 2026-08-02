@@ -4,8 +4,8 @@
  * Handles all license state transitions with automatic license_history tracking
  */
 
-import { getDb, license_history, licenses, licenseQueries, eq } from "@nube-auth/db";
-import { id, createLogger, serializeError } from "@nube-auth/shared";
+import { eq, getDb, license_history, licenseQueries, licenses } from "@nube-auth/db";
+import { createLogger, id, serializeError } from "@nube-auth/shared";
 
 const log = createLogger("license-manager");
 
@@ -81,7 +81,7 @@ export const licenseManager = {
 					appId,
 					planId,
 				},
-				"License created"
+				"License created",
 			);
 
 			return license;
@@ -93,7 +93,7 @@ export const licenseManager = {
 					appId,
 					planId,
 				},
-				"Failed to create license"
+				"Failed to create license",
 			);
 			throw error;
 		}
@@ -148,7 +148,7 @@ export const licenseManager = {
 					oldValidUntil: existingLicense.valid_until,
 					newValidUntil: validUntil,
 				},
-				"License renewed"
+				"License renewed",
 			);
 
 			return updatedLicense;
@@ -158,7 +158,7 @@ export const licenseManager = {
 					err: serializeError(error as Error),
 					licenseId,
 				},
-				"Failed to renew license"
+				"Failed to renew license",
 			);
 			throw error;
 		}
@@ -245,7 +245,12 @@ export const licenseManager = {
 	/**
 	 * Downgrade license to a different plan
 	 */
-	async downgradeLicense(licenseId: number, newPlanId: number, validUntil?: Date, metadata?: Record<string, unknown>) {
+	async downgradeLicense(
+		licenseId: number,
+		newPlanId: number,
+		validUntil?: Date,
+		metadata?: Record<string, unknown>,
+	) {
 		return licenseManager.transitionLicenseState({
 			licenseId,
 			newStatus: "active",
@@ -305,7 +310,10 @@ export const licenseManager = {
 				},
 				new_value: {
 					status: newStatus,
-					valid_until: validUntil !== undefined ? validUntil?.toISOString() || null : existingLicense.valid_until?.toISOString() || null,
+					valid_until:
+						validUntil !== undefined
+							? validUntil?.toISOString() || null
+							: existingLicense.valid_until?.toISOString() || null,
 					plan_id: planId || existingLicense.plan_id,
 				},
 				changed_by_system: true,
@@ -320,7 +328,7 @@ export const licenseManager = {
 					newStatus,
 					reason,
 				},
-				"License state transitioned"
+				"License state transitioned",
 			);
 
 			return updatedLicense;
@@ -332,7 +340,7 @@ export const licenseManager = {
 					changeType,
 					newStatus,
 				},
-				"Failed to transition license state"
+				"Failed to transition license state",
 			);
 			throw error;
 		}
@@ -354,11 +362,7 @@ export const licenseManager = {
 
 			const license = await db.query.licenses.findFirst({
 				where: (l, { and: andOp, eq: eqCol, isNull: isNullOp }) =>
-					andOp(
-						eqCol(l.user_id, user.id),
-						eqCol(l.app_id, appId),
-						isNullOp(l.deleted_at),
-					),
+					andOp(eqCol(l.user_id, user.id), eqCol(l.app_id, appId), isNullOp(l.deleted_at)),
 			});
 
 			return license || null;
@@ -369,7 +373,7 @@ export const licenseManager = {
 					userEmail,
 					appId,
 				},
-				"Failed to find license by email and app"
+				"Failed to find license by email and app",
 			);
 			throw error;
 		}

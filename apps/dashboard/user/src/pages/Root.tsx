@@ -1,16 +1,8 @@
+import { Alert, Button, Icon, IconType, Spinner, ThemeToggle, useTheme } from "@nube-auth/components";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import {
-	Icon,
-	IconType,
-	Button,
-	Alert,
-	Spinner,
-	ThemeToggle,
-	useTheme,
-} from "@nube-auth/components";
-import { useAuth } from "../hooks/api";
 import { config } from "../config";
+import { useAuth } from "../hooks/api";
 
 const OAUTH_ERRORS: Record<string, string> = {
 	missing_code: "Authentication code was missing. Please try again.",
@@ -96,11 +88,7 @@ function UserLanding() {
 						onClick={handleSignIn}
 						disabled={isRedirecting}
 					>
-						{isRedirecting ? (
-							<Spinner className="w-4 h-4" />
-						) : (
-							<Icon icon={IconType.Google} size={18} />
-						)}
+						{isRedirecting ? <Spinner className="w-4 h-4" /> : <Icon icon={IconType.Google} size={18} />}
 						{isRedirecting ? "Redirecting…" : "Continue with Google"}
 					</Button>
 

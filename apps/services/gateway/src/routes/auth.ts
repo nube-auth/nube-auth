@@ -1,15 +1,21 @@
 import crypto from "node:crypto";
-import { createSessionCookie, parseSessionCookie } from "@nube-auth/auth";
+import { createSessionCookie, parseSessionCookie, pingpong } from "@nube-auth/auth";
 import { cache, sessionStore } from "@nube-auth/cache";
-import { getDb, sessionQueries, userQueries, projectMemberQueries, projectQueries, appQueries } from "@nube-auth/db";
-import { createLogger, GatewayLoginRequestSchema, serializeError, type SessionEntitlements } from "@nube-auth/shared";
+import { appQueries, getDb, projectMemberQueries, projectQueries, sessionQueries, userQueries } from "@nube-auth/db";
+import { createLogger, GatewayLoginRequestSchema, type SessionEntitlements, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
-import { CSRF_TOKEN_BYTES, SESSION_ID_BYTES, SESSION_TTL, ADMIN_SESSION_TTL, EXCHANGE_CODE_TTL, CHECKOUT_EXCHANGE_CODE_TTL } from "../config/constants";
+import {
+	ADMIN_SESSION_TTL,
+	CHECKOUT_EXCHANGE_CODE_TTL,
+	CSRF_TOKEN_BYTES,
+	EXCHANGE_CODE_TTL,
+	SESSION_ID_BYTES,
+	SESSION_TTL,
+} from "../config/constants";
 import { env } from "../config/env";
 import { coreClient } from "../lib/core-client";
-import { pingpong } from "@nube-auth/auth";
 import { sessionService } from "../services/sessionService";
 import {
 	ADMIN_SESSION_COOKIE,
@@ -106,31 +112,47 @@ authRoutes.get("/start", async (c: Context) => {
 			if (!app) {
 				return c.json({ error: "Unknown app_id" }, 400);
 			}
-		const securitySettings = app.security_settings as { redirectUris?: string[]; sessionTtlDays?: number } | null;
-		// Strip query string and fragment before comparing — only origin+pathname must match.
-		// This mirrors how Google/GitHub handle redirect_uri validation and allows callers to
-		// append their own query params (e.g. ?upgraded=true) without needing to register
-		// every possible variant.
-		const normalizeUri = (uri: string) => { try { const u = new URL(uri); return u.origin + u.pathname; } catch { return uri; } };
-		const registeredUris: string[] = (securitySettings?.redirectUris ?? []).map(normalizeUri);
-		const normalizedReturnTo = normalizeUri(returnTo);
-		if (registeredUris.length === 0) {
-			// In production an empty allowlist is a misconfiguration — reject to prevent open redirect.
-			// In development allow any URI so local apps work before configuration is complete.
-			if (process.env["NODE_ENV"] === "production") {
-				log.warn({ returnTo, appId }, "No redirect URIs registered for app — rejecting in production");
-				return c.json({ error: "No redirect URIs registered for this app. Configure them in the NubeAuth admin." }, 403);
+			const securitySettings = app.security_settings as {
+				redirectUris?: string[];
+				sessionTtlDays?: number;
+			} | null;
+			// Strip query string and fragment before comparing — only origin+pathname must match.
+			// This mirrors how Google/GitHub handle redirect_uri validation and allows callers to
+			// append their own query params (e.g. ?upgraded=true) without needing to register
+			// every possible variant.
+			const normalizeUri = (uri: string) => {
+				try {
+					const u = new URL(uri);
+					return u.origin + u.pathname;
+				} catch {
+					return uri;
+				}
+			};
+			const registeredUris: string[] = (securitySettings?.redirectUris ?? []).map(normalizeUri);
+			const normalizedReturnTo = normalizeUri(returnTo);
+			if (registeredUris.length === 0) {
+				// In production an empty allowlist is a misconfiguration — reject to prevent open redirect.
+				// In development allow any URI so local apps work before configuration is complete.
+				if (process.env["NODE_ENV"] === "production") {
+					log.warn({ returnTo, appId }, "No redirect URIs registered for app — rejecting in production");
+					return c.json(
+						{ error: "No redirect URIs registered for this app. Configure them in the NubeAuth admin." },
+						403,
+					);
+				}
+			} else if (!registeredUris.includes(normalizedReturnTo)) {
+				log.warn({ returnTo, registeredUris, appId }, "return_to not in registered redirect URIs");
+				return c.json({ error: "return_to URI is not registered for this app_id" }, 400);
 			}
-		} else if (!registeredUris.includes(normalizedReturnTo)) {
-			log.warn({ returnTo, registeredUris, appId }, "return_to not in registered redirect URIs");
-			return c.json({ error: "return_to URI is not registered for this app_id" }, 400);
-		}
 			// Per-app TTL: prefer security_settings.sessionTtlDays; fall back to SESSION_TTL constant.
 			if (securitySettings?.sessionTtlDays && securitySettings.sessionTtlDays > 0) {
 				appSessionTtlSeconds = securitySettings.sessionTtlDays * 24 * 60 * 60;
 			}
 		} catch (lookupError) {
-			log.error({ err: serializeError(lookupError as Error), appId }, "Failed to validate return_to against redirect URI allowlist");
+			log.error(
+				{ err: serializeError(lookupError as Error), appId },
+				"Failed to validate return_to against redirect URI allowlist",
+			);
 			return c.json({ error: "Failed to start auth" }, 500);
 		}
 	}
@@ -185,7 +207,8 @@ authRoutes.get("/start", async (c: Context) => {
 		statePayload["promoCode"] = promoCode;
 	}
 	const stateData = JSON.stringify(statePayload);
-	const encodedState = Buffer.from(stateData).toString("base64")
+	const encodedState = Buffer.from(stateData)
+		.toString("base64")
 		.replace(/\+/g, "-")
 		.replace(/\//g, "_")
 		.replace(/=/g, ".");
@@ -216,7 +239,13 @@ authRoutes.get("/start", async (c: Context) => {
 		});
 
 		const location = response.headers.get("location");
-		if ((response.status === 301 || response.status === 302 || response.status === 307 || response.status === 308) && location) {
+		if (
+			(response.status === 301 ||
+				response.status === 302 ||
+				response.status === 307 ||
+				response.status === 308) &&
+			location
+		) {
 			return c.redirect(location, response.status as 301 | 302 | 307 | 308);
 		}
 
@@ -294,7 +323,13 @@ authRoutes.get("/callback/:provider", async (c: Context) => {
 		});
 
 		const location = response.headers.get("location");
-		if ((response.status === 301 || response.status === 302 || response.status === 307 || response.status === 308) && location) {
+		if (
+			(response.status === 301 ||
+				response.status === 302 ||
+				response.status === 307 ||
+				response.status === 308) &&
+			location
+		) {
 			return c.redirect(location, response.status as 301 | 302 | 307 | 308);
 		}
 
@@ -331,10 +366,7 @@ authRoutes.get("/callback", async (c: Context) => {
 	try {
 		log.debug({ rawState: state }, "Decoding state parameter");
 		// Decode URL-safe base64 back to standard base64
-		const standardBase64 = state
-			.replace(/-/g, "+")
-			.replace(/_/g, "/")
-			.replace(/\./g, "=");
+		const standardBase64 = state.replace(/-/g, "+").replace(/_/g, "/").replace(/\./g, "=");
 		const decodedState = Buffer.from(standardBase64, "base64").toString("utf-8");
 		const stateData = JSON.parse(decodedState) as {
 			returnTo?: string;
@@ -358,23 +390,29 @@ authRoutes.get("/callback", async (c: Context) => {
 		stateSessionTtlSeconds = stateData.sessionTtlSeconds ? parseInt(stateData.sessionTtlSeconds, 10) : undefined;
 		statePriceId = stateData.priceId;
 		statePromoCode = stateData.promoCode;
-		log.info({ 
-			decodedState, 
-			stateData, 
-			returnTo, 
-			audience,
-			rawState: state 
-		}, "Parsed state successfully");
+		log.info(
+			{
+				decodedState,
+				stateData,
+				returnTo,
+				audience,
+				rawState: state,
+			},
+			"Parsed state successfully",
+		);
 	} catch (parseError) {
 		// Fallback for old-style state (just a path string)
 		returnTo = state;
 		audience = inferAudience(c);
-		log.warn({ 
-			rawState: state, 
-			parseError: parseError instanceof Error ? parseError.message : String(parseError),
-			fallbackAudience: audience,
-			fallbackReturnTo: returnTo
-		}, "Failed to parse state, using fallback");
+		log.warn(
+			{
+				rawState: state,
+				parseError: parseError instanceof Error ? parseError.message : String(parseError),
+				fallbackAudience: audience,
+				fallbackReturnTo: returnTo,
+			},
+			"Failed to parse state, using fallback",
+		);
 	}
 
 	// CSRF nonce verification: the nonce set in the /start cookie must match
@@ -394,10 +432,14 @@ authRoutes.get("/callback", async (c: Context) => {
 	});
 	if (stateCsrfNonce) {
 		if (!nonceCookie || nonceCookie !== stateCsrfNonce) {
-			log.warn({ audience, hasNonceCookie: !!nonceCookie }, "OAuth CSRF nonce mismatch — possible CSRF or replay");
-			const dashboardUrl = audience === "admin"
-				? (env.ADMIN_DASHBOARD_URL ?? "http://localhost:5174")
-				: (env.USER_DASHBOARD_URL ?? "http://localhost:5173");
+			log.warn(
+				{ audience, hasNonceCookie: !!nonceCookie },
+				"OAuth CSRF nonce mismatch — possible CSRF or replay",
+			);
+			const dashboardUrl =
+				audience === "admin"
+					? (env.ADMIN_DASHBOARD_URL ?? "http://localhost:5174")
+					: (env.USER_DASHBOARD_URL ?? "http://localhost:5173");
 			if (audience === "app") return c.redirect(`${returnTo}?error=invalid_state`);
 			return c.redirect(`${dashboardUrl}/login?error=invalid_state`);
 		}
@@ -409,9 +451,10 @@ authRoutes.get("/callback", async (c: Context) => {
 			return c.redirect(`${returnTo}?error=${encodeURIComponent(error)}`);
 		}
 		// Redirect to dashboard with error
-		const dashboardUrl = audience === "admin"
-			? (env.ADMIN_DASHBOARD_URL ?? "http://localhost:5174")
-			: (env.USER_DASHBOARD_URL ?? "http://localhost:5173");
+		const dashboardUrl =
+			audience === "admin"
+				? (env.ADMIN_DASHBOARD_URL ?? "http://localhost:5174")
+				: (env.USER_DASHBOARD_URL ?? "http://localhost:5173");
 		return c.redirect(`${dashboardUrl}/login?error=${encodeURIComponent(error)}`);
 	}
 
@@ -419,14 +462,14 @@ authRoutes.get("/callback", async (c: Context) => {
 		if (audience === "app") {
 			return c.redirect(`${returnTo}?error=missing_code`);
 		}
-		const dashboardUrl = audience === "admin"
-			? (env.ADMIN_DASHBOARD_URL ?? "http://localhost:5174")
-			: (env.USER_DASHBOARD_URL ?? "http://localhost:5173");
+		const dashboardUrl =
+			audience === "admin"
+				? (env.ADMIN_DASHBOARD_URL ?? "http://localhost:5174")
+				: (env.USER_DASHBOARD_URL ?? "http://localhost:5173");
 		return c.redirect(`${dashboardUrl}/login?error=missing_code`);
 	}
 
 	try {
-
 		// Exchange session ID with Core (S2S call)
 		// Note: Core's callback sends the session ID as "code" parameter
 		const response = await pingpong(`${env.CORE_URL}/v1/auth/exchange`, {
@@ -443,13 +486,16 @@ authRoutes.get("/callback", async (c: Context) => {
 		if (!response.ok()) {
 			// v1.4.0+: response.data is auto-parsed JSON
 			const errorData = response.data || {};
-			log.error({ 
-				status: response.status,
-				errorData, 
-				sessionId: code ? `${code.substring(0, 8)}...` : undefined,
-				audience,
-				err: serializeError(new Error(`Exchange failed: ${JSON.stringify(errorData)}`))
-			}, "Code exchange failed");
+			log.error(
+				{
+					status: response.status,
+					errorData,
+					sessionId: code ? `${code.substring(0, 8)}...` : undefined,
+					audience,
+					err: serializeError(new Error(`Exchange failed: ${JSON.stringify(errorData)}`)),
+				},
+				"Code exchange failed",
+			);
 			if (audience === "app") {
 				return c.redirect(`${returnTo}?error=exchange_failed`);
 			}
@@ -481,11 +527,10 @@ authRoutes.get("/callback", async (c: Context) => {
 			}
 
 			const appSessionToken = crypto.randomBytes(SESSION_ID_BYTES).toString("hex");
-			const ipAddress = c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ||
-				c.req.header("x-real-ip") ||
-				"unknown";
+			const ipAddress =
+				c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || c.req.header("x-real-ip") || "unknown";
 			const userAgent = c.req.header("user-agent") || "unknown";
-// TTL precedence: Core per-session > per-app security_settings default > global SESSION_TTL
+			// TTL precedence: Core per-session > per-app security_settings default > global SESSION_TTL
 			let ttlSeconds = stateSessionTtlSeconds ?? SESSION_TTL;
 			if (data.sessionTtlSeconds && data.sessionTtlSeconds > 0) {
 				ttlSeconds = data.sessionTtlSeconds;
@@ -553,7 +598,12 @@ authRoutes.get("/callback", async (c: Context) => {
 					}
 
 					log.warn(
-						{ userId: data.userId, priceId: statePriceId, status: checkoutResponse.status, body: checkoutResponse.data },
+						{
+							userId: data.userId,
+							priceId: statePriceId,
+							status: checkoutResponse.status,
+							body: checkoutResponse.data,
+						},
 						"Checkout creation failed — falling back to direct returnTo",
 					);
 				} catch (checkoutError) {
@@ -572,7 +622,7 @@ authRoutes.get("/callback", async (c: Context) => {
 		// Don't reuse the Core's session ID
 		const gatewaySessionId = crypto.randomBytes(SESSION_ID_BYTES).toString("hex");
 		const csrfToken = crypto.randomBytes(CSRF_TOKEN_BYTES).toString("hex"); // Generate CSRF token
-		
+
 		// Use per-app TTL from Core if available, fallback to audience-based TTL
 		let ttlSeconds = audience === "admin" ? ADMIN_SESSION_TTL : SESSION_TTL;
 		if (data.sessionTtlSeconds && data.sessionTtlSeconds > 0) {
@@ -582,48 +632,53 @@ authRoutes.get("/callback", async (c: Context) => {
 		// Store app session in Redis with Gateway session ID
 		// Store Core session ID and CSRF token in metadata
 		const appId = audience === "admin" ? "admin-dashboard" : "user-dashboard";
-		
+
 		// Capture IP address and user-agent for session tracking
-		const ipAddress = c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || 
-			c.req.header("x-real-ip") || 
-			"unknown";
+		const ipAddress =
+			c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || c.req.header("x-real-ip") || "unknown";
 		const userAgent = c.req.header("user-agent") || "unknown";
 
 		// Build session entitlements based on audience
 		const entitlements = await buildEntitlements(data.userId, audience);
-		
-		await sessionStore.setAppSession(gatewaySessionId, data.userId, appId, ttlSeconds, {
-			coreSessionId: code, // Store Core session in metadata
-			csrfToken, // Store CSRF token for validation
-			sessionType: audience, // Track session type for security
-			createdAt: Date.now(), // Track creation time for inactivity checks
-			lastActivityAt: Date.now(), // Track last activity
-			ipAddress, // IP address for location/security tracking
-			userAgent, // Browser/device info
-		}, entitlements);
+
+		await sessionStore.setAppSession(
+			gatewaySessionId,
+			data.userId,
+			appId,
+			ttlSeconds,
+			{
+				coreSessionId: code, // Store Core session in metadata
+				csrfToken, // Store CSRF token for validation
+				sessionType: audience, // Track session type for security
+				createdAt: Date.now(), // Track creation time for inactivity checks
+				lastActivityAt: Date.now(), // Track last activity
+				ipAddress, // IP address for location/security tracking
+				userAgent, // Browser/device info
+			},
+			entitlements,
+		);
 
 		// Create signed cookie with domain for cross-subdomain access
 		const cookieDomain = env.COOKIE_DOMAIN; // e.g., ".nubeauth.com" or "localhost"
 		const secureCookies =
-			env.NODE_ENV === "production" || (env.GATEWAY_PUBLIC_URL ? env.GATEWAY_PUBLIC_URL.startsWith("https://") : false);
-		
+			env.NODE_ENV === "production" ||
+			(env.GATEWAY_PUBLIC_URL ? env.GATEWAY_PUBLIC_URL.startsWith("https://") : false);
+
 		// For localhost: DON'T set domain (host-only cookie works across ports)
 		// For production: set domain=.nubeauth.com for subdomain sharing
-		const cookieOptions = cookieDomain && cookieDomain !== "localhost"
-			? { domain: cookieDomain, secure: secureCookies, maxAge: ttlSeconds }
-			: { secure: secureCookies, maxAge: ttlSeconds };
-		
-		const { value, attributes } = createSessionCookie(
-			gatewaySessionId,
-			cookieOptions,
-		);
+		const cookieOptions =
+			cookieDomain && cookieDomain !== "localhost"
+				? { domain: cookieDomain, secure: secureCookies, maxAge: ttlSeconds }
+				: { secure: secureCookies, maxAge: ttlSeconds };
 
-		const httpOnly = safeAttrBoolean(attributes['httpOnly']);
-		const secure = safeAttrBoolean(attributes['secure']);
-		const sameSite = safeAttrString(attributes['sameSite']) as "Strict" | "Lax" | "None";
-		const path = safeAttrString(attributes['path']);
-		const domain = attributes['domain'] ? safeAttrString(attributes['domain']) : undefined;
-		const maxAge = safeAttrNumber(attributes['maxAge']);
+		const { value, attributes } = createSessionCookie(gatewaySessionId, cookieOptions);
+
+		const httpOnly = safeAttrBoolean(attributes["httpOnly"]);
+		const secure = safeAttrBoolean(attributes["secure"]);
+		const sameSite = safeAttrString(attributes["sameSite"]) as "Strict" | "Lax" | "None";
+		const path = safeAttrString(attributes["path"]);
+		const domain = attributes["domain"] ? safeAttrString(attributes["domain"]) : undefined;
+		const maxAge = safeAttrNumber(attributes["maxAge"]);
 
 		// Set appropriate cookie based on audience
 		const cookieName = audience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
@@ -653,18 +708,24 @@ authRoutes.get("/callback", async (c: Context) => {
 				: (env.USER_DASHBOARD_URL ?? "http://localhost:5173");
 		const redirectUrl = returnTo.startsWith("/") ? `${dashboardUrl}${returnTo}` : dashboardUrl;
 
-		log.info({ 
-			audience, 
-			appId, 
-			cookieName, 
-			dashboardUrl, 
-			returnTo,
-			redirectUrl,
-			hasCsrfToken: true 
-		}, "Login successful, redirecting");
+		log.info(
+			{
+				audience,
+				appId,
+				cookieName,
+				dashboardUrl,
+				returnTo,
+				redirectUrl,
+				hasCsrfToken: true,
+			},
+			"Login successful, redirecting",
+		);
 		return c.redirect(redirectUrl);
 	} catch (error) {
-		log.error({ err: serializeError(error as Error), stack: error instanceof Error ? error.stack : undefined }, "Auth callback error:");
+		log.error(
+			{ err: serializeError(error as Error), stack: error instanceof Error ? error.stack : undefined },
+			"Auth callback error:",
+		);
 		const audience = inferAudience(c);
 		const dashboardUrl =
 			audience === "admin"
@@ -697,9 +758,8 @@ authRoutes.post("/login", async (c: Context) => {
 		const resolvedAudience = audience === "admin" ? "admin" : "user";
 		const ttlSeconds = resolvedAudience === "admin" ? ADMIN_SESSION_TTL : SESSION_TTL;
 		// Capture IP address and user-agent for session tracking
-		const ipAddress = c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || 
-			c.req.header("x-real-ip") || 
-			"unknown";
+		const ipAddress =
+			c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || c.req.header("x-real-ip") || "unknown";
 		const userAgent = c.req.header("user-agent") || "unknown";
 
 		// Store app session with Gateway session ID and CSRF token
@@ -721,18 +781,21 @@ authRoutes.post("/login", async (c: Context) => {
 		// Create signed cookie with Gateway session ID
 		const cookieDomain = env.COOKIE_DOMAIN; // e.g., ".nubeauth.com"
 		const secureCookies =
-			env.NODE_ENV === "production" || (env.GATEWAY_PUBLIC_URL ? env.GATEWAY_PUBLIC_URL.startsWith("https://") : false);
+			env.NODE_ENV === "production" ||
+			(env.GATEWAY_PUBLIC_URL ? env.GATEWAY_PUBLIC_URL.startsWith("https://") : false);
 		const { value, attributes } = createSessionCookie(
 			gatewaySessionId,
-			cookieDomain ? { domain: cookieDomain, secure: secureCookies, maxAge: ttlSeconds } : { secure: secureCookies, maxAge: ttlSeconds },
+			cookieDomain
+				? { domain: cookieDomain, secure: secureCookies, maxAge: ttlSeconds }
+				: { secure: secureCookies, maxAge: ttlSeconds },
 		);
 
-		const httpOnly = safeAttrBoolean(attributes['httpOnly']);
-		const secure = safeAttrBoolean(attributes['secure']);
-		const sameSite = safeAttrString(attributes['sameSite']) as "Strict" | "Lax" | "None";
-		const path = safeAttrString(attributes['path']);
-		const domain = attributes['domain'] ? safeAttrString(attributes['domain']) : undefined;
-		const maxAge = safeAttrNumber(attributes['maxAge']);
+		const httpOnly = safeAttrBoolean(attributes["httpOnly"]);
+		const secure = safeAttrBoolean(attributes["secure"]);
+		const sameSite = safeAttrString(attributes["sameSite"]) as "Strict" | "Lax" | "None";
+		const path = safeAttrString(attributes["path"]);
+		const domain = attributes["domain"] ? safeAttrString(attributes["domain"]) : undefined;
+		const maxAge = safeAttrNumber(attributes["maxAge"]);
 		const cookieName = resolvedAudience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
 
 		// Set session cookie
@@ -821,7 +884,7 @@ authRoutes.post("/logout", async (c: Context) => {
 					const appSessionBefore = await sessionStore.getAppSession(sessionId);
 
 					// Get Core session ID to revoke database session
-					const coreSessionId = appSessionBefore?.metadata?.['coreSessionId'] as string | undefined;
+					const coreSessionId = appSessionBefore?.metadata?.["coreSessionId"] as string | undefined;
 					// Delete from all three stores:
 					// 1. Delete from sessionService (gateway:session:xxx)
 					await sessionService.deleteSession(sessionId);
@@ -968,7 +1031,7 @@ authRoutes.post("/logout", async (c: Context) => {
 /**
  * GET /v1/auth/status
  * Check if user is logged in
- * 
+ *
  * SECURITY: Only validates the cookie matching the requested audience.
  * - audience=admin: Only checks admin cookie, returns 401 if missing/invalid
  * - audience=user: Only checks user cookie, returns 401 if missing/invalid
@@ -976,7 +1039,7 @@ authRoutes.post("/logout", async (c: Context) => {
 authRoutes.get("/status", async (c: Context) => {
 	try {
 		const audience = inferAudience(c);
-		
+
 		// CRITICAL: Only check the cookie for the requested audience
 		const cookieName = audience === "admin" ? ADMIN_SESSION_COOKIE : USER_SESSION_COOKIE;
 		const cookie = getCookie(c, cookieName);
@@ -1009,11 +1072,14 @@ authRoutes.get("/status", async (c: Context) => {
 		// Verify session type matches audience
 		const sessionType = appSession.metadata?.["sessionType"] as string | undefined;
 		if (sessionType && sessionType !== audience) {
-			log.warn({ 
-				audience, 
-				sessionType,
-				sessionId: `${sessionId.substring(0, 8)}...` 
-			}, "Session type mismatch with audience");
+			log.warn(
+				{
+					audience,
+					sessionType,
+					sessionId: `${sessionId.substring(0, 8)}...`,
+				},
+				"Session type mismatch with audience",
+			);
 			return c.json({ error: "Unauthorized", loggedIn: false }, 401);
 		}
 
@@ -1164,10 +1230,7 @@ authRoutes.delete("/sessions/:sessionId", async (c: Context) => {
 
 		// Prevent revoking current session via this endpoint (use /logout instead)
 		if (sessionIdToRevoke === currentSessionId) {
-			return c.json(
-				{ error: "Use /logout endpoint to revoke current session" },
-				400,
-			);
+			return c.json({ error: "Use /logout endpoint to revoke current session" }, 400);
 		}
 
 		// Revoke the session
@@ -1250,7 +1313,10 @@ authRoutes.post("/token", async (c: Context) => {
 		// Resolve the userId from the stored session.
 		const session = await sessionStore.getAppSession(exchangeData.sessionToken);
 		if (!session) {
-			log.error({ sessionToken: `${exchangeData.sessionToken.substring(0, 8)}...` }, "Session not found after code exchange");
+			log.error(
+				{ sessionToken: `${exchangeData.sessionToken.substring(0, 8)}...` },
+				"Session not found after code exchange",
+			);
 			return c.json({ error: "session_not_found" }, 500);
 		}
 

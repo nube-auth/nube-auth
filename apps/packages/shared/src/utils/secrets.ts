@@ -37,7 +37,7 @@ export function validateSecret(
 		isProduction?: boolean | undefined;
 	} = {},
 ): SecretValidationResult {
-	const { minLength = 32, required = true, isProduction = process.env['NODE_ENV'] === "production" } = options;
+	const { minLength = 32, required = true, isProduction = process.env["NODE_ENV"] === "production" } = options;
 	const warnings: string[] = [];
 	const errors: string[] = [];
 

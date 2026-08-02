@@ -1,55 +1,41 @@
-import {
-  Card,
-  CardBody,
-  IconBox,
-  Heading,
-  Text,
-  Chip,
-  Icon,
-  type IconType,
-} from '@nube-auth/components';
+import { Card, CardBody, Chip, Heading, Icon, IconBox, type IconType, Text } from "@nube-auth/components";
 
 export interface StatCardProps {
-  icon: typeof IconType[keyof typeof IconType];
-  title: string;
-  value: string | number;
-  change?: string;
-  changeType?: 'increase' | 'decrease';
-  subtitle?: string;
+	icon: (typeof IconType)[keyof typeof IconType];
+	title: string;
+	value: string | number;
+	change?: string;
+	changeType?: "increase" | "decrease";
+	subtitle?: string;
 }
 
 export function StatCard({
-  icon,
-  title,
-  value,
-  change,
-  changeType,
-  subtitle = 'Compared to last month',
+	icon,
+	title,
+	value,
+	change,
+	changeType,
+	subtitle = "Compared to last month",
 }: StatCardProps) {
-  return (
-    <Card>
-      <CardBody>
-        <IconBox size="lg" variant="info-subtle" className="mb-4">
-          <Icon icon={icon} />
-        </IconBox>
-        <Heading size="sm" className="font-medium text-muted">
-          {title}
-        </Heading>
-        <Text className="text-4xl font-semibold mt-2">{value}</Text>
-        {change && changeType && (
-          <div className="flex items-center gap-2 mt-2">
-            <Chip
-              variant={changeType === 'increase' ? 'success' : 'danger'}
-              size="sm"
-            >
-              {changeType === 'increase' ? '↑' : '↓'} {change}
-            </Chip>
-            <Text className="text-sm text-muted">
-              {subtitle}
-            </Text>
-          </div>
-        )}
-      </CardBody>
-    </Card>
-  );
+	return (
+		<Card>
+			<CardBody>
+				<IconBox size="lg" variant="info-subtle" className="mb-4">
+					<Icon icon={icon} />
+				</IconBox>
+				<Heading size="sm" className="font-medium text-muted">
+					{title}
+				</Heading>
+				<Text className="text-4xl font-semibold mt-2">{value}</Text>
+				{change && changeType && (
+					<div className="flex items-center gap-2 mt-2">
+						<Chip variant={changeType === "increase" ? "success" : "danger"} size="sm">
+							{changeType === "increase" ? "↑" : "↓"} {change}
+						</Chip>
+						<Text className="text-sm text-muted">{subtitle}</Text>
+					</div>
+				)}
+			</CardBody>
+		</Card>
+	);
 }

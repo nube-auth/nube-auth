@@ -85,8 +85,7 @@ export function verifySessionId(signed: string): string {
 	const secret = getSessionSecret();
 	const expectedHmac = crypto.createHmac("sha256", secret).update(sessionId).digest("hex");
 
-	if (hmac.length !== expectedHmac.length ||
-		!crypto.timingSafeEqual(Buffer.from(hmac), Buffer.from(expectedHmac))) {
+	if (hmac.length !== expectedHmac.length || !crypto.timingSafeEqual(Buffer.from(hmac), Buffer.from(expectedHmac))) {
 		throw new Error("Session signature invalid");
 	}
 

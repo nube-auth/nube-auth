@@ -8,6 +8,8 @@ import {
 	ProjectsListResponseSchema,
 } from "@nube-auth/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import config from "../config";
+import { pingpong } from "../lib/pingpong";
 import type {
 	App,
 	CreateAppRequest,
@@ -17,8 +19,6 @@ import type {
 	ProjectMember,
 	UpdateAppRequest,
 } from "../types/admin";
-import config from "../config";
-import { pingpong } from "../lib/pingpong";
 
 const client = new NubeAuthClient({
 	gatewayUrl: config.gatewayUrl,
@@ -147,13 +147,16 @@ export function useProjectsStats() {
 		queryKey: ["projects-stats"],
 		queryFn: async () => {
 			const data = await fetchAPI<{
-				stats: Record<string, {
-					totalApps: number;
-					totalUsers: number;
-					totalLicenses: number;
-					activeLicenses: number;
-					totalRevenue: number;
-				}>;
+				stats: Record<
+					string,
+					{
+						totalApps: number;
+						totalUsers: number;
+						totalLicenses: number;
+						activeLicenses: number;
+						totalRevenue: number;
+					}
+				>;
 			}>("/v1/admin/projects/stats");
 			return data.stats;
 		},
@@ -751,19 +754,16 @@ export function useUpdatePaymentProvider() {
 				metadata?: Record<string, any>;
 			};
 		}) => {
-			return fetchAPI<{ success?: boolean }>(
-				`/v1/admin/providers/${data.projectId}/configs/${data.providerId}`,
-				{
+			return fetchAPI<{ success?: boolean }>(`/v1/admin/providers/${data.projectId}/configs/${data.providerId}`, {
 				method: "PATCH",
-					body: JSON.stringify({
-						name: data.data.name,
-						credentials: data.data.credentials,
-						webhookSecret: data.data.webhookSecret,
-						isActive: data.data.isActive,
-						metadata: data.data.metadata,
-					}),
-				},
-			);
+				body: JSON.stringify({
+					name: data.data.name,
+					credentials: data.data.credentials,
+					webhookSecret: data.data.webhookSecret,
+					isActive: data.data.isActive,
+					metadata: data.data.metadata,
+				}),
+			});
 		},
 		onSuccess: (_, variables) => {
 			queryClient.invalidateQueries({ queryKey: ["payment-providers", "project", variables.projectId] });
@@ -778,12 +778,9 @@ export function useDeletePaymentProvider() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: async (data: { projectId: string; providerId: string }) => {
-			return fetchAPI<{ success: boolean }>(
-				`/v1/admin/providers/${data.projectId}/configs/${data.providerId}`,
-				{
-					method: "DELETE",
-				},
-			);
+			return fetchAPI<{ success: boolean }>(`/v1/admin/providers/${data.projectId}/configs/${data.providerId}`, {
+				method: "DELETE",
+			});
 		},
 		onSuccess: (_, variables) => {
 			queryClient.invalidateQueries({ queryKey: ["payment-providers", "project", variables.projectId] });
@@ -1243,8 +1240,7 @@ export function useUpdateV2Plan(appId: string) {
 export function useDeleteV2Plan(appId: string) {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: (planId: string) =>
-			fetchAPI(`/v1/admin/apps/${appId}/plans/${planId}`, { method: "DELETE" }),
+		mutationFn: (planId: string) => fetchAPI(`/v1/admin/apps/${appId}/plans/${planId}`, { method: "DELETE" }),
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["v2-plans", appId] }),
 	});
 }
@@ -1339,12 +1335,13 @@ export function useV2Licenses(appId: string, params?: { status?: string; source?
 export function useV2LicenseSummary(appId: string) {
 	return useQuery({
 		queryKey: ["v2-license-summary", appId],
-		queryFn: () => fetchAPI<{
-			statusCounts: Record<string, number>;
-			sourceCounts: Record<string, number>;
-			planCounts: Record<string, number>;
-			uniqueUsers: number;
-		}>(`/v1/admin/apps/${appId}/licenses/summary`),
+		queryFn: () =>
+			fetchAPI<{
+				statusCounts: Record<string, number>;
+				sourceCounts: Record<string, number>;
+				planCounts: Record<string, number>;
+				uniqueUsers: number;
+			}>(`/v1/admin/apps/${appId}/licenses/summary`),
 		enabled: !!appId,
 		staleTime: 30_000,
 	});
@@ -1395,7 +1392,8 @@ export function useRevokeV2License(appId: string) {
 export function useV2LicenseHistory(appId: string, licenseId: string) {
 	return useQuery({
 		queryKey: ["v2-license-history", appId, licenseId],
-		queryFn: () => fetchAPI<{ history: V2LicenseHistory[] }>(`/v1/admin/apps/${appId}/licenses/${licenseId}/history`),
+		queryFn: () =>
+			fetchAPI<{ history: V2LicenseHistory[] }>(`/v1/admin/apps/${appId}/licenses/${licenseId}/history`),
 		enabled: !!appId && !!licenseId,
 		staleTime: 30_000,
 	});
@@ -1425,7 +1423,8 @@ export function useV2Subscriptions(appId: string, params?: { status?: string }) 
 
 	return useQuery({
 		queryKey: ["v2-subscriptions", appId, params],
-		queryFn: () => fetchAPI<{ subscriptions: V2Subscription[] }>(`/v1/admin/apps/${appId}/subscriptions${qs ? `?${qs}` : ""}`),
+		queryFn: () =>
+			fetchAPI<{ subscriptions: V2Subscription[] }>(`/v1/admin/apps/${appId}/subscriptions${qs ? `?${qs}` : ""}`),
 		enabled: !!appId,
 		staleTime: 30_000,
 	});
@@ -1645,16 +1644,14 @@ export function useResendOutboundWebhook(appId: string, webhookId: string) {
 			fetchAPI(`/v1/admin/apps/${appId}/webhooks/${webhookId}/logs/${logId}/resend`, {
 				method: "POST",
 			}),
-		onSuccess: () =>
-			queryClient.invalidateQueries({ queryKey: ["app-webhook-logs", appId, webhookId] }),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["app-webhook-logs", appId, webhookId] }),
 	});
 }
 
 export function useDeleteWebhook(appId: string) {
 	const queryClient = useQueryClient();
 	return useMutation<void, Error, string>({
-		mutationFn: (webhookId) =>
-			fetchAPI(`/v1/admin/apps/${appId}/webhooks/${webhookId}`, { method: "DELETE" }),
+		mutationFn: (webhookId) => fetchAPI(`/v1/admin/apps/${appId}/webhooks/${webhookId}`, { method: "DELETE" }),
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["app-webhooks", appId] }),
 	});
 }

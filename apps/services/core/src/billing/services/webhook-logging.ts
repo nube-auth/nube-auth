@@ -4,8 +4,8 @@
  * Logs webhook events for debugging, idempotency, and audit trail.
  */
 
-import { getDb, eq, and, webhook_logs } from "@nube-auth/db";
-import { createLogger, serializeError, id } from "@nube-auth/shared";
+import { and, eq, getDb, webhook_logs } from "@nube-auth/db";
+import { createLogger, id, serializeError } from "@nube-auth/shared";
 
 const log = createLogger("webhook-logging");
 
@@ -73,10 +73,7 @@ export class WebhookLoggingService {
 
 			if (params.eventId) {
 				const existing = await db.query.webhook_logs.findFirst({
-					where: and(
-						eq(webhook_logs.provider, params.provider),
-						eq(webhook_logs.event_id, params.eventId),
-					),
+					where: and(eq(webhook_logs.provider, params.provider), eq(webhook_logs.event_id, params.eventId)),
 					columns: { id: true },
 				});
 				if (existing?.id) return existing.id;
@@ -130,19 +127,16 @@ export class WebhookLoggingService {
 		}
 	}
 
-	static async markProcessingStarted(
-		webhookLogId: number,
-		params?: MarkProcessingStartedParams,
-	): Promise<boolean> {
+	static async markProcessingStarted(webhookLogId: number, params?: MarkProcessingStartedParams): Promise<boolean> {
 		if (!webhookLogId) return true;
 
 		try {
 			const db = getDb();
 			const now = new Date();
 			const updateData: Record<string, unknown> = {
-					status: "processing",
-					processing_started_at: now,
-					updated_at: now,
+				status: "processing",
+				processing_started_at: now,
+				updated_at: now,
 			};
 
 			if (params?.eventType) updateData["event_type"] = params.eventType;
@@ -166,7 +160,7 @@ export class WebhookLoggingService {
 		try {
 			const db = getDb();
 			const now = new Date();
-			const processingDurationMs = await this.getProcessingDurationMs(webhookLogId, now);
+			const processingDurationMs = await WebhookLoggingService.getProcessingDurationMs(webhookLogId, now);
 			await db
 				.update(webhook_logs)
 				.set({
@@ -187,13 +181,17 @@ export class WebhookLoggingService {
 		}
 	}
 
-	static async markProcessingFailed(webhookLogId: number, errorMessage: string, errorStack?: string): Promise<boolean> {
+	static async markProcessingFailed(
+		webhookLogId: number,
+		errorMessage: string,
+		errorStack?: string,
+	): Promise<boolean> {
 		if (!webhookLogId) return true;
 
 		try {
 			const db = getDb();
 			const now = new Date();
-			const processingDurationMs = await this.getProcessingDurationMs(webhookLogId, now);
+			const processingDurationMs = await WebhookLoggingService.getProcessingDurationMs(webhookLogId, now);
 			await db
 				.update(webhook_logs)
 				.set({
@@ -218,7 +216,7 @@ export class WebhookLoggingService {
 		try {
 			const db = getDb();
 			const now = new Date();
-			const processingDurationMs = await this.getProcessingDurationMs(webhookLogId, now);
+			const processingDurationMs = await WebhookLoggingService.getProcessingDurationMs(webhookLogId, now);
 			await db
 				.update(webhook_logs)
 				.set({
@@ -242,7 +240,7 @@ export class WebhookLoggingService {
 		try {
 			const db = getDb();
 			const now = new Date();
-			const processingDurationMs = await this.getProcessingDurationMs(webhookLogId, now);
+			const processingDurationMs = await WebhookLoggingService.getProcessingDurationMs(webhookLogId, now);
 			await db
 				.update(webhook_logs)
 				.set({

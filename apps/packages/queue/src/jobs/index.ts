@@ -5,35 +5,29 @@
 
 import type { Job } from "bullmq";
 import {
-	PaymentJobType,
-	WebhookJobType,
-	EmailJobType,
-	type PaymentJobData,
-	type WebhookJobData,
 	type EmailJobData,
+	EmailJobType,
 	type JobResult,
+	type PaymentJobData,
+	PaymentJobType,
+	type WebhookJobData,
+	WebhookJobType,
 } from "../types";
 
 /**
  * Payment job handler types
  */
-export type PaymentJobHandler<T extends PaymentJobData> = (
-	job: Job<T>
-) => Promise<JobResult>;
+export type PaymentJobHandler<T extends PaymentJobData> = (job: Job<T>) => Promise<JobResult>;
 
 /**
  * Webhook job handler types
  */
-export type WebhookJobHandler<T extends WebhookJobData> = (
-	job: Job<T>
-) => Promise<JobResult>;
+export type WebhookJobHandler<T extends WebhookJobData> = (job: Job<T>) => Promise<JobResult>;
 
 /**
  * Email job handler types
  */
-export type EmailJobHandler<T extends EmailJobData> = (
-	job: Job<T>
-) => Promise<JobResult>;
+export type EmailJobHandler<T extends EmailJobData> = (job: Job<T>) => Promise<JobResult>;
 
 /**
  * Common job utilities

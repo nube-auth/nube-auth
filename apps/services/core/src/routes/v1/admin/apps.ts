@@ -1,9 +1,22 @@
-import { activationQueries, appQueries, appUserQueries, auditLogQueries, getDb, licenseQueries, planQueries, projectMemberQueries, projectQueries, sessionQueries, subscriptionQueries, userQueries } from "@nube-auth/db";
-import { createId, createLogger, CreateAppRequestSchema, idPatterns, serializeError } from "@nube-auth/shared";
+import { randomBytes } from "node:crypto";
 import { cache } from "@nube-auth/cache";
+import {
+	activationQueries,
+	appQueries,
+	appUserQueries,
+	auditLogQueries,
+	getDb,
+	licenseQueries,
+	planQueries,
+	projectMemberQueries,
+	projectQueries,
+	sessionQueries,
+	subscriptionQueries,
+	userQueries,
+} from "@nube-auth/db";
+import { CreateAppRequestSchema, createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
-import { randomBytes } from "node:crypto";
 import { generateAppSlug, generatePlanSlug } from "../../../utils/slug.js";
 
 const log = createLogger("admin-apps-routes");
@@ -78,13 +91,16 @@ appsRouter.get("/:projectId/apps/:appId/provider-selection", async (c: Context) 
 		}
 
 		// selected_payment_provider_id removed - use /v1/admin/routing-rules/:appId
-		return c.json({
-			error: "This endpoint is deprecated. Use /v1/admin/routing-rules/:appId instead",
-			migration: {
-				oldEndpoint: "/v1/admin/apps/:appId/provider-selection",
-				newEndpoint: "/v1/admin/routing-rules/:appId",
+		return c.json(
+			{
+				error: "This endpoint is deprecated. Use /v1/admin/routing-rules/:appId instead",
+				migration: {
+					oldEndpoint: "/v1/admin/apps/:appId/provider-selection",
+					newEndpoint: "/v1/admin/routing-rules/:appId",
+				},
 			},
-		}, 410);
+			410,
+		);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get app provider selection error");
 		return c.json({ error: "Failed to get app provider selection" }, 500);
@@ -167,7 +183,10 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 			appSlug = body.slug;
 			const existing = await appQueries.findByProjectAndSlug(db, project.id, appSlug);
 			if (existing) {
-				return c.json({ error: "An app with this slug already exists in this project. Please choose a different one." }, 409);
+				return c.json(
+					{ error: "An app with this slug already exists in this project. Please choose a different one." },
+					409,
+				);
 			}
 		} else {
 			appSlug = await generateAppSlug(
@@ -189,7 +208,13 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 				clientSecret,
 			},
 			security_settings: {
-				redirectUris: (body.redirectUris || []).map((u: string) => { try { return new URL(u).href; } catch { return u; } }),
+				redirectUris: (body.redirectUris || []).map((u: string) => {
+					try {
+						return new URL(u).href;
+					} catch {
+						return u;
+					}
+				}),
 				allowedHosts: body.allowedHosts || [],
 				sessionTtlDays: body.sessionTtlDays ?? 28,
 			},
@@ -238,7 +263,12 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 				action: "app.created",
 				entity_type: "app",
 				entity_id: newApp.public_id,
-				changes: { name: body.name, slug: appSlug, description: body.description, requiresLicensing: body.requiresLicensing },
+				changes: {
+					name: body.name,
+					slug: appSlug,
+					description: body.description,
+					requiresLicensing: body.requiresLicensing,
+				},
 				ip_address: c.req.header("X-Forwarded-For") || c.req.header("X-Real-IP") || null,
 			});
 		} catch (auditError) {
@@ -264,18 +294,20 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 				rateLimit: securitySettings?.rateLimit || 100,
 				enabledProviders: newApp.enabled_providers || [],
 				requiresLicensing: planSettings?.licensingRequired ?? false,
-				...(defaultPlan ? {
-					defaultPlan: {
-						id: defaultPlan.public_id,
-						name: defaultPlan.name,
-						slug: defaultPlan.slug,
-						description: defaultPlan.description,
-					},
-				} : {}),
+				...(defaultPlan
+					? {
+							defaultPlan: {
+								id: defaultPlan.public_id,
+								name: defaultPlan.name,
+								slug: defaultPlan.slug,
+								description: defaultPlan.description,
+							},
+						}
+					: {}),
 				createdAt: new Date(newApp.created_at).toISOString(),
 				updatedAt: new Date(newApp.updated_at).toISOString(),
 			},
-			201
+			201,
 		);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Create app error");
@@ -436,7 +468,13 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 		}
 
 		// Update security_settings fields atomically if any were provided
-		const normalizeUri = (uri: string) => { try { return new URL(uri).href; } catch { return uri; } };
+		const normalizeUri = (uri: string) => {
+			try {
+				return new URL(uri).href;
+			} catch {
+				return uri;
+			}
+		};
 		const securityUpdates: Record<string, any> = {};
 		if (redirectUris !== undefined) securityUpdates["redirectUris"] = redirectUris.map(normalizeUri);
 		if (allowedHosts !== undefined) securityUpdates["allowedHosts"] = allowedHosts;
@@ -453,7 +491,10 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 		// Invalidate the gateway's cached security settings so CORS and allowedHosts
 		// enforcement picks up the new values immediately.
 		cache.delete(`app-security-settings:${app.public_id}`).catch((err) => {
-			log.warn({ err: serializeError(err as Error), appId: app.public_id }, "Failed to invalidate app security settings cache");
+			log.warn(
+				{ err: serializeError(err as Error), appId: app.public_id },
+				"Failed to invalidate app security settings cache",
+			);
 		});
 
 		// Get project for response
@@ -619,9 +660,11 @@ appsRouter.get("/:projectId/apps/:appId/users", async (c: Context) => {
 					status: license?.status ?? "no_license",
 					createdAt: Math.floor(new Date(row.created_at).getTime() / 1000),
 					lastSeenAt: Math.floor(new Date(row.last_seen_at).getTime() / 1000),
-					licenseValidUntil: license?.valid_until ? Math.floor(new Date(license.valid_until).getTime() / 1000) : null,
+					licenseValidUntil: license?.valid_until
+						? Math.floor(new Date(license.valid_until).getTime() / 1000)
+						: null,
 				};
-			})
+			}),
 		);
 
 		const validUsers = usersList.filter((u) => u !== null);

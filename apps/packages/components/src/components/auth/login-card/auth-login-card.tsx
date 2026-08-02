@@ -1,15 +1,15 @@
 import { Button, Spinner } from "../../../base";
+import type { IconTypeName } from "../../../icons";
+import { Icon, IconType } from "../../../icons";
+import { cn } from "../../../lib/cn";
 import {
 	LoginCard,
-	LoginCardLogo,
-	LoginCardTitle,
-	LoginCardSubtitle,
 	LoginCardBody,
+	LoginCardLogo,
+	LoginCardSubtitle,
 	LoginCardTerms,
+	LoginCardTitle,
 } from "./login-card";
-import { Icon, IconType } from "../../../icons";
-import type { IconTypeName } from "../../../icons";
-import { cn } from "../../../lib/cn";
 
 export type AuthLoginCardProps = {
 	logoSrc?: string;
@@ -54,42 +54,53 @@ export function AuthLoginCard({
 			<LoginCardTitle>{title}</LoginCardTitle>
 			{subtitle ? <LoginCardSubtitle>{subtitle}</LoginCardSubtitle> : null}
 
-<LoginCardBody>
-			{statusMessage ? (
-				<p className="text-sm text-muted text-center leading-relaxed">{statusMessage}</p>
-			) : null}
+			<LoginCardBody>
+				{statusMessage ? (
+					<p className="text-sm text-muted text-center leading-relaxed">{statusMessage}</p>
+				) : null}
 
-			<Button
-				variant={buttonVariant}
-				onClick={onContinue}
-				disabled={busy}
-				className={cn("w-full justify-center", buttonVariant === "secondary" ? "text-foreground" : "")}
-			>
-				{busy ? <Spinner className="h-4 w-4" /> : <Icon icon={buttonIcon} size={18} />}
-				<span>{busy ? "Please wait..." : buttonLabel}</span>
-			</Button>
+				<Button
+					variant={buttonVariant}
+					onClick={onContinue}
+					disabled={busy}
+					className={cn("w-full justify-center", buttonVariant === "secondary" ? "text-foreground" : "")}
+				>
+					{busy ? <Spinner className="h-4 w-4" /> : <Icon icon={buttonIcon} size={18} />}
+					<span>{busy ? "Please wait..." : buttonLabel}</span>
+				</Button>
 
-			{showFooter ? (
-				<LoginCardTerms className="text-center text-xs text-muted leading-relaxed mt-4">
-						By continuing, you agree to our {" "}
-						<a href={termsUrl} target="_blank" rel="noopener noreferrer" className="text-primary">Terms of Service</a>
-						{" "}and{" "}
-						<a href={privacyUrl} target="_blank" rel="noopener noreferrer" className="text-primary">Privacy Policy</a>.
+				{showFooter ? (
+					<LoginCardTerms className="text-center text-xs text-muted leading-relaxed mt-4">
+						By continuing, you agree to our{" "}
+						<a href={termsUrl} target="_blank" rel="noopener noreferrer" className="text-primary">
+							Terms of Service
+						</a>{" "}
+						and{" "}
+						<a href={privacyUrl} target="_blank" rel="noopener noreferrer" className="text-primary">
+							Privacy Policy
+						</a>
+						.
 					</LoginCardTerms>
 				) : null}
 			</LoginCardBody>
 
 			{footerText ? (
-				<div className={cn(
-					"flex items-center justify-center gap-2 pb-6",
-					securityBadge
-						? "bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 py-3 border-t border-primary/20"
-						: "text-xs text-muted"
-				)}>
-					<Icon icon={IconType.Lock} size={securityBadge ? 16 : 14} className={securityBadge ? "text-primary" : ""} />
-					<span className={cn(
-						securityBadge ? "text-sm font-medium text-primary" : "text-xs"
-					)}>{footerText}</span>
+				<div
+					className={cn(
+						"flex items-center justify-center gap-2 pb-6",
+						securityBadge
+							? "bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 py-3 border-t border-primary/20"
+							: "text-xs text-muted",
+					)}
+				>
+					<Icon
+						icon={IconType.Lock}
+						size={securityBadge ? 16 : 14}
+						className={securityBadge ? "text-primary" : ""}
+					/>
+					<span className={cn(securityBadge ? "text-sm font-medium text-primary" : "text-xs")}>
+						{footerText}
+					</span>
 				</div>
 			) : null}
 		</LoginCard>

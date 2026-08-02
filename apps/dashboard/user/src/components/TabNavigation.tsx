@@ -1,5 +1,5 @@
+import { Icon, IconType, Tabs, TabsItem, TabsList } from "@nube-auth/components";
 import { Link, useLocation } from "react-router-dom";
-import { Icon, IconType, Tabs, TabsList, TabsItem } from "@nube-auth/components";
 
 export function TabNavigation() {
 	const location = useLocation();

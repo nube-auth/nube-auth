@@ -1,16 +1,8 @@
+import { Alert, Button, Icon, IconType, Spinner, ThemeToggle, useTheme } from "@nube-auth/components";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import {
-	Icon,
-	IconType,
-	Button,
-	Alert,
-	Spinner,
-	ThemeToggle,
-	useTheme,
-} from "@nube-auth/components";
-import { useMe } from "../hooks/api";
 import config from "../config";
+import { useMe } from "../hooks/api";
 
 const OAUTH_ERRORS: Record<string, string> = {
 	access_denied: "Access denied. Please try again.",
@@ -98,11 +90,7 @@ function AdminLanding() {
 						onClick={handleSignIn}
 						disabled={isRedirecting}
 					>
-						{isRedirecting ? (
-							<Spinner className="w-4 h-4" />
-						) : (
-							<Icon icon={IconType.Google} size={18} />
-						)}
+						{isRedirecting ? <Spinner className="w-4 h-4" /> : <Icon icon={IconType.Google} size={18} />}
 						{isRedirecting ? "Redirecting…" : "Continue with Google"}
 					</Button>
 

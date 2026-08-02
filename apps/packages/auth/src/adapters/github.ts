@@ -1,3 +1,4 @@
+import { pingpongFetch } from "../pingpong.js";
 import {
 	type GitHubEmail,
 	GitHubEmailsSchema,
@@ -6,7 +7,6 @@ import {
 	OAuthErrorSchema,
 } from "../schemas/index.js";
 import type { OAuthAdapter, OAuthProfile } from "../types/index.js";
-import { pingpongFetch } from "../pingpong.js";
 
 /**
  * GitHub OAuth configuration
@@ -82,9 +82,7 @@ export class GitHubOAuthAdapter implements OAuthAdapter {
 		if (!rawData && response.body) {
 			// Fallback: manually parse if response.data not available
 			try {
-				rawData = typeof response.body === 'string' 
-					? JSON.parse(response.body)
-					: response.body;
+				rawData = typeof response.body === "string" ? JSON.parse(response.body) : response.body;
 			} catch {
 				throw new Error(`Failed to parse token response: ${response.body}`);
 			}

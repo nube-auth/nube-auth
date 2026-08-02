@@ -3,13 +3,13 @@
  * Admin-only page for testing payment flows with customizable entity selection
  */
 
-import { useState, useEffect } from "react";
 import { pingpong } from "@nube-auth/auth";
-import config from "../config";
-import { csrfHeaders } from "../lib/csrf";
+import { Alert, Button, Card, CardBody, Heading, Text } from "@nube-auth/components";
+import { useEffect, useState } from "react";
 import { Select } from "../components/Select";
-import { Heading, Text, Card, CardBody, Button, Alert } from "@nube-auth/components";
-import { useProjects, useProjectApps, useAppUsers, useAppPlans } from "../hooks/api";
+import config from "../config";
+import { useAppPlans, useAppUsers, useProjectApps, useProjects } from "../hooks/api";
+import { csrfHeaders } from "../lib/csrf";
 
 const CREATE_NEW = "__create_new__";
 
@@ -75,11 +75,11 @@ export default function PaymentTestingPlayground() {
 		setAppId("");
 		setUserId("");
 		setPlanId("");
-	}, [projectId]);
+	}, []);
 	useEffect(() => {
 		setUserId("");
 		setPlanId("");
-	}, [appId]);
+	}, []);
 
 	// Auto-refresh session status every 2 seconds when session is active
 	useEffect(() => {
@@ -136,7 +136,7 @@ export default function PaymentTestingPlayground() {
 				const errorMsg = response.data?.error || "Failed to initialize test session";
 				setError(errorMsg);
 			}
-		} catch (err) {
+		} catch (_err) {
 			setError("Failed to initialize test session");
 		} finally {
 			setLoading(false);
@@ -673,9 +673,7 @@ export default function PaymentTestingPlayground() {
 							)}
 
 							{/* Auto-refresh indicator */}
-							<div className="text-center text-xs text-muted">
-								⏱️ Auto-refreshing every 2 seconds
-							</div>
+							<div className="text-center text-xs text-muted">⏱️ Auto-refreshing every 2 seconds</div>
 						</>
 					)}
 

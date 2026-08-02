@@ -13,13 +13,15 @@ import {
 	license_history,
 	licenses,
 	outbound_webhook_logs,
+	payment_provider_configs,
+	payment_routing_rules,
 	payment_transactions,
 	plans,
+	price_provider_refs,
 	prices,
 	project_invitations,
 	project_members,
 	projects,
-	price_provider_refs,
 	promotion_codes,
 	promotion_plans,
 	promotion_provider_refs,
@@ -28,10 +30,8 @@ import {
 	purchases,
 	sessions,
 	subscriptions,
-	users,
-	payment_provider_configs,
-	payment_routing_rules,
 	test_sessions,
+	users,
 	webhook_logs,
 } from "./schema.js";
 import { buildJsonbMergeClause, createJsonbUpdateChain } from "./utils/jsonb.js";
@@ -154,13 +154,7 @@ export const sessionQueries = {
 		const results = await db
 			.update(sessions)
 			.set({ revoked_at: now })
-			.where(
-				and(
-					eq(sessions.user_id, userId),
-					eq(sessions.app_id, appId),
-					isNull(sessions.revoked_at),
-				),
-			)
+			.where(and(eq(sessions.user_id, userId), eq(sessions.app_id, appId), isNull(sessions.revoked_at)))
 			.returning({ id: sessions.id });
 		return results.length;
 	},
@@ -171,13 +165,7 @@ export const sessionQueries = {
 		const result = await db
 			.select({ count: sql<number>`count(*)` })
 			.from(sessions)
-			.where(
-				and(
-					eq(sessions.app_id, appId),
-					isNull(sessions.revoked_at),
-					gt(sessions.expires_at, now),
-				),
-			);
+			.where(and(eq(sessions.app_id, appId), isNull(sessions.revoked_at), gt(sessions.expires_at, now)));
 		return Number(result[0]?.count ?? 0);
 	},
 };
@@ -446,10 +434,7 @@ export const appQueries = {
 		const results = await db
 			.select()
 			.from(apps)
-			.where(and(
-				sql`${apps.app_tokens}->>'serviceToken' = ${serviceToken}`,
-				isNull(apps.deleted_at),
-			));
+			.where(and(sql`${apps.app_tokens}->>'serviceToken' = ${serviceToken}`, isNull(apps.deleted_at)));
 		return results[0];
 	},
 
@@ -504,11 +489,7 @@ export const appQueries = {
 	 * Uses PostgreSQL JSONB merge operator for consistent updates
 	 * No read-modify-write cycle - eliminates lost update race conditions
 	 */
-	async updateSecuritySettings(
-		db: DbClient,
-		appId: number,
-		updates: Record<string, any>,
-	) {
+	async updateSecuritySettings(db: DbClient, appId: number, updates: Record<string, any>) {
 		const results = await db
 			.update(apps)
 			.set({
@@ -524,11 +505,7 @@ export const appQueries = {
 	 * Atomically update app_tokens JSONB column
 	 * Use for API key regeneration to prevent lost updates
 	 */
-	async updateAppTokens(
-		db: DbClient,
-		appId: number,
-		updates: Record<string, any>,
-	) {
+	async updateAppTokens(db: DbClient, appId: number, updates: Record<string, any>) {
 		const results = await db
 			.update(apps)
 			.set({
@@ -544,11 +521,7 @@ export const appQueries = {
 	 * Atomically update plan_settings JSONB column
 	 * Use for licensing configuration updates
 	 */
-	async updatePlanSettings(
-		db: DbClient,
-		appId: number,
-		updates: Record<string, any>,
-	) {
+	async updatePlanSettings(db: DbClient, appId: number, updates: Record<string, any>) {
 		const results = await db
 			.update(apps)
 			.set({
@@ -619,11 +592,7 @@ export const appQueries = {
 			updateData[fieldName] = (chain as any).build();
 		}
 
-		const results = await db
-			.update(apps)
-			.set(updateData)
-			.where(eq(apps.id, appId))
-			.returning();
+		const results = await db.update(apps).set(updateData).where(eq(apps.id, appId)).returning();
 		return results[0]!;
 	},
 };
@@ -762,13 +731,7 @@ export const licenseQueries = {
 		const result = await db
 			.select({ count: sql<number>`count(*)` })
 			.from(licenses)
-			.where(
-				and(
-					eq(licenses.user_id, userId),
-					eq(licenses.app_id, appId),
-					eq(licenses.source, "purchase"),
-				),
-			);
+			.where(and(eq(licenses.user_id, userId), eq(licenses.app_id, appId), eq(licenses.source, "purchase")));
 		return (result[0]?.count ?? 0) > 0;
 	},
 
@@ -1042,12 +1005,7 @@ export const paymentProviderConfigQueries = {
 			.orderBy(desc(payment_provider_configs.is_default), desc(payment_provider_configs.created_at));
 	},
 
-	async findByProjectAndProvider(
-		db: DbClient,
-		projectId: number,
-		provider: string,
-		environment: string,
-	) {
+	async findByProjectAndProvider(db: DbClient, projectId: number, provider: string, environment: string) {
 		const results = await db
 			.select()
 			.from(payment_provider_configs)
@@ -1066,27 +1024,17 @@ export const paymentProviderConfigQueries = {
 			.select()
 			.from(payment_provider_configs)
 			.where(
-				and(
-					eq(payment_provider_configs.project_id, projectId),
-					eq(payment_provider_configs.is_default, true),
-				),
+				and(eq(payment_provider_configs.project_id, projectId), eq(payment_provider_configs.is_default, true)),
 			);
 		return results[0];
 	},
 
 	async create(db: DbClient, data: typeof payment_provider_configs.$inferInsert) {
-		const results = await db
-			.insert(payment_provider_configs)
-			.values(data)
-			.returning();
+		const results = await db.insert(payment_provider_configs).values(data).returning();
 		return results[0]!;
 	},
 
-	async update(
-		db: DbClient,
-		configId: number,
-		data: Partial<typeof payment_provider_configs.$inferInsert>,
-	) {
+	async update(db: DbClient, configId: number, data: Partial<typeof payment_provider_configs.$inferInsert>) {
 		return db
 			.update(payment_provider_configs)
 			.set({ ...data, updated_at: new Date() })
@@ -1095,22 +1043,14 @@ export const paymentProviderConfigQueries = {
 	},
 
 	async delete(db: DbClient, configId: number) {
-		return db
-			.delete(payment_provider_configs)
-			.where(eq(payment_provider_configs.id, configId))
-			.returning();
+		return db.delete(payment_provider_configs).where(eq(payment_provider_configs.id, configId)).returning();
 	},
 
 	async findActiveByProvider(db: DbClient, provider: string) {
 		return db
 			.select()
 			.from(payment_provider_configs)
-			.where(
-				and(
-					eq(payment_provider_configs.provider, provider),
-					eq(payment_provider_configs.is_active, true),
-				),
-			);
+			.where(and(eq(payment_provider_configs.provider, provider), eq(payment_provider_configs.is_active, true)));
 	},
 
 	async setAsDefault(db: DbClient, projectId: number, configId: number) {
@@ -1161,10 +1101,7 @@ export const routingRuleQueries = {
 	 * Find routing rule by ID
 	 */
 	async findByInternalId_(db: DbClient, ruleId: number) {
-		const results = await db
-			.select()
-			.from(payment_routing_rules)
-			.where(eq(payment_routing_rules.id, ruleId));
+		const results = await db.select().from(payment_routing_rules).where(eq(payment_routing_rules.id, ruleId));
 		return results[0];
 	},
 
@@ -1190,11 +1127,7 @@ export const routingRuleQueries = {
 	/**
 	 * Update routing rule
 	 */
-	async update(
-		db: DbClient,
-		ruleId: number,
-		data: Partial<typeof payment_routing_rules.$inferInsert>,
-	) {
+	async update(db: DbClient, ruleId: number, data: Partial<typeof payment_routing_rules.$inferInsert>) {
 		return db
 			.update(payment_routing_rules)
 			.set({ ...data, updated_at: new Date() })
@@ -1244,18 +1177,12 @@ export const testSessionQueries = {
 	},
 
 	async findByInternalId_(db: DbClient, sessionId: number) {
-		const results = await db
-			.select()
-			.from(test_sessions)
-			.where(eq(test_sessions.id, sessionId));
+		const results = await db.select().from(test_sessions).where(eq(test_sessions.id, sessionId));
 		return results[0];
 	},
 
 	async findByPublicId(db: DbClient, publicId: string) {
-		const results = await db
-			.select()
-			.from(test_sessions)
-			.where(eq(test_sessions.public_id, publicId));
+		const results = await db.select().from(test_sessions).where(eq(test_sessions.public_id, publicId));
 		return results[0];
 	},
 
@@ -1268,11 +1195,7 @@ export const testSessionQueries = {
 			.limit(limit);
 	},
 
-	async update(
-		db: DbClient,
-		sessionId: number,
-		data: Partial<typeof test_sessions.$inferInsert>
-	) {
+	async update(db: DbClient, sessionId: number, data: Partial<typeof test_sessions.$inferInsert>) {
 		const results = await db
 			.update(test_sessions)
 			.set({ ...data, updated_at: new Date() })
@@ -1301,10 +1224,7 @@ export const testSessionQueries = {
 		if (expiredSessions.length === 0) return [];
 
 		const sessionIds = expiredSessions.map((s) => s.id);
-		return db
-			.delete(test_sessions)
-			.where(inArray(test_sessions.id, sessionIds))
-			.returning();
+		return db.delete(test_sessions).where(inArray(test_sessions.id, sessionIds)).returning();
 	},
 
 	async cleanupTestData(db: DbClient, olderThanHours = 24) {
@@ -1322,9 +1242,7 @@ export const testSessionQueries = {
 
 		const deletedUsers = await db
 			.delete(users)
-			.where(
-				and(eq(users.is_test, true), lt(users.created_at, cutoffTime))
-			)
+			.where(and(eq(users.is_test, true), lt(users.created_at, cutoffTime)))
 			.returning({ id: users.id });
 
 		return {
@@ -1435,9 +1353,7 @@ export const licenseHistoryQueries = {
 		return db
 			.select()
 			.from(license_history)
-			.where(
-				and(eq(license_history.license_id, licenseId), eq(license_history.change_type, changeType)),
-			)
+			.where(and(eq(license_history.license_id, licenseId), eq(license_history.change_type, changeType)))
 			.orderBy(desc(license_history.created_at));
 	},
 };
@@ -1452,18 +1368,12 @@ export const subscriptionQueries = {
 	},
 
 	async findByPublicId(db: DbClient, publicId: string) {
-		const results = await db
-			.select()
-			.from(subscriptions)
-			.where(eq(subscriptions.public_id, publicId));
+		const results = await db.select().from(subscriptions).where(eq(subscriptions.public_id, publicId));
 		return results[0];
 	},
 
 	async findByInternalId_(db: DbClient, id: number) {
-		const results = await db
-			.select()
-			.from(subscriptions)
-			.where(eq(subscriptions.id, id));
+		const results = await db.select().from(subscriptions).where(eq(subscriptions.id, id));
 		return results[0];
 	},
 
@@ -1607,12 +1517,7 @@ export const activationQueries = {
 		const results = await db
 			.update(license_activations)
 			.set({ deactivated_at: now, updated_at: now })
-			.where(
-				and(
-					eq(license_activations.license_id, licenseId),
-					isNull(license_activations.deactivated_at),
-				),
-			)
+			.where(and(eq(license_activations.license_id, licenseId), isNull(license_activations.deactivated_at)))
 			.returning({ id: license_activations.id });
 		return results.length;
 	},
@@ -1647,12 +1552,7 @@ export const activationQueries = {
 		return db
 			.update(license_activations)
 			.set({ deactivated_at: new Date(), updated_at: new Date() })
-			.where(
-				and(
-					isNull(license_activations.deactivated_at),
-					lt(license_activations.last_seen_at, cutoff),
-				),
-			)
+			.where(and(isNull(license_activations.deactivated_at), lt(license_activations.last_seen_at, cutoff)))
 			.returning();
 	},
 };
@@ -1667,39 +1567,24 @@ export const promotionQueries = {
 	},
 
 	async findByPublicId(db: DbClient, publicId: string) {
-		const results = await db
-			.select()
-			.from(promotions)
-			.where(eq(promotions.public_id, publicId));
+		const results = await db.select().from(promotions).where(eq(promotions.public_id, publicId));
 		return results[0];
 	},
 
 	async findByInternalId_(db: DbClient, id: number) {
-		const results = await db
-			.select()
-			.from(promotions)
-			.where(eq(promotions.id, id));
+		const results = await db.select().from(promotions).where(eq(promotions.id, id));
 		return results[0];
 	},
 
 	async findByAppId(db: DbClient, appId: number) {
-		return db
-			.select()
-			.from(promotions)
-			.where(eq(promotions.app_id, appId))
-			.orderBy(desc(promotions.created_at));
+		return db.select().from(promotions).where(eq(promotions.app_id, appId)).orderBy(desc(promotions.created_at));
 	},
 
 	async findActiveByAppId(db: DbClient, appId: number) {
 		return db
 			.select()
 			.from(promotions)
-			.where(
-				and(
-					eq(promotions.app_id, appId),
-					eq(promotions.is_active, true),
-				),
-			)
+			.where(and(eq(promotions.app_id, appId), eq(promotions.is_active, true)))
 			.orderBy(desc(promotions.created_at));
 	},
 
@@ -1739,34 +1624,22 @@ export const promotionCodeQueries = {
 	},
 
 	async findByInternalId_(db: DbClient, codeId: number) {
-		const results = await db
-			.select()
-			.from(promotion_codes)
-			.where(eq(promotion_codes.id, codeId));
+		const results = await db.select().from(promotion_codes).where(eq(promotion_codes.id, codeId));
 		return results[0];
 	},
 
 	async findByCode(db: DbClient, code: string) {
-		const results = await db
-			.select()
-			.from(promotion_codes)
-			.where(eq(promotion_codes.code, code));
+		const results = await db.select().from(promotion_codes).where(eq(promotion_codes.code, code));
 		return results[0];
 	},
 
 	async findByPublicId(db: DbClient, publicId: string) {
-		const results = await db
-			.select()
-			.from(promotion_codes)
-			.where(eq(promotion_codes.public_id, publicId));
+		const results = await db.select().from(promotion_codes).where(eq(promotion_codes.public_id, publicId));
 		return results[0];
 	},
 
 	async findByPromotionId(db: DbClient, promotionId: number) {
-		return db
-			.select()
-			.from(promotion_codes)
-			.where(eq(promotion_codes.promotion_id, promotionId));
+		return db.select().from(promotion_codes).where(eq(promotion_codes.promotion_id, promotionId));
 	},
 
 	async update(db: DbClient, codeId: number, data: Partial<typeof promotion_codes.$inferInsert>) {
@@ -1800,17 +1673,11 @@ export const promotionPlanQueries = {
 	},
 
 	async findByPromotionId(db: DbClient, promotionId: number) {
-		return db
-			.select()
-			.from(promotion_plans)
-			.where(eq(promotion_plans.promotion_id, promotionId));
+		return db.select().from(promotion_plans).where(eq(promotion_plans.promotion_id, promotionId));
 	},
 
 	async deleteByPromotionId(db: DbClient, promotionId: number) {
-		return db
-			.delete(promotion_plans)
-			.where(eq(promotion_plans.promotion_id, promotionId))
-			.returning();
+		return db.delete(promotion_plans).where(eq(promotion_plans.promotion_id, promotionId)).returning();
 	},
 
 	async replaceForPromotion(db: DbClient, promotionId: number, planIds: number[]) {
@@ -1845,7 +1712,9 @@ export const promotionProviderRefQueries = {
 		return db
 			.select()
 			.from(promotion_provider_refs)
-			.where(and(eq(promotion_provider_refs.promotion_id, promotionId), eq(promotion_provider_refs.is_active, true)));
+			.where(
+				and(eq(promotion_provider_refs.promotion_id, promotionId), eq(promotion_provider_refs.is_active, true)),
+			);
 	},
 
 	async findByPromotionAndProvider(db: DbClient, promotionId: number, providerConfigId: number) {
@@ -1892,7 +1761,13 @@ export const promotionRedemptionQueries = {
 			.orderBy(desc(promotion_redemptions.created_at));
 	},
 
-	async findByUserForPromotion(db: DbClient, appId: number, subjectType: string, subjectId: number, promotionCodeIds: number[]) {
+	async findByUserForPromotion(
+		db: DbClient,
+		appId: number,
+		subjectType: string,
+		subjectId: number,
+		promotionCodeIds: number[],
+	) {
 		if (promotionCodeIds.length === 0) return [];
 		return db
 			.select()
@@ -1913,30 +1788,27 @@ export const promotionRedemptionQueries = {
  */
 export const purchaseQueries = {
 	async findByPublicId(db: DbClient, publicId: string) {
-		const results = await db
-			.select()
-			.from(purchases)
-			.where(eq(purchases.public_id, publicId));
+		const results = await db.select().from(purchases).where(eq(purchases.public_id, publicId));
 		return results[0];
 	},
 
 	async findByInternalId_(db: DbClient, id: number) {
-		const results = await db
-			.select()
-			.from(purchases)
-			.where(eq(purchases.id, id));
+		const results = await db.select().from(purchases).where(eq(purchases.id, id));
 		return results[0];
 	},
 
-	async findAll(db: DbClient, filters: {
-		appId?: number | undefined;
-		status?: string | undefined;
-		providerConfigId?: number | undefined;
-		startDate?: Date | undefined;
-		endDate?: Date | undefined;
-		limit?: number | undefined;
-		offset?: number | undefined;
-	} = {}) {
+	async findAll(
+		db: DbClient,
+		filters: {
+			appId?: number | undefined;
+			status?: string | undefined;
+			providerConfigId?: number | undefined;
+			startDate?: Date | undefined;
+			endDate?: Date | undefined;
+			limit?: number | undefined;
+			offset?: number | undefined;
+		} = {},
+	) {
 		const conditions = [];
 		if (filters.appId) conditions.push(eq(purchases.app_id, filters.appId));
 		if (filters.status) conditions.push(eq(purchases.status, filters.status));
@@ -1949,27 +1821,15 @@ export const purchaseQueries = {
 		const offset = filters.offset ?? 0;
 
 		const [items, countResult] = await Promise.all([
-			db
-				.select()
-				.from(purchases)
-				.where(where)
-				.orderBy(desc(purchases.created_at))
-				.limit(limit)
-				.offset(offset),
-			db
-				.select({ count: sql<number>`count(*)` })
-				.from(purchases)
-				.where(where),
+			db.select().from(purchases).where(where).orderBy(desc(purchases.created_at)).limit(limit).offset(offset),
+			db.select({ count: sql<number>`count(*)` }).from(purchases).where(where),
 		]);
 
 		return { items, total: countResult[0]?.count ?? 0 };
 	},
 
 	async findByProviderSessionId(db: DbClient, providerSessionId: string) {
-		const results = await db
-			.select()
-			.from(purchases)
-			.where(eq(purchases.provider_session_id, providerSessionId));
+		const results = await db.select().from(purchases).where(eq(purchases.provider_session_id, providerSessionId));
 		return results[0];
 	},
 
@@ -2001,10 +1861,7 @@ export const paymentTransactionQueries = {
 	},
 
 	async findByInternalId_(db: DbClient, id: number) {
-		const results = await db
-			.select()
-			.from(payment_transactions)
-			.where(eq(payment_transactions.id, id));
+		const results = await db.select().from(payment_transactions).where(eq(payment_transactions.id, id));
 		return results[0];
 	},
 
@@ -2016,21 +1873,25 @@ export const paymentTransactionQueries = {
 			.orderBy(desc(payment_transactions.created_at));
 	},
 
-	async findAll(db: DbClient, filters: {
-		type?: string | undefined;
-		status?: string | undefined;
-		provider?: string | undefined;
-		providerConfigId?: number | undefined;
-		startDate?: Date | undefined;
-		endDate?: Date | undefined;
-		limit?: number | undefined;
-		offset?: number | undefined;
-	} = {}) {
+	async findAll(
+		db: DbClient,
+		filters: {
+			type?: string | undefined;
+			status?: string | undefined;
+			provider?: string | undefined;
+			providerConfigId?: number | undefined;
+			startDate?: Date | undefined;
+			endDate?: Date | undefined;
+			limit?: number | undefined;
+			offset?: number | undefined;
+		} = {},
+	) {
 		const conditions = [];
 		if (filters.type) conditions.push(eq(payment_transactions.type, filters.type));
 		if (filters.status) conditions.push(eq(payment_transactions.status, filters.status));
 		if (filters.provider) conditions.push(eq(payment_transactions.provider, filters.provider));
-		if (filters.providerConfigId) conditions.push(eq(payment_transactions.provider_config_id, filters.providerConfigId));
+		if (filters.providerConfigId)
+			conditions.push(eq(payment_transactions.provider_config_id, filters.providerConfigId));
 		if (filters.startDate) conditions.push(gte(payment_transactions.transaction_date, filters.startDate));
 		if (filters.endDate) conditions.push(lte(payment_transactions.transaction_date, filters.endDate));
 
@@ -2046,10 +1907,7 @@ export const paymentTransactionQueries = {
 				.orderBy(desc(payment_transactions.created_at))
 				.limit(limit)
 				.offset(offset),
-			db
-				.select({ count: sql<number>`count(*)` })
-				.from(payment_transactions)
-				.where(where),
+			db.select({ count: sql<number>`count(*)` }).from(payment_transactions).where(where),
 		]);
 
 		return { items, total: countResult[0]?.count ?? 0 };
@@ -2070,7 +1928,10 @@ export const paymentTransactionQueries = {
 	},
 
 	/** Get revenue stats grouped by type */
-	async revenueByType(db: DbClient, filters: { startDate?: Date | undefined; endDate?: Date | undefined; provider?: string | undefined } = {}) {
+	async revenueByType(
+		db: DbClient,
+		filters: { startDate?: Date | undefined; endDate?: Date | undefined; provider?: string | undefined } = {},
+	) {
 		const conditions = [eq(payment_transactions.status, "success")];
 		if (filters.startDate) conditions.push(gte(payment_transactions.transaction_date, filters.startDate));
 		if (filters.endDate) conditions.push(lte(payment_transactions.transaction_date, filters.endDate));
@@ -2105,7 +1966,10 @@ export const paymentTransactionQueries = {
 	},
 
 	/** Get revenue stats grouped by currency */
-	async revenueByCurrency(db: DbClient, filters: { startDate?: Date | undefined; endDate?: Date | undefined; provider?: string | undefined } = {}) {
+	async revenueByCurrency(
+		db: DbClient,
+		filters: { startDate?: Date | undefined; endDate?: Date | undefined; provider?: string | undefined } = {},
+	) {
 		const conditions = [eq(payment_transactions.status, "success")];
 		if (filters.startDate) conditions.push(gte(payment_transactions.transaction_date, filters.startDate));
 		if (filters.endDate) conditions.push(lte(payment_transactions.transaction_date, filters.endDate));
@@ -2229,30 +2093,27 @@ export const paymentTransactionQueries = {
  */
 export const webhookLogQueries = {
 	async findByPublicId(db: DbClient, publicId: string) {
-		const results = await db
-			.select()
-			.from(webhook_logs)
-			.where(eq(webhook_logs.public_id, publicId));
+		const results = await db.select().from(webhook_logs).where(eq(webhook_logs.public_id, publicId));
 		return results[0];
 	},
 
 	async findByInternalId_(db: DbClient, id: number) {
-		const results = await db
-			.select()
-			.from(webhook_logs)
-			.where(eq(webhook_logs.id, id));
+		const results = await db.select().from(webhook_logs).where(eq(webhook_logs.id, id));
 		return results[0];
 	},
 
-	async findAll(db: DbClient, filters: {
-		provider?: string | undefined;
-		status?: string | undefined;
-		eventType?: string | undefined;
-		startDate?: Date | undefined;
-		endDate?: Date | undefined;
-		limit?: number | undefined;
-		offset?: number | undefined;
-	} = {}) {
+	async findAll(
+		db: DbClient,
+		filters: {
+			provider?: string | undefined;
+			status?: string | undefined;
+			eventType?: string | undefined;
+			startDate?: Date | undefined;
+			endDate?: Date | undefined;
+			limit?: number | undefined;
+			offset?: number | undefined;
+		} = {},
+	) {
 		const conditions = [];
 		if (filters.provider) conditions.push(eq(webhook_logs.provider, filters.provider));
 		if (filters.status) conditions.push(eq(webhook_logs.status, filters.status));
@@ -2285,10 +2146,7 @@ export const webhookLogQueries = {
 				.orderBy(desc(webhook_logs.received_at))
 				.limit(limit)
 				.offset(offset),
-			db
-				.select({ count: sql<number>`count(*)` })
-				.from(webhook_logs)
-				.where(where),
+			db.select({ count: sql<number>`count(*)` }).from(webhook_logs).where(where),
 		]);
 
 		return { items, total: countResult[0]?.count ?? 0 };
@@ -2465,9 +2323,10 @@ export const appWebhookQueries = {
 	},
 
 	async findActiveByAppId(db: DbClient, appId: number) {
-		return db.select().from(app_webhooks).where(
-and(eq(app_webhooks.app_id, appId), eq(app_webhooks.is_active, true)),
-);
+		return db
+			.select()
+			.from(app_webhooks)
+			.where(and(eq(app_webhooks.app_id, appId), eq(app_webhooks.is_active, true)));
 	},
 
 	async findAllByAppId(db: DbClient, appId: number) {
@@ -2537,16 +2396,11 @@ export const outboundWebhookLogQueries = {
 	async getHealthStats(db: DbClient, appId: number, since: Date) {
 		const rows = await db
 			.select({
-status: outbound_webhook_logs.status,
-count: sql<number>`cast(count(*) as int)`,
+				status: outbound_webhook_logs.status,
+				count: sql<number>`cast(count(*) as int)`,
 			})
 			.from(outbound_webhook_logs)
-			.where(
-and(
-eq(outbound_webhook_logs.app_id, appId),
-gt(outbound_webhook_logs.created_at, since),
-),
-)
+			.where(and(eq(outbound_webhook_logs.app_id, appId), gt(outbound_webhook_logs.created_at, since)))
 			.groupBy(outbound_webhook_logs.status);
 
 		const total = rows.reduce((s, r) => s + r.count, 0);

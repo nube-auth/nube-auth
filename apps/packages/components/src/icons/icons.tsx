@@ -1,70 +1,69 @@
-import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
-import type { IconSvgElement } from "@hugeicons/react";
-import React from "react";
-
 // Import common HugeIcons for unified registry
 import {
-	UserIcon,
-	ComputerIcon,
-	SecurityCheckIcon,
-	CheckmarkCircle02Icon,
-	Tick02Icon,
+	Add01Icon,
 	Alert02Icon,
 	AlertCircleIcon,
-	HomeIcon,
-	Add01Icon,
-	Cancel01Icon,
-	BookmarkIcon,
-	UserMultiple02Icon,
-	FlashIcon,
-	SmartPhone01Icon,
-	InformationCircleIcon,
-	Logout03Icon,
-	GridViewIcon,
-	Menu01Icon,
-	Layers01Icon,
-	LockIcon,
-	DollarCircleIcon,
-	ArrowRight01Icon,
-	CreditCardIcon,
-	CloudUploadIcon,
-	ReturnRequestIcon,
-	FileExportIcon,
-	TestTubeIcon,
-	BookOpen01Icon,
-	ChartColumnIcon,
-	LayoutGridIcon,
-	UserGroupIcon,
-	Settings02Icon,
-	DashboardSquare02Icon,
-	LicenseIcon,
-	Key01Icon,
-	ShieldKeyIcon,
-	CodeIcon,
 	ArrowDown01Icon,
-	Sun03Icon,
-	Moon02Icon,
-	UserWarningIcon,
-	Copy01Icon,
-	Delete01Icon,
-	Edit02Icon,
-	Refresh01Icon,
+	ArrowLeft01Icon,
+	ArrowRight01Icon,
+	ArrowUp01Icon,
+	BookmarkIcon,
+	BookOpen01Icon,
+	Cancel01Icon,
+	ChartColumnIcon,
 	CheckmarkBadge01Icon,
+	CheckmarkCircle02Icon,
+	Clock01Icon,
+	CloudUploadIcon,
+	CodeIcon,
+	ComputerIcon,
+	Copy01Icon,
+	CreditCardIcon,
+	DashboardSquare02Icon,
+	Delete01Icon,
+	DollarCircleIcon,
+	Download01Icon,
+	Edit02Icon,
+	EyeIcon,
+	FileExportIcon,
 	FilterIcon,
+	FlashIcon,
 	Folder01Icon,
-	ShieldIcon,
-	TicketIcon,
-	UserAdd01Icon,
-	Settings01Icon,
+	GridViewIcon,
+	HomeIcon,
+	InformationCircleIcon,
+	Key01Icon,
+	Layers01Icon,
+	LayoutGridIcon,
+	LicenseIcon,
+	LockIcon,
+	Logout03Icon,
+	Menu01Icon,
+	Moon02Icon,
+	NotificationIcon,
+	Refresh01Icon,
+	ReturnRequestIcon,
 	RotateClockwiseIcon,
 	Search01Icon,
-	Clock01Icon,
-	ArrowUp01Icon,
-	Download01Icon,
-	ArrowLeft01Icon,
-	EyeIcon,
-	NotificationIcon,
+	SecurityCheckIcon,
+	Settings01Icon,
+	Settings02Icon,
+	ShieldIcon,
+	ShieldKeyIcon,
+	SmartPhone01Icon,
+	Sun03Icon,
+	TestTubeIcon,
+	Tick02Icon,
+	TicketIcon,
+	UserAdd01Icon,
+	UserGroupIcon,
+	UserIcon,
+	UserMultiple02Icon,
+	UserWarningIcon,
 } from "@hugeicons/core-free-icons";
+import type { IconSvgElement } from "@hugeicons/react";
+import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
+import type React from "react";
 
 // ============================================================================
 // Brand Logo SVG Definitions - Inline for direct rendering
@@ -106,14 +105,26 @@ const BRAND_LOGOS = {
 	),
 	NextJS: (className?: string, style?: React.CSSProperties) => (
 		<svg className={className} style={style} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-			<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" fill="white" />
+			<path
+				d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"
+				fill="white"
+			/>
 		</svg>
 	),
 	React: (className?: string, style?: React.CSSProperties) => (
 		<svg className={className} style={style} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 			<circle cx="12" cy="11.245" r="1.785" fill="#61DAFB" />
-			<path d="M12 7.593c-2.494 0-4.888.923-6.697 2.606-1.809 1.682-2.82 3.964-2.82 6.346s1.011 4.664 2.82 6.346c1.809 1.682 4.203 2.606 6.697 2.606 2.494 0 4.888-.923 6.697-2.606 1.809-1.682 2.82-3.964 2.82-6.346s-1.011-4.664-2.82-6.346c-1.809-1.682-4.203-2.606-6.697-2.606z" stroke="#61DAFB" strokeWidth="1" fill="none" />
-			<path d="M7.303 15.405c-1.247.724-2.452 1.698-3.349 2.928M16.697 15.405c1.247.724 2.452 1.698 3.349 2.928M16.697 8.085c1.247-.724 2.452-1.698 3.349-2.928M7.303 8.085c-1.247-.724-2.452-1.698-3.349-2.928" stroke="#61DAFB" strokeWidth="1" />
+			<path
+				d="M12 7.593c-2.494 0-4.888.923-6.697 2.606-1.809 1.682-2.82 3.964-2.82 6.346s1.011 4.664 2.82 6.346c1.809 1.682 4.203 2.606 6.697 2.606 2.494 0 4.888-.923 6.697-2.606 1.809-1.682 2.82-3.964 2.82-6.346s-1.011-4.664-2.82-6.346c-1.809-1.682-4.203-2.606-6.697-2.606z"
+				stroke="#61DAFB"
+				strokeWidth="1"
+				fill="none"
+			/>
+			<path
+				d="M7.303 15.405c-1.247.724-2.452 1.698-3.349 2.928M16.697 15.405c1.247.724 2.452 1.698 3.349 2.928M16.697 8.085c1.247-.724 2.452-1.698 3.349-2.928M7.303 8.085c-1.247-.724-2.452-1.698-3.349-2.928"
+				stroke="#61DAFB"
+				strokeWidth="1"
+			/>
 		</svg>
 	),
 	JavaScript: (className?: string, style?: React.CSSProperties) => (
@@ -131,7 +142,10 @@ const BRAND_LOGOS = {
 	),
 	NodeJS: (className?: string, style?: React.CSSProperties) => (
 		<svg className={className} style={style} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-			<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z" fill="#47A248" />
+			<path
+				d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"
+				fill="#47A248"
+			/>
 		</svg>
 	),
 	Tailwind: (className?: string, style?: React.CSSProperties) => (
@@ -146,89 +160,89 @@ const BRAND_LOGOS = {
  * Type-safe icon registry
  * Unified registry for all icons (brand logos + HugeIcons)
  * Users only need to import from @nube-auth/components - no need to know the source
- * 
+ *
  * Usage:
  * <Icon icon={IconType.Google} size={20} />
  * <Icon icon={IconType.UserIcon} size={20} bold />
  */
 export const IconType = {
 	// Brand logos
-	Google: 'Google' as const,
-	GitHub: 'GitHub' as const,
-	Stripe: 'Stripe' as const,
-	NextJS: 'NextJS' as const,
-	React: 'React' as const,
-	JavaScript: 'JavaScript' as const,
-	Flutter: 'Flutter' as const,
-	NodeJS: 'NodeJS' as const,
-	Tailwind: 'Tailwind' as const,
-	
+	Google: "Google" as const,
+	GitHub: "GitHub" as const,
+	Stripe: "Stripe" as const,
+	NextJS: "NextJS" as const,
+	React: "React" as const,
+	JavaScript: "JavaScript" as const,
+	Flutter: "Flutter" as const,
+	NodeJS: "NodeJS" as const,
+	Tailwind: "Tailwind" as const,
+
 	// HugeIcons - Simplified names (NEW - preferred)
-	User: 'User' as const,
-	Computer: 'Computer' as const,
-	SecurityCheck: 'SecurityCheck' as const,
-	CheckCircle: 'CheckCircle' as const,
-	Check: 'Check' as const,
-	Alert: 'Alert' as const,
-	AlertCircle: 'AlertCircle' as const,
-	Logout: 'Logout' as const,
-	Home: 'Home' as const,
-	Settings: 'Settings' as const,
-	Add: 'Add' as const,
-	Cancel: 'Cancel' as const,
-	Bookmark: 'Bookmark' as const,
-	UserMultiple: 'UserMultiple' as const,
-	Flash: 'Flash' as const,
-	Phone: 'Phone' as const,
-	Info: 'Info' as const,
-	Grid: 'Grid' as const,
-	Menu: 'Menu' as const,
-	Layers: 'Layers' as const,
-	Lock: 'Lock' as const,
-	DollarCircle: 'DollarCircle' as const,
-	ArrowRight: 'ArrowRight' as const,
-	CreditCard: 'CreditCard' as const,
-	CloudUpload: 'CloudUpload' as const,
-	ReturnRequest: 'ReturnRequest' as const,
-	FileExport: 'FileExport' as const,
-	TestTube: 'TestTube' as const,
-	BookOpen: 'BookOpen' as const,
-	ChartColumn: 'ChartColumn' as const,
-	LayoutGrid: 'LayoutGrid' as const,
-	UserGroup: 'UserGroup' as const,
-	Dashboard: 'Dashboard' as const,
-	License: 'License' as const,
-	Key: 'Key' as const,
-	ShieldKey: 'ShieldKey' as const,
-	Code: 'Code' as const,
-	ArrowDown: 'ArrowDown' as const,
-	Sun: 'Sun' as const,
-	Moon: 'Moon' as const,
-	UserWarning: 'UserWarning' as const,
-	Copy: 'Copy' as const,
-	Delete: 'Delete' as const,
-	Edit: 'Edit' as const,
-	Refresh: 'Refresh' as const,
-	CheckBadge: 'CheckBadge' as const,
-	Filter: 'Filter' as const,
-	Folder: 'Folder' as const,
-	Shield: 'Shield' as const,
-	Ticket: 'Ticket' as const,
-	UserAdd: 'UserAdd' as const,
-	Settings01: 'Settings01' as const,
-	RotateClockwise: 'RotateClockwise' as const,
-	Close: 'Close' as const,
-	Users: 'Users' as const,
-	Search: 'Search' as const,
-	Clock: 'Clock' as const,
-	ArrowUp: 'ArrowUp' as const,
-	Download: 'Download' as const,
-	ArrowLeft: 'ArrowLeft' as const,
-	Eye: 'Eye' as const,
-	EyeOff: 'EyeOff' as const,
-	Star: 'Star' as const,
-	Bell: 'Bell' as const,
-	Help: 'Help' as const,
+	User: "User" as const,
+	Computer: "Computer" as const,
+	SecurityCheck: "SecurityCheck" as const,
+	CheckCircle: "CheckCircle" as const,
+	Check: "Check" as const,
+	Alert: "Alert" as const,
+	AlertCircle: "AlertCircle" as const,
+	Logout: "Logout" as const,
+	Home: "Home" as const,
+	Settings: "Settings" as const,
+	Add: "Add" as const,
+	Cancel: "Cancel" as const,
+	Bookmark: "Bookmark" as const,
+	UserMultiple: "UserMultiple" as const,
+	Flash: "Flash" as const,
+	Phone: "Phone" as const,
+	Info: "Info" as const,
+	Grid: "Grid" as const,
+	Menu: "Menu" as const,
+	Layers: "Layers" as const,
+	Lock: "Lock" as const,
+	DollarCircle: "DollarCircle" as const,
+	ArrowRight: "ArrowRight" as const,
+	CreditCard: "CreditCard" as const,
+	CloudUpload: "CloudUpload" as const,
+	ReturnRequest: "ReturnRequest" as const,
+	FileExport: "FileExport" as const,
+	TestTube: "TestTube" as const,
+	BookOpen: "BookOpen" as const,
+	ChartColumn: "ChartColumn" as const,
+	LayoutGrid: "LayoutGrid" as const,
+	UserGroup: "UserGroup" as const,
+	Dashboard: "Dashboard" as const,
+	License: "License" as const,
+	Key: "Key" as const,
+	ShieldKey: "ShieldKey" as const,
+	Code: "Code" as const,
+	ArrowDown: "ArrowDown" as const,
+	Sun: "Sun" as const,
+	Moon: "Moon" as const,
+	UserWarning: "UserWarning" as const,
+	Copy: "Copy" as const,
+	Delete: "Delete" as const,
+	Edit: "Edit" as const,
+	Refresh: "Refresh" as const,
+	CheckBadge: "CheckBadge" as const,
+	Filter: "Filter" as const,
+	Folder: "Folder" as const,
+	Shield: "Shield" as const,
+	Ticket: "Ticket" as const,
+	UserAdd: "UserAdd" as const,
+	Settings01: "Settings01" as const,
+	RotateClockwise: "RotateClockwise" as const,
+	Close: "Close" as const,
+	Users: "Users" as const,
+	Search: "Search" as const,
+	Clock: "Clock" as const,
+	ArrowUp: "ArrowUp" as const,
+	Download: "Download" as const,
+	ArrowLeft: "ArrowLeft" as const,
+	Eye: "Eye" as const,
+	EyeOff: "EyeOff" as const,
+	Star: "Star" as const,
+	Bell: "Bell" as const,
+	Help: "Help" as const,
 } as const;
 
 // Type-safe icon name type
@@ -237,16 +251,16 @@ export type IconTypeName = keyof typeof IconType;
 // Icon registry mapping (brand logos + HugeIcons)
 const ICON_REGISTRY: Record<string, IconSvgElement | keyof typeof BRAND_LOGOS> = {
 	// Brand logos (reference BRAND_LOGOS by key)
-	Google: 'Google',
-	GitHub: 'GitHub',
-	Stripe: 'Stripe',
-	NextJS: 'NextJS',
-	React: 'React',
-	JavaScript: 'JavaScript',
-	Flutter: 'Flutter',
-	NodeJS: 'NodeJS',
-	Tailwind: 'Tailwind',
-	
+	Google: "Google",
+	GitHub: "GitHub",
+	Stripe: "Stripe",
+	NextJS: "NextJS",
+	React: "React",
+	JavaScript: "JavaScript",
+	Flutter: "Flutter",
+	NodeJS: "NodeJS",
+	Tailwind: "Tailwind",
+
 	// Simplified names (point to same icon)
 	User: UserIcon,
 	Computer: ComputerIcon,
@@ -323,17 +337,17 @@ export type IconProps = Omit<HugeiconsIconProps, "icon"> & {
 
 /**
  * Unified Icon component for all icon usage across Nube Auth
- * 
+ *
  * Single source of truth for all icons (brand logos + HugeIcons)
  * Users don't need to import from multiple places or know which icon pack is used
- * 
+ *
  * @example
  * import { Icon, IconType } from "@nube-auth/components";
- * 
+ *
  * // Brand logos
  * <Icon icon={IconType.Google} size={20} />
  * <Icon icon={IconType.GitHub} size={24} bold />
- * 
+ *
  * // HugeIcons (no need to import from @hugeicons/core-free-icons)
  * <Icon icon={IconType.UserIcon} size={20} />
  * <Icon icon={IconType.Settings} size={20} bold />
@@ -341,42 +355,28 @@ export type IconProps = Omit<HugeiconsIconProps, "icon"> & {
  */
 export function Icon({ icon, size = 20, strokeWidth, bold = false, color = "currentColor", ...props }: IconProps) {
 	const resolvedStrokeWidth = strokeWidth ?? (bold ? 2.5 : 1.5);
-	
+
 	// Check if icon is directly a HugeIcons IconSvgElement (looks like an array)
 	if (Array.isArray(icon)) {
-		return (
-			<HugeiconsIcon
-				icon={icon}
-				size={size}
-				strokeWidth={resolvedStrokeWidth}
-				color={color}
-				{...props}
-			/>
-		);
+		return <HugeiconsIcon icon={icon} size={size} strokeWidth={resolvedStrokeWidth} color={color} {...props} />;
 	}
-	
+
 	// Otherwise it's an IconTypeName - look it up in the registry
 	const iconSource = ICON_REGISTRY[icon as IconTypeName];
-	
+
 	// Check if it's a HugeIcons IconSvgElement (looks like an array)
 	if (Array.isArray(iconSource)) {
 		return (
-			<HugeiconsIcon
-				icon={iconSource}
-				size={size}
-				strokeWidth={resolvedStrokeWidth}
-				color={color}
-				{...props}
-			/>
+			<HugeiconsIcon icon={iconSource} size={size} strokeWidth={resolvedStrokeWidth} color={color} {...props} />
 		);
 	}
-	
+
 	// Check if it's a brand logo key
-	if (typeof iconSource === 'string' && iconSource in BRAND_LOGOS) {
+	if (typeof iconSource === "string" && iconSource in BRAND_LOGOS) {
 		const brandLogoRender = BRAND_LOGOS[iconSource as keyof typeof BRAND_LOGOS];
 		return brandLogoRender(props.className, { width: `${size}px`, height: `${size}px`, ...props.style });
 	}
-	
+
 	// Fallback: shouldn't happen if registry is properly set up
 	console.warn(`Icon "${icon}" not found in registry`);
 	return null;
@@ -385,7 +385,7 @@ export function Icon({ icon, size = 20, strokeWidth, bold = false, color = "curr
 /**
  * Get an icon from the registry by name
  * Useful for dynamically referenced icons
- * 
+ *
  * @example
  * const iconName = 'User';
  * const icon = getIconByName(iconName);

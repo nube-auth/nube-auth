@@ -62,11 +62,7 @@ export interface SyncLicenseJob extends BaseJobData {
 	action: "create" | "update" | "extend" | "revoke";
 }
 
-export type PaymentJobData =
-	| ProcessPaymentJob
-	| ReconcilePaymentJob
-	| HandleRefundJob
-	| SyncLicenseJob;
+export type PaymentJobData = ProcessPaymentJob | ReconcilePaymentJob | HandleRefundJob | SyncLicenseJob;
 
 /**
  * Webhook related jobs
@@ -163,12 +159,7 @@ export type AsyncTaskJobData = GenerateReportJob | ExportDataJob | CleanupJob;
 /**
  * Union type for all possible job data
  */
-export type AllJobData =
-	| PaymentJobData
-	| WebhookJobData
-	| EmailJobData
-	| NotificationJobData
-	| AsyncTaskJobData;
+export type AllJobData = PaymentJobData | WebhookJobData | EmailJobData | NotificationJobData | AsyncTaskJobData;
 
 /**
  * Job result types

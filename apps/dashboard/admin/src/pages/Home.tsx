@@ -1,26 +1,18 @@
-import { Link } from "react-router-dom";
 import {
-	Icon,
-	IconType,
-	type IconTypeName,
 	Button,
 	Card,
 	CardBody,
 	Heading,
-	Text,
+	Icon,
+	IconType,
+	type IconTypeName,
 	Spinner,
+	Text,
 } from "@nube-auth/components";
+import { Link } from "react-router-dom";
 import { useMe, useProjects, useProjectsStats } from "../hooks/api";
 
-function StatCard({
-	label,
-	value,
-	isLoading,
-}: {
-	label: string;
-	value: number | string;
-	isLoading: boolean;
-}) {
+function StatCard({ label, value, isLoading }: { label: string; value: number | string; isLoading: boolean }) {
 	return (
 		<Card>
 			<CardBody className="py-5 px-6">
@@ -86,9 +78,7 @@ export function HomePage() {
 						Welcome back, {firstName}
 					</Heading>
 				)}
-				<Text className="text-muted mt-1">
-					Here's an overview of your Nube Auth workspace.
-				</Text>
+				<Text className="text-muted mt-1">Here's an overview of your Nube Auth workspace.</Text>
 			</div>
 
 			{/* Stats */}
@@ -97,21 +87,9 @@ export function HomePage() {
 					Overview
 				</Heading>
 				<div className="grid grid-cols-3 gap-4">
-					<StatCard
-						label="Total Projects"
-						value={totalProjects}
-						isLoading={projectsLoading}
-					/>
-					<StatCard
-						label="Total Apps"
-						value={totalApps}
-						isLoading={statsLoading}
-					/>
-					<StatCard
-						label="Total Users"
-						value={totalUsers}
-						isLoading={statsLoading}
-					/>
+					<StatCard label="Total Projects" value={totalProjects} isLoading={projectsLoading} />
+					<StatCard label="Total Apps" value={totalApps} isLoading={statsLoading} />
+					<StatCard label="Total Users" value={totalUsers} isLoading={statsLoading} />
 				</div>
 			</div>
 
@@ -161,8 +139,8 @@ export function HomePage() {
 							</Heading>
 							<Text className="text-muted">Create your first project to get started with Nube Auth.</Text>
 						</div>
-					<Button variant="primary" size="md" render={<Link to="/projects/new" />}>
-						Create Project
+						<Button variant="primary" size="md" render={<Link to="/projects/new" />}>
+							Create Project
 						</Button>
 					</CardBody>
 				</Card>

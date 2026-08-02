@@ -8,13 +8,12 @@
  * - Revokes license if full refund
  */
 
-import { Worker, type Job } from "bullmq";
+import { createProviderAdapter, decryptProviderCredentials } from "@nube-auth/billing";
+import { and, eq, getDb, payment_transactions, purchases } from "@nube-auth/db";
+import { payment_provider_configs } from "@nube-auth/db/schema";
 import { QueueClient } from "@nube-auth/queue";
 import { createLogger, serializeError } from "@nube-auth/shared";
-import { getDb, eq, and, purchases, payment_transactions } from "@nube-auth/db";
-import { payment_provider_configs } from "@nube-auth/db/schema";
-import { createProviderAdapter } from "@nube-auth/billing";
-import { decryptProviderCredentials } from "@nube-auth/billing";
+import { type Job, Worker } from "bullmq";
 
 const log = createLogger("process-refund-worker");
 
@@ -52,34 +51,22 @@ async function processRefundJob(job: Job<ProcessRefundJobData>): Promise<void> {
 
 		// 2. Validate purchase status
 		if (purchase.status !== "completed") {
-			throw new Error(
-				`Cannot refund purchase with status: ${purchase.status}`,
-			);
+			throw new Error(`Cannot refund purchase with status: ${purchase.status}`);
 		}
 
 		if (!purchase.payment_transaction_id) {
-			throw new Error(
-				`Purchase ${purchaseId} has no associated payment transaction`,
-			);
+			throw new Error(`Purchase ${purchaseId} has no associated payment transaction`);
 		}
 
 		// 3. Check if already refunded
 		const existingRefund = await db
 			.select()
 			.from(payment_transactions)
-			.where(
-				and(
-					eq(payment_transactions.purchase_id, purchaseId),
-					eq(payment_transactions.type, "refund"),
-				),
-			)
+			.where(and(eq(payment_transactions.purchase_id, purchaseId), eq(payment_transactions.type, "refund")))
 			.then((rows) => rows[0]);
 
 		if (existingRefund) {
-			log.warn(
-				{ purchaseId, existingRefundId: existingRefund.id },
-				"Purchase already has a refund",
-			);
+			log.warn({ purchaseId, existingRefundId: existingRefund.id }, "Purchase already has a refund");
 			return; // Already processed, skip
 		}
 
@@ -91,18 +78,14 @@ async function processRefundJob(job: Job<ProcessRefundJobData>): Promise<void> {
 			.then((rows) => rows[0]);
 
 		if (!originalTx) {
-			throw new Error(
-				`Payment transaction not found: ${purchase.payment_transaction_id}`,
-			);
+			throw new Error(`Payment transaction not found: ${purchase.payment_transaction_id}`);
 		}
 
 		// 5. Validate refund amount
 		const finalRefundAmount = refundAmount || originalTx.amount_cents;
 
 		if (finalRefundAmount > originalTx.amount_cents) {
-			throw new Error(
-				`Refund amount (${finalRefundAmount}) exceeds original (${originalTx.amount_cents})`,
-			);
+			throw new Error(`Refund amount (${finalRefundAmount}) exceeds original (${originalTx.amount_cents})`);
 		}
 
 		log.info(
@@ -123,9 +106,7 @@ async function processRefundJob(job: Job<ProcessRefundJobData>): Promise<void> {
 			.then((rows) => rows[0]);
 
 		if (!providerConfig) {
-			throw new Error(
-				`Provider config not found: ${originalTx.provider_config_id}`,
-			);
+			throw new Error(`Provider config not found: ${originalTx.provider_config_id}`);
 		}
 
 		let credentials: unknown;

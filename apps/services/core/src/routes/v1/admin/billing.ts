@@ -5,7 +5,7 @@ import {
 	paymentProviderConfigQueries,
 	paymentTransactionQueries,
 	purchaseQueries,
-	purchases,
+	type purchases,
 	sql,
 	subscriptions,
 	userQueries,
@@ -50,17 +50,22 @@ function formatPurchase(
 		status: purchase.status,
 		created_at: new Date(purchase.created_at).toISOString(),
 		updated_at: new Date(purchase.updated_at).toISOString(),
-		app: extras?.app
-			? { id: extras.app.public_id, name: extras.app.name }
-			: undefined,
-		user: extras?.user
-			? { id: extras.user.public_id, email: extras.user.primary_email }
-			: undefined,
+		app: extras?.app ? { id: extras.app.public_id, name: extras.app.name } : undefined,
+		user: extras?.user ? { id: extras.user.public_id, email: extras.user.primary_email } : undefined,
 	};
 }
 
 function formatTransaction(
-	tx: { public_id: string; type: string; status: string; amount_cents: number | null; currency: string | null; provider: string | null; created_at: Date | string; transaction_date: Date | string | null },
+	tx: {
+		public_id: string;
+		type: string;
+		status: string;
+		amount_cents: number | null;
+		currency: string | null;
+		provider: string | null;
+		created_at: Date | string;
+		transaction_date: Date | string | null;
+	},
 	extras?: { purchase?: { public_id: string; status: string } | null | undefined },
 ) {
 	return {
@@ -73,9 +78,7 @@ function formatTransaction(
 		provider: tx.provider,
 		created_at: new Date(tx.created_at).toISOString(),
 		updated_at: tx.transaction_date ? new Date(tx.transaction_date).toISOString() : null,
-		purchase: extras?.purchase
-			? { id: extras.purchase.public_id, status: extras.purchase.status }
-			: undefined,
+		purchase: extras?.purchase ? { id: extras.purchase.public_id, status: extras.purchase.status } : undefined,
 	};
 }
 
@@ -134,12 +137,8 @@ function formatWebhookDetail(wh: {
 		request_headers: wh.request_headers,
 		signature: wh.signature,
 		error_stack: wh.error_stack ?? undefined,
-		processing_started_at: wh.processing_started_at
-			? new Date(wh.processing_started_at).toISOString()
-			: undefined,
-		last_retry_at: wh.last_retry_at
-			? new Date(wh.last_retry_at).toISOString()
-			: undefined,
+		processing_started_at: wh.processing_started_at ? new Date(wh.processing_started_at).toISOString() : undefined,
+		last_retry_at: wh.last_retry_at ? new Date(wh.last_retry_at).toISOString() : undefined,
 	};
 }
 
@@ -174,21 +173,19 @@ function formatRefund(
 		completed_at: tx.resolved_at ? new Date(tx.resolved_at).toISOString() : undefined,
 		provider_refund_id: tx.provider_transaction_id,
 		error_message: tx.dispute_reason ?? undefined,
-		purchase: extras?.purchase
-			? formatPurchase(extras.purchase, { app: extras.purchaseApp })
-			: undefined,
+		purchase: extras?.purchase ? formatPurchase(extras.purchase, { app: extras.purchaseApp }) : undefined,
 	};
 }
 
 function parsePagination(query: Record<string, string>) {
-	const limit = Math.min(Math.max(Number(query['limit']) || 20, 1), 100);
-	const offset = Math.max(Number(query['offset']) || 0, 0);
+	const limit = Math.min(Math.max(Number(query["limit"]) || 20, 1), 100);
+	const offset = Math.max(Number(query["offset"]) || 0, 0);
 	return { limit, offset };
 }
 
 function parseDateFilters(query: Record<string, string>) {
-	const startDate = query['start_date'] ? new Date(query['start_date']) : undefined;
-	const endDate = query['end_date'] ? new Date(query['end_date']) : undefined;
+	const startDate = query["start_date"] ? new Date(query["start_date"]) : undefined;
+	const endDate = query["end_date"] ? new Date(query["end_date"]) : undefined;
 	return { startDate, endDate };
 }
 
@@ -200,30 +197,27 @@ billingRouter.get("/stats", async (c) => {
 		const db = getDb();
 		const query = c.req.query();
 		const { startDate, endDate } = parseDateFilters(query);
-		const provider = query['provider'] || undefined;
+		const provider = query["provider"] || undefined;
 
 		const dateFilters = { startDate, endDate, provider };
 
-		const [
-			byType,
-			byProvider,
-			byCurrency,
-			last30Days,
-			activeSubsResult,
-			webhookCounts,
-		] = await Promise.all([
+		const [byType, byProvider, byCurrency, last30Days, activeSubsResult, webhookCounts] = await Promise.all([
 			paymentTransactionQueries.revenueByType(db, dateFilters),
 			paymentTransactionQueries.revenueByProvider(db, { startDate, endDate }),
 			paymentTransactionQueries.revenueByCurrency(db, dateFilters),
 			paymentTransactionQueries.countRecent(db, 30),
-			db.select({ count: sql<number>`count(*)` })
+			db
+				.select({ count: sql<number>`count(*)` })
 				.from(subscriptions)
 				.where(inArray(subscriptions.status, ["active", "trialing", "past_due"])),
 			webhookLogQueries.countByStatus(db),
 		]);
 
 		// Compute totals from grouped results
-		const revenueTotal = byType.reduce((sum, r) => sum + (r.type !== "refund" && r.type !== "chargeback" ? Number(r.total) : 0), 0);
+		const revenueTotal = byType.reduce(
+			(sum, r) => sum + (r.type !== "refund" && r.type !== "chargeback" ? Number(r.total) : 0),
+			0,
+		);
 		const refundTotal = byType.find((r) => r.type === "refund")?.total ?? 0;
 		const txTotal = byType.reduce((sum, r) => sum + Number(r.count), 0);
 
@@ -249,9 +243,7 @@ billingRouter.get("/stats", async (c) => {
 				},
 				refunds: {
 					total: Number(refundTotal),
-					percentage: txTotal > 0
-						? Math.round((Number(refundTotal) / revenueTotal) * 10000) / 100
-						: 0,
+					percentage: txTotal > 0 ? Math.round((Number(refundTotal) / revenueTotal) * 10000) / 100 : 0,
 				},
 				subscriptions: {
 					active: Number(activeSubsResult[0]?.count ?? 0),
@@ -261,9 +253,9 @@ billingRouter.get("/stats", async (c) => {
 					last_30_days: Number(last30Days),
 				},
 				webhooks: {
-					success: webhookMap['completed'] ?? 0,
-					failed: (webhookMap['failed'] ?? 0) + (webhookMap['signature_failed'] ?? 0),
-					processing: webhookMap['processing'] ?? 0,
+					success: webhookMap["completed"] ?? 0,
+					failed: (webhookMap["failed"] ?? 0) + (webhookMap["signature_failed"] ?? 0),
+					processing: webhookMap["processing"] ?? 0,
 				},
 			},
 		});
@@ -285,21 +277,21 @@ billingRouter.get("/purchases", async (c) => {
 
 		// Resolve provider filter → providerConfigId if needed
 		let providerConfigId: number | undefined;
-		if (query['provider']) {
+		if (query["provider"]) {
 			// Filter by provider name isn't a direct column on purchases — skip for now
 			// Purchases link to provider_config_id; a full filter would require a join
 		}
 
 		// Resolve app_id filter
 		let appId: number | undefined;
-		if (query['app_id']) {
-			const app = await appQueries.findByPublicId(db, query['app_id']);
+		if (query["app_id"]) {
+			const app = await appQueries.findByPublicId(db, query["app_id"]);
 			if (app) appId = app.id;
 		}
 
 		const { items, total } = await purchaseQueries.findAll(db, {
 			appId,
-			status: query['status'] || undefined,
+			status: query["status"] || undefined,
 			providerConfigId,
 			startDate,
 			endDate,
@@ -366,9 +358,9 @@ billingRouter.get("/transactions", async (c) => {
 		const { startDate, endDate } = parseDateFilters(query);
 
 		const { items, total } = await paymentTransactionQueries.findAll(db, {
-			type: query['type'] || undefined,
-			status: query['status'] || undefined,
-			provider: query['provider'] || undefined,
+			type: query["type"] || undefined,
+			status: query["status"] || undefined,
+			provider: query["provider"] || undefined,
 			startDate,
 			endDate,
 			limit,
@@ -404,9 +396,9 @@ billingRouter.get("/webhooks", async (c) => {
 		const { startDate, endDate } = parseDateFilters(query);
 
 		const { items, total } = await webhookLogQueries.findAll(db, {
-			provider: query['provider'] || undefined,
-			status: query['status'] || undefined,
-			eventType: query['event_type'] || undefined,
+			provider: query["provider"] || undefined,
+			status: query["status"] || undefined,
+			eventType: query["event_type"] || undefined,
 			startDate,
 			endDate,
 			limit,
@@ -458,7 +450,9 @@ billingRouter.post("/webhooks/:webhookId/retry", async (c) => {
 
 		if (!["failed", "signature_failed", "skipped"].includes(webhook.status)) {
 			return c.json(
-				{ error: `Webhook retry allowed only for failed/signature_failed/skipped. Current status: ${webhook.status}` },
+				{
+					error: `Webhook retry allowed only for failed/signature_failed/skipped. Current status: ${webhook.status}`,
+				},
 				400,
 			);
 		}
@@ -521,8 +515,8 @@ billingRouter.get("/refunds", async (c) => {
 
 		const { items, total } = await paymentTransactionQueries.findAll(db, {
 			type: "refund",
-			status: query['status'] || undefined,
-			provider: query['provider'] || undefined,
+			status: query["status"] || undefined,
+			provider: query["provider"] || undefined,
 			startDate,
 			endDate,
 			limit,
@@ -533,9 +527,7 @@ billingRouter.get("/refunds", async (c) => {
 		const refunds = await Promise.all(
 			items.map(async (tx) => {
 				const purchase = await purchaseQueries.findByInternalId_(db, tx.purchase_id);
-				const purchaseApp = purchase
-					? await appQueries.findByInternalId_(db, purchase.app_id)
-					: undefined;
+				const purchaseApp = purchase ? await appQueries.findByInternalId_(db, purchase.app_id) : undefined;
 				return formatRefund(tx, { purchase, purchaseApp });
 			}),
 		);
@@ -582,10 +574,7 @@ billingRouter.post("/refunds", async (c) => {
 		}
 
 		// Get provider config for provider name
-		const providerConfig = await paymentProviderConfigQueries.findByInternalId_(
-			db,
-			purchase.provider_config_id,
-		);
+		const providerConfig = await paymentProviderConfigQueries.findByInternalId_(db, purchase.provider_config_id);
 		if (!providerConfig) {
 			return c.json({ error: "Provider configuration not found" }, 500);
 		}

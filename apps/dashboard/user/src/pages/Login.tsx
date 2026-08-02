@@ -1,8 +1,8 @@
+import { AuthLoginCard } from "@nube-auth/components";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { AuthLoginCard } from "@nube-auth/components";
-import { pingpong } from "../lib/pingpong";
 import { config } from "../config";
+import { pingpong } from "../lib/pingpong";
 
 export function LoginPage() {
 	const [searchParams] = useSearchParams();

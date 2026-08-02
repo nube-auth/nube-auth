@@ -1,54 +1,54 @@
 {
-  "name": "@nube-auth/queue",
-  "version": "0.1.0",
-  "description": "BullMQ queue management for Nube Auth (with future RabbitMQ support)",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./client": {
-      "import": "./dist/client.js",
-      "types": "./dist/client.d.ts"
-    },
-    "./types": {
-      "import": "./dist/types.js",
-      "types": "./dist/types.d.ts"
-    },
-    "./jobs": {
-      "import": "./dist/jobs/index.js",
-      "types": "./dist/jobs/index.d.ts"
-    }
-  },
-  "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
-  },
-  "dependencies": {
-    "bullmq": "^5.8.0",
-    "ioredis": "^5.8.2"
-  },
-  "devDependencies": {
-    "@types/node": "^22.0.0",
-    "tsup": "^8.0.0",
-    "typescript": "^6.0.2"
-  },
-  "keywords": [
-    "queue",
-    "job",
-    "bullmq",
-    "redis",
-    "worker",
-    "background-jobs"
-  ],
-  "author": "Nube Auth",
-  "license": "MIT",
-  "files": [
-    "dist"
-  ]
+	"name": "@nube-auth/queue",
+	"version": "0.1.0",
+	"description": "BullMQ queue management for Nube Auth (with future RabbitMQ support)",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		},
+		"./client": {
+			"import": "./dist/client.js",
+			"types": "./dist/client.d.ts"
+		},
+		"./types": {
+			"import": "./dist/types.js",
+			"types": "./dist/types.d.ts"
+		},
+		"./jobs": {
+			"import": "./dist/jobs/index.js",
+			"types": "./dist/jobs/index.d.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsup",
+		"dev": "tsup --watch",
+		"typecheck": "tsc --noEmit",
+		"clean": "rm -rf dist"
+	},
+	"dependencies": {
+		"bullmq": "^5.8.0",
+		"ioredis": "^5.8.2"
+	},
+	"devDependencies": {
+		"@types/node": "^22.0.0",
+		"tsup": "^8.0.0",
+		"typescript": "^6.0.2"
+	},
+	"keywords": [
+		"queue",
+		"job",
+		"bullmq",
+		"redis",
+		"worker",
+		"background-jobs"
+	],
+	"author": "Nube Auth",
+	"license": "MIT",
+	"files": [
+		"dist"
+	]
 }

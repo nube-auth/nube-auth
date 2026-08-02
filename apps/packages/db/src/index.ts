@@ -8,7 +8,7 @@ const { Pool } = pg;
  * Initialize PostgreSQL client and Drizzle ORM
  */
 export function createDbClient() {
-	const url = process.env['DATABASE_URL'];
+	const url = process.env["DATABASE_URL"];
 
 	if (!url) {
 		throw new Error("DATABASE_URL environment variable is not set");
@@ -20,7 +20,7 @@ export function createDbClient() {
 		// Only log protocol, host, and database name - no credentials
 		const sanitized = `${parsed.protocol}//${parsed.host}${parsed.pathname}`;
 		console.log(`Connecting to database: ${sanitized}`);
-	} catch (error) {
+	} catch (_error) {
 		// Fallback if URL parsing fails
 		console.log("Connecting to database...");
 	}
@@ -64,20 +64,14 @@ export function getDb(): Database {
 
 // Export drizzle-orm operators for queries
 export { and, asc, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
-// Export JSONB utilities
-export {
-	buildJsonbMergeClause,
-	buildJsonbSetClause,
-	createJsonbUpdateChain,
-	jsonbField,
-	validateAndBuildJsonbUpdate,
-	type JsonbUpdateChain,
-} from "./utils/jsonb.js";
+// Export migration runner
+export { runMigrations } from "./migrations.js";
 // Export all query helpers
 export {
 	activationQueries,
 	appQueries,
 	appUserQueries,
+	appWebhookQueries,
 	auditLogQueries,
 	authCodeQueries,
 	emailVerificationQueries,
@@ -85,6 +79,7 @@ export {
 	invitationQueries,
 	licenseHistoryQueries,
 	licenseQueries,
+	outboundWebhookLogQueries,
 	paymentProviderConfigQueries,
 	paymentTransactionQueries,
 	planQueries,
@@ -105,13 +100,18 @@ export {
 	testSessionQueries,
 	userQueries,
 	webhookLogQueries,
-	appWebhookQueries,
-	outboundWebhookLogQueries,
 } from "./queries.js";
-// Export migration runner
-export { runMigrations } from "./migrations.js";
 // Export schema for migrations and types
 export * from "./schema.js";
+// Export JSONB utilities
+export {
+	buildJsonbMergeClause,
+	buildJsonbSetClause,
+	createJsonbUpdateChain,
+	type JsonbUpdateChain,
+	jsonbField,
+	validateAndBuildJsonbUpdate,
+} from "./utils/jsonb.js";
 // Export transaction utilities
 export {
 	executeAtomic,

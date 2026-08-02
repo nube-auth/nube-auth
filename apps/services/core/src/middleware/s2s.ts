@@ -1,14 +1,14 @@
-import type { Context, Next } from "hono";
-import { createLogger, serializeError } from "@nube-auth/shared";
-import { env } from "../config/env";
 import { timingSafeEqual } from "node:crypto";
+import { createLogger, serializeError } from "@nube-auth/shared";
+import type { Context, Next } from "hono";
+import { env } from "../config/env";
 
 const log = createLogger("s2s-middleware");
 
 /**
  * S2S token validation middleware
  * Validates server-to-server authentication tokens for gateway communication
- * 
+ *
  * Security: Uses constant-time comparison to prevent timing attacks
  * Tracking: https://github.com/0xdps/nube-auth/issues/43
  */

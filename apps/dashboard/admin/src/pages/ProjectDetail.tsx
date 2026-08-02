@@ -1,14 +1,16 @@
-import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
 import {
 	Alert,
 	Avatar,
-	Chip,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
 	Button,
 	Card,
 	CardBody,
 	CardHeader,
 	CardTitle,
+	Chip,
 	DataTable,
 	DataTableHeader,
 	DataTableRow,
@@ -23,11 +25,8 @@ import {
 	TableHead,
 	TableHeader,
 	Text,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbButton,
 } from "@nube-auth/components";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getIconById } from "../components/IconPicker";
 import { useProject, useProjectApps, useProjectMembers, useProjectStats } from "../hooks/api";
 
@@ -63,7 +62,7 @@ export function ProjectDetailPage() {
 				<BreadcrumbList>
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
-				</BreadcrumbItem>
+					</BreadcrumbItem>
 					<BreadcrumbItem>
 						<BreadcrumbButton active>{project.name}</BreadcrumbButton>
 					</BreadcrumbItem>
@@ -142,9 +141,7 @@ export function ProjectDetailPage() {
 						</IconBox>
 						<Heading className="mb-1">{statsLoading ? "—" : stats?.activeLicenses || 0}</Heading>
 						<Text className="text-muted">Active Licenses</Text>
-						{!statsLoading && stats && (
-							<Text className="text-muted mt-1">{stats.totalLicenses} total</Text>
-						)}
+						{!statsLoading && stats && <Text className="text-muted mt-1">{stats.totalLicenses} total</Text>}
 					</CardBody>
 				</Card>
 

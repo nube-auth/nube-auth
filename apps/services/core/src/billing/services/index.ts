@@ -6,7 +6,7 @@
  */
 
 export { PurchasesService } from "./purchases.js";
-export { WebhookHandler } from "./webhook-handler.js";
 export { RefundsService } from "./refunds.js";
 export { SubscriptionsService } from "./subscriptions.js";
+export { WebhookHandler } from "./webhook-handler.js";
 export { WebhookLoggingService } from "./webhook-logging.js";

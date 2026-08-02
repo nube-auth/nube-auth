@@ -11,10 +11,10 @@ export {
 	verifyOTP,
 } from "./crypto.js";
 export * from "./oauth.js";
-
+// HTTP client helpers
+export { pingpong } from "./pingpong.js";
 // OAuth validation schemas
 export * from "./schemas/index.js";
-
 // Session management
 export {
 	configureSessionSecret,
@@ -25,6 +25,7 @@ export {
 	signSessionId,
 	verifySessionId,
 } from "./session.js";
+export type { StateStore } from "./state.js";
 // OAuth state management (CSRF protection)
 export {
 	configureStateStore,
@@ -32,7 +33,3 @@ export {
 	createOAuthState,
 	validateOAuthState,
 } from "./state.js";
-export type { StateStore } from "./state.js";
-
-// HTTP client helpers
-export { pingpong } from "./pingpong.js";

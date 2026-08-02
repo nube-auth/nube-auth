@@ -6,7 +6,20 @@
  * interval, and currency — no routing logic is needed here.
  */
 
-import { getDb, prices, plans, payment_provider_configs, appQueries, priceQueries, purchases, userQueries, promotionCodeQueries, promotionPlanQueries, promotionProviderRefQueries, eq, and } from "@nube-auth/db";
+import {
+	and,
+	appQueries,
+	eq,
+	getDb,
+	payment_provider_configs,
+	plans,
+	priceQueries,
+	promotionCodeQueries,
+	promotionPlanQueries,
+	promotionProviderRefQueries,
+	purchases,
+	userQueries,
+} from "@nube-auth/db";
 import { createLogger, id, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -20,8 +33,8 @@ export const checkoutRoutes = new Hono();
 
 const CheckoutRequestSchema = z.object({
 	appId: z.string(),
-	userId: z.string(),   // Nube Auth user public_id (USER0...)
-	priceId: z.string(),  // Nube Auth price public_id (PRICE0...)
+	userId: z.string(), // Nube Auth user public_id (USER0...)
+	priceId: z.string(), // Nube Auth price public_id (PRICE0...)
 	customerId: z.string().optional(),
 	customerEmail: z.string().email(),
 	quantity: z.number().int().positive().optional().default(1),
@@ -118,8 +131,10 @@ checkoutRoutes.post("/", async (c: Context) => {
 
 		// Add environment field for Dodo (convert "test"/"production" to "test_mode"/"live_mode")
 		if (providerConfig.provider === "dodo" && providerConfig.environment) {
-			(decryptedCredentials as any).environment = providerConfig.environment === "production" ? "live_mode" : "test_mode";
-			(decryptedCredentials as any).webhookSecret = providerConfig.webhook_secret || (decryptedCredentials as any).webhookSecret;
+			(decryptedCredentials as any).environment =
+				providerConfig.environment === "production" ? "live_mode" : "test_mode";
+			(decryptedCredentials as any).webhookSecret =
+				providerConfig.webhook_secret || (decryptedCredentials as any).webhookSecret;
 		}
 
 		const adapter = createProviderAdapter(providerConfig.provider, decryptedCredentials);
@@ -140,8 +155,7 @@ checkoutRoutes.post("/", async (c: Context) => {
 				// rejecting the checkout — the attempt is still recorded in our system.
 				const planTargets = await promotionPlanQueries.findByPromotionId(db, promoCode.promotion_id);
 				const eligibleForPlan =
-					planTargets.length === 0 ||
-					planTargets.map((pt) => pt.plan_id).includes(price.plan_id);
+					planTargets.length === 0 || planTargets.map((pt) => pt.plan_id).includes(price.plan_id);
 
 				if (!eligibleForPlan) {
 					log.warn(
@@ -162,7 +176,11 @@ checkoutRoutes.post("/", async (c: Context) => {
 							objectType: ref.provider_object_type as "coupon" | "promotion_code" | "discount",
 						};
 						log.info(
-							{ promoCode: validated.promoCode, couponId: ref.provider_coupon_id, provider: providerConfig.provider },
+							{
+								promoCode: validated.promoCode,
+								couponId: ref.provider_coupon_id,
+								provider: providerConfig.provider,
+							},
 							"Resolved Nube promo code to provider coupon",
 						);
 					} else {
@@ -236,13 +254,22 @@ checkoutRoutes.post("/", async (c: Context) => {
 					// Store the Nube promotion_code so the webhook can link it to the transaction
 					...(resolvedPromoCodeId && { promotion_code_id: resolvedPromoCodeId }),
 				});
-				log.info({ sessionId: session.sessionId, userId: validated.userId, purchaseId: pendingPurchasePublicId }, "Pending purchase record created");
+				log.info(
+					{ sessionId: session.sessionId, userId: validated.userId, purchaseId: pendingPurchasePublicId },
+					"Pending purchase record created",
+				);
 			} catch (purchaseError) {
 				// Non-fatal: the webhook will still create the final record; log and continue
-				log.error({ err: serializeError(purchaseError as Error), sessionId: session.sessionId }, "Failed to create pending purchase record");
+				log.error(
+					{ err: serializeError(purchaseError as Error), sessionId: session.sessionId },
+					"Failed to create pending purchase record",
+				);
 			}
 		} else {
-			log.warn({ userId: validated.userId, sessionId: session.sessionId }, "User not found — pending purchase not recorded");
+			log.warn(
+				{ userId: validated.userId, sessionId: session.sessionId },
+				"User not found — pending purchase not recorded",
+			);
 		}
 
 		return c.json({

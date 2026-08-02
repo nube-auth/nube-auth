@@ -1,26 +1,25 @@
 /**
  * Purchases Service
- * 
+ *
  * Handles creation of purchase, transaction, subscription, and license records
  */
 
 import type { Database } from "@nube-auth/db";
-import { eq, priceQueries, purchaseQueries, promotionCodeQueries, promotionQueries, promotionRedemptionQueries, sql, } from "@nube-auth/db";
+import { eq, priceQueries, promotionCodeQueries, promotionQueries, purchaseQueries, sql } from "@nube-auth/db";
 import {
 	apps,
-	licenses,
 	license_history,
+	licenses,
+	payment_transactions,
+	plans,
+	promotion_redemptions,
 	purchases,
-	prices as pricesTable,
 	subscriptions,
 	users,
-	plans,
-	payment_transactions,
-	promotion_redemptions,
 } from "@nube-auth/db/schema";
-import { createLogger, serializeError, id } from "@nube-auth/shared";
-import type { PaymentDetails } from "../adapters/types.js";
+import { createLogger, id, serializeError } from "@nube-auth/shared";
 import { fireWebhookEvent } from "../../utils/outbound-events.js";
+import type { PaymentDetails } from "../adapters/types.js";
 
 const log = createLogger("purchases-service");
 
@@ -33,10 +32,7 @@ interface CreatePurchaseParams {
 /**
  * Create all purchase-related records in database
  */
-export async function createPurchaseRecords(
-	db: Database,
-	params: CreatePurchaseParams
-): Promise<void> {
+export async function createPurchaseRecords(db: Database, params: CreatePurchaseParams): Promise<void> {
 	try {
 		const { paymentDetails, providerConfigId, provider } = params;
 
@@ -48,10 +44,7 @@ export async function createPurchaseRecords(
 		const interval = paymentDetails.metadata?.["interval"] as string | undefined; // 'month' | 'year' | 'one_time'
 
 		if (!appPublicId || !userPublicId || !planPublicId) {
-			log.error(
-				{ metadata: paymentDetails.metadata },
-				"Missing required metadata (appId, userId, or planId)"
-			);
+			log.error({ metadata: paymentDetails.metadata }, "Missing required metadata (appId, userId, or planId)");
 			throw new Error("Missing required metadata");
 		}
 
@@ -91,19 +84,31 @@ export async function createPurchaseRecords(
 		// Find the price record — prefer the priceId stored in metadata (set at checkout time)
 		// since there can be multiple prices per plan+provider (monthly/yearly).
 		// Fall back to plan+provider lookup for backwards-compat with older webhook events.
-		let price: { id: number; interval: string | null; amount_cents: number; currency: string; duration_days: number | null; billing_type: string | null } | undefined;
+		let price:
+			| {
+					id: number;
+					interval: string | null;
+					amount_cents: number;
+					currency: string;
+					duration_days: number | null;
+					billing_type: string | null;
+			  }
+			| undefined;
 		if (pricePublicId) {
-			price = await priceQueries.findByPublicId(db, pricePublicId) as typeof price;
+			price = (await priceQueries.findByPublicId(db, pricePublicId)) as typeof price;
 		}
 		if (!price) {
 			price = await db.query.prices.findFirst({
 				where: (p, { and, eq: eqCol }) =>
-					and(
-						eqCol(p.plan_id, plan.id),
-						eqCol(p.external_provider, provider),
-						eqCol(p.is_active, true),
-					),
-				columns: { id: true, interval: true, amount_cents: true, currency: true, duration_days: true, billing_type: true },
+					and(eqCol(p.plan_id, plan.id), eqCol(p.external_provider, provider), eqCol(p.is_active, true)),
+				columns: {
+					id: true,
+					interval: true,
+					amount_cents: true,
+					currency: true,
+					duration_days: true,
+					billing_type: true,
+				},
 			});
 		}
 
@@ -139,7 +144,9 @@ export async function createPurchaseRecords(
 					},
 					"Amount mismatch between webhook and price record — rejecting fulfillment",
 				);
-				throw new Error(`Amount mismatch: expected ~${price.amount_cents} cents, received ${paymentDetails.amount}`);
+				throw new Error(
+					`Amount mismatch: expected ~${price.amount_cents} cents, received ${paymentDetails.amount}`,
+				);
 			}
 		}
 
@@ -147,7 +154,12 @@ export async function createPurchaseRecords(
 		// Otherwise create a new one. This prevents duplicates when the pending record was
 		// already created at checkout initiation time.
 		const pendingPurchaseId = paymentDetails.metadata?.["purchaseId"] as string | undefined;
-		const webhookStatus = paymentDetails.status === "succeeded" ? "completed" : paymentDetails.status === "failed" ? "failed" : "pending";
+		const webhookStatus =
+			paymentDetails.status === "succeeded"
+				? "completed"
+				: paymentDetails.status === "failed"
+					? "failed"
+					: "pending";
 		const providerSessionId = paymentDetails.metadata?.["sessionId"] || paymentDetails.transactionId;
 
 		let purchase: typeof purchases.$inferSelect;
@@ -168,7 +180,10 @@ export async function createPurchaseRecords(
 				.returning();
 			if (!updatedPurchase) throw new Error("Failed to update pending purchase record");
 			purchase = updatedPurchase;
-			log.info({ purchaseId: purchase.public_id, status: webhookStatus }, "Pending purchase record updated by webhook");
+			log.info(
+				{ purchaseId: purchase.public_id, status: webhookStatus },
+				"Pending purchase record updated by webhook",
+			);
 		} else {
 			// No pre-existing pending record — create one now (backwards compat / webhook-only flow)
 			const [newPurchase] = await db
@@ -192,13 +207,12 @@ export async function createPurchaseRecords(
 		// Calculate valid_until based on billing type:
 		// - one_time: always 2099-12-31 (permanent access after a single payment)
 		// - recurring: derive from interval (30 days for month, 365 for year)
-		const ONE_TIME_EXPIRY = new Date('2099-12-31T23:59:59.000Z');
+		const ONE_TIME_EXPIRY = new Date("2099-12-31T23:59:59.000Z");
 		let validUntil: Date;
-		if (price.billing_type === 'one_time') {
+		if (price.billing_type === "one_time") {
 			validUntil = ONE_TIME_EXPIRY;
-		} else if (price.billing_type === 'recurring' && price.interval) {
-			const daysToAdd = price.duration_days
-				?? (price.interval === 'year' ? 365 : 30);
+		} else if (price.billing_type === "recurring" && price.interval) {
+			const daysToAdd = price.duration_days ?? (price.interval === "year" ? 365 : 30);
 			validUntil = new Date(Date.now() + daysToAdd * 24 * 60 * 60 * 1000);
 		} else {
 			validUntil = ONE_TIME_EXPIRY;
@@ -226,16 +240,16 @@ export async function createPurchaseRecords(
 				.where(eq(licenses.id, existingLicense.id))
 				.returning();
 
-		if (!updatedLicense) {
-			throw new Error("Failed to update license");
-		}
+			if (!updatedLicense) {
+				throw new Error("Failed to update license");
+			}
 
-		license = updatedLicense;
+			license = updatedLicense;
 
-		log.info(
-			{ licenseId: license.public_id, userId: userPublicId, appId: appPublicId },
-			"License updated via purchase"
-		);
+			log.info(
+				{ licenseId: license.public_id, userId: userPublicId, appId: appPublicId },
+				"License updated via purchase",
+			);
 		} else {
 			// Create new license - handle race condition where another webhook creates it first
 			try {
@@ -257,10 +271,7 @@ export async function createPurchaseRecords(
 
 				license = newLicense;
 
-				log.info(
-					{ licenseId: license.public_id, userId: userPublicId, appId: appPublicId },
-					"License created"
-				);
+				log.info({ licenseId: license.public_id, userId: userPublicId, appId: appPublicId }, "License created");
 
 				createdLicense = true;
 			} catch (error) {
@@ -268,7 +279,7 @@ export async function createPurchaseRecords(
 				if ((error as any)?.code === "23505" && (error as any)?.constraint === "licenses_user_app_unique") {
 					log.info(
 						{ userId: userPublicId, appId: appPublicId },
-						"License already exists (created by parallel webhook), fetching existing license"
+						"License already exists (created by parallel webhook), fetching existing license",
 					);
 
 					// Fetch the license that was created by the other webhook
@@ -300,7 +311,7 @@ export async function createPurchaseRecords(
 
 					log.info(
 						{ licenseId: license.public_id, userId: userPublicId, appId: appPublicId },
-						"License updated after race condition"
+						"License updated after race condition",
 					);
 				} else {
 					// Re-throw if it's a different error
@@ -313,15 +324,19 @@ export async function createPurchaseRecords(
 		let promoCodeRow: { id: number; promotion_id: number; code: string } | undefined;
 		let discountAppliedCents = 0;
 		if (purchase.promotion_code_id) {
-			promoCodeRow = await promotionCodeQueries.findByInternalId_(db, purchase.promotion_code_id) as typeof promoCodeRow;
+			promoCodeRow = (await promotionCodeQueries.findByInternalId_(
+				db,
+				purchase.promotion_code_id,
+			)) as typeof promoCodeRow;
 		}
 
 		if (promoCodeRow) {
 			const promo = await promotionQueries.findByInternalId_(db, promoCodeRow.promotion_id);
 			if (promo && price) {
-				discountAppliedCents = promo.discount_type === "percent"
-					? Math.round((price.amount_cents * promo.discount_value) / 100)
-					: promo.discount_value;
+				discountAppliedCents =
+					promo.discount_type === "percent"
+						? Math.round((price.amount_cents * promo.discount_value) / 100)
+						: promo.discount_value;
 				discountAppliedCents = Math.min(discountAppliedCents, price.amount_cents);
 			}
 		}
@@ -337,8 +352,13 @@ export async function createPurchaseRecords(
 				provider_transaction_id: paymentDetails.transactionId,
 				provider_customer_id: paymentDetails.customerId || null,
 				type: paymentDetails.subscriptionId ? "renewal" : "purchase",
-			// Normalize provider status values to the DB enum: 'success' | 'failed' | 'pending' | 'disputed'
-			status: paymentDetails.status === "succeeded" ? "success" : paymentDetails.status === "failed" ? "failed" : "pending",
+				// Normalize provider status values to the DB enum: 'success' | 'failed' | 'pending' | 'disputed'
+				status:
+					paymentDetails.status === "succeeded"
+						? "success"
+						: paymentDetails.status === "failed"
+							? "failed"
+							: "pending",
 				amount_cents: paymentDetails.amount,
 				currency: paymentDetails.currency,
 				discount_applied_cents: discountAppliedCents,
@@ -382,104 +402,115 @@ export async function createPurchaseRecords(
 				await promotionCodeQueries.incrementUses(db, promoCodeRow.id);
 				await promotionQueries.incrementRedemptions(db, promoCodeRow.promotion_id);
 				log.info(
-					{ promotionCodeId: promoCodeRow.id, discountCents: discountAppliedCents, purchaseId: purchase.public_id },
+					{
+						promotionCodeId: promoCodeRow.id,
+						discountCents: discountAppliedCents,
+						purchaseId: purchase.public_id,
+					},
 					"Promotion redemption recorded",
 				);
 			} catch (redeemErr) {
 				// Non-fatal: transaction is already committed
-				log.error({ err: serializeError(redeemErr as Error), promotionCodeId: promoCodeRow.id }, "Failed to record promotion redemption");
-			}
-		}
-
-	if (paymentDetails.subscriptionId) {
-		const existingSubscription = await db.query.subscriptions.findFirst({
-			where: (s, { and, eq: eqCol }) =>
-				and(
-					eqCol(s.provider_config_id, providerConfigId),
-					eqCol(s.provider_subscription_id, paymentDetails.subscriptionId!),
-				),
-			columns: { id: true },
-		});
-
-		// Upsert subscription: create on first payment, update billing dates on renewal.
-		// A plain INSERT would violate the unique(provider_config_id, provider_subscription_id)
-		// constraint on every renewal since the subscription ID never changes.
-		const [subscription] = await db
-			.insert(subscriptions)
-			.values({
-				public_id: id.request(),
-				user_id: user.id,
-				app_id: app.id,
-				license_id: license.id,
-				price_id: price.id,
-				provider_config_id: providerConfigId,
-				provider,
-				provider_subscription_id: paymentDetails.subscriptionId,
-				provider_customer_id: paymentDetails.customerId || null,
-				status: "active",
-				billing_interval: price.interval || "month",
-				billing_period_start: new Date(),
-				billing_period_end: validUntil,
-				next_billing_date: validUntil,
-				cancel_at_period_end: false,
-				canceled_at: null,
-				ended_at: null,
-				amount_cents: price.amount_cents,
-				currency: price.currency || "usd",
-				metadata: paymentDetails.metadata || {},
-				trial_start: null,
-				trial_end: null,
-			})
-			.onConflictDoUpdate({
-				target: [subscriptions.provider_config_id, subscriptions.provider_subscription_id],
-				set: {
-					status: "active",
-					billing_period_start: new Date(),
-					billing_period_end: validUntil,
-					next_billing_date: validUntil,
-					license_id: license.id,
-					updated_at: new Date(),
-				},
-			})
-			.returning();
-
-		if (subscription) {
-			log.info(
-				{ subscriptionId: subscription.public_id, providerSubId: paymentDetails.subscriptionId },
-				"Subscription record upserted (created or renewed)",
-			);
-
-			const subscriptionEvent = existingSubscription ? "subscription.renewed" : "subscription.created";
-			try {
-				await fireWebhookEvent(db, app.id, subscriptionEvent, {
-					subscriptionId: subscription.public_id,
-					licenseId: license.public_id,
-					appId: appPublicId,
-					userId: userPublicId,
-					planId: planPublicId,
-					status: subscription.status,
-					billingInterval: subscription.billing_interval,
-					billingPeriodStart: subscription.billing_period_start
-						? new Date(subscription.billing_period_start).toISOString()
-						: null,
-					billingPeriodEnd: subscription.billing_period_end
-						? new Date(subscription.billing_period_end).toISOString()
-						: null,
-					nextBillingDate: subscription.next_billing_date
-						? new Date(subscription.next_billing_date).toISOString()
-						: null,
-					transactionId: paymentDetails.transactionId,
-					amountCents: paymentDetails.amount,
-					currency: paymentDetails.currency,
-				});
-			} catch (webhookEventError) {
 				log.error(
-					{ err: serializeError(webhookEventError as Error), event: subscriptionEvent, appId: appPublicId },
-					"Failed to emit outbound subscription webhook event",
+					{ err: serializeError(redeemErr as Error), promotionCodeId: promoCodeRow.id },
+					"Failed to record promotion redemption",
 				);
 			}
 		}
-	}
+
+		if (paymentDetails.subscriptionId) {
+			const existingSubscription = await db.query.subscriptions.findFirst({
+				where: (s, { and, eq: eqCol }) =>
+					and(
+						eqCol(s.provider_config_id, providerConfigId),
+						eqCol(s.provider_subscription_id, paymentDetails.subscriptionId!),
+					),
+				columns: { id: true },
+			});
+
+			// Upsert subscription: create on first payment, update billing dates on renewal.
+			// A plain INSERT would violate the unique(provider_config_id, provider_subscription_id)
+			// constraint on every renewal since the subscription ID never changes.
+			const [subscription] = await db
+				.insert(subscriptions)
+				.values({
+					public_id: id.request(),
+					user_id: user.id,
+					app_id: app.id,
+					license_id: license.id,
+					price_id: price.id,
+					provider_config_id: providerConfigId,
+					provider,
+					provider_subscription_id: paymentDetails.subscriptionId,
+					provider_customer_id: paymentDetails.customerId || null,
+					status: "active",
+					billing_interval: price.interval || "month",
+					billing_period_start: new Date(),
+					billing_period_end: validUntil,
+					next_billing_date: validUntil,
+					cancel_at_period_end: false,
+					canceled_at: null,
+					ended_at: null,
+					amount_cents: price.amount_cents,
+					currency: price.currency || "usd",
+					metadata: paymentDetails.metadata || {},
+					trial_start: null,
+					trial_end: null,
+				})
+				.onConflictDoUpdate({
+					target: [subscriptions.provider_config_id, subscriptions.provider_subscription_id],
+					set: {
+						status: "active",
+						billing_period_start: new Date(),
+						billing_period_end: validUntil,
+						next_billing_date: validUntil,
+						license_id: license.id,
+						updated_at: new Date(),
+					},
+				})
+				.returning();
+
+			if (subscription) {
+				log.info(
+					{ subscriptionId: subscription.public_id, providerSubId: paymentDetails.subscriptionId },
+					"Subscription record upserted (created or renewed)",
+				);
+
+				const subscriptionEvent = existingSubscription ? "subscription.renewed" : "subscription.created";
+				try {
+					await fireWebhookEvent(db, app.id, subscriptionEvent, {
+						subscriptionId: subscription.public_id,
+						licenseId: license.public_id,
+						appId: appPublicId,
+						userId: userPublicId,
+						planId: planPublicId,
+						status: subscription.status,
+						billingInterval: subscription.billing_interval,
+						billingPeriodStart: subscription.billing_period_start
+							? new Date(subscription.billing_period_start).toISOString()
+							: null,
+						billingPeriodEnd: subscription.billing_period_end
+							? new Date(subscription.billing_period_end).toISOString()
+							: null,
+						nextBillingDate: subscription.next_billing_date
+							? new Date(subscription.next_billing_date).toISOString()
+							: null,
+						transactionId: paymentDetails.transactionId,
+						amountCents: paymentDetails.amount,
+						currency: paymentDetails.currency,
+					});
+				} catch (webhookEventError) {
+					log.error(
+						{
+							err: serializeError(webhookEventError as Error),
+							event: subscriptionEvent,
+							appId: appPublicId,
+						},
+						"Failed to emit outbound subscription webhook event",
+					);
+				}
+			}
+		}
 
 		const licenseEvent = createdLicense ? "license.created" : "license.renewed";
 		try {

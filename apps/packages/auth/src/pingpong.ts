@@ -14,24 +14,24 @@ type PingpongRequestOptions = {
  * - response.ok() method (check if 2xx status)
  * - Convenience methods (.get(), .post(), etc.)
  * - Type-safe responses
- * 
+ *
  * Note: Explicitly configures credentials: 'include' to send cookies in browser environment
- * 
+ *
  * @version 1.0.4 - Fixed credentials handling for browser cookie support
  */
 export async function pingpongFetch(url: string, options: PingpongRequestOptions = {}) {
 	const method = (options.method ?? "GET").toUpperCase();
 	let body = options.body;
-	
+
 	// Handle URLSearchParams
 	if (body instanceof URLSearchParams) {
 		body = body.toString();
 	}
 
 	// Always include credentials for cookie support
-	const requestOptions = { 
-		headers: options.headers || {}, 
-		credentials: 'include' as const 
+	const requestOptions = {
+		headers: options.headers || {},
+		credentials: "include" as const,
 	};
 
 	// Use convenience methods for better performance and cleaner code
@@ -57,7 +57,7 @@ export async function pingpongFetch(url: string, options: PingpongRequestOptions
 				url,
 				headers: options.headers || {},
 				body: body as any,
-				credentials: 'include',
+				credentials: "include",
 			});
 	}
 }

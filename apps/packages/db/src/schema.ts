@@ -1,4 +1,16 @@
-import { boolean, index, integer, jsonb, pgTable, serial, smallint, text, timestamp, unique, varchar } from "drizzle-orm/pg-core";
+import {
+	boolean,
+	index,
+	integer,
+	jsonb,
+	pgTable,
+	serial,
+	smallint,
+	text,
+	timestamp,
+	unique,
+	varchar,
+} from "drizzle-orm/pg-core";
 
 /**
  * Users table
@@ -404,9 +416,7 @@ export const license_history = pgTable(
 		changed_by_user_id: integer("changed_by_user_id").references(() => users.id),
 		changed_by_system: boolean("changed_by_system").notNull().default(false),
 		// Link to payment (if applicable)
-		payment_transaction_id: integer("payment_transaction_id").references(
-			() => payment_transactions.id,
-		),
+		payment_transaction_id: integer("payment_transaction_id").references(() => payment_transactions.id),
 		// Notes for admin/audit
 		notes: text("notes"),
 		created_at: timestamp("created_at").notNull().defaultNow(),
@@ -465,7 +475,7 @@ export const payment_provider_configs = pgTable(
 		provider: varchar("provider", { length: 50 }).notNull(), // 'stripe', 'lemonsqueezy', 'dodo'
 		environment: varchar("environment", { length: 20 }).notNull(), // 'test' or 'production'
 		credentials: text("credentials").notNull(), // Encrypted JSON (sealed with DEK)
-		credentials_dek: text("credentials_dek"),     // Wrapped DEK (AES-256-GCM sealed with KEK)
+		credentials_dek: text("credentials_dek"), // Wrapped DEK (AES-256-GCM sealed with KEK)
 		webhook_secret: text("webhook_secret"),
 		is_active: boolean("is_active").notNull().default(true),
 		is_default: boolean("is_default").notNull().default(false),
@@ -572,10 +582,7 @@ export const promotions = pgTable(
 		created_at: timestamp("created_at").notNull().defaultNow(),
 		updated_at: timestamp("updated_at").notNull().defaultNow(),
 	},
-	(table) => [
-		index("promotions_app_id_idx").on(table.app_id),
-		index("promotions_is_active_idx").on(table.is_active),
-	],
+	(table) => [index("promotions_app_id_idx").on(table.app_id), index("promotions_is_active_idx").on(table.is_active)],
 );
 
 /**
@@ -793,18 +800,13 @@ export const payment_transactions = pgTable(
 	(table) => [
 		index("payment_transactions_license_id_idx").on(table.license_id),
 		index("payment_transactions_purchase_id_idx").on(table.purchase_id),
-		index("payment_transactions_provider_transaction_idx").on(
-			table.provider_transaction_id
-		),
+		index("payment_transactions_provider_transaction_idx").on(table.provider_transaction_id),
 		index("payment_transactions_provider_config_id_idx").on(table.provider_config_id),
 		index("payment_transactions_type_idx").on(table.type),
 		index("payment_transactions_status_idx").on(table.status),
 		index("payment_transactions_transaction_date_idx").on(table.transaction_date),
 		index("payment_transactions_promotion_id_idx").on(table.promotion_id),
-		unique("payment_transactions_provider_id_unique").on(
-			table.provider_config_id,
-			table.provider_transaction_id,
-		),
+		unique("payment_transactions_provider_id_unique").on(table.provider_config_id, table.provider_transaction_id),
 	],
 );
 
@@ -881,10 +883,7 @@ export const subscriptions = pgTable(
 		index("subscriptions_provider_subscription_id_idx").on(table.provider_subscription_id),
 		index("subscriptions_status_idx").on(table.status),
 		index("subscriptions_next_billing_date_idx").on(table.next_billing_date),
-		unique("subscriptions_provider_sub_unique").on(
-			table.provider_config_id,
-			table.provider_subscription_id,
-		),
+		unique("subscriptions_provider_sub_unique").on(table.provider_config_id, table.provider_subscription_id),
 	],
 );
 
@@ -910,9 +909,9 @@ export const webhook_logs = pgTable(
 		ip_address: varchar("ip_address", { length: 50 }),
 
 		// Processing status
-		status: varchar("status", { length: 20 }).notNull().default("not_started"), 
+		status: varchar("status", { length: 20 }).notNull().default("not_started"),
 		// 'not_started', 'processing', 'completed', 'failed', 'signature_failed', 'skipped'
-		
+
 		// Processing timeline
 		received_at: timestamp("received_at").notNull().defaultNow(),
 		processing_started_at: timestamp("processing_started_at"),
@@ -922,7 +921,7 @@ export const webhook_logs = pgTable(
 		// Results
 		payment_transaction_id: integer("payment_transaction_id").references(() => payment_transactions.id),
 		license_id: integer("license_id").references(() => licenses.id),
-		
+
 		// Error tracking
 		error_message: text("error_message"),
 		error_stack: text("error_stack"),
@@ -1150,9 +1149,9 @@ export const test_sessions = pgTable(
  * Nube Auth POSTs signed events here when things happen (user.registered, license.upgraded, etc.)
  */
 export const app_webhooks = pgTable(
-"app_webhooks",
-{
-id: serial("id").primaryKey(),
+	"app_webhooks",
+	{
+		id: serial("id").primaryKey(),
 		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
 		app_id: integer("app_id")
 			.notNull()
@@ -1180,9 +1179,9 @@ id: serial("id").primaryKey(),
  * One row per delivery attempt (a single event may retry multiple times).
  */
 export const outbound_webhook_logs = pgTable(
-"outbound_webhook_logs",
-{
-id: serial("id").primaryKey(),
+	"outbound_webhook_logs",
+	{
+		id: serial("id").primaryKey(),
 		public_id: varchar("public_id", { length: 255 }).notNull().unique(),
 		webhook_id: integer("webhook_id")
 			.notNull()

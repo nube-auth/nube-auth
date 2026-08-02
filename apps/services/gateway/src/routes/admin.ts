@@ -3,9 +3,9 @@
  * Proxy to Core service with S2S authentication
  */
 
+import { pingpong } from "@nube-auth/auth";
 import { getDb, userQueries } from "@nube-auth/db";
 import { createLogger, serializeError } from "@nube-auth/shared";
-import { pingpong } from "@nube-auth/auth";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import type { StatusCode } from "hono/utils/http-status";
@@ -49,11 +49,11 @@ adminRoutes.all("/*", async (c: Context) => {
 		const auth = getAuth(c);
 		const method = c.req.method;
 		const path = c.req.path; // Already has /v1/admin prefix
-		
+
 		log.debug({ method, path, userId: auth.userId }, "Proxying to Core service");
-		
+
 		// Get request body if present
-		let body: any ;
+		let body: any;
 		if (["POST", "PUT", "PATCH"].includes(method)) {
 			try {
 				body = await c.req.json();
@@ -72,8 +72,6 @@ adminRoutes.all("/*", async (c: Context) => {
 			"X-Nube-User-Id": auth.userId, // Send public user ID
 			"X-Nube-Session-Id": auth.coreSessionId || "",
 		};
-
-
 
 		// Pass through x-nube-project-id header if present (needed for authorization checks)
 		const projectId = c.req.header("x-nube-project-id");

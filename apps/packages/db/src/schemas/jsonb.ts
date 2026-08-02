@@ -1,6 +1,6 @@
 /**
  * JSONB Column Schemas
- * 
+ *
  * Co-located schemas for JSONB columns.
  * These are the canonical definitions used for validation.
  * Every JSONB column gets:
@@ -15,7 +15,7 @@ import { z } from "zod";
  * ============================================================================
  * SECURITY SETTINGS
  * ============================================================================
- * 
+ *
  * apps.security_settings JSONB column
  * Stores OAuth configuration, redirect URIs, session settings, etc.
  */
@@ -42,11 +42,13 @@ export const SecuritySettingsSchema = z.object({
 	sessionTtlDays: SessionTtlSchema.default(3600),
 	maxSessions: MaxSessionsSchema.default(10),
 	mfaRequired: MfaRequiredSchema.default(false),
-	oauth: z.object({
-		github: OAuthProviderSchema.optional(),
-		google: OAuthProviderSchema.optional(),
-		microsoft: OAuthProviderSchema.optional(),
-	}).default({}),
+	oauth: z
+		.object({
+			github: OAuthProviderSchema.optional(),
+			google: OAuthProviderSchema.optional(),
+			microsoft: OAuthProviderSchema.optional(),
+		})
+		.default({}),
 	allowedOrigins: z.array(z.string().url()).default([]).describe("CORS allowed origins"),
 });
 
@@ -60,7 +62,7 @@ export type SecuritySettingsPatch = z.infer<typeof SecuritySettingsPatchSchema>;
  * ============================================================================
  * APP TOKENS
  * ============================================================================
- * 
+ *
  * apps.app_tokens JSONB column
  * Stores API keys, service tokens, and related metadata
  */
@@ -96,7 +98,7 @@ export type AppTokensPatch = z.infer<typeof AppTokensPatchSchema>;
  * ============================================================================
  * PLAN SETTINGS
  * ============================================================================
- * 
+ *
  * apps.plan_settings JSONB column
  * Stores feature flags, rate limits, quota settings
  */
@@ -144,7 +146,7 @@ export type PlanSettingsPatch = z.infer<typeof PlanSettingsPatchSchema>;
  * ============================================================================
  * PAYMENT PROVIDER METADATA
  * ============================================================================
- * 
+ *
  * payment_providers.metadata JSONB column
  * Stores webhook configuration, retry policies, rate limits
  */
@@ -171,8 +173,7 @@ export const PaymentProviderMetadataSchema = z.object({
 	certificationLevel: z.enum(["unverified", "verified", "certified"]).optional(),
 });
 
-export const PaymentProviderMetadataPatchSchema = 
-	PaymentProviderMetadataSchema.partial().strict();
+export const PaymentProviderMetadataPatchSchema = PaymentProviderMetadataSchema.partial().strict();
 
 export type PaymentProviderMetadata = z.infer<typeof PaymentProviderMetadataSchema>;
 export type PaymentProviderMetadataPatch = z.infer<typeof PaymentProviderMetadataPatchSchema>;
@@ -187,10 +188,7 @@ export type PaymentProviderMetadataPatch = z.infer<typeof PaymentProviderMetadat
  * Validate a JSONB patch against a schema
  * Used internally by query helpers
  */
-export function validateJsonbPatch<T extends z.ZodTypeAny>(
-	schema: T,
-	data: unknown,
-): z.infer<T> {
+export function validateJsonbPatch<T extends z.ZodTypeAny>(schema: T, data: unknown): z.infer<T> {
 	return schema.parse(data);
 }
 
@@ -198,10 +196,7 @@ export function validateJsonbPatch<T extends z.ZodTypeAny>(
  * Validate that a JSONB document matches a schema
  * Use after reading from database to ensure consistency
  */
-export function validateJsonbDocument<T extends z.ZodTypeAny>(
-	schema: T,
-	data: unknown,
-): z.infer<T> {
+export function validateJsonbDocument<T extends z.ZodTypeAny>(schema: T, data: unknown): z.infer<T> {
 	// Use non-partial schema for full documents
 	return schema.parse(data);
 }
@@ -210,10 +205,7 @@ export function validateJsonbDocument<T extends z.ZodTypeAny>(
  * Extract only validated fields from a larger object
  * Useful for accepting request bodies and validating patches
  */
-export function extractValidPatch<T extends z.ZodTypeAny>(
-	schema: T,
-	data: unknown,
-): Partial<z.infer<T>> {
+export function extractValidPatch<T extends z.ZodTypeAny>(schema: T, data: unknown): Partial<z.infer<T>> {
 	// Patch schema already has partial + strict
 	return schema.parse(data);
 }

@@ -1,1 +1,1 @@
-export { InfoGrid, type InfoGridProps } from './info-grid';
+export { InfoGrid, type InfoGridProps } from "./info-grid";

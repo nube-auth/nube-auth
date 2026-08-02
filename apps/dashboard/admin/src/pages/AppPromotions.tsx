@@ -1,54 +1,55 @@
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { ConfirmModal } from "../components/ConfirmModal";
 import {
-	Icon,
-	IconType,
-	Spinner,
 	Alert,
-	Heading,
-	Text,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
 	Button,
 	Card,
 	CardBody,
-	EmptyState,
+	Checkbox,
+	Chip,
 	Dialog,
-	DialogPopup,
-	DialogHeader,
-	DialogTitle,
 	DialogBody,
 	DialogFooter,
+	DialogHeader,
+	DialogPopup,
+	DialogTitle,
+	EmptyState,
+	Heading,
+	Icon,
+	IconType,
 	Input,
-	Textarea,
 	Label,
-	Chip,
-	Checkbox,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbButton,
+	Spinner,
 	Table,
-	TableHeader,
 	TableBody,
-	TableRow,
-	TableHead,
 	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+	Text,
+	Textarea,
 } from "@nube-auth/components";
+import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { ConfirmModal } from "../components/ConfirmModal";
 
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
-import { useApp, useProject } from "../hooks/api";
 import {
+	useApp,
+	useCreateV2PromoCode,
+	useCreateV2Promotion,
+	useDeactivateV2PromoCode,
+	useDeactivateV2Promotion,
+	useProject,
+	useUpdateV2Promotion,
 	useV2Plans,
 	useV2Promotions,
-	useCreateV2Promotion,
-	useUpdateV2Promotion,
-	useDeactivateV2Promotion,
-	useCreateV2PromoCode,
-	useDeactivateV2PromoCode,
 	type V2Plan,
-	type V2Promotion,
 	type V2PromoCode,
+	type V2Promotion,
 } from "../hooks/api";
 
 export function AppPromotionsPage() {
@@ -290,9 +291,7 @@ export function AppPromotionsPage() {
 											</Chip>
 										</div>
 										{promo.description && (
-											<Text className="text-muted text-sm mb-2">
-												{promo.description}
-											</Text>
+											<Text className="text-muted text-sm mb-2">{promo.description}</Text>
 										)}
 										{promo.plans && promo.plans.length > 0 && (
 											<div className="flex flex-wrap gap-1 mb-2">
@@ -468,9 +467,7 @@ export function AppPromotionsPage() {
 									placeholder={form.discountType === "percent" ? "20" : "500"}
 								/>
 								{form.discountValue && form.discountType === "percent" && (
-									<Text className="text-xs text-muted mt-1">
-										{form.discountValue}% off
-									</Text>
+									<Text className="text-xs text-muted mt-1">{form.discountValue}% off</Text>
 								)}
 								{form.discountValue && form.discountType === "fixed" && (
 									<Text className="text-xs text-muted mt-1">

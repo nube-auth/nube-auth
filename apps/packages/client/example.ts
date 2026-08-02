@@ -5,15 +5,8 @@
  *   npx tsx example.ts
  */
 
-import {
-	NubeAuthClient,
-	NubeAuthError,
-	verifyWebhookSignature,
-} from "./src/index";
-import type {
-	WebhookEnvelope,
-	WebhookEventName,
-} from "./src/index";
+import type { WebhookEnvelope, WebhookEventName } from "./src/index";
+import { NubeAuthClient, NubeAuthError, verifyWebhookSignature } from "./src/index";
 
 // ---------------------------------------------------------------------------
 // Client setup
@@ -62,9 +55,9 @@ async function exampleAuth() {
 async function exampleOAuth() {
 	// Step 1 — build the OAuth URL (runs on the client, opens a browser window)
 	const { url, codeVerifier } = await nativeClient.app.buildOAuthUrl({
-		returnTo: "myapp://auth",        // custom scheme for native apps
+		returnTo: "myapp://auth", // custom scheme for native apps
 		// returnTo: "https://app.example.com/auth/callback",  // for web
-		priceId: "PRICE0abc123",         // optional: trigger checkout after login
+		priceId: "PRICE0abc123", // optional: trigger checkout after login
 		deviceId: "device-hardware-uuid", // optional: per-device audit trail
 	});
 
@@ -119,7 +112,8 @@ async function exampleSessions() {
 			s.isCurrent ? "[current]" : "        ",
 			s.id,
 			s.ipAddress ?? "unknown IP",
-			"expires", new Date(s.expiresAt).toLocaleString(),
+			"expires",
+			new Date(s.expiresAt).toLocaleString(),
 		);
 	}
 
@@ -190,9 +184,7 @@ async function exampleAppCatalog() {
 		const { prices } = await serverClient.appCatalog.getPrices(plan.planId);
 		for (const price of prices) {
 			const amount = (price.amountCents / 100).toFixed(2);
-			const label = price.billingType === "recurring"
-				? `$${amount} / ${price.interval}`
-				: `$${amount} one-time`;
+			const label = price.billingType === "recurring" ? `$${amount} / ${price.interval}` : `$${amount} one-time`;
 			console.log(`    ${label} [${price.priceId}]`);
 			if (price.trialEnabled) console.log(`    Free trial: ${price.trialDays} days`);
 		}
@@ -212,12 +204,12 @@ async function exampleCreateCheckout() {
 	// Create a checkout session — redirect the user to session.checkoutUrl
 	const session = await serverClient.payment.createCheckout({
 		priceId: price.priceId,
-		userId: "USER0def456",                    // from the authenticated session
+		userId: "USER0def456", // from the authenticated session
 		customerEmail: "alice@example.com",
 		successUrl: "https://myapp.com/billing/success?session_id={CHECKOUT_SESSION_ID}",
 		cancelUrl: "https://myapp.com/billing",
-		promoCode: "LAUNCH50",                    // optional
-		metadata: { referral: "homepage" },       // optional, stored on the purchase
+		promoCode: "LAUNCH50", // optional
+		metadata: { referral: "homepage" }, // optional, stored on the purchase
 	});
 
 	console.log("Checkout URL:", session.checkoutUrl);
@@ -259,7 +251,13 @@ async function exampleVerifySignature() {
 		event: "license.upgraded",
 		appId: "APP0abc123",
 		timestamp: new Date().toISOString(),
-		data: { licenseId: "LIC0abc", userId: "USER0def", fromPlan: "Starter", toPlan: "Pro", upgradedAt: new Date().toISOString() },
+		data: {
+			licenseId: "LIC0abc",
+			userId: "USER0def",
+			fromPlan: "Starter",
+			toPlan: "Pro",
+			upgradedAt: new Date().toISOString(),
+		},
 	});
 	const secret = "whsec_your_signing_secret";
 
@@ -268,7 +266,7 @@ async function exampleVerifySignature() {
 	const sig = `sha256=${createHmac("sha256", secret).update(payload).digest("hex")}`;
 
 	const valid = await verifyWebhookSignature({
-		rawBody: payload,   // string or Uint8Array — MUST be the raw bytes before JSON.parse
+		rawBody: payload, // string or Uint8Array — MUST be the raw bytes before JSON.parse
 		signature: sig,
 		secret,
 	});
@@ -277,7 +275,7 @@ async function exampleVerifySignature() {
 
 	// Tampered payload returns false, never throws
 	const tampered = await verifyWebhookSignature({
-		rawBody: payload + " ",
+		rawBody: `${payload} `,
 		signature: sig,
 		secret,
 	});
@@ -313,9 +311,12 @@ async function exampleDispatchWebhookEvent(raw: unknown) {
 	const envelope = raw as WebhookEnvelope;
 
 	switch (envelope.event) {
-		case "license.upgraded":  return onLicenseUpgraded(envelope as WebhookEnvelope<"license.upgraded">);
-		case "user.registered":   return onUserRegistered(envelope as WebhookEnvelope<"user.registered">);
-		case "license.canceled":  return onLicenseCanceled(envelope as WebhookEnvelope<"license.canceled">);
+		case "license.upgraded":
+			return onLicenseUpgraded(envelope as WebhookEnvelope<"license.upgraded">);
+		case "user.registered":
+			return onUserRegistered(envelope as WebhookEnvelope<"user.registered">);
+		case "license.canceled":
+			return onLicenseCanceled(envelope as WebhookEnvelope<"license.canceled">);
 		default:
 			console.log(`Unhandled event: ${envelope.event}`);
 	}
@@ -331,8 +332,8 @@ async function exampleErrorHandling() {
 	} catch (error) {
 		if (error instanceof NubeAuthError) {
 			console.error("API error:", {
-				code: error.code,      // machine-readable, e.g. 'UNAUTHORIZED'
-				status: error.status,  // HTTP status code
+				code: error.code, // machine-readable, e.g. 'UNAUTHORIZED'
+				status: error.status, // HTTP status code
 				message: error.message,
 			});
 
@@ -369,10 +370,22 @@ async function exampleErrorHandling() {
 		["createCheckout", exampleCreateCheckout],
 		["validatePromoCode", exampleValidatePromoCode],
 		["verifySignature", exampleVerifySignature],
-		["webhookEvents", async () => exampleDispatchWebhookEvent({
-			id: "abc", event: "user.registered", appId: "APP0abc", timestamp: new Date().toISOString(),
-			data: { userId: "USER0xyz", email: "bob@example.com", name: "Bob", createdAt: new Date().toISOString() },
-		})],
+		[
+			"webhookEvents",
+			async () =>
+				exampleDispatchWebhookEvent({
+					id: "abc",
+					event: "user.registered",
+					appId: "APP0abc",
+					timestamp: new Date().toISOString(),
+					data: {
+						userId: "USER0xyz",
+						email: "bob@example.com",
+						name: "Bob",
+						createdAt: new Date().toISOString(),
+					},
+				}),
+		],
 		["errorHandling", exampleErrorHandling],
 	];
 

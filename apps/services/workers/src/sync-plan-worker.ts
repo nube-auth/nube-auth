@@ -9,9 +9,9 @@
  * consume and discard sync jobs without processing them.
  */
 
+import { QueueClient } from "@nube-auth/queue";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Worker } from "bullmq";
-import { QueueClient } from "@nube-auth/queue";
 
 const log = createLogger("sync-plan-worker-setup");
 
@@ -25,12 +25,8 @@ export async function setupSyncPlanWorker(): Promise<Worker> {
 	return new BullWorker(
 		"sync-plan",
 		async (job) => {
-
 			try {
-				log.info(
-					{ jobId: job.id, planId: job.data.planId },
-					"Processing sync-plan-to-providers job",
-				);
+				log.info({ jobId: job.id, planId: job.data.planId }, "Processing sync-plan-to-providers job");
 
 				const result = await syncPlanToProviders(job.data);
 

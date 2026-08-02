@@ -1,14 +1,23 @@
-import { getDb, sessionQueries, userQueries, subscriptionQueries, licenseQueries, planQueries, priceQueries, appQueries } from "@nube-auth/db";
+import { pingpong } from "@nube-auth/auth";
 import { cache, sessionStore } from "@nube-auth/cache";
+import {
+	appQueries,
+	getDb,
+	licenseQueries,
+	planQueries,
+	priceQueries,
+	sessionQueries,
+	subscriptionQueries,
+	userQueries,
+} from "@nube-auth/db";
 import { createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
-import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 import { Hono } from "hono";
-import { pingpong } from "@nube-auth/auth";
-import { getAuth } from "../middleware/auth";
-import { env } from "../config/env";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { CACHE_TTL } from "../config/constants";
+import { env } from "../config/env";
+import { getAuth } from "../middleware/auth";
 
 const log = createLogger("me-routes");
 
@@ -222,77 +231,88 @@ meRoutes.delete("/sessions/:sessionId", async (c: Context) => {
  *    billingInterval: string | null, periodEnd: string | null }
  */
 meRoutes.get("/subscription", async (c: Context) => {
-        try {
-                const auth = getAuth(c);
+	try {
+		const auth = getAuth(c);
 
-                if (!auth.appId) {
-                        return c.json({ error: "Subscription check is only available for app sessions" }, 400);
-                }
-
-                // Return cached response when available
-                const cacheKey = subCacheKey(auth.userId, auth.appId);
-                const cached = await cache.get<object>(cacheKey);
-                if (cached) return c.json(cached);
-
-                const db = getDb();
-
-                // Resolve internal IDs for both user and app
-                const [user, app] = await Promise.all([
-                        userQueries.findByPublicId(db, auth.userId),
-                        appQueries.findByPublicId(db, auth.appId),
-                ]);
-
-                if (!user || !app) {
-                        return c.json({ hasActivePlan: false, planSlug: null, status: null, billingInterval: null, periodEnd: null });
-                }
-
-                const subscription = await subscriptionQueries.findActiveByUserAndApp(db, user.id, app.id);
-
-let result: Record<string, unknown>;
-
-                if (!subscription) {
-                        // No subscription row — fall back to licenses table (covers one-time purchases)
-                        const license = await licenseQueries.findByUserAndApp(db, user.id, app.id);
-                        if (!license || license.status !== "active") {
-                                result = { hasActivePlan: false, planSlug: null, status: null, billingInterval: null, periodEnd: null };
-                        } else {
-                                const licensePrice = license.price_id ? await priceQueries.findByInternalId_(db, license.price_id) : null;
-                                const licensePlan = licensePrice
-                                        ? await planQueries.findByInternalId_(db, licensePrice.plan_id)
-                                        : license.plan_id
-                                                ? await planQueries.findByInternalId_(db, license.plan_id)
-                                                : null;
-                                result = {
-                                        hasActivePlan: true,
-                                        planSlug: licensePlan?.slug ?? null,
-                                        status: license.status,
-                                        billingInterval: null,
-                                        periodEnd: license.valid_until ? new Date(license.valid_until).toISOString() : null,
-                                };
-                        }
-                } else {
-                        // Walk subscription → price → plan to get the slug
-					const subMeta = (subscription.metadata as Record<string, unknown> | null) ?? {};
-					const price = await priceQueries.findByInternalId_(db, subscription.price_id ?? (subMeta["priceId"] as number | undefined));
-					const plan = price ? await planQueries.findByInternalId_(db, price.plan_id) : null;
-					result = {
-						hasActivePlan: true,
-						planSlug: plan?.slug ?? null,
-						priceId: price?.public_id ?? null,
-						status: subscription.status,
-						billingInterval: subscription.billing_interval,
-						periodEnd: subscription.billing_period_end
-							? new Date(subscription.billing_period_end).toISOString()
-							: null,
-					};
-			}
-			await cache.set(cacheKey, result, CACHE_TTL);
-			return c.json(result);
-		} catch (error) {
-			log.error({ err: serializeError(error as Error) }, "Subscription check error:");
-			return c.json({ error: "Failed to fetch subscription" }, 500);
+		if (!auth.appId) {
+			return c.json({ error: "Subscription check is only available for app sessions" }, 400);
 		}
-	});
+
+		// Return cached response when available
+		const cacheKey = subCacheKey(auth.userId, auth.appId);
+		const cached = await cache.get<object>(cacheKey);
+		if (cached) return c.json(cached);
+
+		const db = getDb();
+
+		// Resolve internal IDs for both user and app
+		const [user, app] = await Promise.all([
+			userQueries.findByPublicId(db, auth.userId),
+			appQueries.findByPublicId(db, auth.appId),
+		]);
+
+		if (!user || !app) {
+			return c.json({
+				hasActivePlan: false,
+				planSlug: null,
+				status: null,
+				billingInterval: null,
+				periodEnd: null,
+			});
+		}
+
+		const subscription = await subscriptionQueries.findActiveByUserAndApp(db, user.id, app.id);
+
+		let result: Record<string, unknown>;
+
+		if (!subscription) {
+			// No subscription row — fall back to licenses table (covers one-time purchases)
+			const license = await licenseQueries.findByUserAndApp(db, user.id, app.id);
+			if (!license || license.status !== "active") {
+				result = { hasActivePlan: false, planSlug: null, status: null, billingInterval: null, periodEnd: null };
+			} else {
+				const licensePrice = license.price_id
+					? await priceQueries.findByInternalId_(db, license.price_id)
+					: null;
+				const licensePlan = licensePrice
+					? await planQueries.findByInternalId_(db, licensePrice.plan_id)
+					: license.plan_id
+						? await planQueries.findByInternalId_(db, license.plan_id)
+						: null;
+				result = {
+					hasActivePlan: true,
+					planSlug: licensePlan?.slug ?? null,
+					status: license.status,
+					billingInterval: null,
+					periodEnd: license.valid_until ? new Date(license.valid_until).toISOString() : null,
+				};
+			}
+		} else {
+			// Walk subscription → price → plan to get the slug
+			const subMeta = (subscription.metadata as Record<string, unknown> | null) ?? {};
+			const price = await priceQueries.findByInternalId_(
+				db,
+				subscription.price_id ?? (subMeta["priceId"] as number | undefined),
+			);
+			const plan = price ? await planQueries.findByInternalId_(db, price.plan_id) : null;
+			result = {
+				hasActivePlan: true,
+				planSlug: plan?.slug ?? null,
+				priceId: price?.public_id ?? null,
+				status: subscription.status,
+				billingInterval: subscription.billing_interval,
+				periodEnd: subscription.billing_period_end
+					? new Date(subscription.billing_period_end).toISOString()
+					: null,
+			};
+		}
+		await cache.set(cacheKey, result, CACHE_TTL);
+		return c.json(result);
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Subscription check error:");
+		return c.json({ error: "Failed to fetch subscription" }, 500);
+	}
+});
 /**
  * POST /v1/me/subscription/cancel
  *
@@ -300,42 +320,42 @@ let result: Record<string, unknown>;
  * Proxies to Core S2S endpoint and busts the subscription + license caches.
  */
 meRoutes.post("/subscription/cancel", async (c: Context) => {
-        try {
-                const auth = getAuth(c);
-                if (!auth.appId) {
-                        return c.json({ error: "Subscription cancel is only available for app sessions" }, 400);
-                }
+	try {
+		const auth = getAuth(c);
+		if (!auth.appId) {
+			return c.json({ error: "Subscription cancel is only available for app sessions" }, 400);
+		}
 
-                let reason: string | undefined;
-                try {
-                        const body = await c.req.json();
-                        reason = typeof body?.reason === "string" ? body.reason : undefined;
-                } catch {
-                        // Body is optional
-                }
+		let reason: string | undefined;
+		try {
+			const body = await c.req.json();
+			reason = typeof body?.reason === "string" ? body.reason : undefined;
+		} catch {
+			// Body is optional
+		}
 
-                const response = await pingpong(`${env.CORE_URL}/v1/subscription/cancel`, {
-                        method: "POST",
-                        headers: {
-                                "Content-Type": "application/json",
-                                "X-Nube-S2S-Token": env.S2S_SECRET,
-                                "X-Nube-User-Id": auth.userId,
-                        },
-                        body: { appId: auth.appId, ...(reason ? { reason } : {}) },
-                });
+		const response = await pingpong(`${env.CORE_URL}/v1/subscription/cancel`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"X-Nube-S2S-Token": env.S2S_SECRET,
+				"X-Nube-User-Id": auth.userId,
+			},
+			body: { appId: auth.appId, ...(reason ? { reason } : {}) },
+		});
 
-                if (response.ok()) {
-                        await Promise.all([
-                                cache.delete(subCacheKey(auth.userId, auth.appId)),
-                                cache.delete(licenseCacheKey(auth.userId, auth.appId)),
-                        ]);
-                }
+		if (response.ok()) {
+			await Promise.all([
+				cache.delete(subCacheKey(auth.userId, auth.appId)),
+				cache.delete(licenseCacheKey(auth.userId, auth.appId)),
+			]);
+		}
 
-                return c.json(response.data, response.status as ContentfulStatusCode);
-        } catch (error) {
-                log.error({ err: serializeError(error as Error) }, "Subscription cancel error:");
-                return c.json({ error: "Failed to cancel subscription" }, 500);
-        }
+		return c.json(response.data, response.status as ContentfulStatusCode);
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Subscription cancel error:");
+		return c.json({ error: "Failed to cancel subscription" }, 500);
+	}
 });
 
 /**
@@ -345,32 +365,32 @@ meRoutes.post("/subscription/cancel", async (c: Context) => {
  * Proxies to Core S2S endpoint and busts the subscription + license caches.
  */
 meRoutes.post("/subscription/resume", async (c: Context) => {
-        try {
-                const auth = getAuth(c);
-                if (!auth.appId) {
-                        return c.json({ error: "Subscription resume is only available for app sessions" }, 400);
-                }
+	try {
+		const auth = getAuth(c);
+		if (!auth.appId) {
+			return c.json({ error: "Subscription resume is only available for app sessions" }, 400);
+		}
 
-                const response = await pingpong(`${env.CORE_URL}/v1/subscription/resume`, {
-                        method: "POST",
-                        headers: {
-                                "Content-Type": "application/json",
-                                "X-Nube-S2S-Token": env.S2S_SECRET,
-                                "X-Nube-User-Id": auth.userId,
-                        },
-                        body: { appId: auth.appId },
-                });
+		const response = await pingpong(`${env.CORE_URL}/v1/subscription/resume`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"X-Nube-S2S-Token": env.S2S_SECRET,
+				"X-Nube-User-Id": auth.userId,
+			},
+			body: { appId: auth.appId },
+		});
 
-                if (response.ok()) {
-                        await Promise.all([
-                                cache.delete(subCacheKey(auth.userId, auth.appId)),
-                                cache.delete(licenseCacheKey(auth.userId, auth.appId)),
-                        ]);
-                }
+		if (response.ok()) {
+			await Promise.all([
+				cache.delete(subCacheKey(auth.userId, auth.appId)),
+				cache.delete(licenseCacheKey(auth.userId, auth.appId)),
+			]);
+		}
 
-                return c.json(response.data, response.status as ContentfulStatusCode);
-        } catch (error) {
-                log.error({ err: serializeError(error as Error) }, "Subscription resume error:");
-                return c.json({ error: "Failed to resume subscription" }, 500);
-        }
+		return c.json(response.data, response.status as ContentfulStatusCode);
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Subscription resume error:");
+		return c.json({ error: "Failed to resume subscription" }, 500);
+	}
 });

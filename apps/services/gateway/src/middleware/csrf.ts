@@ -1,11 +1,11 @@
+import crypto from "node:crypto";
 import { parseSessionCookie } from "@nube-auth/auth";
 import { sessionStore } from "@nube-auth/cache";
-import crypto from "node:crypto";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
-import { loggers } from "../utils/logger";
 import { ADMIN_SESSION_COOKIE, CSRF_TOKEN_COOKIE, USER_SESSION_COOKIE } from "../utils/cookieNames";
+import { loggers } from "../utils/logger";
 
 /**
  * CSRF protection middleware
@@ -22,11 +22,14 @@ export const csrfProtection = createMiddleware(async (c: Context, next) => {
 	const csrfTokenHeader = c.req.header("X-Nube-CSRF-Token");
 
 	if (!csrfTokenHeader) {
-		loggers.auth.warn({ 
-			path: c.req.path, 
-			method,
-			allHeaders: Object.fromEntries(c.req.raw.headers.entries ? c.req.raw.headers.entries() : []),
-		}, "CSRF token missing from header");
+		loggers.auth.warn(
+			{
+				path: c.req.path,
+				method,
+				allHeaders: Object.fromEntries(c.req.raw.headers.entries ? c.req.raw.headers.entries() : []),
+			},
+			"CSRF token missing from header",
+		);
 		return c.json({ error: "CSRF token required" }, 403);
 	}
 
@@ -34,19 +37,21 @@ export const csrfProtection = createMiddleware(async (c: Context, next) => {
 	const csrfTokenCookie = getCookie(c, CSRF_TOKEN_COOKIE);
 
 	if (!csrfTokenCookie) {
-		loggers.auth.warn({ 
-			path: c.req.path, 
-			method,
-			headerTokenPreview: csrfTokenHeader.substring(0, 20),
-		}, "CSRF token cookie not found");
+		loggers.auth.warn(
+			{
+				path: c.req.path,
+				method,
+				headerTokenPreview: csrfTokenHeader.substring(0, 20),
+			},
+			"CSRF token cookie not found",
+		);
 		return c.json({ error: "CSRF token invalid" }, 403);
 	}
 
 	// Verify tokens match using constant-time comparison to prevent timing attacks
 	const headerBuf = Buffer.from(csrfTokenHeader);
 	const cookieBuf = Buffer.from(csrfTokenCookie);
-	const tokensMatch = headerBuf.length === cookieBuf.length &&
-		crypto.timingSafeEqual(headerBuf, cookieBuf);
+	const tokensMatch = headerBuf.length === cookieBuf.length && crypto.timingSafeEqual(headerBuf, cookieBuf);
 
 	if (!tokensMatch) {
 		loggers.auth.warn(

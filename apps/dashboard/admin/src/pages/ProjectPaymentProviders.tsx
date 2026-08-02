@@ -1,49 +1,45 @@
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import config from "../config";
-import { ConfirmModal } from "../components/ConfirmModal";
 import {
-	Icon,
-	IconType,
-	Spinner,
-	Text,
-	Heading,
+	Alert,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
+	Button,
 	Card,
 	CardBody,
-	Button,
-	Label,
-	Input,
-	Textarea,
 	Chip,
-	Alert,
-	EmptyState,
-	Dialog,
-	DialogPopup,
-	DialogHeader,
-	DialogTitle,
-	DialogBody,
-	DialogFooter,
 	DataTable,
 	DataTableRow,
-	TableHeader,
-	TableHead,
+	Dialog,
+	DialogBody,
+	DialogFooter,
+	DialogHeader,
+	DialogPopup,
+	DialogTitle,
+	Heading,
+	Input,
+	Label,
+	Spinner,
 	TableBody,
 	TableCell,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbButton,
+	TableHead,
+	TableHeader,
+	Text,
 } from "@nube-auth/components";
+import { id as nubeId } from "@nube-auth/shared";
+import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { ConfirmModal } from "../components/ConfirmModal";
 import { Select } from "../components/Select";
 import { useToast } from "../components/Toast";
-import { id as nubeId } from "@nube-auth/shared";
+import config from "../config";
 import {
 	useCreatePaymentProvider,
 	useDeletePaymentProvider,
 	useProject,
 	useProjectPaymentProviders,
-	useUpdatePaymentProvider,
 	useSelectDefaultProjectProvider,
+	useUpdatePaymentProvider,
 } from "../hooks/api";
 
 type Provider = "lemonsqueezy" | "dodo" | "stripe";
@@ -286,18 +282,16 @@ export default function ProjectPaymentProvidersPage() {
 				return (
 					<>
 						{!editingProvider && (
-							<>
-								<div className="space-y-1.5">
-									<Label>Webhook URL</Label>
-									<code className="block text-11px font-mono text-text-primary overflow-x-auto p-2.5 bg-bg-secondary rounded border border-border select-all">
-										{`${config.gatewayUrl.replace(/\/$/, "")}/v1/payment/webhooks/dodo/${preGeneratedDodoId}`}
-									</code>
-									<p className="text-12px text-muted">
-										Register this URL in your Dodo dashboard first to receive a webhook secret, then
-										fill in all fields below.
-									</p>
-								</div>
-							</>
+							<div className="space-y-1.5">
+								<Label>Webhook URL</Label>
+								<code className="block text-11px font-mono text-text-primary overflow-x-auto p-2.5 bg-bg-secondary rounded border border-border select-all">
+									{`${config.gatewayUrl.replace(/\/$/, "")}/v1/payment/webhooks/dodo/${preGeneratedDodoId}`}
+								</code>
+								<p className="text-12px text-muted">
+									Register this URL in your Dodo dashboard first to receive a webhook secret, then
+									fill in all fields below.
+								</p>
+							</div>
 						)}
 						{isStep2Edit && (
 							<Alert variant="info">
@@ -550,9 +544,7 @@ export default function ProjectPaymentProvidersPage() {
 							<DialogBody>
 								{/* Provider Info */}
 								<div className="mb-6">
-									<Text className="text-13px font-600 mb-3 uppercase text-muted">
-										Provider Info
-									</Text>
+									<Text className="text-13px font-600 mb-3 uppercase text-muted">Provider Info</Text>
 									<div className="grid grid-cols-2 gap-4">
 										<div>
 											<div className="text-12px text-muted mb-1">Provider</div>

@@ -4,9 +4,9 @@
  * Listens on the "outbound-webhooks" queue for "dispatch-outbound-webhook" jobs.
  */
 
+import { QueueClient } from "@nube-auth/queue";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Worker } from "bullmq";
-import { QueueClient } from "@nube-auth/queue";
 
 const log = createLogger("dispatch-outbound-webhook-worker");
 
@@ -20,7 +20,10 @@ export async function setupDispatchOutboundWebhookWorker(): Promise<Worker> {
 		"outbound-webhooks",
 		async (job) => {
 			try {
-				log.info({ jobId: job.id, event: job.data.event, appId: job.data.appId }, "Processing outbound webhook dispatch");
+				log.info(
+					{ jobId: job.id, event: job.data.event, appId: job.data.appId },
+					"Processing outbound webhook dispatch",
+				);
 				await dispatchOutboundWebhook(job.data, job.attemptsMade + 1);
 				log.info({ jobId: job.id, event: job.data.event }, "Outbound webhook dispatch completed");
 			} catch (error) {

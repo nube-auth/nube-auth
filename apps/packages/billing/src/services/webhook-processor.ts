@@ -7,9 +7,9 @@
 import { eq, getDb, purchaseQueries, purchases } from "@nube-auth/db";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import type { PaymentDetails } from "../adapters/types.js";
+import { fireWebhookEvent } from "../outbound-events.js";
 import { licenseManager } from "./license-manager.js";
 import { createPurchaseRecords } from "./purchases.js";
-import { fireWebhookEvent } from "../outbound-events.js";
 
 const log = createLogger("webhook-processor");
 
@@ -34,7 +34,7 @@ export async function processWebhookEvent(params: ProcessWebhookParams): Promise
 				status: paymentDetails.status,
 				transactionId: paymentDetails.transactionId,
 			},
-			"Processing webhook event"
+			"Processing webhook event",
 		);
 
 		// Handle different event types
@@ -69,7 +69,7 @@ export async function processWebhookEvent(params: ProcessWebhookParams): Promise
 				eventType,
 				transactionId: paymentDetails.transactionId,
 			},
-			"Failed to process webhook event"
+			"Failed to process webhook event",
 		);
 		throw error;
 	}
@@ -81,7 +81,7 @@ export async function processWebhookEvent(params: ProcessWebhookParams): Promise
 async function handleSuccessfulPayment(
 	paymentDetails: PaymentDetails,
 	providerConfigId: number,
-	provider: string
+	provider: string,
 ): Promise<void> {
 	const db = getDb();
 
@@ -98,7 +98,7 @@ async function handleSuccessfulPayment(
 				transactionId: paymentDetails.transactionId,
 				customerEmail: paymentDetails.customerEmail,
 			},
-			"Successful payment processed"
+			"Successful payment processed",
 		);
 	} catch (error) {
 		log.error(
@@ -106,7 +106,7 @@ async function handleSuccessfulPayment(
 				err: serializeError(error as Error),
 				transactionId: paymentDetails.transactionId,
 			},
-			"Failed to handle successful payment"
+			"Failed to handle successful payment",
 		);
 		throw error;
 	}
@@ -128,7 +128,7 @@ async function handleSubscriptionCancellation(paymentDetails: PaymentDetails, pr
 					subscriptionId: paymentDetails.subscriptionId,
 					provider,
 				},
-				"License not found for subscription cancellation"
+				"License not found for subscription cancellation",
 			);
 			return;
 		}
@@ -145,7 +145,7 @@ async function handleSubscriptionCancellation(paymentDetails: PaymentDetails, pr
 				licenseId: license.public_id,
 				subscriptionId: paymentDetails.subscriptionId,
 			},
-			"License canceled due to subscription cancellation"
+			"License canceled due to subscription cancellation",
 		);
 
 		try {
@@ -169,7 +169,7 @@ async function handleSubscriptionCancellation(paymentDetails: PaymentDetails, pr
 				err: serializeError(error as Error),
 				subscriptionId: paymentDetails.subscriptionId,
 			},
-			"Failed to handle subscription cancellation"
+			"Failed to handle subscription cancellation",
 		);
 		throw error;
 	}
@@ -235,7 +235,7 @@ async function handleFailedPayment(paymentDetails: PaymentDetails, provider: str
 					customerEmail: paymentDetails.customerEmail,
 					provider,
 				},
-				"License not found for failed payment"
+				"License not found for failed payment",
 			);
 			return;
 		}
@@ -258,7 +258,7 @@ async function handleFailedPayment(paymentDetails: PaymentDetails, provider: str
 				subscriptionId: paymentDetails.subscriptionId,
 				gracePeriodEnd,
 			},
-			"License suspended due to failed payment"
+			"License suspended due to failed payment",
 		);
 
 		if (paymentDetails.subscriptionId) {
@@ -288,7 +288,7 @@ async function handleFailedPayment(paymentDetails: PaymentDetails, provider: str
 				err: serializeError(error as Error),
 				subscriptionId: paymentDetails.subscriptionId,
 			},
-			"Failed to handle failed payment"
+			"Failed to handle failed payment",
 		);
 		throw error;
 	}
@@ -306,7 +306,7 @@ async function handleRefund(paymentDetails: PaymentDetails, provider: string): P
 
 		if (!license && paymentDetails.customerEmail) {
 			// Fallback: try to find by email
-		const appId = paymentDetails.metadata?.["appId"];
+			const appId = paymentDetails.metadata?.["appId"];
 			if (appId) {
 				const app = await db.query.apps.findFirst({
 					where: (apps, { eq }) => eq(apps.public_id, appId),
@@ -326,7 +326,7 @@ async function handleRefund(paymentDetails: PaymentDetails, provider: string): P
 					customerEmail: paymentDetails.customerEmail,
 					provider,
 				},
-				"License not found for refund"
+				"License not found for refund",
 			);
 			return;
 		}
@@ -345,7 +345,7 @@ async function handleRefund(paymentDetails: PaymentDetails, provider: string): P
 				transactionId: paymentDetails.transactionId,
 				refundAmount: paymentDetails.amount,
 			},
-			"License refunded"
+			"License refunded",
 		);
 
 		if (paymentDetails.subscriptionId) {
@@ -375,7 +375,7 @@ async function handleRefund(paymentDetails: PaymentDetails, provider: string): P
 				err: serializeError(error as Error),
 				transactionId: paymentDetails.transactionId,
 			},
-			"Failed to handle refund"
+			"Failed to handle refund",
 		);
 		throw error;
 	}
@@ -403,7 +403,11 @@ async function findLicenseBySubscriptionId(subscriptionId: string) {
 		// Find license directly from subscription's user_id + app_id
 		const license = await db.query.licenses.findFirst({
 			where: (licenses, { and, eq, isNull }) =>
-				and(eq(licenses.user_id, subscription.user_id), eq(licenses.app_id, subscription.app_id), isNull(licenses.deleted_at)),
+				and(
+					eq(licenses.user_id, subscription.user_id),
+					eq(licenses.app_id, subscription.app_id),
+					isNull(licenses.deleted_at),
+				),
 		});
 
 		return license || null;
@@ -413,7 +417,7 @@ async function findLicenseBySubscriptionId(subscriptionId: string) {
 				err: serializeError(error as Error),
 				subscriptionId,
 			},
-			"Failed to find license by subscription ID"
+			"Failed to find license by subscription ID",
 		);
 		return null;
 	}
@@ -450,7 +454,7 @@ async function findLicenseByTransactionId(transactionId: string) {
 				err: serializeError(error as Error),
 				transactionId,
 			},
-			"Failed to find license by transaction ID"
+			"Failed to find license by transaction ID",
 		);
 		return null;
 	}

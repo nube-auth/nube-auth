@@ -1,28 +1,27 @@
-import { useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
-import { useApp, useProject } from "../hooks/api";
 import {
-	Spinner,
 	Alert,
-	Heading,
-	Text,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
 	Button,
 	Card,
 	CardBody,
+	Heading,
 	Tabs,
-	TabsList,
 	TabsItem,
+	TabsList,
 	TabsPanel,
-	Breadcrumb,
-	BreadcrumbList,
-	BreadcrumbItem,
-	BreadcrumbButton,
+	Text,
 } from "@nube-auth/components";
+import { useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { PageLoader } from "../components/PageLoader";
+import { useApp, useProject } from "../hooks/api";
 
 export function AppDevelopersPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
-	const navigate = useNavigate();
+	const _navigate = useNavigate();
 	const { data: project, isLoading: projectLoading } = useProject(projectId || "");
 	const { data: app, isLoading: appLoading } = useApp(projectId || "", appId || "");
 	const [copied, setCopied] = useState(false);
@@ -32,7 +31,7 @@ export function AppDevelopersPage() {
 			await navigator.clipboard.writeText(text);
 			setCopied(true);
 			setTimeout(() => setCopied(false), 2000);
-		} catch (error) {
+		} catch (_error) {
 			// Clipboard API may fail silently in some browsers
 		}
 	};
@@ -277,9 +276,7 @@ export default App;`}</code>
 							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								useAuth Hook
 							</Heading>
-							<Text className="text-sm text-muted mb-3">
-								Access authentication state and methods:
-							</Text>
+							<Text className="text-sm text-muted mb-3">Access authentication state and methods:</Text>
 							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
 								<code className="text-foreground">{`import { useAuth } from '@nube-auth/react';
 
@@ -327,9 +324,7 @@ function Dashboard() {
 							<Heading level={3} size="md" className="text-base font-semibold mb-3">
 								Protected Routes
 							</Heading>
-							<Text className="text-sm text-muted mb-3">
-								Create a component to protect routes:
-							</Text>
+							<Text className="text-sm text-muted mb-3">Create a component to protect routes:</Text>
 							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
 								<code className="text-foreground">{`import { useAuth } from '@nube-auth/react';
 import { Navigate } from 'react-router-dom';

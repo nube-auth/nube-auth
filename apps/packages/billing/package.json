@@ -1,33 +1,35 @@
 {
-  "name": "@nube-auth/billing",
-  "version": "1.0.0",
-  "description": "Shared billing logic for Nube Auth — payment adapters, webhook processing, license management",
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": ["dist"],
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
-  },
-  "dependencies": {
-    "@nube-auth/db": "workspace:*",
-    "@nube-auth/queue": "workspace:*",
-    "@nube-auth/shared": "workspace:*",
-    "dodopayments": "^2.21.0",
-    "stripe": "^17.3.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.10.0",
-    "tsup": "^8.0.0",
-    "typescript": "^6.0.2"
-  }
+	"name": "@nube-auth/billing",
+	"version": "1.0.0",
+	"description": "Shared billing logic for Nube Auth — payment adapters, webhook processing, license management",
+	"type": "module",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsup",
+		"dev": "tsup --watch",
+		"typecheck": "tsc --noEmit",
+		"clean": "rm -rf dist"
+	},
+	"dependencies": {
+		"@nube-auth/db": "workspace:*",
+		"@nube-auth/queue": "workspace:*",
+		"@nube-auth/shared": "workspace:*",
+		"dodopayments": "^2.21.0",
+		"stripe": "^17.3.0"
+	},
+	"devDependencies": {
+		"@types/node": "^20.10.0",
+		"tsup": "^8.0.0",
+		"typescript": "^6.0.2"
+	}
 }

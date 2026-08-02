@@ -1,29 +1,29 @@
 {
-  "name": "@nube-auth/cache",
-  "version": "1.0.0",
-  "type": "module",
-  "private": true,
-  "description": "Redis client and helpers for Nube Auth",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "scripts": {
-    "build": "tsc",
-    "typecheck": "tsc --noEmit",
-    "dev": "tsc --watch"
-  },
-  "dependencies": {
-    "redis": "^4.7.0"
-  },
-  "devDependencies": {
-    "typescript": "^6.0.2"
-  },
-  "files": [
-    "dist"
-  ]
+	"name": "@nube-auth/cache",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"description": "Redis client and helpers for Nube Auth",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsc",
+		"typecheck": "tsc --noEmit",
+		"dev": "tsc --watch"
+	},
+	"dependencies": {
+		"redis": "^4.7.0"
+	},
+	"devDependencies": {
+		"typescript": "^6.0.2"
+	},
+	"files": [
+		"dist"
+	]
 }

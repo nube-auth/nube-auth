@@ -5,12 +5,11 @@
  * Rules control which provider is selected based on context (country, currency, etc.).
  */
 
+import { getDb, paymentProviderConfigQueries, routingRuleQueries } from "@nube-auth/db";
+import { createId, createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
-import { createId } from "@nube-auth/shared";
-import { getDb, routingRuleQueries, paymentProviderConfigQueries } from "@nube-auth/db";
 import { z } from "zod";
-import { selectProvider, type SelectionContext } from "../../../billing/services/provider-selector.js";
-import { createLogger, serializeError } from "@nube-auth/shared";
+import { type SelectionContext, selectProvider } from "../../../billing/services/provider-selector.js";
 
 const log = createLogger("routing-rules-admin");
 
@@ -198,7 +197,10 @@ app.put("/:appId/:ruleId", async (c) => {
 
 		// If changing provider, verify it exists
 		if (validated.provider_config_id) {
-			const providerConfig = await paymentProviderConfigQueries.findByInternalId_(db, validated.provider_config_id);
+			const providerConfig = await paymentProviderConfigQueries.findByInternalId_(
+				db,
+				validated.provider_config_id,
+			);
 			if (!providerConfig) {
 				return c.json({ error: "Provider config not found" }, 404);
 			}

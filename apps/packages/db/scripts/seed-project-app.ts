@@ -11,10 +11,10 @@
 
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createId } from "@nube-auth/shared";
 import dotenv from "dotenv";
-import { createId, } from "@nube-auth/shared";
 import { getDb } from "../src/index.js";
-import { userQueries, projectQueries, appQueries, projectMemberQueries } from "../src/queries.js";
+import { appQueries, projectMemberQueries, projectQueries, userQueries } from "../src/queries.js";
 import { users } from "../src/schema.js";
 
 const configDir = typeof __dirname === "string" ? __dirname : dirname(fileURLToPath(import.meta.url));

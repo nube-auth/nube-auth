@@ -1,6 +1,6 @@
+import { pingpong } from "@nube-auth/auth";
 import { getEnv } from "../config/env";
 import { addS2SAuthHeader } from "../middleware/s2s";
-import { pingpong } from "@nube-auth/auth";
 
 interface CoreRequest {
 	method: "GET" | "POST" | "PATCH" | "DELETE";

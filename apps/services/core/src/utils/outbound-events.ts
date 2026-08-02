@@ -8,7 +8,7 @@
 
 import type { Database } from "@nube-auth/db";
 import { appQueries } from "@nube-auth/db";
-import { createLogger, serializeError, id } from "@nube-auth/shared";
+import { createLogger, id, serializeError } from "@nube-auth/shared";
 import { enqueueOutboundWebhook } from "../billing/queue.js";
 
 const log = createLogger("outbound-events");

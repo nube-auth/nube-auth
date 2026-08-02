@@ -1,6 +1,6 @@
-import { pingpong } from "./lib/pingpong";
 import { config } from "./config";
 import { csrfHeaders } from "./lib/csrf";
+import { pingpong } from "./lib/pingpong";
 
 const apiClient = {
 	async get<T>(url: string): Promise<T> {

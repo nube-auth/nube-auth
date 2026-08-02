@@ -1,6 +1,6 @@
+import { appQueries, getDb } from "@nube-auth/db";
 import type { Context, Next } from "hono";
 import { createMiddleware } from "hono/factory";
-import { getDb, appQueries } from "@nube-auth/db";
 import { getEnv } from "../config/env";
 
 /**

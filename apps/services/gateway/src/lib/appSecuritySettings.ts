@@ -1,5 +1,5 @@
 import { cache } from "@nube-auth/cache";
-import { getDb, appQueries } from "@nube-auth/db";
+import { appQueries, getDb } from "@nube-auth/db";
 import { createLogger, serializeError } from "@nube-auth/shared";
 
 const log = createLogger("gateway:app-security-settings");

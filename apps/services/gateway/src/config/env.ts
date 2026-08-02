@@ -111,7 +111,10 @@ function validateEnv(): Env {
 		// TTL defaults - production values
 		SESSION_TTL_SECONDS: parseInt(process.env["SESSION_TTL_SECONDS"] ?? String(365 * 24 * 60 * 60), 10), // 365 days (user sessions)
 		ADMIN_SESSION_TTL_SECONDS: parseInt(process.env["ADMIN_SESSION_TTL_SECONDS"] ?? String(2 * 60 * 60), 10), // 2 hours (admin sessions)
-		ADMIN_INACTIVITY_TIMEOUT_SECONDS: parseInt(process.env["ADMIN_INACTIVITY_TIMEOUT_SECONDS"] ?? String(15 * 60), 10), // 15 minutes
+		ADMIN_INACTIVITY_TIMEOUT_SECONDS: parseInt(
+			process.env["ADMIN_INACTIVITY_TIMEOUT_SECONDS"] ?? String(15 * 60),
+			10,
+		), // 15 minutes
 		CACHE_TTL_SECONDS: parseInt(process.env["CACHE_TTL_SECONDS"] ?? String(2 * 60), 10), // 2 minutes
 		REFRESH_TOKEN_TTL_SECONDS: parseInt(process.env["REFRESH_TOKEN_TTL_SECONDS"] ?? String(365 * 24 * 60 * 60), 10), // 365 days
 		TOKEN_EXPIRY_BUFFER_SECONDS: parseInt(process.env["TOKEN_EXPIRY_BUFFER_SECONDS"] ?? "60", 10), // 1 minute
