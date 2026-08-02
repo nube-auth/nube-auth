@@ -1,0 +1,819 @@
+apps/dashboard/admin/src/pages/ProjectDetail.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 65,144
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4-7,13,29
+apps/packages/components/tsconfig.json
+  s_e0fee73ba207bf::t_40d6b207d9bf71 8
+  s_e0fee73ba207bf::t_a40460c3c2194c 2-7,9-28
+apps/services/core/src/billing/services/webhook-logging.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 7-8,163,194,219,243
+  s_e0fee73ba207bf::t_a40460c3c2194c 76,130,137-139,184-188
+apps/services/core/src/routes/v1/email/index.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 3-17,19,244-247
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 18,24
+apps/services/gateway/src/middleware/rateLimit.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 95
+apps/packages/components/src/base/forms/combobox.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,6-7,9-10,14-37,41-69,73-75,79-80,82,84-88,91-94,96-103,105,109-113,115-117,119-167,171-180,182-188,190-221,224-238,241-248,251-261,264-294,297-298,301-308,311-318,321-323
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4-5
+apps/packages/db/tsconfig.json
+  s_e0fee73ba207bf::t_a40460c3c2194c 25-33
+  s_e0fee73ba207bf::t_da3fb81f93e245 7
+apps/services/workers/src/sync-license.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 12,14-16
+  s_e0fee73ba207bf::t_a40460c3c2194c 34,41,57,74-81
+tsconfig.json
+  s_e0fee73ba207bf::t_020f92fbd69ed1 14-17
+apps/dashboard/admin/src/pages/AppSetup.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-7,10,13-16,18,20-21,24-26,28-30,32
+  s_e0fee73ba207bf::t_a40460c3c2194c 806,879
+apps/dashboard/user/vite.config.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1,3
+  s_e0fee73ba207bf::t_a40460c3c2194c 7
+apps/packages/cache/src/client.ts
+  s_e0fee73ba207bf::t_8932df578924f6 380
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2
+  s_e0fee73ba207bf::t_a40460c3c2194c 39-41,381-385
+apps/services/gateway/src/middleware/error.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 54-62
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1
+apps/packages/shared/tsup.config.ts
+  s_e0fee73ba207bf::t_020f92fbd69ed1 1,4-34
+apps/packages/shared/src/utils/secrets.ts
+  s_e0fee73ba207bf::t_020f92fbd69ed1 40
+apps/packages/components/src/lib/cn.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 1-2,7,15
+apps/packages/db/src/migrations.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 20-21
+  s_e0fee73ba207bf::t_a40460c3c2194c 33,38
+apps/services/core/src/middleware/s2s.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 11
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1,3
+apps/packages/components/src/base/feedback/badge.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,6-37,40-47
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4
+apps/services/gateway/src/routes/license.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 10,13,15
+apps/services/core/src/billing/services/purchases.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 3,35,47,87-96,98,103-111,147-149,157-162,183-186,210,212,214-215,243-245,247,249-252,274,282,314,327-330,336-339,355-361,405-409,414-417,421-429,431-445,447,451-471,473-476,478-511
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 8,12-15,20,22
+apps/services/core/src/billing/services/webhook-processor.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 37,72,84,101,109,131,148,172,238,261,291,309,329,348,378,406-410,420,457
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 9
+apps/packages/components/src/base/display/tabs.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,5,7-8,11-35,38-53,56-58
+apps/packages/components/src/base/forms/slider.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,6-16,19-31
+apps/packages/components/src/base/display/collapsible.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,6-7,11-13,15,17-38,42-44,46-61
+apps/services/gateway/src/lib/appSecuritySettings.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2
+apps/services/core/src/middleware/error.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 22-30
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1
+apps/dashboard/admin/src/pages/ProjectPaymentProviders.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2-7,11-12,16-22,25-27,29-32,35,42,285-294
+  s_e0fee73ba207bf::t_a40460c3c2194c 547
+apps/packages/components/src/base/forms/form.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,6-8
+apps/dashboard/admin/src/pages/BillingDashboard.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2-5,9,26-27
+  s_e0fee73ba207bf::t_a40460c3c2194c 134,141,219
+apps/services/core/src/routes/v1/admin/prices.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 10,13-14,18,21-22
+  s_e0fee73ba207bf::t_a40460c3c2194c 12,15-17,19,36-71,126-142,269-280
+apps/packages/billing/src/adapters/factory.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 7-9
+  s_e0fee73ba207bf::t_a40460c3c2194c 13,21-53
+apps/dashboard/admin/src/pages/TransactionExport.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 168,176,365,391
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2-6,13-15,18-20,22,26
+apps/dashboard/admin/src/pages/AppDetail.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-6,10-11,13-15,17-18
+  s_e0fee73ba207bf::t_a40460c3c2194c 146,152
+apps/packages/billing/src/adapters/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 5-6,9-10
+apps/services/gateway/src/routes/admin-billing.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 16-21
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 7
+apps/services/gateway/tsup.config.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,4-13
+apps/packages/react/tsup.config.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,4-12
+apps/dashboard/user/src/pages/Login.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1,5
+apps/services/workers/tsup.config.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,4-13
+apps/dashboard/admin/src/pages/AppUsers.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 526,554
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-7,10,16-18,20-23,26,28-33,35-37,40,45,86,91
+apps/packages/components/src/base/layout/sidebar.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,5,10,12,16,19-83,87-91,94-99,102-111,114-123,126-131,134-135,138-143,146-154,157-164,168-172,174-187,191-222,225-235,238-247,250-259,262-265,268-269,273-274,276-286,289-302
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4,6-7
+apps/dashboard/admin/src/pages/Licenses.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-5,9-13,16-18,20
+apps/dashboard/admin/src/pages/RefundProcessing.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2-7,13-15,18-20,22-23,25-26
+  s_e0fee73ba207bf::t_a40460c3c2194c 244
+apps/services/core/src/routes/v1/admin/promotions.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 26-34,61-64,163-166,314-317,346-351,383-389,399-402,439-440,492-494,505-508,547-551
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4,7,272,444
+apps/packages/components/src/base/forms/label.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,5-17
+apps/dashboard/user/src/App.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1,4,8-9,11,13
+  s_e0fee73ba207bf::t_a40460c3c2194c 15-19,64,81,85-121
+apps/services/core/src/routes/v1/license/index.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 47,55,58-59,80,121,153-154,159,173,192,216-217,247,250,269-270,339-340
+apps/packages/auth/src/adapters/github.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 85
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1
+apps/packages/components/src/base/forms/input.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 5-6
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,9-26,30-35
+apps/services/workers/src/webhook-rescue-cron.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 8,19,136
+apps/dashboard/admin/src/pages/AppLicenses.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 117,315,334,637,649,980,1172-1173
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-6,10-11,17-24,27,30-31,34,36-37,39-41,46,49,51,53-55,57-60,62,601,775,816
+apps/packages/components/src/base/display/item.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,8-54,58-73,76-77,80-81,84-85,88-89,92-99,102-110
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 5
+apps/packages/components/src/components/feedback/status-dot/index.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 1
+apps/services/gateway/src/config/env.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 114-117
+apps/services/core/package.json
+  s_e0fee73ba207bf::t_a40460c3c2194c 7-9
+apps/packages/queue/package.json
+  s_e0fee73ba207bf::t_a40460c3c2194c 2-53
+apps/services/core/src/routes/v1/billing/checkout.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 10-12,15,20-21
+  s_e0fee73ba207bf::t_a40460c3c2194c 9,13-14,16-19,22,36-37,134-137,158,179-183,257-260,263-266,269-272
+apps/services/workers/src/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 14,16,18
+  s_e0fee73ba207bf::t_a40460c3c2194c 61,76-83,86,109,169
+apps/packages/components/src/base/layout/popover.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,6-7,10-11,15-24,26-32,34-78,81-82,85-93
+apps/services/core/tsup.config.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 4
+apps/dashboard/admin/src/pages/AppOAuth.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-7,11-14,16-17,29,56
+apps/packages/components/src/base/feedback/avatar.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,9-21,25-29,32-33,36-43,46-62,65-77
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 5-6
+apps/services/core/src/config/env.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 98-101,114-117
+apps/services/core/src/routes/v1/admin/webhooks.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 19-22
+apps/services/gateway/src/utils/cookieNames.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 13
+apps/dashboard/admin/src/pages/ProjectTeam.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-6,9-10,14-21,24-26,28-29,36
+apps/dashboard/admin/src/pages/WebhookMonitoring.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 129,139,143,149,155,251,306,317,426
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2-5,12-15,18-20,22-23,25
+apps/services/gateway/tsconfig.json
+  s_e0fee73ba207bf::t_4fd01e69e51f10 8-9
+apps/packages/client/src/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2,5-7,14-16,27-29,34,36-37,40-46,48,51,53-55,57-58
+apps/dashboard/docs/.vitepress/env.d.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 3-4
+apps/packages/components/src/components/auth/login-card/auth-login-card.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2-4,7,11
+  s_e0fee73ba207bf::t_a40460c3c2194c 57-60,62-70,72-82,88-103
+apps/packages/components/src/icons/icons.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3,6-7,9-10,12,14-17,19,21-22,24-25,27-28,30,32-50,52-56,59-62,64-66
+  s_e0fee73ba207bf::t_a40460c3c2194c 108-111,117-127,145-148,163,170-179,181-245,254-263,340,343,346,350,358,361,363,366,370,373,375,379,388
+apps/services/gateway/src/routes/appCatalog.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 170-171,173,215
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 26,29
+apps/dashboard/admin/src/pages/ProjectSettings.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-7,10,12-13,16-18,20-24,294
+  s_e0fee73ba207bf::t_a40460c3c2194c 176
+apps/packages/components/src/base/forms/select.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 5-6
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,7,10-12,15-27,31-49,53-64,66-80,84-86,88,90-94,98-99,101-102,104-106,108-118,120-126,128-135,137,141-150,152-190,193-200,203-236,239-240,243-250,253-261
+apps/packages/shared/src/utils/logger.ts
+  s_e0fee73ba207bf::t_020f92fbd69ed1 23,27-37,44
+apps/services/core/src/routes/v1/admin/billing.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 53-54,59-68,81,140-141,176,181-182,187-188,200,204,209-210,217-220,246,256-258,280,287-288,294,361-363,399-401,453-455,518-519,530,577
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 8
+apps/services/gateway/src/services/sessionService.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 87,91
+apps/packages/components/src/base/layout/alert-dialog.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,7-8,11-16,20-22,24-55,58-67,71-73,75-83,86-91,95-97,99-107,110-123,127-130,132-142
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 5
+apps/packages/components/src/base/feedback/toggle.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-5,8-31,35-51
+apps/services/core/src/routes/v1/billing/refunds-clean.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 11-12
+  s_e0fee73ba207bf::t_a40460c3c2194c 67,86-89,123,162,209,241
+apps/services/workers/src/dispatch-outbound-webhook-worker.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 7
+  s_e0fee73ba207bf::t_a40460c3c2194c 23-26
+apps/services/core/src/billing/adapters/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 5-6,9-10
+apps/packages/components/src/components/display/data-table/index.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 2
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1
+biome.json
+  s_e0fee73ba207bf::t_2f538e46e7cb37 10-18
+  s_e0fee73ba207bf::t_eb1cc2b817e7a7 58-59
+apps/packages/components/src/base/display/preview-card.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,6-7,10-11,15-24,26-32,34-75
+apps/services/core/src/billing/services/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 11
+apps/services/gateway/src/lib/core-client.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1
+apps/dashboard/admin/package.json
+  s_e0fee73ba207bf::t_020f92fbd69ed1 18
+apps/dashboard/admin/src/pages/Profile.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3,5,9-12,14-17,19-20,22-24
+apps/services/gateway/src/services/coreService.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1
+apps/dashboard/docs/tsconfig.json
+  s_e0fee73ba207bf::t_a40460c3c2194c 21,26
+apps/dashboard/admin/src/components/ConfirmModal.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 6-14,36-44,46-49,51-52,54-62,64-67,69-77,79-88,90-93,95-97,99-100,102,104-109,115-116,120-121,127-130,154-159,172-174
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1
+apps/packages/db/src/queries.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 157,168,437,492,508,524,595,734,1008,1027,1033,1037,1046,1053,1104,1130,1180,1185,1198,1227,1245,1356,1371,1376,1520,1555,1570,1575,1580,1587,1627,1632,1637,1642,1676,1680,1715-1717,1764-1770,1791,1796,1800-1811,1824-1825,1832,1864,1876-1888,1893-1894,1910,1931-1934,1969-1972,2096,2101,2105-2116,2149,2326-2329,2399-2400,2403
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 16-17,20,34
+apps/packages/shared/src/types/schemas/admin.ts
+  s_e0fee73ba207bf::t_020f92fbd69ed1 68-69
+apps/services/workers/src/process-webhook.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 7
+  s_e0fee73ba207bf::t_a40460c3c2194c 29,51,60-62,74,85,93
+apps/services/core/src/routes/v1/admin/stats.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 51-79,82-102,104,130-145,147-173,177-198,233-261,264-281
+apps/packages/components/src/components/display/info-grid/index.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 1
+apps/dashboard/admin/src/pages/Root.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 93
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1,5
+apps/packages/components/src/base/feedback/divider.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4-5
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,7-18,22-32
+apps/packages/components/src/base/feedback/meter.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,6-18,21-24,27-29
+apps/packages/components/src/base/typography/kbd.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,7-22,25-26,29-31
+apps/dashboard/admin/src/components/Modal.tsx
+  s_e0fee73ba207bf::t_14a497cbfcf5e5 11
+  s_e0fee73ba207bf::t_a40460c3c2194c 22,26,41
+  s_e0fee73ba207bf::t_020f92fbd69ed1 2,4,6,8-9
+apps/services/core/src/routes/v1/admin/test.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 6,8,11,14-15,17,19,22-23,66,70,74,86-93,135-140,280-284,294-302,305-310,315,318-325,327,333-341,347,354-357,359,363-369,372-375,377-380,403-406,409-425,444-452,454-473,475-476,478-479,517-519,549-556,594-601,605-606,624-636,640-646,648-655,669,683-685,688-696,720,725-726,732-738,770-783,790-796,838-844,873,883
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 7,9-10,12-13,16,18,20-21,24,28,30-31,33
+apps/packages/components/src/components/display/info-list/info-list.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,4-6,10,13-32,34
+apps/packages/shared/src/id.ts
+  s_e0fee73ba207bf::t_020f92fbd69ed1 71
+apps/services/gateway/src/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-5,8-10,12,16,60
+  s_e0fee73ba207bf::t_a40460c3c2194c 105-106,154-157
+apps/dashboard/admin/src/pages/ProjectApps.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-6,13-16,19-21,23-24
+apps/dashboard/admin/src/components/InviteUserModal.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-7,15,17,56-59,153-158,162-164,168-174,176-182,184-194,196,198-201,203-210,212-219,221-247,251-287,291,294
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2,8-14,16,22,73
+apps/packages/ui/tsconfig.json
+  s_e0fee73ba207bf::t_e6b01bcaa1731a 8
+  s_e0fee73ba207bf::t_a40460c3c2194c 2-7,9-27
+apps/services/workers/src/process-refund.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 11-13,16
+  s_e0fee73ba207bf::t_a40460c3c2194c 54,58,65,69,81,88,109
+apps/packages/client/src/types.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 4-33,45-55,63-75,87-94,101-130,137-142,154-163
+apps/packages/components/src/icons/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1
+apps/dashboard/user/src/pages/NotFound.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2
+  s_e0fee73ba207bf::t_a40460c3c2194c 19
+apps/dashboard/admin/src/pages/AppWebhooks.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-6,10-11,15-21,25-27,30-37,39-42,45-46,50-52,55-56
+apps/services/gateway/src/middleware/s2s.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1
+apps/packages/components/src/base/forms/number-field.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-5,7-18,22-24,26-35,38-52,56-77,81-91,94-95,98-99,102-115
+apps/packages/components/src/components/display/empty-state/index.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 1
+apps/packages/billing/package.json
+  s_e0fee73ba207bf::t_a40460c3c2194c 2-34
+apps/services/core/tsconfig.json
+  s_e0fee73ba207bf::t_a58deccb3a2d58 12-13
+apps/services/core/src/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2,4,47
+  s_e0fee73ba207bf::t_a40460c3c2194c 50,56-64
+apps/packages/components/src/base/layout/scroll-area.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,7-10,12,14-32,36-38,40-62
+apps/packages/auth/src/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 14-15,28
+apps/services/core/src/routes/v1/admin/apps.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 3-16,94-100,102-103,186-189,211-217,266-271,297-306,310,471-477,494-497,663-665,667
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1,17
+apps/dashboard/admin/src/lib/csrf.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 9,12,22
+apps/packages/auth/src/crypto.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 8
+apps/packages/components/src/base/layout/card.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,5,7-14,18-40,44-48,51-58,61-62,65-66,69-83,86-98
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4
+apps/packages/auth/src/adapters/google.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-5
+  s_e0fee73ba207bf::t_a40460c3c2194c 16,101-109,114,118-121,126-136,159,162-170,173,178-181,193-200,208-214,218-224,233
+apps/packages/shared/src/utils/credentials.ts
+  s_e0fee73ba207bf::t_020f92fbd69ed1 98,111-114,121-124,136-139
+apps/packages/components/src/base/feedback/toast.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,11-20,24,26-63,67,69-91,95-122,125-139,143-216
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 5
+apps/dashboard/admin/src/pages/CreateProject.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1,5
+  s_e0fee73ba207bf::t_a40460c3c2194c 111
+apps/dashboard/admin/src/components/InviteTeamMemberModal.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 66-68,80-82,92-93,99
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 12-15
+apps/dashboard/user/src/pages/Security.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 53-57,65-93,146
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2-3,5,9-12,14
+apps/packages/billing/src/services/webhook-processor.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 10
+  s_e0fee73ba207bf::t_a40460c3c2194c 37,72,84,101,109,131,148,172,238,261,291,309,329,348,378,406-410,420,457
+apps/packages/components/package.json
+  s_e0fee73ba207bf::t_a40460c3c2194c 2-55
+apps/dashboard/user/src/components/TabNavigation.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1
+apps/packages/components/src/base/display/breadcrumb.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,5,7-8,11-18,21-32,36-41,43-61,64-87,90-119
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4
+apps/dashboard/admin/src/pages/AppPromotions.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 294,470
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-6,10-11,15-21,24,28-32,34-36,41,43,45-49,52
+apps/packages/billing/src/adapters/dodo.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 49-53,55,76,78-82,130,188,193-196,209,218,286,297,316-318,320-324,326,391-393,395-398,401-404,420-423,458
+apps/packages/client/example.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 8,58,60,115-116,187,207,211-212,254-260,269,314-319,335-336,373-388
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 9,278
+apps/packages/components/src/components/display/data-table/data-table.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3,5-6
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,4,12-20,37-60,68-71,74-96,103,109-123
+apps/services/gateway/src/routes/s2s.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 7
+apps/packages/components/src/components/forms/form-group/index.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 2-3,5,10
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4,6-9
+apps/packages/components/src/base/display/accordion.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,6-7,10-19,22-27,31-33,35,37-59,62-80
+apps/packages/components/src/components/display/session-card/session-card.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1-2,5-8,12-41,44
+apps/packages/billing/src/services/purchases.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 3,35,47,87-96,98,103-111,147-149,157-162,183-186,210,212,214-215,243-245,247,249-252,274,282,314,327-330,336-339,355-361,406-410,415-418,422-430,432-446,448,452-472,474-477,479-512
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 8,12-15,20
+apps/packages/components/src/base/feedback/chip.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-5,7-31,35-50,53-61
+apps/packages/shared/package.json
+  s_e0fee73ba207bf::t_020f92fbd69ed1 2-48
+apps/services/core/src/routes/v1/admin/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3,7,9-11,13-14
+apps/services/core/src/routes/v1/admin/subscriptions.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 48-50,52-54,77,82-84,91,105,112,115-117,121,142,152,169,202,207,211-212
+apps/services/core/src/routes/v1/admin/license-management.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 30,54,103,114,146,154,178,185-186,217,224,249-250,267,281,288,292,294,303,313,327,337,355,361,364,378,380,430,449,454-455,469,479,513,529,532,535,549,556,558,573
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1,16
+apps/services/core/src/routes/v1/auth/index.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 86-95,147,218,224,252,310-313,382-385,410-413,472-475,492-495,553-556,566-569
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 20-22
+apps/services/core/src/billing/adapters/factory.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 7-9
+  s_e0fee73ba207bf::t_a40460c3c2194c 13,21-53
+apps/packages/components/src/base/forms/textarea.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,7-22,26-31
+apps/packages/components/src/base/display/menubar.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,6-13
+apps/services/core/test-dodo.mjs
+  s_e0fee73ba207bf::t_a40460c3c2194c 3,9,12-14,17,19,21,28-29,34-35,38,44,51-52,54,56-59,63,66-67,70-71,73,77,79,81,83,85,89,92-93,103,105,107,110,113,115,117,122,125,127,130,132,136-137,139-144
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 18,20,126
+apps/dashboard/admin/src/components/ErrorBoundary.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2
+apps/packages/queue/src/config.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 12,14-18,26,35,49,62,79-80
+apps/services/core/src/routes/v1/subscription/index.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 27,40,46-48,54,63-64,66-67,71,88,101,120,203,209,212-213,229,243,247,252,292,300-301
+apps/services/workers/tsconfig.json
+  s_e0fee73ba207bf::t_c236569e69e4d4 2-4
+apps/packages/auth/src/pingpong.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 17,19,25,32-34,60
+apps/packages/components/selia.json
+  s_e0fee73ba207bf::t_a40460c3c2194c 2-12
+apps/packages/shared/src/types/ids.ts
+  s_e0fee73ba207bf::t_020f92fbd69ed1 3,13,19,54,61
+apps/packages/components/src/components/display/profile-header/index.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 1
+apps/services/gateway/src/routes/payments.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 29-31,171-177
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 11
+apps/services/core/src/billing/services/provider-selector.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 186,209
+turbo.json
+  s_e0fee73ba207bf::t_6f0f1191794aa6 13
+apps/packages/billing/src/adapters/types.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 7-29,33-35,39-42,46-54,58-62,66-73,77-78,82-96,100-104,108-126,130-137,141-143,147-150,154-172,176-177,181-183,187-189,192
+apps/packages/billing/src/services/webhook-logging.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 7-8,163,194,219,243
+  s_e0fee73ba207bf::t_a40460c3c2194c 76,130,137-139,184-188
+apps/services/workers/src/process-payment.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 12
+apps/dashboard/admin/src/layouts/DashboardLayout.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1-2
+  s_e0fee73ba207bf::t_a40460c3c2194c 6-22,26-42,46-48,52,54-61,63-66,68-70,72-82,84-92,94-102,104-110
+apps/packages/components/src/base/layout/dialog.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 5
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,7-8,11-16,19-51,54-59,62-67,70-75,79-81,83-91,94-107,110-120
+  s_e0fee73ba207bf::t_74b0f5bcad3196 121
+apps/services/core/src/routes/v1/admin/routing-rules.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 8-9,12
+  s_e0fee73ba207bf::t_a40460c3c2194c 200-203
+apps/packages/billing/src/outbound-events.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 11
+apps/packages/components/src/components/display/session-card/index.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 1
+apps/services/gateway/src/middleware/auth.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 111-119,128-134,183-186,190-200
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 7,11
+apps/dashboard/admin/src/pages/AppSubscriptions.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-6,10,16-21,23,25-26,29-31,33-34,39
+  s_e0fee73ba207bf::t_a40460c3c2194c 184
+apps/services/core/src/middleware/auth.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 21,86-89
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1-2
+apps/packages/db/src/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 23,67-68,74,82,106-114
+  s_e0fee73ba207bf::t_a40460c3c2194c 11
+apps/services/workers/src/sync-plan-worker.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 29
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 12
+apps/packages/components/src/base/forms/checkbox.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,6,8-11,14-23,26-78
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 5
+apps/packages/billing/src/encryption.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 3,5,8,11,53,119,135,170,174,184,207,223,233
+apps/services/gateway/src/routes/debug.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 100-103,116-117,160-161,202,206,215,218
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 6-7
+apps/packages/billing/src/adapters/stripe.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 3,89,108,119,130,149-153,155-158,178,188-191,193-197,215,221-233,244,254-257,259-263,282,292-296,311,317-329,340,354,381,407,416,434-436,444,453,493,510,522-524,526-539,545-548,584
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 9
+apps/packages/components/src/components/display/empty-state/empty-state.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1-2,5-8,12-29,32
+apps/dashboard/user/src/pages/Root.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1,5
+  s_e0fee73ba207bf::t_a40460c3c2194c 91
+apps/packages/components/src/components/display/profile-header/profile-header.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,4-7,11-22,25
+apps/packages/components/src/base/forms/input-group.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4-6
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,9-39,43-52,56-85,89-103,106-120
+apps/packages/billing/src/services/webhook-handler.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 3,79-82,84-88,94-97,115-118,133-135,137,178,187
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 14
+apps/packages/db/src/schema.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 1-13,419,478,585,803,809,886,912,914,924,1152-1154,1182-1184
+apps/services/workers/src/dispatch-outbound-webhook.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 15-16
+apps/dashboard/home/tsconfig.json
+  s_e0fee73ba207bf::t_f3e21407e90f81 2-5
+apps/services/workers/test-webhook-enqueue.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 8-11,18,20,29,32-35
+apps/packages/queue/src/client.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 33,69,90,105-106,115,160,164,182,212,254,287,321
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 7,9-10
+apps/packages/components/src/base/forms/field.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,5,7-8,11-23,26-33,36-43,46-47,50-51,54-56
+apps/packages/components/src/base/typography/icon-box.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,7-45,49-61
+apps/packages/queue/src/jobs/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 8,10,12,14
+  s_e0fee73ba207bf::t_a40460c3c2194c 20,25,30
+apps/dashboard/admin/src/pages/ProjectStats.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 5-11,13-14
+apps/dashboard/admin/src/components/StatCard.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1
+  s_e0fee73ba207bf::t_a40460c3c2194c 4-9,13-18,20-40
+apps/dashboard/admin/src/pages/Home.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 6-8,10,12
+  s_e0fee73ba207bf::t_a40460c3c2194c 15,81,90-92,142-143
+apps/packages/components/src/base/feedback/toolbar.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,6-17,20-21,24-25,28-29,32-33,36-44
+apps/packages/components/src/base/display/menu.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-5,8,11-12,16-55,59-69,71-77,79-101,105-112,115-116,119-126,129-130,133-144,148-155,157-163,165-177,180-181,184-191,194-219,222-223,227-241,245-275
+apps/packages/db/src/schemas/jsonb.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 3,18,45-51,65,101,149,176,191,199,208
+apps/services/core/src/routes/v1/admin/plans.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 8,10,12-13,16-17
+  s_e0fee73ba207bf::t_a40460c3c2194c 33-38,40-43,61-77,202-203,255-256,327-328,348-358
+apps/dashboard/docs/vitepress.config.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,6-79
+apps/dashboard/docs/src/components/ColorPalette.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,4-8,12-14,18-45,49-59,63-312,560-561
+apps/packages/components/src/components/auth/login-card/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1,3,7,9-10,12-13,15,17-18
+  s_e0fee73ba207bf::t_a40460c3c2194c 5-6,8,11,14,16,19
+  s_e0fee73ba207bf::t_851d967a9b4a3d 4
+apps/dashboard/home/tailwind.config.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,4,8-13
+apps/services/core/src/utils/outbound-events.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 11
+apps/packages/components/src/components/display/info-list/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1
+apps/services/gateway/src/config/constants.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 9-10,16
+apps/services/gateway/src/routes/auth.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2,4-5,10-11,13
+  s_e0fee73ba207bf::t_a40460c3c2194c 9,12,14-16,115-145,152-155,210-211,242-248,326-332,369,393-402,407-415,435-442,454-457,465-468,489-498,530-531,533,601-606,625,635,637-638,643-659,664-666,669-672,674-681,711-722,725-728,761-762,784-785,788-790,793-798,887,1034,1042,1075-1082,1233,1316-1319
+apps/packages/components/src/base/layout/stack.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,6-22,25-36
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4
+apps/dashboard/admin/src/components/Toast.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 23
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2
+apps/packages/components/src/base/typography/heading.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,8-18,22-35,37,39-48
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4-6
+apps/dashboard/admin/src/components/Select.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2-4,7,9
+apps/packages/components/src/base/feedback/alert.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,8-32,36-40,43-44,47-54,57-68
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4-5
+apps/services/core/src/routes/v1/admin/projects.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 126-131,165-168,171,224
+apps/packages/queue/src/types.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 65,162
+apps/packages/components/src/base/feedback/toggle-group.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-5,8-48,52-68
+apps/packages/billing/src/adapters/lemonsqueezy.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 104,146,162,196,213-226,228-242,244-258,260-274,276-290,292-305,315,346,390,434,447,461-474,502,519,541-544,554-557,593,599-602,628,645-648
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 9
+apps/packages/ui/src/index.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 3,6,11
+apps/dashboard/admin/src/pages/Login.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1,5-6
+apps/packages/components/src/base/index.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 3-4,6-7,11,16,18,20,22,26-28,57-58
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 5,8-10,13-14,17,19,21,23-25,29-54,59-60
+apps/packages/components/src/base/layout/separator.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-5,7-16,20-27
+apps/services/core/src/routes/v1/billing/webhooks.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 36,47-48,138
+apps/services/core/src/routes/v1/billing/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 19,24,26
+apps/services/gateway/src/middleware/csrf.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1,8
+  s_e0fee73ba207bf::t_a40460c3c2194c 25-32,40-47,54
+apps/packages/queue/tsconfig.json
+  s_e0fee73ba207bf::t_e5c2c10992c6f1 6
+  s_e0fee73ba207bf::t_a40460c3c2194c 2-4,7-19
+  s_e0fee73ba207bf::t_1b7c9692a9c249 5
+apps/packages/queue/src/constants.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 6
+apps/services/core/src/billing/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 9
+apps/services/core/src/utils/license.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1-2
+  s_e0fee73ba207bf::t_a40460c3c2194c 13
+apps/packages/components/src/base/display/table.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,5-8,11-12,15-16,19-29,32-33,36-43,46-57,60-63,67-70,72-83
+apps/packages/components/src/components/feedback/status-dot/status-dot.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,6-7,11-15,19-26,29
+apps/services/core/src/routes/v1/admin/global-licenses.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 19
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1
+apps/services/workers/src/sync-plan-to-providers.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 3,107-110,112-116,139,161-194,196-200,202-233,235-240,242-254,337,341-343,357-358,362-363
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 11-12,15
+apps/packages/components/src/base/feedback/spinner.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,5-22
+apps/services/core/src/routes/v1/admin/members.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 64,121,170,233,285,311-314,389,516
+apps/packages/cache/src/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4-5
+apps/services/core/src/billing/adapters/types.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 7-29,33-35,39-42,46-54,58-62,66-73,77-78,82-96,100-104,108-126,130-137,141-143,147-150,154-172,176-177,181-183,187-189,192
+apps/packages/components/src/base/forms/radio.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,6,8-9,12-21,24-41
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 5
+apps/packages/auth/tsconfig.json
+  s_e0fee73ba207bf::t_7076aa355dab48 7
+apps/dashboard/user/src/pages/Profile.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 17,41-74,76-224
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1,3-4,6,9,11-13,15-16,19,21-22,27-29
+apps/packages/components/src/components/auth/login-card/login-card.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1-2,5-7,11-13,17,21,25,29,33,37-79,82,85-91,94,97-107,110,113-119,122,125-131,134,137-143,146-154,156
+apps/packages/components/src/components/feedback/loading/index.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 1
+apps/packages/billing/tsconfig.json
+  s_e0fee73ba207bf::t_1d5a0f47c002fc 6
+  s_e0fee73ba207bf::t_a40460c3c2194c 2-5,7-19
+apps/services/gateway/src/routes/me.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 3,5-8,12,234-288,290-307,309-315,323-358,368-396
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1,4,9-11,17,19-20
+apps/dashboard/admin/src/pages/PaymentTestingPlayground.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 7-9,11,78,82,139
+  s_e0fee73ba207bf::t_a40460c3c2194c 676
+apps/dashboard/user/src/pages/Home.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 55,58
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1
+apps/packages/billing/src/services/license-manager.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 7-8
+  s_e0fee73ba207bf::t_a40460c3c2194c 84,96,151,161,248-253,313-316,331,343,365,376
+apps/packages/ui/package.json
+  s_e0fee73ba207bf::t_a40460c3c2194c 2-38
+apps/packages/components/src/components/display/ThemeToggle.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1-2,5-8,12-19,24,27,31,34,40,45-46,48-59
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3
+apps/packages/client/tsup.config.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,4-12
+apps/services/core/src/billing/adapters/dodo.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 49-53,55,76,78-82,130,188,193-196,209,218,286,297,316-318,320-324,326,391-393,395-398,401-404,420-423,458
+apps/packages/db/src/utils/jsonb.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 29-32,65-66,84,145,174,241,257-258,261,269,273,287-288,291,325-329,339-341,348,383,399
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3,112
+apps/dashboard/admin/vite.config.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 10
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1,3
+apps/dashboard/admin/src/pages/AppApiKeys.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-7,10-11,13-14,16-17,19,23
+apps/dashboard/docs/.vitepress/theme/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2,7
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-6,15-17
+apps/dashboard/admin/src/pages/AppSettings.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 223
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-9,11-14,17,19,22-24,26-31,558
+apps/packages/components/src/base/typography/text.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,6-20,23-32,35-36,39-47
+apps/packages/components/src/base/layout/tooltip.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,6-7,10-11,15-24,26-32,34-78
+apps/services/core/src/billing/services/license-manager.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 7-8
+  s_e0fee73ba207bf::t_a40460c3c2194c 84,96,151,161,248-253,313-316,331,343,365,376
+apps/dashboard/admin/src/pages/Projects.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3,6,9-12,15-16,19-20,22
+apps/packages/auth/src/session.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 88
+apps/services/core/src/routes/v1/billing/refunds.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 9,28-34,41-47
+apps/dashboard/admin/src/App.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1,3-4,6,10,17,20,22,24-25,30,39,41-42,56
+  s_e0fee73ba207bf::t_a40460c3c2194c 87,98,113-351
+apps/services/gateway/src/middleware/appSecret.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 18-19
+  s_e0fee73ba207bf::t_a40460c3c2194c 26-34,36-39,41-43,45-48,53,55-58,60-64,66-69,72-74,76-77,79-85
+apps/packages/components/src/base/display/command.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,7,10-11,14-29,32-43,46-53,56-57,60-64
+apps/packages/components/src/base/forms/fieldset.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,7-20,23-31
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 4-5
+apps/packages/db/package.json
+  s_e0fee73ba207bf::t_a40460c3c2194c 2-51
+apps/services/core/src/routes/v1/admin/providers.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 3,191,267-270,480-483,492-495
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 16-18,20-21,23,27,29,31-33,236,330,429
+apps/packages/auth/package.json
+  s_e0fee73ba207bf::t_a40460c3c2194c 2-39
+apps/packages/client/src/client.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 162-163,210-211,331,365
+apps/packages/auth/src/state.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 106-109,144-147
+apps/packages/components/src/base/forms/autocomplete.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 5-6
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,8-9,13-35,39-49,53-62,64-70,72-100,103-104,107-108,111-112,115-116,119-130,133-144,147-150,154-155,157-163,166-167,170-171,174-188,192-193,195-202
+apps/dashboard/admin/src/pages/Onboarding.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 5,9-14,16-17,20
+apps/dashboard/docs/.vitepress/config.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,4-6,8,12,15-19,21-29,31,34-36,39-42,44-48,50,54,57-61,64,66-69,72,74-76,79,81-84,87,89-91,94,96-98,101,103-106,109-111,113,115-116,119-120,122,125-126,128,131,133-134,136,140-141,143,147-148,150,154-155,157-158
+apps/packages/react/src/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 19
+apps/packages/components/src/hooks/useTheme.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,7,12,16,31-36,38-39,41-47,49-54,56-64,66
+apps/dashboard/user/src/lib/csrf.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 9
+apps/dashboard/admin/src/layouts/AppSidebar.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 10-12,14-15,17,19,22,25-31,35-38,40-48,50-55,57-68,70-81,83-121,125-134,136-137,139-148,150-184,186-246,248-259,261-272
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2-9,13,16,18,20-21
+apps/dashboard/admin/src/pages/AppPaymentSettings.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-7,12-16,18
+apps/dashboard/admin/src/components/IconPicker.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 13-19,21-34,36-77,80-86,89-95,99-112,114-162,164-170,175-195,198-218,220-226,228-297,304-310,313-319,321-334,351,359,364-368,408,410,415-418,429,440,480-484,495-497
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 1-2
+apps/dashboard/admin/src/pages/NotFound.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2
+  s_e0fee73ba207bf::t_a40460c3c2194c 19
+apps/packages/queue/src/index.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 26
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 8,30-31,35,37-53,55-60,62-63,65-68,70-71,73,75-76,79,81-82,87,90-92
+apps/dashboard/user/src/api.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3
+apps/dashboard/admin/src/hooks/api.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 11-12
+  s_e0fee73ba207bf::t_a40460c3c2194c 150-159,757,759-766,781-783,1243,1338-1344,1395-1396,1426-1427,1647,1654
+apps/packages/components/src/base/display/pagination.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,7-15,18-23,26-31,35-41,43-61
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 5
+apps/services/core/src/utils/encryption.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 3,5,8,11,54,118,161,165,175,198
+apps/packages/ui/src/utils/cn.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 1-2,7,15
+apps/services/gateway/src/routes/admin.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 52,54,56
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 6
+apps/packages/react/src/useCheckout.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 52
+apps/services/core/src/billing/services/webhook-handler.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 3,79-82,84-88,94-97,115-118,133-135,137,178,187
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 12,14
+apps/packages/billing/src/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 14-19
+apps/packages/cache/tsconfig.json
+  s_e0fee73ba207bf::t_b91b6bc26a63a5 7
+apps/dashboard/home/astro.config.mjs
+  s_e0fee73ba207bf::t_a40460c3c2194c 7
+apps/packages/db/scripts/seed-project-app.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 14
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 17
+apps/services/core/src/billing/adapters/stripe.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 3,89,108,119,130,149-153,155-158,178,188-191,193-197,215,221-233,244,254-257,259-263,282,292-296,311,317-329,340,354,381,407,416,434-436,444,453,493,510,522-524,526-539,545-548,584
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 9
+apps/services/core/src/billing/adapters/lemonsqueezy.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 9
+  s_e0fee73ba207bf::t_a40460c3c2194c 104,146,162,196,213-226,228-242,244-258,260-274,276-290,292-305,315,346,389,433,446,460-473,501,518,540-543,553-556,592,598-601,627,644-647
+apps/dashboard/admin/src/pages/AppDevelopers.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3-6,10,13,15,17-18,20,24,34
+  s_e0fee73ba207bf::t_a40460c3c2194c 279,327
+apps/packages/cache/package.json
+  s_e0fee73ba207bf::t_020f92fbd69ed1 2-28
+apps/packages/components/src/base/forms/switch.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,6-30
+apps/packages/components/src/base/feedback/progress.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3-4,6-18,21-28,31-35
+apps/dashboard/user/src/pages/Sessions.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 14,28-70,75,92,94,102,110,113,164-168,177-188,209-217,219-243,292-296,307-309,312-314,319-321,326-327,330-332,334-336
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 2-3,5,8-13,16-17,20,24-25
+apps/packages/billing/tsup.config.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 4-9
+apps/packages/components/src/index.ts
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 21,31,38,51-60,63,65-66,70,72-94
+  s_e0fee73ba207bf::t_a40460c3c2194c 18,24,30,37,44,62,64,67-69,71
+apps/packages/components/src/components/display/info-grid/info-grid.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,4-5,9-16,18-30,33
+apps/packages/components/src/components/forms/form-group/form-group.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,4,8-9,15-16,20-26,29,32-39,42,44-52,54,57-67,70
+apps/packages/components/src/base/feedback/button.tsx
+  s_e0fee73ba207bf::t_ea4dbc5c80c4a0 3,5
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,4,6,9-100,104-117
+apps/packages/components/src/components/feedback/loading/loading.tsx
+  s_e0fee73ba207bf::t_a40460c3c2194c 1,3,6-7,11-22,26-51,54
+apps/packages/db/drizzle/meta/0000_snapshot.json
+  s_e0fee73ba207bf::t_9f0c584fd16019 2-5336
+apps/packages/db/drizzle/meta/0001_snapshot.json
+  s_e0fee73ba207bf::t_a9d160cc7afafe 2-5448
+apps/packages/db/drizzle/meta/0002_snapshot.json
+  s_e0fee73ba207bf::t_3f5e959d60d875 2-5437
+apps/packages/db/drizzle/meta/0003_snapshot.json
+  s_e0fee73ba207bf::t_c00245de0387a5 2-5589
+apps/packages/db/drizzle/meta/0004_snapshot.json
+  s_e0fee73ba207bf::t_cc233010184b6a 2-5908
+apps/packages/db/drizzle/meta/0005_snapshot.json
+  s_e0fee73ba207bf::t_a42b15f57f1df1 2-5909
+apps/packages/db/drizzle/meta/0006_snapshot.json
+  s_e0fee73ba207bf::t_39d48751d2fada 2-5909
+apps/packages/db/drizzle/meta/_journal.json
+  s_e0fee73ba207bf::t_4f41176b60ec6b 2-55
+nube-scripts
+  s_e0fee73ba207bf::t_210fde0cfe6913 1
+pnpm-lock.yaml
+  s_e0fee73ba207bf::t_29a86a3eb6e50f 331-333
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "c0530864e71b485a1d84fad41c9cec76ca914be4",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
