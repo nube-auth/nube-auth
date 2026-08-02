@@ -30,7 +30,6 @@
 		"dev": "tsup --watch"
 	},
 	"dependencies": {
-		"@nube-auth/cache": "workspace:*",
 		"hono": "^4.6.14",
 		"nodemailer": "^7.0.12",
 		"pino": "^10.1.0",

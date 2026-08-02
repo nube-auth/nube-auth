@@ -18,6 +18,7 @@
 		"dev": "tsc --watch"
 	},
 	"dependencies": {
+		"@nube-auth/shared": "workspace:*",
 		"redis": "^4.7.0"
 	},
 	"devDependencies": {
