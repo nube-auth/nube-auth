@@ -1,0 +1,21 @@
+apps/packages/cache/package.json
+  s_e0fee73ba207bf::t_ce412faf323b14 21
+pnpm-lock.yaml
+  s_e0fee73ba207bf::t_aabd67dfd5c3f2 331-333
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "09228fed8eed55114e9033697a89ba5bc0c742f5",
+  "prompts": {},
+  "sessions": {
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
