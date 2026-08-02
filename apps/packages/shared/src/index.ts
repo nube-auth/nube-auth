@@ -84,7 +84,6 @@ export { createId, id, idPatterns, validateId } from "./id.js";
 // Re-export middleware (Node.js only - uses Redis)
 // Browser builds should not import these
 // Backend services should import directly if needed
-export type { LockoutConfig } from "./middleware/lockout.js";
 export type {
 	ApiResponse,
 	App,
