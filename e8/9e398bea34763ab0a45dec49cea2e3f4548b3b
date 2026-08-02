@@ -1,0 +1,21 @@
+apps/services/workers/package.json
+  s_e0fee73ba207bf::t_fe554dc2583a38 15
+apps/services/core/package.json
+  s_e0fee73ba207bf::t_78157e6bc81c5c 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "e89e398bea34763ab0a45dec49cea2e3f4548b3b",
+  "prompts": {},
+  "sessions": {
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
