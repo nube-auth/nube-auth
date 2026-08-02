@@ -12,7 +12,7 @@
 		"build": "tsup",
 		"start": "node dist/index.js",
 		"typecheck": "tsc --noEmit",
-		"test": "vitest"
+		"test": "vitest --passWithNoTests"
 	},
 	"dependencies": {
 		"@nube-auth/billing": "workspace:*",
