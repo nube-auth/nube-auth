@@ -1,0 +1,19 @@
+.github/workflows/docker-build.yml
+  s_e0fee73ba207bf::t_c568171fb3e1b4 52,97,142,205,253
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "c39a7691e00e8732eca331d1f1320582b65f6704",
+  "prompts": {},
+  "sessions": {
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
