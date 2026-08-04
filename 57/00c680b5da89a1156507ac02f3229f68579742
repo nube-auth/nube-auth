@@ -1,0 +1,29 @@
+apps/packages/db/tsconfig.json
+  s_87ccc658ea7075::t_ddd184a037f171 22-23
+nube-scripts
+  s_e0fee73ba207bf::t_0f2392a7071e20 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "5700c680b5da89a1156507ac02f3229f68579742",
+  "prompts": {},
+  "sessions": {
+    "s_87ccc658ea7075": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "b40ee78c-d239-4f3c-a7dc-2db48a8306c7",
+        "model": "deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
