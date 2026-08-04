@@ -1,0 +1,33 @@
+.github/workflows/_build-image.yml
+  s_87ccc658ea7075::t_dd435aee66abda 1-124,128,158
+  s_87ccc658ea7075::t_bdeec69c893994 125-127,129-130,138,140-157,159
+  s_87ccc658ea7075::t_e5a4334abf651a 131-137,139
+.github/workflows/docker-build.yml
+  s_87ccc658ea7075::t_1eaf7cea1d93c5 1-23,29,32,35-38,40-42,45-47,49-51,53-136
+nube-scripts
+  s_e0fee73ba207bf::t_3587b1c95c0f52 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "0311ca78e7fc0c3060512935cd5698b31b9fefe6",
+  "prompts": {},
+  "sessions": {
+    "s_87ccc658ea7075": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "b40ee78c-d239-4f3c-a7dc-2db48a8306c7",
+        "model": "deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
