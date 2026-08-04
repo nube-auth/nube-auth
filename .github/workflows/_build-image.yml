@@ -59,9 +59,8 @@ jobs:
   build:
     name: ${{ inputs.image_name }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+    # Note: permissions are controlled by the *caller* workflow.
+    # docker-build.yml must declare `packages: write`.
     steps:
       # ── Checkout with private submodule ─────────────────────────────────
       - name: Checkout

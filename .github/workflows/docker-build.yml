@@ -41,6 +41,11 @@ concurrency:
   group: docker-build-${{ github.ref_name }}
   cancel-in-progress: true
 
+# Required so reusable workflows can push to GHCR
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   # ── Resolve branch & version tag ────────────────────────────────────────────
   meta:
