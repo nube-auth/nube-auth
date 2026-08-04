@@ -1,0 +1,159 @@
+name: Build & Push Image
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Reusable workflow: builds a single Docker image and pushes it to GHCR.
+#
+# Called by docker-build.yml for each service.  Avoids ~200 lines of duplicated
+# checkout / buildx / login / metadata / build-push steps across 5+ jobs.
+#
+# Railway integration (optional):
+#   Set RAILWAY_TOKEN + RAILWAY_ENVIRONMENT_ID + one or more
+#   RAILWAY_SERVICE_ID_<name> GitHub variables/secrets to trigger a Railway
+#   deploy immediately after the image lands in GHCR.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+on:
+  workflow_call:
+    inputs:
+      image_name:
+        required: true
+        type: string
+        description: 'Image name after ghcr.io/nube-auth/ (e.g. nube-auth-core)'
+      dockerfile:
+        required: true
+        type: string
+        description: 'Path to Dockerfile relative to repo root'
+      branch:
+        required: true
+        type: string
+        description: 'Git branch being built (used for tag and cache key)'
+      platforms:
+        required: false
+        type: string
+        default: 'linux/amd64'
+        description: 'Build platforms (staging defaults to amd64 only)'
+      build_args:
+        required: false
+        type: string
+        default: ''
+        description: 'Additional docker build args (e.g. VITE_GATEWAY_URL=...)'
+      extra_tag:
+        required: false
+        type: string
+        default: ''
+        description: 'Additional tag (e.g. v1.2.3 from a semver tag push)'
+      railway_service_var_suffix:
+        required: false
+        type: string
+        default: ''
+        description: 'Suffix for RAILWAY_SERVICE_ID_* var lookup (e.g. CORE, GATEWAY)'
+    secrets:
+      GH_PAT:
+        required: true
+        description: 'PAT with read access to nube-scripts private submodule'
+
+env:
+  REGISTRY: ghcr.io/nube-auth
+
+jobs:
+  build:
+    name: ${{ inputs.image_name }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      # ── Checkout with private submodule ─────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.GH_PAT }}
+
+      # ── Docker Buildx ───────────────────────────────────────────────────
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ── GHCR login ──────────────────────────────────────────────────────
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── Image tags ──────────────────────────────────────────────────────
+      # Always tagged with the branch name (Railway watches this).
+      # If extra_tag is set (version tag push), also add that tag.
+      - name: Build tag list
+        id: tags
+        run: |
+          TAGS="type=raw,value=${{ inputs.branch }}"
+          TAGS="${TAGS}\ntype=sha,prefix=${{ inputs.branch }}-"
+          if [ "${{ inputs.branch }}" = "trunk" ]; then
+            TAGS="${TAGS}\ntype=raw,value=latest"
+          fi
+          if [ -n "${{ inputs.extra_tag }}" ]; then
+            TAGS="${TAGS}\ntype=raw,value=${{ inputs.extra_tag }}"
+          fi
+          echo "tags<<EOF" >> "$GITHUB_OUTPUT"
+          echo -e "$TAGS" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ inputs.image_name }}
+          tags: ${{ steps.tags.outputs.tags }}
+
+      # ── Build & push ────────────────────────────────────────────────────
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ inputs.dockerfile }}
+          platforms: ${{ inputs.platforms }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: ${{ inputs.build_args }}
+          cache-from: type=gha,scope=${{ inputs.image_name }}-${{ inputs.branch }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.image_name }}-${{ inputs.branch }}
+
+      # ── Trigger Railway deploy (optional) ───────────────────────────────
+      # Skip silently if Railway variables aren't configured.
+      # Set RAILWAY_TOKEN + RAILWAY_ENVIRONMENT_ID as GitHub Variables
+      # and RAILWAY_SERVICE_ID_CORE (etc.) per service.
+      - name: Deploy to Railway
+        if: inputs.railway_service_var_suffix != ''
+        env:
+          RAILWAY_TOKEN: ${{ vars.RAILWAY_TOKEN }}
+          RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+          RAILWAY_SERVICE_ID_APP: ${{ vars.RAILWAY_SERVICE_ID_APP }}
+          RAILWAY_SERVICE_ID_CORE: ${{ vars.RAILWAY_SERVICE_ID_CORE }}
+          RAILWAY_SERVICE_ID_GATEWAY: ${{ vars.RAILWAY_SERVICE_ID_GATEWAY }}
+          RAILWAY_SERVICE_ID_WORKERS: ${{ vars.RAILWAY_SERVICE_ID_WORKERS }}
+          RAILWAY_SERVICE_ID_DASHBOARDS: ${{ vars.RAILWAY_SERVICE_ID_DASHBOARDS }}
+        run: |
+          if [ -z "$RAILWAY_TOKEN" ] || [ -z "$RAILWAY_ENVIRONMENT_ID" ]; then
+            echo "Railway vars not configured — skipping deploy trigger."
+            exit 0
+          fi
+          SERVICE_ID_VAR="RAILWAY_SERVICE_ID_${{ inputs.railway_service_var_suffix }}"
+          SERVICE_ID=$(eval echo "\$$SERVICE_ID_VAR")
+          if [ -z "$SERVICE_ID" ]; then
+            echo "SERVICE_ID var $SERVICE_ID_VAR not set — skipping deploy trigger."
+            exit 0
+          fi
+          echo "Triggering Railway deploy for service $SERVICE_ID..."
+          curl -sS -X POST https://backboard.railway.app/graphql/v2 \
+            -H "Authorization: Bearer $RAILWAY_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"query\": \"mutation(\$serviceId: String!, \$environmentId: String!) { deploymentTrigger(input: { serviceId: \$serviceId, environmentId: \$environmentId }) { id status } }\",
+              \"variables\": {
+                \"serviceId\": \"$SERVICE_ID\",
+                \"environmentId\": \"$RAILWAY_ENVIRONMENT_ID\"
+              }
+            }"
