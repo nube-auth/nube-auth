@@ -1,0 +1,21 @@
+.github/workflows/docker-build.yml
+  s_87ccc658ea7075::t_193f584772ec7b 44-48
+.github/workflows/_build-image.yml
+  s_87ccc658ea7075::t_193f584772ec7b 62-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "01cc594b0c9d9eb186ecfb0b1fb396c2992033fa",
+  "prompts": {},
+  "sessions": {
+    "s_87ccc658ea7075": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "b40ee78c-d239-4f3c-a7dc-2db48a8306c7",
+        "model": "deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
