@@ -12,7 +12,7 @@ export function LoginPage() {
 	const navigate = useNavigate();
 	const [status, setStatus] = useState<AuthStatus>("checking");
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
-	const homeUrl = import.meta.env.VITE_HOME_URL || "http://localhost:4321";
+	const homeUrl = config.homeUrl;
 	const { data: user, isLoading } = useMe();
 
 	useEffect(() => {
