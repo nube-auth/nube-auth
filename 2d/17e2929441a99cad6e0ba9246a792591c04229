@@ -1,0 +1,26 @@
+apps/dashboard/admin/src/layouts/DashboardLayout.tsx
+  s_87ccc658ea7075::t_440e6d5ae51f8c 105
+apps/packages/db/scripts/billing-reset.ts
+  s_87ccc658ea7075::t_440e6d5ae51f8c 20,81,92,99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "2d17e2929441a99cad6e0ba9246a792591c04229",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_87ccc658ea7075": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "b40ee78c-d239-4f3c-a7dc-2db48a8306c7",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
