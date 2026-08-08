@@ -1,0 +1,14 @@
+apps/dashboard/admin/src/layouts/DashboardLayout.tsx
+  h_95aea6b4aa8772 105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "4248aca5d205d22b9d9e1a983b4037c8afea359b",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
