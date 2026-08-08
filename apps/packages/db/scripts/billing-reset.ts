@@ -17,10 +17,7 @@ import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import pg from "pg";
 
-const configDir =
-	typeof __dirname === "string"
-		? __dirname
-		: dirname(fileURLToPath(import.meta.url));
+const configDir = typeof __dirname === "string" ? __dirname : dirname(fileURLToPath(import.meta.url));
 
 // Load .env and .env.local from workspace root
 dotenv.config({ path: resolve(configDir, "../../../../.env.local"), override: true });
@@ -81,11 +78,7 @@ async function resetBilling() {
 	const { Client } = pg;
 	const client = new Client({
 		connectionString: DATABASE_URL,
-		ssl: DATABASE_URL
-			? shouldUseSsl(DATABASE_URL)
-				? { rejectUnauthorized: false }
-				: undefined
-			: undefined,
+		ssl: DATABASE_URL ? (shouldUseSsl(DATABASE_URL) ? { rejectUnauthorized: false } : undefined) : undefined,
 	});
 
 	try {
@@ -96,18 +89,14 @@ async function resetBilling() {
 
 		for (const table of BILLING_TABLES) {
 			try {
-				const result = await client.query(
-					`TRUNCATE TABLE "${table}" RESTART IDENTITY CASCADE`,
-				);
+				const result = await client.query(`TRUNCATE TABLE "${table}" RESTART IDENTITY CASCADE`);
 				console.log(`   ✓ Truncated ${table}`);
 			} catch (error: any) {
 				// Table may not exist yet (e.g. after a fresh push without migrations)
 				if (error?.code === "42P01") {
 					console.log(`   ⏭  Skipped ${table} (does not exist)`);
 				} else {
-					console.warn(
-						`   ⚠  Failed to truncate ${table}: ${error?.message ?? error}`,
-					);
+					console.warn(`   ⚠  Failed to truncate ${table}: ${error?.message ?? error}`);
 				}
 			}
 		}
