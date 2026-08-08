@@ -4,18 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    <!-- CSP fallback for local dev (overridden by nginx add_header in production).
-       nginx injects the correct gateway URL via envsubst at container boot. -->
-    <meta http-equiv="Content-Security-Policy"
-          content="default-src 'self';
-                   script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com;
-                   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-                   img-src 'self' data: blob: https:;
-                   connect-src 'self' http://localhost:* https://cloudflareinsights.com;
-                   font-src 'self' https://fonts.gstatic.com;
-                   object-src 'none';
-                   base-uri 'self';
-                   form-action 'self';">
+    <!-- CSP is set as an HTTP header by nginx (Content-Security-Policy add_header).
+         This avoids baking the gateway URL at build time. -->
     <meta name="referrer" content="strict-origin-when-cross-origin">
     
     <!-- Favicons -->
