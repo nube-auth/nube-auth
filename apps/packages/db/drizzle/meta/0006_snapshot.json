@@ -1,6 +1,6 @@
 {
-	"id": "6321a564-1c1c-4cf0-b473-22d10fea5289",
-	"prevId": "3cdaf672-76ea-43ff-8284-f9e65a42fe46",
+	"id": "9c181f85-eecd-4e95-a1c5-2dd6eafd889c",
+	"prevId": "6321a564-1c1c-4cf0-b473-22d10fea5289",
 	"version": "7",
 	"dialect": "postgresql",
 	"tables": {
@@ -2027,6 +2027,12 @@
 					"type": "text",
 					"primaryKey": false,
 					"notNull": true
+				},
+				"credentials_dek": {
+					"name": "credentials_dek",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
 				},
 				"webhook_secret": {
 					"name": "webhook_secret",
