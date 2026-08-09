@@ -2,16 +2,18 @@ name: Build & Publish Docker Images
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Staging (manual dispatch, branch = staging):
-#   Builds a single all-in-one image: nube-auth-app:staging
+#   Builds a single all-in-one image: nube-auth-staging:staging
 #   (core + gateway + workers + dashboards in one container via supervisord).
 #   Keeps Railway service count minimal for cost efficiency.
 #
 # Trunk (manual dispatch, branch = trunk, or push of v* tag):
-#   Builds 4 images in parallel:
+#   Builds 4 separate images in parallel:
 #     nube-auth-core:trunk          (Dockerfile.core)
 #     nube-auth-gateway:trunk       (Dockerfile.gateway)
 #     nube-auth-workers:trunk       (Dockerfile.workers)
 #     nube-auth-dashboards:trunk    (Dockerfile.dashboards — all 4 in one nginx)
+#   PLUS one combined image:
+#     nube-auth-prod:trunk          (Dockerfile.app — all-in-one via supervisord)
 #   Tag pushes also tag images with the version (e.g. v1.2.3).
 #
 # Railway auto-deploy:
@@ -75,7 +77,7 @@ jobs:
     if: needs.meta.outputs.branch == 'staging'
     uses: ./.github/workflows/_build-image.yml
     with:
-      image_name: nube-auth-app
+      image_name: nube-auth-staging
       dockerfile: nube-scripts/deploy/docker/Dockerfile.app
       branch: staging
       platforms: linux/amd64
@@ -144,4 +146,18 @@ jobs:
       extra_tag: ${{ needs.meta.outputs.extra_tag }}
       railway_service_var_suffix: DASHBOARDS
       railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
+    secrets: inherit
+
+  # ── Combined production image (all-in-one via supervisord) ──────────────────
+  prod-all-in-one:
+    name: Production (all-in-one)
+    needs: meta
+    if: needs.meta.outputs.branch == 'trunk'
+    uses: ./.github/workflows/_build-image.yml
+    with:
+      image_name: nube-auth-prod
+      dockerfile: nube-scripts/deploy/docker/Dockerfile.app
+      branch: trunk
+      platforms: linux/amd64,linux/arm64
+      extra_tag: ${{ needs.meta.outputs.extra_tag }}
     secrets: inherit
