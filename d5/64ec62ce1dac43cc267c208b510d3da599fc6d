@@ -1,0 +1,33 @@
+.github/workflows/_build-image.yml
+  h_95aea6b4aa8772 131,137-141
+  s_87ccc658ea7075::t_fdbd9dab38cb49 135
+  s_87ccc658ea7075::t_dbf1e13ff335fe 136,153
+  h_95aea6b4aa8772 50-54
+.github/workflows/docker-build.yml
+  s_87ccc658ea7075::t_b8613279834611 116
+  h_95aea6b4aa8772 22-23
+  s_87ccc658ea7075::t_8631dee4a76695 19-21
+  s_87ccc658ea7075::t_6aca4ff6e96f94 101,131,146
+  h_95aea6b4aa8772 83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "d564ec62ce1dac43cc267c208b510d3da599fc6d",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_87ccc658ea7075": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "b40ee78c-d239-4f3c-a7dc-2db48a8306c7",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
