@@ -16,10 +16,11 @@ name: Build & Publish Docker Images
 #
 # Railway auto-deploy:
 #   Set these GitHub Variables to trigger a Railway deploy after push:
-#     RAILWAY_TOKEN           — Railway API token
-#     RAILWAY_ENVIRONMENT_ID  — Railway environment UUID
-#     RAILWAY_SERVICE_ID_APP  — Service ID for staging app
-#     RAILWAY_SERVICE_ID_CORE / _GATEWAY / _WORKERS / _DASHBOARDS — trunk
+#     RAILWAY_TOKEN                             — Railway API token (Secret)
+#     RAILWAY_STAGING_ENVIRONMENT_ID            — Staging env UUID
+#     RAILWAY_PRODUCTION_ENVIRONMENT_ID          — Production env UUID
+#     RAILWAY_SERVICE_ID_STAGING                     — Service ID for staging app
+#     RAILWAY_SERVICE_ID_PRODUCTION_CORE / _GATEWAY / _WORKERS / _DASHBOARDS — Production
 # ═══════════════════════════════════════════════════════════════════════════════
 
 on:
@@ -79,6 +80,7 @@ jobs:
       branch: staging
       platforms: linux/amd64
       railway_service_var_suffix: APP
+      railway_environment_id: ${{ vars.RAILWAY_STAGING_ENVIRONMENT_ID }}
     secrets: inherit
 
   # ═════════════════════════════════════════════════════════════════════════
@@ -96,6 +98,7 @@ jobs:
       platforms: linux/amd64,linux/arm64
       extra_tag: ${{ needs.meta.outputs.extra_tag }}
       railway_service_var_suffix: CORE
+      railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
     secrets: inherit
 
   gateway:
@@ -110,6 +113,7 @@ jobs:
       platforms: linux/amd64,linux/arm64
       extra_tag: ${{ needs.meta.outputs.extra_tag }}
       railway_service_var_suffix: GATEWAY
+      railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
     secrets: inherit
 
   workers:
@@ -124,6 +128,7 @@ jobs:
       platforms: linux/amd64,linux/arm64
       extra_tag: ${{ needs.meta.outputs.extra_tag }}
       railway_service_var_suffix: WORKERS
+      railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
     secrets: inherit
 
   dashboards:
@@ -138,4 +143,5 @@ jobs:
       platforms: linux/amd64,linux/arm64
       extra_tag: ${{ needs.meta.outputs.extra_tag }}
       railway_service_var_suffix: DASHBOARDS
+      railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
     secrets: inherit

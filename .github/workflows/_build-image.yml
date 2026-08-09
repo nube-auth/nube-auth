@@ -47,6 +47,11 @@ on:
         type: string
         default: ''
         description: 'Suffix for RAILWAY_SERVICE_ID_* var lookup (e.g. CORE, GATEWAY)'
+      railway_environment_id:
+        required: false
+        type: string
+        default: ''
+        description: 'Railway environment UUID for this deploy (staging or production)'
     secrets:
       GH_PAT:
         required: true
@@ -123,17 +128,17 @@ jobs:
       # ── Trigger Railway deploy (optional) ───────────────────────────────
       # Skip silently if Railway variables aren't configured.
       # Set RAILWAY_TOKEN + RAILWAY_ENVIRONMENT_ID as GitHub Variables
-      # and RAILWAY_SERVICE_ID_CORE (etc.) per service.
+      # and RAILWAY_SERVICE_ID_PRODUCTION_CORE (etc.) per service.
       - name: Deploy to Railway
         if: inputs.railway_service_var_suffix != ''
         env:
-          RAILWAY_TOKEN: ${{ vars.RAILWAY_TOKEN }}
-          RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
-          RAILWAY_SERVICE_ID_APP: ${{ vars.RAILWAY_SERVICE_ID_APP }}
-          RAILWAY_SERVICE_ID_CORE: ${{ vars.RAILWAY_SERVICE_ID_CORE }}
-          RAILWAY_SERVICE_ID_GATEWAY: ${{ vars.RAILWAY_SERVICE_ID_GATEWAY }}
-          RAILWAY_SERVICE_ID_WORKERS: ${{ vars.RAILWAY_SERVICE_ID_WORKERS }}
-          RAILWAY_SERVICE_ID_DASHBOARDS: ${{ vars.RAILWAY_SERVICE_ID_DASHBOARDS }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_ENVIRONMENT_ID: ${{ inputs.railway_environment_id }}
+          RAILWAY_SERVICE_ID_STAGING: ${{ vars.RAILWAY_SERVICE_ID_STAGING }}
+          RAILWAY_SERVICE_ID_PRODUCTION_CORE: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_CORE }}
+          RAILWAY_SERVICE_ID_PRODUCTION_GATEWAY: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_GATEWAY }}
+          RAILWAY_SERVICE_ID_PRODUCTION_WORKERS: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_WORKERS }}
+          RAILWAY_SERVICE_ID_PRODUCTION_DASHBOARDS: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_DASHBOARDS }}
         run: |
           if [ -z "$RAILWAY_TOKEN" ] || [ -z "$RAILWAY_ENVIRONMENT_ID" ]; then
             echo "Railway vars not configured — skipping deploy trigger."
@@ -145,7 +150,7 @@ jobs:
             echo "SERVICE_ID var $SERVICE_ID_VAR not set — skipping deploy trigger."
             exit 0
           fi
-          echo "Triggering Railway deploy for service $SERVICE_ID..."
+          echo "Triggering Railway deploy for service $SERVICE_ID in env $RAILWAY_ENVIRONMENT_ID..."
           curl -sS -X POST https://backboard.railway.app/graphql/v2 \
             -H "Authorization: Bearer $RAILWAY_TOKEN" \
             -H "Content-Type: application/json" \
