@@ -1,0 +1,31 @@
+.github/workflows/docker-build.yml
+  s_87ccc658ea7075::t_f831b17d4bd3e6 150-163
+  s_87ccc658ea7075::t_a0ead253570b46 5,80
+  s_87ccc658ea7075::t_fdbe98f10ff6c0 10,15-16
+nube-scripts
+  s_e0fee73ba207bf::t_0fe906bbabac21 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "965a577382a9607327ddf2b42dfc51d8c65b8b3b",
+  "prompts": {},
+  "sessions": {
+    "s_87ccc658ea7075": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "b40ee78c-d239-4f3c-a7dc-2db48a8306c7",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
