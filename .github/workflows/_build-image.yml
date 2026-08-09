@@ -155,7 +155,7 @@ jobs:
             -H "Authorization: Bearer $RAILWAY_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{
-              \"query\": \"mutation(\$serviceId: String!, \$environmentId: String!) { deploymentTrigger(input: { serviceId: \$serviceId, environmentId: \$environmentId }) { id status } }\",
+              \"query\": \"mutation(\$serviceId: String!, \$environmentId: String!) { deploymentTriggerCreate(input: { serviceId: \$serviceId, environmentId: \$environmentId }) { id status } }\",
               \"variables\": {
                 \"serviceId\": \"$SERVICE_ID\",
                 \"environmentId\": \"$RAILWAY_ENVIRONMENT_ID\"
