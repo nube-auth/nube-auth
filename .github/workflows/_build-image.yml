@@ -149,5 +149,7 @@ jobs:
             echo "SERVICE_ID var $SERVICE_ID_VAR not set — skipping deploy trigger."
             exit 0
           fi
+          echo "RAILWAY_TOKEN is set (length: ${#RAILWAY_TOKEN})"
+          export RAILWAY_TOKEN="$RAILWAY_TOKEN"
           echo "Triggering Railway redeploy for service $SERVICE_ID in env $RAILWAY_ENVIRONMENT_ID..."
           npx -y @railway/cli@latest redeploy --service "$SERVICE_ID" --environment "$RAILWAY_ENVIRONMENT_ID" --from-source --yes --json
