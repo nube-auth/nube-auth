@@ -79,7 +79,7 @@ jobs:
       dockerfile: nube-scripts/deploy/docker/Dockerfile.app
       branch: staging
       platforms: linux/amd64
-      railway_service_var_suffix: APP
+      railway_service_var_suffix: STAGING
       railway_environment_id: ${{ vars.RAILWAY_STAGING_ENVIRONMENT_ID }}
     secrets: inherit
 
