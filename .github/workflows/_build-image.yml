@@ -125,14 +125,15 @@ jobs:
           cache-from: type=gha,scope=${{ inputs.image_name }}-${{ inputs.branch }}
           cache-to: type=gha,mode=max,scope=${{ inputs.image_name }}-${{ inputs.branch }}
 
-      # ── Trigger Railway deploy (optional) ───────────────────────────────
-      # Skip silently if Railway variables aren't configured.
+      # ── Trigger Railway deploy via GraphQL API ───────────────────────────
+      # Uses nube-scripts/dev/scripts/railway-deploy.ts instead of CLI.
       # Set RAILWAY_TOKEN as GitHub Secret and per-service RAILWAY_SERVICE_ID_* vars.
       - name: Deploy to Railway
         if: inputs.railway_service_var_suffix != ''
         continue-on-error: true
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
           RAILWAY_ENVIRONMENT_ID: ${{ inputs.railway_environment_id }}
           RAILWAY_SERVICE_ID_STAGING: ${{ vars.RAILWAY_SERVICE_ID_STAGING }}
           RAILWAY_SERVICE_ID_PRODUCTION_CORE: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_CORE }}
@@ -140,7 +141,7 @@ jobs:
           RAILWAY_SERVICE_ID_PRODUCTION_WORKERS: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_WORKERS }}
           RAILWAY_SERVICE_ID_PRODUCTION_DASHBOARDS: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_DASHBOARDS }}
         run: |
-          if [ -z "$RAILWAY_TOKEN" ] || [ -z "$RAILWAY_ENVIRONMENT_ID" ]; then
+          if [ -z "$RAILWAY_TOKEN" ] || [ -z "$RAILWAY_PROJECT_ID" ] || [ -z "$RAILWAY_ENVIRONMENT_ID" ]; then
             echo "Railway vars not configured — skipping deploy trigger."
             exit 0
           fi
@@ -150,7 +151,20 @@ jobs:
             echo "SERVICE_ID var $SERVICE_ID_VAR not set — skipping deploy trigger."
             exit 0
           fi
-          echo "RAILWAY_TOKEN is set (length: ${#RAILWAY_TOKEN})"
-          export RAILWAY_TOKEN="$RAILWAY_TOKEN"
-          echo "Triggering Railway redeploy for service $SERVICE_ID in env $RAILWAY_ENVIRONMENT_ID..."
-          npx -y @railway/cli@latest redeploy --service "$SERVICE_ID" --environment "$RAILWAY_ENVIRONMENT_ID" --from-source --yes --json
+          echo "Triggering Railway deploy for service $SERVICE_ID in env $RAILWAY_ENVIRONMENT_ID..."
+          ENV_NAME="${{ inputs.branch == 'staging' && 'staging' || 'production' }}"
+          SERVICE_KEY="${{ inputs.railway_service_var_suffix }}"
+          # Convert var suffix to service key (e.g. CORE -> core, STAGING -> app)
+          case "$SERVICE_KEY" in
+            STAGING) SVC_KEY="app" ;;
+            CORE) SVC_KEY="core" ;;
+            GATEWAY) SVC_KEY="gateway" ;;
+            WORKERS) SVC_KEY="workers" ;;
+            DASHBOARDS) SVC_KEY="dashboards" ;;
+            *) SVC_KEY="$(echo "$SERVICE_KEY" | tr '[:upper:]' '[:lower:]')" ;;
+          esac
+          npx tsx nube-scripts/dev/scripts/railway-deploy.ts \
+            --env "$ENV_NAME" \
+            --service "$SVC_KEY" \
+            --tag "${{ inputs.branch }}" \
+            --wait
