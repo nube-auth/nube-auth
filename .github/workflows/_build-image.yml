@@ -128,10 +128,6 @@ jobs:
       # ── Trigger Railway deploy (optional) ───────────────────────────────
       # Skip silently if Railway variables aren't configured.
       # Set RAILWAY_TOKEN as GitHub Secret and per-service RAILWAY_SERVICE_ID_* vars.
-      - name: Install Railway CLI
-        if: inputs.railway_service_var_suffix != ''
-        run: npm install -g @railway/cli@latest
-
       - name: Deploy to Railway
         if: inputs.railway_service_var_suffix != ''
         env:
@@ -154,4 +150,4 @@ jobs:
             exit 0
           fi
           echo "Triggering Railway redeploy for service $SERVICE_ID in env $RAILWAY_ENVIRONMENT_ID..."
-          railway redeploy --service "$SERVICE_ID" --environment "$RAILWAY_ENVIRONMENT_ID" --from-source --yes
+          npx -y @railway/cli@latest redeploy --service "$SERVICE_ID" --environment "$RAILWAY_ENVIRONMENT_ID" --from-source --yes --json
