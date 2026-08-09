@@ -1,0 +1,24 @@
+.github/workflows/_build-image.yml
+  s_87ccc658ea7075::t_0d193fa46fc390 133
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "a3caeeb15c7d4379e90f3426543a14617f591a5b",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_87ccc658ea7075": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "b40ee78c-d239-4f3c-a7dc-2db48a8306c7",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
