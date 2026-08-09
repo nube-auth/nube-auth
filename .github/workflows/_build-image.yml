@@ -130,6 +130,7 @@ jobs:
       # Set RAILWAY_TOKEN as GitHub Secret and per-service RAILWAY_SERVICE_ID_* vars.
       - name: Deploy to Railway
         if: inputs.railway_service_var_suffix != ''
+        continue-on-error: true
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_ENVIRONMENT_ID: ${{ inputs.railway_environment_id }}
