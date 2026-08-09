@@ -127,8 +127,11 @@ jobs:
 
       # ── Trigger Railway deploy (optional) ───────────────────────────────
       # Skip silently if Railway variables aren't configured.
-      # Set RAILWAY_TOKEN + RAILWAY_ENVIRONMENT_ID as GitHub Variables
-      # and RAILWAY_SERVICE_ID_PRODUCTION_CORE (etc.) per service.
+      # Set RAILWAY_TOKEN as GitHub Secret and per-service RAILWAY_SERVICE_ID_* vars.
+      - name: Install Railway CLI
+        if: inputs.railway_service_var_suffix != ''
+        run: npm install -g @railway/cli@latest
+
       - name: Deploy to Railway
         if: inputs.railway_service_var_suffix != ''
         env:
@@ -150,14 +153,5 @@ jobs:
             echo "SERVICE_ID var $SERVICE_ID_VAR not set — skipping deploy trigger."
             exit 0
           fi
-          echo "Triggering Railway deploy for service $SERVICE_ID in env $RAILWAY_ENVIRONMENT_ID..."
-          curl -sS -X POST https://backboard.railway.app/graphql/v2 \
-            -H "Authorization: Bearer $RAILWAY_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"query\": \"mutation(\$serviceId: String!, \$environmentId: String!) { deploymentTriggerCreate(input: { serviceId: \$serviceId, environmentId: \$environmentId }) { id status } }\",
-              \"variables\": {
-                \"serviceId\": \"$SERVICE_ID\",
-                \"environmentId\": \"$RAILWAY_ENVIRONMENT_ID\"
-              }
-            }"
+          echo "Triggering Railway redeploy for service $SERVICE_ID in env $RAILWAY_ENVIRONMENT_ID..."
+          railway redeploy --service "$SERVICE_ID" --environment "$RAILWAY_ENVIRONMENT_ID" --from-source --yes
