@@ -1,0 +1,139 @@
+name: Deploy to Railway
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Manual deploy of existing GHCR images to Railway.
+# Does NOT build anything — only deploys the already-published image.
+#
+# Use this when:
+#   - You want to re-deploy the current image (e.g., env var change)
+#   - The build succeeded but the deploy step failed
+#   - You pushed a new image outside of CI and want to deploy it
+#
+# Environment variables required (set as GitHub Secrets/Variables):
+#   RAILWAY_TOKEN                             — Railway API token (Secret)
+#   RAILWAY_PROJECT_ID                        — Railway project UUID (Variable)
+#   RAILWAY_STAGING_ENVIRONMENT_ID            — Staging env UUID (Variable)
+#   RAILWAY_PRODUCTION_ENVIRONMENT_ID          — Production env UUID (Variable)
+#   RAILWAY_SERVICE_ID_STAGING                     — Service ID for staging app
+#   RAILWAY_SERVICE_ID_PRODUCTION_CORE / _GATEWAY / _WORKERS / _DASHBOARDS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        default: staging
+        options:
+          - staging
+          - production
+      service:
+        description: 'Service to deploy (blank = all)'
+        required: false
+        type: choice
+        default: ''
+        options:
+          - ''
+          - app
+          - core
+          - gateway
+          - workers
+          - dashboards
+      tag:
+        description: 'Image tag to deploy (blank = branch default)'
+        required: false
+        type: string
+        default: ''
+      wait:
+        description: 'Wait for deployment to complete'
+        required: false
+        type: boolean
+        default: true
+
+concurrency:
+  group: railway-deploy-${{ inputs.environment }}-${{ inputs.service || 'all' }}
+  cancel-in-progress: false
+
+jobs:
+  # ═════════════════════════════════════════════════════════════════════════
+  # STAGING — deploy single app service
+  # ═════════════════════════════════════════════════════════════════════════
+  deploy-staging:
+    name: Deploy Staging
+    if: inputs.environment == 'staging'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+        run: |
+          TAG="${{ inputs.tag }}"
+          if [ -z "$TAG" ]; then
+            TAG="staging"
+          fi
+          WAIT_FLAG=""
+          if [ "${{ inputs.wait }}" = "true" ]; then
+            WAIT_FLAG="--wait"
+          fi
+          npx tsx nube-scripts/dev/scripts/railway-deploy.ts \
+            --env staging \
+            --service app \
+            --tag "$TAG" \
+            $WAIT_FLAG
+
+  # ═════════════════════════════════════════════════════════════════════════
+  # PRODUCTION — deploy single service or all
+  # ═════════════════════════════════════════════════════════════════════════
+  deploy-production:
+    name: Deploy Production (${{ inputs.service || 'all' }})
+    if: inputs.environment == 'production'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+        run: |
+          TAG="${{ inputs.tag }}"
+          if [ -z "$TAG" ]; then
+            TAG="trunk"
+          fi
+          WAIT_FLAG=""
+          if [ "${{ inputs.wait }}" = "true" ]; then
+            WAIT_FLAG="--wait"
+          fi
+          SERVICE="${{ inputs.service }}"
+          if [ -n "$SERVICE" ]; then
+            echo "Deploying single service: $SERVICE"
+            npx tsx nube-scripts/dev/scripts/railway-deploy.ts \
+              --env production \
+              --service "$SERVICE" \
+              --tag "$TAG" \
+              $WAIT_FLAG
+          else
+            echo "Deploying all production services..."
+            for svc in core gateway workers dashboards; do
+              echo ""
+              echo "--- Deploying $svc ---"
+              npx tsx nube-scripts/dev/scripts/railway-deploy.ts \
+                --env production \
+                --service "$svc" \
+                --tag "$TAG" \
+                $WAIT_FLAG || true
+            done
+          fi
