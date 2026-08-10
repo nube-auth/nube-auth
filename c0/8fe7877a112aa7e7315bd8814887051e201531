@@ -1,0 +1,66 @@
+apps/services/core/src/routes/v1/admin/plans.ts
+  s_2892fcb726af92::t_6daf2c58efbbd9 101,191,242-243,289-290,384-385
+apps/services/core/src/routes/v1/admin/webhooks.ts
+  s_2892fcb726af92::t_6daf2c58efbbd9 120,142,168,208-209,249-250,278-279,489-490,581-583,617-618
+apps/services/core/src/routes/v1/admin/prices.ts
+  s_2892fcb726af92::t_6daf2c58efbbd9 110-111,185-186,217-219,249-251,315-317,353-355
+apps/services/core/src/routes/v1/admin/routing-rules.ts
+  s_2892fcb726af92::t_6daf2c58efbbd9 176,251
+apps/services/gateway/src/routes/auth.ts
+  s_2892fcb726af92::t_82d95616d92938 1222,1237,1242
+apps/services/gateway/src/routes/me.ts
+  s_2892fcb726af92::t_82d95616d92938 192,204
+apps/services/core/src/routes/v1/admin/billing.ts
+  s_2892fcb726af92::t_6daf2c58efbbd9 330,424,444
+apps/services/gateway/src/routes/payments.ts
+  s_2892fcb726af92::t_82d95616d92938 51-52,75
+apps/services/core/src/routes/v1/billing/refunds-clean.ts
+  s_2892fcb726af92::t_6daf2c58efbbd9 158,188,224
+apps/services/core/src/routes/v1/admin/license-management.ts
+  s_2892fcb726af92::t_6daf2c58efbbd9 279,323,467,547
+  s_2892fcb726af92::t_8581ce75b5c521 87,197,235,278,322,466,546
+apps/services/core/src/routes/v1/billing/webhooks.ts
+  s_2892fcb726af92::t_6daf2c58efbbd9 35
+apps/services/core/src/routes/v1/admin/apps.ts
+  s_2892fcb726af92::t_8581ce75b5c521 690
+  s_2892fcb726af92::t_a65eb6c0d4bf9d 32,71,138,152,324,388,420,542,549,608,688,800,807,853,860,921,928
+  s_2892fcb726af92::t_6daf2c58efbbd9 72,325,389,543,609,689,801,854,922
+apps/services/core/src/routes/v1/admin/promotions.ts
+  s_2892fcb726af92::t_6daf2c58efbbd9 214,223,617,651,744
+apps/services/core/src/routes/v1/admin/projects.ts
+  s_2892fcb726af92::t_6daf2c58efbbd9 71,238,272,345
+apps/services/core/src/routes/v1/admin/members.ts
+  s_2892fcb726af92::t_6daf2c58efbbd9 36,83,247-248,358-359,441,485-486
+apps/services/core/src/routes/v1/billing/refunds.ts
+  s_2892fcb726af92::t_6daf2c58efbbd9 39,52,59
+apps/services/core/src/routes/v1/admin/subscriptions.ts
+  s_2892fcb726af92::t_6daf2c58efbbd9 68,102-103,137-138
+apps/services/core/src/routes/v1/admin/test.ts
+  s_2892fcb726af92::t_6daf2c58efbbd9 668
+apps/services/core/src/routes/v1/admin/stats.ts
+  s_2892fcb726af92::t_6daf2c58efbbd9 117,211-212
+apps/services/gateway/src/routes/appCatalog.ts
+  s_2892fcb726af92::t_82d95616d92938 102,275,348
+apps/services/core/src/routes/v1/admin/providers.ts
+  s_2892fcb726af92::t_6daf2c58efbbd9 96,145-146,197-198,248,342-343,441-442,536-537
+apps/services/gateway/src/routes/license.ts
+  s_2892fcb726af92::t_82d95616d92938 87
+apps/services/core/src/billing/adapters/stripe.ts
+  s_2892fcb726af92::t_9e3d70df22d832 29,189-191,206-207,255-257,272-273,397-398
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "c08fe7877a112aa7e7315bd8814887051e201531",
+  "prompts": {},
+  "sessions": {
+    "s_2892fcb726af92": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "5655574f-82ad-49c9-8ae3-292150f7e070",
+        "model": "deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
