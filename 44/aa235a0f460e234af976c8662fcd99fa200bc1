@@ -1,0 +1,33 @@
+apps/packages/components/package.json
+  s_2892fcb726af92::t_03115bb1be4e3f 53-54
+apps/packages/ui/package.json
+  s_2892fcb726af92::t_03115bb1be4e3f 31-32
+nube-scripts
+  s_e0fee73ba207bf::t_9ad605a8f1c6f0 1
+pnpm-lock.yaml
+  s_2892fcb726af92::t_0b54ac18e4a01f 388,391,442,444-445,516-517,519-520,557,565-566,661,663-664,7974,9672,9680,10788,10790,10802,11637,11666,11914
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "44aa235a0f460e234af976c8662fcd99fa200bc1",
+  "prompts": {},
+  "sessions": {
+    "s_2892fcb726af92": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "5655574f-82ad-49c9-8ae3-292150f7e070",
+        "model": "deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
