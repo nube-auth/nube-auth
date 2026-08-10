@@ -1,0 +1,24 @@
+nube-scripts
+  s_e0fee73ba207bf::t_e22f01e519dcfd 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "0f0886774bcc6ed8af87a26343434056643e8d9b",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
