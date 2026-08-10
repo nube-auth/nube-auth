@@ -1,0 +1,57 @@
+apps/dashboard/home/package.json
+  s_2892fcb726af92::t_b44cf825180716 16-18,22,24-25
+apps/packages/shared/package.json
+  s_2892fcb726af92::t_b44cf825180716 43
+apps/packages/auth/package.json
+  s_2892fcb726af92::t_b44cf825180716 26,31
+apps/packages/ui/package.json
+  s_2892fcb726af92::t_b44cf825180716 37
+apps/packages/billing/package.json
+  s_2892fcb726af92::t_b44cf825180716 33
+apps/packages/react/package.json
+  s_2892fcb726af92::t_b44cf825180716 33
+apps/services/gateway/package.json
+  s_2892fcb726af92::t_b44cf825180716 30
+apps/packages/cache/package.json
+  s_2892fcb726af92::t_b44cf825180716 25
+apps/packages/db/package.json
+  s_2892fcb726af92::t_b44cf825180716 47
+apps/packages/queue/package.json
+  s_2892fcb726af92::t_b44cf825180716 39
+apps/packages/components/package.json
+  s_2892fcb726af92::t_b44cf825180716 47
+apps/dashboard/docs/package.json
+  s_2892fcb726af92::t_b44cf825180716 18
+apps/dashboard/admin/package.json
+  s_2892fcb726af92::t_b44cf825180716 41
+pnpm-workspace.yaml
+  s_2892fcb726af92::t_ed20aac4fc1ea4 19
+  s_2892fcb726af92::t_7c7b1ea8328895 23-24
+  s_2892fcb726af92::t_51cc2b6e89c403 20-22
+apps/dashboard/user/package.json
+  s_2892fcb726af92::t_b44cf825180716 29
+apps/services/core/package.json
+  s_2892fcb726af92::t_b44cf825180716 42
+apps/services/workers/package.json
+  s_2892fcb726af92::t_b44cf825180716 30
+package.json
+  s_2892fcb726af92::t_b44cf825180716 35-42,45-48,56,58-62,64-66
+apps/packages/client/package.json
+  s_2892fcb726af92::t_b44cf825180716 29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "fcf38b669d3446d14016b7dad640e7a0a6a62511",
+  "prompts": {},
+  "sessions": {
+    "s_2892fcb726af92": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "5655574f-82ad-49c9-8ae3-292150f7e070",
+        "model": "deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
