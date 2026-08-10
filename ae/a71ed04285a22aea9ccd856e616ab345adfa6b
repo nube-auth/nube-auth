@@ -1,0 +1,22 @@
+apps/dashboard/home/astro.config.mjs
+  s_87ccc658ea7075::t_11ba96155a8490 1,7,12-13
+  s_87ccc658ea7075::t_d87fd9d9c5f508 14
+apps/dashboard/home/package.json
+  s_87ccc658ea7075::t_1fe20686ce4d4c 12-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "aea71ed04285a22aea9ccd856e616ab345adfa6b",
+  "prompts": {},
+  "sessions": {
+    "s_87ccc658ea7075": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "b40ee78c-d239-4f3c-a7dc-2db48a8306c7",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
