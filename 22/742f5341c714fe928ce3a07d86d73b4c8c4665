@@ -1,0 +1,14 @@
+apps/packages/cache/src/client.ts
+  h_95aea6b4aa8772 237
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "22742f5341c714fe928ce3a07d86d73b4c8c4665",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
