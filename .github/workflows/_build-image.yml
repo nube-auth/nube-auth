@@ -1,4 +1,4 @@
-name: Build & Push Image
+name: Build & Push
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Reusable workflow: builds a single Docker image and pushes it to GHCR.
