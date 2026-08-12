@@ -1,0 +1,36 @@
+.github/workflows/_build-image.yml
+  s_20ab355ceb397d::t_6a6f0da4177e21 148-152
+.github/workflows/deploy-railway.yml
+  s_20ab355ceb397d::t_062537e47e686e 78,112-115
+nube-scripts
+  s_e0fee73ba207bf::t_8e5a2253059f4c 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "e37400f4cae73bad1a6e93fedc39c41ca6193369",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_20ab355ceb397d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "324a48ac-5580-41e5-93b2-cbcee5c5eff5",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
