@@ -145,7 +145,11 @@ jobs:
             echo "Railway vars not configured — skipping deploy trigger."
             exit 0
           fi
-          SERVICE_ID_VAR="RAILWAY_SERVICE_ID_${{ inputs.railway_service_var_suffix }}"
+          if [ "${{ inputs.branch }}" = "staging" ]; then
+            SERVICE_ID_VAR="RAILWAY_SERVICE_ID_${{ inputs.railway_service_var_suffix }}"
+          else
+            SERVICE_ID_VAR="RAILWAY_SERVICE_ID_PRODUCTION_${{ inputs.railway_service_var_suffix }}"
+          fi
           SERVICE_ID=$(eval echo "\$$SERVICE_ID_VAR")
           if [ -z "$SERVICE_ID" ]; then
             echo "SERVICE_ID var $SERVICE_ID_VAR not set — skipping deploy trigger."
