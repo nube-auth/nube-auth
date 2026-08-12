@@ -1,0 +1,31 @@
+apps/services/core/src/index.ts
+  s_20ab355ceb397d::t_8323ceb031cd3d 4
+  s_20ab355ceb397d::t_35673478301c90 120-124,135-159
+  s_20ab355ceb397d::t_01fd241dbc11e6 93-99,101,107
+  s_20ab355ceb397d::t_7ae6cec0d2b631 88-91
+  s_20ab355ceb397d::t_f47e629d611655 160
+apps/services/gateway/src/index.ts
+  s_20ab355ceb397d::t_d65f1e60a55464 36
+  s_20ab355ceb397d::t_1ffa07b84084a1 4
+  s_20ab355ceb397d::t_a1f79188b10323 258-261
+  s_20ab355ceb397d::t_7265f8598dbf3b 263-269,271-272,276-277
+  s_20ab355ceb397d::t_f237b2992a1659 310-314,325-337,346-348
+  s_20ab355ceb397d::t_53ffe7a6cd6073 338-345
+  s_20ab355ceb397d::t_d2e8c33dc51d5f 349
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "f7609329a99d26bb394e899ee5e32dd3a1dd8889",
+  "prompts": {},
+  "sessions": {
+    "s_20ab355ceb397d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "324a48ac-5580-41e5-93b2-cbcee5c5eff5",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
