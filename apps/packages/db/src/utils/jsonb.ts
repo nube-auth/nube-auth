@@ -205,7 +205,7 @@ export function buildJsonbMergeClause<T extends Record<string, any>>(
 	for (const key of Object.keys(updates)) {
 		validatePathPart(key, "buildJsonbMergeClause key");
 	}
-	return sql`${column} || to_jsonb(${updates})`;
+	return sql`${column} || ${updates}::jsonb`;
 }
 
 /**
