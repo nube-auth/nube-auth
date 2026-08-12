@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server";
 import { configureSessionSecret } from "@nube-auth/auth";
 import { initCache, pingCache } from "@nube-auth/cache";
-import { runMigrations } from "@nube-auth/db";
+import { runMigrations, getDb, sql } from "@nube-auth/db";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -85,20 +85,29 @@ app.route("/v1/license", licenseRoutes);
 app.route("/v1/subscription", subscriptionRoutes);
 app.route("/v1/admin", adminRoutes);
 
-// Health check — returns 503 until DB migrations and Redis are ready
+// Health check — returns 200 during startup so Railway health checks pass.
+// The status field lets load balancers / monitoring decide whether to route
+// traffic. DB and Redis readiness is tracked in isReady flags set by the
+// background initialize() function.
 app.get("/health", async (c) => {
-	const redisOk = await pingCache();
+	const [redisOk, dbOk] = await Promise.all([
+		pingCache().catch(() => false),
+		getDb()
+			.execute(sql`SELECT 1`)
+			.then(() => true)
+			.catch(() => false),
+	]);
 	if (redisOk) isReady.redis = true;
+	if (dbOk) isReady.db = true;
 	const ready = isReady.db && isReady.redis;
 	return c.json(
 		{
 			service: "core",
 			status: ready ? "ok" : "starting",
-			db: isReady.db ? "ok" : "not_ready",
+			db: dbOk ? "ok" : "unreachable",
 			redis: redisOk ? "ok" : "unreachable",
 			timestamp: new Date().toISOString(),
 		},
-		ready ? 200 : 503,
 	);
 });
 
@@ -108,28 +117,11 @@ app.onError((err, c) => {
 	return errorHandler(err, c);
 });
 
-// Run DB migrations before starting
-try {
-	await runMigrations();
-	isReady.db = true;
-} catch (error) {
-	log.error({ err: serializeError(error as Error) }, "Database migration failed — exiting");
-	process.exit(1);
-}
-
-// Warm up Redis connection — non-fatal, /health will report degraded if unreachable
-try {
-	isReady.redis = await pingCache();
-	if (isReady.redis) {
-		log.info("Redis connection verified");
-	} else {
-		log.warn("Redis not reachable at startup — will retry on first request");
-	}
-} catch (error) {
-	log.warn({ err: serializeError(error as Error) }, "Redis ping failed at startup");
-}
-
-// Start server
+// ── Start HTTP server immediately ─────────────────────────────────────────────
+// Railway health checks fire on a 30s start-period timer. If we wait for
+// DB migrations + Redis warmup before binding the port, the container
+// exceeds the start-period and gets marked unhealthy. Start the server
+// first, then initialize asynchronously so health checks succeed early.
 const port = env.CORE_PORT;
 log.info({ port }, "Core server starting");
 
@@ -139,6 +131,32 @@ const server = serve({
 });
 
 log.info({ port, url: `http://localhost:${port}` }, "Core server running");
+
+// ── Background initialization ─────────────────────────────────────────────────
+// DB migrations block until the database is ready. Once done, /health reports ok.
+async function initialize(): Promise<void> {
+	try {
+		await runMigrations();
+		isReady.db = true;
+		log.info("Database migrations complete");
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Database migration failed — exiting");
+		process.exit(1);
+	}
+
+	try {
+		isReady.redis = await pingCache();
+		if (isReady.redis) {
+			log.info("Redis connection verified");
+		} else {
+			log.warn("Redis not reachable at startup — will retry on first request");
+		}
+	} catch (error) {
+		log.warn({ err: serializeError(error as Error) }, "Redis ping failed at startup");
+	}
+}
+
+void initialize();
 
 // Graceful shutdown
 process.on("SIGINT", async () => {

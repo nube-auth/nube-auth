@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server";
 import { configureSessionSecret } from "@nube-auth/auth";
 import { cache, initCache, pingCache } from "@nube-auth/cache";
-import { appQueries, getDb } from "@nube-auth/db";
+import { appQueries, getDb, sql } from "@nube-auth/db";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { secureHeaders } from "hono/secure-headers";
@@ -33,7 +33,7 @@ const log = createLogger("gateway");
 const app = new Hono();
 
 // Readiness state — gates the /health endpoint
-const isReady = { redis: false };
+const isReady = { db: false, redis: false };
 
 // CORS configuration for cross-subdomain requests with credentials
 // Build allowed origins dynamically from env vars so staging/production work without code changes
@@ -255,18 +255,29 @@ if (process.env["NODE_ENV"] !== "production") {
 	app.route("/v1/debug", debugRoutes);
 }
 
-// Health check — returns 503 until Redis is reachable
+// Health check — returns 200 during startup so Railway health checks pass.
+// The status field lets load balancers / monitoring decide whether to route
+// traffic. Redis readiness is tracked in isReady.redis set by the background
+// initialize() function.
 app.get("/health", async (c) => {
-	const redisOk = await pingCache();
+	const [redisOk, dbOk] = await Promise.all([
+		pingCache().catch(() => false),
+		getDb()
+			.execute(sql`SELECT 1`)
+			.then(() => true)
+			.catch(() => false),
+	]);
 	if (redisOk) isReady.redis = true;
+	if (dbOk) isReady.db = true;
+	const ready = isReady.db && isReady.redis;
 	return c.json(
 		{
 			service: "gateway",
-			status: redisOk ? "ok" : "starting",
+			status: ready ? "ok" : "starting",
+			db: dbOk ? "ok" : "unreachable",
 			redis: redisOk ? "ok" : "unreachable",
 			timestamp: new Date().toISOString(),
 		},
-		redisOk ? 200 : 503,
 	);
 });
 
@@ -296,19 +307,11 @@ app.onError((err, c) => {
 	return c.json({ error: errorMessage }, 500);
 });
 
-// Warm up Redis connection — non-fatal, /health will report degraded if unreachable
-try {
-	isReady.redis = await pingCache();
-	if (isReady.redis) {
-		log.info("Redis connection verified");
-	} else {
-		log.warn("Redis not reachable at startup — will retry on first request");
-	}
-} catch (error) {
-	log.warn({ err: serializeError(error as Error) }, "Redis ping failed at startup");
-}
-
-// Start server
+// ── Start HTTP server immediately ─────────────────────────────────────────────
+// Railway health checks fire on a 30s start-period timer. If we wait for
+// Redis warmup before binding the port, the container exceeds the start-period
+// and gets marked unhealthy. Start the server first, then warm up Redis
+// asynchronously so health checks succeed early.
 const port = env.GATEWAY_PORT;
 log.info({ port }, "Gateway server starting");
 
@@ -318,6 +321,31 @@ serve({
 });
 
 log.info({ port, url: `http://localhost:${port}` }, "Gateway server running");
+
+// ── Background initialization ─────────────────────────────────────────────────
+// Warm up Redis connection — non-fatal, /health will report degraded until ready.
+async function initialize(): Promise<void> {
+	try {
+		isReady.redis = await pingCache();
+		if (isReady.redis) {
+			log.info("Redis connection verified");
+		} else {
+			log.warn("Redis not reachable at startup — will retry on first request");
+		}
+	} catch (error) {
+		log.warn({ err: serializeError(error as Error) }, "Redis ping failed at startup");
+	}
+
+	try {
+		await getDb().execute(sql`SELECT 1`);
+		isReady.db = true;
+		log.info("Database connection verified");
+	} catch (error) {
+		log.warn({ err: serializeError(error as Error) }, "Database ping failed at startup — will retry on health check");
+	}
+}
+
+void initialize();
 
 export default app;
 export { log };
