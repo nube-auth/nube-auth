@@ -270,15 +270,13 @@ app.get("/health", async (c) => {
 	if (redisOk) isReady.redis = true;
 	if (dbOk) isReady.db = true;
 	const ready = isReady.db && isReady.redis;
-	return c.json(
-		{
-			service: "gateway",
-			status: ready ? "ok" : "starting",
-			db: dbOk ? "ok" : "unreachable",
-			redis: redisOk ? "ok" : "unreachable",
-			timestamp: new Date().toISOString(),
-		},
-	);
+	return c.json({
+		service: "gateway",
+		status: ready ? "ok" : "starting",
+		db: dbOk ? "ok" : "unreachable",
+		redis: redisOk ? "ok" : "unreachable",
+		timestamp: new Date().toISOString(),
+	});
 });
 
 // 404
@@ -341,7 +339,10 @@ async function initialize(): Promise<void> {
 		isReady.db = true;
 		log.info("Database connection verified");
 	} catch (error) {
-		log.warn({ err: serializeError(error as Error) }, "Database ping failed at startup — will retry on health check");
+		log.warn(
+			{ err: serializeError(error as Error) },
+			"Database ping failed at startup — will retry on health check",
+		);
 	}
 }
 

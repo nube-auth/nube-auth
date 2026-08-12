@@ -10,6 +10,7 @@
  */
 
 import { createServer } from "node:http";
+import { getDb, sql } from "@nube-auth/db";
 import { QueueClient } from "@nube-auth/queue";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Worker } from "bullmq";
@@ -129,26 +130,37 @@ async function main(): Promise<void> {
 
 	const server = createServer(async (req, res) => {
 		if (req.url === "/health") {
+			const now = new Date().toISOString();
 			if (!initialized) {
 				const body = JSON.stringify({
 					service: "workers",
 					status: initError ? "error" : "starting",
+					db: "not_ready",
+					redis: "not_ready",
 					workers: 0,
-					timestamp: new Date().toISOString(),
+					timestamp: now,
 				});
 				res.writeHead(initError ? 503 : 200, { "Content-Type": "application/json" });
 				res.end(body);
 				return;
 			}
-			const redisOk = healthQueueClient ? await healthQueueClient.ping() : false;
+			const [redisOk, dbOk] = await Promise.all([
+				(healthQueueClient ? healthQueueClient.ping() : Promise.resolve(false)).catch(() => false),
+				getDb()
+					.execute(sql`SELECT 1`)
+					.then(() => true)
+					.catch(() => false),
+			]);
+			const ready = redisOk && dbOk;
 			const body = JSON.stringify({
 				service: "workers",
-				status: redisOk ? "ok" : "degraded",
+				status: ready ? "ok" : "degraded",
+				db: dbOk ? "ok" : "unreachable",
 				redis: redisOk ? "ok" : "unreachable",
 				workers: workers.length,
-				timestamp: new Date().toISOString(),
+				timestamp: now,
 			});
-			res.writeHead(redisOk ? 200 : 503, { "Content-Type": "application/json" });
+			res.writeHead(200, { "Content-Type": "application/json" });
 			res.end(body);
 		} else {
 			res.writeHead(404);

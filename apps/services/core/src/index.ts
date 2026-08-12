@@ -100,15 +100,13 @@ app.get("/health", async (c) => {
 	if (redisOk) isReady.redis = true;
 	if (dbOk) isReady.db = true;
 	const ready = isReady.db && isReady.redis;
-	return c.json(
-		{
-			service: "core",
-			status: ready ? "ok" : "starting",
-			db: dbOk ? "ok" : "unreachable",
-			redis: redisOk ? "ok" : "unreachable",
-			timestamp: new Date().toISOString(),
-		},
-	);
+	return c.json({
+		service: "core",
+		status: ready ? "ok" : "starting",
+		db: dbOk ? "ok" : "unreachable",
+		redis: redisOk ? "ok" : "unreachable",
+		timestamp: new Date().toISOString(),
+	});
 });
 
 // Error handling
