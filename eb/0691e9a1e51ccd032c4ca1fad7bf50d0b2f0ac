@@ -1,0 +1,29 @@
+apps/services/workers/src/index.ts
+  s_20ab355ceb397d::t_8cdbe64dc3b52d 13,133,138-139,141,147-154,157-158,161,163
+nube-scripts
+  s_e0fee73ba207bf::t_389ebd6549c78e 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "eb0691e9a1e51ccd032c4ca1fad7bf50d0b2f0ac",
+  "prompts": {},
+  "sessions": {
+    "s_20ab355ceb397d": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "324a48ac-5580-41e5-93b2-cbcee5c5eff5",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
