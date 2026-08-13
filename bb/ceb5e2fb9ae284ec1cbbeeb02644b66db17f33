@@ -1,0 +1,40 @@
+.npmrc
+  h_95aea6b4aa8772 22,26
+  s_8c71c3ab085a70::t_19624a84e3b7c3 24-25
+  s_8c71c3ab085a70::t_3e908cc858de9d 1-21,23
+lint-staged.config.js
+  s_8c71c3ab085a70::t_19cb8f1de0c3a6 6-8
+.github/workflows/_build-image.yml
+  s_8c71c3ab085a70::t_3efe1f4f503fb2 67-70
+nube-scripts
+  s_e0fee73ba207bf::t_866b5d36ff3f60 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "bbceb5e2fb9ae284ec1cbbeeb02644b66db17f33",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_8c71c3ab085a70": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "28efe981-47a0-48c6-9250-5b878dc75b8c",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
