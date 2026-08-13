@@ -1,0 +1,19 @@
+nube-templates
+  s_8c71c3ab085a70::t_eeee627512b72f 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "5c61cd20728e9acdf9d6fe78d77cb62ddbf4dd36",
+  "prompts": {},
+  "sessions": {
+    "s_8c71c3ab085a70": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "28efe981-47a0-48c6-9250-5b878dc75b8c",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
