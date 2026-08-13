@@ -268,7 +268,7 @@ meRoutes.get("/subscription", async (c: Context) => {
 		if (!subscription) {
 			// No subscription row — fall back to licenses table (covers one-time purchases)
 			const license = await licenseQueries.findByUserAndApp(db, user.id, app.id);
-			if (!license || license.status !== "active") {
+			if (license?.status !== "active") {
 				result = { hasActivePlan: false, planSlug: null, status: null, billingInterval: null, periodEnd: null };
 			} else {
 				const licensePrice = license.price_id

@@ -46,12 +46,14 @@ export {
 	QUEUE_NAMES,
 	WORKER_EVENTS,
 } from "./constants";
+export type { EnqueueEmailOptions } from "./email";
+// Email enqueuer
+export { enqueueEmail } from "./email";
 export type {
 	EmailJobHandler,
 	PaymentJobHandler,
 	WebhookJobHandler,
 } from "./jobs";
-
 export {
 	EmailJobHandlers,
 	JobUtils,

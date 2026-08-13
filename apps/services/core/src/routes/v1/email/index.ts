@@ -9,6 +9,7 @@ import {
 	sessionQueries,
 	userQueries,
 } from "@nube-auth/db";
+import { enqueueEmail } from "@nube-auth/queue";
 import {
 	createId,
 	createLogger,
@@ -17,24 +18,14 @@ import {
 	OTP_MAX_ATTEMPTS,
 	serializeError,
 } from "@nube-auth/shared";
-import { createEmailService } from "@nube-auth/shared/email";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { env } from "../../../config/env";
 import { getClientCountry, getClientIp } from "../../../middleware/rateLimit";
 import { ensureLicenseForApp } from "../../../utils/license";
+import { enqueueSignupEmails } from "../../../utils/signup-email";
 
 const log = createLogger("email-routes");
-
-// Initialize email service
-const emailService = createEmailService({
-	sendEmails: env.SEND_EMAILS,
-	resendApiKey: env.EMAIL_API_KEY,
-	useMailpit: env.IS_DEVELOPMENT,
-	smtpHost: env.SMTP_HOST,
-	smtpPort: env.SMTP_PORT,
-	defaultFrom: env.EMAIL_FROM,
-});
 
 const router = new Hono();
 
@@ -45,7 +36,7 @@ const router = new Hono();
 router.post("/start", async (c: Context) => {
 	const { email } = (await c.req.json()) as { email?: string };
 
-	if (!email || !email.includes("@")) {
+	if (!email?.includes("@")) {
 		return c.json({ error: "Invalid email" }, 400);
 	}
 
@@ -94,11 +85,14 @@ router.post("/start", async (c: Context) => {
 			});
 		}
 
-		// Send OTP email
-		await emailService.send({
+		// Send OTP email (async via queue)
+		await enqueueEmail({
 			to: email,
-			subject: "Your Nube Auth OTP Code",
-			html: `<p>Your OTP code is: <strong>${otp}</strong></p><p>Valid for 10 minutes.</p>`,
+			templateSlug: "email-verify",
+			variables: {
+				otp,
+				expiresInMinutes: 10,
+			},
 		});
 
 		return c.json({
@@ -118,7 +112,7 @@ router.post("/start", async (c: Context) => {
 router.post("/verify", async (c: Context) => {
 	const { email, otp, appId } = (await c.req.json()) as { email?: string; otp?: string; appId?: string };
 
-	if (!email || !email.includes("@")) {
+	if (!email?.includes("@")) {
 		return c.json({ error: "Invalid email" }, 400);
 	}
 
@@ -189,8 +183,10 @@ router.post("/verify", async (c: Context) => {
 		const existingUser = await userQueries.findByEmail(db, email);
 		let userId = existingUser?.id;
 		let userPublicId = existingUser?.public_id;
+		let isNewUser = false;
 
 		if (!userId) {
+			isNewUser = true;
 			const newUser = await userQueries.create(db, {
 				public_id: createId("user"),
 				primary_email: email,
@@ -236,10 +232,12 @@ router.post("/verify", async (c: Context) => {
 
 		// Resolve app internal id for session scoping and app_users upsert
 		let appInternalId: number | undefined;
+		let resolvedAppName: string | undefined;
 		if (appId) {
 			try {
 				const resolvedApp = await appQueries.findByPublicId(db, appId);
 				appInternalId = resolvedApp?.id;
+				resolvedAppName = resolvedApp?.name;
 			} catch (appLookupError) {
 				log.error(
 					{ err: serializeError(appLookupError as Error), appId },
@@ -275,6 +273,15 @@ router.post("/verify", async (c: Context) => {
 
 		// Clear email verification
 		await emailVerificationQueries.delete(db, emailVerification.id);
+
+		// First-signup emails: Nube Auth account welcome + app-specific signup
+		if (isNewUser) {
+			enqueueSignupEmails({
+				email,
+				userName: email.split("@")[0] ?? email,
+				appName: resolvedAppName,
+			});
+		}
 
 		return c.json({
 			sessionId: session.public_id,

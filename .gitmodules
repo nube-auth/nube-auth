@@ -1,3 +1,6 @@
 [submodule "nube-scripts"]
 	path = nube-scripts
 	url = https://github.com/nube-auth/nube-scripts.git
+[submodule "nube-templates"]
+	path = nube-templates
+	url = https://github.com/nube-auth/nube-templates.git

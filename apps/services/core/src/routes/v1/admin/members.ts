@@ -6,24 +6,12 @@ import {
 	projectQueries,
 	userQueries,
 } from "@nube-auth/db";
+import { enqueueEmail } from "@nube-auth/queue";
 import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
-import { createEmailService } from "@nube-auth/shared/email";
 import type { Context } from "hono";
 import { Hono } from "hono";
-import { env } from "../../../config/env";
-import { generateProjectTeamInvitationEmail } from "../../../utils/email-templates";
 
 const log = createLogger("admin-members-routes");
-
-// Initialize email service
-const emailService = createEmailService({
-	sendEmails: env.SEND_EMAILS,
-	resendApiKey: env.EMAIL_API_KEY,
-	useMailpit: env.IS_DEVELOPMENT,
-	smtpHost: env.SMTP_HOST,
-	smtpPort: env.SMTP_PORT,
-	defaultFrom: env.EMAIL_FROM,
-});
 
 export const membersRouter = new Hono();
 
@@ -198,26 +186,23 @@ membersRouter.post("/:projectId/members", async (c: Context) => {
 			log.error({ err: serializeError(auditError as Error) }, "Failed to create audit log");
 		}
 
-		// Send invitation email
+		// Send invitation email (async via queue)
 		try {
-			const emailHtml = generateProjectTeamInvitationEmail({
-				inviteeEmail: email,
-				projectName: project.name,
-				inviterName: requestingUser.name || requestingUser.primary_email || "A team member",
-				role,
-				invitationCode: invitation.public_id,
-				expiresInDays: 7,
-			});
-
-			await emailService.send({
+			await enqueueEmail({
 				to: email,
-				subject: `You've been invited to join ${project.name}`,
-				html: emailHtml,
+				templateSlug: "project-invite",
+				variables: {
+					projectName: project.name,
+					inviterName: requestingUser.name || requestingUser.primary_email || "A team member",
+					role,
+					invitationCode: invitation.public_id,
+					expiresInDays: 7,
+				},
 			});
 
-			log.info({ email, projectId: project.public_id }, "Team invitation email sent");
+			log.info({ email, projectId: project.public_id }, "Team invitation email enqueued");
 		} catch (emailError) {
-			log.error({ err: serializeError(emailError as Error), email }, "Failed to send invitation email");
+			log.error({ err: serializeError(emailError as Error), email }, "Failed to enqueue invitation email");
 			// Don't fail the request if email fails - invitation is still created
 		}
 
@@ -284,7 +269,7 @@ membersRouter.patch("/:projectId/members/:memberId", async (c: Context) => {
 		// Check authorization: must be owner
 		const requestingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, requestingUser.id);
 		const requestingUserMember = requestingMember?.[0];
-		if (!requestingUserMember || requestingUserMember.role !== "owner") {
+		if (requestingUserMember?.role !== "owner") {
 			return c.json({ error: "Forbidden - only owner can change member roles" }, 403);
 		}
 

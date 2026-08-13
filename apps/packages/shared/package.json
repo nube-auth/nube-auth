@@ -30,6 +30,7 @@
 		"dev": "tsup --watch"
 	},
 	"dependencies": {
+		"@pingpong-js/fetch": "^1.0.2",
 		"hono": "^4.6.14",
 		"nodemailer": "^7.0.12",
 		"pino": "^10.1.0",

@@ -20,6 +20,7 @@ import { env } from "../../../config/env";
 import { getClientCountry, getClientIp } from "../../../middleware/rateLimit";
 import { ensureLicenseForApp } from "../../../utils/license";
 import { fireWebhookEvent } from "../../../utils/outbound-events.js";
+import { enqueueSignupEmails } from "../../../utils/signup-email.js";
 
 const log = createLogger("auth-routes");
 const router = new Hono();
@@ -395,9 +396,11 @@ router.get("/callback/:provider", async (c: Context) => {
 
 		// Resolve app internal id — needed for session TTL lookup and app_users upsert
 		let appInternalId: number | undefined;
+		let resolvedAppName: string | undefined;
 		if (storedState.appId) {
 			const resolvedApp = await appQueries.findByPublicId(db, storedState.appId);
 			appInternalId = resolvedApp?.id;
+			resolvedAppName = resolvedApp?.name;
 		}
 
 		// Upsert persistent app_users record — survives session deletion and captures
@@ -433,6 +436,18 @@ router.get("/callback/:provider", async (c: Context) => {
 		};
 		const session = await sessionQueries.create(db, sessionData);
 		log.info({ userId, sessionPublicId: session.public_id.substring(0, 8) }, "Session created successfully");
+
+		// First-signup emails: Nube Auth account welcome + app-specific signup
+		if (isNewUser) {
+			const user = await userQueries.findByInternalId_(db, userId);
+			if (user) {
+				enqueueSignupEmails({
+					email: user.primary_email ?? "",
+					userName: user.name || user.primary_email?.split("@")[0] || "",
+					appName: resolvedAppName,
+				});
+			}
+		}
 
 		// Fire outbound webhook events (fire-and-forget)
 		if (appInternalId !== undefined) {

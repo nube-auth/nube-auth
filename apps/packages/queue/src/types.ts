@@ -99,8 +99,11 @@ export enum EmailJobType {
 export interface SendEmailJob extends BaseJobData {
 	type: EmailJobType.SEND_EMAIL;
 	to: string;
-	templateId: string;
-	data: Record<string, any>;
+	templateSlug: string;
+	subject?: string;
+	variables?: Record<string, unknown>;
+	from?: string;
+	themeId?: string;
 }
 
 export interface SendBatchEmailJob extends BaseJobData {

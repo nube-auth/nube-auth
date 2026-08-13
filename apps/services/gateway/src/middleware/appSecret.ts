@@ -42,7 +42,7 @@ export const appSecretMiddleware = createMiddleware(async (c: Context, next: Nex
 		const db = getDb();
 		const app = await appQueries.findByPublicId(db, appId);
 
-		if (!app || !app.is_active) {
+		if (!app?.is_active) {
 			// Don't leak whether the app exists
 			return c.json({ error: "Invalid app credentials" }, 401);
 		}

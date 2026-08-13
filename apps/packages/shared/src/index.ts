@@ -15,7 +15,7 @@ export {
 // Re-export email service (Node.js only - not for browser)
 // Backend services should import directly: import { createEmailService } from "@nube-auth/shared/email"
 // Type-only export to prevent bundling in browser builds
-export type { EmailConfig, EmailOptions } from "./email.js";
+export type { EmailConfig, EmailOptions, EmailTemplateSlug, EmailVariables } from "./email.js";
 // Re-export audit logging
 export {
 	type AuditEvent,

@@ -19,14 +19,14 @@ export interface Environment {
 	S2S_SECRET: string;
 	REDIS_URL: string;
 	EMAIL_API_KEY: string;
+	EMAIL_API_BASE_URL: string;
+	EMAIL_THEME_ID?: string | undefined;
 	SEND_EMAILS: boolean;
 	PAYMENT_CONFIGS_KEY: string;
 	PAYMENT_CONFIGS_KEY_PREVIOUS?: string | undefined; // Optional fallback for zero-downtime key rotation
 	EMAIL_FROM: string;
 	ADMIN_DASHBOARD_URL: string;
-	// SMTP for local email testing (auto-enabled in development)
-	SMTP_HOST: string;
-	SMTP_PORT: number;
+	USER_DASHBOARD_URL: string;
 	LOG_LEVEL: "debug" | "info" | "warn" | "error";
 	CORE_SESSION_TTL_SECONDS: number;
 	SESSION_REFRESH_THRESHOLD_SECONDS: number;
@@ -86,13 +86,14 @@ function getEnvironment(): Environment {
 		S2S_SECRET: process.env["S2S_SECRET"]!,
 		REDIS_URL: process.env["REDIS_URL"]!,
 		EMAIL_API_KEY: process.env["EMAIL_API_KEY"]!,
+		EMAIL_API_BASE_URL: process.env["EMAIL_API_BASE_URL"] ?? "",
+		EMAIL_THEME_ID: process.env["EMAIL_THEME_ID"] ?? undefined,
 		SEND_EMAILS: process.env["SEND_EMAILS"] === "true",
 		EMAIL_FROM: process.env["EMAIL_FROM"] ?? "noreply@localhost",
 		ADMIN_DASHBOARD_URL: process.env["ADMIN_DASHBOARD_URL"] ?? "http://localhost:5174",
+		USER_DASHBOARD_URL: process.env["USER_DASHBOARD_URL"] ?? "http://localhost:5173",
 		PAYMENT_CONFIGS_KEY: process.env["PAYMENT_CONFIGS_KEY"]!,
 		PAYMENT_CONFIGS_KEY_PREVIOUS: process.env["PAYMENT_CONFIGS_KEY_PREVIOUS"] ?? undefined,
-		SMTP_HOST: process.env["SMTP_HOST"] ?? "localhost",
-		SMTP_PORT: parseInt(process.env["SMTP_PORT"] ?? "1025", 10),
 		LOG_LEVEL: (process.env["LOG_LEVEL"] as Environment["LOG_LEVEL"] | undefined) ?? "info",
 		CORE_SESSION_TTL_SECONDS: parseInt(process.env["CORE_SESSION_TTL_SECONDS"] ?? String(365 * 24 * 60 * 60), 10), // 365 days
 		SESSION_REFRESH_THRESHOLD_SECONDS: parseInt(

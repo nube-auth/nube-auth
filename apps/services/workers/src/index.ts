@@ -15,6 +15,7 @@ import { QueueClient } from "@nube-auth/queue";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Worker } from "bullmq";
 import { setupDispatchOutboundWebhookWorker } from "./dispatch-outbound-webhook-worker.js";
+import { setupEmailWorker } from "./email-worker.js";
 import { setupProcessPaymentWorker } from "./process-payment.js";
 import { startProcessRefundWorker } from "./process-refund.js";
 import { setupProcessWebhookWorker } from "./process-webhook.js";
@@ -55,8 +56,17 @@ export async function initializeWorkers(): Promise<void> {
 		const refundWorker = startProcessRefundWorker();
 		const syncPlanWorker = await setupSyncPlanWorker();
 		const outboundWebhookWorker = await setupDispatchOutboundWebhookWorker();
+		const emailWorker = await setupEmailWorker();
 
-		workers = [paymentWorker, webhookWorker, licenseWorker, refundWorker, syncPlanWorker, outboundWebhookWorker];
+		workers = [
+			paymentWorker,
+			webhookWorker,
+			licenseWorker,
+			refundWorker,
+			syncPlanWorker,
+			outboundWebhookWorker,
+			emailWorker,
+		];
 		webhookRescueTimer = startWebhookRescueCron();
 
 		log.info({ workerCount: workers.length }, "Workers initialized successfully");

@@ -8,6 +8,8 @@ export interface Env {
 	DATABASE_URL: string;
 	REDIS_URL: string;
 	EMAIL_API_KEY: string;
+	EMAIL_API_BASE_URL: string;
+	EMAIL_THEME_ID?: string | undefined;
 	CORE_URL: string;
 	S2S_SECRET: string;
 	X_NUBE_AUTH_SERVICE_TOKEN: string;
@@ -22,10 +24,6 @@ export interface Env {
 	EMAIL_FROM: string;
 	STRIPE_SECRET_KEY: string;
 	STRIPE_WEBHOOK_SECRET: string;
-
-	// SMTP for local email testing (auto-enabled in development)
-	SMTP_HOST: string;
-	SMTP_PORT: number;
 
 	ENCRYPTION_KEY: string;
 	// TTL overrides (in seconds)
@@ -84,6 +82,8 @@ function validateEnv(): Env {
 		DATABASE_URL: process.env["DATABASE_URL"]!,
 		REDIS_URL: process.env["REDIS_URL"]!,
 		EMAIL_API_KEY: process.env["EMAIL_API_KEY"]!,
+		EMAIL_API_BASE_URL: process.env["EMAIL_API_BASE_URL"] ?? "",
+		EMAIL_THEME_ID: process.env["EMAIL_THEME_ID"] ?? undefined,
 		CORE_URL: process.env["CORE_URL"]!,
 		S2S_SECRET: process.env["S2S_SECRET"]!,
 		X_NUBE_AUTH_SERVICE_TOKEN: process.env["X_NUBE_AUTH_SERVICE_TOKEN"]!,
@@ -103,8 +103,6 @@ function validateEnv(): Env {
 		EMAIL_FROM: process.env["EMAIL_FROM"] || "noreply@localhost",
 		STRIPE_SECRET_KEY: process.env["STRIPE_SECRET_KEY"] || "",
 		STRIPE_WEBHOOK_SECRET: process.env["STRIPE_WEBHOOK_SECRET"] || "",
-		SMTP_HOST: process.env["SMTP_HOST"] ?? "localhost",
-		SMTP_PORT: parseInt(process.env["SMTP_PORT"] ?? "1025", 10),
 
 		ENCRYPTION_KEY: process.env["ENCRYPTION_KEY"]!,
 

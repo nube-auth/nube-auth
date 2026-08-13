@@ -89,7 +89,7 @@ async function resetBilling() {
 
 		for (const table of BILLING_TABLES) {
 			try {
-				const result = await client.query(`TRUNCATE TABLE "${table}" RESTART IDENTITY CASCADE`);
+				const _result = await client.query(`TRUNCATE TABLE "${table}" RESTART IDENTITY CASCADE`);
 				console.log(`   ✓ Truncated ${table}`);
 			} catch (error: any) {
 				// Table may not exist yet (e.g. after a fresh push without migrations)

@@ -484,7 +484,7 @@ promotionsRouter.delete("/:promoId", async (c) => {
 	for (const ref of refs) {
 		try {
 			const config = await paymentProviderConfigQueries.findByInternalId_(db, ref.provider_config_id);
-			if (!config || !config.is_active) continue;
+			if (!config?.is_active) continue;
 
 			let credentials: unknown;
 			try {

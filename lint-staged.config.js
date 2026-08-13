@@ -3,5 +3,5 @@
  * @type {import('lint-staged').Configuration}
  */
 export default {
-	"*": "pnpm lint --fix",
+	"*": ["npx biome format --fix", "pnpm lint --fix"],
 };

@@ -62,7 +62,7 @@ checkoutRoutes.post("/", async (c: Context) => {
 		// Resolve price — this is the single source of truth for the checkout
 		const price = await priceQueries.findByPublicId(db, validated.priceId);
 
-		if (!price || !price.is_active) {
+		if (!price?.is_active) {
 			log.warn({ priceId: validated.priceId }, "Price not found or inactive");
 			return c.json({ error: "Invalid price ID" }, 400);
 		}
