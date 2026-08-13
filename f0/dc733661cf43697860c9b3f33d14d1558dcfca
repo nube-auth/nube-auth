@@ -1,0 +1,145 @@
+apps/services/core/src/routes/v1/email/index.ts
+  s_8c71c3ab085a70::t_69b7655372763a 186
+  s_8c71c3ab085a70::t_f6f861509ef4c3 280-282
+  s_8c71c3ab085a70::t_f0e53181186c3b 283-285
+  h_95aea6b4aa8772 26,88-89,91-95,189,235,240
+  s_8c71c3ab085a70::t_2e0986dcfee729 277-279
+  s_8c71c3ab085a70::t_3d179107283662 12
+  h_95aea6b4aa8772 39,115
+apps/packages/shared/package.json
+  s_8c71c3ab085a70::t_28a53557ab8609 33
+apps/services/gateway/.env.example
+  s_8c71c3ab085a70::t_39b69517aa6c95 27-30
+apps/services/core/src/routes/v1/admin/promotions.ts
+  553d97324ef36351 487
+apps/packages/queue/src/types.ts
+  s_8c71c3ab085a70::t_3e0a2e9370cb67 102-106
+biome.json
+  h_95aea6b4aa8772 29
+  s_8c71c3ab085a70::t_f8ddb4b00d25b6 2
+apps/services/core/src/routes/v1/billing/checkout.ts
+  b9b9567d4b04a9ac 65
+.env.example
+  s_8c71c3ab085a70::t_4250375f0ccc9f 87-91
+apps/packages/db/scripts/billing-reset.ts
+  s_87ccc658ea7075::t_440e6d5ae51f8c 92
+apps/packages/shared/src/index.ts
+  s_8c71c3ab085a70::t_54bafbc536b000 18
+apps/services/workers/src/index.ts
+  h_95aea6b4aa8772 18
+  s_8c71c3ab085a70::t_e3c3b971bf2fc8 59,61-69
+.gitmodules
+  h_95aea6b4aa8772 4-6
+apps/services/core/src/routes/v1/auth/index.ts
+  s_8c71c3ab085a70::t_595f849267b53b 23
+  s_8c71c3ab085a70::t_a18b22ee014edc 399,403
+  s_8c71c3ab085a70::t_cfd3c5c3e7c35d 440-451
+.gitignore
+  s_8c71c3ab085a70::t_b8013e1c94fde8 195
+apps/services/gateway/src/config/env.ts
+  h_95aea6b4aa8772 11-12,85-86
+lint-staged.config.js
+  h_95aea6b4aa8772 6
+apps/packages/queue/src/index.ts
+  s_8c71c3ab085a70::t_3d179107283662 49-51
+apps/services/core/.env.example
+  s_8c71c3ab085a70::t_19800ae183cbef 30
+  s_8c71c3ab085a70::t_82c4025636c4c9 35-38
+apps/packages/queue/src/email.ts
+  s_8c71c3ab085a70::t_3d179107283662 12
+  s_8c71c3ab085a70::t_ed0d9025d13017 1-11,13-49
+apps/services/gateway/src/routes/me.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 271
+apps/services/core/src/routes/v1/admin/members.ts
+  s_8c71c3ab085a70::t_9e49c58ac789b4 193-199
+  h_95aea6b4aa8772 9,189,191,203,205
+  s_8c71c3ab085a70::t_ddf53c543b878f 200
+  h_95aea6b4aa8772 272
+apps/services/core/src/utils/signup-email.ts
+  s_8c71c3ab085a70::t_eefb09fcebb879 33
+  s_8c71c3ab085a70::t_0514d382aa06a3 2-9,12-13,16,18,20-22,25-31,38-48,50-62
+  s_8c71c3ab085a70::t_5f8e672fde1f65 32,34-37
+apps/services/core/src/config/env.ts
+  h_95aea6b4aa8772 22-23,29
+  s_8c71c3ab085a70::t_e30796474e63c1 94
+  s_8c71c3ab085a70::t_863b9904bcbffe 89-90
+apps/services/gateway/src/middleware/appSecret.ts
+  s_e0fee73ba207bf::t_a40460c3c2194c 45
+apps/services/workers/src/email-worker.ts
+  s_8c71c3ab085a70::t_3d179107283662 11,14-15
+  s_8c71c3ab085a70::t_b26cdf957b397a 1-10,12-13,16-60
+  s_8c71c3ab085a70::t_fc1eb0c08b421e 61-62
+apps/packages/shared/src/email.ts
+  s_8c71c3ab085a70::t_328ba26fbcc4fa 75-77
+  s_8c71c3ab085a70::t_947e67412e2b01 2-17,20-30,36-48,52-55,60,62-65,67,70-72,78-90,98-115,118,122-125,127-134,136-137,139,146-147
+  s_8c71c3ab085a70::t_8deb33cc3651cd 31-35
+  s_8c71c3ab085a70::t_da9cb882b92c6f 73-74
+nube-scripts
+  s_e0fee73ba207bf::t_3a670d8003523e 1
+nube-templates
+  s_8c71c3ab085a70::t_fd6ed8a2c515ee 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "f0dc733661cf43697860c9b3f33d14d1558dcfca",
+  "prompts": {
+    "553d97324ef36351": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5c50c261-943e-4200-90dd-4b989d11189b",
+        "model": "default"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages_url": "https://usegitai.com/cas/ac82903597ca56e96f7d00c14ffb2faffff46a4963b87b34eab456ea8f936c6c",
+      "total_additions": 5,
+      "total_deletions": 0,
+      "accepted_lines": 234,
+      "overriden_lines": 0
+    },
+    "b9b9567d4b04a9ac": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "f22f2aa8-a742-47d6-b3fc-e3b85c1e0840",
+        "model": "copilot/claude-sonnet-4.6"
+      },
+      "human_author": "Devendra Pratap Singh <dps.manit@gmail.com>",
+      "messages_url": "https://usegitai.com/cas/9ef685457187298364002dd33fe57c3af23c69f433f7b4c95e202bca301a066e",
+      "total_additions": 2,
+      "total_deletions": 2,
+      "accepted_lines": 103,
+      "overriden_lines": 0
+    }
+  },
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_87ccc658ea7075": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "b40ee78c-d239-4f3c-a7dc-2db48a8306c7",
+        "model": "deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_8c71c3ab085a70": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "28efe981-47a0-48c6-9250-5b878dc75b8c",
+        "model": "openrouter/OpenRouter/deepseek/deepseek-v4-pro"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "moonshotai/kimi-k2.6"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
