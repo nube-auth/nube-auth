@@ -469,6 +469,9 @@ importers:
 
   apps/packages/shared:
     dependencies:
+      '@pingpong-js/fetch':
+        specifier: ^1.0.2
+        version: 1.0.2
       hono:
         specifier: ^4.6.14
         version: 4.11.3
