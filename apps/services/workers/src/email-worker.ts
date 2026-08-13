@@ -11,7 +11,7 @@
 import type { SendEmailJob } from "@nube-auth/queue";
 import { QueueClient } from "@nube-auth/queue";
 import { createLogger, serializeError } from "@nube-auth/shared";
-import type { EmailTemplateSlug } from "@nube-auth/shared/email";
+import type { EmailTemplateSlug, EmailVariables } from "@nube-auth/shared/email";
 import { createEmailService } from "@nube-auth/shared/email";
 import type { Worker } from "bullmq";
 
@@ -43,7 +43,7 @@ export async function setupEmailWorker(): Promise<Worker<SendEmailJob>> {
 					to,
 					templateSlug: templateSlug as EmailTemplateSlug,
 					subject,
-					variables,
+					variables: variables as EmailVariables,
 					from,
 					themeId,
 				});
