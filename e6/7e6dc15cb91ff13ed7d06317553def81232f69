@@ -1,0 +1,16 @@
+biome.json
+  h_95aea6b4aa8772 2,29
+pnpm-lock.yaml
+  h_95aea6b4aa8772 472-474
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "e67e6dc15cb91ff13ed7d06317553def81232f69",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
