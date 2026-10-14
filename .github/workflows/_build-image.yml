@@ -65,9 +65,9 @@ jobs:
     name: ${{ inputs.image_name }}
     runs-on: ubuntu-latest
     # Fail fast instead of hanging for the 6-hour GitHub default if a step
-    # stalls (e.g. a remote fetch during a build). Keeps one stuck build from
-    # silently blocking the parallel production build matrix.
-    timeout-minutes: 60
+    # stalls (e.g. a remote fetch during a build). Reduced from 60 to 40 mins
+    # since individual build step now has 30min timeout.
+    timeout-minutes: 40
     # Note: permissions are controlled by the *caller* workflow.
     # docker-build.yml must declare `packages: write`.
     steps:
@@ -116,8 +116,10 @@ jobs:
           tags: ${{ steps.tags.outputs.tags }}
 
       # ── Build & push ────────────────────────────────────────────────────
+      # Timeout prevents infinite hangs. Provenance/SBOM disabled to reduce build time.
       - name: Build and push
         uses: docker/build-push-action@v6
+        timeout-minutes: 25
         with:
           context: .
           file: ${{ inputs.dockerfile }}
@@ -128,6 +130,11 @@ jobs:
           build-args: ${{ inputs.build_args }}
           cache-from: type=gha,scope=${{ inputs.image_name }}-${{ inputs.branch }}
           cache-to: type=gha,mode=max,scope=${{ inputs.image_name }}-${{ inputs.branch }}
+          # Disable to prevent hangs and reduce build time
+          provenance: false
+          sbom: false
+          # Network mode host can help with flaky connections
+          network: host
 
       # ── Trigger Railway deploy via GraphQL API ───────────────────────────
       # Uses nube-scripts/dev/scripts/railway-deploy.ts instead of CLI.

@@ -43,6 +43,7 @@ on:
 concurrency:
   group: docker-build-${{ github.ref_name }}
   cancel-in-progress: true
+  # Limit to 1 build per branch to avoid runner resource exhaustion
 
 # Required so reusable workflows can push to GHCR
 permissions:
@@ -93,7 +94,7 @@ jobs:
     secrets: inherit
 
   # ═════════════════════════════════════════════════════════════════════════
-  # TRUNK / PRODUCTION — 4 separate images (build in parallel)
+  # TRUNK / PRODUCTION — 4 separate images (build sequentially to avoid hangs)
   # ═════════════════════════════════════════════════════════════════════════
   core:
     name: Core
@@ -112,7 +113,7 @@ jobs:
 
   gateway:
     name: Gateway
-    needs: meta
+    needs: [meta, core]
     if: needs.meta.outputs.branch == 'trunk'
     uses: ./.github/workflows/_build-image.yml
     with:
@@ -127,7 +128,7 @@ jobs:
 
   workers:
     name: Workers
-    needs: meta
+    needs: [meta, gateway]
     if: needs.meta.outputs.branch == 'trunk'
     uses: ./.github/workflows/_build-image.yml
     with:
@@ -142,7 +143,7 @@ jobs:
 
   dashboards:
     name: Dashboards (combined)
-    needs: meta
+    needs: [meta, workers]
     if: needs.meta.outputs.branch == 'trunk'
     uses: ./.github/workflows/_build-image.yml
     with:
@@ -165,7 +166,7 @@ jobs:
   # ── Combined production image (all-in-one via supervisord) ──────────────────
   prod-all-in-one:
     name: Production (all-in-one)
-    needs: meta
+    needs: [meta, dashboards]
     if: needs.meta.outputs.branch == 'trunk'
     uses: ./.github/workflows/_build-image.yml
     with:
