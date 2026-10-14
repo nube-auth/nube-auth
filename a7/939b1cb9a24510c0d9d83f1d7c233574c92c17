@@ -1,0 +1,19 @@
+package.json
+  s_d69bbab79ecbe0::t_01ba6b6c5d98d3 67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a7939b1cb9a24510c0d9d83f1d7c233574c92c17",
+  "prompts": {},
+  "sessions": {
+    "s_d69bbab79ecbe0": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "b34223e7-d627-475f-a51c-5f5682499be8",
+        "model": "claude-sonnet-4-5"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
