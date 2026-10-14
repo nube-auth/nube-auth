@@ -1,0 +1,45 @@
+HEALTHCHECK_FIX.md
+  s_d69bbab79ecbe0::t_a1a6bc571589de 1-356
+.github/workflows/docker-build.yml
+  s_d69bbab79ecbe0::t_3a6de5e5118c86 84-90
+  s_d69bbab79ecbe0::t_064ddeb7dd75e7 177-183
+  s_d69bbab79ecbe0::t_667c6b16cd8f87 154-160
+.npmrc
+  s_d69bbab79ecbe0::t_ea2fa175f27ba2 27-29
+SUMMARY.md
+  s_d69bbab79ecbe0::t_e97c8c1d20a9cf 1-352
+QUICK_START.md
+  s_d69bbab79ecbe0::t_bdd597e410a84f 1-488
+PUSH_NOW.md
+  s_d69bbab79ecbe0::t_c59f5413c8fdcc 1-96
+DEPLOYMENT_ANALYSIS.md
+  s_d69bbab79ecbe0::t_2f62f5f8e03df0 1-403
+scripts/fix-deployment-issues.sh
+  s_d69bbab79ecbe0::t_d68fd880867416 1-100
+nube-scripts
+  s_e0fee73ba207bf::t_bfe5eed8a28cd9 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "17d93f8806450f8c25cd3341a0fa8cfe1ae20128",
+  "prompts": {},
+  "sessions": {
+    "s_d69bbab79ecbe0": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "b34223e7-d627-475f-a51c-5f5682499be8",
+        "model": "claude-sonnet-4-5"
+      },
+      "human_author": null
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
