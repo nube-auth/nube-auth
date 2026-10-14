@@ -81,6 +81,13 @@ jobs:
       dockerfile: nube-scripts/deploy/docker/Dockerfile.app
       branch: staging
       platforms: linux/amd64
+      build_args: |
+        VITE_GATEWAY_URL=${{ vars.VITE_GATEWAY_URL_STAGING || 'https://s-api.nubeauth.app' }}
+        VITE_HOME_URL=${{ vars.VITE_HOME_URL_STAGING || 'https://s-nubeauth.app' }}
+        VITE_DOCS_URL=${{ vars.VITE_DOCS_URL_STAGING || 'https://s-docs.nubeauth.app' }}
+        VITE_ENV_TAG=Staging
+        PUBLIC_DOCS_URL=${{ vars.VITE_DOCS_URL_STAGING || 'https://s-docs.nubeauth.app' }}
+        PUBLIC_ENV_TAG=Staging
       railway_service_var_suffix: STAGING
       railway_environment_id: ${{ vars.RAILWAY_STAGING_ENVIRONMENT_ID }}
     secrets: inherit
@@ -144,6 +151,13 @@ jobs:
       branch: trunk
       platforms: linux/amd64,linux/arm64
       extra_tag: ${{ needs.meta.outputs.extra_tag }}
+      build_args: |
+        VITE_GATEWAY_URL=${{ vars.VITE_GATEWAY_URL_PRODUCTION || 'https://api.nubeauth.com' }}
+        VITE_HOME_URL=${{ vars.VITE_HOME_URL_PRODUCTION || 'https://nubeauth.com' }}
+        VITE_DOCS_URL=${{ vars.VITE_DOCS_URL_PRODUCTION || 'https://docs.nubeauth.com' }}
+        VITE_ENV_TAG=Production
+        PUBLIC_DOCS_URL=${{ vars.VITE_DOCS_URL_PRODUCTION || 'https://docs.nubeauth.com' }}
+        PUBLIC_ENV_TAG=Production
       railway_service_var_suffix: DASHBOARDS
       railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
     secrets: inherit
@@ -160,4 +174,11 @@ jobs:
       branch: trunk
       platforms: linux/amd64,linux/arm64
       extra_tag: ${{ needs.meta.outputs.extra_tag }}
+      build_args: |
+        VITE_GATEWAY_URL=${{ vars.VITE_GATEWAY_URL_PRODUCTION || 'https://api.nubeauth.com' }}
+        VITE_HOME_URL=${{ vars.VITE_HOME_URL_PRODUCTION || 'https://nubeauth.com' }}
+        VITE_DOCS_URL=${{ vars.VITE_DOCS_URL_PRODUCTION || 'https://docs.nubeauth.com' }}
+        VITE_ENV_TAG=Production
+        PUBLIC_DOCS_URL=${{ vars.VITE_DOCS_URL_PRODUCTION || 'https://docs.nubeauth.com' }}
+        PUBLIC_ENV_TAG=Production
     secrets: inherit
