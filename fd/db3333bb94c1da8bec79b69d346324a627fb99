@@ -1,0 +1,19 @@
+pnpm-lock.yaml
+  s_d69bbab79ecbe0::t_86c94b8e471178 62,432,556,654,8009,8017,11277,11288
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fddb3333bb94c1da8bec79b69d346324a627fb99",
+  "prompts": {},
+  "sessions": {
+    "s_d69bbab79ecbe0": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "b34223e7-d627-475f-a51c-5f5682499be8",
+        "model": "claude-sonnet-4-5"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
