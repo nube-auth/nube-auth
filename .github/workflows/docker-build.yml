@@ -94,7 +94,10 @@ jobs:
     secrets: inherit
 
   # ═════════════════════════════════════════════════════════════════════════
-  # TRUNK / PRODUCTION — 4 separate images (build sequentially to avoid hangs)
+  # TRUNK / PRODUCTION — 4 separate images (build 2 at a time for speed + reliability)
+  # Batch 1: Core + Gateway (parallel)
+  # Batch 2: Workers + Dashboards (parallel, after batch 1)
+  # Batch 3: Production all-in-one (after batch 2)
   # ═════════════════════════════════════════════════════════════════════════
   core:
     name: Core
@@ -113,7 +116,7 @@ jobs:
 
   gateway:
     name: Gateway
-    needs: [meta, core]
+    needs: meta
     if: needs.meta.outputs.branch == 'trunk'
     uses: ./.github/workflows/_build-image.yml
     with:
@@ -128,7 +131,7 @@ jobs:
 
   workers:
     name: Workers
-    needs: [meta, gateway]
+    needs: [meta, core, gateway]
     if: needs.meta.outputs.branch == 'trunk'
     uses: ./.github/workflows/_build-image.yml
     with:
@@ -143,7 +146,7 @@ jobs:
 
   dashboards:
     name: Dashboards (combined)
-    needs: [meta, workers]
+    needs: [meta, core, gateway]
     if: needs.meta.outputs.branch == 'trunk'
     uses: ./.github/workflows/_build-image.yml
     with:
@@ -166,7 +169,7 @@ jobs:
   # ── Combined production image (all-in-one via supervisord) ──────────────────
   prod-all-in-one:
     name: Production (all-in-one)
-    needs: [meta, dashboards]
+    needs: [meta, workers, dashboards]
     if: needs.meta.outputs.branch == 'trunk'
     uses: ./.github/workflows/_build-image.yml
     with:
