@@ -1,0 +1,20 @@
+.github/workflows/_build-image.yml
+  s_d69bbab79ecbe0::t_49c3bdff5c0a54 119-120,123
+  s_d69bbab79ecbe0::t_c2621918292900 67-70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ec03cf29b4c121eae13d28ce4d4b1455cdfb95af",
+  "prompts": {},
+  "sessions": {
+    "s_d69bbab79ecbe0": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "b34223e7-d627-475f-a51c-5f5682499be8",
+        "model": "claude-sonnet-4-5"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
