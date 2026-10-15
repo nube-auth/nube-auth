@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import config from "../config";
 import { useMe } from "../hooks/api";
+import { csrfHeaders } from "../lib/csrf";
 import { pingpong } from "../lib/pingpong";
 
 type AuthStatus = "idle" | "checking" | "redirecting" | "processing" | "error";
@@ -38,10 +39,17 @@ export function LoginPage() {
 				if (!isLoading && user) {
 					// Handle invite acceptance if invite code present
 					if (inviteCode) {
-						const inviteRes = await pingpong(`/api/admin/invitations/${inviteCode}/accept`, {
-							method: "POST",
-							credentials: "include",
-						});
+						const inviteRes = await pingpong(
+							`${config.gatewayUrl}/v1/admin/invitations/${encodeURIComponent(inviteCode)}/accept`,
+							{
+								method: "POST",
+								credentials: "include",
+								headers: {
+									"Content-Type": "application/json",
+									...csrfHeaders(),
+								},
+							},
+						);
 
 						if (inviteRes.ok()) {
 							const inviteData = inviteRes.data as { project?: { id: string } };
@@ -74,7 +82,7 @@ export function LoginPage() {
 		setStatus("redirecting");
 		const inviteCode = searchParams.get("invite") || "";
 		// After successful auth, redirect to projects (or handle invite flow)
-		const returnTo = inviteCode ? `/login?invite=${inviteCode}` : "/";
+		const returnTo = inviteCode ? `/login?invite=${inviteCode}` : "/home";
 		const gatewayAuthUrl = `${config.gatewayUrl}/v1/auth/start?provider=google&audience=admin&return_to=${encodeURIComponent(returnTo)}&invite=${encodeURIComponent(inviteCode)}`;
 		window.location.href = gatewayAuthUrl;
 	};

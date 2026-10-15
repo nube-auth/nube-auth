@@ -7,7 +7,7 @@ name: Build & Publish
 #   Keeps Railway service count minimal for cost efficiency.
 #
 # Trunk (manual dispatch, branch = trunk, or push of v* tag):
-#   Builds 4 separate images in parallel:
+#   Builds 4 separate images in two parallel batches, then the all-in-one image:
 #     nube-auth-core:trunk          (Dockerfile.core)
 #     nube-auth-gateway:trunk       (Dockerfile.gateway)
 #     nube-auth-workers:trunk       (Dockerfile.workers)
@@ -43,7 +43,7 @@ on:
 concurrency:
   group: docker-build-${{ github.ref_name }}
   cancel-in-progress: true
-  # Limit to 1 build per branch to avoid runner resource exhaustion
+  # One workflow run per ref. Job batching below limits parallelism inside that run.
 
 # Required so reusable workflows can push to GHCR
 permissions:
@@ -84,10 +84,16 @@ jobs:
       platforms: linux/amd64
       build_args: |
         VITE_GATEWAY_URL=${{ vars.VITE_GATEWAY_URL_STAGING || 'https://s-api.nubeauth.app' }}
-        VITE_HOME_URL=${{ vars.VITE_HOME_URL_STAGING || 'https://s-nubeauth.app' }}
+        VITE_HOME_URL=${{ vars.VITE_HOME_URL_STAGING || 'https://s-home.nubeauth.app' }}
         VITE_DOCS_URL=${{ vars.VITE_DOCS_URL_STAGING || 'https://s-docs.nubeauth.app' }}
+        VITE_ADMIN_URL=${{ vars.VITE_ADMIN_URL_STAGING || 'https://s-manage.nubeauth.app' }}
+        VITE_USER_URL=${{ vars.VITE_USER_URL_STAGING || 'https://s-me.nubeauth.app' }}
         VITE_ENV_TAG=Staging
+        PUBLIC_SITE_URL=${{ vars.VITE_HOME_URL_STAGING || 'https://s-home.nubeauth.app' }}
         PUBLIC_DOCS_URL=${{ vars.VITE_DOCS_URL_STAGING || 'https://s-docs.nubeauth.app' }}
+        PUBLIC_ADMIN_URL=${{ vars.VITE_ADMIN_URL_STAGING || 'https://s-manage.nubeauth.app' }}
+        PUBLIC_USER_URL=${{ vars.VITE_USER_URL_STAGING || 'https://s-me.nubeauth.app' }}
+        PUBLIC_GATEWAY_URL=${{ vars.VITE_GATEWAY_URL_STAGING || 'https://s-api.nubeauth.app' }}
         PUBLIC_ENV_TAG=Staging
       railway_service_var_suffix: STAGING
       railway_environment_id: ${{ vars.RAILWAY_STAGING_ENVIRONMENT_ID }}
@@ -159,8 +165,14 @@ jobs:
         VITE_GATEWAY_URL=${{ vars.VITE_GATEWAY_URL_PRODUCTION || 'https://api.nubeauth.com' }}
         VITE_HOME_URL=${{ vars.VITE_HOME_URL_PRODUCTION || 'https://nubeauth.com' }}
         VITE_DOCS_URL=${{ vars.VITE_DOCS_URL_PRODUCTION || 'https://docs.nubeauth.com' }}
+        VITE_ADMIN_URL=${{ vars.VITE_ADMIN_URL_PRODUCTION || 'https://manage.nubeauth.com' }}
+        VITE_USER_URL=${{ vars.VITE_USER_URL_PRODUCTION || 'https://me.nubeauth.com' }}
         VITE_ENV_TAG=Production
+        PUBLIC_SITE_URL=${{ vars.VITE_HOME_URL_PRODUCTION || 'https://nubeauth.com' }}
         PUBLIC_DOCS_URL=${{ vars.VITE_DOCS_URL_PRODUCTION || 'https://docs.nubeauth.com' }}
+        PUBLIC_ADMIN_URL=${{ vars.VITE_ADMIN_URL_PRODUCTION || 'https://manage.nubeauth.com' }}
+        PUBLIC_USER_URL=${{ vars.VITE_USER_URL_PRODUCTION || 'https://me.nubeauth.com' }}
+        PUBLIC_GATEWAY_URL=${{ vars.VITE_GATEWAY_URL_PRODUCTION || 'https://api.nubeauth.com' }}
         PUBLIC_ENV_TAG=Production
       railway_service_var_suffix: DASHBOARDS
       railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
@@ -182,7 +194,13 @@ jobs:
         VITE_GATEWAY_URL=${{ vars.VITE_GATEWAY_URL_PRODUCTION || 'https://api.nubeauth.com' }}
         VITE_HOME_URL=${{ vars.VITE_HOME_URL_PRODUCTION || 'https://nubeauth.com' }}
         VITE_DOCS_URL=${{ vars.VITE_DOCS_URL_PRODUCTION || 'https://docs.nubeauth.com' }}
+        VITE_ADMIN_URL=${{ vars.VITE_ADMIN_URL_PRODUCTION || 'https://manage.nubeauth.com' }}
+        VITE_USER_URL=${{ vars.VITE_USER_URL_PRODUCTION || 'https://me.nubeauth.com' }}
         VITE_ENV_TAG=Production
+        PUBLIC_SITE_URL=${{ vars.VITE_HOME_URL_PRODUCTION || 'https://nubeauth.com' }}
         PUBLIC_DOCS_URL=${{ vars.VITE_DOCS_URL_PRODUCTION || 'https://docs.nubeauth.com' }}
+        PUBLIC_ADMIN_URL=${{ vars.VITE_ADMIN_URL_PRODUCTION || 'https://manage.nubeauth.com' }}
+        PUBLIC_USER_URL=${{ vars.VITE_USER_URL_PRODUCTION || 'https://me.nubeauth.com' }}
+        PUBLIC_GATEWAY_URL=${{ vars.VITE_GATEWAY_URL_PRODUCTION || 'https://api.nubeauth.com' }}
         PUBLIC_ENV_TAG=Production
     secrets: inherit

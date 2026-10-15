@@ -17,7 +17,7 @@
 		"@nube-auth/db": "workspace:*",
 		"@nube-auth/shared": "workspace:*",
 		"@stripe/stripe-js": "^5.5.0",
-		"hono": "^4.0.0",
+		"hono": "4.11.10",
 		"nanoid": "^5.0.0",
 		"resend": "^3.2.0",
 		"stripe": "^17.6.0",

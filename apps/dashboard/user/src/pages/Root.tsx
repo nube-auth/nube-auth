@@ -26,7 +26,7 @@ function UserLanding() {
 
 	const handleSignIn = () => {
 		setIsRedirecting(true);
-		window.location.href = `${config.gatewayUrl}/v1/auth/start?provider=google&return_to=${encodeURIComponent("/home")}`;
+		window.location.href = `${config.gatewayUrl}/v1/auth/start?provider=google&audience=user&return_to=${encodeURIComponent("/home")}`;
 	};
 
 	return (

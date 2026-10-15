@@ -100,6 +100,7 @@ appCatalogRoutes.get("/:appId/plans/:planId/prices", async (c: Context) => {
 	try {
 		const resolvedApp = c.get("resolvedApp") as { id: number; public_id: string };
 		const planPublicId = c.req.param("planId");
+		if (!planPublicId) return c.json({ error: "Plan not found" }, 404);
 		const db = getDb();
 
 		const plan = await planQueries.findByPublicId(db, planPublicId);
@@ -273,8 +274,7 @@ appCatalogRoutes.get("/:appId/users/:userId/license", async (c: Context) => {
 	try {
 		const resolvedApp = c.get("resolvedApp") as { id: number; public_id: string };
 		const userPublicId = c.req.param("userId");
-
-		if (!idPatterns.user.test(userPublicId)) {
+		if (!userPublicId || !idPatterns.user.test(userPublicId)) {
 			return c.json({ error: "Invalid userId" }, 400);
 		}
 
@@ -346,8 +346,7 @@ appCatalogRoutes.get("/:appId/users/:userId/license", async (c: Context) => {
 appCatalogRoutes.get("/:appId/users/:userId", async (c: Context) => {
 	try {
 		const userPublicId = c.req.param("userId");
-
-		if (!idPatterns.user.test(userPublicId)) {
+		if (!userPublicId || !idPatterns.user.test(userPublicId)) {
 			return c.json({ error: "Invalid userId" }, 400);
 		}
 

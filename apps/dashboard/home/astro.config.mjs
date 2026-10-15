@@ -1,10 +1,8 @@
-import tailwind from "@astrojs/tailwind";
 import { defineConfig } from "astro/config";
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://nubeauth.com",
-	integrations: [tailwind()],
+	site: process.env.PUBLIC_SITE_URL || "https://nubeauth.com",
 	output: "static",
 	server: {
 		port: 4321,

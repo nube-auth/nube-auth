@@ -1,14 +1,22 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
 import Hero from '../sections/Hero.astro';
+import Surfaces from '../sections/Surfaces.astro';
 import Features from '../sections/Features.astro';
 import HowItWorks from '../sections/HowItWorks.astro';
 import CTA from '../sections/CTA.astro';
 ---
 
-<Layout title="NubeAuth - Identity, Sessions & Licensing for Modern Apps">
-  <Hero />
-  <Features />
-  <HowItWorks />
-  <CTA />
+<Layout title="NubeAuth · Sign-in, sessions, and licensing for SaaS apps">
+  <Nav />
+  <main>
+    <Hero />
+    <Surfaces />
+    <Features />
+    <HowItWorks />
+    <CTA />
+  </main>
+  <Footer />
 </Layout>

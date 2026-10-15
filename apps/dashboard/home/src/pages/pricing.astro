@@ -1,0 +1,40 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import config from '../config';
+---
+
+<Layout title="Pricing - NubeAuth" description="NubeAuth is free during beta. Configure your own application plans in the admin console.">
+  <Nav />
+  <div class="legal-page">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 pt-28 pb-16">
+      <div class="mb-8">
+        <a href="/" class="legal-back transition inline-flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Back to Home
+        </a>
+      </div>
+
+      <h1 class="text-2xl sm:text-4xl font-bold mb-4">Pricing</h1>
+      <p class="mb-8">The NubeAuth admin console and user portal are free while the platform is in beta.</p>
+
+      <div class="grid gap-6 md:grid-cols-2">
+        <section class="rounded-xl border p-6" style="background: var(--card-bg); border-color: var(--card-border);">
+          <h2 class="text-xl font-bold mb-2">Platform</h2>
+          <p class="text-3xl font-bold mb-3">Free</p>
+          <p class="mb-4">Create projects, connect OAuth providers, and manage sessions from the admin console.</p>
+          <a href={config.adminLoginUrl} class="btn btn-primary">Open admin console</a>
+        </section>
+        <section class="rounded-xl border p-6" style="background: var(--card-bg); border-color: var(--card-border);">
+          <h2 class="text-xl font-bold mb-2">Your applications</h2>
+          <p class="mb-4">Plans, prices, and entitlements belong to the apps you build. You set them in the admin console and charge through your payment provider.</p>
+          <a href={`${config.docsUrl}/licensing/plans`} class="btn btn-outline" target="_blank" rel="noopener">Read licensing docs</a>
+        </section>
+      </div>
+    </div>
+  </div>
+  <Footer />
+</Layout>

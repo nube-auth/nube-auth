@@ -1,0 +1,62 @@
+---
+import config from '../config';
+
+const host = (url: string) => new URL(url).host;
+
+const surfaces = [
+  {
+    host: host(config.adminUrl),
+    href: config.adminLoginUrl,
+    name: 'Admin console',
+    who: 'For you and your team',
+    what: 'Create projects and apps, connect OAuth and payment providers, define plans, and invite teammates.',
+    go: 'Open the console',
+  },
+  {
+    host: host(config.userUrl),
+    href: config.userLoginUrl,
+    name: 'User portal',
+    who: 'For the people using your app',
+    what: 'Your users update their profile, see where they are signed in, and end sessions they do not recognise.',
+    go: 'Open the portal',
+  },
+  {
+    host: host(config.gatewayUrl),
+    href: `${config.docsUrl}/api/rest`,
+    name: 'Gateway API',
+    who: 'For your code',
+    what: 'Start sign-in, read the current user, and check a license from your frontend or your server.',
+    go: 'See the API',
+  },
+  {
+    host: host(config.docsUrl),
+    href: config.docsUrl,
+    name: 'Docs',
+    who: 'For integration',
+    what: 'Quick starts for React, plain JavaScript, and browser extensions, plus the full API reference.',
+    go: 'Read the docs',
+  },
+];
+---
+
+<section id="surfaces" class="section">
+  <div class="page-width">
+    <div class="section-head">
+      <p class="eyebrow">Product</p>
+      <h2 class="section-title">One account, four places to work.</h2>
+      <p class="section-lede">A single sign-in carries across every NubeAuth surface. Each one has a single job.</p>
+    </div>
+
+    <div class="surface-grid">
+      {surfaces.map((surface) => (
+        <a href={surface.href} class="surface">
+          <p class="surface-host">{surface.host}</p>
+          <h3 class="surface-name">{surface.name}</h3>
+          <p class="surface-who">{surface.who}</p>
+          <p class="surface-what">{surface.what}</p>
+          <span class="surface-go">{surface.go} →</span>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>

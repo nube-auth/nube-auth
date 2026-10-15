@@ -8,7 +8,7 @@ The Admin Dashboard is your control center for managing projects, apps, users, a
 
 ## Overview
 
-Access the Admin Dashboard at **[admin.nubeauth.com](https://admin.nubeauth.com)**
+Access the Admin Dashboard at **[manage.nubeauth.com](https://manage.nubeauth.com)**
 
 The dashboard features a contextual sidebar that adapts to your current location:
 - **Global View** - Projects, billing, webhooks

@@ -1,96 +1,43 @@
 ---
-const features = [
+const rows = [
   {
-    iconClass: 'dashboard',
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="7"/>
-      <rect x="14" y="3" width="7" height="7"/>
-      <rect x="14" y="14" width="7" height="7"/>
-      <rect x="3" y="14" width="7" height="7"/>
-    </svg>`,
-    title: 'Powerful Admin Dashboard',
-    description: 'Beautiful React dashboard to manage projects, apps, users, licenses, and billing. Team collaboration with role-based access control.'
+    term: 'Sign-in',
+    detail: 'Google and GitHub OAuth with PKCE. Configure providers once per project or override them per app.',
   },
   {
-    iconClass: 'auth',
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-    </svg>`,
-    title: 'OAuth & Magic Links',
-    description: 'Google, GitHub OAuth providers built-in. Magic link authentication. Configure per-app or inherit from project-level settings.'
+    term: 'Sessions',
+    detail: 'Bearer tokens for your apps, HttpOnly cookies with CSRF checks for the dashboards. Requests are rate limited, and users can revoke any session from the portal.',
   },
   {
-    iconClass: 'integration',
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="16 18 22 12 16 6"/>
-      <polyline points="8 6 2 12 8 18"/>
-    </svg>`,
-    title: 'Easy Integration',
-    description: 'React hooks, vanilla JavaScript, and browser extension support. Complete documentation with code examples and guides.'
+    term: 'Licensing',
+    detail: 'Plans with trials and monthly, yearly, or lifetime billing. Your app asks <code>GET /v1/license/:appId</code> and gets the plan back.',
   },
   {
-    iconClass: 'license',
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-      <polyline points="14 2 14 8 20 8"/>
-      <path d="M9 15l2 2 4-4"/>
-    </svg>`,
-    title: 'Flexible Licensing',
-    description: 'Create plans with trials, monthly/yearly billing, or lifetime access. Integrate with Stripe, LemonSqueezy, and more payment providers.'
+    term: 'Payments',
+    detail: 'Stripe, LemonSqueezy, and Dodo. Provider credentials are stored encrypted, and every webhook is logged and deduplicated.',
   },
   {
-    iconClass: 'payment',
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-      <line x1="1" y1="10" x2="23" y2="10"/>
-    </svg>`,
-    title: 'Payment Integration',
-    description: 'Multi-provider support with encrypted credentials. Webhook monitoring, refund processing, and billing analytics built-in.'
+    term: 'Team',
+    detail: 'Invite teammates to a project as owner, admin, or member. Each role sees only what it is allowed to change.',
   },
-  {
-    iconClass: 'security',
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-    </svg>`,
-    title: 'Enterprise Security',
-    description: 'HttpOnly cookies, CSRF protection, rate limiting, S2S tokens. Session hijacking protection with IP fingerprinting.'
-  }
 ];
 ---
 
-<section id="features" class="features">
-  <div class="features-container">
-    <div class="section-header">
-      <span class="section-tag">Features</span>
-      <h2 class="section-title">Everything You Need</h2>
-      <p class="section-description">
-        Built for modern SaaS applications with developer experience in mind
-      </p>
+<section id="features" class="section">
+  <div class="page-width spec">
+    <div class="section-head">
+      <p class="eyebrow">What the gateway handles</p>
+      <h2 class="section-title">The auth work you would otherwise maintain.</h2>
+      <p class="section-lede">Everything below runs behind the gateway. Your app makes a few requests and reads the answers.</p>
     </div>
 
-    <div class="features-grid">
-      {features.map((feature) => (
-        <article class="feature-card">
-          <div class={`feature-icon ${feature.iconClass}`} set:html={feature.icon} />
-          <h3 class="feature-title">{feature.title}</h3>
-          <p class="feature-description">{feature.description}</p>
-        </article>
+    <dl class="spec-list">
+      {rows.map((row) => (
+        <div class="spec-row">
+          <dt>{row.term}</dt>
+          <dd set:html={row.detail} />
+        </div>
       ))}
-    </div>
+    </dl>
   </div>
 </section>
-
-<style>
-  .feature-icon svg {
-    width: 24px;
-    height: 24px;
-  }
-  
-  .feature-icon.dashboard svg { color: var(--info); }
-  .feature-icon.auth svg { color: #a855f7; }
-  .feature-icon.integration svg { color: #10b981; }
-  .feature-icon.license svg { color: var(--warning); }
-  .feature-icon.payment svg { color: #06b6d4; }
-  .feature-icon.security svg { color: var(--danger); }
-</style>
