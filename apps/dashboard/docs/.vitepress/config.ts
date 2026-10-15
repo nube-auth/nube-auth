@@ -1,10 +1,16 @@
 import { defineConfig } from "vitepress";
+import { nubeHosts, rewriteHosts } from "../../../../scripts/nube-hosts.mjs";
 
 const dev = process.env.NODE_ENV !== "production";
-const envTag = (process.env.VITE_ENV_TAG || (dev ? "Local" : "Beta")).replace(/[^a-zA-Z0-9 ._-]/g, "") || "Beta";
-const adminUrl = process.env.VITE_ADMIN_URL || (dev ? "http://localhost:5174" : "https://manage.nubeauth.com");
-const userUrl = process.env.VITE_USER_URL || (dev ? "http://localhost:5173" : "https://me.nubeauth.com");
-const homeUrl = process.env.VITE_HOME_URL || (dev ? "http://localhost:4321" : "https://nubeauth.com");
+const hosts = nubeHosts(
+	process.env.PUBLIC_NUBE_DOMAIN || process.env.NUBE_DOMAIN,
+	process.env.PUBLIC_NUBE_ENV || process.env.NUBE_ENV || "production",
+);
+const envTag =
+	(process.env.VITE_ENV_TAG || (dev ? "Local" : hosts.envTag)).replace(/[^a-zA-Z0-9 ._-]/g, "") || hosts.envTag;
+const adminUrl = process.env.VITE_ADMIN_URL || (dev ? "http://localhost:5174" : hosts.admin);
+const userUrl = process.env.VITE_USER_URL || (dev ? "http://localhost:5173" : hosts.user);
+const homeUrl = process.env.VITE_HOME_URL || (dev ? "http://localhost:4321" : hosts.site);
 
 export default defineConfig({
 	srcExclude: ["src/**"],
@@ -154,6 +160,17 @@ export default defineConfig({
 		server: {
 			port: 4322,
 		},
+		plugins: [
+			{
+				name: "nube-hosts",
+				enforce: "pre",
+				transform(code, id) {
+					if (!id.endsWith(".md")) return null;
+					if (dev) return null;
+					return rewriteHosts(code, hosts);
+				},
+			},
+		],
 	},
 
 	// Markdown config
