@@ -61,7 +61,6 @@ export function LoginPage() {
 			subtitle="Manage your account, sessions, and licenses"
 			errorMessage={status === "error" && error ? getErrorMessage(error) : null}
 			buttonLabel="Continue with Google"
-			buttonVariant="secondary"
 			onContinue={handleGoogleLogin}
 			busy={isBusy}
 			termsUrl={`${config.homeUrl}/terms`}

@@ -1,0 +1,42 @@
+/* Shared Tailwind v4 theme map for the admin and user dashboards. */
+
+@import "./theme.css";
+
+@theme {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-bg: var(--card-bg, var(--card));
+	--color-card-border: var(--card-border);
+	--color-muted: var(--muted);
+	--color-dimmed: var(--dimmed);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-primary-hover: var(--primary-hover, var(--primary));
+	--color-primary-border: var(--primary-border);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-secondary-hover: var(--secondary-hover, var(--secondary));
+	--color-secondary-border: var(--secondary-border);
+	--color-tertiary: var(--tertiary, var(--secondary));
+	--color-tertiary-foreground: var(--tertiary-foreground);
+	--color-tertiary-border: var(--tertiary-border);
+	--color-danger: var(--danger);
+	--color-danger-foreground: var(--danger-foreground);
+	--color-danger-hover: var(--danger-hover, var(--danger));
+	--color-danger-border: var(--danger-border);
+	--color-success: var(--success);
+	--color-warning: var(--warning);
+	--color-info: var(--info);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-accent: var(--accent);
+	--color-bg-primary: var(--bg-primary, var(--background));
+	--color-bg-secondary: var(--bg-secondary, var(--background));
+	--color-bg-muted: var(--bg-muted, var(--muted));
+	--color-text-primary: var(--text-primary, var(--foreground));
+	--color-text-secondary: var(--text-secondary, var(--foreground));
+	--color-text-muted: var(--text-muted, var(--muted));
+	--color-text-dimmed: var(--text-dimmed, var(--dimmed));
+}

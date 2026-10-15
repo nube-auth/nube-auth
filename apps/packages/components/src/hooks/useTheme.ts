@@ -2,6 +2,34 @@ import { useEffect, useState } from "react";
 
 export type Theme = "light" | "dark" | "system";
 
+/** Next theme in the system → light → dark cycle shared by every Nube Auth surface. */
+export function cycleTheme(theme: Theme): Theme {
+	if (theme === "system") return "light";
+	if (theme === "light") return "dark";
+	return "system";
+}
+
+function systemIsDark(): boolean {
+	return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
+function applyTheme(theme: Theme) {
+	const root = document.documentElement;
+	const dark = theme === "dark" || (theme === "system" && systemIsDark());
+
+	root.classList.toggle("dark", dark);
+	root.classList.toggle("light", theme === "light");
+
+	if (theme === "system") {
+		root.removeAttribute("data-theme");
+		localStorage.removeItem("theme");
+		return;
+	}
+
+	root.setAttribute("data-theme", theme);
+	localStorage.setItem("theme", theme);
+}
+
 /**
  * Custom hook to manage theme state across light, dark, and system preferences.
  *
@@ -36,31 +64,15 @@ export function useTheme() {
 	});
 
 	useEffect(() => {
-		const root = document.documentElement;
+		applyTheme(theme);
+	}, [theme]);
 
-		// Determine effective theme
-		let effectiveTheme: "light" | "dark" = "light";
-		if (theme === "system") {
-			effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-		} else {
-			effectiveTheme = theme;
-		}
-
-		// Apply dark class for Selia components
-		if (effectiveTheme === "dark") {
-			root.classList.add("dark");
-		} else {
-			root.classList.remove("dark");
-		}
-
-		// Also set data-theme for custom components
-		if (theme === "system") {
-			root.removeAttribute("data-theme");
-			localStorage.removeItem("theme");
-		} else {
-			root.setAttribute("data-theme", theme);
-			localStorage.setItem("theme", theme);
-		}
+	useEffect(() => {
+		if (theme !== "system") return;
+		const media = window.matchMedia("(prefers-color-scheme: dark)");
+		const onChange = () => applyTheme("system");
+		media.addEventListener("change", onChange);
+		return () => media.removeEventListener("change", onChange);
 	}, [theme]);
 
 	return { theme, setTheme };

@@ -94,7 +94,7 @@ export function DashboardLayout({ children, sidebar, topBar }: DashboardLayoutPr
 			{/* Main content */}
 			<main className={cn("transition-all", sidebarOpen ? "xl:ml-72" : "xl:ml-0")}>
 				{/* Top navigation bar */}
-				<nav className={cn("h-16 flex items-center gap-2.5 px-4 xl:px-6 border-b border-border")}>
+				<nav className={cn("flex h-16 min-w-0 items-center gap-2.5 border-b border-border px-4 xl:px-6")}>
 					<Button variant="plain" size="sm-icon" onClick={handleSidebarToggle}>
 						{sidebarOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
 					</Button>
