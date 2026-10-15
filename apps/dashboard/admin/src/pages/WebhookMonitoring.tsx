@@ -297,8 +297,7 @@ export function WebhookMonitoringPage() {
 	}
 
 	return (
-		<div>
-			{/* Breadcrumb */}
+		<div className="space-y-6">
 			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
@@ -310,15 +309,9 @@ export function WebhookMonitoringPage() {
 				</BreadcrumbList>
 			</Breadcrumb>
 
-			<div className="mb-6">
-				<Heading level={1} size="lg" className="mb-2">
-					Webhook Monitoring
-				</Heading>
-				<Text className="text-muted">Monitor webhook deliveries and troubleshoot integration issues</Text>
-			</div>
+			<Text className="text-muted">Monitor webhook deliveries and troubleshoot integration issues</Text>
 
-			{/* Filters */}
-			<Card className="mb-6">
+			<Card>
 				<CardBody>
 					<Heading level={3} size="md" className="mb-4">
 						Filters

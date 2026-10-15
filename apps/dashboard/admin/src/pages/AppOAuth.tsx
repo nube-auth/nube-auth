@@ -8,7 +8,6 @@ import {
 	Card,
 	CardBody,
 	Chip,
-	Heading,
 	Icon,
 	IconType,
 	Text,
@@ -108,14 +107,9 @@ export default function AppOAuthPage() {
 
 			{/* Page Header */}
 			<div className="flex justify-between items-center">
-				<div>
-					<Heading level={1} size="lg">
-						OAuth Providers
-					</Heading>
-					<Text className="text-muted">
-						Select which OAuth providers to enable for <strong>{app.name}</strong>
-					</Text>
-				</div>
+				<Text className="text-muted">
+					Select which OAuth providers to enable for <strong>{app.name}</strong>
+				</Text>
 				{!isEditing ? (
 					<Button variant="primary" onClick={() => setIsEditing(true)}>
 						Edit

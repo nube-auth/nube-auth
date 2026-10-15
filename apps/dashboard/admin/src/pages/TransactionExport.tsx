@@ -159,8 +159,7 @@ export function TransactionExportPage() {
 	};
 
 	return (
-		<div>
-			{/* Breadcrumb */}
+		<div className="space-y-6">
 			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
@@ -172,12 +171,9 @@ export function TransactionExportPage() {
 				</BreadcrumbList>
 			</Breadcrumb>
 
-			<div className="mb-6">
-				<Text className="m-0 text-muted">Export and analyze transaction history in CSV or JSON format</Text>
-			</div>
+			<Text className="text-muted">Export and analyze transaction history in CSV or JSON format</Text>
 
-			{/* Export Controls */}
-			<Card className="mb-6">
+			<Card>
 				<CardBody className="p-5 space-y-5">
 					<Heading level={3} size="md" className="mb-0">
 						Export Settings
