@@ -18,15 +18,15 @@
 		"@nube-auth/shared": "workspace:*",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
-		"react-router-dom": "^6.30.6"
+		"react-router-dom": "^7.18.4"
 	},
 	"devDependencies": {
 		"@tailwindcss/vite": "^4.1.18",
 		"@types/react": "^18.2.0",
 		"@types/react-dom": "^18.2.0",
-		"@vitejs/plugin-react": "^4.2.1",
+		"@vitejs/plugin-react": "^4.7.0",
 		"typescript": "^6.0.2",
 		"tailwindcss": "^4.1.18",
-		"vite": "^5.0.0"
+		"vite": "^6.4.4"
 	}
 }

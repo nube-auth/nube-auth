@@ -17,6 +17,7 @@ import {
 import { CreateAppRequestSchema, createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
+import { requiredParam } from "../../../utils/route-param.js";
 import { generateAppSlug, generatePlanSlug } from "../../../utils/slug.js";
 
 const log = createLogger("admin-apps-routes");
@@ -29,7 +30,7 @@ export const appsRouter = new Hono();
  */
 appsRouter.get("/:projectId/apps", async (c: Context) => {
 	try {
-		const projectId = c.req.param("projectId");
+		const projectId = requiredParam(c, "projectId");
 
 		if (!projectId || !idPatterns.project.test(projectId)) {
 			return c.json({ error: "Invalid projectId" }, 400);
@@ -68,8 +69,8 @@ appsRouter.get("/:projectId/apps", async (c: Context) => {
  */
 appsRouter.get("/:projectId/apps/:appId/provider-selection", async (c: Context) => {
 	try {
-		const projectId = c.req.param("projectId");
-		const appId = c.req.param("appId");
+		const projectId = requiredParam(c, "projectId");
+		const appId = requiredParam(c, "appId");
 
 		if (!appId || !idPatterns.app.test(appId)) {
 			return c.json({ error: "Invalid appId" }, 400);
@@ -135,7 +136,7 @@ appsRouter.patch("/:projectId/apps/:appId/provider-selection", async (c: Context
  */
 appsRouter.post("/:projectId/apps", async (c: Context) => {
 	try {
-		const projectId = c.req.param("projectId");
+		const projectId = requiredParam(c, "projectId");
 		const rawBody = await c.req.json();
 		const parsed = CreateAppRequestSchema.safeParse(rawBody);
 
@@ -321,8 +322,8 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
  */
 appsRouter.get("/:projectId/apps/:appId", async (c: Context) => {
 	try {
-		const projectId = c.req.param("projectId");
-		const appId = c.req.param("appId");
+		const projectId = requiredParam(c, "projectId");
+		const appId = requiredParam(c, "appId");
 
 		if (!appId || !idPatterns.app.test(appId)) {
 			return c.json({ error: "Invalid appId" }, 400);
@@ -385,8 +386,8 @@ appsRouter.get("/:projectId/apps/:appId", async (c: Context) => {
  */
 appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 	try {
-		const projectId = c.req.param("projectId");
-		const appId = c.req.param("appId");
+		const projectId = requiredParam(c, "projectId");
+		const appId = requiredParam(c, "appId");
 		const {
 			name,
 			slug,
@@ -539,8 +540,8 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
  */
 appsRouter.delete("/:projectId/apps/:appId", async (c: Context) => {
 	try {
-		const projectId = c.req.param("projectId");
-		const appId = c.req.param("appId");
+		const projectId = requiredParam(c, "projectId");
+		const appId = requiredParam(c, "appId");
 
 		if (!appId || !idPatterns.app.test(appId)) {
 			return c.json({ error: "Invalid appId" }, 400);
@@ -605,8 +606,8 @@ appsRouter.delete("/:projectId/apps/:appId", async (c: Context) => {
  */
 appsRouter.get("/:projectId/apps/:appId/users", async (c: Context) => {
 	try {
-		const projectId = c.req.param("projectId");
-		const appId = c.req.param("appId");
+		const projectId = requiredParam(c, "projectId");
+		const appId = requiredParam(c, "appId");
 
 		if (!appId || !idPatterns.app.test(appId)) {
 			return c.json({ error: "Invalid appId" }, 400);
@@ -685,9 +686,9 @@ appsRouter.get("/:projectId/apps/:appId/users", async (c: Context) => {
  */
 appsRouter.post("/:projectId/apps/:appId/users/:userId", async (c: Context) => {
 	try {
-		const projectId = c.req.param("projectId");
-		const appId = c.req.param("appId");
-		const targetUserId = c.req.param("userId");
+		const projectId = requiredParam(c, "projectId");
+		const appId = requiredParam(c, "appId");
+		const targetUserId = requiredParam(c, "userId");
 
 		if (!appId || !idPatterns.app.test(appId)) {
 			return c.json({ error: "Invalid appId" }, 400);
@@ -797,8 +798,8 @@ appsRouter.post("/:projectId/apps/:appId/users/:userId", async (c: Context) => {
  */
 appsRouter.get("/:projectId/apps/:appId/api-keys", async (c: Context) => {
 	try {
-		const projectId = c.req.param("projectId");
-		const appId = c.req.param("appId");
+		const projectId = requiredParam(c, "projectId");
+		const appId = requiredParam(c, "appId");
 
 		if (!appId || !idPatterns.app.test(appId)) {
 			return c.json({ error: "Invalid appId" }, 400);
@@ -850,8 +851,8 @@ appsRouter.get("/:projectId/apps/:appId/api-keys", async (c: Context) => {
  */
 appsRouter.post("/:projectId/apps/:appId/regenerate-secret", async (c: Context) => {
 	try {
-		const projectId = c.req.param("projectId");
-		const appId = c.req.param("appId");
+		const projectId = requiredParam(c, "projectId");
+		const appId = requiredParam(c, "appId");
 
 		if (!appId || !idPatterns.app.test(appId)) {
 			return c.json({ error: "Invalid appId" }, 400);
@@ -918,8 +919,8 @@ appsRouter.post("/:projectId/apps/:appId/regenerate-secret", async (c: Context) 
  */
 appsRouter.post("/:projectId/apps/:appId/regenerate-token", async (c: Context) => {
 	try {
-		const projectId = c.req.param("projectId");
-		const appId = c.req.param("appId");
+		const projectId = requiredParam(c, "projectId");
+		const appId = requiredParam(c, "appId");
 
 		if (!appId || !idPatterns.app.test(appId)) {
 			return c.json({ error: "Invalid appId" }, 400);

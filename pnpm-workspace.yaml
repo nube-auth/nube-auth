@@ -2,6 +2,41 @@ overrides:
   undici: 7.29.1
   tar: 7.5.22
   ioredis: 5.8.2
+  # Direct and transitive advisories. Selectors stay on the installed major
+  # when a jump would break callers (nanoid 3, minimatch 9, picomatch 2, uuid 9).
+  hono: 4.13.13
+  "@hono/node-server": 1.19.17
+  nodemailer: 10.1.1
+  drizzle-orm: 0.45.4
+  turbo: 2.11.8
+  "react-router": 7.18.4
+  "react-router-dom": 7.18.4
+  "shell-quote": 1.12.0
+  tinypool: 2.2.0
+  "brace-expansion@2": 2.1.7
+  "@isaacs/brace-expansion": 5.0.1
+  browserslist: 4.29.3
+  defu: 6.1.7
+  "fast-xml-parser": 5.11.2
+  "js-cookie": 3.0.8
+  "minimatch@9": 9.0.9
+  "minimatch@10": 10.2.6
+  "nanoid@3": 3.3.20
+  "nanoid@>=4": 5.1.16
+  "picomatch@2": 2.3.2
+  "picomatch@4": 4.0.7
+  postcss: 8.5.30
+  "postcss-selector-parser": 7.1.6
+  rollup: 4.64.7
+  "source-map-js": 1.2.2
+  "baseline-browser-mapping": 2.11.28
+  "fast-copy": 4.2.0
+  qs: 6.16.1
+  "@babel/core": 7.29.7
+  "@vue/server-renderer": 3.5.44
+  "esbuild@<=0.24.2": 0.25.12
+  "uuid@11": 11.1.1
+  "vite@<=6.4.2": 6.4.4
 
 packages:
   - 'apps/services/*'
@@ -12,5 +47,5 @@ packages:
 catalogs:
   default:
     express: '^4.18.0'
-    hono: '^4.0.0'
+    hono: '^4.13.13'
     typescript: '^5.3.0'

@@ -21,6 +21,7 @@ import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
 import { enqueuePlanSync } from "../../../billing/queue.js";
+import { requiredParam } from "../../../utils/route-param.js";
 
 const log = createLogger("admin-prices");
 const pricesRouter = new Hono();
@@ -107,8 +108,8 @@ pricesRouter.post("/", async (c: Context) => {
 		const userPublicId = getUserIdHeader(c);
 		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
 
-		const appId = c.req.param("appId");
-		const planId = c.req.param("planId");
+		const appId = requiredParam(c, "appId");
+		const planId = requiredParam(c, "planId");
 		const body = await c.req.json();
 		const validated = CreatePriceSchema.parse(body);
 
@@ -182,8 +183,8 @@ pricesRouter.post("/", async (c: Context) => {
  */
 pricesRouter.get("/", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
-		const planId = c.req.param("planId");
+		const appId = requiredParam(c, "appId");
+		const planId = requiredParam(c, "planId");
 		const includeInactive = c.req.query("includeInactive") === "true";
 
 		const db = getDb();
@@ -214,9 +215,9 @@ pricesRouter.get("/", async (c: Context) => {
  */
 pricesRouter.get("/:priceId", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
-		const planId = c.req.param("planId");
-		const priceId = c.req.param("priceId");
+		const appId = requiredParam(c, "appId");
+		const planId = requiredParam(c, "planId");
+		const priceId = requiredParam(c, "priceId");
 
 		const db = getDb();
 
@@ -246,9 +247,9 @@ pricesRouter.patch("/:priceId", async (c: Context) => {
 		const userPublicId = getUserIdHeader(c);
 		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
 
-		const appId = c.req.param("appId");
-		const planId = c.req.param("planId");
-		const priceId = c.req.param("priceId");
+		const appId = requiredParam(c, "appId");
+		const planId = requiredParam(c, "planId");
+		const priceId = requiredParam(c, "priceId");
 		const body = await c.req.json();
 		const validated = UpdatePriceSchema.parse(body);
 
@@ -312,9 +313,9 @@ pricesRouter.post("/:priceId/sync", async (c: Context) => {
 		const userPublicId = getUserIdHeader(c);
 		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
 
-		const appId = c.req.param("appId");
-		const planId = c.req.param("planId");
-		const priceId = c.req.param("priceId");
+		const appId = requiredParam(c, "appId");
+		const planId = requiredParam(c, "planId");
+		const priceId = requiredParam(c, "priceId");
 
 		const db = getDb();
 
@@ -350,9 +351,9 @@ pricesRouter.delete("/:priceId", async (c: Context) => {
 		const userPublicId = getUserIdHeader(c);
 		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
 
-		const appId = c.req.param("appId");
-		const planId = c.req.param("planId");
-		const priceId = c.req.param("priceId");
+		const appId = requiredParam(c, "appId");
+		const planId = requiredParam(c, "planId");
+		const priceId = requiredParam(c, "priceId");
 
 		const db = getDb();
 
