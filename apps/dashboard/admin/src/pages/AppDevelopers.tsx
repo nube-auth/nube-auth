@@ -18,6 +18,7 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { PageLoader } from "../components/PageLoader";
 import { useApp, useProject } from "../hooks/api";
+import { config } from "../config";
 
 export function AppDevelopersPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -598,7 +599,7 @@ app.get('/api/protected', requireAuth, (req, res) => {
 								<code className="text-foreground">{`from functools import wraps
 import requests
 
-NUBE_AUTH_API = "https://api.nubeauth.com"
+NUBE_AUTH_API = "${config.gatewayUrl}"
 APP_ID = "${app.id}"
 
 def require_auth(f):
@@ -644,7 +645,7 @@ def protected_route():
 							</Text>
 							<pre className="bg-muted/50 p-4 rounded-lg overflow-x-auto text-sm font-mono m-0 leading-relaxed">
 								<code className="text-foreground">{`// Get user by email (admin operation)
-const response = await fetch('https://api.nubeauth.com/v1/users/by-email', {
+const response = await fetch('${config.gatewayUrl}/v1/users/by-email', {
   method: 'POST',
   headers: {
     'Authorization': \`Bearer \${process.env.NUBE_AUTH_SERVICE_TOKEN}\`,

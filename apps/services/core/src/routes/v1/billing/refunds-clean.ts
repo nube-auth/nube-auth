@@ -15,6 +15,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { createProviderAdapter } from "../../../billing/adapters/index.js";
 import { decryptProviderCredentials } from "../../../utils/encryption.js";
+import { requiredParam } from "../../../utils/route-param.js";
 
 const log = createLogger("refund-routes");
 
@@ -155,7 +156,7 @@ refundRoutes.post("/", async (c: Context) => {
  */
 refundRoutes.get("/:id/status", async (c: Context) => {
 	try {
-		const refundPublicId = c.req.param("id");
+		const refundPublicId = requiredParam(c, "id");
 		const db = getDb();
 
 		const refundTx = await db.query.payment_transactions.findFirst({
@@ -185,7 +186,7 @@ refundRoutes.get("/:id/status", async (c: Context) => {
  */
 refundRoutes.get("/purchase/:purchaseId", async (c: Context) => {
 	try {
-		const purchasePublicId = c.req.param("purchaseId");
+		const purchasePublicId = requiredParam(c, "purchaseId");
 		const db = getDb();
 
 		const purchase = await db.query.purchases.findFirst({
@@ -221,7 +222,7 @@ refundRoutes.get("/purchase/:purchaseId", async (c: Context) => {
  */
 refundRoutes.get("/purchase/:purchaseId/can-refund", async (c: Context) => {
 	try {
-		const purchasePublicId = c.req.param("purchaseId");
+		const purchasePublicId = requiredParam(c, "purchaseId");
 		const db = getDb();
 
 		const purchase = await db.query.purchases.findFirst({

@@ -14,6 +14,7 @@ import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
 import { fireWebhookEvent } from "../../../utils/outbound-events.js";
+import { requiredParam } from "../../../utils/route-param.js";
 
 const log = createLogger("admin-license-routes");
 
@@ -84,7 +85,7 @@ const GrantLicenseSchema = z.object({
 
 licenseManagementRouter.post("/grant", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
+		const appId = requiredParam(c, "appId");
 		const body = await c.req.json();
 		const validated = GrantLicenseSchema.parse(body);
 
@@ -194,7 +195,7 @@ licenseManagementRouter.post("/grant", async (c: Context) => {
 
 licenseManagementRouter.get("/", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
+		const appId = requiredParam(c, "appId");
 		const statusFilter = c.req.query("status") as string | undefined;
 		const sourceFilter = c.req.query("source") as string | undefined;
 
@@ -232,7 +233,7 @@ licenseManagementRouter.get("/", async (c: Context) => {
 
 licenseManagementRouter.get("/summary", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
+		const appId = requiredParam(c, "appId");
 		const db = getDb();
 
 		const app = await appQueries.findByPublicId(db, appId);
@@ -275,8 +276,8 @@ licenseManagementRouter.get("/summary", async (c: Context) => {
 
 licenseManagementRouter.get("/:licenseId", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
-		const licenseId = c.req.param("licenseId");
+		const appId = requiredParam(c, "appId");
+		const licenseId = requiredParam(c, "licenseId");
 
 		if (!idPatterns.license.test(licenseId)) return c.json({ error: "Invalid licenseId" }, 400);
 
@@ -319,8 +320,8 @@ const UpdateLicenseSchema = z.object({
 
 licenseManagementRouter.patch("/:licenseId", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
-		const licenseId = c.req.param("licenseId");
+		const appId = requiredParam(c, "appId");
+		const licenseId = requiredParam(c, "licenseId");
 		const body = await c.req.json();
 		const validated = UpdateLicenseSchema.parse(body);
 
@@ -463,8 +464,8 @@ licenseManagementRouter.patch("/:licenseId", async (c: Context) => {
 
 licenseManagementRouter.delete("/:licenseId", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
-		const licenseId = c.req.param("licenseId");
+		const appId = requiredParam(c, "appId");
+		const licenseId = requiredParam(c, "licenseId");
 
 		if (!idPatterns.license.test(licenseId)) return c.json({ error: "Invalid licenseId" }, 400);
 
@@ -543,8 +544,8 @@ licenseManagementRouter.delete("/:licenseId", async (c: Context) => {
 
 licenseManagementRouter.get("/:licenseId/history", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
-		const licenseId = c.req.param("licenseId");
+		const appId = requiredParam(c, "appId");
+		const licenseId = requiredParam(c, "licenseId");
 
 		if (!idPatterns.license.test(licenseId)) return c.json({ error: "Invalid licenseId" }, 400);
 

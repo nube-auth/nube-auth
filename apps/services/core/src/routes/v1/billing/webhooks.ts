@@ -11,6 +11,7 @@ import { Hono } from "hono";
 import { enqueueWebhookProcessing } from "../../../billing/queue.js";
 import { WebhookLoggingService } from "../../../billing/services/webhook-logging.js";
 import { rateLimitMiddleware } from "../../../middleware/rateLimit.js";
+import { requiredParam } from "../../../utils/route-param.js";
 
 const log = createLogger("webhook-routes");
 
@@ -32,7 +33,7 @@ webhookRoutes.use(
  */
 async function handleIncomingWebhook(c: Context, providerConfigPublicId?: string) {
 	try {
-		const provider = c.req.param("provider");
+		const provider = requiredParam(c, "provider");
 
 		// Get signature from various header formats used by different providers
 		// For Dodo: pack Standard Webhooks headers (webhook-id, webhook-signature, webhook-timestamp) as JSON
@@ -135,7 +136,7 @@ async function handleIncomingWebhook(c: Context, providerConfigPublicId?: string
  * POST /v1/billing/webhooks/:provider/:configId
  * Config-scoped webhook — pins verification to a specific payment_provider_config (CFG0...).
  */
-webhookRoutes.post("/:provider/:configId", (c: Context) => handleIncomingWebhook(c, c.req.param("configId")));
+webhookRoutes.post("/:provider/:configId", (c: Context) => handleIncomingWebhook(c, requiredParam(c, "configId")));
 
 /**
  * POST /v1/billing/webhooks/:provider
