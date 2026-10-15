@@ -58,7 +58,16 @@ jobs:
     outputs:
       branch: ${{ steps.params.outputs.branch }}
       extra_tag: ${{ steps.params.outputs.extra_tag }}
+      domain: ${{ steps.params.outputs.domain }}
+      staging_build_args: ${{ steps.params.outputs.staging_build_args }}
+      production_build_args: ${{ steps.params.outputs.production_build_args }}
     steps:
+      - name: Checkout host map
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts
+          sparse-checkout-cone-mode: true
+          fetch-depth: 1
       - id: params
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
@@ -68,6 +77,17 @@ jobs:
             echo "branch=${{ inputs.branch }}" >> "$GITHUB_OUTPUT"
             echo "extra_tag=" >> "$GITHUB_OUTPUT"
           fi
+          DOMAIN="${{ vars.NUBE_DOMAIN }}"
+          if [ -z "$DOMAIN" ]; then DOMAIN="nubeauth.com"; fi
+          echo "domain=$DOMAIN" >> "$GITHUB_OUTPUT"
+          {
+            echo "staging_build_args<<EOF"
+            NUBE_DOMAIN="$DOMAIN" NUBE_ENV=staging node scripts/print-nube-hosts.mjs
+            echo "EOF"
+            echo "production_build_args<<EOF"
+            NUBE_DOMAIN="$DOMAIN" NUBE_ENV=production node scripts/print-nube-hosts.mjs
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
   # ═════════════════════════════════════════════════════════════════════════
   # STAGING — single combined image (Dockerfile.app)
@@ -82,19 +102,7 @@ jobs:
       dockerfile: nube-scripts/deploy/docker/Dockerfile.app
       branch: staging
       platforms: linux/amd64
-      build_args: |
-        VITE_GATEWAY_URL=${{ vars.VITE_GATEWAY_URL_STAGING || 'https://s-api.nubeauth.app' }}
-        VITE_HOME_URL=${{ vars.VITE_HOME_URL_STAGING || 'https://s-home.nubeauth.app' }}
-        VITE_DOCS_URL=${{ vars.VITE_DOCS_URL_STAGING || 'https://s-docs.nubeauth.app' }}
-        VITE_ADMIN_URL=${{ vars.VITE_ADMIN_URL_STAGING || 'https://s-manage.nubeauth.app' }}
-        VITE_USER_URL=${{ vars.VITE_USER_URL_STAGING || 'https://s-me.nubeauth.app' }}
-        VITE_ENV_TAG=Staging
-        PUBLIC_SITE_URL=${{ vars.VITE_HOME_URL_STAGING || 'https://s-home.nubeauth.app' }}
-        PUBLIC_DOCS_URL=${{ vars.VITE_DOCS_URL_STAGING || 'https://s-docs.nubeauth.app' }}
-        PUBLIC_ADMIN_URL=${{ vars.VITE_ADMIN_URL_STAGING || 'https://s-manage.nubeauth.app' }}
-        PUBLIC_USER_URL=${{ vars.VITE_USER_URL_STAGING || 'https://s-me.nubeauth.app' }}
-        PUBLIC_GATEWAY_URL=${{ vars.VITE_GATEWAY_URL_STAGING || 'https://s-api.nubeauth.app' }}
-        PUBLIC_ENV_TAG=Staging
+      build_args: ${{ needs.meta.outputs.staging_build_args }}
       railway_service_var_suffix: STAGING
       railway_environment_id: ${{ vars.RAILWAY_STAGING_ENVIRONMENT_ID }}
     secrets: inherit
@@ -161,19 +169,7 @@ jobs:
       branch: trunk
       platforms: linux/amd64,linux/arm64
       extra_tag: ${{ needs.meta.outputs.extra_tag }}
-      build_args: |
-        VITE_GATEWAY_URL=${{ vars.VITE_GATEWAY_URL_PRODUCTION || 'https://api.nubeauth.com' }}
-        VITE_HOME_URL=${{ vars.VITE_HOME_URL_PRODUCTION || 'https://nubeauth.com' }}
-        VITE_DOCS_URL=${{ vars.VITE_DOCS_URL_PRODUCTION || 'https://docs.nubeauth.com' }}
-        VITE_ADMIN_URL=${{ vars.VITE_ADMIN_URL_PRODUCTION || 'https://manage.nubeauth.com' }}
-        VITE_USER_URL=${{ vars.VITE_USER_URL_PRODUCTION || 'https://me.nubeauth.com' }}
-        VITE_ENV_TAG=Production
-        PUBLIC_SITE_URL=${{ vars.VITE_HOME_URL_PRODUCTION || 'https://nubeauth.com' }}
-        PUBLIC_DOCS_URL=${{ vars.VITE_DOCS_URL_PRODUCTION || 'https://docs.nubeauth.com' }}
-        PUBLIC_ADMIN_URL=${{ vars.VITE_ADMIN_URL_PRODUCTION || 'https://manage.nubeauth.com' }}
-        PUBLIC_USER_URL=${{ vars.VITE_USER_URL_PRODUCTION || 'https://me.nubeauth.com' }}
-        PUBLIC_GATEWAY_URL=${{ vars.VITE_GATEWAY_URL_PRODUCTION || 'https://api.nubeauth.com' }}
-        PUBLIC_ENV_TAG=Production
+      build_args: ${{ needs.meta.outputs.production_build_args }}
       railway_service_var_suffix: DASHBOARDS
       railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
     secrets: inherit
@@ -190,17 +186,5 @@ jobs:
       branch: trunk
       platforms: linux/amd64,linux/arm64
       extra_tag: ${{ needs.meta.outputs.extra_tag }}
-      build_args: |
-        VITE_GATEWAY_URL=${{ vars.VITE_GATEWAY_URL_PRODUCTION || 'https://api.nubeauth.com' }}
-        VITE_HOME_URL=${{ vars.VITE_HOME_URL_PRODUCTION || 'https://nubeauth.com' }}
-        VITE_DOCS_URL=${{ vars.VITE_DOCS_URL_PRODUCTION || 'https://docs.nubeauth.com' }}
-        VITE_ADMIN_URL=${{ vars.VITE_ADMIN_URL_PRODUCTION || 'https://manage.nubeauth.com' }}
-        VITE_USER_URL=${{ vars.VITE_USER_URL_PRODUCTION || 'https://me.nubeauth.com' }}
-        VITE_ENV_TAG=Production
-        PUBLIC_SITE_URL=${{ vars.VITE_HOME_URL_PRODUCTION || 'https://nubeauth.com' }}
-        PUBLIC_DOCS_URL=${{ vars.VITE_DOCS_URL_PRODUCTION || 'https://docs.nubeauth.com' }}
-        PUBLIC_ADMIN_URL=${{ vars.VITE_ADMIN_URL_PRODUCTION || 'https://manage.nubeauth.com' }}
-        PUBLIC_USER_URL=${{ vars.VITE_USER_URL_PRODUCTION || 'https://me.nubeauth.com' }}
-        PUBLIC_GATEWAY_URL=${{ vars.VITE_GATEWAY_URL_PRODUCTION || 'https://api.nubeauth.com' }}
-        PUBLIC_ENV_TAG=Production
+      build_args: ${{ needs.meta.outputs.production_build_args }}
     secrets: inherit

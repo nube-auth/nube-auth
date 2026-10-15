@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import config from '../config';
 ---
 
 <style>
@@ -127,7 +128,7 @@ import Footer from '../components/Footer.astro';
           <li><strong>Objection:</strong> Object to certain processing activities</li>
         </ul>
         <p class="mb-4">
-          To exercise these rights, contact us at <a href="mailto:privacy@nubeauth.com" class="legal-link">privacy@nubeauth.com</a>.
+          To exercise these rights, contact us at <a href={`mailto:${config.privacyEmail}`} class="legal-link">{config.privacyEmail}</a>.
         </p>
 
         <h2 class="text-xl sm:text-2xl font-bold mt-8 mb-4">8. Cookies and Tracking</h2>
@@ -160,7 +161,7 @@ import Footer from '../components/Footer.astro';
           If you have questions about this Privacy Policy, please contact us at:
         </p>
         <ul class="list-none mb-4 space-y-1">
-          <li>Email: <a href="mailto:privacy@nubeauth.com" class="legal-link">privacy@nubeauth.com</a></li>
+          <li>Email: <a href={`mailto:${config.privacyEmail}`} class="legal-link">{config.privacyEmail}</a></li>
         </ul>
       </div>
     </div>
