@@ -35,7 +35,7 @@ export { Icon, IconType } from "./icons";
 // ============================================================================
 
 export type { Theme } from "./hooks/useTheme";
-export { useTheme } from "./hooks/useTheme";
+export { cycleTheme, useTheme } from "./hooks/useTheme";
 
 // ============================================================================
 // UTILITIES
@@ -69,6 +69,14 @@ export {
 	LoginCardTerms,
 	LoginCardTitle,
 } from "./components/auth/login-card";
+export type { ConsoleLandingFeature, ConsoleLandingProps } from "./components/display/console";
+export {
+	BrandLockup,
+	ConsoleHeader,
+	ConsoleLanding,
+	ConsoleShell,
+	DocsLink,
+} from "./components/display/console";
 export type { DataTableHeaderProps, DataTableProps, DataTableRowProps } from "./components/display/data-table";
 export { DataTable, DataTableHeader, DataTableRow } from "./components/display/data-table";
 export type { EmptyStateProps } from "./components/display/empty-state";

@@ -1,28 +1,28 @@
+@import "@nube-auth/components/styles/tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ==========================================================================
    NubeAuth home
-   Palette: fog page, ink text, cobalt actions. HTTP status colors (hold for
-   redirects, granted for 200) are reserved for request traces and status chips.
+   Colors alias the shared dashboard tokens. Marketing type and the larger
+   page radius stay local. Trace colors stay on the dark request panel.
    ========================================================================== */
 
 :root {
-	color-scheme: light;
-
-	--fog: #eceff3;
-	--paper: #ffffff;
-	--ink: #0f1729;
-	--ink-2: #3b4658;
-	--ink-3: #667085;
-	--rule: #cdd4df;
-	--cobalt: #3340f5;
-	--cobalt-hover: #2530c9;
-	--cobalt-ink: #ffffff;
-	--cobalt-soft: #e3e6ff;
-	--granted: #0e8a5f;
-	--hold: #b45309;
+	--fog: var(--nube-canvas);
+	--paper: var(--nube-surface);
+	--ink: var(--nube-foreground);
+	--ink-2: var(--nube-secondary);
+	--ink-3: var(--nube-tertiary);
+	--rule: var(--nube-line);
+	--cobalt: var(--nube-brand);
+	--cobalt-hover: var(--nube-brand-hover);
+	--cobalt-ink: var(--nube-brand-foreground);
+	--cobalt-soft: var(--nube-brand-soft);
+	--granted: var(--nube-success);
+	--hold: var(--nube-warning);
 
 	--trace-bg: #0e1424;
 	--trace-ink: #d7deea;
@@ -50,26 +50,6 @@
 	--card-border: var(--rule);
 	--border-primary: var(--rule);
 	--color-primary: var(--cobalt);
-}
-
-[data-theme="dark"] {
-	color-scheme: dark;
-
-	--fog: #0a0f1c;
-	--paper: #111a2c;
-	--ink: #e6ebf4;
-	--ink-2: #aeb8ca;
-	--ink-3: #7d8aa3;
-	--rule: #24304a;
-	--cobalt: #8c95ff;
-	--cobalt-hover: #b3b9ff;
-	--cobalt-ink: #0a0f1c;
-	--cobalt-soft: #1b2147;
-	--granted: #3fd39a;
-	--hold: #f2b45a;
-
-	--trace-bg: #0e1526;
-	--trace-rule: #24304a;
 }
 
 /* ── Base ─────────────────────────────────────────────────────────────── */
