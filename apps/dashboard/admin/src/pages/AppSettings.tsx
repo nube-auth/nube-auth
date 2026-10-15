@@ -168,9 +168,6 @@ export function AppSettingsPage() {
 						</BreadcrumbButton>
 					</BreadcrumbItem>
 					<BreadcrumbItem>
-						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps`} />}>Apps</BreadcrumbButton>
-					</BreadcrumbItem>
-					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to={`/projects/${projectId}/apps/${appId}`} />}>
 							{app.name}
 						</BreadcrumbButton>
@@ -182,12 +179,7 @@ export function AppSettingsPage() {
 			</Breadcrumb>
 
 			{/* Page Header */}
-			<div>
-				<Heading level={1} size="lg">
-					App Settings
-				</Heading>
-				<Text className="text-muted mt-1">Configure your application settings and preferences</Text>
-			</div>
+			<Text className="text-muted">Configure your application settings and preferences</Text>
 
 			{/* Tabs */}
 			<Tabs defaultValue="general">

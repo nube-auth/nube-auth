@@ -16,7 +16,6 @@ import {
 	DialogPopup,
 	DialogTitle,
 	EmptyState,
-	Heading,
 	Icon,
 	IconType,
 	Input,
@@ -500,12 +499,9 @@ export function AppWebhooksPage() {
 
 			{/* Header */}
 			<div className="flex items-center justify-between">
-				<div>
-					<Heading level={2}>Webhooks</Heading>
-					<Text className="text-muted">
-						Register HTTPS endpoints to receive real-time event notifications from {app.name}.
-					</Text>
-				</div>
+				<Text className="text-muted">
+					Register HTTPS endpoints to receive real-time event notifications from {app.name}.
+				</Text>
 				<Button variant="primary" onClick={openCreate}>
 					<Icon icon={IconType.Add} />
 					Add Endpoint

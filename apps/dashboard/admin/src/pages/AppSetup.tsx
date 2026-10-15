@@ -184,9 +184,8 @@ export function AppSetupPage() {
 	}
 
 	return (
-		<div className="page bg-content-bg min-h-screen">
-			{/* Breadcrumb */}
-			<Breadcrumb className="mb-6 pt-5 px-10">
+		<div className="space-y-6">
+			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
@@ -203,13 +202,9 @@ export function AppSetupPage() {
 			</Breadcrumb>
 
 			{/* 2 Column Layout */}
-			<div className="grid grid-cols-[1.4fr_1fr] gap-10 py-5 px-10 max-w-[1600px] mx-auto">
-				{/* Left Column - Form */}
+			<div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-10 max-w-[1600px]">
 				<div>
 					<div className="mb-8">
-						<Heading level={1} size="lg" className="mb-2">
-							Create New Application
-						</Heading>
 						<Text className="text-muted">
 							Configure your application's authentication settings and OAuth providers.
 						</Text>

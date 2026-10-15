@@ -1,5 +1,9 @@
 import {
 	Alert,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
 	Button,
 	Card,
 	CardBody,
@@ -52,14 +56,15 @@ export default function Projects() {
 
 	return (
 		<div className="flex flex-col gap-6">
-			{/* Page Header */}
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Projects</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
 			<div className="flex items-center justify-between">
-				<div>
-					<Heading level={1} size="lg">
-						Projects
-					</Heading>
-					<Text className="text-muted mt-1">Manage your authentication projects</Text>
-				</div>
+				<Text className="text-muted">Manage your authentication projects</Text>
 				{hasProjects && (
 					<div className="flex gap-3 items-center">
 						<div className="flex bg-surface-secondary/50 border border-border rounded-lg p-1 gap-1">

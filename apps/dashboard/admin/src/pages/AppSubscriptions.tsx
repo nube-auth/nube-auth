@@ -146,12 +146,7 @@ export function AppSubscriptionsPage() {
 				</BreadcrumbList>
 			</Breadcrumb>
 
-			<div>
-				<Heading level={1} size="lg">
-					Subscriptions
-				</Heading>
-				<Text className="text-muted mt-1">Manage recurring subscriptions for {app.name}</Text>
-			</div>
+			<Text className="text-muted">Manage recurring subscriptions for {app.name}</Text>
 
 			{/* Summary */}
 			{Object.keys(statusCounts).length > 0 && (

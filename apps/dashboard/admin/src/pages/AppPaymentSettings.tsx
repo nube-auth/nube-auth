@@ -75,7 +75,7 @@ export default function AppPaymentSettingsPage() {
 	}
 
 	return (
-		<div className="page">
+		<div className="space-y-6">
 			{/* Breadcrumb */}
 			<Breadcrumb>
 				<BreadcrumbList>
@@ -99,14 +99,9 @@ export default function AppPaymentSettingsPage() {
 			</Breadcrumb>
 
 			{/* Page Header */}
-			<div className="mb-8">
-				<Heading level={1} size="lg">
-					Payment Provider
-				</Heading>
-				<Text className="text-muted">
-					Select one payment provider for {app.name}. Providers are configured at the project level.
-				</Text>
-			</div>
+			<Text className="text-muted">
+				Select one payment provider for {app.name}. Providers are configured at the project level.
+			</Text>
 
 			{/* Info Banner */}
 			<Alert variant="info" className="mb-6">
