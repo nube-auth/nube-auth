@@ -110,12 +110,7 @@ export function AppLicensesPage() {
 				</BreadcrumbList>
 			</Breadcrumb>
 
-			<div>
-				<Heading level={1} size="lg">
-					Licenses & Plans
-				</Heading>
-				<Text className="text-muted mt-1">Manage plans, pricing, and user licenses for {app.name}</Text>
-			</div>
+			<Text className="text-muted">Manage plans, pricing, and user licenses for {app.name}</Text>
 
 			<Tabs value={activeTab} onValueChange={setActiveTab}>
 				<TabsList>

@@ -1,6 +1,20 @@
-import { Button, Card, CardBody, Field, Heading, Input, Label, Text, Textarea } from "@nube-auth/components";
+import {
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
+	Button,
+	Card,
+	CardBody,
+	Field,
+	Heading,
+	Input,
+	Label,
+	Text,
+	Textarea,
+} from "@nube-auth/components";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { IconPicker } from "../components/IconPicker";
 import { useCreateProject } from "../hooks/api";
 
@@ -40,16 +54,20 @@ export function CreateProjectPage() {
 	};
 
 	return (
-		<div className="w-full">
-			{/* Page Header */}
-			<div className="mb-8 pb-6 border-b border-border">
-				<Heading size="lg" className="mb-2">
-					Create New Project
-				</Heading>
-				<Text className="text-muted">
-					Projects help you organize your applications and manage authentication across your services.
-				</Text>
-			</div>
+		<div className="w-full space-y-6">
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton active>New project</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
+			<Text className="text-muted">
+				Projects help you organize your applications and manage authentication across your services.
+			</Text>
 
 			<div className="grid grid-cols-3 gap-8">
 				{/* Form - Left Column */}

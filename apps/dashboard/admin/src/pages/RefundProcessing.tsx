@@ -235,8 +235,7 @@ export function RefundProcessingPage() {
 	}
 
 	return (
-		<div>
-			{/* Breadcrumb */}
+		<div className="space-y-6">
 			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
@@ -248,13 +247,8 @@ export function RefundProcessingPage() {
 				</BreadcrumbList>
 			</Breadcrumb>
 
-			<div className="mb-6 flex justify-between items-center">
-				<div>
-					<Heading level={1} size="lg">
-						Refund Processing
-					</Heading>
-					<Text className="m-0 text-muted">Create and manage customer refunds</Text>
-				</div>
+			<div className="flex justify-between items-center">
+				<Text className="text-muted">Create and manage customer refunds</Text>
 				<Button onClick={() => setActiveTab("create")} variant="primary">
 					+ Create Refund
 				</Button>

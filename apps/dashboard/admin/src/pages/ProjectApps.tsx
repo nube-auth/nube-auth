@@ -43,9 +43,8 @@ export function ProjectAppsPage() {
 	}
 
 	return (
-		<div className="page">
-			{/* Breadcrumb */}
-			<Breadcrumb className="mb-6">
+		<div className="space-y-6">
+			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
@@ -62,15 +61,10 @@ export function ProjectAppsPage() {
 			</Breadcrumb>
 
 			{/* Page Header */}
-			<div className="flex justify-between items-center mb-8">
-				<div>
-					<Heading level={1} size="lg" className="mb-2">
-						Applications
-					</Heading>
-					<Text className="text-muted">
-						{apps?.length || 0} {apps?.length === 1 ? "app" : "apps"} in {project.name}
-					</Text>
-				</div>
+			<div className="flex justify-between items-center">
+				<Text className="text-muted">
+					{apps?.length || 0} {apps?.length === 1 ? "app" : "apps"} in {project.name}
+				</Text>
 				<div className="flex gap-3 items-center">
 					{/* View Mode Toggle */}
 					<div className="flex bg-surface-secondary/50 border border-border rounded-lg p-1 gap-1">

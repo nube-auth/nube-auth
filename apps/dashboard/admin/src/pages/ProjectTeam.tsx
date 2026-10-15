@@ -84,9 +84,8 @@ export function ProjectTeamPage() {
 	}
 
 	return (
-		<div className="page">
-			{/* Breadcrumb */}
-			<Breadcrumb className="mb-6">
+		<div className="space-y-6">
+			<Breadcrumb>
 				<BreadcrumbList>
 					<BreadcrumbItem>
 						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
@@ -103,13 +102,8 @@ export function ProjectTeamPage() {
 			</Breadcrumb>
 
 			{/* Page Header */}
-			<div className="flex justify-between items-center mb-8">
-				<div>
-					<Heading level={1} size="lg">
-						Team Members
-					</Heading>
-					<Text className="text-muted mt-2">Manage team members and their roles for {project.name}</Text>
-				</div>
+			<div className="flex justify-between items-center">
+				<Text className="text-muted">Manage team members and their roles for {project.name}</Text>
 				{canManageMembers && (
 					<Button onClick={() => setShowInviteModal(true)}>
 						<Icon icon={IconType.UserMultiple} size={16} />

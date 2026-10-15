@@ -31,7 +31,7 @@ export function ProjectStatsPage() {
 	}
 
 	return (
-		<div className="page">
+		<div className="space-y-6">
 			{/* Breadcrumb */}
 			<Breadcrumb>
 				<BreadcrumbList>
@@ -50,15 +50,9 @@ export function ProjectStatsPage() {
 			</Breadcrumb>
 
 			{/* Page Header */}
-			<div className="mb-8">
-				<Heading level={1} size="lg">
-					Project Statistics
-				</Heading>
-				<Text className="text-muted">View detailed analytics and insights for {project.name}</Text>
-			</div>
+			<Text className="text-muted">View detailed analytics and insights for {project.name}</Text>
 
-			{/* Stats Cards */}
-			<div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-5 mb-8">
+			<div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-5">
 				<Card>
 					<CardBody>
 						<Text className="text-13px text-muted mb-2 font-semibold uppercase tracking-wider">

@@ -17,7 +17,6 @@ import {
 	DialogPopup,
 	DialogTitle,
 	EmptyState,
-	Heading,
 	Icon,
 	IconType,
 	Input,
@@ -253,13 +252,8 @@ export function AppUsersPage() {
 			</Breadcrumb>
 
 			{/* Page Header */}
-			<div className="flex items-start justify-between gap-4">
-				<div>
-					<Heading size="lg" className="mb-2">
-						Users
-					</Heading>
-					<Text className="text-muted">Manage users and their licenses for {app.name}</Text>
-				</div>
+			<div className="flex items-center justify-between gap-4">
+				<Text className="text-muted">Manage users and their licenses for {app.name}</Text>
 				<Button variant="primary" onClick={() => setShowInviteModal(true)}>
 					<Icon icon={IconType.UserAdd} size={16} />
 					Invite User
@@ -267,7 +261,7 @@ export function AppUsersPage() {
 			</div>
 
 			{/* Filters */}
-			<div className="mb-5 flex items-center gap-3">
+			<div className="flex items-center gap-3">
 				<div className="w-full max-w-100">
 					<Input
 						type="text"

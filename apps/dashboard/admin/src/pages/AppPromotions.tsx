@@ -248,13 +248,8 @@ export function AppPromotionsPage() {
 				</BreadcrumbList>
 			</Breadcrumb>
 
-			<div className="flex justify-between items-start">
-				<div>
-					<Heading level={1} size="lg">
-						Promotions
-					</Heading>
-					<Text className="text-muted mt-1">Manage discounts and promo codes for {app.name}</Text>
-				</div>
+			<div className="flex justify-between items-center">
+				<Text className="text-muted">Manage discounts and promo codes for {app.name}</Text>
 				<Button onClick={openCreate}>
 					<Icon icon={IconType.Add} size={16} />
 					Create Promotion

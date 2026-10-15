@@ -16,7 +16,6 @@ import {
 	DialogHeader,
 	DialogPopup,
 	DialogTitle,
-	Heading,
 	Input,
 	Label,
 	Spinner,
@@ -404,7 +403,7 @@ export default function ProjectPaymentProvidersPage() {
 	}
 
 	return (
-		<div className="page">
+		<div className="space-y-6">
 			{/* Breadcrumb */}
 			<Breadcrumb>
 				<BreadcrumbList>
@@ -423,15 +422,10 @@ export default function ProjectPaymentProvidersPage() {
 			</Breadcrumb>
 
 			{/* Page Header */}
-			<div className="flex justify-between items-center mb-8">
-				<div>
-					<Heading level={1} size="lg">
-						Payment Providers
-					</Heading>
-					<Text className="text-muted">
-						{providers?.length || 0} {providers?.length === 1 ? "provider" : "providers"} configured
-					</Text>
-				</div>
+			<div className="flex justify-between items-center">
+				<Text className="text-muted">
+					{providers?.length || 0} {providers?.length === 1 ? "provider" : "providers"} configured
+				</Text>
 				<Button variant="primary" onClick={handleCreate}>
 					+ Add Provider
 				</Button>
