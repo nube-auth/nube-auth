@@ -9,7 +9,7 @@ Deploy Nube Auth using Docker Compose for a production-ready setup.
 
 ```bash
 # Clone the repository
-git clone https://github.com/0xdps/nube-auth.git
+git clone https://github.com/nube-auth/nube-auth.git
 cd nube-auth
 
 # Copy environment template
@@ -30,7 +30,7 @@ version: '3.8'
 
 services:
   gateway:
-    image: ghcr.io/0xdps/nube-auth-gateway:latest
+    image: ghcr.io/nube-auth/nube-auth-gateway:latest
     ports:
       - "3000:3000"
     environment:
@@ -42,7 +42,7 @@ services:
       - core
 
   core:
-    image: ghcr.io/0xdps/nube-auth:latest
+    image: ghcr.io/nube-auth/nube-auth:latest
     ports:
       - "3001:3001"
     environment:

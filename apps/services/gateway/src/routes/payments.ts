@@ -50,6 +50,7 @@ paymentsRoutes.post("/webhooks/:provider/:configId", async (c: Context) => {
 	try {
 		const provider = c.req.param("provider");
 		const configId = c.req.param("configId");
+		if (!provider || !configId) return c.json({ error: "Missing webhook target" }, 400);
 		const rawBody = await c.req.text();
 		const coreUrl = `${env.CORE_URL}/v1/billing/webhooks/${encodeURIComponent(provider)}/${encodeURIComponent(configId)}`;
 
@@ -73,6 +74,7 @@ paymentsRoutes.post("/webhooks/:provider/:configId", async (c: Context) => {
 paymentsRoutes.post("/webhooks/:provider", async (c: Context) => {
 	try {
 		const provider = c.req.param("provider");
+		if (!provider) return c.json({ error: "Missing webhook provider" }, 400);
 		const rawBody = await c.req.text();
 		const coreUrl = `${env.CORE_URL}/v1/billing/webhooks/${encodeURIComponent(provider)}`;
 

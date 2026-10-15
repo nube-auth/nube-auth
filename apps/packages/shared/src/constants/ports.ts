@@ -10,9 +10,9 @@ export const DEFAULT_PORTS = {
 	/** Gateway service */
 	GATEWAY: 3004,
 	/** User dashboard (Vite dev server) */
-	DASHBOARD_USER: 3001,
+	DASHBOARD_USER: 5173,
 	/** Admin dashboard (Vite dev server) */
-	DASHBOARD_ADMIN: 3002,
+	DASHBOARD_ADMIN: 5174,
 	/** Home/marketing site (Astro) */
 	HOME: 4321,
 } as const;

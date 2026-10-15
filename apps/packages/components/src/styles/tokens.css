@@ -1,0 +1,155 @@
+/* Shared Nube Auth brand tokens.
+   Light is the default. Dark applies through .dark, [data-theme="dark"],
+   or the system preference unless light was chosen explicitly.
+   Dashboard theme.css and the marketing site both alias these names. */
+
+:root {
+	color-scheme: light;
+
+	--nube-brand: #6366f1;
+	--nube-brand-hover: #4f46e5;
+	--nube-brand-foreground: #fefefe;
+	--nube-brand-soft: #eef2ff;
+	--nube-brand-border: #4f46e5;
+
+	--nube-canvas: #fafafa;
+	--nube-background: #fefefe;
+	--nube-surface: #ffffff;
+	--nube-surface-raised: #fefefe;
+	--nube-surface-muted: #f4f4f5;
+	--nube-muted-fill: #e4e4e7;
+
+	--nube-foreground: #18181b;
+	--nube-secondary: #52525b;
+	--nube-muted: #52525b;
+	--nube-tertiary: #a1a1aa;
+	--nube-dimmed: #a1a1aa;
+
+	--nube-line: #e4e4e7;
+	--nube-line-strong: #d4d4d8;
+
+	--nube-sidebar-text: #52525b;
+	--nube-sidebar-text-hover: #18181b;
+	--nube-sidebar-section: #a1a1aa;
+	--nube-sidebar-active-bg: rgba(99, 102, 241, 0.08);
+
+	--nube-success: #16a34a;
+	--nube-success-bg: #dcfce7;
+	--nube-success-text: #166534;
+	--nube-warning: #d97706;
+	--nube-warning-bg: #fef3c7;
+	--nube-warning-text: #92400e;
+	--nube-danger: #dc2626;
+	--nube-danger-bg: #fee2e2;
+	--nube-danger-text: #991b1b;
+	--nube-danger-border: #fecaca;
+	--nube-info-bg: #e0e7ff;
+	--nube-info-text: #3730a3;
+
+	--nube-on-tertiary: #fefefe;
+	--nube-tertiary-border: #d4d4d8;
+	--nube-shadow-input: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+	--nube-radius-sm: 4px;
+	--nube-radius: 6px;
+	--nube-radius-md: 8px;
+	--nube-radius-lg: 12px;
+	--nube-radius-xl: 16px;
+}
+
+.dark,
+[data-theme="dark"] {
+	color-scheme: dark;
+
+	--nube-brand: #818cf8;
+	--nube-brand-hover: #a5b4fc;
+	--nube-brand-foreground: #fafafa;
+	--nube-brand-soft: #312e81;
+	--nube-brand-border: #6366f1;
+
+	--nube-canvas: #09090b;
+	--nube-background: #18181b;
+	--nube-surface: #27272a;
+	--nube-surface-raised: #18181b;
+	--nube-surface-muted: #27272a;
+	--nube-muted-fill: #27272a;
+
+	--nube-foreground: #fafafa;
+	--nube-secondary: #d4d4d8;
+	--nube-muted: #a1a1aa;
+	--nube-tertiary: #a1a1aa;
+	--nube-dimmed: #71717a;
+
+	--nube-line: rgba(212, 212, 216, 0.15);
+	--nube-line-strong: rgba(212, 212, 216, 0.25);
+
+	--nube-sidebar-text: #a1a1aa;
+	--nube-sidebar-text-hover: #fafafa;
+	--nube-sidebar-section: #71717a;
+	--nube-sidebar-active-bg: rgba(129, 140, 248, 0.15);
+
+	--nube-success: #22c55e;
+	--nube-success-bg: rgba(34, 197, 94, 0.12);
+	--nube-success-text: #86efac;
+	--nube-warning: #f59e0b;
+	--nube-warning-bg: rgba(245, 158, 11, 0.12);
+	--nube-warning-text: #fcd34d;
+	--nube-danger-bg: rgba(220, 38, 38, 0.12);
+	--nube-danger-text: #fca5a5;
+	--nube-danger-border: #f87171;
+	--nube-info-bg: rgba(99, 102, 241, 0.12);
+	--nube-info-text: #a5b4fc;
+
+	--nube-on-tertiary: #18181b;
+	--nube-tertiary-border: #71717a;
+	--nube-shadow-input: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not(.light):not([data-theme="light"]) {
+		color-scheme: dark;
+
+		--nube-brand: #818cf8;
+		--nube-brand-hover: #a5b4fc;
+		--nube-brand-foreground: #fafafa;
+		--nube-brand-soft: #312e81;
+		--nube-brand-border: #6366f1;
+
+		--nube-canvas: #09090b;
+		--nube-background: #18181b;
+		--nube-surface: #27272a;
+		--nube-surface-raised: #18181b;
+		--nube-surface-muted: #27272a;
+		--nube-muted-fill: #27272a;
+
+		--nube-foreground: #fafafa;
+		--nube-secondary: #d4d4d8;
+		--nube-muted: #a1a1aa;
+		--nube-tertiary: #a1a1aa;
+		--nube-dimmed: #71717a;
+
+		--nube-line: rgba(212, 212, 216, 0.15);
+		--nube-line-strong: rgba(212, 212, 216, 0.25);
+
+		--nube-sidebar-text: #a1a1aa;
+		--nube-sidebar-text-hover: #fafafa;
+		--nube-sidebar-section: #71717a;
+		--nube-sidebar-active-bg: rgba(129, 140, 248, 0.15);
+
+		--nube-success: #22c55e;
+		--nube-success-bg: rgba(34, 197, 94, 0.12);
+		--nube-success-text: #86efac;
+		--nube-warning: #f59e0b;
+		--nube-warning-bg: rgba(245, 158, 11, 0.12);
+		--nube-warning-text: #fcd34d;
+		--nube-danger-bg: rgba(220, 38, 38, 0.12);
+		--nube-danger-text: #fca5a5;
+		--nube-danger-border: #f87171;
+		--nube-info-bg: rgba(99, 102, 241, 0.12);
+		--nube-info-text: #a5b4fc;
+
+		--nube-on-tertiary: #18181b;
+		--nube-tertiary-border: #71717a;
+		--nube-shadow-input: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+	}
+}

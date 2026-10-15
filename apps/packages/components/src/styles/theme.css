@@ -1,272 +1,85 @@
-/* ==========================================================================
-   Nube Auth Design System - Shared Theme
-   Single source of truth for all dashboard theming
-   
-   Color Philosophy: Neutral canvas with indigo brand accent
-   
-   Light Theme:
-   - Sidebar: Clean neutral frame (#FAFAFA)
-   - Main: Light neutral canvas (#FAFAFA)
-   - Topbar: Neutral bridge (#FAFAFA)
-   - Text: Black monochrome hierarchy (#18181B → #A1A1AA)
-   - Brand: Indigo for interactive elements (#6366F1)
-   
-   Dark Theme:
-   - Sidebar: Deep black frame (#09090B)
-   - Main: Near-black canvas (#09090B)
-   - Topbar: Dark bridge (#09090B)
-   - Text: White monochrome hierarchy (#FAFAFA → #A1A1AA)
-   - Brand: Light indigo for interactive elements (#818CF8)
-   
-   Neutral grays everywhere, indigo brand accent for maximum focus
-   Consistent brand color across Home, Docs, Admin, and User dashboards
-   Dividers: subtle borders that adapt to theme
-   
-   Usage:
-   Import in each dashboard's styles.css:
-   @import "@nube-auth/components/theme.css";
-   
-   NOTE: Custom utilities imported in tailwind.css to avoid duplicates
-   ========================================================================== */
+/* Dashboard theme. Colors come from tokens.css; these names are what Selia and the dashboards read. */
 
-/* CSS Variables - Light Theme (Default) */
+@import "./tokens.css";
+
 :root {
-  /* Primary Colors - Indigo Brand */
-  --primary: #6366F1;
-  --primary-hover: #4F46E5;
-  --primary-light: #EEF2FF;
-  
-  /* Sidebar (Frame) - Light theme matches content bg */
-  --sidebar-bg: #FAFAFA;
-  --sidebar-border: #E4E4E7;
-  --sidebar-text: #52525B;
-  --sidebar-text-hover: #18181B;
-  --sidebar-active-bg: rgba(99, 102, 241, 0.08);
-  --sidebar-active-text: #6366F1;
-  --sidebar-section-text: #A1A1AA;
-  
-  /* Topbar (Bridge) - Light theme */
-  --top-header-bg: #FAFAFA;
-  
-  /* Content Area - Light Theme */
-  --content-bg: #FAFAFA;
-  --card-bg: #FEFEFE;
-  --card-border: #E4E4E7;
-  --card-hover-border: #D4D4D8;
-  --bg-surface: #FEFEFE;
-  --bg-muted: #E4E4E7;
-  --border: #E4E4E7;
-  
-  /* Text Colors - Light Theme */
-  --text-primary: #18181B;
-  --text-secondary: #52525B;
-  --text-muted: #52525B;
-  --text-tertiary: #A1A1AA;
-  --text-link: #6366F1;
-  
-  /* Status Colors */
-  --success: #16A34A;
-  --success-bg: #DCFCE7;
-  --success-text: #166534;
-  --warning: #D97706;
-  --warning-bg: #FEF3C7;
-  --warning-text: #92400E;
-  --danger: #DC2626;
-  --danger-bg: #FEE2E2;
-  --danger-text: #991B1B;
-  --info: #6366F1;
-  --info-bg: #E0E7FF;
-  --info-text: #3730A3;
-  
-  /* Selia Component Colors (mapped to our system) */
-  --foreground: #18181B;
-  --background: #FEFEFE;
-  --card: #FFFFFF;
-  --card-border: #E4E4E7;
-  --muted: #52525B;
-  --dimmed: #A1A1AA;
-  --primary-foreground: #FEFEFE;
-  --primary-border: #4F46E5;
-  --tertiary: #52525B;
-  --tertiary-foreground: #FEFEFE;
-  --tertiary-border: #D4D4D8;
-  --danger-foreground: #FEFEFE;
-  --danger-border: #FECACA;
-  --accent: #F4F4F5;
-  --input-bg: #FEFEFE;
-  --input-border: #E4E4E7;
-  --input-accent-border: #D4D4D8;
-  --chip: #E4E4E7;
-  --chip-border: #D4D4D8;
-  --spinner: #18181B;
-  --shadow-input: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  
-  /* Code Block (Always Dark) */
-  --code-bg: #1e1e2e;
-  --code-text: #cdd6f4;
-  --code-border: #313244;
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  
-  /* Border Radius */
-  --radius-sm: 4px;
-  --radius: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  
-  /* Transitions */
-  --transition: 150ms ease;
-}
+	--primary: var(--nube-brand);
+	--primary-hover: var(--nube-brand-hover);
+	--primary-light: var(--nube-brand-soft);
+	--primary-foreground: var(--nube-brand-foreground);
+	--primary-border: var(--nube-brand-border);
 
-/* Dark Theme - Manual Override (Selia uses .dark class) */
-.dark {
-  /* Primary Colors - Indigo Brand Dark */
-  --primary: #818CF8;
-  --primary-hover: #A5B4FC;
-  --primary-light: #312E81;
-  
-  /* Sidebar (Frame) - Matches content bg */
-  --sidebar-bg: #09090B;
-  --sidebar-border: rgba(212, 212, 216, 0.15);
-  --sidebar-text: #A1A1AA;
-  --sidebar-text-hover: #FAFAFA;
-  --sidebar-active-bg: rgba(129, 140, 248, 0.15);
-  --sidebar-active-text: #818CF8;
-  --sidebar-section-text: #71717A;
-  
-  /* Topbar (Bridge) */
-  --top-header-bg: #09090B;
-  
-  /* Canvas - Dark neutral background */
-  --content-bg: #09090B;
-  --card-bg: #18181B;
-  --card-border: rgba(212, 212, 216, 0.15);
-  --card-hover-border: rgba(212, 212, 216, 0.25);
-  --bg-surface: #18181B;
-  --bg-muted: #27272A;
-  --border: rgba(212, 212, 216, 0.15);
-  
-  /* Text - Light for contrast on dark bg */
-  --text-primary: #FAFAFA;
-  --text-secondary: #D4D4D8;
-  --text-muted: #D4D4D8;
-  --text-tertiary: #A1A1AA;
-  --text-link: #818CF8;
-  
-  /* Selia Component Colors (mapped to dark system) */
-  --foreground: #FAFAFA;
-  --background: #18181B;
-  --card: #27272A;
-  --card-border: rgba(212, 212, 216, 0.15);
-  --muted: #A1A1AA;
-  --dimmed: #71717A;
-  --primary-foreground: #FAFAFA;
-  --primary-border: #6366F1;
-  --tertiary: #A1A1AA;
-  --tertiary-foreground: #18181B;
-  --tertiary-border: #71717A;
-  --danger-foreground: #FEFEFE;
-  --danger-border: #F87171;
-  --accent: #27272A;
-  --input-bg: #18181B;
-  --input-border: rgba(212, 212, 216, 0.15);
-  --input-accent-border: rgba(212, 212, 216, 0.25);
-  --chip: #27272A;
-  --chip-border: rgba(212, 212, 216, 0.15);
-  --spinner: #FAFAFA;
-  --shadow-input: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-  --success: #22C55E;
-  --success-bg: rgba(34, 197, 94, 0.12);
-  --success-text: #86EFAC;
-  --warning: #F59E0B;
-  --warning-bg: rgba(245, 158, 11, 0.12);
-  --warning-text: #FCD34D;
-  --danger-bg: rgba(220, 38, 38, 0.12);
-  --danger-text: #FCA5A5;
-  --info-bg: rgba(99, 102, 241, 0.12);
-  --info-text: #A5B4FC;
-  
-  /* Surface colors for elevation */
-  --surface-secondary: #27272A;
-  --surface-hover: rgba(212, 212, 216, 0.1);
-}
+	--sidebar-bg: var(--nube-canvas);
+	--sidebar-border: var(--nube-line);
+	--sidebar-text: var(--nube-sidebar-text);
+	--sidebar-text-hover: var(--nube-sidebar-text-hover);
+	--sidebar-active-bg: var(--nube-sidebar-active-bg);
+	--sidebar-active-text: var(--nube-brand);
+	--sidebar-section-text: var(--nube-sidebar-section);
+	--top-header-bg: var(--nube-canvas);
 
-/* Auto Dark Theme Detection */
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) {
-    /* Primary Colors - Indigo Brand Dark */
-    --primary: #818CF8;
-    --primary-hover: #A5B4FC;
-    --primary-light: #312E81;
-    
-    /* Sidebar (Frame) - Matches content bg */
-    --sidebar-bg: #09090B;
-    --sidebar-border: rgba(212, 212, 216, 0.15);
-    --sidebar-text: #A1A1AA;
-    --sidebar-text-hover: #FAFAFA;
-    --sidebar-active-bg: rgba(129, 140, 248, 0.15);
-    --sidebar-active-text: #818CF8;
-    --sidebar-section-text: #71717A;
-    
-    /* Topbar (Bridge) */
-    --top-header-bg: #09090B;
-    
-    /* Canvas - Dark neutral background */
-    --content-bg: #09090B;
-    --card-bg: #18181B;
-    --card-border: rgba(212, 212, 216, 0.15);
-    --card-hover-border: rgba(212, 212, 216, 0.25);
-    --bg-surface: #18181B;
-    --bg-muted: #27272A;
-    --border: rgba(212, 212, 216, 0.15);
-    
-    /* Text - Light for contrast on dark bg */
-    --text-primary: #FAFAFA;
-    --text-secondary: #D4D4D8;
-    --text-muted: #D4D4D8;
-    --text-tertiary: #A1A1AA;
-    --text-link: #818CF8;
-    
-    /* Selia Component Colors (mapped to dark system) */
-    --foreground: #FAFAFA;
-    --background: #18181B;
-    --card: #27272A;
-    --card-border: rgba(212, 212, 216, 0.15);
-    --muted: #A1A1AA;
-    --dimmed: #71717A;
-    --primary-foreground: #FAFAFA;
-    --primary-border: #6366F1;
-    --tertiary: #A1A1AA;
-    --tertiary-foreground: #18181B;
-    --tertiary-border: #71717A;
-    --danger-foreground: #FEFEFE;
-    --danger-border: #F87171;
-    --accent: #27272A;
-    --input-bg: #18181B;
-    --input-border: rgba(212, 212, 216, 0.15);
-    --input-accent-border: rgba(212, 212, 216, 0.25);
-    --chip: #27272A;
-    --chip-border: rgba(212, 212, 216, 0.15);
-    --spinner: #FAFAFA;
-    --shadow-input: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-    --success: #22C55E;
-    --success-bg: rgba(34, 197, 94, 0.12);
-    --success-text: #86EFAC;
-    --warning: #F59E0B;
-    --warning-bg: rgba(245, 158, 11, 0.12);
-    --warning-text: #FCD34D;
-    --danger-bg: rgba(220, 38, 38, 0.12);
-    --danger-text: #FCA5A5;
-    --info-bg: rgba(99, 102, 241, 0.12);
-    --info-text: #A5B4FC;
-    
-    /* Surface colors for elevation */
-    --surface-secondary: #27272A;
-    --surface-hover: rgba(212, 212, 216, 0.1);
-  }
+	--content-bg: var(--nube-canvas);
+	--card-bg: var(--nube-surface-raised);
+	--card-border: var(--nube-line);
+	--card-hover-border: var(--nube-line-strong);
+	--bg-surface: var(--nube-background);
+	--bg-muted: var(--nube-muted-fill);
+	--border: var(--nube-line);
+	--surface-secondary: var(--nube-surface-muted);
+	--surface-hover: var(--nube-sidebar-active-bg);
+
+	--text-primary: var(--nube-foreground);
+	--text-secondary: var(--nube-secondary);
+	--text-muted: var(--nube-muted);
+	--text-tertiary: var(--nube-tertiary);
+	--text-link: var(--nube-brand);
+	--text-link-hover: var(--nube-brand-hover);
+
+	--success: var(--nube-success);
+	--success-bg: var(--nube-success-bg);
+	--success-text: var(--nube-success-text);
+	--warning: var(--nube-warning);
+	--warning-bg: var(--nube-warning-bg);
+	--warning-text: var(--nube-warning-text);
+	--danger: var(--nube-danger);
+	--danger-bg: var(--nube-danger-bg);
+	--danger-text: var(--nube-danger-text);
+	--danger-foreground: #fefefe;
+	--danger-border: var(--nube-danger-border);
+	--info: var(--nube-brand);
+	--info-bg: var(--nube-info-bg);
+	--info-text: var(--nube-info-text);
+
+	--foreground: var(--nube-foreground);
+	--background: var(--nube-background);
+	--card: var(--nube-surface);
+	--muted: var(--nube-muted);
+	--dimmed: var(--nube-dimmed);
+	--tertiary: var(--nube-muted);
+	--tertiary-foreground: var(--nube-on-tertiary);
+	--tertiary-border: var(--nube-tertiary-border);
+	--accent: var(--nube-surface-muted);
+	--input-bg: var(--nube-background);
+	--input-border: var(--nube-line);
+	--input-accent-border: var(--nube-line-strong);
+	--chip: var(--nube-muted-fill);
+	--chip-border: var(--nube-line-strong);
+	--spinner: var(--nube-foreground);
+	--shadow-input: var(--nube-shadow-input);
+
+	--code-bg: #1e1e2e;
+	--code-text: #cdd6f4;
+	--code-border: #313244;
+
+	--shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+	--shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+	--shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+	--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+
+	--radius-sm: var(--nube-radius-sm);
+	--radius: var(--nube-radius);
+	--radius-md: var(--nube-radius-md);
+	--radius-lg: var(--nube-radius-lg);
+	--radius-xl: var(--nube-radius-xl);
+	--transition: 150ms ease;
 }

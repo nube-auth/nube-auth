@@ -19,7 +19,7 @@ Integrating Nube Auth into your application involves:
 ## Prerequisites
 
 Before starting, you need:
-- A Nube Auth account at [admin.nubeauth.com](https://admin.nubeauth.com)
+- A Nube Auth account at [manage.nubeauth.com](https://manage.nubeauth.com)
 - A project and app created
 - OAuth providers configured (Google, GitHub)
 
@@ -55,7 +55,7 @@ No npm package needed! Use vanilla JavaScript with fetch API.
 
 ### Get Your App Credentials
 
-1. Go to [Admin Dashboard](https://admin.nubeauth.com)
+1. Go to [Admin Dashboard](https://manage.nubeauth.com)
 2. Navigate to your **App**
 3. Go to **API Keys** or **Integration Guide**
 4. Copy your **App ID** and **App Token**
@@ -476,4 +476,4 @@ Need help?
 
 - 📧 Email: support@nubeauth.com
 - 📖 Docs: [docs.nubeauth.com](https://docs.nubeauth.com)
-- 💬 GitHub: [github.com/0xdps/nube-auth](https://github.com/0xdps/nube-auth)
+- 💬 GitHub: [github.com/nube-auth/nube-auth](https://github.com/nube-auth/nube-auth)

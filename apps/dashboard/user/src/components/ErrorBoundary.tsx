@@ -28,10 +28,10 @@ export class ErrorBoundary extends Component<Props, State> {
 	override render() {
 		if (this.state.hasError) {
 			return (
-				<div className="app-layout">
-					<div className="loading min-h-screen flex-col gap-4">
+				<div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-6 text-center text-foreground">
+					<div className="flex flex-col items-center gap-4">
 						<p className="text-lg font-semibold">Something went wrong</p>
-						<p className="text-sm text-text-secondary">
+						<p className="text-sm text-muted">
 							{this.state.error?.message ?? "An unexpected error occurred."}
 						</p>
 						<button
