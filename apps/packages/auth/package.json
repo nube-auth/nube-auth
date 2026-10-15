@@ -31,7 +31,6 @@
 		"typescript": "^6.0.2"
 	},
 	"optionalDependencies": {
-		"google-auth-library": "^9.4.1",
 		"octokit": "^3.1.0"
 	},
 	"files": [

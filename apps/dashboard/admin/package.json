@@ -23,7 +23,7 @@
 		"clsx": "^2.0.0",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
-		"react-router-dom": "^6.30.6",
+		"react-router-dom": "^7.18.4",
 		"tailwind-merge": "^3.4.0"
 	},
 	"devDependencies": {
@@ -39,6 +39,6 @@
 		"tailwindcss": "^4.1.18",
 		"tsx": "^4.7.0",
 		"typescript": "^6.0.2",
-		"vite": "^5.0.8"
+		"vite": "^6.4.4"
 	}
 }
