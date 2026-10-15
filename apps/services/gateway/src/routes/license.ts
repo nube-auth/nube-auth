@@ -74,6 +74,7 @@ licenseRoutes.get("/check", async (c: Context) => {
 licenseRoutes.get("/:appId", async (c: Context) => {
 	try {
 		const appId = c.req.param("appId");
+		if (!appId) return c.json({ error: "Not found" }, 404);
 		const auth = getAuth(c);
 
 		const cacheKey = `gateway:license:${auth.userId}:${appId}`;

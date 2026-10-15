@@ -1,4 +1,4 @@
-import { Button, Heading, Icon, IconType, Spinner, ThemeToggle, Toast, useTheme } from "@nube-auth/components";
+import { cycleTheme, DocsLink, Heading, Spinner, ThemeToggle, Toast, useTheme } from "@nube-auth/components";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type React from "react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
@@ -70,25 +70,14 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 		return <Navigate to="/" replace />;
 	}
 
-	const cycleTheme = () => {
-		if (theme === "system") setTheme("light");
-		else if (theme === "light") setTheme("dark");
-		else setTheme("system");
-	};
-
 	const topBar = (
 		<>
-			<Heading size="sm">Dashboard</Heading>
-			<div className="ml-auto flex items-center gap-3">
-				<ThemeToggle theme={theme} onToggle={cycleTheme} />
-				<Button
-					variant="outline"
-					size="sm"
-					onClick={() => window.open(config.docsUrl, "_blank", "noopener,noreferrer")}
-				>
-					<Icon icon={IconType.BookOpen} size={16} />
-					Docs
-				</Button>
+			<Heading size="sm" className="min-w-0 truncate">
+				Dashboard
+			</Heading>
+			<div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
+				<ThemeToggle theme={theme} onToggle={() => setTheme(cycleTheme(theme))} />
+				<DocsLink href={config.docsUrl} />
 			</div>
 		</>
 	);

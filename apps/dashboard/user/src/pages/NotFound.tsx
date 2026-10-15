@@ -19,7 +19,7 @@ export function NotFoundPage() {
 					<p className="text-[120px] font-black leading-none tracking-tighter text-border select-none">404</p>
 
 					<h1 className="text-2xl font-bold mt-2 mb-3">Page not found</h1>
-					<p className="text-text-secondary text-base mb-8">
+					<p className="mb-8 text-base text-muted">
 						The page you're looking for doesn't exist or has been moved.
 					</p>
 
@@ -28,7 +28,7 @@ export function NotFoundPage() {
 							<Icon icon={IconType.ArrowLeft} size={16} />
 							Go Back
 						</Button>
-						<Button variant="secondary" size="md" onClick={() => navigate("/")}>
+						<Button variant="primary" size="md" onClick={() => navigate("/")}>
 							<Icon icon={IconType.Home} size={16} />
 							Home
 						</Button>

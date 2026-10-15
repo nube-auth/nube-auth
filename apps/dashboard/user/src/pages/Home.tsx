@@ -15,8 +15,8 @@ function NavCard({ to, icon, title, description }: NavCardProps) {
 			<Card className="h-full transition-colors hover:border-primary/50 cursor-pointer">
 				<CardBody className="py-6 px-6 flex flex-col gap-2">
 					<div className="flex items-center gap-3 mb-1">
-						<div className="w-9 h-9 rounded-lg bg-secondary/20 flex items-center justify-center">
-							<Icon icon={icon} size={18} className="text-secondary-foreground" />
+						<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+							<Icon icon={icon} size={18} className="text-primary" />
 						</div>
 						<Heading level={3} size="sm" className="font-semibold m-0">
 							{title}

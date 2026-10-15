@@ -1,4 +1,15 @@
-import { Button, Icon, IconType, Spinner, ThemeToggle, useTheme } from "@nube-auth/components";
+import {
+	BrandLockup,
+	Button,
+	ConsoleHeader,
+	ConsoleShell,
+	cycleTheme,
+	DocsLink,
+	Icon,
+	IconType,
+	Spinner,
+	useTheme,
+} from "@nube-auth/components";
 import type React from "react";
 import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -12,24 +23,15 @@ import { RootPage } from "./pages/Root";
 import { SecurityPage } from "./pages/Security";
 import { SessionsPage } from "./pages/Sessions";
 
-function ProtectedLayout({
-	children,
-	theme,
-	setTheme,
-}: {
-	children: React.ReactNode;
-	theme: "light" | "dark" | "system";
-	setTheme: (theme: "light" | "dark" | "system") => void;
-}) {
-	const { isAuthenticated, user, isLoading } = useAuth();
+function ProtectedLayout({ children }: { children: React.ReactNode }) {
+	const { isAuthenticated, isLoading } = useAuth();
+	const { theme, setTheme } = useTheme();
 
 	if (isLoading) {
 		return (
-			<div className="app-layout">
-				<div className="loading min-h-screen">
-					<Spinner />
-					<span className="loading-text">Loading...</span>
-				</div>
+			<div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background text-foreground">
+				<Spinner />
+				<span className="text-sm text-muted">Loading...</span>
 			</div>
 		);
 	}
@@ -38,46 +40,38 @@ function ProtectedLayout({
 		return <Navigate to="/" replace />;
 	}
 
-	const cycleTheme = () => {
-		if (theme === "system") setTheme("light");
-		else if (theme === "light") setTheme("dark");
-		else setTheme("system");
-	};
-
 	return (
-		<div className="app-layout">
-			{/* Top Header */}
-			<header className="top-header">
-				<div className="header-left">
-					<Link to="/profile" className="header-logo">
-						<img src="/favicon.png" alt="Nube Auth" className="header-logo-img" />
-						<span className="header-logo-text">Nube Auth</span>
-						<span className="header-beta-badge">{config.envTag}</span>
-					</Link>
-				</div>
-
-				<div className="header-right">
-					<ThemeToggle theme={theme} onToggle={cycleTheme} />
+		<ConsoleShell
+			header={
+				<ConsoleHeader
+					brand={
+						<Link to="/profile" className="text-foreground no-underline">
+							<BrandLockup envTag={config.envTag} />
+						</Link>
+					}
+					theme={theme}
+					onToggleTheme={() => setTheme(cycleTheme(theme))}
+				>
+					<DocsLink href={config.docsUrl} />
 					<Button
 						variant="outline"
 						size="sm"
+						className="max-sm:hidden"
 						onClick={() => window.open(config.homeUrl, "_blank", "noopener,noreferrer")}
 					>
 						<Icon icon={IconType.Home} size={16} />
 						Home
 					</Button>
-				</div>
-			</header>
-
-			{/* Main Content */}
-			<main className="main-content">{children}</main>
-		</div>
+				</ConsoleHeader>
+			}
+		>
+			{children}
+		</ConsoleShell>
 	);
 }
 
 function App() {
-	// Initialize theme for all pages (including login)
-	const { theme, setTheme } = useTheme();
+	useTheme();
 
 	return (
 		<BrowserRouter>
@@ -87,7 +81,7 @@ function App() {
 					<Route
 						path="/profile"
 						element={
-							<ProtectedLayout theme={theme} setTheme={setTheme}>
+							<ProtectedLayout>
 								<ProfilePage />
 							</ProtectedLayout>
 						}
@@ -95,7 +89,7 @@ function App() {
 					<Route
 						path="/sessions"
 						element={
-							<ProtectedLayout theme={theme} setTheme={setTheme}>
+							<ProtectedLayout>
 								<SessionsPage />
 							</ProtectedLayout>
 						}
@@ -103,7 +97,7 @@ function App() {
 					<Route
 						path="/security"
 						element={
-							<ProtectedLayout theme={theme} setTheme={setTheme}>
+							<ProtectedLayout>
 								<SecurityPage />
 							</ProtectedLayout>
 						}
@@ -112,7 +106,7 @@ function App() {
 					<Route
 						path="/home"
 						element={
-							<ProtectedLayout theme={theme} setTheme={setTheme}>
+							<ProtectedLayout>
 								<HomePage />
 							</ProtectedLayout>
 						}

@@ -1,90 +1,60 @@
 ---
-const steps = [
-  {
-    number: 1,
-    title: 'Create Your Project',
-    description: 'Sign up at admin.nubeauth.com and create your first project. Invite team members and set up payment providers.'
-  },
-  {
-    number: 2,
-    title: 'Configure Your App',
-    description: 'Add an app to your project. Set up OAuth providers (Google, GitHub), configure redirect URIs, and create licensing plans.'
-  },
-  {
-    number: 3,
-    title: 'Integrate & Ship',
-    description: 'Use our React SDK, vanilla JavaScript client, or browser extension integration. Your users can login in minutes.'
-  }
-];
-
-const codeExample = `import { NubeAuthClient } from '@nube-auth/sdk';
-
-const nubeAuth = new NubeAuthClient({
-  appId: 'your-app-id',
-  apiUrl: 'https://api.nubeauth.com'
-});
-
-// Redirect to login
-await nubeAuth.login({ provider: 'google' });
-
-// Get current user
-const user = await nubeAuth.getUser();`;
+import config from '../config';
 ---
 
-<section id="how-it-works" class="how-it-works">
-  <div class="how-it-works-container">
-    <div class="section-header">
-      <span class="section-tag">Quick Start</span>
-      <h2 class="section-title">How It Works</h2>
-      <p class="section-description">
-        Get started in minutes, not hours
-      </p>
+<section id="integrate" class="section">
+  <div class="page-width integrate">
+    <div>
+      <div class="section-head">
+        <p class="eyebrow">How it works</p>
+        <h2 class="section-title">From empty project to signed-in user.</h2>
+      </div>
+
+      <ol class="steps">
+        <li class="step">
+          <div>
+            <h3 class="step-title">Create a project</h3>
+            <p class="step-body">Sign in to the <a href={config.adminLoginUrl}>admin console</a> and create a project. Invite your team and connect a payment provider if you charge.</p>
+          </div>
+        </li>
+        <li class="step">
+          <div>
+            <h3 class="step-title">Add your app</h3>
+            <p class="step-body">Register the app, turn on Google or GitHub, list your redirect URLs, and define the plans users can hold.</p>
+          </div>
+        </li>
+        <li class="step">
+          <div>
+            <h3 class="step-title">Call the gateway</h3>
+            <p class="step-body">Start sign-in, swap the returned code for a session token, then check the license. The <a href={`${config.docsUrl}/integration/quickstart`}>quick start</a> covers React, plain JavaScript, and extensions.</p>
+          </div>
+        </li>
+      </ol>
     </div>
 
-    <div class="steps-grid">
-      {steps.map((step) => (
-        <div class="step">
-          <div class="step-number">{step.number}</div>
-          <h3 class="step-title">{step.title}</h3>
-          <p class="step-description">{step.description}</p>
-        </div>
-      ))}
-    </div>
+    <div class="code">
+      <div class="code-head">auth.ts</div>
+      <pre><code><span class="code-keyword">import</span> {'{'} NubeAuthClient {'}'} <span class="code-keyword">from</span> <span class="code-string">'@nube-auth/client'</span>;
 
-    <div class="code-block">
-      <div class="code-block-header">
-        <div class="code-block-dots">
-          <span class="code-block-dot red"></span>
-          <span class="code-block-dot yellow"></span>
-          <span class="code-block-dot green"></span>
-        </div>
-        <span class="code-block-tab">app.ts</span>
-      </div>
-      <div class="code-block-body">
-        <pre><code><span class="code-comment"># Install for React apps</span>
-<span class="code-variable">npm install</span> <span class="code-string">@nube-auth/client @nube-auth/react</span>
+<span class="code-keyword">const</span> gatewayUrl = <span class="code-string">'{config.gatewayUrl}'</span>;
+<span class="code-keyword">const</span> appId = <span class="code-string">'APP0x7k2'</span>;
+<span class="code-keyword">const</span> nube = <span class="code-keyword">new</span> NubeAuthClient({'{'} gatewayUrl, appId {'}'});
 
-<span class="code-comment"># Or vanilla JavaScript</span>
-<span class="code-variable">npm install</span> <span class="code-string">@nube-auth/client</span>
+<span class="code-comment">// 1. Send the user to sign in</span>
+<span class="code-keyword">const</span> {'{'} url, codeVerifier {'}'} = <span class="code-keyword">await</span> nube.app.buildOAuthUrl({'{'}
+  returnTo: <span class="code-string">'https://yourapp.com/auth'</span>,
+{'}'});
+sessionStorage.setItem(<span class="code-string">'pkce'</span>, codeVerifier);
+location.assign(url);
 
-<span class="code-comment"># React integration</span>
-<span class="code-keyword">import</span> {'{'} <span class="code-property">NubeAuthProvider</span>, <span class="code-property">useNubeAuth</span> {'}'} <span class="code-keyword">from</span> <span class="code-string">'@nube-auth/react'</span>;
+<span class="code-comment">// 2. Back on /auth?code=…, swap the code for a token</span>
+<span class="code-keyword">const</span> {'{'} sessionToken {'}'} = <span class="code-keyword">await</span> nube.app.exchangeCode(code, {'{'}
+  codeVerifier: sessionStorage.getItem(<span class="code-string">'pkce'</span>),
+{'}'});
 
-<span class="code-keyword">function</span> <span class="code-function">App</span>() {'{'}
-  <span class="code-keyword">return</span> (
-    <span class="code-tag">&lt;NubeAuthProvider</span>
-      <span class="code-property">appId</span>=<span class="code-string">"APP0abc123..."</span>
-      <span class="code-property">gatewayUrl</span>=<span class="code-string">"https://api.nubeauth.com"</span>
-    <span class="code-tag">&gt;</span>
-      <span class="code-tag">&lt;YourApp /&gt;</span>
-    <span class="code-tag">&lt;/NubeAuthProvider&gt;</span>
-  );
-{'}'}
-
-<span class="code-comment">// Use in components</span>
-<span class="code-keyword">const</span> {'{'} <span class="code-variable">login</span>, <span class="code-variable">user</span> {'}'} = <span class="code-function">useNubeAuth</span>();
-<span class="code-function">login</span>({'{'} <span class="code-property">provider</span>: <span class="code-string">'google'</span> {'}'});</code></pre>
-      </div>
+<span class="code-comment">// 3. Ask which plan they are on</span>
+<span class="code-keyword">const</span> user = <span class="code-keyword">new</span> NubeAuthClient({'{'} gatewayUrl, appId, sessionToken {'}'});
+<span class="code-keyword">const</span> {'{'} plan, status {'}'} = <span class="code-keyword">await</span> user.license.getDetails();</code></pre>
     </div>
   </div>
 </section>

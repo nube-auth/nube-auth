@@ -18,7 +18,9 @@
 		"./selia-theme.css": "./selia-theme.css",
 		"./tailwind.css": "./src/styles/tailwind.css",
 		"./styles": "./src/styles/tailwind.css",
+		"./styles/tokens.css": "./src/styles/tokens.css",
 		"./styles/theme.css": "./src/styles/theme.css",
+		"./styles/dashboard.css": "./src/styles/dashboard.css",
 		"./styles/selia-theme.css": "./selia-theme.css",
 		"./styles/selia.css": "./src/styles/selia.css",
 		"./styles/tailwind.css": "./src/styles/tailwind.css"

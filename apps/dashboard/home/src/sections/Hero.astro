@@ -1,60 +1,68 @@
 ---
-import Nav from '../components/Nav.astro';
 import config from '../config';
+
+const gatewayHost = new URL(config.gatewayUrl).host;
 ---
 
-<Nav />
-
 <section class="hero">
-  <div class="hero-container">
-    <div class="hero-badge animate-fade-in">
-      <span class="hero-badge-dot"></span>
-      <span>{config.envTag}</span>
-    </div>
-    
-    <h1 class="hero-title animate-fade-in animate-delay-100">
-      Authentication, Licensing & User Management
-      <br />
-      <span class="hero-title-highlight">Built for Modern SaaS</span>
-    </h1>
-    
-    <p class="hero-description animate-fade-in animate-delay-200">
-      Production-ready authentication with OAuth providers, powerful admin dashboard,
-      flexible licensing, and session management. Integrate in minutes, scale to millions.
-    </p>
-    
-    <div class="hero-actions animate-fade-in animate-delay-300">
-      <a href="/signup" class="btn btn-primary btn-lg">
-        Get Started Free
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12"/>
-          <polyline points="12 5 19 12 12 19"/>
-        </svg>
-      </a>
-      <a href="#how-it-works" class="btn btn-outline btn-lg">
-        See How It Works
-      </a>
-    </div>
-    
-    <div class="hero-stats animate-fade-in animate-delay-400">
-      <div class="hero-stat">
-        <svg class="hero-stat-icon" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-        </svg>
-        <span>Admin Dashboard</span>
+  <div class="page-width hero-grid">
+    <div>
+      <p class="eyebrow">Auth gateway for SaaS apps</p>
+      <h1 class="hero-title">Sign-in, sessions, and licenses. <em>One gateway.</em></h1>
+      <p class="hero-lede">
+        NubeAuth runs the OAuth handshake with PKCE, hands your app a session token, and tells
+        it which plan each user is on. You set it up in the admin console and call it from your code.
+      </p>
+      <div class="hero-actions">
+        <a href={config.adminLoginUrl} class="btn btn-primary btn-lg">Open the admin console</a>
+        <a href={`${config.docsUrl}/integration/quickstart`} class="btn btn-outline btn-lg">Read the quick start</a>
       </div>
-      <div class="hero-stat">
-        <svg class="hero-stat-icon" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-        </svg>
-        <span>Browser Extensions</span>
-      </div>
-      <div class="hero-stat">
-        <svg class="hero-stat-icon" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-        </svg>
-        <span>React & Vanilla JS</span>
-      </div>
+      <p class="hero-note">Free during beta. Sign in with Google.</p>
     </div>
+
+    <figure class="trace" aria-label="The requests behind one NubeAuth sign-in">
+      <figcaption class="trace-head">
+        <span class="trace-title">One sign-in, start to finish</span>
+        <span class="trace-host">{gatewayHost}</span>
+      </figcaption>
+      <ol class="trace-rows">
+        <li class="trace-row">
+          <span class="trace-method">GET</span>
+          <span class="trace-path">/v1/auth/start?app_id=APP0x7k2&amp;code_challenge=…
+            <span class="trace-detail">PKCE S256. Redirects the browser to Google.</span>
+          </span>
+          <span class="trace-status hold">302</span>
+        </li>
+        <li class="trace-row">
+          <span class="trace-method">GET</span>
+          <span class="trace-path">accounts.google.com/o/oauth2/auth
+            <span class="trace-detail">The user picks an account.</span>
+          </span>
+          <span class="trace-status hold">302</span>
+        </li>
+        <li class="trace-row">
+          <span class="trace-method">GET</span>
+          <span class="trace-path">/v1/auth/callback/google?code=4/0Ad…
+            <span class="trace-detail trace-cookie">Location: https://yourapp.com/auth?code=… (one use, 60 s)</span>
+          </span>
+          <span class="trace-status hold">302</span>
+        </li>
+        <li class="trace-row">
+          <span class="trace-method">POST</span>
+          <span class="trace-path">/v1/auth/token
+            <span class="trace-detail">{'{ "sessionToken": "…", "userId": "USR0q41m" }'}</span>
+          </span>
+          <span class="trace-status granted">200</span>
+        </li>
+        <li class="trace-row">
+          <span class="trace-method">GET</span>
+          <span class="trace-path">/v1/license/APP0x7k2
+            <span class="trace-detail">{'{ "plan": "pro", "status": "active" }'}</span>
+          </span>
+          <span class="trace-status granted">200</span>
+        </li>
+      </ol>
+      <p class="trace-foot">The one-time code is worthless without the verifier your app kept.</p>
+    </figure>
   </div>
 </section>

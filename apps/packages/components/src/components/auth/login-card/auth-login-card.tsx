@@ -36,7 +36,7 @@ export function AuthLoginCard({
 	statusMessage,
 	errorMessage,
 	buttonLabel,
-	buttonVariant = "secondary",
+	buttonVariant = "primary",
 	buttonIcon = IconType.Google,
 	onContinue,
 	busy = false,
@@ -65,7 +65,15 @@ export function AuthLoginCard({
 					disabled={busy}
 					className={cn("w-full justify-center", buttonVariant === "secondary" ? "text-foreground" : "")}
 				>
-					{busy ? <Spinner className="h-4 w-4" /> : <Icon icon={buttonIcon} size={18} />}
+					{busy ? (
+						<Spinner className="h-4 w-4" />
+					) : buttonIcon === IconType.Google ? (
+						<span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+							<Icon icon={buttonIcon} size={16} />
+						</span>
+					) : (
+						<Icon icon={buttonIcon} size={18} />
+					)}
 					<span>{busy ? "Please wait..." : buttonLabel}</span>
 				</Button>
 

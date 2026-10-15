@@ -3,59 +3,49 @@ import config from "../config";
 ---
 
 <footer class="footer">
-  <div class="footer-container">
+  <div class="page-width">
     <div class="footer-grid">
       <div class="footer-brand">
-        <a href="/" class="footer-logo">
-          <div class="footer-logo-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-          </div>
-          <span class="footer-logo-text">NubeAuth</span>
+        <a href="/" class="brand">
+          <img src="/favicon-32x32.png" alt="" width="26" height="26" />
+          <span>NubeAuth</span>
         </a>
-        <p class="footer-tagline">
-          Identity, sessions, and licensing for modern applications.
-        </p>
+        <p class="footer-tagline">Sign-in, sessions, and licensing for the apps you ship.</p>
       </div>
-      
-      <div class="footer-column">
-        <h4>Product</h4>
+
+      <div>
+        <h2 class="footer-heading">Product</h2>
         <ul class="footer-links">
-          <li><a href="#features">Features</a></li>
-          <li><a href="#how-it-works">How it Works</a></li>
-          <li><a href={`${config.docsUrl}/dashboards/admin-dashboard`} target="_blank" rel="noopener">Admin Dashboard</a></li>
+          <li><a href={config.adminLoginUrl}>Admin console</a></li>
+          <li><a href={config.userLoginUrl}>User portal</a></li>
           <li><a href="/pricing">Pricing</a></li>
         </ul>
       </div>
-      
-      <div class="footer-column">
-        <h4>Developers</h4>
+
+      <div>
+        <h2 class="footer-heading">Developers</h2>
         <ul class="footer-links">
-          <li><a href={config.docsUrl} target="_blank" rel="noopener">Documentation</a></li>
-          <li><a href={`${config.docsUrl}/integration/quickstart`} target="_blank" rel="noopener">Quick Start</a></li>
-          <li><a href={`${config.docsUrl}/integration/browser-extension`} target="_blank" rel="noopener">Browser Extensions</a></li>
-          <li><a href={`${config.docsUrl}/api/rest`} target="_blank" rel="noopener">API Reference</a></li>
+          <li><a href={config.docsUrl}>Documentation</a></li>
+          <li><a href={`${config.docsUrl}/integration/quickstart`}>Quick start</a></li>
+          <li><a href={`${config.docsUrl}/api/rest`}>API reference</a></li>
+          <li><a href={`${config.docsUrl}/integration/browser-extension`}>Browser extensions</a></li>
         </ul>
       </div>
-      
-      <div class="footer-column">
-        <h4>Resources</h4>
+
+      <div>
+        <h2 class="footer-heading">Help</h2>
         <ul class="footer-links">
-          <li><a href={`${config.docsUrl}/getting-started/introduction`} target="_blank" rel="noopener">Getting Started</a></li>
-          <li><a href={`${config.docsUrl}/dashboards/overview`} target="_blank" rel="noopener">Dashboards Guide</a></li>
-          <li><a href="https://github.com/nube-auth/nube-auth" target="_blank" rel="noopener">GitHub</a></li>
           <li><a href="/support">Support</a></li>
+          <li><a href="https://github.com/nube-auth/nube-auth" rel="noopener">GitHub</a></li>
+          <li><a href="/privacy">Privacy policy</a></li>
+          <li><a href="/terms">Terms of service</a></li>
         </ul>
       </div>
     </div>
-    
+
     <div class="footer-bottom">
-      <p class="footer-copyright">© 2025 NubeAuth. All rights reserved.</p>
-      <div class="footer-legal">
-        <a href="/privacy">Privacy Policy</a>
-        <a href="/terms">Terms of Service</a>
-      </div>
+      <span>© 2026 NubeAuth</span>
+      <span class="mono">{config.envTag}</span>
     </div>
   </div>
 </footer>

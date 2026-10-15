@@ -1,6 +1,13 @@
 import { defineConfig } from "vitepress";
 
+const dev = process.env.NODE_ENV !== "production";
+const envTag = (process.env.VITE_ENV_TAG || (dev ? "Local" : "Beta")).replace(/[^a-zA-Z0-9 ._-]/g, "") || "Beta";
+const adminUrl = process.env.VITE_ADMIN_URL || (dev ? "http://localhost:5174" : "https://manage.nubeauth.com");
+const userUrl = process.env.VITE_USER_URL || (dev ? "http://localhost:5173" : "https://me.nubeauth.com");
+const homeUrl = process.env.VITE_HOME_URL || (dev ? "http://localhost:4321" : "https://nubeauth.com");
+
 export default defineConfig({
+	srcExclude: ["src/**"],
 	title: "Nube Auth",
 	description: "Authentication, session management, and licensing for modern applications",
 
@@ -17,6 +24,7 @@ export default defineConfig({
 		["meta", { property: "og:type", content: "website" }],
 		["meta", { property: "og:locale", content: "en" }],
 		["meta", { property: "og:site_name", content: "Nube Auth Documentation" }],
+		["style", {}, `:root { --env-tag-label: '${envTag}'; }`],
 		// Google Fonts
 		["link", { rel: "preconnect", href: "https://fonts.googleapis.com" }],
 		["link", { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" }],
@@ -41,9 +49,9 @@ export default defineConfig({
 			{
 				text: "Links",
 				items: [
-					{ text: "Admin Dashboard", link: "https://admin.nubeauth.com" },
-					{ text: "User Portal", link: "https://app.nubeauth.com" },
-					{ text: "Website", link: "https://nubeauth.com" },
+					{ text: "Admin Dashboard", link: adminUrl },
+					{ text: "User Portal", link: userUrl },
+					{ text: "Website", link: homeUrl },
 				],
 			},
 		],
@@ -112,11 +120,11 @@ export default defineConfig({
 		],
 
 		// Social links
-		socialLinks: [{ icon: "github", link: "https://github.com/0xdps/nube-auth" }],
+		socialLinks: [{ icon: "github", link: "https://github.com/nube-auth/nube-auth" }],
 
 		// Edit link
 		editLink: {
-			pattern: "https://github.com/0xdps/nube-auth/edit/trunk/apps/dashboard/docs/:path",
+			pattern: "https://github.com/nube-auth/nube-auth/edit/trunk/apps/dashboard/docs/:path",
 			text: "Edit this page on GitHub",
 		},
 

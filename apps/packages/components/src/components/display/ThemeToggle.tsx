@@ -50,11 +50,11 @@ export function ThemeToggle({ theme, onToggle, showLabel = true, className = "" 
 			variant="outline"
 			size="sm"
 			onClick={onToggle}
-			className={`min-w-28 ${className}`}
+			className={`min-w-28 max-sm:min-w-0 max-sm:px-2 ${className}`}
 			title={`Current theme: ${current.label}`}
 		>
 			<Icon icon={current.icon} size={16} />
-			{showLabel && <span>{current.label}</span>}
+			{showLabel && <span className="max-sm:hidden">{current.label}</span>}
 		</Button>
 	);
 }

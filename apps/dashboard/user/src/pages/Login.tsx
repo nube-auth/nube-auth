@@ -38,7 +38,7 @@ export function LoginPage() {
 
 	const handleGoogleLogin = () => {
 		setStatus("redirecting");
-		const gatewayAuthUrl = `${config.gatewayUrl}/v1/auth/start?provider=google&return_to=/profile`;
+		const gatewayAuthUrl = `${config.gatewayUrl}/v1/auth/start?provider=google&audience=user&return_to=${encodeURIComponent("/home")}`;
 		window.location.href = gatewayAuthUrl;
 	};
 
@@ -61,7 +61,6 @@ export function LoginPage() {
 			subtitle="Manage your account, sessions, and licenses"
 			errorMessage={status === "error" && error ? getErrorMessage(error) : null}
 			buttonLabel="Continue with Google"
-			buttonVariant="secondary"
 			onContinue={handleGoogleLogin}
 			busy={isBusy}
 			termsUrl={`${config.homeUrl}/terms`}
