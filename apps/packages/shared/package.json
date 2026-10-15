@@ -31,15 +31,15 @@
 	},
 	"dependencies": {
 		"@pingpong-js/fetch": "^1.0.2",
-		"hono": "4.11.10",
-		"nodemailer": "^7.0.12",
+		"hono": "4.13.13",
+		"nodemailer": "^10.1.1",
 		"pino": "^10.1.0",
 		"resend": "^3.2.0",
 		"zod": "^3.22.4"
 	},
 	"devDependencies": {
-		"@types/nodemailer": "^7.0.4",
-		"nanoid": "^4.0.2",
+		"@types/nodemailer": "^8.0.2",
+		"nanoid": "^5.1.16",
 		"tsup": "^8.0.0",
 		"typescript": "^6.0.2"
 	},

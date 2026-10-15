@@ -12,6 +12,7 @@ import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/s
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
+import { requiredParam } from "../../../utils/route-param.js";
 
 const log = createLogger("admin-subscription-routes");
 
@@ -65,7 +66,7 @@ function formatSubscription(sub: any, extras?: { user?: any; plan?: any; price?:
 
 subscriptionsRouter.get("/", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
+		const appId = requiredParam(c, "appId");
 		const statusFilter = c.req.query("status") as string | undefined;
 
 		const db = getDb();
@@ -99,8 +100,8 @@ subscriptionsRouter.get("/", async (c: Context) => {
 
 subscriptionsRouter.get("/:subId", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
-		const subId = c.req.param("subId");
+		const appId = requiredParam(c, "appId");
+		const subId = requiredParam(c, "subId");
 
 		if (!idPatterns.subscription.test(subId)) return c.json({ error: "Invalid subscriptionId" }, 400);
 
@@ -134,8 +135,8 @@ const AdminUpdateSubSchema = z.object({
 
 subscriptionsRouter.patch("/:subId", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
-		const subId = c.req.param("subId");
+		const appId = requiredParam(c, "appId");
+		const subId = requiredParam(c, "subId");
 		const body = await c.req.json();
 		const validated = AdminUpdateSubSchema.parse(body);
 

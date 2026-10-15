@@ -30,7 +30,7 @@ import config from '../config';
         <li class="rounded-xl border p-6" style="background: var(--card-bg); border-color: var(--card-border);">
           <h2 class="text-xl font-bold mb-2">Email</h2>
           <p class="mb-4">Account and product questions go to the support inbox.</p>
-          <a href="mailto:support@nubeauth.com" class="btn btn-outline">support@nubeauth.com</a>
+          <a href={`mailto:${config.supportEmail}`} class="btn btn-outline">{config.supportEmail}</a>
         </li>
         <li class="rounded-xl border p-6" style="background: var(--card-bg); border-color: var(--card-border);">
           <h2 class="text-xl font-bold mb-2">GitHub</h2>

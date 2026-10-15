@@ -31,6 +31,7 @@ import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
 import { decryptProviderCredentials, encryptProviderCredentials } from "../../../utils";
+import { requiredParam } from "../../../utils/route-param.js";
 
 const log = createLogger("admin-providers");
 const providersRouter = new Hono();
@@ -93,7 +94,7 @@ providersRouter.get("/available", async (c: Context) => {
  * GET /providers/:projectId/configs
  */
 providersRouter.get("/:projectId/configs", async (c: Context) => {
-	const projectId = c.req.param("projectId");
+	const projectId = requiredParam(c, "projectId");
 	const userId = getUserIdHeader(c);
 
 	if (!userId) {
@@ -142,8 +143,8 @@ providersRouter.get("/:projectId/configs", async (c: Context) => {
  * GET /providers/:projectId/configs/:providerId
  */
 providersRouter.get("/:projectId/configs/:providerId", async (c: Context) => {
-	const projectId = c.req.param("projectId");
-	const providerId = c.req.param("providerId");
+	const projectId = requiredParam(c, "projectId");
+	const providerId = requiredParam(c, "providerId");
 	const userId = getUserIdHeader(c);
 
 	if (!userId) {
@@ -194,8 +195,8 @@ providersRouter.get("/:projectId/configs/:providerId", async (c: Context) => {
  * or service-to-service auth token in production.
  */
 providersRouter.get("/:projectId/configs/:providerId/credentials", async (c: Context) => {
-	const projectId = c.req.param("projectId");
-	const providerId = c.req.param("providerId");
+	const projectId = requiredParam(c, "projectId");
+	const providerId = requiredParam(c, "providerId");
 	const userId = getUserIdHeader(c);
 
 	if (!userId) {
@@ -245,7 +246,7 @@ providersRouter.get("/:projectId/configs/:providerId/credentials", async (c: Con
  * POST /providers/:projectId/configs
  */
 providersRouter.post("/:projectId/configs", async (c: Context) => {
-	const projectId = c.req.param("projectId");
+	const projectId = requiredParam(c, "projectId");
 	const userId = getUserIdHeader(c);
 
 	if (!userId) {
@@ -339,8 +340,8 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
  * PATCH /providers/:projectId/configs/:providerId
  */
 providersRouter.patch("/:projectId/configs/:providerId", async (c: Context) => {
-	const projectId = c.req.param("projectId");
-	const providerId = c.req.param("providerId");
+	const projectId = requiredParam(c, "projectId");
+	const providerId = requiredParam(c, "providerId");
 	const userId = getUserIdHeader(c);
 
 	if (!userId) {
@@ -438,8 +439,8 @@ providersRouter.patch("/:projectId/configs/:providerId", async (c: Context) => {
  * DELETE /providers/:projectId/configs/:providerId
  */
 providersRouter.delete("/:projectId/configs/:providerId", async (c: Context) => {
-	const projectId = c.req.param("projectId");
-	const providerId = c.req.param("providerId");
+	const projectId = requiredParam(c, "projectId");
+	const providerId = requiredParam(c, "providerId");
 	const userId = getUserIdHeader(c);
 
 	if (!userId) {
@@ -533,8 +534,8 @@ providersRouter.delete("/:projectId/configs/:providerId", async (c: Context) => 
  * POST /providers/:projectId/configs/:providerId/select
  */
 providersRouter.post("/:projectId/configs/:providerId/select", async (c: Context) => {
-	const projectId = c.req.param("projectId");
-	const providerId = c.req.param("providerId");
+	const projectId = requiredParam(c, "projectId");
+	const providerId = requiredParam(c, "providerId");
 	const userId = getUserIdHeader(c);
 
 	if (!userId) {

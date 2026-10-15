@@ -23,6 +23,7 @@ import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
 import { enqueueOutboundWebhook } from "../../../billing/queue.js";
+import { requiredParam } from "../../../utils/route-param.js";
 
 const log = createLogger("admin-webhook-routes");
 
@@ -117,7 +118,7 @@ export const webhooksRouter = new Hono();
  */
 webhooksRouter.get("/health", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
+		const appId = requiredParam(c, "appId");
 		if (!appId || !idPatterns.app.test(appId)) return c.json({ error: "Invalid appId" }, 400);
 
 		const db = getDb();
@@ -139,7 +140,7 @@ webhooksRouter.get("/health", async (c: Context) => {
  */
 webhooksRouter.get("/", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
+		const appId = requiredParam(c, "appId");
 		if (!appId || !idPatterns.app.test(appId)) return c.json({ error: "Invalid appId" }, 400);
 
 		const db = getDb();
@@ -165,7 +166,7 @@ webhooksRouter.get("/", async (c: Context) => {
  */
 webhooksRouter.post("/", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
+		const appId = requiredParam(c, "appId");
 		if (!appId || !idPatterns.app.test(appId)) return c.json({ error: "Invalid appId" }, 400);
 
 		const body = await c.req.json();
@@ -205,8 +206,8 @@ webhooksRouter.post("/", async (c: Context) => {
  */
 webhooksRouter.patch("/:webhookId", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
-		const webhookId = c.req.param("webhookId");
+		const appId = requiredParam(c, "appId");
+		const webhookId = requiredParam(c, "webhookId");
 
 		if (!appId || !idPatterns.app.test(appId)) return c.json({ error: "Invalid appId" }, 400);
 
@@ -246,8 +247,8 @@ webhooksRouter.patch("/:webhookId", async (c: Context) => {
  */
 webhooksRouter.delete("/:webhookId", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
-		const webhookId = c.req.param("webhookId");
+		const appId = requiredParam(c, "appId");
+		const webhookId = requiredParam(c, "webhookId");
 
 		if (!appId || !idPatterns.app.test(appId)) return c.json({ error: "Invalid appId" }, 400);
 
@@ -275,8 +276,8 @@ webhooksRouter.delete("/:webhookId", async (c: Context) => {
  */
 webhooksRouter.post("/:webhookId/rotate-secret", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
-		const webhookId = c.req.param("webhookId");
+		const appId = requiredParam(c, "appId");
+		const webhookId = requiredParam(c, "webhookId");
 
 		if (!appId || !idPatterns.app.test(appId)) return c.json({ error: "Invalid appId" }, 400);
 
@@ -486,8 +487,8 @@ const TestEventSchema = z.object({
  */
 webhooksRouter.post("/:webhookId/test", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
-		const webhookId = c.req.param("webhookId");
+		const appId = requiredParam(c, "appId");
+		const webhookId = requiredParam(c, "webhookId");
 
 		if (!appId || !idPatterns.app.test(appId)) return c.json({ error: "Invalid appId" }, 400);
 
@@ -578,9 +579,9 @@ webhooksRouter.post("/:webhookId/test", async (c: Context) => {
  */
 webhooksRouter.post("/:webhookId/logs/:logId/resend", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
-		const webhookId = c.req.param("webhookId");
-		const logId = c.req.param("logId");
+		const appId = requiredParam(c, "appId");
+		const webhookId = requiredParam(c, "webhookId");
+		const logId = requiredParam(c, "logId");
 
 		if (!appId || !idPatterns.app.test(appId)) return c.json({ error: "Invalid appId" }, 400);
 
@@ -614,8 +615,8 @@ webhooksRouter.post("/:webhookId/logs/:logId/resend", async (c: Context) => {
  */
 webhooksRouter.get("/:webhookId/logs", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
-		const webhookId = c.req.param("webhookId");
+		const appId = requiredParam(c, "appId");
+		const webhookId = requiredParam(c, "webhookId");
 		const limitParam = c.req.query("limit");
 		const limit = Math.min(Number(limitParam ?? 50), 200);
 

@@ -13,6 +13,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { enqueuePlanSync } from "../../../billing/queue.js";
 import { fireWebhookEvent } from "../../../utils/outbound-events.js";
+import { requiredParam } from "../../../utils/route-param.js";
 import { generatePlanSlug } from "../../../utils/slug.js";
 import { pricesRouter } from "./prices.js";
 
@@ -98,7 +99,7 @@ plansRouter.post("/", async (c: Context) => {
 		const userPublicId = getUserIdHeader(c);
 		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
 
-		const appId = c.req.param("appId");
+		const appId = requiredParam(c, "appId");
 		const body = await c.req.json();
 		const validated = CreatePlanSchema.parse(body);
 
@@ -188,7 +189,7 @@ plansRouter.post("/", async (c: Context) => {
 
 plansRouter.get("/", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
+		const appId = requiredParam(c, "appId");
 		const includeInactive = c.req.query("includeInactive") === "true";
 		const includePrices = c.req.query("includePrices") === "true";
 
@@ -239,8 +240,8 @@ plansRouter.get("/", async (c: Context) => {
 
 plansRouter.get("/:planId", async (c: Context) => {
 	try {
-		const appId = c.req.param("appId");
-		const planId = c.req.param("planId");
+		const appId = requiredParam(c, "appId");
+		const planId = requiredParam(c, "planId");
 
 		const db = getDb();
 
@@ -286,8 +287,8 @@ plansRouter.patch("/:planId", async (c: Context) => {
 		const userPublicId = getUserIdHeader(c);
 		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
 
-		const appId = c.req.param("appId");
-		const planId = c.req.param("planId");
+		const appId = requiredParam(c, "appId");
+		const planId = requiredParam(c, "planId");
 		const body = await c.req.json();
 		const validated = UpdatePlanSchema.parse(body);
 
@@ -381,8 +382,8 @@ plansRouter.delete("/:planId", async (c: Context) => {
 		const userPublicId = getUserIdHeader(c);
 		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
 
-		const appId = c.req.param("appId");
-		const planId = c.req.param("planId");
+		const appId = requiredParam(c, "appId");
+		const planId = requiredParam(c, "planId");
 
 		const db = getDb();
 

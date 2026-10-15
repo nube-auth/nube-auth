@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import config from '../config';
 ---
 
 <style>
@@ -242,7 +243,7 @@ import Footer from '../components/Footer.astro';
           For questions about these Terms, contact us at:
         </p>
         <ul class="list-none mb-4 space-y-1">
-          <li>Email: <a href="mailto:legal@nubeauth.com" class="legal-link">legal@nubeauth.com</a></li>
+          <li>Email: <a href={`mailto:${config.legalEmail}`} class="legal-link">{config.legalEmail}</a></li>
         </ul>
       </div>
     </div>
