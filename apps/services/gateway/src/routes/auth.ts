@@ -74,7 +74,15 @@ function inferAudience(c: Context): "user" | "admin" {
 	if (userHost && requestHost === userHost) return "user";
 
 	// Fallback heuristics for hosted environments
-	if (requestHost.includes("manage.nube-auth.") || requestHost.includes("admin.nube-auth.")) return "admin";
+	if (
+		requestHost.startsWith("manage.") ||
+		requestHost.startsWith("s-manage.") ||
+		requestHost.includes("manage.nubeauth.") ||
+		requestHost.includes("manage.nube-auth.") ||
+		requestHost.includes("admin.nube-auth.")
+	) {
+		return "admin";
+	}
 	return "user";
 }
 
@@ -1181,6 +1189,7 @@ authRoutes.get("/sessions", async (c: Context) => {
 authRoutes.delete("/sessions/:sessionId", async (c: Context) => {
 	try {
 		const sessionIdToRevoke = c.req.param("sessionId");
+		if (!sessionIdToRevoke) return c.json({ error: "Session not found" }, 404);
 		const adminCookie = getCookie(c, ADMIN_SESSION_COOKIE);
 		const userCookie = getCookie(c, USER_SESSION_COOKIE);
 

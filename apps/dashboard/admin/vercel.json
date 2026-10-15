@@ -8,7 +8,7 @@
 	"rewrites": [
 		{
 			"source": "/api/:path*",
-			"destination": "https://api.nubeauth.com/:path*"
+			"destination": "https://api.nubeauth.com/v1/:path*"
 		},
 		{
 			"source": "/(.*)",
@@ -30,7 +30,7 @@
 			"headers": [
 				{
 					"key": "Content-Security-Policy",
-					"value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.nubeauth.com; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self';"
+					"value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.nubeauth.com https://*.nubeauth.app; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self';"
 				},
 				{
 					"key": "X-Frame-Options",

@@ -593,4 +593,4 @@ Chrome extensions work on Edge with no changes!
 Need help with your extension?
 
 - 📧 Email: support@nubeauth.com
-- 💬 GitHub Issues: [github.com/0xdps/nube-auth/issues](https://github.com/0xdps/nube-auth/issues)
+- 💬 GitHub Issues: [github.com/nube-auth/nube-auth/issues](https://github.com/nube-auth/nube-auth/issues)

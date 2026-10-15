@@ -18,14 +18,21 @@ Deploy to Vercel: [![Deploy with Vercel](https://vercel.com/button)](https://ver
 
 ## 🔧 Environment Variables
 
-No environment variables required for static site.
+These are baked in at build time. `astro dev` uses localhost until you set them.
+
+- `PUBLIC_SITE_URL` — this marketing site
+- `PUBLIC_ADMIN_URL` — admin console
+- `PUBLIC_USER_URL` — user portal
+- `PUBLIC_DOCS_URL` — documentation
+- `PUBLIC_GATEWAY_URL` — public API gateway
+- `PUBLIC_ENV_TAG` — badge text, such as `Local`, `Staging`, or `Production`
 
 ## 📦 Build Settings
 
 Vercel will automatically detect the Astro framework and use the correct build settings from `vercel.json`.
 
 The site uses:
-- Astro 4.x with static output
+- Astro 7 with static output
 - Tailwind CSS for styling
 - Vercel Analytics (enabled)
 

@@ -64,10 +64,10 @@ jobs:
   build:
     name: ${{ inputs.image_name }}
     runs-on: ubuntu-latest
-    # Aggressive timeout: step-level timeouts sometimes fail with docker buildx,
-    # so we rely on job-level timeout as the hard limit. Reduced to 30 mins
-    # because builds should complete in 10-15 mins; anything longer is stuck.
-    timeout-minutes: 30
+    # Step timeouts do not always cancel a hung buildx process, so the job
+    # timeout is the hard stop. 45 minutes covers a multi-arch build plus the
+    # Railway deploy wait without leaving a stuck runner up for an hour.
+    timeout-minutes: 45
     # Note: permissions are controlled by the *caller* workflow.
     # docker-build.yml must declare `packages: write`.
     steps:
@@ -117,10 +117,9 @@ jobs:
 
       # ── Build & push ────────────────────────────────────────────────────
       # Step timeout often fails with buildx hangs, so job timeout is the real limit.
-      # Keep this as a secondary protection. Provenance/SBOM disabled to reduce build time.
       - name: Build and push
         uses: docker/build-push-action@v6
-        timeout-minutes: 20
+        timeout-minutes: 25
         with:
           context: .
           file: ${{ inputs.dockerfile }}
@@ -131,9 +130,8 @@ jobs:
           build-args: ${{ inputs.build_args }}
           cache-from: type=gha,scope=${{ inputs.image_name }}-${{ inputs.branch }}
           cache-to: type=gha,mode=max,scope=${{ inputs.image_name }}-${{ inputs.branch }}
-          # Disable to prevent hangs and reduce build time
-          provenance: false
-          sbom: false
+          provenance: true
+          sbom: true
           # Network mode host can help with flaky connections
           network: host
 

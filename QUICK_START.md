@@ -102,8 +102,10 @@ Before deploying, set these in your GitHub repository:
 #### For Staging (Optional - has defaults):
 ```
 VITE_GATEWAY_URL_STAGING=https://s-api.nubeauth.app
-VITE_HOME_URL_STAGING=https://s-nubeauth.app
+VITE_HOME_URL_STAGING=https://s-home.nubeauth.app
 VITE_DOCS_URL_STAGING=https://s-docs.nubeauth.app
+VITE_ADMIN_URL_STAGING=https://s-manage.nubeauth.app
+VITE_USER_URL_STAGING=https://s-me.nubeauth.app
 ```
 
 #### For Production (REQUIRED):
@@ -195,7 +197,7 @@ curl -I https://s-me.nubeauth.app
 Open in browser:
 - Admin: https://s-manage.nubeauth.app
 - User: https://s-me.nubeauth.app
-- Home: https://s-nubeauth.app
+- Home: https://s-home.nubeauth.app
 
 **Verify:**
 - ✅ Dashboards load without errors

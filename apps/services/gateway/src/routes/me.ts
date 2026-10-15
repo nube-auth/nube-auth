@@ -190,8 +190,7 @@ meRoutes.delete("/sessions/:sessionId", async (c: Context) => {
 	try {
 		const auth = getAuth(c);
 		const sessionId = c.req.param("sessionId");
-
-		if (!idPatterns.session.test(sessionId)) {
+		if (!sessionId || !idPatterns.session.test(sessionId)) {
 			return c.json({ error: "Invalid session id" }, 400);
 		}
 

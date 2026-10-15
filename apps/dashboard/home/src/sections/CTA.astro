@@ -1,27 +1,18 @@
 ---
 import config from '../config';
-import Footer from '../components/Footer.astro';
 ---
 
-<section class="cta">
-  <div class="cta-container">
-    <h2 class="cta-title">Ready to Ship Authentication?</h2>
-    <p class="cta-description">
-      Join developers shipping production-ready auth with powerful dashboards, flexible licensing, and enterprise security.
-    </p>
-    <div class="cta-actions">
-      <a href="/signup" class="btn btn-primary btn-lg">
-        Start Building Free
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12"/>
-          <polyline points="12 5 19 12 12 19"/>
-        </svg>
-      </a>
-      <a href={config.docsUrl} class="btn btn-outline btn-lg" target="_blank" rel="noopener">
-        Read the Docs
-      </a>
+<section class="closing">
+  <div class="page-width">
+    <div class="closing-panel">
+      <div>
+        <h2 class="closing-title">Create your first project.</h2>
+        <p class="closing-lede">It takes a Google account and about five minutes.</p>
+      </div>
+      <div class="closing-actions">
+        <a href={config.adminLoginUrl} class="btn btn-primary btn-lg">Open the admin console</a>
+        <a href={config.docsUrl} class="btn btn-outline btn-lg">Read the docs</a>
+      </div>
     </div>
   </div>
 </section>
-
-<Footer />

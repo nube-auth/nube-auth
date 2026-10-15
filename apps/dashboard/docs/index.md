@@ -14,7 +14,7 @@ hero:
       link: /getting-started/quickstart
     - theme: alt
       text: View on GitHub
-      link: https://github.com/0xdps/nube-auth
+      link: https://github.com/nube-auth/nube-auth
 
 features:
   - icon: 🔐
@@ -53,7 +53,7 @@ Integrate Nube Auth authentication into your app in 5 minutes:
 # 1. Install the SDK
 npm install @nube-auth/client @nube-auth/react
 
-# 2. Get your credentials from admin.nubeauth.com
+# 2. Get your credentials from manage.nubeauth.com
 # - Create a project
 # - Add an app
 # - Copy your App ID
@@ -139,7 +139,7 @@ nube-auth/
 
 ### For Developers (Integrate Nube Auth)
 
-1. **Sign up** at [admin.nubeauth.com](https://admin.nubeauth.com)
+1. **Sign up** at [manage.nubeauth.com](https://manage.nubeauth.com)
 2. **Create a project** and add your app
 3. **Configure OAuth** providers (Google, GitHub)
 4. **Install SDK** in your application
@@ -157,8 +157,8 @@ Need help integrating Nube Auth?
 
 - 📧 **Email**: support@nubeauth.com
 - 📖 **Documentation**: You're here!
-- 💬 **GitHub Issues**: [Report bugs or request features](https://github.com/0xdps/nube-auth/issues)
-- 🌟 **Star us on GitHub**: [github.com/0xdps/nube-auth](https://github.com/0xdps/nube-auth)
+- 💬 **GitHub Issues**: [Report bugs or request features](https://github.com/nube-auth/nube-auth/issues)
+- 🌟 **Star us on GitHub**: [github.com/nube-auth/nube-auth](https://github.com/nube-auth/nube-auth)
 
 ---
 

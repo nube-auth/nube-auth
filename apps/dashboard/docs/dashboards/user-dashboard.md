@@ -8,7 +8,7 @@ The User Dashboard provides a simple interface for end users to manage their acc
 
 ## Overview
 
-Access the User Dashboard at **[account.nubeauth.com](https://account.nubeauth.com)**
+Access the User Dashboard at **[me.nubeauth.com](https://me.nubeauth.com)**
 
 The dashboard focuses on essential account management features:
 - **Profile** - View and update your information
@@ -19,7 +19,7 @@ The dashboard focuses on essential account management features:
 
 ### OAuth Login
 
-1. Visit [account.nubeauth.com](https://account.nubeauth.com)
+1. Visit [me.nubeauth.com](https://me.nubeauth.com)
 2. Click **"Login with Google"** or **"Login with GitHub"**
 3. Authorize Nube Auth to access your profile
 4. Redirected to dashboard after login
@@ -286,7 +286,7 @@ To change or cancel your subscription:
 ### Mobile Browser
 
 Access the User Dashboard from mobile:
-1. Visit [account.nubeauth.com](https://account.nubeauth.com)
+1. Visit [me.nubeauth.com](https://me.nubeauth.com)
 2. Responsive design adapts to screen size
 3. All features available on mobile
 
@@ -364,7 +364,7 @@ Need assistance?
 
 Suggest new features:
 - Email: feedback@nubeauth.com
-- GitHub: [github.com/0xdps/nube-auth/issues](https://github.com/0xdps/nube-auth/issues)
+- GitHub: [github.com/nube-auth/nube-auth/issues](https://github.com/nube-auth/nube-auth/issues)
 
 ## Best Practices
 

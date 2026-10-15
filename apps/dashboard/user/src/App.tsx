@@ -61,6 +61,14 @@ function ProtectedLayout({
 					<Button
 						variant="outline"
 						size="sm"
+						onClick={() => window.open(config.docsUrl, "_blank", "noopener,noreferrer")}
+					>
+						<Icon icon={IconType.BookOpen} size={16} />
+						Docs
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
 						onClick={() => window.open(config.homeUrl, "_blank", "noopener,noreferrer")}
 					>
 						<Icon icon={IconType.Home} size={16} />

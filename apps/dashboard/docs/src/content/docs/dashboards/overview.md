@@ -20,7 +20,7 @@ Nube Auth provides two powerful dashboards for managing your applications and us
 
 ## Admin Dashboard
 
-**URL:** `admin.nubeauth.com`
+**URL:** `manage.nubeauth.com`
 
 The Admin Dashboard is your control center for managing all aspects of Nube Auth:
 
@@ -47,7 +47,7 @@ The Admin Dashboard is your control center for managing all aspects of Nube Auth
 
 ## User Dashboard
 
-**URL:** `account.nubeauth.com`
+**URL:** `me.nubeauth.com`
 
 The User Dashboard provides a simple interface for end users to manage their accounts:
 
@@ -70,7 +70,7 @@ Both dashboards use secure OAuth-based authentication:
 
 ## Getting Started
 
-1. **Sign up** at [admin.nubeauth.com](https://admin.nubeauth.com)
+1. **Sign up** at [manage.nubeauth.com](https://manage.nubeauth.com)
 2. **Create a project** to organize your apps
 3. **Create an app** within your project
 4. **Configure OAuth** providers for your app
