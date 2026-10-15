@@ -1,5 +1,9 @@
 import {
 	Alert,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
 	Card,
 	CardBody,
 	Chip,
@@ -10,24 +14,20 @@ import {
 	Heading,
 	Icon,
 	IconType,
-	Spinner,
 	TableBody,
 	TableCell,
 	TableHead,
 	TableHeader,
 	Text,
 } from "@nube-auth/components";
+import { PageLoader } from "../components/PageLoader";
 import { useLicenses } from "../hooks/api";
 
 export function LicensesPage() {
 	const { data: licenses, isLoading, error } = useLicenses();
 
 	if (isLoading) {
-		return (
-			<div className="flex items-center justify-center min-h-screen">
-				<Spinner />
-			</div>
-		);
+		return <PageLoader />;
 	}
 
 	if (error) {
@@ -41,15 +41,14 @@ export function LicensesPage() {
 
 	return (
 		<div className="space-y-6">
-			{/* Page Header */}
-			<div className="page-header">
-				<div>
-					<Heading level={1} size="lg">
-						Licenses
-					</Heading>
-					<Text className="text-muted mt-2">View and manage your license keys</Text>
-				</div>
-			</div>
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Licenses</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
+			<Text className="text-muted">View and manage your license keys</Text>
 
 			{/* Stats */}
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

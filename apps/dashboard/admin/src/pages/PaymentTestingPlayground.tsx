@@ -4,7 +4,18 @@
  */
 
 import { pingpong } from "@nube-auth/auth";
-import { Alert, Button, Card, CardBody, Heading, Text } from "@nube-auth/components";
+import {
+	Alert,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
+	Button,
+	Card,
+	CardBody,
+	Heading,
+	Text,
+} from "@nube-auth/components";
 import { useEffect, useState } from "react";
 import { Select } from "../components/Select";
 import config from "../config";
@@ -218,13 +229,17 @@ export default function PaymentTestingPlayground() {
 	];
 
 	return (
-		<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+		<div className="max-w-7xl space-y-6">
 			{/* Header */}
-			<div className="mb-8">
-				<Heading level={1} size="lg">
-					Payment Testing Playground
-				</Heading>
-				<Text className="mt-2 text-muted">
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Test Playground</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
+			<div>
+				<Text className="text-muted">
 					Test payment flows against your existing projects, apps, users, and plans
 				</Text>
 				<div className="flex items-center mt-3 p-3 bg-orange-50 dark:bg-orange-900/10 rounded-lg border border-orange-200 dark:border-orange-800">

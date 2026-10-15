@@ -1,5 +1,9 @@
 import {
 	Alert,
+	Breadcrumb,
+	BreadcrumbButton,
+	BreadcrumbItem,
+	BreadcrumbList,
 	Button,
 	Card,
 	CardBody,
@@ -117,6 +121,13 @@ export function ProfilePage() {
 
 	return (
 		<div className="space-y-6">
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Profile</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
 			<ProfileHeader
 				name={profile.name || "Admin"}
 				email={email}

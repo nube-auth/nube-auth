@@ -69,33 +69,23 @@ export function ProjectSettingsPage() {
 	}
 
 	return (
-		<div className="page">
-			{/* Breadcrumb */}
-			<div className="mb-6">
-				<Breadcrumb>
-					<BreadcrumbList>
-						<BreadcrumbItem>
-							<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
-						</BreadcrumbItem>
-						<BreadcrumbItem>
-							<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>
-								{project.name}
-							</BreadcrumbButton>
-						</BreadcrumbItem>
-						<BreadcrumbItem>
-							<BreadcrumbButton active>Settings</BreadcrumbButton>
-						</BreadcrumbItem>
-					</BreadcrumbList>
-				</Breadcrumb>
-			</div>
-
-			{/* Page Header */}
-			<div className="mb-8">
-				<Heading level={1} size="lg">
-					Project Settings
-				</Heading>
-				<Text className="text-muted">Manage your project configuration and preferences</Text>
-			</div>
+		<div className="space-y-6">
+			<Breadcrumb>
+				<BreadcrumbList>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to="/projects" />}>Projects</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton render={<Link to={`/projects/${projectId}`} />}>
+							{project.name}
+						</BreadcrumbButton>
+					</BreadcrumbItem>
+					<BreadcrumbItem>
+						<BreadcrumbButton active>Settings</BreadcrumbButton>
+					</BreadcrumbItem>
+				</BreadcrumbList>
+			</Breadcrumb>
+			<Text className="text-muted">Manage your project configuration and preferences</Text>
 
 			{/* Settings Content */}
 			{!isEditing ? (

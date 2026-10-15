@@ -74,7 +74,7 @@ export function BillingDashboardPage() {
 	};
 
 	return (
-		<div className="page">
+		<div className="space-y-6">
 			{/* Breadcrumb */}
 			<Breadcrumb>
 				<BreadcrumbList>
@@ -85,13 +85,8 @@ export function BillingDashboardPage() {
 			</Breadcrumb>
 
 			{/* Page Header */}
-			<div className="mb-8 flex justify-between items-center">
-				<div>
-					<Heading size="lg" className="mb-2">
-						Billing Dashboard
-					</Heading>
-					<Text className="text-muted">Monitor payments, subscriptions, and financial metrics</Text>
-				</div>
+			<div className="flex justify-between items-center">
+				<Text className="text-muted">Monitor payments, subscriptions, and financial metrics</Text>
 
 				{/* Date Range Filters */}
 				<div className="flex gap-3 items-center">

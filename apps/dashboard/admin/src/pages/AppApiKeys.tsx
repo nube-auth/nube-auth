@@ -7,7 +7,6 @@ import {
 	Button,
 	Card,
 	CardBody,
-	Heading,
 	Icon,
 	IconBox,
 	IconType,
@@ -180,12 +179,7 @@ export function AppApiKeysPage() {
 			</Breadcrumb>
 
 			{/* Page Header */}
-			<div>
-				<Heading level={1} size="lg">
-					API Keys
-				</Heading>
-				<Text className="text-muted mt-1">Manage your app's API credentials for integration</Text>
-			</div>
+			<Text className="text-muted">Manage your app's API credentials for integration</Text>
 
 			{/* Warning Banner */}
 			<Alert variant="warning">

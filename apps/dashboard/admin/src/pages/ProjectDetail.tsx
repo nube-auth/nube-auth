@@ -28,6 +28,7 @@ import {
 } from "@nube-auth/components";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getIconById } from "../components/IconPicker";
+import { PageLoader } from "../components/PageLoader";
 import { useProject, useProjectApps, useProjectMembers, useProjectStats } from "../hooks/api";
 
 export function ProjectDetailPage() {
@@ -39,11 +40,7 @@ export function ProjectDetailPage() {
 	const { data: stats, isLoading: statsLoading } = useProjectStats(projectId || "");
 
 	if (projectLoading) {
-		return (
-			<div className="flex items-center justify-center py-12">
-				<Spinner />
-			</div>
-		);
+		return <PageLoader />;
 	}
 
 	if (!project) {
@@ -79,10 +76,7 @@ export function ProjectDetailPage() {
 								<Icon icon={IconType[getIconById(project.icon || "dashboard")]} size={28} />
 							</IconBox>
 							<div className="flex-1">
-								<div className="flex items-center gap-3 mb-2">
-									<Heading size="lg" className="mb-0">
-										{project.name}
-									</Heading>
+								<div className="mb-2">
 									<Chip variant="success" size="sm">
 										Active
 									</Chip>

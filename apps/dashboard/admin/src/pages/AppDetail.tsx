@@ -11,10 +11,10 @@ import {
 	Icon,
 	IconBox,
 	IconType,
-	Spinner,
 	Text,
 } from "@nube-auth/components";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { PageLoader } from "../components/PageLoader";
 import { useApp, useAppStats, useProject } from "../hooks/api";
 
 export function AppDetailPage() {
@@ -25,11 +25,7 @@ export function AppDetailPage() {
 	const { data: stats, isLoading: statsLoading } = useAppStats(projectId || "", appId || "");
 
 	if (projectLoading || appLoading) {
-		return (
-			<div className="flex items-center justify-center min-h-screen">
-				<Spinner />
-			</div>
-		);
+		return <PageLoader />;
 	}
 
 	if (!project) {
@@ -130,10 +126,7 @@ export function AppDetailPage() {
 								<Icon icon={IconType.Key} size={28} />
 							</IconBox>
 							<div className="flex-1">
-								<div className="flex items-center gap-3 mb-2">
-									<Heading size="lg" className="mb-0">
-										{app.name}
-									</Heading>
+								<div className="mb-2">
 									<Chip variant="success" size="sm">
 										Active
 									</Chip>

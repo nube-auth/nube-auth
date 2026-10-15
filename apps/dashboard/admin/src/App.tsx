@@ -1,4 +1,4 @@
-import { cycleTheme, DocsLink, Heading, Spinner, ThemeToggle, Toast, useTheme } from "@nube-auth/components";
+import { cycleTheme, DocsLink, Spinner, ThemeToggle, Toast, useTheme } from "@nube-auth/components";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type React from "react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
@@ -71,15 +71,10 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 	}
 
 	const topBar = (
-		<>
-			<Heading size="sm" className="min-w-0 truncate">
-				Dashboard
-			</Heading>
-			<div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
-				<ThemeToggle theme={theme} onToggle={() => setTheme(cycleTheme(theme))} />
-				<DocsLink href={config.docsUrl} />
-			</div>
-		</>
+		<div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
+			<ThemeToggle theme={theme} onToggle={() => setTheme(cycleTheme(theme))} />
+			<DocsLink href={config.docsUrl} />
+		</div>
 	);
 
 	return (

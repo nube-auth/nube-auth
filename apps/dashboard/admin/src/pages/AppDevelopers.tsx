@@ -17,8 +17,8 @@ import {
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { PageLoader } from "../components/PageLoader";
-import { useApp, useProject } from "../hooks/api";
 import { config } from "../config";
+import { useApp, useProject } from "../hooks/api";
 
 export function AppDevelopersPage() {
 	const { projectId, appId } = useParams<{ projectId: string; appId: string }>();
@@ -70,14 +70,7 @@ export function AppDevelopersPage() {
 			</Breadcrumb>
 
 			{/* Page Header */}
-			<div>
-				<Heading level={1} size="lg">
-					Integration Guide
-				</Heading>
-				<Text className="text-muted">
-					Learn how to integrate Nube Auth authentication into your application
-				</Text>
-			</div>
+			<Text className="text-muted">Learn how to integrate Nube Auth authentication into your application</Text>
 
 			{/* Tabs */}
 			<Tabs defaultValue="quickstart">
