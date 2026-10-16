@@ -23,6 +23,8 @@ import {
 	projectQueries,
 	promotion_provider_refs,
 	purchases,
+	readSealedSecret,
+	sealSecret,
 	subscriptions,
 	userQueries,
 } from "@nube-auth/db";
@@ -232,7 +234,7 @@ providersRouter.get("/:projectId/configs/:providerId/credentials", async (c: Con
 			provider: config.provider,
 			environment: config.environment,
 			credentials,
-			webhookSecret: config.webhook_secret,
+			webhookSecret: readSealedSecret(config.webhook_secret),
 		});
 	} catch (_error) {
 		// Never log error object that might contain credentials
@@ -303,7 +305,7 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
 			environment: body.environment as PaymentEnvironment,
 			credentials: sealedBundle.sealed,
 			credentials_dek: sealedBundle.wrappedDek,
-			webhook_secret: body.webhookSecret,
+			webhook_secret: body.webhookSecret ? sealSecret(body.webhookSecret) : null,
 			metadata: body.metadata,
 			is_active: true,
 			is_default: false, // Must explicitly select as default
@@ -397,7 +399,7 @@ providersRouter.patch("/:projectId/configs/:providerId", async (c: Context) => {
 		}
 
 		if (body.webhookSecret !== undefined) {
-			updateData.webhook_secret = body.webhookSecret ?? null;
+			updateData.webhook_secret = body.webhookSecret ? sealSecret(body.webhookSecret) : null;
 		}
 
 		if (body.isActive !== undefined) {

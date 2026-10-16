@@ -6,7 +6,7 @@
  * and attempts verification with each until one succeeds.
  */
 
-import { getDb, paymentProviderConfigQueries } from "@nube-auth/db";
+import { getDb, paymentProviderConfigQueries, readSealedSecret } from "@nube-auth/db";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import { createProviderAdapter } from "../adapters/index.js";
 import { decryptProviderCredentials } from "../encryption.js";
@@ -73,7 +73,7 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 					// even if encrypted API credentials are stale/corrupted.
 					decryptedCredentials = {
 						apiKey: "webhook-verification-only",
-						webhookSecret: providerConfig.webhook_secret,
+						webhookSecret: readSealedSecret(providerConfig.webhook_secret),
 						environment: providerConfig.environment === "production" ? "live_mode" : "test_mode",
 					};
 					log.warn(
@@ -94,7 +94,7 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 				(decryptedCredentials as any).environment =
 					providerConfig.environment === "production" ? "live_mode" : "test_mode";
 				(decryptedCredentials as any).webhookSecret =
-					providerConfig.webhook_secret || (decryptedCredentials as any).webhookSecret;
+					readSealedSecret(providerConfig.webhook_secret) || (decryptedCredentials as any).webhookSecret;
 			}
 
 			const adapter = createProviderAdapter(providerConfig.provider, decryptedCredentials);

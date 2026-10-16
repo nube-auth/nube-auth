@@ -117,9 +117,27 @@ membersRouter.post("/:projectId/members", async (c: Context) => {
 
 		if (existingUser) {
 			// Check if already a member
-			const existingMember = await projectMemberQueries.findByProjectAndUser(db, project.id, existingUser.id);
-			if (existingMember && existingMember.length > 0) {
+			const existingMember = await projectMemberQueries.findAnyByProjectAndUser(db, project.id, existingUser.id);
+			if (existingMember && existingMember.deleted_at == null) {
 				return c.json({ error: "User is already a member of this project" }, 409);
+			}
+			if (existingMember?.deleted_at) {
+				const restored = await projectMemberQueries.update(db, existingMember.id, {
+					deleted_at: null,
+					role,
+					updated_at: new Date(),
+				});
+				return c.json(
+					{
+						id: restored.public_id,
+						userId: existingUser.public_id,
+						email: existingUser.primary_email,
+						name: existingUser.name,
+						role: restored.role,
+						joinedAt: new Date(restored.created_at).toISOString(),
+					},
+					201,
+				);
 			}
 
 			// Add existing user as member

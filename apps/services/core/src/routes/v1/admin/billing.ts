@@ -1,9 +1,14 @@
 import {
+	and,
 	appQueries,
+	apps,
 	getDb,
 	inArray,
+	isNull,
+	licenseQueries,
 	paymentProviderConfigQueries,
 	paymentTransactionQueries,
+	projectMemberQueries,
 	purchaseQueries,
 	type purchases,
 	sql,
@@ -189,28 +194,86 @@ function parseDateFilters(query: Record<string, string>) {
 	return { startDate, endDate };
 }
 
+interface BillingScope {
+	appIds: number[];
+	canWrite: (appId: number) => boolean;
+}
+
+async function loadBillingScope(userPublicId: string | undefined): Promise<BillingScope | null> {
+	if (!userPublicId) return null;
+	const db = getDb();
+	const user = await userQueries.findByPublicId(db, userPublicId);
+	if (!user) return null;
+	const memberships = await projectMemberQueries.findByUserId(db, user.id);
+	const projectIds = memberships.map((membership) => membership.project_id);
+	const appRows = projectIds.length
+		? await db
+				.select({ id: apps.id, project_id: apps.project_id })
+				.from(apps)
+				.where(and(inArray(apps.project_id, projectIds), isNull(apps.deleted_at)))
+		: [];
+	const roles = new Map(memberships.map((membership) => [membership.project_id, membership.role]));
+	const appProject = new Map(appRows.map((app) => [app.id, app.project_id]));
+	return {
+		appIds: appRows.map((app) => app.id),
+		canWrite(appId: number) {
+			const projectId = appProject.get(appId);
+			if (projectId == null) return false;
+			const role = roles.get(projectId);
+			return role === "owner" || role === "admin";
+		},
+	};
+}
+
+async function webhookAppId(
+	db: ReturnType<typeof getDb>,
+	webhook: { payment_transaction_id: number | null; license_id: number | null },
+) {
+	if (webhook.payment_transaction_id) {
+		const tx = await paymentTransactionQueries.findByInternalId_(db, webhook.payment_transaction_id);
+		if (tx) {
+			const purchase = await purchaseQueries.findByInternalId_(db, tx.purchase_id);
+			if (purchase) return purchase.app_id;
+		}
+	}
+	if (webhook.license_id) {
+		const license = await licenseQueries.findByInternalId_(db, webhook.license_id);
+		if (license) return license.app_id;
+	}
+	return null;
+}
+
 // ---------------------------------------------------------------------------
 // GET /stats
 // ---------------------------------------------------------------------------
 billingRouter.get("/stats", async (c) => {
 	try {
+		const scope = await loadBillingScope(c.req.header("X-Nube-User-Id"));
+		if (!scope) return c.json({ error: "Unauthorized" }, 401);
 		const db = getDb();
 		const query = c.req.query();
 		const { startDate, endDate } = parseDateFilters(query);
 		const provider = query["provider"] || undefined;
 
-		const dateFilters = { startDate, endDate, provider };
+		const dateFilters = { startDate, endDate, provider, appIds: scope.appIds };
 
 		const [byType, byProvider, byCurrency, last30Days, activeSubsResult, webhookCounts] = await Promise.all([
 			paymentTransactionQueries.revenueByType(db, dateFilters),
-			paymentTransactionQueries.revenueByProvider(db, { startDate, endDate }),
+			paymentTransactionQueries.revenueByProvider(db, { startDate, endDate, appIds: scope.appIds }),
 			paymentTransactionQueries.revenueByCurrency(db, dateFilters),
-			paymentTransactionQueries.countRecent(db, 30),
-			db
-				.select({ count: sql<number>`count(*)` })
-				.from(subscriptions)
-				.where(inArray(subscriptions.status, ["active", "trialing", "past_due"])),
-			webhookLogQueries.countByStatus(db),
+			paymentTransactionQueries.countRecent(db, 30, scope.appIds),
+			scope.appIds.length
+				? db
+						.select({ count: sql<number>`count(*)` })
+						.from(subscriptions)
+						.where(
+							and(
+								inArray(subscriptions.status, ["active", "trialing", "past_due"]),
+								inArray(subscriptions.app_id, scope.appIds),
+							),
+						)
+				: Promise.resolve([{ count: 0 }]),
+			webhookLogQueries.countByStatus(db, scope.appIds),
 		]);
 
 		// Compute totals from grouped results
@@ -270,6 +333,8 @@ billingRouter.get("/stats", async (c) => {
 // ---------------------------------------------------------------------------
 billingRouter.get("/purchases", async (c) => {
 	try {
+		const scope = await loadBillingScope(c.req.header("X-Nube-User-Id"));
+		if (!scope) return c.json({ error: "Unauthorized" }, 401);
 		const db = getDb();
 		const query = c.req.query();
 		const { limit, offset } = parsePagination(query);
@@ -286,11 +351,18 @@ billingRouter.get("/purchases", async (c) => {
 		let appId: number | undefined;
 		if (query["app_id"]) {
 			const app = await appQueries.findByPublicId(db, query["app_id"]);
-			if (app) appId = app.id;
+			if (!app || !scope.appIds.includes(app.id)) {
+				return c.json({
+					data: [],
+					pagination: { total: 0, limit, offset, hasMore: false },
+				});
+			}
+			appId = app.id;
 		}
 
 		const { items, total } = await purchaseQueries.findAll(db, {
 			appId,
+			appIds: scope.appIds,
 			status: query["status"] || undefined,
 			providerConfigId,
 			startDate,
@@ -329,8 +401,10 @@ billingRouter.get("/purchases/:purchaseId", async (c) => {
 		const db = getDb();
 		const purchaseId = c.req.param("purchaseId");
 
+		const scope = await loadBillingScope(c.req.header("X-Nube-User-Id"));
+		if (!scope) return c.json({ error: "Unauthorized" }, 401);
 		const purchase = await purchaseQueries.findByPublicId(db, purchaseId);
-		if (!purchase) {
+		if (!purchase || !scope.appIds.includes(purchase.app_id)) {
 			return c.json({ error: "Purchase not found" }, 404);
 		}
 
@@ -352,6 +426,8 @@ billingRouter.get("/purchases/:purchaseId", async (c) => {
 // ---------------------------------------------------------------------------
 billingRouter.get("/transactions", async (c) => {
 	try {
+		const scope = await loadBillingScope(c.req.header("X-Nube-User-Id"));
+		if (!scope) return c.json({ error: "Unauthorized" }, 401);
 		const db = getDb();
 		const query = c.req.query();
 		const { limit, offset } = parsePagination(query);
@@ -361,6 +437,7 @@ billingRouter.get("/transactions", async (c) => {
 			type: query["type"] || undefined,
 			status: query["status"] || undefined,
 			provider: query["provider"] || undefined,
+			appIds: scope.appIds,
 			startDate,
 			endDate,
 			limit,
@@ -390,6 +467,8 @@ billingRouter.get("/transactions", async (c) => {
 // ---------------------------------------------------------------------------
 billingRouter.get("/webhooks", async (c) => {
 	try {
+		const scope = await loadBillingScope(c.req.header("X-Nube-User-Id"));
+		if (!scope) return c.json({ error: "Unauthorized" }, 401);
 		const db = getDb();
 		const query = c.req.query();
 		const { limit, offset } = parsePagination(query);
@@ -399,6 +478,7 @@ billingRouter.get("/webhooks", async (c) => {
 			provider: query["provider"] || undefined,
 			status: query["status"] || undefined,
 			eventType: query["event_type"] || undefined,
+			appIds: scope.appIds,
 			startDate,
 			endDate,
 			limit,
@@ -423,8 +503,11 @@ billingRouter.get("/webhooks/:webhookId", async (c) => {
 		const db = getDb();
 		const webhookId = c.req.param("webhookId");
 
+		const scope = await loadBillingScope(c.req.header("X-Nube-User-Id"));
+		if (!scope) return c.json({ error: "Unauthorized" }, 401);
 		const webhook = await webhookLogQueries.findByPublicId(db, webhookId);
-		if (!webhook) {
+		const appId = webhook ? await webhookAppId(db, webhook) : null;
+		if (!webhook || appId == null || !scope.appIds.includes(appId)) {
 			return c.json({ error: "Webhook log not found" }, 404);
 		}
 
@@ -443,8 +526,11 @@ billingRouter.post("/webhooks/:webhookId/retry", async (c) => {
 		const db = getDb();
 		const webhookId = c.req.param("webhookId");
 
+		const scope = await loadBillingScope(c.req.header("X-Nube-User-Id"));
+		if (!scope) return c.json({ error: "Unauthorized" }, 401);
 		const webhook = await webhookLogQueries.findByPublicId(db, webhookId);
-		if (!webhook) {
+		const appId = webhook ? await webhookAppId(db, webhook) : null;
+		if (!webhook || appId == null || !scope.canWrite(appId)) {
 			return c.json({ error: "Webhook log not found" }, 404);
 		}
 
@@ -508,6 +594,8 @@ billingRouter.post("/webhooks/:webhookId/retry", async (c) => {
 // ---------------------------------------------------------------------------
 billingRouter.get("/refunds", async (c) => {
 	try {
+		const scope = await loadBillingScope(c.req.header("X-Nube-User-Id"));
+		if (!scope) return c.json({ error: "Unauthorized" }, 401);
 		const db = getDb();
 		const query = c.req.query();
 		const { limit, offset } = parsePagination(query);
@@ -517,6 +605,7 @@ billingRouter.get("/refunds", async (c) => {
 			type: "refund",
 			status: query["status"] || undefined,
 			provider: query["provider"] || undefined,
+			appIds: scope.appIds,
 			startDate,
 			endDate,
 			limit,
@@ -564,8 +653,10 @@ billingRouter.post("/refunds", async (c) => {
 		const { purchase_id, amount, reason } = parsed.data;
 
 		// Look up purchase
+		const scope = await loadBillingScope(c.req.header("X-Nube-User-Id"));
+		if (!scope) return c.json({ error: "Unauthorized" }, 401);
 		const purchase = await purchaseQueries.findByPublicId(db, purchase_id);
-		if (!purchase) {
+		if (!purchase || !scope.canWrite(purchase.app_id)) {
 			return c.json({ error: "Purchase not found" }, 404);
 		}
 

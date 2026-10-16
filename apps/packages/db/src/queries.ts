@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, gte, inArray, isNull, lt, lte, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, gte, inArray, isNull, lt, lte, sql } from "drizzle-orm";
 import type { DbClient } from "./index.js";
 import {
 	app_users,
@@ -274,7 +274,22 @@ export const projectMemberQueries = {
 		return db
 			.select()
 			.from(project_members)
+			.where(
+				and(
+					eq(project_members.project_id, projectId),
+					eq(project_members.user_id, userId),
+					isNull(project_members.deleted_at),
+				),
+			);
+	},
+
+	/** Includes a soft-deleted row so an invite can restore it instead of inserting a duplicate. */
+	async findAnyByProjectAndUser(db: DbClient, projectId: number, userId: number) {
+		const results = await db
+			.select()
+			.from(project_members)
 			.where(and(eq(project_members.project_id, projectId), eq(project_members.user_id, userId)));
+		return results[0];
 	},
 
 	async findByProjectId(db: DbClient, projectId: number) {
@@ -436,15 +451,7 @@ export const appQueries = {
 		const results = await db
 			.select()
 			.from(apps)
-			.where(
-				and(
-					isNull(apps.deleted_at),
-					or(
-						sql`${apps.app_tokens}->>'serviceTokenHash' = ${hash}`,
-						sql`${apps.app_tokens}->>'serviceToken' = ${serviceToken}`,
-					),
-				),
-			);
+			.where(and(isNull(apps.deleted_at), sql`${apps.app_tokens}->>'serviceTokenHash' = ${hash}`));
 		return results[0];
 	},
 
@@ -1793,6 +1800,30 @@ export const promotionRedemptionQueries = {
 	},
 };
 
+function idList(ids: number[]) {
+	return sql.join(
+		ids.map((id) => sql`${id}`),
+		sql`, `,
+	);
+}
+
+function purchaseIdsInApps(appIds: number[]) {
+	return sql`${payment_transactions.purchase_id} IN (SELECT id FROM purchases WHERE app_id IN (${idList(appIds)}))`;
+}
+
+function webhookLogsInApps(appIds: number[]) {
+	return sql`(
+		${webhook_logs.payment_transaction_id} IN (
+			SELECT pt.id FROM payment_transactions pt
+			INNER JOIN purchases p ON p.id = pt.purchase_id
+			WHERE p.app_id IN (${idList(appIds)})
+		)
+		OR ${webhook_logs.license_id} IN (
+			SELECT id FROM licenses WHERE app_id IN (${idList(appIds)})
+		)
+	)`;
+}
+
 /**
  * Purchase queries
  */
@@ -1811,6 +1842,7 @@ export const purchaseQueries = {
 		db: DbClient,
 		filters: {
 			appId?: number | undefined;
+			appIds?: number[] | undefined;
 			status?: string | undefined;
 			providerConfigId?: number | undefined;
 			startDate?: Date | undefined;
@@ -1819,7 +1851,9 @@ export const purchaseQueries = {
 			offset?: number | undefined;
 		} = {},
 	) {
+		if (filters.appIds && filters.appIds.length === 0) return { items: [], total: 0 };
 		const conditions = [];
+		if (filters.appIds) conditions.push(inArray(purchases.app_id, filters.appIds));
 		if (filters.appId) conditions.push(eq(purchases.app_id, filters.appId));
 		if (filters.status) conditions.push(eq(purchases.status, filters.status));
 		if (filters.providerConfigId) conditions.push(eq(purchases.provider_config_id, filters.providerConfigId));
@@ -1890,13 +1924,16 @@ export const paymentTransactionQueries = {
 			status?: string | undefined;
 			provider?: string | undefined;
 			providerConfigId?: number | undefined;
+			appIds?: number[] | undefined;
 			startDate?: Date | undefined;
 			endDate?: Date | undefined;
 			limit?: number | undefined;
 			offset?: number | undefined;
 		} = {},
 	) {
+		if (filters.appIds && filters.appIds.length === 0) return { items: [], total: 0 };
 		const conditions = [];
+		if (filters.appIds) conditions.push(purchaseIdsInApps(filters.appIds));
 		if (filters.type) conditions.push(eq(payment_transactions.type, filters.type));
 		if (filters.status) conditions.push(eq(payment_transactions.status, filters.status));
 		if (filters.provider) conditions.push(eq(payment_transactions.provider, filters.provider));
@@ -1940,9 +1977,16 @@ export const paymentTransactionQueries = {
 	/** Get revenue stats grouped by type */
 	async revenueByType(
 		db: DbClient,
-		filters: { startDate?: Date | undefined; endDate?: Date | undefined; provider?: string | undefined } = {},
+		filters: {
+			startDate?: Date | undefined;
+			endDate?: Date | undefined;
+			provider?: string | undefined;
+			appIds?: number[] | undefined;
+		} = {},
 	) {
+		if (filters.appIds && filters.appIds.length === 0) return [];
 		const conditions = [eq(payment_transactions.status, "success")];
+		if (filters.appIds) conditions.push(purchaseIdsInApps(filters.appIds));
 		if (filters.startDate) conditions.push(gte(payment_transactions.transaction_date, filters.startDate));
 		if (filters.endDate) conditions.push(lte(payment_transactions.transaction_date, filters.endDate));
 		if (filters.provider) conditions.push(eq(payment_transactions.provider, filters.provider));
@@ -1959,8 +2003,13 @@ export const paymentTransactionQueries = {
 	},
 
 	/** Get revenue stats grouped by provider */
-	async revenueByProvider(db: DbClient, filters: { startDate?: Date | undefined; endDate?: Date | undefined } = {}) {
+	async revenueByProvider(
+		db: DbClient,
+		filters: { startDate?: Date | undefined; endDate?: Date | undefined; appIds?: number[] | undefined } = {},
+	) {
+		if (filters.appIds && filters.appIds.length === 0) return [];
 		const conditions = [eq(payment_transactions.status, "success")];
+		if (filters.appIds) conditions.push(purchaseIdsInApps(filters.appIds));
 		if (filters.startDate) conditions.push(gte(payment_transactions.transaction_date, filters.startDate));
 		if (filters.endDate) conditions.push(lte(payment_transactions.transaction_date, filters.endDate));
 
@@ -1978,9 +2027,16 @@ export const paymentTransactionQueries = {
 	/** Get revenue stats grouped by currency */
 	async revenueByCurrency(
 		db: DbClient,
-		filters: { startDate?: Date | undefined; endDate?: Date | undefined; provider?: string | undefined } = {},
+		filters: {
+			startDate?: Date | undefined;
+			endDate?: Date | undefined;
+			provider?: string | undefined;
+			appIds?: number[] | undefined;
+		} = {},
 	) {
+		if (filters.appIds && filters.appIds.length === 0) return [];
 		const conditions = [eq(payment_transactions.status, "success")];
+		if (filters.appIds) conditions.push(purchaseIdsInApps(filters.appIds));
 		if (filters.startDate) conditions.push(gte(payment_transactions.transaction_date, filters.startDate));
 		if (filters.endDate) conditions.push(lte(payment_transactions.transaction_date, filters.endDate));
 		if (filters.provider) conditions.push(eq(payment_transactions.provider, filters.provider));
@@ -1997,13 +2053,16 @@ export const paymentTransactionQueries = {
 	},
 
 	/** Count transactions in last N days */
-	async countRecent(db: DbClient, days: number) {
+	async countRecent(db: DbClient, days: number, appIds?: number[]) {
+		if (appIds && appIds.length === 0) return 0;
 		const since = new Date();
 		since.setDate(since.getDate() - days);
+		const conditions = [gte(payment_transactions.created_at, since)];
+		if (appIds) conditions.push(purchaseIdsInApps(appIds));
 		const result = await db
 			.select({ count: sql<number>`count(*)` })
 			.from(payment_transactions)
-			.where(gte(payment_transactions.created_at, since));
+			.where(and(...conditions));
 		return result[0]?.count ?? 0;
 	},
 
@@ -2118,13 +2177,16 @@ export const webhookLogQueries = {
 			provider?: string | undefined;
 			status?: string | undefined;
 			eventType?: string | undefined;
+			appIds?: number[] | undefined;
 			startDate?: Date | undefined;
 			endDate?: Date | undefined;
 			limit?: number | undefined;
 			offset?: number | undefined;
 		} = {},
 	) {
+		if (filters.appIds && filters.appIds.length === 0) return { items: [], total: 0 };
 		const conditions = [];
+		if (filters.appIds) conditions.push(webhookLogsInApps(filters.appIds));
 		if (filters.provider) conditions.push(eq(webhook_logs.provider, filters.provider));
 		if (filters.status) conditions.push(eq(webhook_logs.status, filters.status));
 		if (filters.eventType) conditions.push(eq(webhook_logs.event_type, filters.eventType));
@@ -2163,13 +2225,15 @@ export const webhookLogQueries = {
 	},
 
 	/** Count webhooks by status */
-	async countByStatus(db: DbClient) {
+	async countByStatus(db: DbClient, appIds?: number[]) {
+		if (appIds && appIds.length === 0) return [];
 		return db
 			.select({
 				status: webhook_logs.status,
 				count: sql<number>`count(*)`,
 			})
 			.from(webhook_logs)
+			.where(appIds ? webhookLogsInApps(appIds) : undefined)
 			.groupBy(webhook_logs.status);
 	},
 

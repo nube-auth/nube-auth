@@ -1,108 +1,145 @@
 # Nube Auth backend audit
 
-**Date:** 16 October 2026
-**Branch audited:** `trunk` at `dc88089`
-**Scope:** Gateway, Core, Workers, and backend packages (`auth`, `db`, `cache`, `queue`, `shared`, `billing`), plus deploy/runtime config
+**Second pass:** 16 October 2026
+**Tree:** `trunk` plus uncommitted secret-storage work
+**Scope:** Gateway, Core, Workers, packages (`auth`, `db`, `cache`, `queue`, `shared`, `billing`), and deploy config
 
-This file is the source of truth for the audit. Remediation status is updated as fixes land.
+This file is the source of truth. The first pass closed the items in [Closed in the first pass](#closed-in-the-first-pass). This pass re-read the current tree, including the secret-box changes, and checked the findings below in code.
 
 ## Summary
 
-| Severity | Open before this change | Addressed here |
+The second-pass findings below were fixed in code on 16 October 2026, except the structural refactors called out at the end. Deploy this branch before the sealed app secrets and webhook signatures work again.
+
+| Severity | Was open | Now |
 | --- | --- | --- |
-| Critical | 1 | Authorization gap closed; live credentials removed from generic app responses |
-| High | 7 | CORS, session binding, payment acknowledgement, playground guards, secret logging, outbound URL checks, first automated tests |
-| Medium | 8 | Queue routing, webhook limits, readiness probes, env fail-fast, dead code |
-| Low | 2 | Global license query scoped and batched; unused security modules removed |
+| Critical | 1 | Billing routes are limited to the caller's projects |
+| High | 3 | Session binding, Dodo file removed, deploy still required for sealed secrets |
+| Medium | 7 | Fixed in code. Existing provider webhook secrets stay readable until they are rewritten after deploy |
+| Low | 4 | Fixed |
 
-## Findings
+Structural debt (Gateway database access, the duplicate billing trees, and the size of `auth.ts`) is still open. Subscription lists are batched. The other admin lists are not. Staging's nginx health check stays on `/health` because that process does not serve `/ready`. Production core, gateway, and workers probes use `/ready`.
 
-### AUTH-01 — Critical — Cross-tenant admin access
+## Findings addressed in this change
 
-App-scoped admin routers resolved a project or app id without proving the caller belonged to that project. `GET /projects/:projectId/apps/:appId` returned live `clientSecret` and `serviceToken`. `GET /licenses` listed every tenant.
+### AUTH-BILL-01 — Critical — Platform billing is not tenant-scoped
 
-**Fix:** Core admin routes now require a session-bound user, then check project membership before an app, project, or routing-rule id is used. Generic app responses mask credentials. The existing `/api-keys` route remains the reveal path and still requires an owner or admin. Global licenses are limited to the caller's projects.
+`enforceAdminAccess` checks project membership only when the path contains a project, app, or routing-rule id. `/v1/admin/billing/*` has none, so any live admin session is enough.
 
-### AUTH-02 — High — Caller-controlled admin identity
+The billing router then reads and writes across every tenant:
 
-Core trusted `X-Nube-User-Id` after a shared service token. Gateway already forwards `X-Nube-Session-Id`.
+- `GET /billing/stats`, `/purchases`, `/transactions`, `/webhooks`, `/refunds` call the global `findAll` helpers
+- `GET /billing/webhooks/:webhookId` returns the stored request body, headers, and signature
+- `POST /billing/webhooks/:webhookId/retry` requeues that delivery
+- `POST /billing/refunds` creates a refund record for any completed purchase id
 
-**Fix:** Admin requests must present a live, unrevoked session whose user matches `X-Nube-User-Id`.
+Gateway only requires the admin session cookie before it proxies the call. A member of one project can read another project's purchases, payer emails, and payment webhook payloads.
 
-### NET-01 — High — Outbound webhook SSRF
+Evidence: `apps/services/core/src/middleware/admin-access.ts` (membership check runs only when a resource id was parsed), `apps/services/core/src/routes/v1/admin/billing.ts`, `apps/services/core/src/routes/v1/admin/index.ts`.
 
-Webhook URLs were stored and fetched with no host, scheme, or redirect checks.
+Provider routes are not in this gap. They call `validateProjectAccess` and require the project owner. Routing-rule paths carry a numeric app id, which the middleware does scope.
 
-**Fix:** Registration, test delivery, and worker delivery reject non-HTTPS URLs outside development, credentials in URLs, loopback, link-local, private, CGNAT, and metadata addresses. Redirects are not followed.
+### OPS-ENC-01 — High — Running services cannot read the sealed secrets
 
-### PAY-01 — High — Payment webhooks acknowledged on failure
+Staging and production databases were rewritten in this session. App client secrets are stored as `clientSecretHash` plus `clientSecretEnc`, and the plaintext field is null. Both webhook signing secrets are `enc1:` envelopes. Each value was opened with that environment's payment key before commit.
 
-Gateway returned HTTP 200 when the Core proxy threw, so providers stopped retrying.
+The image currently serving traffic still compares the plaintext `clientSecret` and signs webhooks with the stored string. Until this branch is deployed:
 
-**Fix:** Transport and proxy failures return HTTP 502.
+- app-secret checks fail
+- customer webhook signatures will not match
 
-### TEST-02 — High — Payment playground
+Workers call `openSecret` only in this tree. The vault entrypoint still does not require `PAYMENT_CONFIGS_KEY` for the workers process (`nube-scripts/deploy/docker/dhd-entrypoint.sh`). A worker that starts without that key fails at delivery time. Production deploy config lists the key, and the vault file contains it.
 
-The test router was mounted in production. Lemon Squeezy and Dodo checks always returned true. A caller could name another project.
+Gateway auth in this tree compares the hash, so it does not need the key to accept a presented client secret. Reveal and webhook signing do.
 
-**Fix:** The router mounts only in development, or in any environment when `ENABLE_PAYMENT_PLAYGROUND=true`. Non-simulate mode is limited to a Stripe test key. Session and cleanup actions require admin membership on that session's project. Global cleanup is disabled.
+### SEC-DODO-01 — High — Dodo test credentials are committed
 
-### CORS-01 — High — Credentialed CORS suffix match
+`apps/services/core/test-dodo.mjs` contains a Dodo test-mode API key and webhook secret. Rotate both in Dodo and delete the file. Do not copy the values into docs or chat.
 
-`https://evil.com` matched the `.com` suffix of `s-api.nubeauth.com`.
+### AUTH-CORE-01 — High — Core user routes trust the user header
 
-**Fix:** Origins are parsed and compared to configured origins or one subdomain under the service's registrable domain. Localhost is development-only.
+Admin routes now require a live session whose user matches `X-Nube-User-Id`. License validate, activate, deactivate, and `for-user`, subscription cancel and resume, and checkout still take that header after the shared `S2S_SECRET` alone.
 
-### LOG-01 — High — Cookies and headers in logs
+Anyone who can call Core with the service token can act as any user: start a checkout, activate a device, or cancel a subscription. Gateway stamps the header from the session for the paths it proxies. Core does not check that stamp.
 
-Auth and CSRF failures logged raw cookies or full header maps. The admin proxy logged the service token.
+Evidence: `apps/services/core/src/routes/v1/license/index.ts`, `apps/services/core/src/routes/v1/subscription/index.ts`, `apps/services/core/src/routes/v1/billing/checkout.ts`, `apps/services/core/src/middleware/s2s.ts`.
 
-**Fix:** Those fields are no longer logged. The shared logger redacts common secret paths.
+### SSRF-REBIND-01 — Medium — Webhook DNS is checked, then resolved again
 
-### TEST-01 — High — No backend tests
+`assertSafeOutboundUrl` resolves the host and rejects private answers. `postOutboundWebhook` then calls `fetch` on the hostname, which resolves a second time. A name that is public at check time and private at connect time is not pinned. Redirects are already refused.
 
-**Fix:** Unit tests now cover origin matching, blocked outbound addresses, and admin path parsing. Route-level integration tests are still required before `--passWithNoTests` can be removed from Workers.
+Evidence: `apps/packages/shared/src/outbound-url.ts`.
 
-### QUEUE-01 — Medium — Queue name drift
+### AUTH-MEM-01 — Medium — Route checks still see deleted memberships
 
-Payment, license, and refund enqueuers published to `billing`, where the webhook worker ignores unknown job names. Workers listen on `PROCESS_PAYMENT`, `SYNC_LICENSE`, and `PROCESS_REFUND`.
+`findByProjectAndUser` does not filter `deleted_at`. Middleware does. App and member handlers that call the query and take the first row can disagree with the middleware: a removed member can block a re-invite, and a stale owner row can satisfy a local role check.
 
-**Fix:** Those enqueuers now publish to the queues the workers consume. Webhooks stay on `billing`. The older `QueueName` enum in `@nube-auth/queue` still uses a third set of names and should be collapsed in a follow-up.
+Evidence: `apps/packages/db/src/queries.ts`, `apps/services/core/src/routes/v1/admin/apps.ts`, `apps/services/core/src/routes/v1/admin/members.ts`.
 
-### INPUT-01 — Medium — Unbounded webhooks
+### SEC-LEGACY-01 — Medium — Plaintext secret fallback is still compiled in
 
-**Fix:** Ingress bodies are capped at 256 KiB. Stored headers are allowlisted. Each app can register at most 25 endpoints. Delivery runs five at a time.
+`presentedSecretMatches`, `findByServiceToken`, and `openSecret` still accept a legacy plaintext value. Gateway caches `{ hash, legacy }` for five minutes under `app-client-secret:${appId}`. The databases no longer have those plaintext fields. The fallback is dormant until a plaintext value is written again, or a stale cache entry is still a raw secret string.
 
-### OPS-01 — Medium — Readiness always returned 200
+Evidence: `apps/packages/db/src/secret-box.ts`, `apps/packages/db/src/queries.ts`, `apps/services/gateway/src/index.ts`, `apps/services/gateway/src/middleware/appSecret.ts`.
 
-**Fix:** `/live` is liveness and always returns 200 once the process is listening. `/ready` returns 503 until the database and Redis are usable. `/health` still returns 200 so existing Railway and Fly checks keep passing during migration. Point traffic routing at `/ready`.
+### SEED-01 — Medium — Seed script writes the old secret shape
 
-### CONFIG-01 — Medium — Weak environment parsing
+`apps/packages/db/scripts/seed-project-app.ts` writes `client_secret` and `service_token` and prints a prefix of each. Running it against staging or production would not match the sealed `app_tokens` shape.
 
-**Fix:** Numeric environment values must be finite integers in range. Production rejects localhost dashboard URLs. OAuth state and email OTP lifetimes use the configured TTLs. Queue Redis configuration fails startup in production and staging when no Redis host is set. The vault entrypoint validates service-specific variables: Core requires `PAYMENT_CONFIGS_KEY`, Gateway requires `GATEWAY_PUBLIC_URL`, and Workers no longer require Gateway or encryption variables.
+### DEBUG-01 — Medium — Debug routes are on whenever production mode is off
 
-### PERF-01 — Low — Global license N+1
+`/v1/debug/*` mounts when `NODE_ENV !== "production"` and auth treats that prefix as public. The handlers return cookie names and values. A staging process that is not `NODE_ENV=production` exposes them without a session.
 
-**Fix:** The global license list loads the caller's apps, licenses, and plans in three queries. Other admin lists still query per row.
+Evidence: `apps/services/gateway/src/index.ts`, `apps/services/gateway/src/routes/debug.ts`, `apps/services/gateway/src/middleware/auth.ts`.
 
-### DEAD-01 — Low — Unused security modules
+### PAY-WHSEC-01 — Medium — Provider webhook secrets are plaintext
 
-**Fix:** Removed the unmounted admin security check, the unused Gateway `coreService` / `cacheService` pair, and the second Gateway service-token middleware that read a different header.
+`payment_provider_configs.webhook_secret` is a text column. `GET /providers/:projectId/configs/:providerId/credentials` returns that value, plus decrypted API credentials, to the project owner. App and outbound webhook secrets were sealed. This column was not.
 
-## Still open
+Evidence: `apps/packages/db/src/schema.ts`, `apps/services/core/src/routes/v1/admin/providers.ts`.
 
-These need a dedicated change and should not be mixed into a silent refactor:
+### OPS-HEALTH-01 — Medium — Traffic probes still use `/health`
 
-- **SECRET-01.** App service tokens and webhook signing secrets are still stored in plaintext. Hashing or envelope-encrypting them needs a migration that keeps existing tokens valid during rotation.
-- **BOUNDARY-01.** Gateway still reads and writes the database for auth, licenses, profile, and catalog flows. Dead proxy helpers are gone; moving the live paths into Core is a separate project.
-- **ARCH-01.** `apps/packages/billing` and `apps/services/core/src/billing` are still two trees. Queue routing was aligned in both copies.
-- **ARCH-02.** `auth.ts` and the larger admin routers are still monolithic. Tenant authorization now lives in one middleware.
-- **Queue enum cleanup.** `QueueName` in `@nube-auth/queue` does not match the runtime queue names.
-- **Integration tests.** Cross-tenant HTTP tests need a database harness.
+`/ready` returns 503 until the database and Redis are usable. Railway, Fly, and the Docker health checks still request `/health`, which stays HTTP 200 while dependencies are down so a rolling start is not killed. Files: `nube-scripts/deploy/configs/nube-auth.deploy.yml`, `nube-auth.deploy.staging.yml`, `nube-auth.deploy.prod.yml`, `apps/services/gateway/fly.toml`, `apps/services/core/fly.toml`, and the Dockerfiles under `nube-scripts/deploy/docker/`.
 
-## Remediation order from here
+Production deploy config also pins services to `feat/envelope-encryption-key-rotation`, not the branch that contains this audit's code.
 
-1. Ship the authorization, CORS, webhook, and logging fixes.
-2. Add database-backed tests for every admin route that takes an app or project id.
-3. Migrate app and webhook secrets to hashes or envelope encryption.
-4. Collapse the billing trees and move Gateway domain queries behind Core.
+## Low
+
+- **SSRF-IPV6-01.** `isBlockedIp` blocks loopback, link-local, and `fc`/`fd` unique-local addresses. 6to4 and Teredo literals that embed a private IPv4 address are not decoded.
+- **PROMO-01.** Public `validate-promo` forwards a caller-supplied `X-Nube-User-Id`, so redemption state can be queried for another user.
+- **SEC-ROTATE-01.** `openSecret` uses `PAYMENT_CONFIGS_KEY` only. Payment-credential decryption also tries `PAYMENT_CONFIGS_KEY_PREVIOUS`. A key rotation would break reveal and webhook signing before it broke payment credentials.
+- **TEST-01.** Core has one unit file for origin matching, outbound addresses, and admin path parsing. Workers still run `vitest --passWithNoTests`. Gateway and the packages have no test script. There is no database-backed cross-tenant test.
+
+## Structural debt
+
+These were open in the first pass and are still open.
+
+- **BOUNDARY-01.** Gateway still queries the database from `routes/auth.ts`, `routes/me.ts`, `routes/appCatalog.ts`, `routes/s2s.ts`, `middleware/s2s.ts`, `middleware/appSecret.ts`, `lib/appSecuritySettings.ts`, and `index.ts`. Admin and license reads are proxied to Core.
+- **ARCH-01.** `apps/packages/billing` and `apps/services/core/src/billing` are still two trees. Workers import the package. Core enqueues through its own copy. Several files differ.
+- **ARCH-02.** `apps/services/gateway/src/routes/auth.ts` is 1342 lines. The largest admin routers are `apps.ts` (994), `test.ts` (909), `promotions.ts` (796), and `webhooks.ts` (673).
+- **PERF-01.** Subscription, license, member, plan, routing-rule, billing, and stats lists still query per row. Global licenses were batched.
+- **SCHEMA-01.** `AppTokensSchema` in the db and shared packages still describes plaintext `clientSecret` and `serviceToken`. Runtime writes `clientSecretHash`, `clientSecretEnc`, `serviceTokenHash`, and `serviceTokenEnc`.
+- **QUEUE-01.** Runtime queue names match `QueueName`. `notifications` and `async-tasks` have no worker. `enqueuePaymentProcessing`, `enqueueLicenseSync`, and `enqueueRefundProcessing` have no callers, and their payloads do not match the workers.
+
+## Closed in the first pass
+
+| Id | What changed |
+| --- | --- |
+| AUTH-01 | Admin routes require a live session and membership before a project or app id is used. Generic app responses mask secrets. Global licenses are limited to the caller's projects. |
+| AUTH-02 | Admin identity is the session user, not a bare `X-Nube-User-Id`. |
+| NET-01 | Outbound webhooks require HTTPS outside development, block private and metadata addresses, and do not follow redirects. |
+| PAY-01 | Gateway returns 502 when a payment webhook proxy fails. |
+| TEST-02 | The payment playground mounts only in development or when `ENABLE_PAYMENT_PLAYGROUND=true`. Global cleanup is disabled. |
+| CORS-01 | Origins match an explicit origin or one subdomain under the service domain. |
+| LOG-01 | Auth, CSRF, and admin proxy logs no longer include cookies, header maps, or the service token. |
+| INPUT-01 | Webhook bodies are capped, headers are allowlisted, endpoints are capped at 25 per app, and delivery concurrency is 5. |
+| DEAD-01 | Unused Gateway security and proxy modules were removed. |
+| SECRET-01 | New code seals app and webhook secrets. Staging and production rows were rewritten. See OPS-ENC-01 for the deploy gap. |
+
+## Order from here
+
+1. Scope `/v1/admin/billing/*` to the caller's projects, and require owner or admin for refund and retry.
+2. Deploy this branch to staging and production so sealed secrets are readable. Flush `app-client-secret:*` in Redis.
+3. Rotate the Dodo test key and remove `test-dodo.mjs`. Rotate the database passwords that were pasted into chat.
+4. Bind Core license, subscription, and checkout routes to the forwarded session the same way admin routes are bound.
+5. Require `PAYMENT_CONFIGS_KEY` in the workers entrypoint, and point load-balancer checks at `/ready` after the deploy.

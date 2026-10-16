@@ -14,8 +14,6 @@ export enum QueueName {
 	SYNC_PLAN = "sync-plan",
 	OUTBOUND_WEBHOOKS = "outbound-webhooks",
 	EMAILS = "emails",
-	NOTIFICATIONS = "notifications",
-	ASYNC_TASKS = "async-tasks",
 }
 
 /**

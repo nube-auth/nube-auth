@@ -12,26 +12,45 @@ export function secretsEqual(left: string, right: string): boolean {
 	return a.length === b.length && timingSafeEqual(a, b);
 }
 
-export function presentedSecretMatches(
-	presented: string,
-	stored: { hash?: string | null; legacy?: string | null },
-): boolean {
-	if (stored.hash && secretsEqual(digestSecret(presented), stored.hash)) return true;
-	if (stored.legacy && secretsEqual(presented, stored.legacy)) return true;
-	return false;
+export function presentedSecretMatches(presented: string, stored: { hash?: string | null }): boolean {
+	return Boolean(stored.hash) && secretsEqual(digestSecret(presented), stored.hash as string);
 }
 
-function encryptionKey(kekHex?: string): Buffer {
-	const hex = kekHex ?? process.env["PAYMENT_CONFIGS_KEY"];
-	if (!hex) throw new Error("PAYMENT_CONFIGS_KEY is required to seal a secret");
+function parseKey(hex: string): Buffer {
 	const key = Buffer.from(hex, "hex");
 	if (key.length !== 32) throw new Error("PAYMENT_CONFIGS_KEY must be 32-byte hex");
 	return key;
 }
 
-/** Envelope-encrypt a revealable secret. Legacy plaintext is returned unchanged by openSecret. */
+function encryptionKeys(kekHex?: string): Buffer[] {
+	if (kekHex) return [parseKey(kekHex)];
+	const current = process.env["PAYMENT_CONFIGS_KEY"];
+	if (!current) throw new Error("PAYMENT_CONFIGS_KEY is required to seal a secret");
+	const previous = process.env["PAYMENT_CONFIGS_KEY_PREVIOUS"];
+	return [parseKey(current), ...(previous ? [parseKey(previous)] : [])];
+}
+
+function decryptWithKey(stored: string, key: Buffer): string {
+	const payload = JSON.parse(stored.slice(PREFIX.length)) as {
+		iv: string;
+		tag: string;
+		ct: string;
+		wiv: string;
+		wtag: string;
+		wdek: string;
+	};
+	const wrapDecipher = createDecipheriv("aes-256-gcm", key, Buffer.from(payload.wiv, "base64"));
+	wrapDecipher.setAuthTag(Buffer.from(payload.wtag, "base64"));
+	const dek = Buffer.concat([wrapDecipher.update(Buffer.from(payload.wdek, "base64")), wrapDecipher.final()]);
+	const decipher = createDecipheriv("aes-256-gcm", dek, Buffer.from(payload.iv, "base64"));
+	decipher.setAuthTag(Buffer.from(payload.tag, "base64"));
+	return Buffer.concat([decipher.update(Buffer.from(payload.ct, "base64")), decipher.final()]).toString("utf8");
+}
+
+/** Envelope-encrypt a revealable secret. */
 export function sealSecret(plaintext: string, kekHex?: string): string {
-	const key = encryptionKey(kekHex);
+	const key = encryptionKeys(kekHex)[0];
+	if (!key) throw new Error("PAYMENT_CONFIGS_KEY is required to seal a secret");
 	const dek = randomBytes(32);
 	const iv = randomBytes(12);
 	const cipher = createCipheriv("aes-256-gcm", dek, iv);
@@ -55,35 +74,34 @@ export function sealSecret(plaintext: string, kekHex?: string): string {
 
 export function openSecret(stored: string, kekHex?: string): string {
 	if (!stored.startsWith(PREFIX)) return stored;
-	const key = encryptionKey(kekHex);
-	const payload = JSON.parse(stored.slice(PREFIX.length)) as {
-		iv: string;
-		tag: string;
-		ct: string;
-		wiv: string;
-		wtag: string;
-		wdek: string;
-	};
-	const wrapDecipher = createDecipheriv("aes-256-gcm", key, Buffer.from(payload.wiv, "base64"));
-	wrapDecipher.setAuthTag(Buffer.from(payload.wtag, "base64"));
-	const dek = Buffer.concat([wrapDecipher.update(Buffer.from(payload.wdek, "base64")), wrapDecipher.final()]);
-	const decipher = createDecipheriv("aes-256-gcm", dek, Buffer.from(payload.iv, "base64"));
-	decipher.setAuthTag(Buffer.from(payload.tag, "base64"));
-	return Buffer.concat([decipher.update(Buffer.from(payload.ct, "base64")), decipher.final()]).toString("utf8");
+	const keys = encryptionKeys(kekHex);
+	let lastError: Error | undefined;
+	for (const key of keys) {
+		try {
+			return decryptWithKey(stored, key);
+		} catch (error) {
+			lastError = error as Error;
+		}
+	}
+	throw lastError ?? new Error("Unable to open secret");
 }
 
 export function protectSecret(plaintext: string, kekHex?: string): { hash: string; enc: string } {
 	return { hash: digestSecret(plaintext), enc: sealSecret(plaintext, kekHex) };
 }
 
+/** Open an enc1 value. Plaintext is returned only when it has not been sealed yet. */
+export function readSealedSecret(stored: string | null | undefined, kekHex?: string): string | null {
+	if (typeof stored !== "string" || stored.length === 0) return null;
+	return openSecret(stored, kekHex);
+}
+
 export function revealStoredSecret(
 	tokens: Record<string, unknown> | null | undefined,
 	encField: string,
-	legacyField: string,
 	kekHex?: string,
 ): string | null {
 	const encrypted = tokens?.[encField];
 	if (typeof encrypted === "string" && encrypted.length > 0) return openSecret(encrypted, kekHex);
-	const legacy = tokens?.[legacyField];
-	return typeof legacy === "string" && legacy.length > 0 ? legacy : null;
+	return null;
 }

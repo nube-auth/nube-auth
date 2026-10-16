@@ -7,12 +7,6 @@ import { createLogger } from "@nube-auth/shared";
 
 const log = createLogger("billing-queue");
 
-export interface ProcessPaymentJobData {
-	transactionId: string;
-	amount: number;
-	currency: string;
-}
-
 export interface ProcessWebhookJobData {
 	provider: string;
 	rawBody: string;
@@ -24,34 +18,8 @@ export interface ProcessWebhookJobData {
 	webhookLogId?: number;
 }
 
-export interface SyncLicenseJobData {
-	licenseId: string;
-	action: "activate" | "deactivate" | "sync";
-}
-
-export interface ProcessRefundJobData {
-	transactionId: string;
-	amount: number;
-	reason: string;
-}
-
 export interface SyncPlanJobData {
 	planId: string;
-}
-
-/**
- * Enqueue payment processing
- */
-export async function enqueuePaymentProcessing(data: ProcessPaymentJobData): Promise<void> {
-	const queue = getQueue<any>("PROCESS_PAYMENT");
-	await queue.add("process-payment", data as any, {
-		attempts: 3,
-		backoff: {
-			type: "exponential",
-			delay: 2000,
-		},
-	});
-	log.info({ transactionId: data.transactionId }, "Payment processing job enqueued");
 }
 
 /**
@@ -85,36 +53,6 @@ export async function enqueueWebhookProcessing(
 	});
 
 	log.info({ provider, ipAddress }, "Webhook processing job enqueued");
-}
-
-/**
- * Enqueue license sync
- */
-export async function enqueueLicenseSync(data: SyncLicenseJobData): Promise<void> {
-	const queue = getQueue<any>("SYNC_LICENSE");
-	await queue.add("sync-license", data as any, {
-		attempts: 3,
-		backoff: {
-			type: "exponential",
-			delay: 2000,
-		},
-	});
-	log.info({ licenseId: data.licenseId, action: data.action }, "License sync job enqueued");
-}
-
-/**
- * Enqueue refund processing
- */
-export async function enqueueRefundProcessing(data: ProcessRefundJobData): Promise<void> {
-	const queue = getQueue<any>("PROCESS_REFUND");
-	await queue.add("process-refund", data as any, {
-		attempts: 3,
-		backoff: {
-			type: "exponential",
-			delay: 2000,
-		},
-	});
-	log.info({ transactionId: data.transactionId }, "Refund processing job enqueued");
 }
 
 /**

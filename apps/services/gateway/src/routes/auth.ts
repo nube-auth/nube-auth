@@ -581,6 +581,8 @@ authRoutes.get("/callback", async (c: Context) => {
 						headers: {
 							"Content-Type": "application/json",
 							"X-Nube-S2S-Token": env.S2S_SECRET,
+							"X-Nube-User-Id": data.userId,
+							"X-Nube-Session-Id": code,
 						},
 						body: {
 							appId: stateAppId,

@@ -17,6 +17,8 @@ import {
 	projectMemberQueries,
 	projectQueries,
 	purchases,
+	readSealedSecret,
+	sealSecret,
 	testSessionQueries,
 	userQueries,
 	webhook_logs,
@@ -252,7 +254,7 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 				environment: "test",
 				is_default: true,
 				credentials: "test-playground-no-real-credentials",
-				webhook_secret: "test-playground-no-real-webhook-secret",
+				webhook_secret: sealSecret("test-playground-no-real-webhook-secret"),
 			});
 
 			log.info({ configId: providerConfig.public_id, provider }, "Created test provider config");
@@ -325,7 +327,7 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 					decryptedCredentials["environment"] =
 						configToUse.environment === "production" ? "live_mode" : "test_mode";
 					decryptedCredentials["webhookSecret"] =
-						configToUse.webhook_secret || decryptedCredentials["webhookSecret"] || "";
+						readSealedSecret(configToUse.webhook_secret) || decryptedCredentials["webhookSecret"] || "";
 					log.info(
 						{ environment: decryptedCredentials["environment"] },
 						"Added environment to Dodo credentials",

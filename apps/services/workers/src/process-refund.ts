@@ -9,7 +9,7 @@
  */
 
 import { createProviderAdapter, decryptProviderCredentials } from "@nube-auth/billing";
-import { and, eq, getDb, payment_transactions, purchases } from "@nube-auth/db";
+import { and, eq, getDb, payment_transactions, purchases, readSealedSecret } from "@nube-auth/db";
 import { payment_provider_configs } from "@nube-auth/db/schema";
 import { QueueClient } from "@nube-auth/queue";
 import { createLogger, serializeError } from "@nube-auth/shared";
@@ -122,7 +122,8 @@ async function processRefundJob(job: Job<ProcessRefundJobData>): Promise<void> {
 
 		if (providerConfig.provider === "dodo" && providerConfig.environment) {
 			(credentials as any).environment = providerConfig.environment === "production" ? "live_mode" : "test_mode";
-			(credentials as any).webhookSecret = providerConfig.webhook_secret || (credentials as any).webhookSecret;
+			(credentials as any).webhookSecret =
+				readSealedSecret(providerConfig.webhook_secret) || (credentials as any).webhookSecret;
 		}
 
 		const adapter = createProviderAdapter(providerConfig.provider, credentials);

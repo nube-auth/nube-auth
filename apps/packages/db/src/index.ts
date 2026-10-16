@@ -107,6 +107,7 @@ export {
 	digestSecret,
 	openSecret,
 	presentedSecretMatches,
+	readSealedSecret,
 	protectSecret,
 	revealStoredSecret,
 	sealSecret,
