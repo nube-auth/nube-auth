@@ -63,7 +63,7 @@ paymentsRoutes.post("/webhooks/:provider/:configId", async (c: Context) => {
 		return c.json(response.data, response.status as ContentfulStatusCode);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Webhook proxy error");
-		return c.json({ success: true, message: "Webhook received" }, 200);
+		return c.json({ error: "Webhook delivery failed" }, 502);
 	}
 });
 
@@ -87,7 +87,7 @@ paymentsRoutes.post("/webhooks/:provider", async (c: Context) => {
 		return c.json(response.data, response.status as ContentfulStatusCode);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Webhook proxy error");
-		return c.json({ success: true, message: "Webhook received" }, 200);
+		return c.json({ error: "Webhook delivery failed" }, 502);
 	}
 });
 

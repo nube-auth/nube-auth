@@ -64,15 +64,17 @@ async function validateTestModeCredentials(provider: string, mode: string): Prom
 		return apiKey?.startsWith("sk_test_") || false;
 	}
 
-	if (provider === "lemonsqueezy" || provider === "lemon_squeezy") {
-		return true; // Placeholder - implement proper check
-	}
-
-	if (provider === "dodo") {
-		return true; // Placeholder - implement proper check
-	}
-
+	// Lemon Squeezy and Dodo do not expose a reliable test-key prefix.
+	// Playground calls in those providers are limited to simulate mode.
 	return false;
+}
+
+async function assertProjectAdmin(db: ReturnType<typeof getDb>, userPublicId: string, projectInternalId: number) {
+	const user = await userQueries.findByPublicId(db, userPublicId);
+	if (!user) return false;
+	const memberships = await projectMemberQueries.findByProjectAndUser(db, projectInternalId, user.id);
+	const member = memberships.find((row) => row.deleted_at == null);
+	return member?.role === "owner" || member?.role === "admin";
 }
 
 /**
@@ -123,7 +125,9 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 		}
 
 		const memberships = await projectMemberQueries.findByUserId(db, adminUser.id);
-		const hasAdminRole = memberships.some((m) => m.role === "owner" || m.role === "admin");
+		const hasAdminRole = memberships.some(
+			(m) => m.deleted_at == null && (m.role === "owner" || m.role === "admin"),
+		);
 		if (!hasAdminRole) {
 			return c.json({ error: "Unauthorized - not a project admin" }, 403);
 		}
@@ -144,6 +148,9 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 		const testProject = await projectQueries.findByPublicId(db, projectId);
 		if (!testProject) {
 			return c.json({ error: "Project not found" }, 404);
+		}
+		if (!(await assertProjectAdmin(db, adminPublicId, testProject.id))) {
+			return c.json({ error: "Forbidden" }, 403);
 		}
 
 		// Use existing app or create a test app
@@ -522,6 +529,11 @@ router.post("/simulate-webhook", testRateLimit, async (c: Context) => {
 			return c.json({ error: "Test app or user not found" }, 400);
 		}
 
+		const callerId = c.req.header("X-Nube-User-Id");
+		if (!callerId || !(await assertProjectAdmin(db, callerId, testApp.project_id))) {
+			return c.json({ error: "Forbidden" }, 403);
+		}
+
 		// Normalize event type for provider
 		const provider = session.provider as "stripe" | "lemonsqueezy" | "dodo";
 		const normalizedEventType = normalizeEventType(provider, eventType);
@@ -683,6 +695,10 @@ router.get("/status/:sessionId", async (c: Context) => {
 		const testApp = session.test_app_id ? await appQueries.findByInternalId_(db, session.test_app_id) : null;
 
 		const testUser = session.test_user_id ? await userQueries.findByInternalId_(db, session.test_user_id) : null;
+		const callerId = c.req.header("X-Nube-User-Id");
+		if (!testApp || !callerId || !(await assertProjectAdmin(db, callerId, testApp.project_id))) {
+			return c.json({ error: "Forbidden" }, 403);
+		}
 
 		// Get transactions for test user/app
 		let transactions: {
@@ -819,6 +835,11 @@ router.delete("/cleanup", async (c: Context) => {
 			if (!session) {
 				return c.json({ error: "Session not found" }, 404);
 			}
+			const testApp = session.test_app_id ? await appQueries.findByInternalId_(db, session.test_app_id) : null;
+			const callerId = c.req.header("X-Nube-User-Id");
+			if (!testApp || !callerId || !(await assertProjectAdmin(db, callerId, testApp.project_id))) {
+				return c.json({ error: "Forbidden" }, 403);
+			}
 
 			await testSessionQueries.delete(db, session.id);
 
@@ -831,28 +852,10 @@ router.delete("/cleanup", async (c: Context) => {
 		}
 
 		if (all === "true") {
-			// Cleanup all expired test data
-			const result = await testSessionQueries.cleanupTestData(db, 24);
-			const deletedSessions = await testSessionQueries.deleteExpired(db);
-
-			log.info(
-				{
-					...result,
-					sessions: deletedSessions.length,
-				},
-				"Cleaned up test data",
-			);
-
-			return c.json({
-				success: true,
-				deleted: {
-					...result,
-					sessions: deletedSessions.length,
-				},
-			});
+			return c.json({ error: "Global test cleanup is disabled" }, 403);
 		}
 
-		return c.json({ error: "Must provide sessionId or all=true" }, 400);
+		return c.json({ error: "Must provide sessionId" }, 400);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Failed to cleanup test data");
 		return c.json({ error: "Failed to cleanup test data" }, 500);
@@ -869,7 +872,7 @@ router.get("/providers", async (c: Context) => {
 			{
 				name: "stripe",
 				status: "available",
-				testMode: true,
+				testMode: env.STRIPE_SECRET_KEY?.startsWith("sk_test_") ?? false,
 				webhookUrl: `${env.API_BASE_URL || "http://localhost:3003"}/v1/payment/webhooks/stripe`,
 				credentials: {
 					publicKey: `${env.STRIPE_PUBLISHABLE_KEY?.substring(0, 20)}****`,
@@ -879,7 +882,7 @@ router.get("/providers", async (c: Context) => {
 			{
 				name: "lemonsqueezy",
 				status: "available",
-				testMode: true,
+				testMode: false,
 				webhookUrl: `${env.API_BASE_URL || "http://localhost:3003"}/v1/payment/webhooks/lemonsqueezy`,
 				credentials: {
 					hasApiKey: !!env.LEMONSQUEEZY_API_KEY,
@@ -888,7 +891,7 @@ router.get("/providers", async (c: Context) => {
 			{
 				name: "dodo",
 				status: "available",
-				testMode: true,
+				testMode: false,
 				webhookUrl: `${env.API_BASE_URL || "http://localhost:3003"}/v1/payment/webhooks/dodo`,
 				credentials: {
 					hasApiKey: !!env.DODO_API_KEY,

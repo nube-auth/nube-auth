@@ -139,7 +139,12 @@ async function main(): Promise<void> {
 	let initError: Error | null = null;
 
 	const server = createServer(async (req, res) => {
-		if (req.url === "/health") {
+		if (req.url === "/live") {
+			res.writeHead(200, { "Content-Type": "application/json" });
+			res.end(JSON.stringify({ service: "workers", status: "live", timestamp: new Date().toISOString() }));
+			return;
+		}
+		if (req.url === "/health" || req.url === "/ready") {
 			const now = new Date().toISOString();
 			if (!initialized) {
 				const body = JSON.stringify({
@@ -150,7 +155,8 @@ async function main(): Promise<void> {
 					workers: 0,
 					timestamp: now,
 				});
-				res.writeHead(initError ? 503 : 200, { "Content-Type": "application/json" });
+				const statusCode = req.url === "/ready" || initError ? 503 : 200;
+				res.writeHead(statusCode, { "Content-Type": "application/json" });
 				res.end(body);
 				return;
 			}
@@ -170,7 +176,8 @@ async function main(): Promise<void> {
 				workers: workers.length,
 				timestamp: now,
 			});
-			res.writeHead(200, { "Content-Type": "application/json" });
+			const statusCode = req.url === "/ready" && !ready ? 503 : 200;
+			res.writeHead(statusCode, { "Content-Type": "application/json" });
 			res.end(body);
 		} else {
 			res.writeHead(404);

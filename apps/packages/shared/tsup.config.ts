@@ -20,6 +20,7 @@ export default [
 		entry: {
 			"env-loader": "src/env-loader.ts",
 			email: "src/email.ts",
+			"outbound-url": "src/outbound-url.ts",
 		},
 		format: ["esm"],
 		platform: "node",

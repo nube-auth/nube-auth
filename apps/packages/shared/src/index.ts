@@ -1,21 +1,6 @@
 // Re-export all types
 
-// Re-export ID types for type safety
-export {
-	type InternalId,
-	type PublicId,
-	internalId,
-	publicId,
-	unwrapInternalId,
-	unwrapPublicId,
-	isInternalId,
-	isPublicId,
-} from "./types/ids.js";
-
-// Re-export email service (Node.js only - not for browser)
-// Backend services should import directly: import { createEmailService } from "@nube-auth/shared/email"
-// Type-only export to prevent bundling in browser builds
-export type { EmailConfig, EmailOptions, EmailTemplateSlug, EmailVariables } from "./email.js";
+export { type AllowedOriginInput, resolveAllowedOrigin } from "./allowed-origin.js";
 // Re-export audit logging
 export {
 	type AuditEvent,
@@ -33,6 +18,10 @@ export {
 	AUDIT_ACTIONS,
 	AUTH_CODE_TTL_SECONDS,
 	type AuditActionType,
+	BILLING_INTERVALS,
+	BILLING_TYPES,
+	type BillingInterval,
+	type BillingType,
 	CACHE_TTL_DEFAULT_MINUTES,
 	CORE_SESSION_REFRESH_INTERVAL_SECONDS,
 	CORE_SESSION_TTL_SECONDS,
@@ -44,14 +33,6 @@ export {
 	type LicensePlanType,
 	type LicenseSourceType,
 	type LicenseStatusType,
-	SUBSCRIPTION_STATUSES,
-	type SubscriptionStatusType,
-	BILLING_TYPES,
-	type BillingType,
-	BILLING_INTERVALS,
-	type BillingInterval,
-	SUPPORTED_CURRENCIES,
-	type SupportedCurrency,
 	OTP_LENGTH,
 	OTP_LOCKOUT_MINUTES,
 	OTP_MAX_ATTEMPTS,
@@ -64,6 +45,10 @@ export {
 	RATE_LIMIT_OTP_SEND_PER_HOUR,
 	ROLES,
 	type RoleType,
+	SUBSCRIPTION_STATUSES,
+	SUPPORTED_CURRENCIES,
+	type SubscriptionStatusType,
+	type SupportedCurrency,
 } from "./constants/index.js";
 // Re-export port configuration
 export {
@@ -73,6 +58,10 @@ export {
 	INFRA_PORTS,
 	ports,
 } from "./constants/ports.js";
+// Re-export email service (Node.js only - not for browser)
+// Backend services should import directly: import { createEmailService } from "@nube-auth/shared/email"
+// Type-only export to prevent bundling in browser builds
+export type { EmailConfig, EmailOptions, EmailTemplateSlug, EmailVariables } from "./email.js";
 // Re-export environment utilities (Node.js only - not for browser)
 // Note: These functions use Node.js APIs and should NOT be imported in browser code
 // Backend services should import directly: import { loadEnv } from "@nube-auth/shared/env-loader"
@@ -81,6 +70,17 @@ export type {} from "./env-loader.js";
 export type { IdType } from "./id.js";
 // Re-export ID generators and validation
 export { createId, id, idPatterns, validateId } from "./id.js";
+// Re-export ID types for type safety
+export {
+	type InternalId,
+	internalId,
+	isInternalId,
+	isPublicId,
+	type PublicId,
+	publicId,
+	unwrapInternalId,
+	unwrapPublicId,
+} from "./types/ids.js";
 // Re-export middleware (Node.js only - uses Redis)
 // Browser builds should not import these
 // Backend services should import directly if needed

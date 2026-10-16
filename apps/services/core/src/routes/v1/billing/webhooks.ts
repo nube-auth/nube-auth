@@ -14,6 +14,18 @@ import { rateLimitMiddleware } from "../../../middleware/rateLimit.js";
 import { requiredParam } from "../../../utils/route-param.js";
 
 const log = createLogger("webhook-routes");
+const MAX_WEBHOOK_BODY_BYTES = 256 * 1024;
+const STORED_WEBHOOK_HEADERS = [
+	"content-type",
+	"user-agent",
+	"stripe-signature",
+	"webhook-id",
+	"webhook-signature",
+	"webhook-timestamp",
+	"x-signature",
+	"x-webhook-signature",
+	"paddle-signature",
+];
 
 export const webhookRoutes = new Hono();
 
@@ -58,13 +70,25 @@ async function handleIncomingWebhook(c: Context, providerConfigPublicId?: string
 			return c.json({ error: "Missing signature" }, 400);
 		}
 
+		const declaredLength = Number(c.req.header("content-length") ?? "0");
+		if (Number.isFinite(declaredLength) && declaredLength > MAX_WEBHOOK_BODY_BYTES) {
+			return c.json({ error: "Webhook body is too large" }, 413);
+		}
+
 		const rawBody = await c.req.text();
+		if (Buffer.byteLength(rawBody) > MAX_WEBHOOK_BODY_BYTES) {
+			return c.json({ error: "Webhook body is too large" }, 413);
+		}
 		const parsedBody = safeParseWebhookBody(rawBody);
 		const eventType = extractEventType(provider, parsedBody);
 
 		// Get client IP address for logging and fraud detection
 		const ipAddress = getClientIp(c);
-		const requestHeaders = Object.fromEntries(c.req.raw.headers.entries());
+		const requestHeaders: Record<string, string> = {};
+		for (const name of STORED_WEBHOOK_HEADERS) {
+			const value = c.req.header(name);
+			if (value) requestHeaders[name] = value.slice(0, 512);
+		}
 
 		// Validate provider
 		const validProviders = ["stripe", "lemon_squeezy", "lemon-squeezy", "lemonsqueezy", "dodo", "paddle"];
