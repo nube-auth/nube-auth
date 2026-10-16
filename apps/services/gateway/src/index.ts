@@ -114,23 +114,18 @@ app.use("*", async (c, next) => {
 		const appId = (c as any).get("appId") as string | undefined;
 		if (appId) {
 			try {
-				const cacheKey = `app-client-secret:${appId}`;
-				let stored = await cache.get<{ hash: string | null; legacy: string | null }>(cacheKey);
+				const cacheKey = `app-client-secret:v2:${appId}`;
+				let stored = await cache.get<{ hash: string | null }>(cacheKey);
 
 				if (stored === null) {
 					const db = getDb();
 					const appRecord = await appQueries.findByPublicId(db, appId);
-					const tokens = appRecord?.app_tokens as { clientSecret?: string; clientSecretHash?: string } | null;
-					stored = {
-						hash: tokens?.clientSecretHash ?? null,
-						legacy: tokens?.clientSecret ?? null,
-					};
-					if (stored.hash || stored.legacy) {
-						await cache.set(cacheKey, stored, 300);
-					}
+					const tokens = appRecord?.app_tokens as { clientSecretHash?: string } | null;
+					stored = { hash: tokens?.clientSecretHash ?? null };
+					if (stored.hash) await cache.set(cacheKey, stored, 300);
 				}
 
-				if (stored && presentedSecretMatches(secretHeader, stored)) {
+				if (stored?.hash && presentedSecretMatches(secretHeader, stored)) {
 					(c as any).set("trustedBackend", true);
 					log.debug({ appId }, "Trusted backend authenticated via app secret");
 				}
@@ -236,7 +231,7 @@ app.route("/v1/license", licenseRoutes);
 app.use("/v1/s2s/*", s2sAuthMiddleware);
 app.route("/v1/s2s", s2sRoutes);
 // Debug routes only available in non-production environments
-if (process.env["NODE_ENV"] !== "production") {
+if (process.env["NODE_ENV"] === "development") {
 	app.route("/v1/debug", debugRoutes);
 }
 

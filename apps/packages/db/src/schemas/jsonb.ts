@@ -80,6 +80,8 @@ export const AppTokensSchema = z.object({
 	currentKey: ApiKeySchema.optional(),
 	previousKey: ApiKeySchema.optional().describe("Previous key for graceful rotation"),
 	serviceToken: z.string().min(1).max(1000).optional(),
+	serviceTokenHash: z.string().min(1).optional(),
+	serviceTokenEnc: z.string().min(1).optional(),
 	webhookSecret: z.string().min(1).max(500).optional(),
 	/**
 	 * App client secret — 64 hex chars (randomBytes(32)) generated at app creation.
@@ -87,6 +89,8 @@ export const AppTokensSchema = z.object({
 	 * Never expose in browser code or client-side bundles.
 	 */
 	clientSecret: z.string().min(1).max(128).optional(),
+	clientSecretHash: z.string().min(1).optional(),
+	clientSecretEnc: z.string().min(1).optional(),
 });
 
 export const AppTokensPatchSchema = AppTokensSchema.partial().strict();

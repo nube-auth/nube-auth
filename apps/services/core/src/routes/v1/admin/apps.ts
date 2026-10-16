@@ -840,8 +840,8 @@ appsRouter.get("/:projectId/apps/:appId/api-keys", async (c: Context) => {
 
 		const appTokens = app.app_tokens as Record<string, unknown> | null;
 		return c.json({
-			clientSecret: revealStoredSecret(appTokens, "clientSecretEnc", "clientSecret"),
-			serviceToken: revealStoredSecret(appTokens, "serviceTokenEnc", "serviceToken"),
+			clientSecret: revealStoredSecret(appTokens, "clientSecretEnc"),
+			serviceToken: revealStoredSecret(appTokens, "serviceTokenEnc"),
 		});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get api-keys error");

@@ -50,14 +50,13 @@ export const appSecretMiddleware = createMiddleware(async (c: Context, next: Nex
 		// part of the AppTokensSchema — access raw via bracket notation.
 		const appTokens = app.app_tokens as Record<string, unknown> | null;
 		const hash = typeof appTokens?.["clientSecretHash"] === "string" ? appTokens["clientSecretHash"] : null;
-		const legacy = typeof appTokens?.["clientSecret"] === "string" ? appTokens["clientSecret"] : null;
 
-		if (!hash && !legacy) {
+		if (!hash) {
 			log.warn({ appId }, "App has no clientSecret in app_tokens");
 			return c.json({ error: "Invalid app credentials" }, 401);
 		}
 
-		if (!presentedSecretMatches(providedSecret, { hash, legacy })) {
+		if (!presentedSecretMatches(providedSecret, { hash })) {
 			log.warn({ appId }, "Invalid app secret");
 			return c.json({ error: "Invalid app credentials" }, 401);
 		}

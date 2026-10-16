@@ -1,12 +1,17 @@
 import {
 	appQueries,
 	getDb,
+	inArray,
 	licenseHistoryQueries,
 	licenseQueries,
+	licenses,
 	planQueries,
+	plans,
 	priceQueries,
+	prices,
 	subscriptionQueries,
 	userQueries,
+	users,
 } from "@nube-auth/db";
 import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
@@ -77,15 +82,28 @@ subscriptionsRouter.get("/", async (c: Context) => {
 
 		const filtered = statusFilter ? allSubs.filter((s) => s.status === statusFilter) : allSubs;
 
-		const results = await Promise.all(
-			filtered.map(async (sub) => {
-				const user = await userQueries.findByInternalId_(db, sub.user_id);
-				const license = sub.license_id ? await licenseQueries.findByInternalId_(db, sub.license_id) : null;
-				const plan = license ? await planQueries.findByInternalId_(db, license.plan_id) : null;
-				const price = sub.price_id ? await priceQueries.findByInternalId_(db, sub.price_id) : null;
-				return formatSubscription(sub, { user, plan, price });
-			}),
-		);
+		const userIds = [...new Set(filtered.map((sub) => sub.user_id))];
+		const licenseIds = [...new Set(filtered.flatMap((sub) => (sub.license_id ? [sub.license_id] : [])))];
+		const priceIds = [...new Set(filtered.flatMap((sub) => (sub.price_id ? [sub.price_id] : [])))];
+		const [userRows, licenseRows, priceRows] = await Promise.all([
+			userIds.length ? db.select().from(users).where(inArray(users.id, userIds)) : [],
+			licenseIds.length ? db.select().from(licenses).where(inArray(licenses.id, licenseIds)) : [],
+			priceIds.length ? db.select().from(prices).where(inArray(prices.id, priceIds)) : [],
+		]);
+		const planIds = [...new Set(licenseRows.map((license) => license.plan_id))];
+		const planRows = planIds.length ? await db.select().from(plans).where(inArray(plans.id, planIds)) : [];
+		const usersById = new Map(userRows.map((user) => [user.id, user]));
+		const licensesById = new Map(licenseRows.map((license) => [license.id, license]));
+		const plansById = new Map(planRows.map((plan) => [plan.id, plan]));
+		const pricesById = new Map(priceRows.map((price) => [price.id, price]));
+		const results = filtered.map((sub) => {
+			const license = sub.license_id ? licensesById.get(sub.license_id) : null;
+			return formatSubscription(sub, {
+				user: usersById.get(sub.user_id),
+				plan: license ? plansById.get(license.plan_id) : null,
+				price: sub.price_id ? pricesById.get(sub.price_id) : null,
+			});
+		});
 
 		return c.json({ subscriptions: results, total: results.length });
 	} catch (error) {

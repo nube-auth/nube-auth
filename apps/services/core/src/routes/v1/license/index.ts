@@ -1,16 +1,9 @@
-import {
-	activationQueries,
-	appQueries,
-	getDb,
-	licenseQueries,
-	planQueries,
-	priceQueries,
-	userQueries,
-} from "@nube-auth/db";
+import { activationQueries, appQueries, getDb, licenseQueries, planQueries, priceQueries } from "@nube-auth/db";
 import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
+import { requireMatchingSession } from "../../../middleware/forwarded-session.js";
 
 const log = createLogger("license-routes");
 const router = new Hono();
@@ -21,10 +14,10 @@ const router = new Hono();
 
 router.get("/validate", async (c: Context) => {
 	const appId = c.req.query("appId");
-	const userPublicId = c.req.header("X-Nube-User-Id");
+	const user = await requireMatchingSession(c);
 
-	if (!userPublicId) {
-		return c.json({ error: "Unauthorized — missing user ID" }, 401);
+	if (!user) {
+		return c.json({ error: "Unauthorized" }, 401);
 	}
 
 	if (!appId) {
@@ -33,11 +26,6 @@ router.get("/validate", async (c: Context) => {
 
 	try {
 		const db = getDb();
-
-		const user = await userQueries.findByPublicId(db, userPublicId);
-		if (!user) {
-			return c.json({ valid: false, reason: "user_not_found" });
-		}
 
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) {
@@ -136,16 +124,13 @@ const ActivateSchema = z.object({
 
 router.post("/activate", async (c: Context) => {
 	try {
-		const userPublicId = c.req.header("X-Nube-User-Id");
-		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
+		const user = await requireMatchingSession(c);
+		if (!user) return c.json({ error: "Unauthorized" }, 401);
 
 		const body = await c.req.json();
 		const validated = ActivateSchema.parse(body);
 
 		const db = getDb();
-
-		const user = await userQueries.findByPublicId(db, userPublicId);
-		if (!user) return c.json({ error: "User not found" }, 404);
 
 		const app = await appQueries.findByPublicId(db, validated.appId);
 		if (!app) return c.json({ error: "App not found" }, 404);
@@ -230,16 +215,13 @@ const DeactivateSchema = z.object({
 
 router.post("/deactivate", async (c: Context) => {
 	try {
-		const userPublicId = c.req.header("X-Nube-User-Id");
-		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
+		const user = await requireMatchingSession(c);
+		if (!user) return c.json({ error: "Unauthorized" }, 401);
 
 		const body = await c.req.json();
 		const validated = DeactivateSchema.parse(body);
 
 		const db = getDb();
-
-		const user = await userQueries.findByPublicId(db, userPublicId);
-		if (!user) return c.json({ error: "User not found" }, 404);
 
 		const app = await appQueries.findByPublicId(db, validated.appId);
 		if (!app) return c.json({ error: "App not found" }, 404);
@@ -352,17 +334,14 @@ router.get("/check", async (c: Context) => {
  */
 router.get("/for-user", async (c: Context) => {
 	const appId = c.req.query("appId");
-	const userPublicId = c.req.header("X-Nube-User-Id");
-	if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
+	const user = await requireMatchingSession(c);
+	if (!user) return c.json({ error: "Unauthorized" }, 401);
 	if (!appId) return c.json({ error: "Missing appId query parameter" }, 400);
 
 	try {
 		const db = getDb();
-		const [user, app] = await Promise.all([
-			userQueries.findByPublicId(db, userPublicId),
-			appQueries.findByPublicId(db, appId),
-		]);
-		if (!user || !app) return c.json({ error: "Not found" }, 404);
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) return c.json({ error: "Not found" }, 404);
 
 		const license = await licenseQueries.findByUserAndApp(db, user.id, app.id);
 		if (!license) return c.json({ error: "License not found" }, 404);

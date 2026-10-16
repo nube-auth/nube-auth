@@ -339,6 +339,7 @@ meRoutes.post("/subscription/cancel", async (c: Context) => {
 				"Content-Type": "application/json",
 				"X-Nube-S2S-Token": env.S2S_SECRET,
 				"X-Nube-User-Id": auth.userId,
+				"X-Nube-Session-Id": auth.coreSessionId || "",
 			},
 			body: { appId: auth.appId, ...(reason ? { reason } : {}) },
 		});
@@ -376,6 +377,7 @@ meRoutes.post("/subscription/resume", async (c: Context) => {
 				"Content-Type": "application/json",
 				"X-Nube-S2S-Token": env.S2S_SECRET,
 				"X-Nube-User-Id": auth.userId,
+				"X-Nube-Session-Id": auth.coreSessionId || "",
 			},
 			body: { appId: auth.appId },
 		});

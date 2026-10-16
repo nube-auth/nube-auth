@@ -1,3 +1,4 @@
+import { digestSecret, openSecret, presentedSecretMatches, sealSecret } from "@nube-auth/db";
 import { resolveAllowedOrigin } from "@nube-auth/shared";
 import { assertSafeOutboundUrl, isBlockedIp, UnsafeOutboundUrlError } from "@nube-auth/shared/outbound-url";
 import { describe, expect, it } from "vitest";
@@ -41,6 +42,8 @@ describe("outbound webhook URLs", () => {
 		expect(isBlockedIp("10.1.2.3")).toBe(true);
 		expect(isBlockedIp("169.254.169.254")).toBe(true);
 		expect(isBlockedIp("8.8.8.8")).toBe(false);
+		expect(isBlockedIp("2002:7f00:1::")).toBe(true);
+		expect(isBlockedIp("2002:808:808::")).toBe(false);
 	});
 
 	it("rejects private literal URLs and insecure production URLs", async () => {
@@ -61,6 +64,18 @@ describe("outbound webhook URLs", () => {
 			lookup: async () => [{ address: "8.8.8.8", family: 4 }],
 		});
 		expect(url.hostname).toBe("hooks.example.com");
+	});
+});
+
+describe("sealed secrets", () => {
+	const key = "a".repeat(64);
+
+	it("round-trips a sealed secret and matches only the hash", () => {
+		const sealed = sealSecret("secret-value", key);
+		expect(sealed.startsWith("enc1:")).toBe(true);
+		expect(openSecret(sealed, key)).toBe("secret-value");
+		expect(presentedSecretMatches("secret-value", { hash: digestSecret("secret-value") })).toBe(true);
+		expect(presentedSecretMatches("other", { hash: digestSecret("secret-value") })).toBe(false);
 	});
 });
 

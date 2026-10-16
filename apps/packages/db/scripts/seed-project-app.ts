@@ -13,6 +13,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createId } from "@nube-auth/shared";
 import dotenv from "dotenv";
+import { protectSecret } from "../src/secret-box.js";
 import { getDb } from "../src/index.js";
 import { appQueries, projectMemberQueries, projectQueries, userQueries } from "../src/queries.js";
 import { users } from "../src/schema.js";
@@ -101,6 +102,8 @@ async function seedProjectAndApp() {
 		const appSlug = `app-${timestamp}`;
 		const clientSecret = await generateSecureToken(64);
 		const serviceToken = await generateSecureToken(64);
+		const protectedClient = protectSecret(clientSecret);
+		const protectedService = protectSecret(serviceToken);
 
 		const app = await appQueries.create(db, {
 			public_id: createId("app"),
@@ -108,16 +111,23 @@ async function seedProjectAndApp() {
 			name: `Demo App ${timestamp}`,
 			slug: appSlug,
 			description: "A demo app created by seed script",
-			client_secret: clientSecret,
-			service_token: serviceToken,
-			redirect_uris: ["http://localhost:3000/callback"],
-			allowed_hosts: ["localhost", "127.0.0.1"],
-			cors_origins: ["http://localhost:3000"],
 			enabled_providers: ["google", "github"],
-			session_ttl_days: 28,
-			account_lockout_minutes: 30,
-			cache_ttl_minutes: 60,
-			rate_limit: 100,
+			app_tokens: {
+				clientSecretHash: protectedClient.hash,
+				clientSecretEnc: protectedClient.enc,
+				serviceTokenHash: protectedService.hash,
+				serviceTokenEnc: protectedService.enc,
+			},
+			security_settings: {
+				redirectUris: ["http://localhost:3000/callback"],
+				allowedHosts: ["localhost", "127.0.0.1"],
+				corsOrigins: ["http://localhost:3000"],
+				sessionTtlDays: 28,
+			},
+			plan_settings: {
+				licensingRequired: false,
+				defaultPlanId: null,
+			},
 			is_active: true,
 			created_at: new Date(),
 			updated_at: new Date(),
@@ -127,8 +137,7 @@ async function seedProjectAndApp() {
 		console.log(`   App ID: ${app.id}`);
 		console.log(`   Public ID: ${app.public_id}`);
 		console.log(`   Slug: ${app.slug}`);
-		console.log(`   Client Secret: ${clientSecret.substring(0, 10)}...`);
-		console.log(`   Service Token: ${serviceToken.substring(0, 10)}...\n`);
+		console.log("   Client secret and service token were sealed. They are not printed.\n");
 
 		// Step 4: Payment provider configuration (TODO: Update to use payment_provider_configs table)
 		console.log("📋 Step 4: Payment provider configuration skipped (deprecated API)\n");

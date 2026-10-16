@@ -9,7 +9,16 @@
  */
 
 import { createProviderAdapter, decryptProviderCredentials } from "@nube-auth/billing";
-import { appQueries, eq, getDb, planQueries, priceProviderRefQueries, priceQueries, prices } from "@nube-auth/db";
+import {
+	appQueries,
+	eq,
+	getDb,
+	planQueries,
+	priceProviderRefQueries,
+	priceQueries,
+	prices,
+	readSealedSecret,
+} from "@nube-auth/db";
 import { payment_provider_configs } from "@nube-auth/db/schema";
 import { QueueClient } from "@nube-auth/queue";
 import { createId, createLogger, serializeError } from "@nube-auth/shared";
@@ -155,7 +164,8 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 			// Add environment field for Dodo
 			if (provider.provider === "dodo" && provider.environment) {
 				(credentials as any).environment = provider.environment === "production" ? "live_mode" : "test_mode";
-				(credentials as any).webhookSecret = provider.webhook_secret || (credentials as any).webhookSecret;
+				(credentials as any).webhookSecret =
+					readSealedSecret(provider.webhook_secret) || (credentials as any).webhookSecret;
 			}
 
 			// Create adapter

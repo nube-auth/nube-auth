@@ -14,9 +14,9 @@ import {
 	promotionPlanQueries,
 	promotionQueries,
 	promotionRedemptionQueries,
-	userQueries,
 } from "@nube-auth/db";
 import { createLogger, idPatterns } from "@nube-auth/shared";
+import { requireMatchingSession } from "../../../middleware/forwarded-session.js";
 import { Hono } from "hono";
 import { z } from "zod";
 import { checkoutRoutes } from "./checkout.js";
@@ -126,13 +126,9 @@ billingRoutes.post("/validate-promo", async (c) => {
 
 	// Step 8: Check is_new_customers_only → user has no existing license for this app
 	if (promo.is_new_customers_only) {
-		const userPublicId = c.req.header("X-Nube-User-Id");
-		if (!userPublicId) {
-			return c.json({ valid: false, reason: "user_required" });
-		}
-		const user = await userQueries.findByPublicId(db, userPublicId);
+		const user = await requireMatchingSession(c);
 		if (!user) {
-			return c.json({ valid: false, reason: "user_not_found" });
+			return c.json({ valid: false, reason: "user_required" });
 		}
 		const existingLicense = await licenseQueries.findByUserAndApp(db, user.id, app.id);
 		if (existingLicense) {
@@ -141,22 +137,19 @@ billingRoutes.post("/validate-promo", async (c) => {
 	}
 
 	// Step 9: Check user hasn't already redeemed this promotion
-	const userPublicId = c.req.header("X-Nube-User-Id");
-	if (userPublicId) {
-		const user = await userQueries.findByPublicId(db, userPublicId);
-		if (user) {
-			const allCodes = await promotionCodeQueries.findByPromotionId(db, promo.id);
-			const codeIds = allCodes.map((c) => c.id);
-			const redemptions = await promotionRedemptionQueries.findByUserForPromotion(
-				db,
-				app.id,
-				"user",
-				user.id,
-				codeIds,
-			);
-			if (redemptions.length > 0) {
-				return c.json({ valid: false, reason: "already_redeemed" });
-			}
+	const user = await requireMatchingSession(c);
+	if (user) {
+		const allCodes = await promotionCodeQueries.findByPromotionId(db, promo.id);
+		const codeIds = allCodes.map((c) => c.id);
+		const redemptions = await promotionRedemptionQueries.findByUserForPromotion(
+			db,
+			app.id,
+			"user",
+			user.id,
+			codeIds,
+		);
+		if (redemptions.length > 0) {
+			return c.json({ valid: false, reason: "already_redeemed" });
 		}
 	}
 
