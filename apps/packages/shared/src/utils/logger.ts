@@ -39,6 +39,24 @@ export function createLogger(
 	return pino({
 		name,
 		level,
+		redact: {
+			censor: "[redacted]",
+			paths: [
+				"cookie",
+				"authorization",
+				"headers.cookie",
+				"headers.authorization",
+				"headers.set-cookie",
+				"req.headers.cookie",
+				"req.headers.authorization",
+				"req.headers.set-cookie",
+				"*.cookie",
+				"*.authorization",
+				"*.clientSecret",
+				"*.serviceToken",
+				"*.secret",
+			],
+		},
 		...(transport && { transport }),
 		base: {
 			env: isNode ? (process.env["NODE_ENV"] ?? "development") : "browser",

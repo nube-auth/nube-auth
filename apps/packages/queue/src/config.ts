@@ -42,6 +42,11 @@ export function getRedisConfig() {
 		}
 	}
 
+	const nodeEnv = process.env["NODE_ENV"] ?? "development";
+	if (nodeEnv === "production" || nodeEnv === "staging") {
+		throw new Error("REDIS_URL or REDIS_HOST is required when NODE_ENV is production or staging");
+	}
+
 	return {
 		host: "localhost",
 		port: 6379,

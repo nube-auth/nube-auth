@@ -112,7 +112,7 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 			{
 				path: c.req.path,
 				cookieName,
-				allCookies: c.req.header("cookie") || "none",
+				hasCookieHeader: Boolean(c.req.header("cookie")),
 				isAdminRoute,
 			},
 			"No cookie found - returning 401",
@@ -127,7 +127,6 @@ export const authMiddleware = createMiddleware(async (c: Context, next) => {
 		if (!sessionId) {
 			loggers.auth.error(
 				{
-					cookieValue: cookieValue ? `${cookieValue.substring(0, 20)}...` : null,
 					cookieLength: cookieValue?.length,
 				},
 				"Failed to parse session cookie - returning 401",
@@ -248,23 +247,3 @@ export function getAuth(c: Context): AuthContext {
 	}
 	return auth as AuthContext;
 }
-
-/**
- * S2S token validation middleware for internal requests
- * Uses constant-time comparison to prevent timing attacks
- */
-export const s2sAuthMiddleware = createMiddleware(async (c: Context, next) => {
-	const token = c.req.header("X-Nube-S2S-Token");
-	const expectedToken = env.X_NUBE_AUTH_SERVICE_TOKEN;
-
-	if (!token || !expectedToken || token.length !== expectedToken.length) {
-		return c.json({ error: "Unauthorized" }, 401);
-	}
-
-	const { timingSafeEqual } = await import("node:crypto");
-	if (!timingSafeEqual(Buffer.from(token), Buffer.from(expectedToken))) {
-		return c.json({ error: "Unauthorized" }, 401);
-	}
-
-	return next();
-});

@@ -43,7 +43,7 @@ export interface SyncPlanJobData {
  * Enqueue payment processing
  */
 export async function enqueuePaymentProcessing(data: ProcessPaymentJobData): Promise<void> {
-	const queue = getQueue<any>("billing");
+	const queue = getQueue<any>("PROCESS_PAYMENT");
 	await queue.add("process-payment", data as any, {
 		attempts: 3,
 		backoff: {
@@ -91,7 +91,7 @@ export async function enqueueWebhookProcessing(
  * Enqueue license sync
  */
 export async function enqueueLicenseSync(data: SyncLicenseJobData): Promise<void> {
-	const queue = getQueue<any>("billing");
+	const queue = getQueue<any>("SYNC_LICENSE");
 	await queue.add("sync-license", data as any, {
 		attempts: 3,
 		backoff: {
@@ -106,7 +106,7 @@ export async function enqueueLicenseSync(data: SyncLicenseJobData): Promise<void
  * Enqueue refund processing
  */
 export async function enqueueRefundProcessing(data: ProcessRefundJobData): Promise<void> {
-	const queue = getQueue<any>("billing");
+	const queue = getQueue<any>("PROCESS_REFUND");
 	await queue.add("process-refund", data as any, {
 		attempts: 3,
 		backoff: {

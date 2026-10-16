@@ -86,7 +86,7 @@ adminRoutes.all("/*", async (c: Context) => {
 			url.search = `?${queryString}`;
 		}
 
-		log.debug({ url: url.toString(), headers }, "Making request to Core");
+		log.debug({ url: url.toString(), userId: auth.userId }, "Making request to Core");
 
 		const response = await pingpong(url.toString(), {
 			method,

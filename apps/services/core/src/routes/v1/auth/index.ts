@@ -16,6 +16,7 @@ import {
 import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
+import { TTL } from "../../../config/constants.js";
 import { env } from "../../../config/env";
 import { getClientCountry, getClientIp } from "../../../middleware/rateLimit";
 import { ensureLicenseForApp } from "../../../utils/license";
@@ -27,7 +28,7 @@ const router = new Hono();
 
 // OAuth state storage helpers using Redis
 const OAUTH_STATE_PREFIX = "oauth:state:";
-const OAUTH_STATE_TTL = 600; // 10 minutes
+const OAUTH_STATE_TTL = TTL.OAUTH_STATE;
 
 interface OAuthStateData {
 	redirectUri: string;

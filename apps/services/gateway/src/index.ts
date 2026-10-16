@@ -2,7 +2,7 @@ import { serve } from "@hono/node-server";
 import { configureSessionSecret } from "@nube-auth/auth";
 import { cache, initCache, pingCache } from "@nube-auth/cache";
 import { appQueries, getDb, sql } from "@nube-auth/db";
-import { createLogger, serializeError } from "@nube-auth/shared";
+import { createLogger, resolveAllowedOrigin, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { secureHeaders } from "hono/secure-headers";
 import { env } from "./config/env";
@@ -37,41 +37,23 @@ const isReady = { db: false, redis: false };
 
 // CORS configuration for cross-subdomain requests with credentials
 // Build allowed origins dynamically from env vars so staging/production work without code changes
-const allowedOrigins = [
-	"http://localhost:5173",
-	"http://localhost:5174",
-	env.USER_DASHBOARD_URL,
-	env.ADMIN_DASHBOARD_URL,
-	env.FRONTEND_URL,
-].filter(Boolean);
+const allowedOrigins = [env.USER_DASHBOARD_URL, env.ADMIN_DASHBOARD_URL, env.FRONTEND_URL].filter(
+	(origin): origin is string => Boolean(origin),
+);
 
-// Derive the root domain from GATEWAY_PUBLIC_URL for wildcard subdomain matching.
-// Only allows ONE level of subdomain below the base domain.
-// e.g. GATEWAY_PUBLIC_URL="https://s-api.nubeauth.com" → allows *.nubeauth.com
 function getAllowedOriginOrNull(origin: string): string | null {
-	if (!origin) return "*";
-	if (allowedOrigins.includes(origin)) return origin;
+	let serviceHostname = "";
 	try {
-		const gatewayHost = new URL(env.GATEWAY_PUBLIC_URL).hostname;
-		const parts = gatewayHost.split(".");
-		// For domain like api.nubeauth.com → base = nubeauth.com → allow *.nubeauth.com
-		// For domain like nubeauth.com → base = nubeauth.com → allow *.nubeauth.com
-		for (let i = 1; i < parts.length; i++) {
-			const suffix = `.${parts.slice(i).join(".")}`;
-			if (origin.endsWith(suffix)) {
-				// Ensure origin is exactly one level deeper than suffix
-				// e.g. origin=dashboard.nubeauth.com, suffix=.nubeauth.com → ok
-				// e.g. origin=evil.dashboard.nubeauth.com, suffix=.nubeauth.com → block
-				const originParts = origin.replace(/https?:\/\//, "").split(".");
-				const suffixParts = suffix.replace(/^\./, "").split(".");
-				const depthDiff = originParts.length - suffixParts.length;
-				if (depthDiff === 1) return origin;
-			}
-		}
+		serviceHostname = new URL(env.GATEWAY_PUBLIC_URL).hostname;
 	} catch {
-		// ignore invalid URL
+		serviceHostname = "";
 	}
-	return null;
+	return resolveAllowedOrigin({
+		origin,
+		serviceHostname,
+		explicitOrigins: allowedOrigins,
+		allowLocalhost: env.IS_DEVELOPMENT,
+	});
 }
 
 // Security headers middleware
@@ -255,11 +237,7 @@ if (process.env["NODE_ENV"] !== "production") {
 	app.route("/v1/debug", debugRoutes);
 }
 
-// Health check — returns 200 during startup so Railway health checks pass.
-// The status field lets load balancers / monitoring decide whether to route
-// traffic. Redis readiness is tracked in isReady.redis set by the background
-// initialize() function.
-app.get("/health", async (c) => {
+async function dependencySnapshot() {
 	const [redisOk, dbOk] = await Promise.all([
 		pingCache().catch(() => false),
 		getDb()
@@ -270,13 +248,25 @@ app.get("/health", async (c) => {
 	if (redisOk) isReady.redis = true;
 	if (dbOk) isReady.db = true;
 	const ready = isReady.db && isReady.redis;
-	return c.json({
-		service: "gateway",
-		status: ready ? "ok" : "starting",
-		db: dbOk ? "ok" : "unreachable",
-		redis: redisOk ? "ok" : "unreachable",
-		timestamp: new Date().toISOString(),
-	});
+	return {
+		ready,
+		body: {
+			service: "gateway",
+			db: dbOk ? "ok" : "unreachable",
+			redis: redisOk ? "ok" : "unreachable",
+			timestamp: new Date().toISOString(),
+		},
+	};
+}
+
+app.get("/live", (c) => c.json({ service: "gateway", status: "live", timestamp: new Date().toISOString() }));
+app.get("/ready", async (c) => {
+	const snapshot = await dependencySnapshot();
+	return c.json({ ...snapshot.body, status: snapshot.ready ? "ok" : "starting" }, snapshot.ready ? 200 : 503);
+});
+app.get("/health", async (c) => {
+	const snapshot = await dependencySnapshot();
+	return c.json({ ...snapshot.body, status: snapshot.ready ? "ok" : "starting" });
 });
 
 // 404
