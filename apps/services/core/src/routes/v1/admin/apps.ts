@@ -24,6 +24,18 @@ import { generateAppSlug, generatePlanSlug } from "../../../utils/slug.js";
 
 const log = createLogger("admin-apps-routes");
 
+function presentDescription(value: string | null | undefined): string | undefined {
+	return value ?? undefined;
+}
+
+function presentStoredSecret(
+	tokens: Record<string, unknown> | null | undefined,
+	encField: string,
+	plainField: string,
+): string {
+	return tokens?.[encField] || tokens?.[plainField] ? "••••••••" : "";
+}
+
 export const appsRouter = new Hono();
 
 /**
@@ -287,12 +299,12 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 				projectId: project.public_id,
 				name: newApp.name,
 				slug: newApp.slug,
-				description: newApp.description,
+				description: presentDescription(newApp.description),
 				redirectUris: securitySettings?.redirectUris || [],
 				allowedHosts: securitySettings?.allowedHosts || [],
 				corsOrigins: securitySettings?.corsOrigins || [],
 				clientSecret,
-				serviceToken: null,
+				serviceToken: "",
 				sessionTtlDays: securitySettings?.sessionTtlDays || 28,
 				accountLockoutMinutes: securitySettings?.accountLockoutMinutes || 30,
 				cacheTtlMinutes: securitySettings?.cacheTtlMinutes || 60,
@@ -363,12 +375,12 @@ appsRouter.get("/:projectId/apps/:appId", async (c: Context) => {
 			projectId: project.public_id,
 			name: app.name,
 			slug: app.slug,
-			description: app.description,
+			description: presentDescription(app.description),
 			redirectUris: securitySettings?.redirectUris || [],
 			allowedHosts: securitySettings?.allowedHosts || [],
 			corsOrigins: securitySettings?.corsOrigins || [],
-			clientSecret: appTokens?.clientSecretEnc || appTokens?.clientSecret ? "••••••••" : null,
-			serviceToken: appTokens?.serviceTokenEnc || appTokens?.serviceToken ? "••••••••" : null,
+			clientSecret: presentStoredSecret(appTokens, "clientSecretEnc", "clientSecret"),
+			serviceToken: presentStoredSecret(appTokens, "serviceTokenEnc", "serviceToken"),
 			sessionTtlDays: securitySettings?.sessionTtlDays || 28,
 			accountLockoutMinutes: securitySettings?.accountLockoutMinutes || 30,
 			cacheTtlMinutes: securitySettings?.cacheTtlMinutes || 60,
@@ -517,12 +529,12 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 			projectId: projectForResponse.public_id,
 			name: updated.name,
 			slug: updated.slug,
-			description: updated.description,
+			description: presentDescription(updated.description),
 			redirectUris: securitySettings?.redirectUris || [],
 			allowedHosts: securitySettings?.allowedHosts || [],
 			corsOrigins: securitySettings?.corsOrigins || [],
-			clientSecret: appTokens?.clientSecretEnc || appTokens?.clientSecret ? "••••••••" : null,
-			serviceToken: appTokens?.serviceTokenEnc || appTokens?.serviceToken ? "••••••••" : null,
+			clientSecret: presentStoredSecret(appTokens, "clientSecretEnc", "clientSecret"),
+			serviceToken: presentStoredSecret(appTokens, "serviceTokenEnc", "serviceToken"),
 			sessionTtlDays: securitySettings?.sessionTtlDays || 28,
 			accountLockoutMinutes: securitySettings?.accountLockoutMinutes || 30,
 			cacheTtlMinutes: securitySettings?.cacheTtlMinutes || 60,
