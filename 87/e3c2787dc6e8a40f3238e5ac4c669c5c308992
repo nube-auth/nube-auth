@@ -1,0 +1,19 @@
+nube-scripts
+  s_e0fee73ba207bf::t_e7140b60b7d6e0 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "87e3c2787dc6e8a40f3238e5ac4c669c5c308992",
+  "prompts": {},
+  "sessions": {
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
