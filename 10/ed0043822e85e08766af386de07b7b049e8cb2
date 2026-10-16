@@ -1,0 +1,25 @@
+apps/packages/shared/src/types/schemas/admin.ts
+  s_974302adc1ddb3::t_5d062e37f6a4a8 187,192-193
+apps/services/core/src/routes/v1/admin/apps.ts
+  s_974302adc1ddb3::t_4f7d2e29942ef4 532,536-537
+  s_974302adc1ddb3::t_fa372a25f7c33d 27-38
+  s_974302adc1ddb3::t_c1ad894f6aa00d 302
+  s_974302adc1ddb3::t_1aa774f8b19111 307
+  s_974302adc1ddb3::t_819d84778a5562 378,382-383
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "10ed0043822e85e08766af386de07b7b049e8cb2",
+  "prompts": {},
+  "sessions": {
+    "s_974302adc1ddb3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a2a5bedf-2cdd-4d9f-9782-9b93669c21e3",
+        "model": "auto-smart"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
