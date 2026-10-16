@@ -17,7 +17,7 @@
  */
 
 import { createHmac, randomBytes, randomUUID } from "node:crypto";
-import { appQueries, appWebhookQueries, getDb, outboundWebhookLogQueries } from "@nube-auth/db";
+import { appQueries, appWebhookQueries, getDb, openSecret, outboundWebhookLogQueries, sealSecret } from "@nube-auth/db";
 import { createLogger, id, idPatterns, serializeError } from "@nube-auth/shared";
 import { assertSafeOutboundUrl, postOutboundWebhook, UnsafeOutboundUrlError } from "@nube-auth/shared/outbound-url";
 import type { Context } from "hono";
@@ -196,7 +196,7 @@ webhooksRouter.post("/", async (c: Context) => {
 			public_id: id.appWebhook(),
 			app_id: app.id,
 			url,
-			secret,
+			secret: sealSecret(secret),
 			events: validated.events,
 			description: validated.description ?? null,
 			is_active: true,
@@ -310,7 +310,7 @@ webhooksRouter.post("/:webhookId/rotate-secret", async (c: Context) => {
 		if (!webhook || webhook.app_id !== app.id) return c.json({ error: "Webhook not found" }, 404);
 
 		const newSecret = generateSecret();
-		await appWebhookQueries.update(db, webhook.id, { secret: newSecret });
+		await appWebhookQueries.update(db, webhook.id, { secret: sealSecret(newSecret) });
 
 		log.info({ webhookId: webhook.public_id }, "Webhook secret rotated");
 
@@ -526,6 +526,7 @@ webhooksRouter.post("/:webhookId/test", async (c: Context) => {
 		const webhook = await appWebhookQueries.findByPublicId(db, webhookId);
 		if (!webhook || webhook.app_id !== app.id) return c.json({ error: "Webhook not found" }, 404);
 		if (!webhook.secret) return c.json({ error: "Webhook has no signing secret" }, 422);
+		const signingSecret = openSecret(webhook.secret);
 
 		const deliveryId = randomUUID();
 		const sampleData = TEST_PAYLOADS[event] ?? {};
@@ -539,7 +540,7 @@ webhooksRouter.post("/:webhookId/test", async (c: Context) => {
 		};
 
 		const bodyStr = JSON.stringify(payload);
-		const signature = `sha256=${createHmac("sha256", webhook.secret).update(bodyStr).digest("hex")}`;
+		const signature = `sha256=${createHmac("sha256", signingSecret).update(bodyStr).digest("hex")}`;
 
 		const start = Date.now();
 		let responseStatus: number | null = null;

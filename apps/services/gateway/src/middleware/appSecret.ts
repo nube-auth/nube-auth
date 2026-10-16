@@ -15,8 +15,7 @@
  * - Does NOT establish a user session — purely app-level identity.
  */
 
-import { timingSafeEqual } from "node:crypto";
-import { appQueries, getDb } from "@nube-auth/db";
+import { appQueries, getDb, presentedSecretMatches } from "@nube-auth/db";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Context, Next } from "hono";
 import { createMiddleware } from "hono/factory";
@@ -50,26 +49,16 @@ export const appSecretMiddleware = createMiddleware(async (c: Context, next: Nex
 		// `clientSecret` is stored in the app_tokens JSONB column but is not
 		// part of the AppTokensSchema — access raw via bracket notation.
 		const appTokens = app.app_tokens as Record<string, unknown> | null;
-		const storedSecret = typeof appTokens?.["clientSecret"] === "string" ? appTokens["clientSecret"] : null;
+		const hash = typeof appTokens?.["clientSecretHash"] === "string" ? appTokens["clientSecretHash"] : null;
+		const legacy = typeof appTokens?.["clientSecret"] === "string" ? appTokens["clientSecret"] : null;
 
-		if (!storedSecret) {
+		if (!hash && !legacy) {
 			log.warn({ appId }, "App has no clientSecret in app_tokens");
 			return c.json({ error: "Invalid app credentials" }, 401);
 		}
 
-		// Constant-time comparison — both buffers must be the same byte length
-		if (providedSecret.length !== storedSecret.length) {
-			log.warn({ appId }, "App secret length mismatch");
-			return c.json({ error: "Invalid app credentials" }, 401);
-		}
-
-		try {
-			const match = timingSafeEqual(Buffer.from(providedSecret, "utf8"), Buffer.from(storedSecret, "utf8"));
-			if (!match) {
-				log.warn({ appId }, "Invalid app secret");
-				return c.json({ error: "Invalid app credentials" }, 401);
-			}
-		} catch {
+		if (!presentedSecretMatches(providedSecret, { hash, legacy })) {
+			log.warn({ appId }, "Invalid app secret");
 			return c.json({ error: "Invalid app credentials" }, 401);
 		}
 

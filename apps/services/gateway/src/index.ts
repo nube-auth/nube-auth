@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server";
 import { configureSessionSecret } from "@nube-auth/auth";
 import { cache, initCache, pingCache } from "@nube-auth/cache";
-import { appQueries, getDb, sql } from "@nube-auth/db";
+import { appQueries, getDb, presentedSecretMatches, sql } from "@nube-auth/db";
 import { createLogger, resolveAllowedOrigin, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { secureHeaders } from "hono/secure-headers";
@@ -115,19 +115,22 @@ app.use("*", async (c, next) => {
 		if (appId) {
 			try {
 				const cacheKey = `app-client-secret:${appId}`;
-				let storedSecret = await cache.get<string>(cacheKey);
+				let stored = await cache.get<{ hash: string | null; legacy: string | null }>(cacheKey);
 
-				if (storedSecret === null) {
+				if (stored === null) {
 					const db = getDb();
 					const appRecord = await appQueries.findByPublicId(db, appId);
-					storedSecret = (appRecord?.app_tokens as { clientSecret?: string } | null)?.clientSecret ?? null;
-					if (storedSecret) {
-						// Cache for 5 minutes — short enough to pick up rotations, long enough to matter
-						await cache.set(cacheKey, storedSecret, 300);
+					const tokens = appRecord?.app_tokens as { clientSecret?: string; clientSecretHash?: string } | null;
+					stored = {
+						hash: tokens?.clientSecretHash ?? null,
+						legacy: tokens?.clientSecret ?? null,
+					};
+					if (stored.hash || stored.legacy) {
+						await cache.set(cacheKey, stored, 300);
 					}
 				}
 
-				if (storedSecret && secretHeader === storedSecret) {
+				if (stored && presentedSecretMatches(secretHeader, stored)) {
 					(c as any).set("trustedBackend", true);
 					log.debug({ appId }, "Trusted backend authenticated via app secret");
 				}

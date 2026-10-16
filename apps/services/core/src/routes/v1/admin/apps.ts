@@ -10,6 +10,8 @@ import {
 	planQueries,
 	projectMemberQueries,
 	projectQueries,
+	protectSecret,
+	revealStoredSecret,
 	sessionQueries,
 	subscriptionQueries,
 	userQueries,
@@ -198,6 +200,7 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 
 		// Create app
 		const clientSecret = randomBytes(32).toString("hex");
+		const protectedClientSecret = protectSecret(clientSecret);
 		const newApp = await appQueries.create(db, {
 			public_id: createId("app"),
 			project_id: project.id,
@@ -206,7 +209,8 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 			description: body.description || null,
 			enabled_providers: body.enabledProviders,
 			app_tokens: {
-				clientSecret,
+				clientSecretHash: protectedClientSecret.hash,
+				clientSecretEnc: protectedClientSecret.enc,
 			},
 			security_settings: {
 				redirectUris: (body.redirectUris || []).map((u: string) => {
@@ -287,8 +291,8 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 				redirectUris: securitySettings?.redirectUris || [],
 				allowedHosts: securitySettings?.allowedHosts || [],
 				corsOrigins: securitySettings?.corsOrigins || [],
-				clientSecret: appTokens?.clientSecret || "***",
-				serviceToken: appTokens?.serviceToken || "***",
+				clientSecret,
+				serviceToken: null,
 				sessionTtlDays: securitySettings?.sessionTtlDays || 28,
 				accountLockoutMinutes: securitySettings?.accountLockoutMinutes || 30,
 				cacheTtlMinutes: securitySettings?.cacheTtlMinutes || 60,
@@ -363,8 +367,8 @@ appsRouter.get("/:projectId/apps/:appId", async (c: Context) => {
 			redirectUris: securitySettings?.redirectUris || [],
 			allowedHosts: securitySettings?.allowedHosts || [],
 			corsOrigins: securitySettings?.corsOrigins || [],
-			clientSecret: appTokens?.clientSecret ? "••••••••" : null,
-			serviceToken: appTokens?.serviceToken ? "••••••••" : null,
+			clientSecret: appTokens?.clientSecretEnc || appTokens?.clientSecret ? "••••••••" : null,
+			serviceToken: appTokens?.serviceTokenEnc || appTokens?.serviceToken ? "••••••••" : null,
 			sessionTtlDays: securitySettings?.sessionTtlDays || 28,
 			accountLockoutMinutes: securitySettings?.accountLockoutMinutes || 30,
 			cacheTtlMinutes: securitySettings?.cacheTtlMinutes || 60,
@@ -517,8 +521,8 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 			redirectUris: securitySettings?.redirectUris || [],
 			allowedHosts: securitySettings?.allowedHosts || [],
 			corsOrigins: securitySettings?.corsOrigins || [],
-			clientSecret: appTokens?.clientSecret ? "••••••••" : null,
-			serviceToken: appTokens?.serviceToken ? "••••••••" : null,
+			clientSecret: appTokens?.clientSecretEnc || appTokens?.clientSecret ? "••••••••" : null,
+			serviceToken: appTokens?.serviceTokenEnc || appTokens?.serviceToken ? "••••••••" : null,
 			sessionTtlDays: securitySettings?.sessionTtlDays || 28,
 			accountLockoutMinutes: securitySettings?.accountLockoutMinutes || 30,
 			cacheTtlMinutes: securitySettings?.cacheTtlMinutes || 60,
@@ -834,10 +838,10 @@ appsRouter.get("/:projectId/apps/:appId/api-keys", async (c: Context) => {
 			return c.json({ error: "Forbidden" }, 403);
 		}
 
-		const appTokens = app.app_tokens as any;
+		const appTokens = app.app_tokens as Record<string, unknown> | null;
 		return c.json({
-			clientSecret: appTokens?.clientSecret ?? null,
-			serviceToken: appTokens?.serviceToken ?? null,
+			clientSecret: revealStoredSecret(appTokens, "clientSecretEnc", "clientSecret"),
+			serviceToken: revealStoredSecret(appTokens, "serviceTokenEnc", "serviceToken"),
 		});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get api-keys error");
@@ -886,7 +890,12 @@ appsRouter.post("/:projectId/apps/:appId/regenerate-secret", async (c: Context) 
 		}
 
 		const clientSecret = randomBytes(32).toString("hex");
-		await appQueries.updateAppTokens(db, app.id, { clientSecret });
+		const protectedClientSecret = protectSecret(clientSecret);
+		await appQueries.updateAppTokens(db, app.id, {
+			clientSecretHash: protectedClientSecret.hash,
+			clientSecretEnc: protectedClientSecret.enc,
+			clientSecret: null,
+		});
 
 		try {
 			await auditLogQueries.create(db, {
@@ -954,7 +963,12 @@ appsRouter.post("/:projectId/apps/:appId/regenerate-token", async (c: Context) =
 		}
 
 		const serviceToken = randomBytes(32).toString("hex");
-		await appQueries.updateAppTokens(db, app.id, { serviceToken });
+		const protectedServiceToken = protectSecret(serviceToken);
+		await appQueries.updateAppTokens(db, app.id, {
+			serviceTokenHash: protectedServiceToken.hash,
+			serviceTokenEnc: protectedServiceToken.enc,
+			serviceToken: null,
+		});
 
 		try {
 			await auditLogQueries.create(db, {

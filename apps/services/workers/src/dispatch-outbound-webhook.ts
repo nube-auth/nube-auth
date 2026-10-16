@@ -12,7 +12,7 @@
  */
 
 import { createHmac, randomUUID } from "node:crypto";
-import { appWebhookQueries, getDb, outboundWebhookLogQueries } from "@nube-auth/db";
+import { appWebhookQueries, getDb, openSecret, outboundWebhookLogQueries } from "@nube-auth/db";
 import { createLogger, id, serializeError } from "@nube-auth/shared";
 import { postOutboundWebhook } from "@nube-auth/shared/outbound-url";
 
@@ -102,7 +102,7 @@ export async function dispatchOutboundWebhook(data: DispatchOutboundWebhookJobDa
 				let errorMessage: string | null = null;
 
 				try {
-					const signature = signPayload(wh.secret, body);
+					const signature = signPayload(openSecret(wh.secret), body);
 					const result = await postWebhook(wh.url, body, signature, event);
 					responseStatus = result.status;
 					responseBody = result.responseBody;
