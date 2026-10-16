@@ -2,7 +2,7 @@
  * Queue Job Enqueuers for Billing Operations
  */
 
-import { getQueue } from "@nube-auth/queue";
+import { getQueue, QueueName } from "@nube-auth/queue";
 import { createLogger } from "@nube-auth/shared";
 
 const log = createLogger("billing-queue");
@@ -43,7 +43,7 @@ export interface SyncPlanJobData {
  * Enqueue payment processing
  */
 export async function enqueuePaymentProcessing(data: ProcessPaymentJobData): Promise<void> {
-	const queue = getQueue<any>("PROCESS_PAYMENT");
+	const queue = getQueue<any>(QueueName.PROCESS_PAYMENT);
 	await queue.add("process-payment", data as any, {
 		attempts: 3,
 		backoff: {
@@ -65,7 +65,7 @@ export async function enqueueWebhookProcessing(
 	webhookLogId?: number,
 	providerConfigPublicId?: string,
 ): Promise<void> {
-	const queue = getQueue<any>("billing");
+	const queue = getQueue<any>(QueueName.BILLING);
 	const jobData: ProcessWebhookJobData = {
 		provider,
 		rawBody,
@@ -91,7 +91,7 @@ export async function enqueueWebhookProcessing(
  * Enqueue license sync
  */
 export async function enqueueLicenseSync(data: SyncLicenseJobData): Promise<void> {
-	const queue = getQueue<any>("SYNC_LICENSE");
+	const queue = getQueue<any>(QueueName.SYNC_LICENSE);
 	await queue.add("sync-license", data as any, {
 		attempts: 3,
 		backoff: {
@@ -106,7 +106,7 @@ export async function enqueueLicenseSync(data: SyncLicenseJobData): Promise<void
  * Enqueue refund processing
  */
 export async function enqueueRefundProcessing(data: ProcessRefundJobData): Promise<void> {
-	const queue = getQueue<any>("PROCESS_REFUND");
+	const queue = getQueue<any>(QueueName.PROCESS_REFUND);
 	await queue.add("process-refund", data as any, {
 		attempts: 3,
 		backoff: {
@@ -125,7 +125,7 @@ export async function enqueueRefundProcessing(data: ProcessRefundJobData): Promi
  * consumes unrecognised jobs without processing them).
  */
 export async function enqueuePlanSync(data: SyncPlanJobData): Promise<void> {
-	const queue = getQueue<any>("sync-plan");
+	const queue = getQueue<any>(QueueName.SYNC_PLAN);
 	await queue.add("sync-plan-to-providers", data as any, {
 		attempts: 5,
 		backoff: {
@@ -149,7 +149,7 @@ export interface DispatchOutboundWebhookJobData {
  * the queue provides retry / backoff automatically.
  */
 export async function enqueueOutboundWebhook(data: DispatchOutboundWebhookJobData): Promise<void> {
-	const queue = getQueue<any>("outbound-webhooks");
+	const queue = getQueue<any>(QueueName.OUTBOUND_WEBHOOKS);
 	await queue.add("dispatch-outbound-webhook", data as any, {
 		attempts: 5,
 		backoff: {

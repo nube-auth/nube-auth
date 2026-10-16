@@ -346,4 +346,53 @@ router.get("/check", async (c: Context) => {
 	}
 });
 
+/**
+ * GET /for-user?appId=
+ * License for the forwarded user. Gateway proxies the authenticated app session here.
+ */
+router.get("/for-user", async (c: Context) => {
+	const appId = c.req.query("appId");
+	const userPublicId = c.req.header("X-Nube-User-Id");
+	if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
+	if (!appId) return c.json({ error: "Missing appId query parameter" }, 400);
+
+	try {
+		const db = getDb();
+		const [user, app] = await Promise.all([
+			userQueries.findByPublicId(db, userPublicId),
+			appQueries.findByPublicId(db, appId),
+		]);
+		if (!user || !app) return c.json({ error: "Not found" }, 404);
+
+		const license = await licenseQueries.findByUserAndApp(db, user.id, app.id);
+		if (!license) return c.json({ error: "License not found" }, 404);
+
+		const price = license.price_id ? await priceQueries.findByInternalId_(db, license.price_id) : null;
+		const plan = price
+			? await planQueries.findByInternalId_(db, price.plan_id)
+			: await planQueries.findByInternalId_(db, license.plan_id);
+
+		return c.json({
+			licenseId: license.public_id,
+			appId: app.public_id,
+			status: license.status,
+			source: license.source ?? null,
+			maxActivations: license.max_activations ?? null,
+			validFrom: Math.floor(license.created_at.getTime() / 1000),
+			validUntil: license.valid_until ? Math.floor(new Date(license.valid_until).getTime() / 1000) : null,
+			plan: plan
+				? {
+						planId: plan.public_id,
+						slug: plan.slug,
+						name: plan.name,
+						features: (plan.features as Record<string, unknown>) ?? {},
+					}
+				: null,
+		});
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "License for-user error");
+		return c.json({ error: "Failed to get license" }, 500);
+	}
+});
+
 export const licenseRoutes = router;

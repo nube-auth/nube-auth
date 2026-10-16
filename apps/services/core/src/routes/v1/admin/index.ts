@@ -2,6 +2,7 @@ import { createLogger } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { env } from "../../../config/env.js";
 import { enforceAdminAccess } from "../../../middleware/admin-access.js";
+import { adminMeRouter } from "./me.js";
 import { appsRouter } from "./apps.js";
 import { billingRouter } from "./billing.js";
 import { globalLicensesRouter } from "./global-licenses.js";
@@ -21,6 +22,8 @@ const _log = createLogger("admin-routes");
 const router = new Hono();
 
 router.use("*", enforceAdminAccess);
+
+router.route("/", adminMeRouter);
 
 // Mount subrouters with appropriate prefixes
 router.route("/projects", statsRouter);

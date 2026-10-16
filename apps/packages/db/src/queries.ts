@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, gte, inArray, isNull, lt, lte, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, gte, inArray, isNull, lt, lte, or, sql } from "drizzle-orm";
 import type { DbClient } from "./index.js";
 import {
 	app_users,
@@ -431,10 +431,20 @@ export const appQueries = {
 	},
 
 	async findByServiceToken(db: DbClient, serviceToken: string) {
+		const { digestSecret } = await import("./secret-box.js");
+		const hash = digestSecret(serviceToken);
 		const results = await db
 			.select()
 			.from(apps)
-			.where(and(sql`${apps.app_tokens}->>'serviceToken' = ${serviceToken}`, isNull(apps.deleted_at)));
+			.where(
+				and(
+					isNull(apps.deleted_at),
+					or(
+						sql`${apps.app_tokens}->>'serviceTokenHash' = ${hash}`,
+						sql`${apps.app_tokens}->>'serviceToken' = ${serviceToken}`,
+					),
+				),
+			);
 		return results[0];
 	},
 
