@@ -7,6 +7,7 @@ declare global {
 			homeUrl?: string;
 			docsUrl?: string;
 			envTag?: string;
+			cookieNamespace?: string;
 		};
 	}
 }
