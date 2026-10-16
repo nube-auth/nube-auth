@@ -1,0 +1,35 @@
+apps/dashboard/admin/src/lib/csrf.ts
+  s_974302adc1ddb3::t_62be6a5aea01bb 7-8
+apps/dashboard/admin/src/config.ts
+  s_974302adc1ddb3::t_6aa97a631556d8 10
+apps/dashboard/user/src/lib/csrf.ts
+  s_974302adc1ddb3::t_5edacc56d308e4 7-8
+apps/dashboard/user/src/config.ts
+  s_974302adc1ddb3::t_1c331ca07bd107 10
+nube-scripts
+  s_e0fee73ba207bf::t_bcae1c913caedf 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "01ba50d39934d3aacd90f797f746467af932925c",
+  "prompts": {},
+  "sessions": {
+    "s_974302adc1ddb3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a2a5bedf-2cdd-4d9f-9782-9b93669c21e3",
+        "model": "auto-smart"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
