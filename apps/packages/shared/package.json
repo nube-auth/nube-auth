@@ -22,6 +22,10 @@
 		"./email": {
 			"import": "./dist/email.js",
 			"types": "./dist/email.d.ts"
+		},
+		"./outbound-url": {
+			"import": "./dist/outbound-url.js",
+			"types": "./dist/outbound-url.d.ts"
 		}
 	},
 	"scripts": {

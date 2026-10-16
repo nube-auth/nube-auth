@@ -18,12 +18,13 @@ import {
 	promotionPlanQueries,
 	promotionProviderRefQueries,
 	purchases,
-	userQueries,
+	readSealedSecret,
 } from "@nube-auth/db";
 import { createLogger, id, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
+import { requireMatchingSession } from "../../../middleware/forwarded-session.js";
 import { createProviderAdapter } from "../../../billing/adapters/index.js";
 import { decryptProviderCredentials } from "../../../utils/encryption.js";
 
@@ -56,6 +57,9 @@ checkoutRoutes.post("/", async (c: Context) => {
 	try {
 		const body = await c.req.json();
 		const validated = CheckoutRequestSchema.parse(body);
+		const sessionUser = await requireMatchingSession(c);
+		if (!sessionUser) return c.json({ error: "Unauthorized" }, 401);
+		if (validated.userId !== sessionUser.public_id) return c.json({ error: "Forbidden" }, 403);
 
 		const db = getDb();
 
@@ -134,7 +138,7 @@ checkoutRoutes.post("/", async (c: Context) => {
 			(decryptedCredentials as any).environment =
 				providerConfig.environment === "production" ? "live_mode" : "test_mode";
 			(decryptedCredentials as any).webhookSecret =
-				providerConfig.webhook_secret || (decryptedCredentials as any).webhookSecret;
+				readSealedSecret(providerConfig.webhook_secret) || (decryptedCredentials as any).webhookSecret;
 		}
 
 		const adapter = createProviderAdapter(providerConfig.provider, decryptedCredentials);
@@ -197,7 +201,7 @@ checkoutRoutes.post("/", async (c: Context) => {
 		// so we can embed it in the provider metadata. The webhook will use this to
 		// update the existing pending record instead of creating a duplicate.
 		let pendingPurchasePublicId: string | undefined;
-		const user = await userQueries.findByPublicId(db, validated.userId);
+		const user = sessionUser;
 		if (user) {
 			pendingPurchasePublicId = id.request();
 		}

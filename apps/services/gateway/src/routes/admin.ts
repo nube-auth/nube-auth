@@ -4,7 +4,6 @@
  */
 
 import { pingpong } from "@nube-auth/auth";
-import { getDb, userQueries } from "@nube-auth/db";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -16,33 +15,7 @@ const log = createLogger("admin-routes");
 
 export const adminRoutes = new Hono();
 
-/**
- * GET /v1/admin/me
- * Get current admin profile
- */
-adminRoutes.get("/me", async (c: Context) => {
-	try {
-		const auth = getAuth(c);
-		const db = getDb();
-
-		// Fetch user from database to get full profile
-		const user = await userQueries.findByPublicId(db, auth.userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
-
-		return c.json({
-			id: auth.userId,
-			email: auth.email,
-			name: auth.name,
-			createdAt: user.created_at ? new Date(user.created_at).toISOString() : null,
-		});
-	} catch (error) {
-		log.error({ err: serializeError(error as Error) }, "Get admin profile error");
-		return c.json({ error: "Failed to get profile" }, 500);
-	}
-});
-
+// Proxy admin routes, including /me, to Core. Gateway only attaches the session.
 // Proxy all other admin routes to Core service
 adminRoutes.all("/*", async (c: Context) => {
 	try {
@@ -86,7 +59,7 @@ adminRoutes.all("/*", async (c: Context) => {
 			url.search = `?${queryString}`;
 		}
 
-		log.debug({ url: url.toString(), headers }, "Making request to Core");
+		log.debug({ url: url.toString(), userId: auth.userId }, "Making request to Core");
 
 		const response = await pingpong(url.toString(), {
 			method,

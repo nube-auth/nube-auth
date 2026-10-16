@@ -12,8 +12,9 @@
  */
 
 import { createHmac, randomUUID } from "node:crypto";
-import { appWebhookQueries, getDb, outboundWebhookLogQueries } from "@nube-auth/db";
+import { appWebhookQueries, getDb, openSecret, outboundWebhookLogQueries } from "@nube-auth/db";
 import { createLogger, id, serializeError } from "@nube-auth/shared";
+import { postOutboundWebhook } from "@nube-auth/shared/outbound-url";
 
 const log = createLogger("dispatch-outbound-webhook");
 
@@ -21,6 +22,8 @@ const log = createLogger("dispatch-outbound-webhook");
 const MAX_RESPONSE_BODY_BYTES = 1024;
 /** HTTP request timeout in ms */
 const REQUEST_TIMEOUT_MS = 10_000;
+const DELIVERY_CONCURRENCY = 5;
+const allowInsecureHttp = process.env["NODE_ENV"] === "development";
 
 export interface DispatchOutboundWebhookJobData {
 	appId: number;
@@ -45,33 +48,26 @@ async function postWebhook(
 	signature: string,
 	event: string,
 ): Promise<{ status: number; responseBody: string; durationMs: number }> {
-	const controller = new AbortController();
-	const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 	const start = Date.now();
+	const res = await postOutboundWebhook(url, {
+		headers: {
+			"Content-Type": "application/json",
+			"X-Nube-Signature": `sha256=${signature}`,
+			"X-Nube-Event": event,
+			"X-Nube-Delivery": randomUUID(),
+		},
+		body,
+		timeoutMs: REQUEST_TIMEOUT_MS,
+		allowInsecureHttp,
+	});
 
-	try {
-		const res = await fetch(url, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"X-Nube-Signature": `sha256=${signature}`,
-				"X-Nube-Event": event,
-				"X-Nube-Delivery": randomUUID(),
-			},
-			body,
-			signal: controller.signal,
-		});
-
-		const durationMs = Date.now() - start;
-		const text = await res.text();
-		return {
-			status: res.status,
-			responseBody: text.slice(0, MAX_RESPONSE_BODY_BYTES),
-			durationMs,
-		};
-	} finally {
-		clearTimeout(timer);
-	}
+	const durationMs = Date.now() - start;
+	const text = await res.text();
+	return {
+		status: res.status,
+		responseBody: text.slice(0, MAX_RESPONSE_BODY_BYTES),
+		durationMs,
+	};
 }
 
 /**
@@ -93,61 +89,69 @@ export async function dispatchOutboundWebhook(data: DispatchOutboundWebhookJobDa
 
 	if (deliveries.length === 0) return;
 
-	const results = await Promise.all(
-		deliveries.map(async (wh) => {
-			const logPublicId = id.outboundWebhookLog();
-			let logStatus: "success" | "failed" = "failed";
-			let responseStatus: number | null = null;
-			let responseBody: string | null = null;
-			let durationMs: number | null = null;
-			let errorMessage: string | null = null;
+	const results: boolean[] = [];
+	for (let index = 0; index < deliveries.length; index += DELIVERY_CONCURRENCY) {
+		const batch = deliveries.slice(index, index + DELIVERY_CONCURRENCY);
+		const batchResults = await Promise.all(
+			batch.map(async (wh) => {
+				const logPublicId = id.outboundWebhookLog();
+				let logStatus: "success" | "failed" = "failed";
+				let responseStatus: number | null = null;
+				let responseBody: string | null = null;
+				let durationMs: number | null = null;
+				let errorMessage: string | null = null;
 
-			try {
-				const signature = signPayload(wh.secret, body);
-				const result = await postWebhook(wh.url, body, signature, event);
-				responseStatus = result.status;
-				responseBody = result.responseBody;
-				durationMs = result.durationMs;
+				try {
+					const signature = signPayload(openSecret(wh.secret), body);
+					const result = await postWebhook(wh.url, body, signature, event);
+					responseStatus = result.status;
+					responseBody = result.responseBody;
+					durationMs = result.durationMs;
 
-				if (result.status >= 200 && result.status < 300) {
-					logStatus = "success";
-					log.info({ webhookId: wh.public_id, event, status: result.status }, "Outbound webhook delivered");
-				} else {
-					log.warn(
-						{ webhookId: wh.public_id, event, status: result.status },
-						"Outbound webhook received non-2xx response",
+					if (result.status >= 200 && result.status < 300) {
+						logStatus = "success";
+						log.info(
+							{ webhookId: wh.public_id, event, status: result.status },
+							"Outbound webhook delivered",
+						);
+					} else {
+						log.warn(
+							{ webhookId: wh.public_id, event, status: result.status },
+							"Outbound webhook received non-2xx response",
+						);
+						// Throw so BullMQ retries the job
+						throw new Error(`Non-2xx response: ${result.status}`);
+					}
+				} catch (error) {
+					const isAbort = (error as Error).name === "AbortError";
+					errorMessage = isAbort
+						? `Request timed out after ${REQUEST_TIMEOUT_MS}ms`
+						: (error as Error).message.slice(0, 500);
+					log.error(
+						{ err: serializeError(error as Error), webhookId: wh.public_id, event },
+						"Outbound webhook delivery failed",
 					);
-					// Throw so BullMQ retries the job
-					throw new Error(`Non-2xx response: ${result.status}`);
 				}
-			} catch (error) {
-				const isAbort = (error as Error).name === "AbortError";
-				errorMessage = isAbort
-					? `Request timed out after ${REQUEST_TIMEOUT_MS}ms`
-					: (error as Error).message.slice(0, 500);
-				log.error(
-					{ err: serializeError(error as Error), webhookId: wh.public_id, event },
-					"Outbound webhook delivery failed",
-				);
-			}
 
-			await outboundWebhookLogQueries.create(db, {
-				public_id: logPublicId,
-				webhook_id: wh.id,
-				app_id: appId,
-				event,
-				payload,
-				response_status: responseStatus ?? undefined,
-				response_body: responseBody ?? undefined,
-				status: logStatus,
-				attempt,
-				duration_ms: durationMs ?? undefined,
-				error_message: errorMessage ?? undefined,
-			});
+				await outboundWebhookLogQueries.create(db, {
+					public_id: logPublicId,
+					webhook_id: wh.id,
+					app_id: appId,
+					event,
+					payload,
+					response_status: responseStatus ?? undefined,
+					response_body: responseBody ?? undefined,
+					status: logStatus,
+					attempt,
+					duration_ms: durationMs ?? undefined,
+					error_message: errorMessage ?? undefined,
+				});
 
-			return logStatus === "success";
-		}),
-	);
+				return logStatus === "success";
+			}),
+		);
+		results.push(...batchResults);
+	}
 
 	const failedCount = results.filter((ok) => !ok).length;
 	if (failedCount > 0) {

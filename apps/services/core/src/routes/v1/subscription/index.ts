@@ -6,12 +6,12 @@ import {
 	planQueries,
 	priceQueries,
 	subscriptionQueries,
-	userQueries,
 } from "@nube-auth/db";
 import { createId, createLogger, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
+import { requireMatchingSession } from "../../../middleware/forwarded-session.js";
 import { fireWebhookEvent } from "../../../utils/outbound-events.js";
 
 const log = createLogger("subscription-routes");
@@ -23,16 +23,13 @@ const router = new Hono();
 
 router.get("/", async (c: Context) => {
 	try {
-		const userPublicId = c.req.header("X-Nube-User-Id");
-		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
+		const user = await requireMatchingSession(c);
+		if (!user) return c.json({ error: "Unauthorized" }, 401);
 
 		const appId = c.req.query("appId");
 		if (!appId) return c.json({ error: "Missing appId query parameter" }, 400);
 
 		const db = getDb();
-
-		const user = await userQueries.findByPublicId(db, userPublicId);
-		if (!user) return c.json({ error: "User not found" }, 404);
 
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) return c.json({ error: "App not found" }, 404);
@@ -84,16 +81,13 @@ const CancelSchema = z.object({
 
 router.post("/cancel", async (c: Context) => {
 	try {
-		const userPublicId = c.req.header("X-Nube-User-Id");
-		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
+		const user = await requireMatchingSession(c);
+		if (!user) return c.json({ error: "Unauthorized" }, 401);
 
 		const body = await c.req.json();
 		const validated = CancelSchema.parse(body);
 
 		const db = getDb();
-
-		const user = await userQueries.findByPublicId(db, userPublicId);
-		if (!user) return c.json({ error: "User not found" }, 404);
 
 		const app = await appQueries.findByPublicId(db, validated.appId);
 		if (!app) return c.json({ error: "App not found" }, 404);
@@ -200,7 +194,7 @@ router.post("/cancel", async (c: Context) => {
 			);
 		}
 
-		log.info({ subId: sub.public_id, userId: userPublicId }, "Subscription canceled by user");
+		log.info({ subId: sub.public_id, userId: user.public_id }, "Subscription canceled by user");
 
 		return c.json({
 			subscriptionId: sub.public_id,
@@ -225,16 +219,13 @@ const ResumeSchema = z.object({
 
 router.post("/resume", async (c: Context) => {
 	try {
-		const userPublicId = c.req.header("X-Nube-User-Id");
-		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
+		const user = await requireMatchingSession(c);
+		if (!user) return c.json({ error: "Unauthorized" }, 401);
 
 		const body = await c.req.json();
 		const validated = ResumeSchema.parse(body);
 
 		const db = getDb();
-
-		const user = await userQueries.findByPublicId(db, userPublicId);
-		if (!user) return c.json({ error: "User not found" }, 404);
 
 		const app = await appQueries.findByPublicId(db, validated.appId);
 		if (!app) return c.json({ error: "App not found" }, 404);
@@ -289,7 +280,7 @@ router.post("/resume", async (c: Context) => {
 			);
 		}
 
-		log.info({ subId: sub.public_id, userId: userPublicId }, "Subscription resumed by user");
+		log.info({ subId: sub.public_id, userId: user.public_id }, "Subscription resumed by user");
 
 		return c.json({
 			subscriptionId: sub.public_id,

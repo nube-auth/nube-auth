@@ -7,7 +7,6 @@
 
 import { pingpong } from "@nube-auth/auth";
 import { cache } from "@nube-auth/cache";
-import { appQueries, getDb, licenseQueries, planQueries, priceQueries, userQueries } from "@nube-auth/db";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -81,48 +80,20 @@ licenseRoutes.get("/:appId", async (c: Context) => {
 		const cached = await cache.get<object>(cacheKey);
 		if (cached) return c.json(cached);
 
-		const db = getDb();
-
-		const [user, app] = await Promise.all([
-			userQueries.findByPublicId(db, auth.userId),
-			appQueries.findByPublicId(db, appId),
-		]);
-
-		if (!user || !app) {
-			return c.json({ error: "Not found" }, 404);
+		const coreUrl = new URL(`${env.CORE_URL}/v1/license/for-user`);
+		coreUrl.searchParams.set("appId", appId);
+		const response = await pingpong(coreUrl.toString(), {
+			method: "GET",
+			headers: {
+				"X-Nube-S2S-Token": env.S2S_SECRET,
+				"X-Nube-User-Id": auth.userId,
+				"X-Nube-Session-Id": auth.coreSessionId || "",
+			},
+		});
+		if (response.status >= 200 && response.status < 300) {
+			await cache.set(cacheKey, response.data, CACHE_TTL);
 		}
-
-		const license = await licenseQueries.findByUserAndApp(db, user.id, app.id);
-		if (!license) {
-			return c.json({ error: "License not found" }, 404);
-		}
-
-		// Resolve plan slug via price chain, falling back to direct plan_id
-		const price = license.price_id ? await priceQueries.findByInternalId_(db, license.price_id) : null;
-		const plan = price
-			? await planQueries.findByInternalId_(db, price.plan_id)
-			: await planQueries.findByInternalId_(db, license.plan_id);
-
-		const result = {
-			licenseId: license.public_id,
-			appId: app.public_id,
-			status: license.status as "active" | "expired" | "canceled" | "suspended",
-			source: license.source ?? null,
-			maxActivations: license.max_activations ?? null,
-			validFrom: Math.floor(license.created_at.getTime() / 1000),
-			validUntil: license.valid_until ? Math.floor(new Date(license.valid_until).getTime() / 1000) : null,
-			plan: plan
-				? {
-						planId: plan.public_id,
-						slug: plan.slug,
-						name: plan.name,
-						features: (plan.features as Record<string, unknown>) ?? {},
-					}
-				: null,
-		};
-
-		await cache.set(cacheKey, result, CACHE_TTL);
-		return c.json(result);
+		return c.json(response.data, response.status as ContentfulStatusCode);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get license error");
 		return c.json({ error: "Failed to get license" }, 500);

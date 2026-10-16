@@ -63,7 +63,7 @@ router.post("/start", async (c: Context) => {
 		// Generate OTP
 		const otp = generateOTP();
 		const otpHash = hashOTP(otp);
-		const expiresAt = new Date(now.getTime() + 10 * 60 * 1000); // 10 minutes
+		const expiresAt = new Date(now.getTime() + env.EMAIL_CODE_TTL_SECONDS * 1000);
 
 		// Save or update OTP record
 		if (emailVerification) {
@@ -91,13 +91,13 @@ router.post("/start", async (c: Context) => {
 			templateSlug: "email-verify",
 			variables: {
 				otp,
-				expiresInMinutes: 10,
+				expiresInMinutes: Math.ceil(env.EMAIL_CODE_TTL_SECONDS / 60),
 			},
 		});
 
 		return c.json({
 			message: "OTP sent to email",
-			expiresIn: 600, // 10 minutes in seconds
+			expiresIn: env.EMAIL_CODE_TTL_SECONDS,
 		});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Email start error");
@@ -262,7 +262,7 @@ router.post("/verify", async (c: Context) => {
 			user_id: userId,
 			created_at: now,
 			last_seen_at: now,
-			expires_at: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days
+			expires_at: new Date(now.getTime() + env.SESSION_TTL_SECONDS * 1000),
 			ip_address: ipAddress,
 			user_agent: userAgent,
 			country: country,

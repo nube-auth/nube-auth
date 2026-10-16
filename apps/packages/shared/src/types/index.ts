@@ -74,8 +74,12 @@ export interface ProjectMember {
  * Stores client_secret and service_token for app authentication
  */
 export interface AppTokens {
-	clientSecret: string;
-	serviceToken: string;
+	clientSecret?: string;
+	clientSecretHash?: string;
+	clientSecretEnc?: string;
+	serviceToken?: string;
+	serviceTokenHash?: string;
+	serviceTokenEnc?: string;
 }
 
 /**

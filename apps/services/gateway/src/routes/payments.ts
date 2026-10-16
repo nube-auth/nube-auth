@@ -63,7 +63,7 @@ paymentsRoutes.post("/webhooks/:provider/:configId", async (c: Context) => {
 		return c.json(response.data, response.status as ContentfulStatusCode);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Webhook proxy error");
-		return c.json({ success: true, message: "Webhook received" }, 200);
+		return c.json({ error: "Webhook delivery failed" }, 502);
 	}
 });
 
@@ -87,7 +87,7 @@ paymentsRoutes.post("/webhooks/:provider", async (c: Context) => {
 		return c.json(response.data, response.status as ContentfulStatusCode);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Webhook proxy error");
-		return c.json({ success: true, message: "Webhook received" }, 200);
+		return c.json({ error: "Webhook delivery failed" }, 502);
 	}
 });
 
@@ -106,8 +106,6 @@ paymentsRoutes.post("/validate-promo", async (c: Context) => {
 			headers: {
 				"Content-Type": "application/json",
 				"X-Nube-S2S-Token": env.S2S_SECRET,
-				// Forward user ID if provided (enables new-customer and already-redeemed checks)
-				...(c.req.header("X-Nube-User-Id") && { "X-Nube-User-Id": c.req.header("X-Nube-User-Id")! }),
 			},
 			body,
 		});
@@ -137,7 +135,6 @@ paymentsRoutes.all("/*", async (c: Context) => {
 				headers: {
 					"Content-Type": "application/json",
 					"X-Nube-S2S-Token": env.S2S_SECRET,
-					...(c.req.header("X-Nube-User-Id") && { "X-Nube-User-Id": c.req.header("X-Nube-User-Id")! }),
 				},
 				body,
 			});
