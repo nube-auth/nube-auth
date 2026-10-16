@@ -184,13 +184,13 @@ export const AppDTOSchema = z.object({
 	projectId: PublicIdSchema,
 	name: NameSchema,
 	slug: SlugSchema,
-	description: DescriptionSchema,
+	description: DescriptionSchema.nullish(),
 	icon: z.string().optional(),
 	redirectUris: z.array(z.string()),
 	allowedHosts: z.array(z.string()),
 	corsOrigins: z.array(z.string()),
-	clientSecret: z.string(), // Masked in API response
-	serviceToken: z.string(), // Masked in API response
+	clientSecret: z.string().nullish(),
+	serviceToken: z.string().nullish(),
 	sessionTtlDays: z.number(),
 	accountLockoutMinutes: z.number(),
 	cacheTtlMinutes: z.number(),
