@@ -135,11 +135,13 @@ export const WORKER_EVENTS = {
  * Queue names (matching enum in types)
  */
 export const QUEUE_NAMES = {
-	PAYMENTS: "payments",
-	WEBHOOKS: "webhooks",
+	BILLING: "billing",
+	PROCESS_PAYMENT: "PROCESS_PAYMENT",
+	SYNC_LICENSE: "SYNC_LICENSE",
+	PROCESS_REFUND: "PROCESS_REFUND",
+	SYNC_PLAN: "sync-plan",
+	OUTBOUND_WEBHOOKS: "outbound-webhooks",
 	EMAILS: "emails",
-	NOTIFICATIONS: "notifications",
-	ASYNC_TASKS: "async-tasks",
 } as const;
 
 /**

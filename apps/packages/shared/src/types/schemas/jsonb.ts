@@ -10,8 +10,12 @@ import { z } from "zod";
  * Validates the app_tokens JSONB field
  */
 export const AppTokensSchema = z.object({
-	clientSecret: z.string().min(1),
-	serviceToken: z.string().min(1),
+	clientSecret: z.string().min(1).optional(),
+	clientSecretHash: z.string().min(1).optional(),
+	clientSecretEnc: z.string().min(1).optional(),
+	serviceToken: z.string().min(1).optional(),
+	serviceTokenHash: z.string().min(1).optional(),
+	serviceTokenEnc: z.string().min(1).optional(),
 });
 
 /**

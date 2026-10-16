@@ -8,7 +8,15 @@
  * - GET /billing/purchases/:purchaseId/can-refund - Check refund eligibility
  */
 
-import { and, eq, getDb, payment_provider_configs, payment_transactions, purchases } from "@nube-auth/db";
+import {
+	and,
+	eq,
+	getDb,
+	payment_provider_configs,
+	payment_transactions,
+	purchases,
+	readSealedSecret,
+} from "@nube-auth/db";
 import { createLogger, id, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -87,7 +95,7 @@ refundRoutes.post("/", async (c: Context) => {
 			decryptedCredentials["environment"] =
 				providerConfig.environment === "production" ? "live_mode" : "test_mode";
 			decryptedCredentials["webhookSecret"] =
-				providerConfig.webhook_secret || decryptedCredentials["webhookSecret"] || "";
+				readSealedSecret(providerConfig.webhook_secret) || decryptedCredentials["webhookSecret"] || "";
 		}
 		const adapter = createProviderAdapter(providerConfig.provider, decryptedCredentials);
 

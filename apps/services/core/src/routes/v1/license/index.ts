@@ -1,16 +1,9 @@
-import {
-	activationQueries,
-	appQueries,
-	getDb,
-	licenseQueries,
-	planQueries,
-	priceQueries,
-	userQueries,
-} from "@nube-auth/db";
+import { activationQueries, appQueries, getDb, licenseQueries, planQueries, priceQueries } from "@nube-auth/db";
 import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
+import { requireMatchingSession } from "../../../middleware/forwarded-session.js";
 
 const log = createLogger("license-routes");
 const router = new Hono();
@@ -21,10 +14,10 @@ const router = new Hono();
 
 router.get("/validate", async (c: Context) => {
 	const appId = c.req.query("appId");
-	const userPublicId = c.req.header("X-Nube-User-Id");
+	const user = await requireMatchingSession(c);
 
-	if (!userPublicId) {
-		return c.json({ error: "Unauthorized — missing user ID" }, 401);
+	if (!user) {
+		return c.json({ error: "Unauthorized" }, 401);
 	}
 
 	if (!appId) {
@@ -33,11 +26,6 @@ router.get("/validate", async (c: Context) => {
 
 	try {
 		const db = getDb();
-
-		const user = await userQueries.findByPublicId(db, userPublicId);
-		if (!user) {
-			return c.json({ valid: false, reason: "user_not_found" });
-		}
 
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) {
@@ -136,16 +124,13 @@ const ActivateSchema = z.object({
 
 router.post("/activate", async (c: Context) => {
 	try {
-		const userPublicId = c.req.header("X-Nube-User-Id");
-		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
+		const user = await requireMatchingSession(c);
+		if (!user) return c.json({ error: "Unauthorized" }, 401);
 
 		const body = await c.req.json();
 		const validated = ActivateSchema.parse(body);
 
 		const db = getDb();
-
-		const user = await userQueries.findByPublicId(db, userPublicId);
-		if (!user) return c.json({ error: "User not found" }, 404);
 
 		const app = await appQueries.findByPublicId(db, validated.appId);
 		if (!app) return c.json({ error: "App not found" }, 404);
@@ -230,16 +215,13 @@ const DeactivateSchema = z.object({
 
 router.post("/deactivate", async (c: Context) => {
 	try {
-		const userPublicId = c.req.header("X-Nube-User-Id");
-		if (!userPublicId) return c.json({ error: "Unauthorized" }, 401);
+		const user = await requireMatchingSession(c);
+		if (!user) return c.json({ error: "Unauthorized" }, 401);
 
 		const body = await c.req.json();
 		const validated = DeactivateSchema.parse(body);
 
 		const db = getDb();
-
-		const user = await userQueries.findByPublicId(db, userPublicId);
-		if (!user) return c.json({ error: "User not found" }, 404);
 
 		const app = await appQueries.findByPublicId(db, validated.appId);
 		if (!app) return c.json({ error: "App not found" }, 404);
@@ -343,6 +325,52 @@ router.get("/check", async (c: Context) => {
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "License check error");
 		return c.json({ valid: false, reason: "internal_error" }, 500);
+	}
+});
+
+/**
+ * GET /for-user?appId=
+ * License for the forwarded user. Gateway proxies the authenticated app session here.
+ */
+router.get("/for-user", async (c: Context) => {
+	const appId = c.req.query("appId");
+	const user = await requireMatchingSession(c);
+	if (!user) return c.json({ error: "Unauthorized" }, 401);
+	if (!appId) return c.json({ error: "Missing appId query parameter" }, 400);
+
+	try {
+		const db = getDb();
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) return c.json({ error: "Not found" }, 404);
+
+		const license = await licenseQueries.findByUserAndApp(db, user.id, app.id);
+		if (!license) return c.json({ error: "License not found" }, 404);
+
+		const price = license.price_id ? await priceQueries.findByInternalId_(db, license.price_id) : null;
+		const plan = price
+			? await planQueries.findByInternalId_(db, price.plan_id)
+			: await planQueries.findByInternalId_(db, license.plan_id);
+
+		return c.json({
+			licenseId: license.public_id,
+			appId: app.public_id,
+			status: license.status,
+			source: license.source ?? null,
+			maxActivations: license.max_activations ?? null,
+			validFrom: Math.floor(license.created_at.getTime() / 1000),
+			validUntil: license.valid_until ? Math.floor(new Date(license.valid_until).getTime() / 1000) : null,
+			plan: plan
+				? {
+						planId: plan.public_id,
+						slug: plan.slug,
+						name: plan.name,
+						features: (plan.features as Record<string, unknown>) ?? {},
+					}
+				: null,
+		});
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "License for-user error");
+		return c.json({ error: "Failed to get license" }, 500);
 	}
 });
 

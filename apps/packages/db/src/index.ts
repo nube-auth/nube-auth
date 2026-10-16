@@ -103,6 +103,16 @@ export {
 } from "./queries.js";
 // Export schema for migrations and types
 export * from "./schema.js";
+export {
+	digestSecret,
+	openSecret,
+	presentedSecretMatches,
+	readSealedSecret,
+	protectSecret,
+	revealStoredSecret,
+	sealSecret,
+	secretsEqual,
+} from "./secret-box.js";
 // Export JSONB utilities
 export {
 	buildJsonbMergeClause,

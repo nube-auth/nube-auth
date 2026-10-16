@@ -1,8 +1,8 @@
 import { serve } from "@hono/node-server";
 import { configureSessionSecret } from "@nube-auth/auth";
 import { initCache, pingCache } from "@nube-auth/cache";
-import { runMigrations, getDb, sql } from "@nube-auth/db";
-import { createLogger, serializeError } from "@nube-auth/shared";
+import { getDb, runMigrations, sql } from "@nube-auth/db";
+import { createLogger, resolveAllowedOrigin, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { env } from "./config/env";
@@ -33,23 +33,19 @@ app.use(
 	"*",
 	cors({
 		origin: (origin: string | undefined) => {
-			// Allow requests with no origin (e.g., same-origin, server-to-server)
 			if (!origin) return "*";
-			// Allow localhost ONLY in development mode
-			if (env.IS_DEVELOPMENT && origin.startsWith("http://localhost:")) return origin;
-			// Allow any subdomain of the deployment domain (derived from CORE_PUBLIC_URL).
-			// e.g. CORE_PUBLIC_URL=https://s-api.example.com → allows *.example.com
-			if (env.CORE_PUBLIC_URL) {
-				try {
-					const coreHost = new URL(env.CORE_PUBLIC_URL).hostname;
-					const parts = coreHost.split(".");
-					for (let i = 1; i < parts.length - 1; i++) {
-						const suffix = `.${parts.slice(i).join(".")}`;
-						if (origin.endsWith(suffix)) return origin;
-					}
-				} catch {}
+			let serviceHostname = "";
+			try {
+				serviceHostname = env.CORE_PUBLIC_URL ? new URL(env.CORE_PUBLIC_URL).hostname : "";
+			} catch {
+				serviceHostname = "";
 			}
-			return null;
+			return resolveAllowedOrigin({
+				origin,
+				serviceHostname,
+				explicitOrigins: [],
+				allowLocalhost: env.IS_DEVELOPMENT,
+			});
 		},
 		credentials: true,
 		allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -85,11 +81,7 @@ app.route("/v1/license", licenseRoutes);
 app.route("/v1/subscription", subscriptionRoutes);
 app.route("/v1/admin", adminRoutes);
 
-// Health check — returns 200 during startup so Railway health checks pass.
-// The status field lets load balancers / monitoring decide whether to route
-// traffic. DB and Redis readiness is tracked in isReady flags set by the
-// background initialize() function.
-app.get("/health", async (c) => {
+async function dependencySnapshot() {
 	const [redisOk, dbOk] = await Promise.all([
 		pingCache().catch(() => false),
 		getDb()
@@ -100,13 +92,27 @@ app.get("/health", async (c) => {
 	if (redisOk) isReady.redis = true;
 	if (dbOk) isReady.db = true;
 	const ready = isReady.db && isReady.redis;
-	return c.json({
-		service: "core",
-		status: ready ? "ok" : "starting",
-		db: dbOk ? "ok" : "unreachable",
-		redis: redisOk ? "ok" : "unreachable",
-		timestamp: new Date().toISOString(),
-	});
+	return {
+		ready,
+		body: {
+			service: "core",
+			db: dbOk ? "ok" : "unreachable",
+			redis: redisOk ? "ok" : "unreachable",
+			timestamp: new Date().toISOString(),
+		},
+	};
+}
+
+// Liveness stays green as soon as the process is listening. Readiness is the
+// probe that should receive traffic. /health remains 200 for existing deploy checks.
+app.get("/live", (c) => c.json({ service: "core", status: "live", timestamp: new Date().toISOString() }));
+app.get("/ready", async (c) => {
+	const snapshot = await dependencySnapshot();
+	return c.json({ ...snapshot.body, status: snapshot.ready ? "ok" : "starting" }, snapshot.ready ? 200 : 503);
+});
+app.get("/health", async (c) => {
+	const snapshot = await dependencySnapshot();
+	return c.json({ ...snapshot.body, status: snapshot.ready ? "ok" : "starting" });
 });
 
 // Error handling

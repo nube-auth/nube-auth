@@ -26,7 +26,7 @@ export const csrfProtection = createMiddleware(async (c: Context, next) => {
 			{
 				path: c.req.path,
 				method,
-				allHeaders: Object.fromEntries(c.req.raw.headers.entries ? c.req.raw.headers.entries() : []),
+				hasCsrfHeader: false,
 			},
 			"CSRF token missing from header",
 		);
@@ -41,7 +41,7 @@ export const csrfProtection = createMiddleware(async (c: Context, next) => {
 			{
 				path: c.req.path,
 				method,
-				headerTokenPreview: csrfTokenHeader.substring(0, 20),
+				hasCsrfCookie: false,
 			},
 			"CSRF token cookie not found",
 		);
@@ -58,9 +58,7 @@ export const csrfProtection = createMiddleware(async (c: Context, next) => {
 			{
 				path: c.req.path,
 				method,
-				headerPreview: csrfTokenHeader.substring(0, 20),
 				headerLength: csrfTokenHeader.length,
-				cookiePreview: csrfTokenCookie.substring(0, 20),
 				cookieLength: csrfTokenCookie.length,
 			},
 			"CSRF token mismatch",

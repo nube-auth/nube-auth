@@ -17,15 +17,23 @@
  */
 
 import { createHmac, randomBytes, randomUUID } from "node:crypto";
-import { appQueries, appWebhookQueries, getDb, outboundWebhookLogQueries } from "@nube-auth/db";
+import { appQueries, appWebhookQueries, getDb, openSecret, outboundWebhookLogQueries, sealSecret } from "@nube-auth/db";
 import { createLogger, id, idPatterns, serializeError } from "@nube-auth/shared";
+import { assertSafeOutboundUrl, postOutboundWebhook, UnsafeOutboundUrlError } from "@nube-auth/shared/outbound-url";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
 import { enqueueOutboundWebhook } from "../../../billing/queue.js";
+import { env } from "../../../config/env.js";
 import { requiredParam } from "../../../utils/route-param.js";
 
 const log = createLogger("admin-webhook-routes");
+const MAX_WEBHOOKS_PER_APP = 25;
+
+async function parseWebhookUrl(raw: string): Promise<string> {
+	const url = await assertSafeOutboundUrl(raw, { allowInsecureHttp: env.IS_DEVELOPMENT });
+	return url.toString();
+}
 
 export const SUPPORTED_EVENTS = [
 	"user.registered",
@@ -162,7 +170,7 @@ webhooksRouter.get("/", async (c: Context) => {
 
 /**
  * POST / — register a new webhook endpoint
- * Returns the signing secret exactly once — it is not stored in readable form.
+ * Returns the signing secret exactly once. The secret is stored for delivery signing.
  */
 webhooksRouter.post("/", async (c: Context) => {
 	try {
@@ -171,18 +179,24 @@ webhooksRouter.post("/", async (c: Context) => {
 
 		const body = await c.req.json();
 		const validated = CreateWebhookSchema.parse(body);
+		const url = await parseWebhookUrl(validated.url);
 
 		const db = getDb();
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) return c.json({ error: "App not found" }, 404);
+
+		const existing = await appWebhookQueries.findAllByAppId(db, app.id);
+		if (existing.length >= MAX_WEBHOOKS_PER_APP) {
+			return c.json({ error: `An app can have at most ${MAX_WEBHOOKS_PER_APP} webhook endpoints` }, 409);
+		}
 
 		const secret = generateSecret();
 
 		const webhook = await appWebhookQueries.create(db, {
 			public_id: id.appWebhook(),
 			app_id: app.id,
-			url: validated.url,
-			secret,
+			url,
+			secret: sealSecret(secret),
 			events: validated.events,
 			description: validated.description ?? null,
 			is_active: true,
@@ -195,6 +209,9 @@ webhooksRouter.post("/", async (c: Context) => {
 	} catch (error) {
 		if (error instanceof z.ZodError) {
 			return c.json({ error: "Validation error", details: error.issues }, 400);
+		}
+		if (error instanceof UnsafeOutboundUrlError) {
+			return c.json({ error: error.message }, 400);
 		}
 		log.error({ err: serializeError(error as Error) }, "Create webhook error");
 		return c.json({ error: "Failed to create webhook" }, 500);
@@ -213,6 +230,7 @@ webhooksRouter.patch("/:webhookId", async (c: Context) => {
 
 		const body = await c.req.json();
 		const validated = UpdateWebhookSchema.parse(body);
+		const url = validated.url != null ? await parseWebhookUrl(validated.url) : undefined;
 
 		const db = getDb();
 		const app = await appQueries.findByPublicId(db, appId);
@@ -222,7 +240,7 @@ webhooksRouter.patch("/:webhookId", async (c: Context) => {
 		if (!webhook || webhook.app_id !== app.id) return c.json({ error: "Webhook not found" }, 404);
 
 		const updated = await appWebhookQueries.update(db, webhook.id, {
-			...(validated.url != null ? { url: validated.url } : {}),
+			...(url != null ? { url } : {}),
 			...(validated.events != null ? { events: validated.events } : {}),
 			...(validated.description !== undefined ? { description: validated.description } : {}),
 			...(validated.isActive != null ? { is_active: validated.isActive } : {}),
@@ -236,6 +254,9 @@ webhooksRouter.patch("/:webhookId", async (c: Context) => {
 	} catch (error) {
 		if (error instanceof z.ZodError) {
 			return c.json({ error: "Validation error", details: error.issues }, 400);
+		}
+		if (error instanceof UnsafeOutboundUrlError) {
+			return c.json({ error: error.message }, 400);
 		}
 		log.error({ err: serializeError(error as Error) }, "Update webhook error");
 		return c.json({ error: "Failed to update webhook" }, 500);
@@ -289,7 +310,7 @@ webhooksRouter.post("/:webhookId/rotate-secret", async (c: Context) => {
 		if (!webhook || webhook.app_id !== app.id) return c.json({ error: "Webhook not found" }, 404);
 
 		const newSecret = generateSecret();
-		await appWebhookQueries.update(db, webhook.id, { secret: newSecret });
+		await appWebhookQueries.update(db, webhook.id, { secret: sealSecret(newSecret) });
 
 		log.info({ webhookId: webhook.public_id }, "Webhook secret rotated");
 
@@ -505,6 +526,7 @@ webhooksRouter.post("/:webhookId/test", async (c: Context) => {
 		const webhook = await appWebhookQueries.findByPublicId(db, webhookId);
 		if (!webhook || webhook.app_id !== app.id) return c.json({ error: "Webhook not found" }, 404);
 		if (!webhook.secret) return c.json({ error: "Webhook has no signing secret" }, 422);
+		const signingSecret = openSecret(webhook.secret);
 
 		const deliveryId = randomUUID();
 		const sampleData = TEST_PAYLOADS[event] ?? {};
@@ -518,7 +540,7 @@ webhooksRouter.post("/:webhookId/test", async (c: Context) => {
 		};
 
 		const bodyStr = JSON.stringify(payload);
-		const signature = `sha256=${createHmac("sha256", webhook.secret).update(bodyStr).digest("hex")}`;
+		const signature = `sha256=${createHmac("sha256", signingSecret).update(bodyStr).digest("hex")}`;
 
 		const start = Date.now();
 		let responseStatus: number | null = null;
@@ -527,8 +549,7 @@ webhooksRouter.post("/:webhookId/test", async (c: Context) => {
 		let errorMessage: string | null = null;
 
 		try {
-			const res = await fetch(webhook.url, {
-				method: "POST",
+			const res = await postOutboundWebhook(webhook.url, {
 				headers: {
 					"Content-Type": "application/json",
 					"X-Nube-Signature": signature,
@@ -536,7 +557,8 @@ webhooksRouter.post("/:webhookId/test", async (c: Context) => {
 					"X-Nube-Delivery": deliveryId,
 				},
 				body: bodyStr,
-				signal: AbortSignal.timeout(10_000),
+				timeoutMs: 10_000,
+				allowInsecureHttp: env.IS_DEVELOPMENT,
 			});
 			responseStatus = res.status;
 			responseBody = (await res.text()).slice(0, 1024);
