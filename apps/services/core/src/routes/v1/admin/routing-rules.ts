@@ -5,6 +5,7 @@
  * Rules control which provider is selected based on context (country, currency, etc.).
  */
 
+import { type SelectionContext, selectProvider } from "@nube-auth/billing";
 import {
 	getDb,
 	inArray,
@@ -15,7 +16,6 @@ import {
 import { createId, createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { z } from "zod";
-import { type SelectionContext, selectProvider } from "../../../billing/services/provider-selector.js";
 
 const log = createLogger("routing-rules-admin");
 

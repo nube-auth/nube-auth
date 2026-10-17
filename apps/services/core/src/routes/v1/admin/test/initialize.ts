@@ -3,6 +3,7 @@
  * Admin-only endpoints for testing payment flows without manual setup
  */
 
+import { createProviderAdapter, decryptProviderCredentials } from "@nube-auth/billing";
 import {
 	appQueries,
 	eq,
@@ -22,9 +23,7 @@ import {
 import { createId, publicId, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
-import { createProviderAdapter } from "../../../../billing/adapters/factory.js";
 import { env } from "../../../../config/env.js";
-import { decryptProviderCredentials } from "../../../../utils/encryption.js";
 
 import { assertProjectAdmin, log, testRateLimit, validateTestModeCredentials } from "./shared.js";
 

@@ -1,3 +1,4 @@
+import { enqueueWebhookProcessing } from "@nube-auth/billing";
 import {
 	and,
 	appQueries,
@@ -20,7 +21,6 @@ import {
 import { createId, createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { z } from "zod";
-import { enqueueWebhookProcessing } from "../../../billing/queue.js";
 
 const log = createLogger("admin-billing-routes");
 

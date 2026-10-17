@@ -557,6 +557,9 @@ importers:
       '@nube-auth/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@nube-auth/billing':
+        specifier: workspace:*
+        version: link:../../packages/billing
       '@nube-auth/cache':
         specifier: workspace:*
         version: link:../../packages/cache
@@ -572,9 +575,6 @@ importers:
       bullmq:
         specifier: ^5.8.0
         version: 5.66.4
-      dodopayments:
-        specifier: ^2.21.0
-        version: 2.21.0
       hono:
         specifier: 4.13.13
         version: 4.13.13
@@ -584,9 +584,6 @@ importers:
       resend:
         specifier: ^2.0.0
         version: 2.1.0
-      stripe:
-        specifier: ^17.3.0
-        version: 17.7.0
     devDependencies:
       '@hono/zod-validator':
         specifier: ^0.7.6
