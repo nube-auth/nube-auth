@@ -5,11 +5,10 @@
  * - POST /v1/billing/webhooks/:provider - Receive webhook events
  */
 
+import { enqueueWebhookProcessing, WebhookLoggingService } from "@nube-auth/billing";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
-import { enqueueWebhookProcessing } from "../../../billing/queue.js";
-import { WebhookLoggingService } from "../../../billing/services/webhook-logging.js";
 import { rateLimitMiddleware } from "../../../middleware/rateLimit.js";
 import { requiredParam } from "../../../utils/route-param.js";
 

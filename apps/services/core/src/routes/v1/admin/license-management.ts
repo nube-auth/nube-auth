@@ -1,3 +1,4 @@
+import { fireWebhookEvent } from "@nube-auth/billing";
 import { cache } from "@nube-auth/cache";
 import {
 	activationQueries,
@@ -19,7 +20,6 @@ import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/s
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
-import { fireWebhookEvent } from "../../../utils/outbound-events.js";
 import { requiredParam } from "../../../utils/route-param.js";
 
 const log = createLogger("admin-license-routes");

@@ -5,6 +5,7 @@
  * Pricing lives on the prices table, exposed via nested /:planId/prices routes.
  */
 
+import { enqueuePlanSync, fireWebhookEvent } from "@nube-auth/billing";
 import {
 	and,
 	appQueries,
@@ -23,8 +24,6 @@ import { createLogger, id, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
-import { enqueuePlanSync } from "../../../billing/queue.js";
-import { fireWebhookEvent } from "../../../utils/outbound-events.js";
 import { requiredParam } from "../../../utils/route-param.js";
 import { generatePlanSlug } from "../../../utils/slug.js";
 import { pricesRouter } from "./prices.js";

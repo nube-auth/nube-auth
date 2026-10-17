@@ -12,6 +12,7 @@
  * Apps can then select which project-level provider they want to use.
  */
 
+import { decryptProviderCredentials, encryptProviderCredentials } from "@nube-auth/billing";
 import {
 	and,
 	eq,
@@ -32,7 +33,6 @@ import { createId, createLogger } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
-import { decryptProviderCredentials, encryptProviderCredentials } from "../../../utils";
 import { requiredParam } from "../../../utils/route-param.js";
 
 const log = createLogger("admin-providers");

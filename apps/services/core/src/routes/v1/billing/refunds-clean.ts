@@ -8,6 +8,7 @@
  * - GET /billing/purchases/:purchaseId/can-refund - Check refund eligibility
  */
 
+import { createProviderAdapter, decryptProviderCredentials } from "@nube-auth/billing";
 import {
 	and,
 	eq,
@@ -21,8 +22,6 @@ import { createLogger, id, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
-import { createProviderAdapter } from "../../../billing/adapters/index.js";
-import { decryptProviderCredentials } from "../../../utils/encryption.js";
 import { requiredParam } from "../../../utils/route-param.js";
 
 const log = createLogger("refund-routes");

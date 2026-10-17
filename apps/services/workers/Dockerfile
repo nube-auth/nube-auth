@@ -21,6 +21,7 @@ RUN pnpm --filter @nube-auth/shared build
 RUN pnpm --filter @nube-auth/db build
 RUN pnpm --filter @nube-auth/auth build
 RUN pnpm --filter @nube-auth/queue build
+RUN pnpm --filter @nube-auth/billing build
 RUN pnpm --filter @nube-auth/core build
 RUN pnpm --filter @nube-auth/workers build
 
