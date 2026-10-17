@@ -6,7 +6,7 @@
  */
 
 import { pingpong } from "@nube-auth/auth";
-import { cache } from "@nube-auth/cache";
+import { cache, readCacheKeys } from "@nube-auth/cache";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -76,7 +76,7 @@ licenseRoutes.get("/:appId", async (c: Context) => {
 		if (!appId) return c.json({ error: "Not found" }, 404);
 		const auth = getAuth(c);
 
-		const cacheKey = `gateway:license:${auth.userId}:${appId}`;
+		const cacheKey = readCacheKeys.license(auth.userId, appId);
 		const cached = await cache.get<object>(cacheKey);
 		if (cached) return c.json(cached);
 

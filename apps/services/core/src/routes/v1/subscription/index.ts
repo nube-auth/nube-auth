@@ -1,4 +1,5 @@
 import { fireWebhookEvent } from "@nube-auth/billing";
+import { forgetUserAppCache } from "@nube-auth/cache";
 import {
 	appQueries,
 	getDb,
@@ -144,6 +145,7 @@ router.post("/cancel", async (c: Context) => {
 				);
 			}
 
+			await forgetUserAppCache(user.public_id, app.public_id);
 			return c.json({
 				subscriptionId: sub.public_id,
 				status: "canceled",
@@ -195,6 +197,7 @@ router.post("/cancel", async (c: Context) => {
 		}
 
 		log.info({ subId: sub.public_id, userId: user.public_id }, "Subscription canceled by user");
+		await forgetUserAppCache(user.public_id, app.public_id);
 
 		return c.json({
 			subscriptionId: sub.public_id,
@@ -281,6 +284,7 @@ router.post("/resume", async (c: Context) => {
 		}
 
 		log.info({ subId: sub.public_id, userId: user.public_id }, "Subscription resumed by user");
+		await forgetUserAppCache(user.public_id, app.public_id);
 
 		return c.json({
 			subscriptionId: sub.public_id,

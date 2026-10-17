@@ -8,6 +8,7 @@
  */
 
 import { enqueuePlanSync } from "@nube-auth/billing";
+import { forgetAppEntitlements } from "@nube-auth/cache";
 import { appQueries, auditLogQueries, eq, getDb, planQueries, priceQueries, userQueries } from "@nube-auth/db";
 import { prices } from "@nube-auth/db/schema";
 import {
@@ -283,6 +284,7 @@ pricesRouter.patch("/:priceId", async (c: Context) => {
 		if (!updatedPrice) return c.json({ error: "Failed to update price" }, 500);
 
 		log.info({ priceId: updatedPrice.public_id }, "Price updated");
+		await forgetAppEntitlements(app.public_id);
 
 		await auditLogQueries.create(db, {
 			public_id: id.auditLog(),
@@ -370,6 +372,7 @@ pricesRouter.delete("/:priceId", async (c: Context) => {
 		if (!price || price.plan_id !== plan.id) return c.json({ error: "Price not found" }, 404);
 
 		await priceQueries.deactivate(db, price.id);
+		await forgetAppEntitlements(app.public_id);
 
 		log.info({ priceId: price.public_id }, "Price deactivated");
 

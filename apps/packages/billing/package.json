@@ -21,6 +21,7 @@
 		"clean": "rm -rf dist"
 	},
 	"dependencies": {
+		"@nube-auth/cache": "workspace:*",
 		"@nube-auth/db": "workspace:*",
 		"@nube-auth/queue": "workspace:*",
 		"@nube-auth/shared": "workspace:*",

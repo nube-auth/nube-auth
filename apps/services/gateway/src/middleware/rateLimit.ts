@@ -178,9 +178,14 @@ export async function checkRateLimit(
 	identifier: string,
 	keyPrefix: string,
 ): Promise<{ current: number; remaining: number; resetAt: number }> {
-	const key = `${keyPrefix}:${identifier}`;
-	const current = parseInt((await cache.get(key)) || "0", 10);
-	const ttl = await cache.ttl(key);
+	const keys = await cache.keys(`${keyPrefix}:${identifier}:*`);
+	let current = 0;
+	let ttl = 0;
+	for (const key of keys) {
+		const value = await cache.get<number>(key);
+		current += typeof value === "number" ? value : 0;
+		ttl = Math.max(ttl, await cache.ttl(key));
+	}
 	const resetAt = Date.now() + ttl * 1000;
 
 	return {

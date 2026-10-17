@@ -1,5 +1,5 @@
 import { pingpong } from "@nube-auth/auth";
-import { cache, sessionStore } from "@nube-auth/cache";
+import { cache, readCacheKeys, sessionStore } from "@nube-auth/cache";
 import { createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 
@@ -14,8 +14,8 @@ const log = createLogger("me-routes");
 
 export const meRoutes = new Hono();
 
-const subCacheKey = (userId: string, appId: string) => `gateway:sub:${userId}:${appId}`;
-const licenseCacheKey = (userId: string, appId: string) => `gateway:license:${userId}:${appId}`;
+const subCacheKey = readCacheKeys.subscription;
+const licenseCacheKey = readCacheKeys.license;
 
 async function revokeGatewaySessions(userPublicId: string, targetCoreSessionId?: string): Promise<void> {
 	let cursor = 0;

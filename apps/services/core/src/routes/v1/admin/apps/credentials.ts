@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { cache } from "@nube-auth/cache";
+import { cache, readCacheKeys } from "@nube-auth/cache";
 import {
 	appQueries,
 	auditLogQueries,
@@ -121,7 +121,7 @@ credentialRoutes.post("/:projectId/apps/:appId/regenerate-secret", async (c: Con
 			clientSecretHash: protectedClientSecret.hash,
 			clientSecretEnc: protectedClientSecret.enc,
 		});
-		await cache.delete(`app-client-secret:v2:${app.public_id}`).catch((error: unknown) => {
+		await cache.delete(readCacheKeys.clientSecret(app.public_id)).catch((error: unknown) => {
 			log.error(
 				{ err: serializeError(error as Error), appId: app.public_id },
 				"Failed to drop cached app secret",

@@ -8,7 +8,6 @@ import { getCookie, setCookie } from "hono/cookie";
 import { ADMIN_SESSION_TTL, CSRF_TOKEN_BYTES, SESSION_ID_BYTES, SESSION_TTL } from "../../config/constants";
 import { env } from "../../config/env";
 import { coreClient } from "../../lib/core-client";
-import { sessionService } from "../../services/sessionService";
 import {
 	ADMIN_SESSION_COOKIE,
 	CSRF_TOKEN_COOKIE,
@@ -170,11 +169,6 @@ loginRoutes.post("/logout", async (c: Context) => {
 
 					// Get Core session ID to revoke database session
 					const coreSessionId = appSessionBefore?.metadata?.["coreSessionId"] as string | undefined;
-					// Delete from all three stores:
-					// 1. Delete from sessionService (gateway:session:xxx)
-					await sessionService.deleteSession(sessionId);
-
-					// 2. Delete from sessionStore (session:app:xxx) - this is what auth middleware checks!
 					await sessionStore.revokeAppSession(sessionId);
 
 					if (coreSessionId) {

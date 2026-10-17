@@ -9,3 +9,4 @@ export {
 
 // Re-export constants
 export { DEFAULT_TTLS, KEY_PREFIXES, RATE_LIMIT_WINDOWS } from "./constants.js";
+export { forgetAppEntitlements, forgetAppReadCache, forgetUserAppCache, readCacheKeys } from "./read-cache.js";

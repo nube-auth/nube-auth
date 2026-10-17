@@ -6,6 +6,7 @@
  */
 
 import { enqueuePlanSync, fireWebhookEvent } from "@nube-auth/billing";
+import { forgetAppEntitlements } from "@nube-auth/cache";
 import {
 	and,
 	appQueries,
@@ -352,6 +353,7 @@ plansRouter.patch("/:planId", async (c: Context) => {
 		}
 
 		log.info({ planId: updatedPlan.public_id }, "Plan updated");
+		await forgetAppEntitlements(app.public_id);
 
 		await auditLogQueries.create(db, {
 			public_id: id.auditLog(),
@@ -414,6 +416,7 @@ plansRouter.delete("/:planId", async (c: Context) => {
 			.update(plans)
 			.set({ is_active: false, deleted_at: new Date(), updated_at: new Date() })
 			.where(eq(plans.id, plan.id));
+		await forgetAppEntitlements(app.public_id);
 
 		// If the deleted plan was the default, clear it
 		const currentDefaultId = app.default_plan_id;

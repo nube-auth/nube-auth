@@ -1,3 +1,4 @@
+import { forgetUserAppCache } from "@nube-auth/cache";
 import {
 	appQueries,
 	getDb,
@@ -219,6 +220,8 @@ subscriptionsRouter.patch("/:subId", async (c: Context) => {
 		}
 
 		log.info({ subId, action: validated.action, appId }, "Subscription updated by admin");
+		const owner = await userQueries.findByInternalId_(db, sub.user_id);
+		if (owner) await forgetUserAppCache(owner.public_id, app.public_id);
 
 		return c.json({
 			subscriptionId: updated.public_id,
