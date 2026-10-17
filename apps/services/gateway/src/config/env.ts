@@ -5,7 +5,6 @@ export interface Env {
 	NODE_ENV: string;
 	IS_DEVELOPMENT: boolean;
 	GATEWAY_PORT: number;
-	DATABASE_URL: string;
 	REDIS_URL: string;
 	EMAIL_API_KEY: string;
 	EMAIL_API_BASE_URL: string;
@@ -44,7 +43,6 @@ export interface Env {
 }
 
 const requiredEnvVars = [
-	"DATABASE_URL",
 	"REDIS_URL",
 	"EMAIL_API_KEY",
 	"ENCRYPTION_KEY",
@@ -79,7 +77,6 @@ function validateEnv(): Env {
 		NODE_ENV: process.env["NODE_ENV"] || "production",
 		IS_DEVELOPMENT: (process.env["NODE_ENV"] || "production") === "development",
 		GATEWAY_PORT: parseInt(process.env["GATEWAY_PORT"] ?? process.env["PORT"] ?? "8080", 10),
-		DATABASE_URL: process.env["DATABASE_URL"]!,
 		REDIS_URL: process.env["REDIS_URL"]!,
 		EMAIL_API_KEY: process.env["EMAIL_API_KEY"]!,
 		EMAIL_API_BASE_URL: process.env["EMAIL_API_BASE_URL"] ?? "",

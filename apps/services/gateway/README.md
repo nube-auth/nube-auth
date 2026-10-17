@@ -127,9 +127,6 @@ src/
 ## Environment Variables
 
 ```bash
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/nube-auth
-
 # Redis
 REDIS_URL=redis://localhost:6379
 
@@ -229,7 +226,6 @@ docker build -t nube-auth-gateway .
 
 # Run container
 docker run -p 3000:3000 \
-  -e DATABASE_URL="..." \
   -e REDIS_URL="..." \
   nube-auth-gateway
 ```

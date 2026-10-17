@@ -1,8 +1,7 @@
 import crypto from "node:crypto";
 import { createSessionCookie, pingpong } from "@nube-auth/auth";
 import { cache, sessionStore } from "@nube-auth/cache";
-import { appQueries, getDb } from "@nube-auth/db";
-import { serializeError } from "@nube-auth/shared";
+import { type SessionEntitlements, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
@@ -22,7 +21,7 @@ import {
 	USER_SESSION_COOKIE,
 } from "../../utils/cookieNames";
 
-import { buildEntitlements, inferAudience, log, safeAttrBoolean, safeAttrNumber, safeAttrString } from "./shared";
+import { inferAudience, log, safeAttrBoolean, safeAttrNumber, safeAttrString } from "./shared";
 
 const oauthRoutes = new Hono();
 
@@ -46,61 +45,6 @@ oauthRoutes.get("/start", async (c: Context) => {
 	// audience=app requires app_id to scope the session and validate the redirect allowlist
 	if (audience === "app" && !appId) {
 		return c.json({ error: "app_id is required when audience is 'app'" }, 400);
-	}
-
-	// Validate return_to against the app's registered redirect URIs (security_settings.redirectUris).
-	// This prevents exchange codes being delivered to unregistered URIs.
-	// If redirectUris is empty (not yet configured) we allow any return_to so existing apps
-	// are not broken — apps should populate the allowlist in the NubeAuth admin.
-	let appSessionTtlSeconds: number | undefined;
-	if (audience === "app" && appId) {
-		try {
-			const db = getDb();
-			const app = await appQueries.findByPublicId(db, appId);
-			if (!app) {
-				return c.json({ error: "Unknown app_id" }, 400);
-			}
-			const redirectUris = app.redirect_uris ?? [];
-			const sessionTtlDays = app.session_ttl_days;
-			// Strip query string and fragment before comparing — only origin+pathname must match.
-			// This mirrors how Google/GitHub handle redirect_uri validation and allows callers to
-			// append their own query params (e.g. ?upgraded=true) without needing to register
-			// every possible variant.
-			const normalizeUri = (uri: string) => {
-				try {
-					const u = new URL(uri);
-					return u.origin + u.pathname;
-				} catch {
-					return uri;
-				}
-			};
-			const registeredUris: string[] = redirectUris.map(normalizeUri);
-			const normalizedReturnTo = normalizeUri(returnTo);
-			if (registeredUris.length === 0) {
-				// In production an empty allowlist is a misconfiguration — reject to prevent open redirect.
-				// In development allow any URI so local apps work before configuration is complete.
-				if (process.env["NODE_ENV"] === "production") {
-					log.warn({ returnTo, appId }, "No redirect URIs registered for app — rejecting in production");
-					return c.json(
-						{ error: "No redirect URIs registered for this app. Configure them in the NubeAuth admin." },
-						403,
-					);
-				}
-			} else if (!registeredUris.includes(normalizedReturnTo)) {
-				log.warn({ returnTo, registeredUris, appId }, "return_to not in registered redirect URIs");
-				return c.json({ error: "return_to URI is not registered for this app_id" }, 400);
-			}
-			// Per-app TTL: prefer security_settings.sessionTtlDays; fall back to SESSION_TTL constant.
-			if (sessionTtlDays > 0) {
-				appSessionTtlSeconds = sessionTtlDays * 24 * 60 * 60;
-			}
-		} catch (lookupError) {
-			log.error(
-				{ err: serializeError(lookupError as Error), appId },
-				"Failed to validate return_to against redirect URI allowlist",
-			);
-			return c.json({ error: "Failed to start auth" }, 500);
-		}
 	}
 
 	// CSRF nonce: bind the state to this specific browser session.
@@ -143,9 +87,6 @@ oauthRoutes.get("/start", async (c: Context) => {
 		statePayload["codeChallenge"] = codeChallenge;
 		statePayload["codeChallengeMethod"] = "S256"; // always S256 — enforced above
 	}
-	if (appSessionTtlSeconds !== undefined) {
-		statePayload["sessionTtlSeconds"] = String(appSessionTtlSeconds);
-	}
 	if (priceId) {
 		statePayload["priceId"] = priceId;
 	}
@@ -167,6 +108,7 @@ oauthRoutes.get("/start", async (c: Context) => {
 	// Tell core to use Gateway's public URL as the OAuth provider callback (so core stays internal)
 	coreAuthUrl.searchParams.set("oauth_callback_base", env.GATEWAY_PUBLIC_URL);
 	if (appId) coreAuthUrl.searchParams.set("app_id", appId);
+	if (audience === "app" && appId) coreAuthUrl.searchParams.set("return_to", returnTo);
 	if (inviteCode) coreAuthUrl.searchParams.set("invite_code", inviteCode);
 	if (invite) coreAuthUrl.searchParams.set("invite", invite);
 
@@ -195,8 +137,22 @@ oauthRoutes.get("/start", async (c: Context) => {
 			return c.redirect(location, response.status as 301 | 302 | 307 | 308);
 		}
 
-		// Core returned an error response
 		const body = await response.text();
+		if (response.status === 400 || response.status === 403) {
+			try {
+				const parsed = JSON.parse(body) as { error?: string };
+				if (
+					parsed.error === "Unknown app_id" ||
+					parsed.error === "app_id is required when audience is 'app'" ||
+					parsed.error === "return_to URI is not registered for this app_id" ||
+					parsed.error === "No redirect URIs registered for this app. Configure them in the NubeAuth admin."
+				) {
+					return c.json({ error: parsed.error }, response.status);
+				}
+			} catch {
+				// Core did not return the redirect-allowlist error shape.
+			}
+		}
 		log.error({ status: response.status, body }, "Core auth start returned non-redirect");
 		return c.json({ error: "Failed to start auth" }, 500);
 	} catch (error) {
@@ -388,6 +344,7 @@ oauthRoutes.get("/callback", async (c: Context) => {
 			},
 			body: {
 				sessionId: code, // Core passes session ID as "code" param
+				...(audience === "admin" ? { audience: "admin" } : {}),
 			},
 		});
 
@@ -420,6 +377,7 @@ oauthRoutes.get("/callback", async (c: Context) => {
 			email?: string;
 			name?: string;
 			sessionTtlSeconds?: number;
+			entitlements?: SessionEntitlements;
 		};
 
 		// -----------------------------------------------------------------------
@@ -548,8 +506,8 @@ oauthRoutes.get("/callback", async (c: Context) => {
 			c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || c.req.header("x-real-ip") || "unknown";
 		const userAgent = c.req.header("user-agent") || "unknown";
 
-		// Build session entitlements based on audience
-		const entitlements = await buildEntitlements(data.userId, audience);
+		const entitlements: SessionEntitlements =
+			audience === "admin" ? (data.entitlements ?? {}) : { identity: { role: "user" } };
 
 		await sessionStore.setAppSession(
 			gatewaySessionId,

@@ -10,10 +10,11 @@ import {
 	planQueries,
 	projectInvitationQueries,
 	projectMemberQueries,
+	projectQueries,
 	sessionQueries,
 	userQueries,
 } from "@nube-auth/db";
-import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
+import { createId, createLogger, idPatterns, type SessionEntitlements, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { TTL } from "../../../config/constants.js";
@@ -52,6 +53,61 @@ async function deleteOAuthState(state: string): Promise<void> {
 	await cache.delete(`${OAUTH_STATE_PREFIX}${state}`);
 }
 
+function normalizeAppUri(uri: string): string {
+	try {
+		const url = new URL(uri);
+		return url.origin + url.pathname;
+	} catch {
+		return uri;
+	}
+}
+
+async function rejectUnregisteredReturnTo(
+	appId: string,
+	returnTo: string,
+): Promise<{ status: 400 | 403; body: { error: string } } | null> {
+	const db = getDb();
+	const app = await appQueries.findByPublicId(db, appId);
+	if (!app) return { status: 400, body: { error: "Unknown app_id" } };
+
+	const registered = (app.redirect_uris ?? []).map(normalizeAppUri);
+	const normalized = normalizeAppUri(returnTo);
+	if (registered.length === 0) {
+		if (env.NODE_ENV === "production") {
+			log.warn({ returnTo, appId }, "No redirect URIs registered for app — rejecting in production");
+			return {
+				status: 403,
+				body: { error: "No redirect URIs registered for this app. Configure them in the NubeAuth admin." },
+			};
+		}
+		return null;
+	}
+	if (!registered.includes(normalized)) {
+		log.warn({ returnTo, registered, appId }, "return_to not in registered redirect URIs");
+		return { status: 400, body: { error: "return_to URI is not registered for this app_id" } };
+	}
+	return null;
+}
+
+async function buildAdminEntitlements(userPublicId: string): Promise<SessionEntitlements> {
+	const db = getDb();
+	const user = await userQueries.findByPublicId(db, userPublicId);
+	if (!user) return {};
+
+	const memberships = await projectMemberQueries.findByUserId(db, user.id);
+	const entitlements: SessionEntitlements = {};
+	for (const membership of memberships) {
+		const project = await projectQueries.findByInternalId_(db, membership.project_id);
+		if (!project) continue;
+		const projectApps = await appQueries.findByProjectId(db, membership.project_id);
+		entitlements[project.public_id] = {
+			role: membership.role,
+			resources: projectApps.map((app) => app.public_id),
+		};
+	}
+	return entitlements;
+}
+
 /**
  * GET /v1/auth/start
  * Start OAuth flow - redirects to provider
@@ -71,6 +127,13 @@ router.get("/start", async (c: Context) => {
 
 	if (!redirectUri) {
 		return c.json({ error: "Missing redirect_uri" }, 400);
+	}
+
+	const returnTo = c.req.query("return_to");
+	if (returnTo) {
+		if (!appId) return c.json({ error: "app_id is required when audience is 'app'" }, 400);
+		const rejection = await rejectUnregisteredReturnTo(appId, returnTo);
+		if (rejection) return c.json(rejection.body, rejection.status);
 	}
 
 	// Validate redirect_uri against allowed origins
@@ -500,7 +563,11 @@ router.get("/callback/:provider", async (c: Context) => {
  */
 router.post("/exchange", async (c: Context) => {
 	try {
-		const { sessionId } = await c.req.json();
+		const { sessionId, revoke, audience } = (await c.req.json()) as {
+			sessionId?: string;
+			revoke?: boolean;
+			audience?: string;
+		};
 
 		if (!sessionId || !idPatterns.session.test(sessionId)) {
 			log.warn(
@@ -514,6 +581,11 @@ router.post("/exchange", async (c: Context) => {
 		const now = new Date();
 
 		const session = await sessionQueries.findByPublicId(db, sessionId);
+
+		if (revoke === true) {
+			if (session && !session.revoked_at) await sessionQueries.revoke(db, session.id);
+			return c.json({ revoked: true });
+		}
 
 		if (!session) {
 			log.warn({ sessionId: `${sessionId.substring(0, 8)}...` }, "Session not found");
@@ -564,6 +636,7 @@ router.post("/exchange", async (c: Context) => {
 			{ userId: user.public_id, sessionId: `${sessionId.substring(0, 8)}...` },
 			"Session exchange successful",
 		);
+		const entitlements = audience === "admin" ? await buildAdminEntitlements(user.public_id) : undefined;
 		return c.json({
 			userId: user.public_id,
 			email: user.primary_email,
@@ -571,6 +644,7 @@ router.post("/exchange", async (c: Context) => {
 			picture: user.avatar_url,
 			expiresAt: updatedExpiresAt,
 			sessionTtlSeconds, // Return TTL so Gateway knows how long to cache
+			...(entitlements ? { entitlements } : {}),
 		});
 	} catch (error) {
 		log.error(
