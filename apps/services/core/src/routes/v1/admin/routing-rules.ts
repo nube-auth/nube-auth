@@ -5,7 +5,13 @@
  * Rules control which provider is selected based on context (country, currency, etc.).
  */
 
-import { getDb, paymentProviderConfigQueries, routingRuleQueries } from "@nube-auth/db";
+import {
+	getDb,
+	inArray,
+	payment_provider_configs,
+	paymentProviderConfigQueries,
+	routingRuleQueries,
+} from "@nube-auth/db";
 import { createId, createLogger, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -67,30 +73,35 @@ app.get("/:appId", async (c) => {
 		const db = getDb();
 		const rules = await routingRuleQueries.findByAppId(db, appId);
 
-		// Join with provider configs to include provider info
-		const enrichedRules = await Promise.all(
-			rules.map(async (rule: any) => {
-				const provider = await paymentProviderConfigQueries.findByInternalId_(db, rule.provider_config_id);
-				return {
-					ruleId: rule.public_id,
-					name: rule.name,
-					description: rule.description,
-					priority: rule.priority,
-					conditions: rule.conditions,
-					trafficPercentage: rule.traffic_percentage,
-					isActive: rule.is_active,
-					provider: provider
-						? {
-								providerId: provider.public_id,
-								provider: provider.provider,
-								environment: provider.environment,
-							}
-						: null,
-					createdAt: rule.created_at,
-					updatedAt: rule.updated_at,
-				};
-			}),
-		);
+		const providerConfigIds = [...new Set(rules.map((rule) => rule.provider_config_id))];
+		const providerConfigs = providerConfigIds.length
+			? await db
+					.select()
+					.from(payment_provider_configs)
+					.where(inArray(payment_provider_configs.id, providerConfigIds))
+			: [];
+		const providersById = new Map(providerConfigs.map((provider) => [provider.id, provider]));
+		const enrichedRules = rules.map((rule) => {
+			const provider = providersById.get(rule.provider_config_id);
+			return {
+				ruleId: rule.public_id,
+				name: rule.name,
+				description: rule.description,
+				priority: rule.priority,
+				conditions: rule.conditions,
+				trafficPercentage: rule.traffic_percentage,
+				isActive: rule.is_active,
+				provider: provider
+					? {
+							providerId: provider.public_id,
+							provider: provider.provider,
+							environment: provider.environment,
+						}
+					: null,
+				createdAt: rule.created_at,
+				updatedAt: rule.updated_at,
+			};
+		});
 
 		return c.json({ rules: enrichedRules });
 	} catch (error) {
