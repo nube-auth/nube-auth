@@ -73,7 +73,9 @@ export function sealSecret(plaintext: string, kekHex?: string): string {
 }
 
 export function openSecret(stored: string, kekHex?: string): string {
-	if (!stored.startsWith(PREFIX)) return stored;
+	if (!stored.startsWith(PREFIX)) {
+		throw new Error("Secret is not sealed");
+	}
 	const keys = encryptionKeys(kekHex);
 	let lastError: Error | undefined;
 	for (const key of keys) {

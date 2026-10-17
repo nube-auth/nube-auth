@@ -34,8 +34,6 @@ import {
 	users,
 	webhook_logs,
 } from "./schema.js";
-import { buildJsonbMergeClause, createJsonbUpdateChain } from "./utils/jsonb.js";
-
 /**
  * User queries
  */
@@ -451,7 +449,7 @@ export const appQueries = {
 		const results = await db
 			.select()
 			.from(apps)
-			.where(and(isNull(apps.deleted_at), sql`${apps.app_tokens}->>'serviceTokenHash' = ${hash}`));
+			.where(and(isNull(apps.deleted_at), eq(apps.service_token_hash, hash)));
 		return results[0];
 	},
 
@@ -501,115 +499,53 @@ export const appQueries = {
 		return results[0]!;
 	},
 
-	/**
-	 * Atomically update security_settings JSONB column
-	 * Uses PostgreSQL JSONB merge operator for consistent updates
-	 * No read-modify-write cycle - eliminates lost update race conditions
-	 */
-	async updateSecuritySettings(db: DbClient, appId: number, updates: Record<string, any>) {
-		const results = await db
-			.update(apps)
-			.set({
-				security_settings: buildJsonbMergeClause(apps.security_settings, updates),
-				updated_at: new Date(),
-			})
-			.where(eq(apps.id, appId))
-			.returning();
-		return results[0]!;
-	},
-
-	/**
-	 * Atomically update app_tokens JSONB column
-	 * Use for API key regeneration to prevent lost updates
-	 */
-	async updateAppTokens(db: DbClient, appId: number, updates: Record<string, any>) {
-		const results = await db
-			.update(apps)
-			.set({
-				app_tokens: buildJsonbMergeClause(apps.app_tokens, updates),
-				updated_at: new Date(),
-			})
-			.where(eq(apps.id, appId))
-			.returning();
-		return results[0]!;
-	},
-
-	/**
-	 * Atomically update plan_settings JSONB column
-	 * Use for licensing configuration updates
-	 */
-	async updatePlanSettings(db: DbClient, appId: number, updates: Record<string, any>) {
-		const results = await db
-			.update(apps)
-			.set({
-				plan_settings: buildJsonbMergeClause(apps.plan_settings, updates),
-				updated_at: new Date(),
-			})
-			.where(eq(apps.id, appId))
-			.returning();
-		return results[0]!;
-	},
-
-	/**
-	 * Atomically update multiple JSONB fields with chained updates
-	 * Use for complex updates involving multiple nested paths
-	 * Example: updateSecuritySettingField(db, appId, 'redirectUris', [...])
-	 */
-	async updateJsonbField(
-		db: DbClient,
-		appId: number,
-		fieldName: "app_tokens" | "security_settings" | "plan_settings",
-		path: string,
-		value: any,
-	) {
-		const field = apps[fieldName as keyof typeof apps];
-		const chain = createJsonbUpdateChain(field as any);
-		(chain as any).set(path, value);
-
-		const results = await db
-			.update(apps)
-			.set({
-				[fieldName]: (chain as any).build(),
-				updated_at: new Date(),
-			} as any)
-			.where(eq(apps.id, appId))
-			.returning();
-		return results[0]!;
-	},
-
-	/**
-	 * Batch update multiple JSONB paths atomically
-	 * More efficient than multiple individual updates
-	 */
-	async batchUpdateJsonbFields(
+	async updateSecuritySettings(
 		db: DbClient,
 		appId: number,
 		updates: {
-			fieldName: "app_tokens" | "security_settings" | "plan_settings";
-			path: string;
-			value: any;
-		}[],
+			redirectUris?: string[];
+			allowedHosts?: string[];
+			corsOrigins?: string[];
+			sessionTtlDays?: number;
+		},
 	) {
-		const updateData: Record<string, any> = { updated_at: new Date() };
+		const set: Partial<typeof apps.$inferInsert> = { updated_at: new Date() };
+		if (updates.redirectUris !== undefined) set.redirect_uris = updates.redirectUris;
+		if (updates.allowedHosts !== undefined) set.allowed_hosts = updates.allowedHosts;
+		if (updates.corsOrigins !== undefined) set.cors_origins = updates.corsOrigins;
+		if (updates.sessionTtlDays !== undefined) set.session_ttl_days = updates.sessionTtlDays;
+		const results = await db.update(apps).set(set).where(eq(apps.id, appId)).returning();
+		return results[0]!;
+	},
 
-		// Group by field name
-		const grouped = updates.reduce(
-			(acc, { fieldName, path, value }) => {
-				if (!acc[fieldName]) {
-					acc[fieldName] = createJsonbUpdateChain(apps[fieldName as keyof typeof apps] as any);
-				}
-				(acc[fieldName] as any).set(path, value);
-				return acc;
-			},
-			{} as Record<string, any>,
-		);
+	async updateAppTokens(
+		db: DbClient,
+		appId: number,
+		updates: {
+			clientSecretHash?: string;
+			clientSecretEnc?: string;
+			serviceTokenHash?: string;
+			serviceTokenEnc?: string;
+		},
+	) {
+		const set: Partial<typeof apps.$inferInsert> = { updated_at: new Date() };
+		if (updates.clientSecretHash !== undefined) set.client_secret_hash = updates.clientSecretHash;
+		if (updates.clientSecretEnc !== undefined) set.client_secret_enc = updates.clientSecretEnc;
+		if (updates.serviceTokenHash !== undefined) set.service_token_hash = updates.serviceTokenHash;
+		if (updates.serviceTokenEnc !== undefined) set.service_token_enc = updates.serviceTokenEnc;
+		const results = await db.update(apps).set(set).where(eq(apps.id, appId)).returning();
+		return results[0]!;
+	},
 
-		// Build all field updates
-		for (const [fieldName, chain] of Object.entries(grouped)) {
-			updateData[fieldName] = (chain as any).build();
-		}
-
-		const results = await db.update(apps).set(updateData).where(eq(apps.id, appId)).returning();
+	async updatePlanSettings(
+		db: DbClient,
+		appId: number,
+		updates: { licensingRequired?: boolean; defaultPlanId?: number | null },
+	) {
+		const set: Partial<typeof apps.$inferInsert> = { updated_at: new Date() };
+		if (updates.licensingRequired !== undefined) set.licensing_required = updates.licensingRequired;
+		if (updates.defaultPlanId !== undefined) set.default_plan_id = updates.defaultPlanId;
+		const results = await db.update(apps).set(set).where(eq(apps.id, appId)).returning();
 		return results[0]!;
 	},
 };

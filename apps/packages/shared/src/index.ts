@@ -101,7 +101,6 @@ export type {
 	SecuritySettings,
 	Session,
 	SessionEntitlements,
-	TrialConfig,
 	User,
 } from "./types/index.js";
 // Re-export schemas

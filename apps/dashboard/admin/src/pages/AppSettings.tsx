@@ -51,9 +51,6 @@ export function AppSettingsPage() {
 			redirectUris: app.redirectUris || [],
 			allowedHosts: app.allowedHosts || [],
 			sessionTtlDays: app.sessionTtlDays || 30,
-			accountLockoutMinutes: app.accountLockoutMinutes || 15,
-			cacheTtlMinutes: app.cacheTtlMinutes || 10,
-			rateLimit: app.rateLimit || 100,
 			corsOrigins: app.corsOrigins || [],
 		});
 	}
@@ -130,9 +127,6 @@ export function AppSettingsPage() {
 			redirectUris: (formData.redirectUris || []).filter((uri: string) => uri.trim()),
 			allowedHosts: (formData.allowedHosts || []).filter((host: string) => host.trim()),
 			sessionTtlDays: formData.sessionTtlDays || 30,
-			accountLockoutMinutes: formData.accountLockoutMinutes || 15,
-			cacheTtlMinutes: formData.cacheTtlMinutes || 10,
-			rateLimit: formData.rateLimit || 100,
 			corsOrigins: formData.corsOrigins || [],
 		};
 
@@ -186,7 +180,6 @@ export function AppSettingsPage() {
 				<TabsList>
 					<TabsItem value="general">General</TabsItem>
 					<TabsItem value="authentication">Authentication</TabsItem>
-					<TabsItem value="security">Security</TabsItem>
 					<TabsItem value="danger">Danger Zone</TabsItem>
 				</TabsList>
 
@@ -408,88 +401,6 @@ export function AppSettingsPage() {
 								</Button>
 							</CardBody>
 						</Card>
-
-						<div className="flex gap-3">
-							<Button type="submit" disabled={isSaving || updateAppMutation.isPending}>
-								{isSaving || updateAppMutation.isPending ? "Saving..." : "Save Changes"}
-							</Button>
-							<Button
-								type="button"
-								variant="secondary"
-								onClick={() => navigate(`/projects/${projectId}/apps/${appId}`)}
-							>
-								Cancel
-							</Button>
-						</div>
-					</form>
-				</TabsPanel>
-
-				{/* Security Tab */}
-				<TabsPanel value="security">
-					<form onSubmit={handleSave} className="space-y-6">
-						<Card>
-							<CardBody className="space-y-5">
-								<Heading level={3} size="sm">
-									Security Settings
-								</Heading>
-
-								<div className="space-y-1.5">
-									<Label htmlFor="accountLockoutMinutes">Account Lockout Duration (Minutes)</Label>
-									<Input
-										id="accountLockoutMinutes"
-										type="number"
-										name="accountLockoutMinutes"
-										value={formData.accountLockoutMinutes || 15}
-										onChange={handleInputChange}
-										min={5}
-										max={120}
-										required
-									/>
-									<Text className="text-muted text-xs">
-										Duration to lock accounts after failed login attempts (5-120 minutes)
-									</Text>
-								</div>
-
-								<div className="space-y-1.5">
-									<Label htmlFor="cacheTtlMinutes">Cache TTL (Minutes)</Label>
-									<Input
-										id="cacheTtlMinutes"
-										type="number"
-										name="cacheTtlMinutes"
-										value={formData.cacheTtlMinutes || 10}
-										onChange={handleInputChange}
-										min={1}
-										max={60}
-										required
-									/>
-									<Text className="text-muted text-xs">
-										How long to cache user session data (1-60 minutes)
-									</Text>
-								</div>
-
-								<div className="space-y-1.5">
-									<Label htmlFor="rateLimit">Rate Limit (Requests Per Minute)</Label>
-									<Input
-										id="rateLimit"
-										type="number"
-										name="rateLimit"
-										value={formData.rateLimit || 100}
-										onChange={handleInputChange}
-										min={10}
-										max={1000}
-										required
-									/>
-									<Text className="text-muted text-xs">
-										Maximum API requests per minute per user (10-1000)
-									</Text>
-								</div>
-							</CardBody>
-						</Card>
-
-						<Alert variant="info">
-							Adjust these settings based on your app's needs. Higher values provide better UX but may
-							increase security risks.
-						</Alert>
 
 						<div className="flex gap-3">
 							<Button type="submit" disabled={isSaving || updateAppMutation.isPending}>

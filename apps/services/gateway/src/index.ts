@@ -120,8 +120,7 @@ app.use("*", async (c, next) => {
 				if (stored === null) {
 					const db = getDb();
 					const appRecord = await appQueries.findByPublicId(db, appId);
-					const tokens = appRecord?.app_tokens as { clientSecretHash?: string } | null;
-					stored = { hash: tokens?.clientSecretHash ?? null };
+					stored = { hash: appRecord?.client_secret_hash ?? null };
 					if (stored.hash) await cache.set(cacheKey, stored, 300);
 				}
 

@@ -123,7 +123,7 @@ providersRouter.get("/:projectId/configs", async (c: Context) => {
 			environment: config.environment,
 			isActive: config.is_active,
 			isDefault: config.is_default,
-			hasWebhookSecret: !!config.webhook_secret,
+			hasWebhookSecret: !!config.webhook_secret_enc,
 			createdAt: config.created_at,
 			updatedAt: config.updated_at,
 			createdBy: config.created_by_user_id,
@@ -175,7 +175,7 @@ providersRouter.get("/:projectId/configs/:providerId", async (c: Context) => {
 			environment: config.environment,
 			isActive: config.is_active,
 			isDefault: config.is_default,
-			hasWebhookSecret: !!config.webhook_secret,
+			hasWebhookSecret: !!config.webhook_secret_enc,
 			metadata: config.metadata,
 			createdAt: config.created_at,
 			updatedAt: config.updated_at,
@@ -234,7 +234,7 @@ providersRouter.get("/:projectId/configs/:providerId/credentials", async (c: Con
 			provider: config.provider,
 			environment: config.environment,
 			credentials,
-			webhookSecret: readSealedSecret(config.webhook_secret),
+			webhookSecret: readSealedSecret(config.webhook_secret_enc),
 		});
 	} catch (_error) {
 		// Never log error object that might contain credentials
@@ -289,8 +289,7 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
 			return c.json({ error: accessCheck.error }, accessCheck.status);
 		}
 
-		// Create new config with DEK-wrapped credentials
-		let sealedBundle: { sealed: string; wrappedDek: string };
+		let sealedBundle: { sealed: string };
 		try {
 			sealedBundle = encryptProviderCredentials(body.credentials);
 		} catch (error) {
@@ -304,8 +303,7 @@ providersRouter.post("/:projectId/configs", async (c: Context) => {
 			provider: body.provider as PaymentProvider,
 			environment: body.environment as PaymentEnvironment,
 			credentials: sealedBundle.sealed,
-			credentials_dek: sealedBundle.wrappedDek,
-			webhook_secret: body.webhookSecret ? sealSecret(body.webhookSecret) : null,
+			webhook_secret_enc: body.webhookSecret ? sealSecret(body.webhookSecret) : null,
 			metadata: body.metadata,
 			is_active: true,
 			is_default: false, // Must explicitly select as default
@@ -391,7 +389,6 @@ providersRouter.patch("/:projectId/configs/:providerId", async (c: Context) => {
 			try {
 				const sealedBundle = encryptProviderCredentials(body.credentials);
 				updateData.credentials = sealedBundle.sealed;
-				updateData.credentials_dek = sealedBundle.wrappedDek;
 			} catch (error) {
 				log.error({ err: (error as Error).message }, "Encrypt credentials error");
 				return c.json({ error: "Server encryption not configured" }, 500);
@@ -399,7 +396,7 @@ providersRouter.patch("/:projectId/configs/:providerId", async (c: Context) => {
 		}
 
 		if (body.webhookSecret !== undefined) {
-			updateData.webhook_secret = body.webhookSecret ? sealSecret(body.webhookSecret) : null;
+			updateData.webhook_secret_enc = body.webhookSecret ? sealSecret(body.webhookSecret) : null;
 		}
 
 		if (body.isActive !== undefined) {
@@ -425,7 +422,7 @@ providersRouter.patch("/:projectId/configs/:providerId", async (c: Context) => {
 			environment: updated.environment,
 			isActive: updated.is_active,
 			isDefault: updated.is_default,
-			hasWebhookSecret: !!updated.webhook_secret,
+			hasWebhookSecret: !!updated.webhook_secret_enc,
 			metadata: updated.metadata,
 			updatedAt: updated.updated_at,
 		});

@@ -28,12 +28,48 @@ function presentDescription(value: string | null | undefined): string | undefine
 	return value ?? undefined;
 }
 
-function presentStoredSecret(
-	tokens: Record<string, unknown> | null | undefined,
-	encField: string,
-	plainField: string,
-): string {
-	return tokens?.[encField] || tokens?.[plainField] ? "••••••••" : "";
+function maskedSecret(enc: string | null | undefined): string {
+	return enc ? "••••••••" : "";
+}
+
+function appSettingsResponse(
+	app: {
+		public_id: string;
+		name: string;
+		slug: string;
+		description: string | null;
+		redirect_uris: string[];
+		allowed_hosts: string[];
+		cors_origins: string[];
+		client_secret_enc: string;
+		service_token_enc: string | null;
+		session_ttl_days: number;
+		enabled_providers: string[];
+		licensing_required: boolean;
+		created_at: Date;
+		updated_at: Date;
+	},
+	projectPublicId: string,
+	extras?: Record<string, unknown>,
+) {
+	return {
+		id: app.public_id,
+		projectId: projectPublicId,
+		name: app.name,
+		slug: app.slug,
+		description: presentDescription(app.description),
+		redirectUris: app.redirect_uris,
+		allowedHosts: app.allowed_hosts,
+		corsOrigins: app.cors_origins,
+		clientSecret: maskedSecret(app.client_secret_enc),
+		serviceToken: maskedSecret(app.service_token_enc),
+		sessionTtlDays: app.session_ttl_days,
+		enabledProviders: app.enabled_providers,
+		requiresLicensing: app.licensing_required,
+		createdAt: new Date(app.created_at).toISOString(),
+		updatedAt: new Date(app.updated_at).toISOString(),
+		...extras,
+	};
 }
 
 export const appsRouter = new Hono();
@@ -220,25 +256,18 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 			slug: appSlug,
 			description: body.description || null,
 			enabled_providers: body.enabledProviders,
-			app_tokens: {
-				clientSecretHash: protectedClientSecret.hash,
-				clientSecretEnc: protectedClientSecret.enc,
-			},
-			security_settings: {
-				redirectUris: (body.redirectUris || []).map((u: string) => {
-					try {
-						return new URL(u).href;
-					} catch {
-						return u;
-					}
-				}),
-				allowedHosts: body.allowedHosts || [],
-				sessionTtlDays: body.sessionTtlDays ?? 28,
-			},
-			plan_settings: {
-				licensingRequired: body.requiresLicensing,
-				defaultPlanId: null,
-			},
+			client_secret_hash: protectedClientSecret.hash,
+			client_secret_enc: protectedClientSecret.enc,
+			redirect_uris: (body.redirectUris || []).map((u: string) => {
+				try {
+					return new URL(u).href;
+				} catch {
+					return u;
+				}
+			}),
+			allowed_hosts: body.allowedHosts || [],
+			session_ttl_days: body.sessionTtlDays ?? 28,
+			licensing_required: body.requiresLicensing,
 			is_active: true,
 		});
 
@@ -267,9 +296,6 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 		}
 
 		// Extract JSONB fields
-		const securitySettings = newApp.security_settings as any;
-		const appTokens = newApp.app_tokens as any;
-
 		// Audit log: app created
 		try {
 			await auditLogQueries.create(db, {
@@ -292,25 +318,10 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 			log.error({ err: serializeError(auditError as Error) }, "Failed to create audit log");
 		}
 
-		const planSettings = newApp.plan_settings as any;
 		return c.json(
-			{
-				id: newApp.public_id,
-				projectId: project.public_id,
-				name: newApp.name,
-				slug: newApp.slug,
-				description: presentDescription(newApp.description),
-				redirectUris: securitySettings?.redirectUris || [],
-				allowedHosts: securitySettings?.allowedHosts || [],
-				corsOrigins: securitySettings?.corsOrigins || [],
+			appSettingsResponse(newApp, project.public_id, {
 				clientSecret,
 				serviceToken: "",
-				sessionTtlDays: securitySettings?.sessionTtlDays || 28,
-				accountLockoutMinutes: securitySettings?.accountLockoutMinutes || 30,
-				cacheTtlMinutes: securitySettings?.cacheTtlMinutes || 60,
-				rateLimit: securitySettings?.rateLimit || 100,
-				enabledProviders: newApp.enabled_providers || [],
-				requiresLicensing: planSettings?.licensingRequired ?? false,
 				...(defaultPlan
 					? {
 							defaultPlan: {
@@ -321,9 +332,7 @@ appsRouter.post("/:projectId/apps", async (c: Context) => {
 							},
 						}
 					: {}),
-				createdAt: new Date(newApp.created_at).toISOString(),
-				updatedAt: new Date(newApp.updated_at).toISOString(),
-			},
+			}),
 			201,
 		);
 	} catch (error) {
@@ -366,30 +375,7 @@ appsRouter.get("/:projectId/apps/:appId", async (c: Context) => {
 			return c.json({ error: "Project not found" }, 404);
 		}
 
-		// Extract JSONB fields
-		const securitySettings = app.security_settings as any;
-		const appTokens = app.app_tokens as any;
-
-		return c.json({
-			id: app.public_id,
-			projectId: project.public_id,
-			name: app.name,
-			slug: app.slug,
-			description: presentDescription(app.description),
-			redirectUris: securitySettings?.redirectUris || [],
-			allowedHosts: securitySettings?.allowedHosts || [],
-			corsOrigins: securitySettings?.corsOrigins || [],
-			clientSecret: presentStoredSecret(appTokens, "clientSecretEnc", "clientSecret"),
-			serviceToken: presentStoredSecret(appTokens, "serviceTokenEnc", "serviceToken"),
-			sessionTtlDays: securitySettings?.sessionTtlDays || 28,
-			accountLockoutMinutes: securitySettings?.accountLockoutMinutes || 30,
-			cacheTtlMinutes: securitySettings?.cacheTtlMinutes || 60,
-			rateLimit: securitySettings?.rateLimit || 100,
-			enabledProviders: app.enabled_providers || [],
-			// selectedPaymentProviderId removed - use /v1/admin/routing-rules/:appId
-			createdAt: new Date(app.created_at).toISOString(),
-			updatedAt: new Date(app.updated_at).toISOString(),
-		});
+		return c.json(appSettingsResponse(app, project.public_id));
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get app error");
 		return c.json({ error: "Failed to get app" }, 500);
@@ -404,31 +390,17 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 	try {
 		const projectId = requiredParam(c, "projectId");
 		const appId = requiredParam(c, "appId");
-		const {
-			name,
-			slug,
-			description,
-			enabledProviders,
-			redirectUris,
-			allowedHosts,
-			corsOrigins,
-			sessionTtlDays,
-			accountLockoutMinutes,
-			cacheTtlMinutes,
-			rateLimit,
-		} = (await c.req.json()) as {
-			name?: string;
-			slug?: string;
-			description?: string;
-			enabledProviders?: string[];
-			redirectUris?: string[];
-			allowedHosts?: string[];
-			corsOrigins?: string[];
-			sessionTtlDays?: number;
-			accountLockoutMinutes?: number;
-			cacheTtlMinutes?: number;
-			rateLimit?: number;
-		};
+		const { name, slug, description, enabledProviders, redirectUris, allowedHosts, corsOrigins, sessionTtlDays } =
+			(await c.req.json()) as {
+				name?: string;
+				slug?: string;
+				description?: string;
+				enabledProviders?: string[];
+				redirectUris?: string[];
+				allowedHosts?: string[];
+				corsOrigins?: string[];
+				sessionTtlDays?: number;
+			};
 
 		if (!appId || !idPatterns.app.test(appId)) {
 			return c.json({ error: "Invalid appId" }, 400);
@@ -497,9 +469,6 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 		if (allowedHosts !== undefined) securityUpdates["allowedHosts"] = allowedHosts;
 		if (corsOrigins !== undefined) securityUpdates["corsOrigins"] = corsOrigins;
 		if (sessionTtlDays !== undefined) securityUpdates["sessionTtlDays"] = sessionTtlDays;
-		if (accountLockoutMinutes !== undefined) securityUpdates["accountLockoutMinutes"] = accountLockoutMinutes;
-		if (cacheTtlMinutes !== undefined) securityUpdates["cacheTtlMinutes"] = cacheTtlMinutes;
-		if (rateLimit !== undefined) securityUpdates["rateLimit"] = rateLimit;
 
 		if (Object.keys(securityUpdates).length > 0) {
 			updated = await appQueries.updateSecuritySettings(db, app.id, securityUpdates);
@@ -520,30 +489,7 @@ appsRouter.patch("/:projectId/apps/:appId", async (c: Context) => {
 			return c.json({ error: "Project not found" }, 404);
 		}
 
-		// Extract JSONB fields
-		const securitySettings = updated.security_settings as any;
-		const appTokens = updated.app_tokens as any;
-
-		return c.json({
-			id: updated.public_id,
-			projectId: projectForResponse.public_id,
-			name: updated.name,
-			slug: updated.slug,
-			description: presentDescription(updated.description),
-			redirectUris: securitySettings?.redirectUris || [],
-			allowedHosts: securitySettings?.allowedHosts || [],
-			corsOrigins: securitySettings?.corsOrigins || [],
-			clientSecret: presentStoredSecret(appTokens, "clientSecretEnc", "clientSecret"),
-			serviceToken: presentStoredSecret(appTokens, "serviceTokenEnc", "serviceToken"),
-			sessionTtlDays: securitySettings?.sessionTtlDays || 28,
-			accountLockoutMinutes: securitySettings?.accountLockoutMinutes || 30,
-			cacheTtlMinutes: securitySettings?.cacheTtlMinutes || 60,
-			rateLimit: securitySettings?.rateLimit || 100,
-			enabledProviders: updated.enabled_providers || [],
-			// selectedPaymentProviderId removed - use /v1/admin/routing-rules/:appId
-			createdAt: new Date(updated.created_at).toISOString(),
-			updatedAt: new Date(updated.updated_at).toISOString(),
-		});
+		return c.json(appSettingsResponse(updated, projectForResponse.public_id));
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Update app error");
 		return c.json({ error: "Failed to update app" }, 500);
@@ -850,10 +796,12 @@ appsRouter.get("/:projectId/apps/:appId/api-keys", async (c: Context) => {
 			return c.json({ error: "Forbidden" }, 403);
 		}
 
-		const appTokens = app.app_tokens as Record<string, unknown> | null;
 		return c.json({
-			clientSecret: revealStoredSecret(appTokens, "clientSecretEnc"),
-			serviceToken: revealStoredSecret(appTokens, "serviceTokenEnc"),
+			clientSecret: revealStoredSecret({ clientSecretEnc: app.client_secret_enc }, "clientSecretEnc"),
+			serviceToken: revealStoredSecret(
+				app.service_token_enc ? { serviceTokenEnc: app.service_token_enc } : null,
+				"serviceTokenEnc",
+			),
 		});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get api-keys error");
@@ -906,7 +854,6 @@ appsRouter.post("/:projectId/apps/:appId/regenerate-secret", async (c: Context) 
 		await appQueries.updateAppTokens(db, app.id, {
 			clientSecretHash: protectedClientSecret.hash,
 			clientSecretEnc: protectedClientSecret.enc,
-			clientSecret: null,
 		});
 
 		try {
@@ -979,7 +926,6 @@ appsRouter.post("/:projectId/apps/:appId/regenerate-token", async (c: Context) =
 		await appQueries.updateAppTokens(db, app.id, {
 			serviceTokenHash: protectedServiceToken.hash,
 			serviceTokenEnc: protectedServiceToken.enc,
-			serviceToken: null,
 		});
 
 		try {

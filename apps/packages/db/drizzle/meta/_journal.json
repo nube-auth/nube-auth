@@ -50,6 +50,13 @@
 			"when": 1750943800000,
 			"tag": "0006_add_credentials_dek",
 			"breakpoints": true
+		},
+		{
+			"idx": 7,
+			"version": "7",
+			"when": 1777100000000,
+			"tag": "0007_app_secret_columns",
+			"breakpoints": true
 		}
 	]
 }

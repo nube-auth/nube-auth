@@ -17,6 +17,7 @@ import {
 	projectMemberQueries,
 	projectQueries,
 	purchases,
+	protectSecret,
 	readSealedSecret,
 	sealSecret,
 	testSessionQueries,
@@ -164,28 +165,19 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 			}
 			log.info({ appId: testApp.public_id }, "Using existing app for test");
 		} else {
+			const protectedClient = protectSecret(`test_${createId("app")}`);
 			testApp = await appQueries.create(db, {
 				public_id: publicId(createId("app")),
 				project_id: testProject.id,
 				name: `Test App - ${provider}`,
 				slug: `test-app-${provider}-${Date.now()}`,
 				description: `Auto-generated app for ${provider} testing`,
-				enabled_providers: JSON.stringify(["google"]),
-				app_tokens: JSON.stringify({
-					currentKey: {
-						value: `test_${createId("app")}`,
-						createdAt: new Date().toISOString(),
-					},
-				}),
-				security_settings: JSON.stringify({
-					sessionTtlDays: 30,
-					maxSessions: 5,
-					redirectUris: ["http://localhost:3000/callback"],
-				}),
-				plan_settings: JSON.stringify({
-					allowPlanSelection: true,
-					defaultPlanSlug: "pro",
-				}),
+				enabled_providers: ["google"],
+				client_secret_hash: protectedClient.hash,
+				client_secret_enc: protectedClient.enc,
+				redirect_uris: ["http://localhost:3000/callback"],
+				session_ttl_days: 30,
+				licensing_required: false,
 				is_test: true,
 			});
 			log.info({ testAppId: testApp.public_id, projectId: testProject.public_id }, "Created test app");
@@ -253,8 +245,8 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 				provider,
 				environment: "test",
 				is_default: true,
-				credentials: "test-playground-no-real-credentials",
-				webhook_secret: sealSecret("test-playground-no-real-webhook-secret"),
+				credentials: sealSecret(JSON.stringify({ apiKey: "test-playground-no-real-credentials" })),
+				webhook_secret_enc: sealSecret("test-playground-no-real-webhook-secret"),
 			});
 
 			log.info({ configId: providerConfig.public_id, provider }, "Created test provider config");
@@ -326,8 +318,7 @@ router.post("/initialize", testRateLimit, async (c: Context) => {
 				if (provider === "dodo" && configToUse.environment) {
 					decryptedCredentials["environment"] =
 						configToUse.environment === "production" ? "live_mode" : "test_mode";
-					decryptedCredentials["webhookSecret"] =
-						readSealedSecret(configToUse.webhook_secret) || decryptedCredentials["webhookSecret"] || "";
+					decryptedCredentials["webhookSecret"] = readSealedSecret(configToUse.webhook_secret_enc) || "";
 					log.info(
 						{ environment: decryptedCredentials["environment"] },
 						"Added environment to Dodo credentials",

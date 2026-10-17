@@ -102,7 +102,7 @@ export async function dispatchOutboundWebhook(data: DispatchOutboundWebhookJobDa
 				let errorMessage: string | null = null;
 
 				try {
-					const signature = signPayload(openSecret(wh.secret), body);
+					const signature = signPayload(openSecret(wh.secret_enc), body);
 					const result = await postWebhook(wh.url, body, signature, event);
 					responseStatus = result.status;
 					responseBody = result.responseBody;
