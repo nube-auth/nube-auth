@@ -6,6 +6,7 @@
  * interval, and currency — no routing logic is needed here.
  */
 
+import { createProviderAdapter, decryptProviderCredentials } from "@nube-auth/billing";
 import {
 	and,
 	appQueries,
@@ -25,8 +26,6 @@ import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
 import { requireMatchingSession } from "../../../middleware/forwarded-session.js";
-import { createProviderAdapter } from "../../../billing/adapters/index.js";
-import { decryptProviderCredentials } from "../../../utils/encryption.js";
 
 const log = createLogger("checkout-routes");
 

@@ -9,8 +9,6 @@
 	],
 	"exports": {
 		".": "./dist/index.js",
-		"./billing/services/*": "./dist/billing/services/*.js",
-		"./billing/adapters/*": "./dist/billing/adapters/*.js",
 		"./utils/*": "./dist/utils/*.js"
 	},
 	"scripts": {
@@ -23,16 +21,15 @@
 	"dependencies": {
 		"@hono/node-server": "^1.19.17",
 		"@nube-auth/auth": "workspace:*",
+		"@nube-auth/billing": "workspace:*",
 		"@nube-auth/cache": "workspace:*",
 		"@nube-auth/db": "workspace:*",
 		"@nube-auth/queue": "workspace:*",
 		"@nube-auth/shared": "workspace:*",
 		"bullmq": "^5.8.0",
-		"dodopayments": "^2.21.0",
 		"hono": "4.13.13",
 		"ioredis": "^5.3.2",
-		"resend": "^2.0.0",
-		"stripe": "^17.3.0"
+		"resend": "^2.0.0"
 	},
 	"devDependencies": {
 		"@hono/zod-validator": "^0.7.6",

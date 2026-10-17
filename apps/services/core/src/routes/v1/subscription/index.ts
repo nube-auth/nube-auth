@@ -1,3 +1,4 @@
+import { fireWebhookEvent } from "@nube-auth/billing";
 import {
 	appQueries,
 	getDb,
@@ -12,7 +13,6 @@ import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
 import { requireMatchingSession } from "../../../middleware/forwarded-session.js";
-import { fireWebhookEvent } from "../../../utils/outbound-events.js";
 
 const log = createLogger("subscription-routes");
 const router = new Hono();

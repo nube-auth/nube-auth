@@ -1,3 +1,4 @@
+import { createProviderAdapter, decryptProviderCredentials } from "@nube-auth/billing";
 import {
 	getDb,
 	paymentProviderConfigQueries,
@@ -11,8 +12,6 @@ import {
 import { createId, idPatterns, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { z } from "zod";
-import { createProviderAdapter } from "../../../../billing/adapters/index.js";
-import { decryptProviderCredentials } from "../../../../utils/encryption.js";
 
 import {
 	formatCode,

@@ -3,13 +3,11 @@
  * Admin-only endpoints for testing payment flows without manual setup
  */
 
+import { normalizeEventType, type PaymentDetails, processWebhookEvent } from "@nube-auth/billing";
 import { appQueries, getDb, paymentProviderConfigQueries, testSessionQueries, userQueries } from "@nube-auth/db";
 import { createId, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
-import type { PaymentDetails } from "../../../../billing/adapters/types.js";
-import { processWebhookEvent } from "../../../../billing/services/webhook-processor.js";
-import { normalizeEventType } from "../../../../billing/services/webhook-simulator.js";
 
 import { assertProjectAdmin, log, testRateLimit } from "./shared.js";
 

@@ -15,6 +15,8 @@ export * from "./outbound-events.js";
 export * from "./queue.js";
 // License manager
 export * from "./services/license-manager.js";
+// Provider routing
+export * from "./services/provider-selector.js";
 // Purchases service
 export * from "./services/purchases.js";
 // Webhook handler (entry point for workers)
@@ -23,3 +25,5 @@ export * from "./services/webhook-handler.js";
 export * from "./services/webhook-logging.js";
 // Webhook processor
 export * from "./services/webhook-processor.js";
+// Payment playground webhook fixtures
+export * from "./services/webhook-simulator.js";

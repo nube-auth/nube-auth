@@ -1,11 +1,11 @@
 import { createHmac, randomUUID } from "node:crypto";
+import { enqueueOutboundWebhook } from "@nube-auth/billing";
 import { appQueries, appWebhookQueries, getDb, openSecret, outboundWebhookLogQueries } from "@nube-auth/db";
 import { id, idPatterns, serializeError } from "@nube-auth/shared";
 import { postOutboundWebhook } from "@nube-auth/shared/outbound-url";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
-import { enqueueOutboundWebhook } from "../../../../billing/queue.js";
 import { env } from "../../../../config/env.js";
 import { requiredParam } from "../../../../utils/route-param.js";
 
