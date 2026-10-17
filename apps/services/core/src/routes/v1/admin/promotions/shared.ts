@@ -1,3 +1,4 @@
+import { createProviderAdapter, decryptProviderCredentials } from "@nube-auth/billing";
 import {
 	appQueries,
 	getDb,
@@ -10,8 +11,6 @@ import {
 	readSealedSecret,
 } from "@nube-auth/db";
 import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
-import { createProviderAdapter } from "../../../../billing/adapters/index.js";
-import { decryptProviderCredentials } from "../../../../utils/encryption.js";
 
 /**
  * Sync a promotion to all active payment providers for a project.

@@ -7,6 +7,7 @@
  * Mounted at: /v1/admin/apps/:appId/plans/:planId/prices
  */
 
+import { enqueuePlanSync } from "@nube-auth/billing";
 import { appQueries, auditLogQueries, eq, getDb, planQueries, priceQueries, userQueries } from "@nube-auth/db";
 import { prices } from "@nube-auth/db/schema";
 import {
@@ -20,7 +21,6 @@ import {
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
-import { enqueuePlanSync } from "../../../billing/queue.js";
 import { requiredParam } from "../../../utils/route-param.js";
 
 const log = createLogger("admin-prices");

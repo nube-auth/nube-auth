@@ -16,9 +16,9 @@ import {
 	promotionRedemptionQueries,
 } from "@nube-auth/db";
 import { createLogger, idPatterns } from "@nube-auth/shared";
-import { requireMatchingSession } from "../../../middleware/forwarded-session.js";
 import { Hono } from "hono";
 import { z } from "zod";
+import { requireMatchingSession } from "../../../middleware/forwarded-session.js";
 import { checkoutRoutes } from "./checkout.js";
 import { refundRoutes } from "./refunds-clean.js";
 import { webhookRoutes } from "./webhooks.js";

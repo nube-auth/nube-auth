@@ -1,4 +1,5 @@
 import { GitHubOAuthAdapter, GoogleOAuthAdapter } from "@nube-auth/auth";
+import { fireWebhookEvent } from "@nube-auth/billing";
 import { cache } from "@nube-auth/cache";
 import {
 	appQueries,
@@ -21,7 +22,6 @@ import { TTL } from "../../../config/constants.js";
 import { env } from "../../../config/env";
 import { getClientCountry, getClientIp } from "../../../middleware/rateLimit";
 import { ensureLicenseForApp } from "../../../utils/license";
-import { fireWebhookEvent } from "../../../utils/outbound-events.js";
 import { enqueueSignupEmails } from "../../../utils/signup-email.js";
 
 const log = createLogger("auth-routes");
