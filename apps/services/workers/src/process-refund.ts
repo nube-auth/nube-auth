@@ -122,8 +122,7 @@ async function processRefundJob(job: Job<ProcessRefundJobData>): Promise<void> {
 
 		if (providerConfig.provider === "dodo" && providerConfig.environment) {
 			(credentials as any).environment = providerConfig.environment === "production" ? "live_mode" : "test_mode";
-			(credentials as any).webhookSecret =
-				readSealedSecret(providerConfig.webhook_secret) || (credentials as any).webhookSecret;
+			(credentials as any).webhookSecret = readSealedSecret(providerConfig.webhook_secret_enc);
 		}
 
 		const adapter = createProviderAdapter(providerConfig.provider, credentials);

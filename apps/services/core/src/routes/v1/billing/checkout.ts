@@ -137,8 +137,7 @@ checkoutRoutes.post("/", async (c: Context) => {
 		if (providerConfig.provider === "dodo" && providerConfig.environment) {
 			(decryptedCredentials as any).environment =
 				providerConfig.environment === "production" ? "live_mode" : "test_mode";
-			(decryptedCredentials as any).webhookSecret =
-				readSealedSecret(providerConfig.webhook_secret) || (decryptedCredentials as any).webhookSecret;
+			(decryptedCredentials as any).webhookSecret = readSealedSecret(providerConfig.webhook_secret_enc);
 		}
 
 		const adapter = createProviderAdapter(providerConfig.provider, decryptedCredentials);

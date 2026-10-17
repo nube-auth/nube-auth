@@ -100,8 +100,7 @@ async function syncPromotionToProviders(
 
 			if (provider.provider === "dodo" && provider.environment) {
 				(credentials as any).environment = provider.environment === "production" ? "live_mode" : "test_mode";
-				(credentials as any).webhookSecret =
-					readSealedSecret(provider.webhook_secret) || (credentials as any).webhookSecret;
+				(credentials as any).webhookSecret = readSealedSecret(provider.webhook_secret_enc);
 			}
 
 			// Resolve product IDs: prefer price_provider_refs (primary), fall back to legacy column
@@ -497,8 +496,7 @@ promotionsRouter.delete("/:promoId", async (c) => {
 
 			if (config.provider === "dodo" && config.environment) {
 				(credentials as any).environment = config.environment === "production" ? "live_mode" : "test_mode";
-				(credentials as any).webhookSecret =
-					readSealedSecret(config.webhook_secret) || (credentials as any).webhookSecret;
+				(credentials as any).webhookSecret = readSealedSecret(config.webhook_secret_enc);
 			}
 
 			const adapter = createProviderAdapter(config.provider, credentials);

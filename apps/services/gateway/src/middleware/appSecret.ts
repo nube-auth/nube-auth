@@ -48,8 +48,7 @@ export const appSecretMiddleware = createMiddleware(async (c: Context, next: Nex
 
 		// `clientSecret` is stored in the app_tokens JSONB column but is not
 		// part of the AppTokensSchema — access raw via bracket notation.
-		const appTokens = app.app_tokens as Record<string, unknown> | null;
-		const hash = typeof appTokens?.["clientSecretHash"] === "string" ? appTokens["clientSecretHash"] : null;
+		const hash = app.client_secret_hash;
 
 		if (!hash) {
 			log.warn({ appId }, "App has no clientSecret in app_tokens");

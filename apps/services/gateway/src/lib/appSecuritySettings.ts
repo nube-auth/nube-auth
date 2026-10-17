@@ -33,10 +33,9 @@ export async function getAppSecuritySettings(appId: string): Promise<AppSecurity
 
 		if (!appRecord) return null;
 
-		const securitySettings = (appRecord.security_settings as Record<string, unknown>) ?? {};
 		const result: AppSecuritySettings = {
-			corsOrigins: (securitySettings["corsOrigins"] as string[] | undefined) ?? [],
-			allowedHosts: (securitySettings["allowedHosts"] as string[] | undefined) ?? [],
+			corsOrigins: appRecord.cors_origins ?? [],
+			allowedHosts: appRecord.allowed_hosts ?? [],
 		};
 
 		await cache.set(cacheKey, result, CACHE_TTL_SECONDS);

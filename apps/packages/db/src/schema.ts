@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
 	boolean,
 	index,
@@ -298,11 +299,17 @@ export const apps = pgTable(
 		slug: varchar("slug", { length: 255 }).notNull(),
 		description: text("description"),
 		icon: varchar("icon", { length: 50 }).notNull().default("application"),
-		enabled_providers: jsonb("enabled_providers").notNull().default('["google"]'),
-		app_tokens: jsonb("app_tokens").notNull(),
-		security_settings: jsonb("security_settings").notNull(),
-		plan_settings: jsonb("plan_settings").notNull(),
-		// selected_payment_provider_id removed - use payment_routing_rules instead
+		enabled_providers: text("enabled_providers").array().notNull().default(sql`ARRAY['google']::text[]`),
+		client_secret_hash: text("client_secret_hash").notNull(),
+		client_secret_enc: text("client_secret_enc").notNull(),
+		service_token_hash: text("service_token_hash"),
+		service_token_enc: text("service_token_enc"),
+		redirect_uris: text("redirect_uris").array().notNull().default(sql`'{}'::text[]`),
+		allowed_hosts: text("allowed_hosts").array().notNull().default(sql`'{}'::text[]`),
+		cors_origins: text("cors_origins").array().notNull().default(sql`'{}'::text[]`),
+		session_ttl_days: smallint("session_ttl_days").notNull().default(28),
+		licensing_required: boolean("licensing_required").notNull().default(false),
+		default_plan_id: integer("default_plan_id"),
 		is_active: boolean("is_active").notNull().default(true),
 		is_test: boolean("is_test").notNull().default(false),
 		created_at: timestamp("created_at").notNull().defaultNow(),
@@ -312,6 +319,8 @@ export const apps = pgTable(
 	(table) => [
 		unique("apps_project_slug_unique").on(table.project_id, table.slug),
 		index("apps_project_id_idx").on(table.project_id),
+		index("apps_service_token_hash_idx").on(table.service_token_hash),
+		index("apps_default_plan_id_idx").on(table.default_plan_id),
 		index("apps_is_test_idx").on(table.is_test, table.created_at),
 	],
 );
@@ -474,9 +483,8 @@ export const payment_provider_configs = pgTable(
 		name: varchar("name", { length: 100 }), // Optional display name — allows multiple configs of same provider/env
 		provider: varchar("provider", { length: 50 }).notNull(), // 'stripe', 'lemonsqueezy', 'dodo'
 		environment: varchar("environment", { length: 20 }).notNull(), // 'test' or 'production'
-		credentials: text("credentials").notNull(), // Encrypted JSON (sealed with DEK)
-		credentials_dek: text("credentials_dek"), // Wrapped DEK (AES-256-GCM sealed with KEK)
-		webhook_secret: text("webhook_secret"),
+		credentials: text("credentials").notNull(), // enc1 JSON of provider API credentials
+		webhook_secret_enc: text("webhook_secret_enc"),
 		is_active: boolean("is_active").notNull().default(true),
 		is_default: boolean("is_default").notNull().default(false),
 		metadata: jsonb("metadata"),
@@ -1158,10 +1166,9 @@ export const app_webhooks = pgTable(
 			.references(() => apps.id, { onDelete: "cascade" }),
 		/** Public HTTPS URL that receives POST requests */
 		url: text("url").notNull(),
-		/** HMAC-SHA256 secret — never returned to the client after creation */
-		secret: text("secret").notNull(),
-		/** JSON array of subscribed event names, e.g. ["user.registered","license.upgraded"] */
-		events: jsonb("events").notNull().default("[]"), // string[]
+		/** enc1 envelope of the HMAC signing secret. The raw value is returned only when the endpoint is created. */
+		secret_enc: text("secret_enc").notNull(),
+		events: text("events").array().notNull().default(sql`'{}'::text[]`),
 		/** Human-readable label */
 		description: varchar("description", { length: 255 }),
 		is_active: boolean("is_active").notNull().default(true),

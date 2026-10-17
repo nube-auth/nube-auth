@@ -120,10 +120,8 @@ authRoutes.get("/start", async (c: Context) => {
 			if (!app) {
 				return c.json({ error: "Unknown app_id" }, 400);
 			}
-			const securitySettings = app.security_settings as {
-				redirectUris?: string[];
-				sessionTtlDays?: number;
-			} | null;
+			const redirectUris = app.redirect_uris ?? [];
+			const sessionTtlDays = app.session_ttl_days;
 			// Strip query string and fragment before comparing — only origin+pathname must match.
 			// This mirrors how Google/GitHub handle redirect_uri validation and allows callers to
 			// append their own query params (e.g. ?upgraded=true) without needing to register
@@ -136,7 +134,7 @@ authRoutes.get("/start", async (c: Context) => {
 					return uri;
 				}
 			};
-			const registeredUris: string[] = (securitySettings?.redirectUris ?? []).map(normalizeUri);
+			const registeredUris: string[] = redirectUris.map(normalizeUri);
 			const normalizedReturnTo = normalizeUri(returnTo);
 			if (registeredUris.length === 0) {
 				// In production an empty allowlist is a misconfiguration — reject to prevent open redirect.
@@ -153,8 +151,8 @@ authRoutes.get("/start", async (c: Context) => {
 				return c.json({ error: "return_to URI is not registered for this app_id" }, 400);
 			}
 			// Per-app TTL: prefer security_settings.sessionTtlDays; fall back to SESSION_TTL constant.
-			if (securitySettings?.sessionTtlDays && securitySettings.sessionTtlDays > 0) {
-				appSessionTtlSeconds = securitySettings.sessionTtlDays * 24 * 60 * 60;
+			if (sessionTtlDays > 0) {
+				appSessionTtlSeconds = sessionTtlDays * 24 * 60 * 60;
 			}
 		} catch (lookupError) {
 			log.error(

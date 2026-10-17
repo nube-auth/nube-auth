@@ -14,6 +14,7 @@
  */
 
 import crypto from "node:crypto";
+import { openSecret, sealSecret } from "@nube-auth/db";
 import { env } from "../config/env";
 
 // ── Key Management ──────────────────────────────────────────────────────────────
@@ -166,45 +167,17 @@ export function unsealCredentials(sealed: string, wrappedDek: string, kek: Buffe
  * @param config - Row with credentials (encrypted) and credentials_dek (wrapped DEK, null for legacy)
  * @param kek - Optional override KEK (defaults to PAYMENT_CONFIGS_KEY env var)
  */
-export function decryptProviderCredentials(
-	config: { credentials: string; credentials_dek: string | null },
-	kek?: Buffer,
-): Record<string, string> {
-	const primaryKey = kek ?? getEncryptionKey();
-	const previousKeyHex = env.PAYMENT_CONFIGS_KEY_PREVIOUS;
-	const previousKey = previousKeyHex && previousKeyHex.length === 64 ? parseKey(previousKeyHex) : null;
-
-	const keys = previousKey ? [primaryKey, previousKey] : [primaryKey];
-
-	for (const key of keys) {
-		try {
-			if (config.credentials_dek) {
-				return unsealCredentials(config.credentials, config.credentials_dek, key);
-			}
-			// Legacy: direct KEK encryption, no DEK
-			return JSON.parse(decryptString(config.credentials, key));
-		} catch (error) {
-			if (key === previousKey) throw error; // last key failed, propagate
-			// primary key failed, try previous
-		}
-	}
-
-	throw new Error("Failed to decrypt credentials with all available keys");
+export function decryptProviderCredentials(config: { credentials: string }, kekHex?: string): Record<string, string> {
+	const parsed = JSON.parse(openSecret(config.credentials, kekHex)) as Record<string, string>;
+	delete parsed["webhookSecret"];
+	return parsed;
 }
 
-/**
- * Encrypt a payment provider config's credentials.
- * Always uses DEK-wrapping.
- *
- * @param credentials - Plaintext credentials object
- * @param kek - Optional override KEK
- * @returns { sealed (→ credentials column), wrappedDek (→ credentials_dek column) }
- */
-export function encryptProviderCredentials(
-	credentials: Record<string, unknown>,
-	kek?: Buffer,
-): { sealed: string; wrappedDek: string } {
-	return sealCredentials(credentials, kek ?? getEncryptionKey());
+/** Seal provider API credentials as one enc1 value. The webhook secret is stored in its own column. */
+export function encryptProviderCredentials(credentials: Record<string, unknown>, kekHex?: string): { sealed: string } {
+	const copy = { ...credentials };
+	delete copy["webhookSecret"];
+	return { sealed: sealSecret(JSON.stringify(copy), kekHex) };
 }
 
 // ── Legacy API (direct KEK encryption, for backward compatibility) ──────────────

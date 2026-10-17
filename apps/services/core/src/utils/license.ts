@@ -1,5 +1,5 @@
 import { appQueries, type Database, licenseQueries, planQueries, priceQueries } from "@nube-auth/db";
-import { createId, createLogger, type PlanSettings, serializeError } from "@nube-auth/shared";
+import { createId, createLogger, serializeError } from "@nube-auth/shared";
 
 const log = createLogger("license-utils");
 
@@ -17,23 +17,22 @@ export async function ensureLicenseForApp(db: Database, userId: number, appPubli
 		const app = await appQueries.findByPublicId(db, appPublicId);
 		if (!app) return;
 
-		const planSettings = app.plan_settings as unknown as PlanSettings;
-		if (planSettings?.licensingRequired === false) return;
+		if (app.licensing_required === false) return;
 
 		const existing = await licenseQueries.findByUserAndApp(db, userId, app.id);
 		if (existing) return;
 
 		const existingAny = await licenseQueries.findAnyByUserAndApp(db, userId, app.id);
 
-		if (!planSettings?.defaultPlanId) {
-			log.warn({ appId: appPublicId }, "Auto-license skipped: defaultPlanId not set in plan_settings");
+		if (!app.default_plan_id) {
+			log.warn({ appId: appPublicId }, "Auto-license skipped: default plan is not set");
 			return;
 		}
 
-		const plan = await planQueries.findByInternalId_(db, planSettings.defaultPlanId);
+		const plan = await planQueries.findByInternalId_(db, app.default_plan_id);
 		if (!plan || plan.app_id !== app.id || plan.status !== "active" || plan.deleted_at) {
 			log.warn(
-				{ appId: appPublicId, planId: planSettings.defaultPlanId },
+				{ appId: appPublicId, planId: app.default_plan_id },
 				"Auto-license skipped: default plan invalid or inactive",
 			);
 			return;
