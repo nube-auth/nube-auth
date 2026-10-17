@@ -5,7 +5,19 @@
  * Pricing lives on the prices table, exposed via nested /:planId/prices routes.
  */
 
-import { appQueries, auditLogQueries, eq, getDb, planQueries, priceQueries, userQueries } from "@nube-auth/db";
+import {
+	and,
+	appQueries,
+	auditLogQueries,
+	eq,
+	getDb,
+	inArray,
+	isNull,
+	planQueries,
+	priceQueries,
+	prices,
+	userQueries,
+} from "@nube-auth/db";
 import { plans } from "@nube-auth/db/schema";
 import { createLogger, id, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
@@ -206,22 +218,39 @@ plansRouter.get("/", async (c: Context) => {
 
 		let result: unknown[];
 		if (includePrices) {
-			result = await Promise.all(
-				plansList.map(async (plan) => ({
-					...formatPlan(plan, app.public_id, defaultPlanId),
-					prices: (await priceQueries.findActiveByPlanId(db, plan.id)).map((p) => ({
-						priceId: p.public_id,
-						billingType: p.billing_type,
-						interval: p.interval,
-						amountCents: p.amount_cents,
-						currency: p.currency,
-						durationDays: p.duration_days,
-						trialEnabled: p.trial_enabled,
-						trialDays: p.trial_days,
-						isActive: p.is_active,
-					})),
+			const planIds = plansList.map((plan) => plan.id);
+			const activePrices = planIds.length
+				? await db
+						.select()
+						.from(prices)
+						.where(
+							and(
+								inArray(prices.plan_id, planIds),
+								eq(prices.is_active, true),
+								isNull(prices.deleted_at),
+							),
+						)
+				: [];
+			const pricesByPlanId = new Map<number, typeof activePrices>();
+			for (const price of activePrices) {
+				const existing = pricesByPlanId.get(price.plan_id);
+				if (existing) existing.push(price);
+				else pricesByPlanId.set(price.plan_id, [price]);
+			}
+			result = plansList.map((plan) => ({
+				...formatPlan(plan, app.public_id, defaultPlanId),
+				prices: (pricesByPlanId.get(plan.id) ?? []).map((p) => ({
+					priceId: p.public_id,
+					billingType: p.billing_type,
+					interval: p.interval,
+					amountCents: p.amount_cents,
+					currency: p.currency,
+					durationDays: p.duration_days,
+					trialEnabled: p.trial_enabled,
+					trialDays: p.trial_days,
+					isActive: p.is_active,
 				})),
-			);
+			}));
 		} else {
 			result = plansList.map((plan) => formatPlan(plan, app.public_id, defaultPlanId));
 		}
