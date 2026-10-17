@@ -1,10 +1,12 @@
 import {
 	auditLogQueries,
 	getDb,
+	inArray,
 	projectInvitationQueries,
 	projectMemberQueries,
 	projectQueries,
 	userQueries,
+	users,
 } from "@nube-auth/db";
 import { enqueueEmail } from "@nube-auth/queue";
 import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
@@ -38,19 +40,22 @@ membersRouter.get("/:projectId/members", async (c: Context) => {
 		// Get all members with user details
 		const members = await projectMemberQueries.findByProjectId(db, project.id);
 
-		const membersList = await Promise.all(
-			members.map(async (member) => {
-				const user = await userQueries.findByInternalId_(db, member.user_id);
-				return {
-					id: member.public_id,
-					userId: user?.public_id || "unknown",
-					email: user?.primary_email || "unknown",
-					name: user?.name || null,
-					role: member.role,
-					createdAt: new Date(member.created_at).toISOString(),
-				};
-			}),
-		);
+		const memberUserIds = [...new Set(members.map((member) => member.user_id))];
+		const memberUsers = memberUserIds.length
+			? await db.select().from(users).where(inArray(users.id, memberUserIds))
+			: [];
+		const membersByUserId = new Map(memberUsers.map((user) => [user.id, user]));
+		const membersList = members.map((member) => {
+			const user = membersByUserId.get(member.user_id);
+			return {
+				id: member.public_id,
+				userId: user?.public_id || "unknown",
+				email: user?.primary_email || "unknown",
+				name: user?.name || null,
+				role: member.role,
+				createdAt: new Date(member.created_at).toISOString(),
+			};
+		});
 
 		return c.json({
 			members: membersList,

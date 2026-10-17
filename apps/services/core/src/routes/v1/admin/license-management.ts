@@ -1,13 +1,19 @@
 import { cache } from "@nube-auth/cache";
 import {
 	activationQueries,
+	and,
 	appQueries,
 	getDb,
+	inArray,
+	isNull,
 	licenseHistoryQueries,
 	licenseQueries,
 	planQueries,
+	plans,
 	priceQueries,
+	prices,
 	userQueries,
+	users,
 } from "@nube-auth/db";
 import { createId, createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
@@ -211,12 +217,33 @@ licenseManagementRouter.get("/", async (c: Context) => {
 			return true;
 		});
 
-		const results = await Promise.all(
-			filtered.map(async (license) => {
-				const user = await userQueries.findByInternalId_(db, license.user_id);
-				const plan = await planQueries.findByInternalId_(db, license.plan_id);
-				const price = license.price_id ? await priceQueries.findByInternalId_(db, license.price_id) : null;
-				return formatLicense(license, { app, user, plan, price });
+		const userIds = [...new Set(filtered.map((license) => license.user_id))];
+		const planIds = [...new Set(filtered.map((license) => license.plan_id))];
+		const priceIds = [...new Set(filtered.flatMap((license) => (license.price_id ? [license.price_id] : [])))];
+		const [userRows, planRows, priceRows] = await Promise.all([
+			userIds.length ? db.select().from(users).where(inArray(users.id, userIds)) : [],
+			planIds.length
+				? db
+						.select()
+						.from(plans)
+						.where(and(inArray(plans.id, planIds), isNull(plans.deleted_at)))
+				: [],
+			priceIds.length
+				? db
+						.select()
+						.from(prices)
+						.where(and(inArray(prices.id, priceIds), isNull(prices.deleted_at)))
+				: [],
+		]);
+		const usersById = new Map(userRows.map((user) => [user.id, user]));
+		const plansById = new Map(planRows.map((plan) => [plan.id, plan]));
+		const pricesById = new Map(priceRows.map((price) => [price.id, price]));
+		const results = filtered.map((license) =>
+			formatLicense(license, {
+				app,
+				user: usersById.get(license.user_id),
+				plan: plansById.get(license.plan_id),
+				price: license.price_id ? pricesById.get(license.price_id) : null,
 			}),
 		);
 
@@ -245,13 +272,21 @@ licenseManagementRouter.get("/summary", async (c: Context) => {
 		const sourceCounts: Record<string, number> = {};
 		const planCounts: Record<string, number> = {};
 		const uniqueUsers = new Set<number>();
+		const summaryPlanIds = [...new Set(allLicenses.map((license) => license.plan_id))];
+		const summaryPlans = summaryPlanIds.length
+			? await db
+					.select()
+					.from(plans)
+					.where(and(inArray(plans.id, summaryPlanIds), isNull(plans.deleted_at)))
+			: [];
+		const summaryPlansById = new Map(summaryPlans.map((plan) => [plan.id, plan]));
 
 		for (const license of allLicenses) {
 			statusCounts[license.status] = (statusCounts[license.status] ?? 0) + 1;
 			sourceCounts[license.source] = (sourceCounts[license.source] ?? 0) + 1;
 			uniqueUsers.add(license.user_id);
 
-			const plan = await planQueries.findByInternalId_(db, license.plan_id);
+			const plan = summaryPlansById.get(license.plan_id);
 			if (plan) {
 				planCounts[plan.slug] = (planCounts[plan.slug] ?? 0) + 1;
 			}
