@@ -68,6 +68,22 @@ export class CoreClient {
 			return null;
 		}
 	}
+
+	async revokeSession(sessionId: string): Promise<void> {
+		await this.request("POST", "/v1/auth/exchange", { sessionId, revoke: true });
+	}
+
+	async edge<T>(method: string, path: string, body?: Record<string, unknown>): Promise<{ status: number; data: T }> {
+		const response = await pingpong(`${this.baseUrl}${path}`, {
+			method,
+			headers: {
+				"Content-Type": "application/json",
+				"X-Nube-S2S-Token": this.s2sToken,
+			},
+			...(body ? { body } : {}),
+		});
+		return { status: response.status, data: response.data as T };
+	}
 }
 
 export const coreClient = new CoreClient();

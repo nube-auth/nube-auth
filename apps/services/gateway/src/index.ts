@@ -1,12 +1,13 @@
 import { serve } from "@hono/node-server";
 import { configureSessionSecret } from "@nube-auth/auth";
-import { cache, initCache, pingCache } from "@nube-auth/cache";
-import { appQueries, getDb, presentedSecretMatches, sql } from "@nube-auth/db";
+import { initCache, pingCache } from "@nube-auth/cache";
 import { createLogger, resolveAllowedOrigin, serializeError } from "@nube-auth/shared";
 import { Hono } from "hono";
 import { secureHeaders } from "hono/secure-headers";
 import { env } from "./config/env";
+import { getClientSecretHash } from "./lib/appClientSecret";
 import { getAppSecuritySettings } from "./lib/appSecuritySettings";
+import { presentedSecretMatches } from "./lib/secret-match";
 import { allowedHostsMiddleware } from "./middleware/allowedHosts";
 import { appResolverMiddleware } from "./middleware/appResolver";
 import { authMiddleware } from "./middleware/auth";
@@ -33,7 +34,7 @@ const log = createLogger("gateway");
 const app = new Hono();
 
 // Readiness state — gates the /health endpoint
-const isReady = { db: false, redis: false };
+const isReady = { core: false, redis: false };
 
 // CORS configuration for cross-subdomain requests with credentials
 // Build allowed origins dynamically from env vars so staging/production work without code changes
@@ -114,17 +115,8 @@ app.use("*", async (c, next) => {
 		const appId = (c as any).get("appId") as string | undefined;
 		if (appId) {
 			try {
-				const cacheKey = `app-client-secret:v2:${appId}`;
-				let stored = await cache.get<{ hash: string | null }>(cacheKey);
-
-				if (stored === null) {
-					const db = getDb();
-					const appRecord = await appQueries.findByPublicId(db, appId);
-					stored = { hash: appRecord?.client_secret_hash ?? null };
-					if (stored.hash) await cache.set(cacheKey, stored, 300);
-				}
-
-				if (stored?.hash && presentedSecretMatches(secretHeader, stored)) {
+				const stored = await getClientSecretHash(appId);
+				if (stored.hash && stored.isActive && presentedSecretMatches(secretHeader, stored)) {
 					(c as any).set("trustedBackend", true);
 					log.debug({ appId }, "Trusted backend authenticated via app secret");
 				}
@@ -167,7 +159,7 @@ app.use("*", async (c, next) => {
 		return next();
 	}
 
-	// Slow path: look up per-app CORS origins from cache (read-through to DB, 5 min TTL).
+	// Slow path: look up per-app CORS origins from cache (read-through to Core, 1 hour TTL).
 	// appResolverMiddleware must have already run and set appId in context.
 	const appId = (c as any).get("appId") as string | undefined;
 	if (appId) {
@@ -234,22 +226,25 @@ if (process.env["NODE_ENV"] === "development") {
 	app.route("/v1/debug", debugRoutes);
 }
 
+async function coreReady(): Promise<boolean> {
+	try {
+		const response = await fetch(`${env.CORE_URL}/ready`, { signal: AbortSignal.timeout(2000) });
+		return response.ok;
+	} catch {
+		return false;
+	}
+}
+
 async function dependencySnapshot() {
-	const [redisOk, dbOk] = await Promise.all([
-		pingCache().catch(() => false),
-		getDb()
-			.execute(sql`SELECT 1`)
-			.then(() => true)
-			.catch(() => false),
-	]);
+	const [redisOk, coreOk] = await Promise.all([pingCache().catch(() => false), coreReady()]);
 	if (redisOk) isReady.redis = true;
-	if (dbOk) isReady.db = true;
-	const ready = isReady.db && isReady.redis;
+	if (coreOk) isReady.core = true;
+	const ready = isReady.core && isReady.redis;
 	return {
 		ready,
 		body: {
 			service: "gateway",
-			db: dbOk ? "ok" : "unreachable",
+			core: coreOk ? "ok" : "unreachable",
 			redis: redisOk ? "ok" : "unreachable",
 			timestamp: new Date().toISOString(),
 		},
@@ -322,14 +317,14 @@ async function initialize(): Promise<void> {
 	}
 
 	try {
-		await getDb().execute(sql`SELECT 1`);
-		isReady.db = true;
-		log.info("Database connection verified");
+		isReady.core = await coreReady();
+		if (isReady.core) {
+			log.info("Core readiness verified");
+		} else {
+			log.warn("Core is not ready at startup — will retry on health check");
+		}
 	} catch (error) {
-		log.warn(
-			{ err: serializeError(error as Error) },
-			"Database ping failed at startup — will retry on health check",
-		);
+		log.warn({ err: serializeError(error as Error) }, "Core readiness check failed at startup");
 	}
 }
 
