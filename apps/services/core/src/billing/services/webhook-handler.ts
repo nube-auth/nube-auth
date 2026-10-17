@@ -68,12 +68,12 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 			try {
 				decryptedCredentials = decryptProviderCredentials(providerConfig);
 			} catch (error) {
-				if (providerConfig.provider === "dodo" && providerConfig.webhook_secret) {
+				if (providerConfig.provider === "dodo" && providerConfig.webhook_secret_enc) {
 					// Dodo verification uses webhook secret only; allow verification to proceed
 					// even if encrypted API credentials are stale/corrupted.
 					decryptedCredentials = {
 						apiKey: "webhook-verification-only",
-						webhookSecret: readSealedSecret(providerConfig.webhook_secret),
+						webhookSecret: readSealedSecret(providerConfig.webhook_secret_enc),
 						environment: providerConfig.environment === "production" ? "live_mode" : "test_mode",
 					};
 					log.warn(
@@ -93,8 +93,7 @@ export async function processWebhook(params: WebhookProcessingParams): Promise<b
 			if (providerConfig.provider === "dodo" && providerConfig.environment) {
 				(decryptedCredentials as any).environment =
 					providerConfig.environment === "production" ? "live_mode" : "test_mode";
-				(decryptedCredentials as any).webhookSecret =
-					readSealedSecret(providerConfig.webhook_secret) || (decryptedCredentials as any).webhookSecret;
+				(decryptedCredentials as any).webhookSecret = readSealedSecret(providerConfig.webhook_secret_enc);
 			}
 
 			const adapter = createProviderAdapter(providerConfig.provider, decryptedCredentials);

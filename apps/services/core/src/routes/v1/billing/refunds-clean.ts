@@ -94,8 +94,7 @@ refundRoutes.post("/", async (c: Context) => {
 		if (providerConfig.provider === "dodo" && providerConfig.environment) {
 			decryptedCredentials["environment"] =
 				providerConfig.environment === "production" ? "live_mode" : "test_mode";
-			decryptedCredentials["webhookSecret"] =
-				readSealedSecret(providerConfig.webhook_secret) || decryptedCredentials["webhookSecret"] || "";
+			decryptedCredentials["webhookSecret"] = readSealedSecret(providerConfig.webhook_secret_enc) || "";
 		}
 		const adapter = createProviderAdapter(providerConfig.provider, decryptedCredentials);
 

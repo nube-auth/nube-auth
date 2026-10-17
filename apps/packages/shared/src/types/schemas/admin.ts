@@ -76,9 +76,6 @@ export const CreateAppRequestSchema = z.object({
 
 export const UpdateAppRequestSchema = CreateAppRequestSchema.partial().extend({
 	corsOrigins: z.array(z.string()).optional(),
-	rateLimit: z.number().int().positive().optional(),
-	accountLockoutMinutes: z.number().int().positive().optional(),
-	cacheTtlMinutes: z.number().int().positive().optional(),
 });
 
 /**
@@ -192,9 +189,6 @@ export const AppDTOSchema = z.object({
 	clientSecret: z.string().nullish(),
 	serviceToken: z.string().nullish(),
 	sessionTtlDays: z.number(),
-	accountLockoutMinutes: z.number(),
-	cacheTtlMinutes: z.number(),
-	rateLimit: z.number(),
 	enabledProviders: z.array(z.string()),
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),

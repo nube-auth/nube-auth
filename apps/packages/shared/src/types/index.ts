@@ -90,31 +90,15 @@ export interface SecuritySettings {
 	redirectUris: string[];
 	allowedHosts: string[];
 	corsOrigins: string[];
-	sessionTtlDays: number; // default 30 (1-365)
-	accountLockoutMinutes: number; // default 30
-	cacheTtlMinutes: number; // default 60
-	rateLimit: number; // default 100 requests per minute
+	sessionTtlDays: number;
 }
 
 /**
- * Trial Configuration nested in Plan Settings
- */
-export interface TrialConfig {
-	enabled: boolean;
-	planId: number | null;
-	days: number | null;
-	oncePerUser: boolean;
-	fallbackPlanId: number | null;
-}
-
-/**
- * Plan Settings JSONB structure
- * Stores licensing and trial configuration for the app
+ * Plan settings stored on the app row.
  */
 export interface PlanSettings {
 	licensingRequired: boolean;
 	defaultPlanId: number | null;
-	trial: TrialConfig;
 }
 
 /**
@@ -128,10 +112,17 @@ export interface App {
 	name: string;
 	slug: string;
 	description: string | null;
-	enabled_providers: string[]; // ['google', 'github']
-	app_tokens: AppTokens;
-	security_settings: SecuritySettings;
-	plan_settings: PlanSettings;
+	enabled_providers: string[];
+	client_secret_hash: string;
+	client_secret_enc: string;
+	service_token_hash: string | null;
+	service_token_enc: string | null;
+	redirect_uris: string[];
+	allowed_hosts: string[];
+	cors_origins: string[];
+	session_ttl_days: number;
+	licensing_required: boolean;
+	default_plan_id: number | null;
 	// selected_payment_provider_id removed - use payment_routing_rules table
 	is_active: boolean;
 	created_at: number;
