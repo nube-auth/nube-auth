@@ -1,4 +1,5 @@
-import { appQueries, type Database, licenseQueries, planQueries, priceQueries } from "@nube-auth/db";
+import { forgetUserAppCache } from "@nube-auth/cache";
+import { appQueries, type Database, licenseQueries, planQueries, priceQueries, userQueries } from "@nube-auth/db";
 import { createId, createLogger, serializeError } from "@nube-auth/shared";
 
 const log = createLogger("license-utils");
@@ -75,6 +76,8 @@ export async function ensureLicenseForApp(db: Database, userId: number, appPubli
 			});
 		}
 
+		const owner = await userQueries.findByInternalId_(db, userId);
+		if (owner) await forgetUserAppCache(owner.public_id, app.public_id);
 		log.info({ appId: appPublicId, userId, planId: plan.public_id }, "Auto-license created");
 	} catch (licenseError) {
 		log.error({ appId: appPublicId, err: serializeError(licenseError as Error) }, "Auto-license creation failed");

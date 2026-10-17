@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { cache } from "@nube-auth/cache";
+import { cache, forgetAppReadCache, readCacheKeys } from "@nube-auth/cache";
 import {
 	appQueries,
 	auditLogQueries,
@@ -422,7 +422,7 @@ recordRoutes.patch("/:projectId/apps/:appId", async (c: Context) => {
 
 		// Invalidate the gateway's cached security settings so CORS and allowedHosts
 		// enforcement picks up the new values immediately.
-		cache.delete(`app-security-settings:${app.public_id}`).catch((err) => {
+		cache.delete(readCacheKeys.securitySettings(app.public_id)).catch((err) => {
 			log.warn(
 				{ err: serializeError(err as Error), appId: app.public_id },
 				"Failed to invalidate app security settings cache",
@@ -497,6 +497,8 @@ recordRoutes.delete("/:projectId/apps/:appId", async (c: Context) => {
 		if (!deleted) {
 			return c.json({ error: "Failed to delete app" }, 500);
 		}
+
+		await forgetAppReadCache(app.public_id);
 
 		return c.json({
 			message: "App deleted successfully",

@@ -4,10 +4,19 @@
  * Handles all license state transitions with automatic license_history tracking
  */
 
-import { eq, getDb, license_history, licenseQueries, licenses } from "@nube-auth/db";
+import { forgetUserAppCache } from "@nube-auth/cache";
+import { apps, eq, getDb, license_history, licenseQueries, licenses, users } from "@nube-auth/db";
 import { createLogger, id, serializeError } from "@nube-auth/shared";
 
 const log = createLogger("license-manager");
+
+async function dropEntitlementCache(userId: number, appId: number): Promise<void> {
+	const db = getDb();
+	const [user] = await db.select({ public_id: users.public_id }).from(users).where(eq(users.id, userId));
+	const [app] = await db.select({ public_id: apps.public_id }).from(apps).where(eq(apps.id, appId));
+	if (!user || !app) return;
+	await forgetUserAppCache(user.public_id, app.public_id);
+}
 
 export type LicenseStatus = "active" | "expired" | "canceled" | "suspended" | "refunded";
 export type ChangeType =
@@ -83,6 +92,7 @@ export const licenseManager = {
 				},
 				"License created",
 			);
+			await dropEntitlementCache(userId, appId);
 
 			return license;
 		} catch (error) {
@@ -150,6 +160,7 @@ export const licenseManager = {
 				},
 				"License renewed",
 			);
+			await dropEntitlementCache(existingLicense.user_id, existingLicense.app_id);
 
 			return updatedLicense;
 		} catch (error) {
@@ -330,6 +341,7 @@ export const licenseManager = {
 				},
 				"License state transitioned",
 			);
+			await dropEntitlementCache(existingLicense.user_id, existingLicense.app_id);
 
 			return updatedLicense;
 		} catch (error) {

@@ -4,6 +4,7 @@
  * Handles creation of purchase, transaction, subscription, and license records
  */
 
+import { forgetUserAppCache } from "@nube-auth/cache";
 import type { Database } from "@nube-auth/db";
 import { eq, priceQueries, promotionCodeQueries, promotionQueries, purchaseQueries, sql } from "@nube-auth/db";
 import {
@@ -551,6 +552,8 @@ export async function createPurchaseRecords(db: Database, params: CreatePurchase
 				notes: `License created via purchase - ${interval || "one-time"}`,
 			});
 		}
+
+		await forgetUserAppCache(userPublicId, appPublicId);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Failed to create purchase records");
 		throw error;

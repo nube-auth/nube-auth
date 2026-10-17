@@ -10,6 +10,7 @@
  */
 
 import { createServer } from "node:http";
+import { initCache } from "@nube-auth/cache";
 import { getDb, sql } from "@nube-auth/db";
 import { QueueClient } from "@nube-auth/queue";
 import { createLogger, serializeError } from "@nube-auth/shared";
@@ -32,9 +33,24 @@ let healthQueueClient: QueueClient | null = null;
 /**
  * Initialize all workers
  */
+function workerRedisUrl(): string | null {
+	if (process.env["REDIS_URL"]) return process.env["REDIS_URL"];
+	const host = process.env["REDIS_HOST"];
+	if (!host) return null;
+	const port = process.env["REDIS_PORT"] || "6379";
+	const username = process.env["REDIS_USERNAME"];
+	const password = process.env["REDIS_PASSWORD"];
+	const auth = password
+		? `${username ? `${encodeURIComponent(username)}:` : ""}${encodeURIComponent(password)}@`
+		: "";
+	return `redis://${auth}${host}:${port}`;
+}
+
 export async function initializeWorkers(): Promise<void> {
 	try {
 		log.info("Initializing workers...");
+		const redisUrl = workerRedisUrl();
+		if (redisUrl) initCache(redisUrl);
 
 		// Shared Redis client used for health checks
 		healthQueueClient = new QueueClient();

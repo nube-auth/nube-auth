@@ -1,5 +1,5 @@
 import { fireWebhookEvent } from "@nube-auth/billing";
-import { cache } from "@nube-auth/cache";
+import { forgetUserAppCache } from "@nube-auth/cache";
 import {
 	activationQueries,
 	and,
@@ -71,8 +71,7 @@ function formatLicense(license: any, extras?: { app?: any; user?: any; plan?: an
  * GET /v1/license/:appId and GET /v1/me/subscription return fresh data.
  */
 function bustLicenseCache(userPublicId: string, appPublicId: string): void {
-	cache.delete(`gateway:license:${userPublicId}:${appPublicId}`).catch(() => {});
-	cache.delete(`gateway:sub:${userPublicId}:${appPublicId}`).catch(() => {});
+	void forgetUserAppCache(userPublicId, appPublicId);
 }
 
 // ---------------------------------------------------------------------------

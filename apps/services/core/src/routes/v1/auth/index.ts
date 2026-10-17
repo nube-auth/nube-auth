@@ -1,6 +1,6 @@
 import { GitHubOAuthAdapter, GoogleOAuthAdapter } from "@nube-auth/auth";
 import { fireWebhookEvent } from "@nube-auth/billing";
-import { cache } from "@nube-auth/cache";
+import { cache, forgetUserAppCache } from "@nube-auth/cache";
 import {
 	appQueries,
 	appUserQueries,
@@ -365,6 +365,8 @@ router.get("/callback/:provider", async (c: Context) => {
 										valid_until: validUntil,
 										created_at: now,
 									});
+									const licensedUser = await userQueries.findByInternalId_(db, userId);
+									if (licensedUser) await forgetUserAppCache(licensedUser.public_id, app.public_id);
 								}
 							}
 						}

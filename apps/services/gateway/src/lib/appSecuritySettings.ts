@@ -1,11 +1,10 @@
-import { cache } from "@nube-auth/cache";
+import { cache, readCacheKeys } from "@nube-auth/cache";
 import { createLogger, serializeError } from "@nube-auth/shared";
 import { coreClient } from "./core-client";
 
 const log = createLogger("gateway:app-security-settings");
 
 const CACHE_TTL_SECONDS = 3600;
-export const APP_SECURITY_SETTINGS_CACHE_KEY_PREFIX = "app-security-settings:";
 
 export interface AppSecuritySettings {
 	corsOrigins: string[];
@@ -13,7 +12,7 @@ export interface AppSecuritySettings {
 }
 
 export async function getAppSecuritySettings(appId: string): Promise<AppSecuritySettings | null> {
-	const cacheKey = `${APP_SECURITY_SETTINGS_CACHE_KEY_PREFIX}${appId}`;
+	const cacheKey = readCacheKeys.securitySettings(appId);
 	const cached = await cache.get<AppSecuritySettings>(cacheKey);
 	if (cached !== null) return cached;
 
@@ -33,7 +32,7 @@ export async function getAppSecuritySettings(appId: string): Promise<AppSecurity
 }
 
 export async function invalidateAppSecuritySettings(appId: string): Promise<void> {
-	const cacheKey = `${APP_SECURITY_SETTINGS_CACHE_KEY_PREFIX}${appId}`;
+	const cacheKey = readCacheKeys.securitySettings(appId);
 	try {
 		await cache.delete(cacheKey);
 		log.debug({ appId }, "Invalidated app security settings cache");

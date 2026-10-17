@@ -323,6 +323,9 @@ importers:
 
   apps/packages/billing:
     dependencies:
+      '@nube-auth/cache':
+        specifier: workspace:*
+        version: link:../cache
       '@nube-auth/db':
         specifier: workspace:*
         version: link:../db
@@ -658,6 +661,9 @@ importers:
       '@nube-auth/billing':
         specifier: workspace:*
         version: link:../../packages/billing
+      '@nube-auth/cache':
+        specifier: workspace:*
+        version: link:../../packages/cache
       '@nube-auth/db':
         specifier: workspace:*
         version: link:../../packages/db
