@@ -1,0 +1,101 @@
+apps/services/gateway/src/lib/appClientSecret.ts
+  s_9a0d4dc9d5cbab::t_908832a44e2cb2 1-20
+apps/services/gateway/src/lib/secret-match.ts
+  s_9a0d4dc9d5cbab::t_c84d8518c00b99 1-12
+apps/services/gateway/src/middleware/s2s.ts
+  s_9a0d4dc9d5cbab::t_a9de0ff43da6c6 3,7,13-14,16
+apps/services/gateway/src/index.ts
+  s_9a0d4dc9d5cbab::t_db933dd6a08eaa 229-237,239,241-242,247
+  s_9a0d4dc9d5cbab::t_16b6325000ef16 8,10
+  s_9a0d4dc9d5cbab::t_9409dd1c8ffbbb 320-325,327
+  s_9a0d4dc9d5cbab::t_905d8055036682 118-119
+  s_9a0d4dc9d5cbab::t_856a7fde068813 37
+  s_9a0d4dc9d5cbab::t_51e379a3504b4c 162
+  s_9a0d4dc9d5cbab::t_71c8a6acb38c0e 3
+apps/services/gateway/src/routes/auth/login.ts
+  s_9a0d4dc9d5cbab::t_7e99d693d04064 182-183,185
+apps/services/gateway/src/routes/auth/oauth.ts
+  s_9a0d4dc9d5cbab::t_084e83a26c7121 24
+  s_9a0d4dc9d5cbab::t_c72d53326d857c 141-155
+  s_9a0d4dc9d5cbab::t_23a68a61a61922 347
+  s_9a0d4dc9d5cbab::t_b31fb82b81cdc8 380
+  s_9a0d4dc9d5cbab::t_56eff1526468f5 509-510
+  s_9a0d4dc9d5cbab::t_5318448223f890 4
+  s_9a0d4dc9d5cbab::t_83f53e53dc2640 111
+apps/services/core/src/routes/v1/admin/apps/credentials.ts
+  s_9a0d4dc9d5cbab::t_a53448bb8292b1 124,129
+  s_9a0d4dc9d5cbab::t_aca4daac52b44b 2
+  s_9a0d4dc9d5cbab::t_16b6325000ef16 125-128
+apps/services/gateway/src/lib/appSecuritySettings.ts
+  s_9a0d4dc9d5cbab::t_053ea5981dc683 3,7,18,21-28
+apps/services/gateway/src/routes/auth/shared.ts
+  s_9a0d4dc9d5cbab::t_14f41da5d7521a 1
+apps/services/core/src/index.ts
+  s_9a0d4dc9d5cbab::t_f96c25c0495d27 83
+  s_9a0d4dc9d5cbab::t_f44b9952a11ddf 15
+  s_9a0d4dc9d5cbab::t_3fa54454cb913f 76
+apps/services/core/src/routes/v1/auth/index.ts
+  s_9a0d4dc9d5cbab::t_5318448223f890 17
+  s_9a0d4dc9d5cbab::t_e19a52a84e4a75 132-138
+  s_9a0d4dc9d5cbab::t_655c6eada9a5a5 585-589
+  s_9a0d4dc9d5cbab::t_dca900089f14ff 56-110
+  s_9a0d4dc9d5cbab::t_efad7b2a78ba84 13
+  s_9a0d4dc9d5cbab::t_2b1ac20a40954e 639,647
+  s_9a0d4dc9d5cbab::t_b15dd5f64ee4d1 566-570
+apps/services/gateway/src/lib/core-client.ts
+  s_9a0d4dc9d5cbab::t_9415a416379378 75-86
+  s_9a0d4dc9d5cbab::t_9343ef841af50d 71-74
+apps/services/gateway/src/routes/me.ts
+  s_9a0d4dc9d5cbab::t_898fceee989bc9 113-117,123
+  s_9a0d4dc9d5cbab::t_4903ee51f9e6b6 49-53,59
+  s_9a0d4dc9d5cbab::t_f0d5900e982e00 214-220
+  s_9a0d4dc9d5cbab::t_3780517b405c08 77-91,95-98
+  s_9a0d4dc9d5cbab::t_315586003079e7 10
+  s_9a0d4dc9d5cbab::t_16b6325000ef16 118
+  s_9a0d4dc9d5cbab::t_cd9c6b460d238a 137-146,148
+  s_9a0d4dc9d5cbab::t_ed21277e4b70b9 167-175,178,182
+apps/services/gateway/.env.example
+  s_9a0d4dc9d5cbab::t_875ad60e223d33 22
+apps/services/gateway/src/routes/s2s.ts
+  s_9a0d4dc9d5cbab::t_d5286ea9cb26c8 3,6,8-9,27-41,43
+  s_9a0d4dc9d5cbab::t_4136e73b96f63f 13
+apps/services/gateway/src/routes/appCatalog.ts
+  s_9a0d4dc9d5cbab::t_0aabf4d5040220 4,7,10-11,19,21-24,26-27,29-61
+apps/services/gateway/src/middleware/appSecret.ts
+  s_9a0d4dc9d5cbab::t_bd61fc8d79b447 4-5,14-15,35-37
+apps/services/core/src/routes/v1/edge.ts
+  s_9a0d4dc9d5cbab::t_821b7a456dc0f1 30,39,63,89,102,113,300,342
+  s_9a0d4dc9d5cbab::t_1868da277e59e8 1-19,21-29,31-38,40-62,64-88,90-98,100-101,103-112,115-153,155-159,161-180,182-204,206-220,222,224-242,244-299,301-302,304-341,343-354
+  s_9a0d4dc9d5cbab::t_8b70f98712f6da 20
+  s_9a0d4dc9d5cbab::t_e7e7232fa58f31 114,154,160,181,205,223,243,303
+  s_9a0d4dc9d5cbab::t_58d8a719ebff2e 221
+  s_9a0d4dc9d5cbab::t_3b73b053b87ed4 99
+nube-scripts
+  s_e0fee73ba207bf::t_5880d60a700b55 1
+pnpm-lock.yaml
+  s_9a0d4dc9d5cbab::t_685156bc77f811 97,234,1169,1173,1869,2471,2940,6805,6813,7060,7109-7110,9394,9405,9409,9420,9424,9426
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3af3e0c2873ecd4e29984693cad8a9066bf8871d",
+  "prompts": {},
+  "sessions": {
+    "s_9a0d4dc9d5cbab": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "62aa1d1c-96fc-4214-b162-241fa6191d89",
+        "model": "auto-smart"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
