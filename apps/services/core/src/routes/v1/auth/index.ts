@@ -85,9 +85,7 @@ router.get("/start", async (c: Context) => {
 			if (appId) {
 				const db = getDb();
 				const app = await appQueries.findByPublicId(db, appId);
-				const rawUris = (app?.security_settings as Record<string, unknown> | null)?.["redirectUris"] as
-					| string[]
-					| undefined;
+				const rawUris = app?.redirect_uris;
 				const normalizeUri = (uri: string) => {
 					try {
 						return new URL(uri).href;
@@ -543,12 +541,8 @@ router.post("/exchange", async (c: Context) => {
 		let sessionTtlSeconds = env.CORE_SESSION_TTL_SECONDS; // Default fallback
 		if (session.app_id) {
 			const app = await appQueries.findByInternalId_(db, session.app_id);
-			if (app?.security_settings) {
-				const securitySettings = app.security_settings as any;
-				const sessionTtlDays = securitySettings.sessionTtlDays;
-				if (typeof sessionTtlDays === "number" && sessionTtlDays > 0) {
-					sessionTtlSeconds = sessionTtlDays * 24 * 60 * 60; // Convert days to seconds
-				}
+			if (app && app.session_ttl_days > 0) {
+				sessionTtlSeconds = app.session_ttl_days * 24 * 60 * 60;
 			}
 		}
 

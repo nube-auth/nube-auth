@@ -198,10 +198,7 @@ plansRouter.get("/", async (c: Context) => {
 		const app = await appQueries.findByPublicId(db, appId);
 		if (!app) return c.json({ error: "App not found" }, 404);
 
-		const planSettings = app.plan_settings as any;
-		// Normalize to number — old data may have stored a string (public ID) here
-		const defaultPlanId: number | null =
-			typeof planSettings?.defaultPlanId === "number" ? planSettings.defaultPlanId : null;
+		const defaultPlanId = app.default_plan_id;
 
 		const plansList = includeInactive
 			? await planQueries.findByAppId(db, app.id)
@@ -251,10 +248,7 @@ plansRouter.get("/:planId", async (c: Context) => {
 		const plan = await planQueries.findByPublicId(db, planId);
 		if (!plan || plan.app_id !== app.id) return c.json({ error: "Plan not found" }, 404);
 
-		const planSettings = app.plan_settings as any;
-		// Normalize to number — old data may have stored a string (public ID) here
-		const defaultPlanId: number | null =
-			typeof planSettings?.defaultPlanId === "number" ? planSettings.defaultPlanId : null;
+		const defaultPlanId = app.default_plan_id;
 
 		const planPrices = await priceQueries.findActiveByPlanId(db, plan.id);
 
@@ -323,10 +317,7 @@ plansRouter.patch("/:planId", async (c: Context) => {
 			await appQueries.updatePlanSettings(db, app.id, { defaultPlanId: updatedPlan.id });
 		} else if (validated.isDefault === false) {
 			// Clear defaultPlanId only if this plan was the current default
-			const planSettings = app.plan_settings as any;
-			// Normalize to number to handle old string data
-			const currentDefaultId =
-				typeof planSettings?.defaultPlanId === "number" ? planSettings.defaultPlanId : null;
+			const currentDefaultId = app.default_plan_id;
 			if (currentDefaultId === updatedPlan.id) {
 				await appQueries.updatePlanSettings(db, app.id, { defaultPlanId: null });
 			}
@@ -349,14 +340,9 @@ plansRouter.patch("/:planId", async (c: Context) => {
 		const updatedDefaultPlanId =
 			validated.isDefault === true
 				? updatedPlan.id
-				: validated.isDefault === false &&
-						(typeof (app.plan_settings as any)?.defaultPlanId === "number"
-							? (app.plan_settings as any).defaultPlanId
-							: null) === updatedPlan.id
+				: validated.isDefault === false && app.default_plan_id === updatedPlan.id
 					? null
-					: typeof (app.plan_settings as any)?.defaultPlanId === "number"
-						? (app.plan_settings as any).defaultPlanId
-						: null;
+					: app.default_plan_id;
 
 		// Fire outbound webhook event
 		await fireWebhookEvent(db, app.id, "plan.updated", {
@@ -402,8 +388,7 @@ plansRouter.delete("/:planId", async (c: Context) => {
 			.where(eq(plans.id, plan.id));
 
 		// If the deleted plan was the default, clear it
-		const planSettings = app.plan_settings as any;
-		const currentDefaultId = typeof planSettings?.defaultPlanId === "number" ? planSettings.defaultPlanId : null;
+		const currentDefaultId = app.default_plan_id;
 		if (currentDefaultId === plan.id) {
 			await appQueries.updatePlanSettings(db, app.id, { defaultPlanId: null });
 		}

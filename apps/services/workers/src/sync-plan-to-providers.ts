@@ -84,9 +84,8 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 			public_id: true,
 			provider: true,
 			credentials: true,
-			credentials_dek: true,
 			environment: true,
-			webhook_secret: true,
+			webhook_secret_enc: true,
 			is_active: true,
 		},
 	});
@@ -164,8 +163,7 @@ export async function syncPlanToProviders(job: SyncPlanJob): Promise<SyncResult>
 			// Add environment field for Dodo
 			if (provider.provider === "dodo" && provider.environment) {
 				(credentials as any).environment = provider.environment === "production" ? "live_mode" : "test_mode";
-				(credentials as any).webhookSecret =
-					readSealedSecret(provider.webhook_secret) || (credentials as any).webhookSecret;
+				(credentials as any).webhookSecret = readSealedSecret(provider.webhook_secret_enc);
 			}
 
 			// Create adapter
