@@ -1,5 +1,4 @@
-import { appQueries, getDb, projectMemberQueries, projectQueries, userQueries } from "@nube-auth/db";
-import { createLogger, type SessionEntitlements } from "@nube-auth/shared";
+import { createLogger } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { env } from "../../config/env";
 
@@ -60,45 +59,4 @@ export function inferAudience(c: Context): "user" | "admin" {
 		return "admin";
 	}
 	return "user";
-}
-
-/**
- * Build session entitlements for a user based on audience type.
- * Admin: project memberships with roles and app resources.
- * User: basic identity entitlement.
- */
-export async function buildEntitlements(
-	userPublicId: string,
-	audience: "user" | "admin",
-): Promise<SessionEntitlements> {
-	if (audience === "user") {
-		return { identity: { role: "user" } };
-	}
-
-	// Admin: build entitlements from project memberships
-	const db = getDb();
-	const user = await userQueries.findByPublicId(db, userPublicId);
-	if (!user) {
-		return {};
-	}
-
-	const memberships = await projectMemberQueries.findByUserId(db, user.id);
-	const entitlements: SessionEntitlements = {};
-
-	for (const membership of memberships) {
-		// Get project public_id
-		const project = await projectQueries.findByInternalId_(db, membership.project_id);
-		if (!project) continue;
-
-		// Get apps for this project
-		const projectApps = await appQueries.findByProjectId(db, membership.project_id);
-		const appPublicIds = projectApps.map((a) => a.public_id);
-
-		entitlements[project.public_id] = {
-			role: membership.role,
-			resources: appPublicIds,
-		};
-	}
-
-	return entitlements;
 }

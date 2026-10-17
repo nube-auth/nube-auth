@@ -1,7 +1,6 @@
 import crypto from "node:crypto";
 import { createSessionCookie, parseSessionCookie } from "@nube-auth/auth";
 import { cache, sessionStore } from "@nube-auth/cache";
-import { getDb, sessionQueries } from "@nube-auth/db";
 import { GatewayLoginRequestSchema, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
@@ -178,17 +177,12 @@ loginRoutes.post("/logout", async (c: Context) => {
 					// 2. Delete from sessionStore (session:app:xxx) - this is what auth middleware checks!
 					await sessionStore.revokeAppSession(sessionId);
 
-					// 3. Revoke Core database session
 					if (coreSessionId) {
 						try {
-							const db = getDb();
-							const dbSession = await sessionQueries.findByPublicId(db, coreSessionId);
-							if (dbSession) {
-								await sessionQueries.revoke(db, dbSession.id);
-							}
-						} catch (dbError) {
+							await coreClient.revokeSession(coreSessionId);
+						} catch (revokeError) {
 							log.error(
-								{ err: serializeError(dbError as Error) },
+								{ err: serializeError(revokeError as Error) },
 								"Failed to revoke Core database session",
 							);
 						}

@@ -1,15 +1,5 @@
 import { pingpong } from "@nube-auth/auth";
 import { cache, sessionStore } from "@nube-auth/cache";
-import {
-	appQueries,
-	getDb,
-	licenseQueries,
-	planQueries,
-	priceQueries,
-	sessionQueries,
-	subscriptionQueries,
-	userQueries,
-} from "@nube-auth/db";
 import { createLogger, idPatterns, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 
@@ -17,6 +7,7 @@ import { Hono } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { CACHE_TTL } from "../config/constants";
 import { env } from "../config/env";
+import { coreClient } from "../lib/core-client";
 import { getAuth } from "../middleware/auth";
 
 const log = createLogger("me-routes");
@@ -55,16 +46,17 @@ async function revokeGatewaySessions(userPublicId: string, targetCoreSessionId?:
 meRoutes.get("/", async (c: Context) => {
 	try {
 		const auth = getAuth(c);
-		const db = getDb();
-
-		// Fetch user from database to get createdAt
-		const user = await userQueries.findByPublicId(db, auth.userId);
+		const profile = await coreClient.edge<{ createdAt: string | null }>(
+			"GET",
+			`/v1/edge/users/${encodeURIComponent(auth.userId)}`,
+		);
+		if (profile.status !== 200) return c.json({ error: "Failed to get profile" }, 500);
 
 		return c.json({
 			id: auth.userId,
 			email: auth.email,
 			name: auth.name,
-			createdAt: user?.created_at ? new Date(user.created_at).toISOString() : null,
+			createdAt: profile.data.createdAt,
 			entitlements: auth.entitlements,
 		});
 	} catch (error) {
@@ -82,31 +74,28 @@ meRoutes.patch("/", async (c: Context) => {
 		const auth = getAuth(c);
 		const { name, picture } = (await c.req.json()) as { name?: string; picture?: string };
 
-		const db = getDb();
-
-		// Get user by public ID
-		const user = await userQueries.findByPublicId(db, auth.userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
-
-		// Update user in database
-		const updateData: Parameters<typeof userQueries.update>[2] = {};
-		if (name !== undefined) updateData.name = name;
-		if (picture !== undefined) updateData.avatar_url = picture;
-
-		const updatedRows = await userQueries.update(db, user.id, updateData);
-		const updated = updatedRows[0];
-
-		if (!updated) {
-			return c.json({ error: "User not found" }, 404);
+		const updated = await coreClient.edge<{
+			id: string;
+			email: string;
+			name: string | null;
+			createdAt: string | null;
+			error?: string;
+		}>("PATCH", `/v1/edge/users/${encodeURIComponent(auth.userId)}`, {
+			...(name !== undefined ? { name } : {}),
+			...(picture !== undefined ? { picture } : {}),
+		});
+		if (updated.status !== 200) {
+			return c.json(
+				{ error: updated.data.error ?? "Failed to update profile" },
+				updated.status as ContentfulStatusCode,
+			);
 		}
 
 		return c.json({
-			id: updated.public_id,
-			email: updated.primary_email,
-			name: updated.name,
-			createdAt: updated.created_at ? new Date(updated.created_at).toISOString() : null,
+			id: updated.data.id,
+			email: updated.data.email,
+			name: updated.data.name,
+			createdAt: updated.data.createdAt,
 		});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Update profile error:");
@@ -121,21 +110,17 @@ meRoutes.patch("/", async (c: Context) => {
 meRoutes.delete("/sessions", async (c: Context) => {
 	try {
 		const auth = getAuth(c);
-		const db = getDb();
-
-		const user = await userQueries.findByPublicId(db, auth.userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
-
-		const activeSessions = await sessionQueries.findActiveByUserId(db, user.id);
-		for (const session of activeSessions) {
-			await sessionQueries.revoke(db, session.id);
+		const revoked = await coreClient.edge<{ revoked: number; error?: string }>(
+			"DELETE",
+			`/v1/edge/users/${encodeURIComponent(auth.userId)}/sessions`,
+		);
+		if (revoked.status !== 200) {
+			return c.json({ error: revoked.data.error ?? "Failed to logout" }, revoked.status as ContentfulStatusCode);
 		}
 
 		await revokeGatewaySessions(auth.userId);
 
-		return c.json({ message: "All sessions revoked", revoked: activeSessions.length });
+		return c.json({ message: "All sessions revoked", revoked: revoked.data.revoked });
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Logout error:");
 		return c.json({ error: "Failed to logout" }, 500);
@@ -149,33 +134,18 @@ meRoutes.delete("/sessions", async (c: Context) => {
 meRoutes.get("/sessions", async (c: Context) => {
 	try {
 		const auth = getAuth(c);
-		const db = getDb();
-
-		const user = await userQueries.findByPublicId(db, auth.userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
+		const current = auth.coreSessionId ? `?current=${encodeURIComponent(auth.coreSessionId)}` : "";
+		const sessions = await coreClient.edge<{ sessions: unknown[]; error?: string }>(
+			"GET",
+			`/v1/edge/users/${encodeURIComponent(auth.userId)}/sessions${current}`,
+		);
+		if (sessions.status !== 200) {
+			return c.json(
+				{ error: sessions.data.error ?? "Failed to get sessions" },
+				sessions.status as ContentfulStatusCode,
+			);
 		}
-
-		const sessionRows = await sessionQueries.findActiveByUserId(db, user.id);
-		sessionRows.sort((a, b) => {
-			const aIsCurrent = a.public_id === auth.coreSessionId;
-			const bIsCurrent = b.public_id === auth.coreSessionId;
-			if (aIsCurrent !== bIsCurrent) return aIsCurrent ? -1 : 1;
-			return new Date(b.last_seen_at).getTime() - new Date(a.last_seen_at).getTime();
-		});
-
-		return c.json({
-			sessions: sessionRows.map((s) => ({
-				id: s.public_id,
-				createdAt: new Date(s.created_at).toISOString(),
-				lastSeenAt: new Date(s.last_seen_at).toISOString(),
-				expiresAt: new Date(s.expires_at).toISOString(),
-				isCurrent: s.public_id === auth.coreSessionId,
-				ipAddress: s.ip_address || null,
-				userAgent: s.user_agent || null,
-				country: s.country || null,
-			})),
-		});
+		return c.json({ sessions: sessions.data.sessions });
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Get sessions error:");
 		return c.json({ error: "Failed to get sessions" }, 500);
@@ -194,23 +164,22 @@ meRoutes.delete("/sessions/:sessionId", async (c: Context) => {
 			return c.json({ error: "Invalid session id" }, 400);
 		}
 
-		const db = getDb();
-		const user = await userQueries.findByPublicId(db, auth.userId);
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
+		const revoked = await coreClient.edge<{ publicId: string; error?: string }>(
+			"DELETE",
+			`/v1/edge/users/${encodeURIComponent(auth.userId)}/sessions/${encodeURIComponent(sessionId)}`,
+		);
+		if (revoked.status !== 200) {
+			return c.json(
+				{ error: revoked.data.error ?? "Failed to revoke session" },
+				revoked.status as ContentfulStatusCode,
+			);
 		}
 
-		const session = await sessionQueries.findByPublicId(db, sessionId);
-		if (!session || session.user_id !== user.id) {
-			return c.json({ error: "Session not found" }, 404);
-		}
-
-		await sessionQueries.revoke(db, session.id);
-		await revokeGatewaySessions(auth.userId, session.public_id);
+		await revokeGatewaySessions(auth.userId, revoked.data.publicId);
 
 		return c.json({
 			message: "Session revoked",
-			currentSessionRevoked: session.public_id === auth.coreSessionId,
+			currentSessionRevoked: revoked.data.publicId === auth.coreSessionId,
 		});
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Revoke session error:");
@@ -242,71 +211,13 @@ meRoutes.get("/subscription", async (c: Context) => {
 		const cached = await cache.get<object>(cacheKey);
 		if (cached) return c.json(cached);
 
-		const db = getDb();
-
-		// Resolve internal IDs for both user and app
-		const [user, app] = await Promise.all([
-			userQueries.findByPublicId(db, auth.userId),
-			appQueries.findByPublicId(db, auth.appId),
-		]);
-
-		if (!user || !app) {
-			return c.json({
-				hasActivePlan: false,
-				planSlug: null,
-				status: null,
-				billingInterval: null,
-				periodEnd: null,
-			});
-		}
-
-		const subscription = await subscriptionQueries.findActiveByUserAndApp(db, user.id, app.id);
-
-		let result: Record<string, unknown>;
-
-		if (!subscription) {
-			// No subscription row — fall back to licenses table (covers one-time purchases)
-			const license = await licenseQueries.findByUserAndApp(db, user.id, app.id);
-			if (license?.status !== "active") {
-				result = { hasActivePlan: false, planSlug: null, status: null, billingInterval: null, periodEnd: null };
-			} else {
-				const licensePrice = license.price_id
-					? await priceQueries.findByInternalId_(db, license.price_id)
-					: null;
-				const licensePlan = licensePrice
-					? await planQueries.findByInternalId_(db, licensePrice.plan_id)
-					: license.plan_id
-						? await planQueries.findByInternalId_(db, license.plan_id)
-						: null;
-				result = {
-					hasActivePlan: true,
-					planSlug: licensePlan?.slug ?? null,
-					status: license.status,
-					billingInterval: null,
-					periodEnd: license.valid_until ? new Date(license.valid_until).toISOString() : null,
-				};
-			}
-		} else {
-			// Walk subscription → price → plan to get the slug
-			const subMeta = (subscription.metadata as Record<string, unknown> | null) ?? {};
-			const price = await priceQueries.findByInternalId_(
-				db,
-				subscription.price_id ?? (subMeta["priceId"] as number | undefined),
-			);
-			const plan = price ? await planQueries.findByInternalId_(db, price.plan_id) : null;
-			result = {
-				hasActivePlan: true,
-				planSlug: plan?.slug ?? null,
-				priceId: price?.public_id ?? null,
-				status: subscription.status,
-				billingInterval: subscription.billing_interval,
-				periodEnd: subscription.billing_period_end
-					? new Date(subscription.billing_period_end).toISOString()
-					: null,
-			};
-		}
-		await cache.set(cacheKey, result, CACHE_TTL);
-		return c.json(result);
+		const subscription = await coreClient.edge<Record<string, unknown>>(
+			"GET",
+			`/v1/edge/users/${encodeURIComponent(auth.userId)}/apps/${encodeURIComponent(auth.appId)}/subscription`,
+		);
+		if (subscription.status !== 200) return c.json({ error: "Failed to fetch subscription" }, 500);
+		await cache.set(cacheKey, subscription.data, CACHE_TTL);
+		return c.json(subscription.data);
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "Subscription check error:");
 		return c.json({ error: "Failed to fetch subscription" }, 500);

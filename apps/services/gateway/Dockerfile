@@ -17,7 +17,6 @@ RUN pnpm install --frozen-lockfile
 # Build packages and gateway
 RUN pnpm --filter @nube-auth/cache build
 RUN pnpm --filter @nube-auth/shared build
-RUN pnpm --filter @nube-auth/db build
 RUN pnpm --filter @nube-auth/auth build
 RUN pnpm --filter @nube-auth/gateway build
 

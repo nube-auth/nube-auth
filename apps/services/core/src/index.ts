@@ -12,6 +12,7 @@ import { s2sMiddleware } from "./middleware/s2s";
 import { adminRoutes } from "./routes/v1/admin";
 import { authRoutes } from "./routes/v1/auth";
 import { billingRoutes } from "./routes/v1/billing";
+import { edgeRoutes } from "./routes/v1/edge";
 import { emailRoutes } from "./routes/v1/email";
 import { licenseRoutes } from "./routes/v1/license";
 import { subscriptionRoutes } from "./routes/v1/subscription";
@@ -72,12 +73,14 @@ app.use("/v1/email/*", s2sMiddleware);
 app.use("/v1/license/*", s2sMiddleware);
 app.use("/v1/subscription/*", s2sMiddleware);
 app.use("/v1/admin/*", s2sMiddleware);
+app.use("/v1/edge/*", s2sMiddleware);
 
 // Routes
 app.route("/v1/auth", authRoutes);
 app.route("/v1/billing", billingRoutes);
 app.route("/v1/email", emailRoutes);
 app.route("/v1/license", licenseRoutes);
+app.route("/v1/edge", edgeRoutes);
 app.route("/v1/subscription", subscriptionRoutes);
 app.route("/v1/admin", adminRoutes);
 
