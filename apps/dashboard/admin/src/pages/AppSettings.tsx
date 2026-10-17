@@ -126,7 +126,7 @@ export function AppSettingsPage() {
 		const dataToSend = {
 			name: formData.name,
 			slug: formData.slug,
-			description: formData.description,
+			description: formData.description ?? undefined,
 			redirectUris: (formData.redirectUris || []).filter((uri: string) => uri.trim()),
 			allowedHosts: (formData.allowedHosts || []).filter((host: string) => host.trim()),
 			sessionTtlDays: formData.sessionTtlDays || 30,
