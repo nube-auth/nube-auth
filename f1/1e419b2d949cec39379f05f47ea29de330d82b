@@ -1,0 +1,128 @@
+apps/services/core/src/routes/v1/admin/promotions/index.ts
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 1-12
+apps/services/core/src/routes/v1/admin/apps/index.ts
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 1-10
+apps/services/core/src/routes/v1/admin/promotions/provider-refs.ts
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 3-5,7-107
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 1-2,6
+apps/services/core/src/routes/v1/admin/webhooks/index.ts
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 1-27
+apps/services/core/src/routes/v1/admin/webhooks/shared.ts
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 1-3
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 4-96
+apps/services/gateway/src/routes/auth/sessions.ts
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 1-3,6,8,10
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 4-5,7,9,11-238
+apps/services/core/src/routes/v1/admin/promotions/codes.ts
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 1-2,6
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 3-5,7-133
+apps/services/core/src/routes/v1/admin/webhooks/logs.ts
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 3-51
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 1-2
+apps/services/core/src/routes/v1/admin/webhooks/record.ts
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 1-3
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 4-13,15,18-223
+  s_9a0d4dc9d5cbab::t_dc2ae54c13381b 14,16-17
+apps/services/core/src/routes/v1/admin/test/providers.ts
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 1-5,7-59
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 6
+apps/services/gateway/src/routes/auth.ts
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 2-4,8-10
+apps/services/core/src/routes/v1/admin/test/simulate-webhook.ts
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 6-7
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 1-5,8-199
+apps/services/core/src/routes/v1/admin/apps/credentials.ts
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 12
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 1-11,13-219
+apps/services/gateway/src/routes/auth/login.ts
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 1,3,6-8,10-19,21-398
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 2,4-5,9,20
+apps/services/core/src/routes/v1/admin/promotions/record.ts
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 14-15,17-25,27,48,124,158,207,270,322,337
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 11
+apps/services/gateway/src/routes/auth/shared.ts
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 3-69,74-104
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 1-2
+  s_9a0d4dc9d5cbab::t_dc2ae54c13381b 70-73
+apps/services/gateway/src/routes/auth/oauth.ts
+  s_9a0d4dc9d5cbab::t_dc2ae54c13381b 25
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 1,3,6-24,26-648
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 2,4-5
+apps/services/core/src/routes/v1/admin/members.ts
+  s_9a0d4dc9d5cbab::t_9590278384a8f3 43-58
+  s_9a0d4dc9d5cbab::t_e2d5d06bf6e379 4,9
+apps/services/core/src/routes/v1/admin/apps/record.ts
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 1-12,14-511
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 13
+apps/services/core/src/routes/v1/admin/promotions/redemptions.ts
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 2-3,5-47
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 1,4
+apps/services/core/src/routes/v1/admin/test/initialize.ts
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 25-27,29,31,38,436
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 22
+apps/services/core/src/routes/v1/admin/apps/shared.ts
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 1
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 2-51
+apps/services/core/src/routes/v1/admin/test/cleanup.ts
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 1-5,8-58
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 6-7
+apps/services/core/src/routes/v1/admin/test/index.ts
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 1-18
+apps/services/core/src/routes/v1/admin/index.ts
+  s_9a0d4dc9d5cbab::t_39232d6dbbe41e 13
+  s_9a0d4dc9d5cbab::t_a47ba516767947 18-19
+  s_9a0d4dc9d5cbab::t_dc2ae54c13381b 9
+  s_9a0d4dc9d5cbab::t_61336609cabbad 5
+apps/services/core/src/routes/v1/admin/routing-rules.ts
+  s_9a0d4dc9d5cbab::t_56e0c5d4e79f5d 76-98
+  s_9a0d4dc9d5cbab::t_9d9cf1f4c54b25 8
+  s_9a0d4dc9d5cbab::t_46b4f451dcc043 9-14,99-104
+apps/services/core/src/routes/v1/admin/apps/users.ts
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 15
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 1-14,16-215
+apps/services/core/src/routes/v1/admin/plans.ts
+  s_9a0d4dc9d5cbab::t_9d15998368a8c8 8-20
+  s_9a0d4dc9d5cbab::t_650a472ff8144f 221-247
+  s_9a0d4dc9d5cbab::t_4cd09028452f45 248-251,253
+apps/services/core/src/routes/v1/admin/promotions/shared.ts
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 1-219
+apps/services/core/src/routes/v1/admin/test/shared.ts
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 1-5,8-46,52-57
+  s_9a0d4dc9d5cbab::t_dc2ae54c13381b 47-51
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 6-7
+apps/services/core/src/routes/v1/admin/license-management.ts
+  s_9a0d4dc9d5cbab::t_c81118c6657ddc 275-282,289
+  s_9a0d4dc9d5cbab::t_74a16b145049ee 220-246
+  s_9a0d4dc9d5cbab::t_7c3fe374f2b8d1 4,7-8,12,14,16
+apps/services/core/src/routes/v1/admin/test/status.ts
+  s_9a0d4dc9d5cbab::t_dc2ae54c13381b 13
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 1-12,14-17,19-174
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 18
+apps/services/core/src/routes/v1/admin/webhooks/delivery.ts
+  s_9a0d4dc9d5cbab::t_bf6f96319289f0 1-4,12
+  s_9a0d4dc9d5cbab::t_07d8fec8f58ba4 5-11,13-327
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f11e419b2d949cec39379f05f47ea29de330d82b",
+  "prompts": {},
+  "sessions": {
+    "s_9a0d4dc9d5cbab": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "62aa1d1c-96fc-4214-b162-241fa6191d89",
+        "model": "auto-smart"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}

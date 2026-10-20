@@ -1,0 +1,27 @@
+turbo.json
+  s_974302adc1ddb3::t_0107381c0cd7b7 18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "05a12025a19b025139f486d400e0684bda5a3ab3",
+  "prompts": {},
+  "sessions": {
+    "s_974302adc1ddb3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a2a5bedf-2cdd-4d9f-9782-9b93669c21e3",
+        "model": "auto-smart"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}

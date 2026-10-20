@@ -1,0 +1,104 @@
+apps/dashboard/home/src/components/Footer.astro
+  s_974302adc1ddb3::t_bcd6c51ea30ac7 10
+apps/dashboard/admin/src/pages/ProjectTeam.tsx
+  s_974302adc1ddb3::t_ece28c1a8d98ce 87-88
+  s_974302adc1ddb3::t_b5a2c3f7ac03da 105-106
+apps/dashboard/admin/src/pages/AppOAuth.tsx
+  s_974302adc1ddb3::t_c9d3bb46a24e1d 110-112
+apps/dashboard/admin/src/pages/AppWebhooks.tsx
+  s_974302adc1ddb3::t_bb50db26af7a1c 502-504
+apps/dashboard/admin/src/pages/AppSubscriptions.tsx
+  s_974302adc1ddb3::t_094667c323bf6d 149
+apps/dashboard/admin/src/pages/ProjectApps.tsx
+  s_974302adc1ddb3::t_68f65a0193916f 46-47
+  s_974302adc1ddb3::t_62f00cedcfbe34 64-67
+apps/dashboard/admin/src/pages/AppApiKeys.tsx
+  s_974302adc1ddb3::t_71afac95301fc8 182
+apps/dashboard/admin/src/pages/AppPromotions.tsx
+  s_974302adc1ddb3::t_9247ee86c1b088 251-252
+apps/dashboard/admin/src/pages/ProjectStats.tsx
+  s_974302adc1ddb3::t_c6024d8abb0b93 34
+  s_974302adc1ddb3::t_682f3830d04ee3 53,55
+apps/dashboard/admin/src/pages/AppPaymentSettings.tsx
+  s_974302adc1ddb3::t_ec06ff21e56a12 78
+  s_974302adc1ddb3::t_4825e1b04b2eb4 102-104
+apps/dashboard/admin/src/pages/AppDevelopers.tsx
+  s_974302adc1ddb3::t_335d54d1ac6954 21,73
+apps/dashboard/home/src/layouts/Layout.astro
+  s_974302adc1ddb3::t_0fc50488962aae 18-22
+apps/dashboard/admin/src/pages/Projects.tsx
+  s_974302adc1ddb3::t_81f540a3a95a30 3-6
+  s_974302adc1ddb3::t_7c65e38d14d163 59-65,67
+apps/dashboard/admin/src/pages/Profile.tsx
+  s_974302adc1ddb3::t_1b7cac7aead458 3-6
+  s_974302adc1ddb3::t_95acf0429264c7 124-130
+apps/dashboard/admin/src/pages/AppLicenses.tsx
+  s_974302adc1ddb3::t_355348211a7a13 113
+apps/dashboard/admin/src/pages/AppSetup.tsx
+  s_974302adc1ddb3::t_210825610ae8fb 187-188
+  s_974302adc1ddb3::t_9f7ead9a7c0866 205
+apps/dashboard/home/src/components/Nav.astro
+  s_974302adc1ddb3::t_bc296a1db0d201 8
+apps/dashboard/admin/src/pages/CreateProject.tsx
+  s_974302adc1ddb3::t_2eb8292dbace34 57-70
+  s_974302adc1ddb3::t_7daf865774e5fc 1-15,17
+apps/dashboard/admin/src/App.tsx
+  s_974302adc1ddb3::t_515f1d1674aa01 74-77
+  s_974302adc1ddb3::t_d5f9e97e4d448c 1
+apps/dashboard/admin/src/pages/TransactionExport.tsx
+  s_974302adc1ddb3::t_032d6f8b6ebc64 174,176
+  s_974302adc1ddb3::t_1aa2fe2c10cce2 162
+apps/dashboard/admin/src/pages/AppDetail.tsx
+  s_974302adc1ddb3::t_6d15372b9caae2 129
+  s_974302adc1ddb3::t_c56d0e9b5e912e 17
+  s_974302adc1ddb3::t_0a083a3dd723f7 28
+apps/dashboard/admin/src/pages/RefundProcessing.tsx
+  s_974302adc1ddb3::t_815370f956df33 238
+  s_974302adc1ddb3::t_16d646cbaac72d 250-251
+apps/dashboard/admin/src/pages/AppUsers.tsx
+  s_974302adc1ddb3::t_ad160a0944618d 255-256
+  s_974302adc1ddb3::t_1e6c4baa3c8fc6 264
+apps/dashboard/admin/src/pages/BillingDashboard.tsx
+  s_974302adc1ddb3::t_a86236d02efe50 88-89
+  s_974302adc1ddb3::t_70f8e1805112fc 77
+apps/dashboard/admin/src/pages/ProjectSettings.tsx
+  s_974302adc1ddb3::t_0b0807c55b09c5 88
+  s_974302adc1ddb3::t_a6df093a152daa 72-73
+  s_974302adc1ddb3::t_335d54d1ac6954 74-87
+apps/dashboard/admin/src/pages/AppSettings.tsx
+  s_974302adc1ddb3::t_96d095783f7896 182
+apps/dashboard/admin/src/pages/Licenses.tsx
+  s_974302adc1ddb3::t_9401d7f6a86b02 23,30
+  s_974302adc1ddb3::t_06199c7b449eb6 44-51
+  s_974302adc1ddb3::t_8c5dfaeeda5a7f 3-6
+apps/dashboard/admin/src/pages/WebhookMonitoring.tsx
+  s_974302adc1ddb3::t_267b1255f36a21 312,314
+  s_974302adc1ddb3::t_6317ed22f42b8d 300
+apps/dashboard/admin/src/pages/ProjectPaymentProviders.tsx
+  s_974302adc1ddb3::t_702a82c82fdefc 425-428
+  s_974302adc1ddb3::t_66542bb9e40a36 406
+apps/dashboard/admin/src/pages/PaymentTestingPlayground.tsx
+  s_974302adc1ddb3::t_6e42a45db64687 232
+  s_974302adc1ddb3::t_8d1d8657fceb50 234-242
+  s_974302adc1ddb3::t_db26d3951ffbf9 7-18
+apps/dashboard/admin/src/pages/ProjectDetail.tsx
+  s_974302adc1ddb3::t_1235f937842f5b 31
+  s_974302adc1ddb3::t_0a749f6ef72de2 43
+  s_974302adc1ddb3::t_fb19059ec41f39 79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "29e2da2df12768353808aeb2e8da15880a5286ec",
+  "prompts": {},
+  "sessions": {
+    "s_974302adc1ddb3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a2a5bedf-2cdd-4d9f-9782-9b93669c21e3",
+        "model": "auto-smart"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}

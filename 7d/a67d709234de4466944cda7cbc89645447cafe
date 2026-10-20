@@ -1,0 +1,70 @@
+apps/packages/db/src/queries.ts
+  s_974302adc1ddb3::t_b73c66ae66224c 434-435,439-447
+  s_974302adc1ddb3::t_841a7272be8063 1
+apps/packages/queue/src/constants.ts
+  s_974302adc1ddb3::t_ee86fe77c1e6ab 138-143
+apps/services/core/src/routes/v1/admin/apps.ts
+  s_974302adc1ddb3::t_a94567c66e3d11 13-14
+  s_974302adc1ddb3::t_1f1928e63750a3 966-971
+  s_974302adc1ddb3::t_8ce8a7e1e51e84 841,843-844
+  s_974302adc1ddb3::t_a4586c5ff00f21 203,212-213
+  s_974302adc1ddb3::t_9e218a03787d50 893-898
+  s_974302adc1ddb3::t_5a4688d8fb3513 370-371,524-525
+  s_974302adc1ddb3::t_31ab5aed8c23e2 294-295
+apps/services/workers/src/dispatch-outbound-webhook.ts
+  s_974302adc1ddb3::t_cd17f4b4e68cc7 105
+  s_974302adc1ddb3::t_5dd738fb0bdb7a 15
+apps/services/core/src/routes/v1/admin/me.ts
+  s_974302adc1ddb3::t_d09892d8c10d26 1-27
+apps/services/gateway/src/routes/admin.ts
+  s_974302adc1ddb3::t_c0f4d1c7ada409 18
+apps/packages/billing/src/queue.ts
+  s_974302adc1ddb3::t_97a66cd287954a 128
+  s_974302adc1ddb3::t_e7e31282869fdc 5
+  s_974302adc1ddb3::t_fd19d1c1209ac0 152
+  s_974302adc1ddb3::t_17be4e46027663 94
+  s_974302adc1ddb3::t_c4f6ee95279586 46
+  s_974302adc1ddb3::t_14d33592b6d85a 68
+  s_974302adc1ddb3::t_38b20d0d6bc571 109
+apps/services/core/src/routes/v1/admin/index.ts
+  s_974302adc1ddb3::t_cc36da5606d0bd 26-27
+  s_974302adc1ddb3::t_b18e0548d3a094 5
+apps/services/gateway/src/routes/license.ts
+  s_974302adc1ddb3::t_e92247f8d074dd 83-94,96
+apps/services/gateway/src/index.ts
+  s_974302adc1ddb3::t_4528e07cc981c5 4
+  s_974302adc1ddb3::t_6bd7cd58ab72a2 118,120,123-129,133
+apps/services/gateway/src/middleware/appSecret.ts
+  s_974302adc1ddb3::t_9fd31673ce9cfa 18
+  s_974302adc1ddb3::t_b4e8e743746554 52-53,55,60-61
+apps/packages/db/src/index.ts
+  s_974302adc1ddb3::t_5beaaf8338558f 106-114
+apps/packages/queue/src/types.ts
+  s_974302adc1ddb3::t_68d25e1eecdedf 10-15
+apps/services/core/src/routes/v1/admin/webhooks.ts
+  s_974302adc1ddb3::t_64a638e3c733e7 20
+  s_974302adc1ddb3::t_04d55840e8b733 199
+  s_974302adc1ddb3::t_c7a6204ab27458 529
+  s_974302adc1ddb3::t_0ec59a336a4827 543
+  s_974302adc1ddb3::t_7c4321af4cfe2e 313
+apps/services/core/src/routes/v1/license/index.ts
+  s_974302adc1ddb3::t_2dcb8bdf335cba 349-397
+apps/packages/db/src/secret-box.ts
+  s_974302adc1ddb3::t_ce1c26b911965d 1-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7da67d709234de4466944cda7cbc89645447cafe",
+  "prompts": {},
+  "sessions": {
+    "s_974302adc1ddb3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a2a5bedf-2cdd-4d9f-9782-9b93669c21e3",
+        "model": "auto-smart"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}

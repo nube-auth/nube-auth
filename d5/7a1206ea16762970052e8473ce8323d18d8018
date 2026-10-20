@@ -1,0 +1,139 @@
+apps/services/core/src/routes/v1/email/index.ts
+  s_974302adc1ddb3::t_91b9df34b7a9a6 66
+  s_974302adc1ddb3::t_9538040cbf5300 265
+  s_974302adc1ddb3::t_5d86fbbc2b470a 94
+  s_974302adc1ddb3::t_824d850bd6b7e4 100
+apps/services/core/src/routes/v1/billing/webhooks.ts
+  s_974302adc1ddb3::t_ff3e16d9837053 87-91
+  s_974302adc1ddb3::t_504251a17d189c 73-77,79-81
+  s_974302adc1ddb3::t_75a96edf73d49f 17-28
+apps/packages/shared/src/outbound-url.ts
+  s_974302adc1ddb3::t_9bfb7531513f94 1-33,35-46,51-101,103-114
+  s_974302adc1ddb3::t_0411eb015b6eff 102
+  s_974302adc1ddb3::t_a203f32afaeaa1 34
+  s_974302adc1ddb3::t_614ecf8990e91b 47-50
+apps/services/gateway/src/index.ts
+  s_974302adc1ddb3::t_b795ee837927f9 5
+  s_974302adc1ddb3::t_57077044567fc2 40-42,45,47,49,51-56
+  s_974302adc1ddb3::t_31b550a62801ab 240,251-269
+apps/services/core/package.json
+  s_974302adc1ddb3::t_64bff6bc149268 21
+apps/packages/queue/src/config.ts
+  s_974302adc1ddb3::t_d40d09712960e3 45-49
+apps/services/gateway/src/middleware/csrf.ts
+  s_974302adc1ddb3::t_8cac20d828d682 44
+  s_974302adc1ddb3::t_318fd26bd38013 29
+apps/packages/billing/src/queue.ts
+  s_974302adc1ddb3::t_6f709908cc22fc 109
+  s_974302adc1ddb3::t_637e4ca98c2b6f 46
+  s_974302adc1ddb3::t_c3f79f551b13ef 94
+apps/services/core/src/middleware/admin-access.ts
+  s_974302adc1ddb3::t_32e5a290cdf71c 1-101
+apps/services/gateway/src/routes/admin.ts
+  s_974302adc1ddb3::t_6005059301f707 89
+apps/services/workers/src/index.ts
+  s_974302adc1ddb3::t_be07fa5f4ea77b 142-147,158-159,179-180
+docs/audits/BACKEND_AUDIT.md
+  s_974302adc1ddb3::t_7e7c0a7dfd2159 1-108
+apps/services/core/src/routes/v1/admin/global-licenses.ts
+  s_974302adc1ddb3::t_8823aeea4838df 1,10,15,19-21,23-34,36-48,50-53,55,57-66
+  s_974302adc1ddb3::t_614ecf8990e91b 54
+apps/services/core/src/index.ts
+  s_974302adc1ddb3::t_614ecf8990e91b 4
+  s_974302adc1ddb3::t_d18887bffea58a 5
+  s_974302adc1ddb3::t_d8d4b9d3b7e8a7 37-41,43-48
+  s_974302adc1ddb3::t_8e023ab0c9d708 84,95-115
+apps/packages/shared/src/index.ts
+  s_974302adc1ddb3::t_614ecf8990e91b 3,21-24,48-51,61-64,73-83
+apps/services/core/src/billing/queue.ts
+  s_974302adc1ddb3::t_974d58e3ff502b 94
+  s_974302adc1ddb3::t_ae7ad1f27d98c1 46
+  s_974302adc1ddb3::t_bab34953281ded 109
+apps/services/gateway/src/middleware/auth.ts
+  s_974302adc1ddb3::t_2855966849cfa3 115
+apps/services/core/src/routes/v1/admin/test.ts
+  s_974302adc1ddb3::t_786f239109eb25 838-842
+  s_974302adc1ddb3::t_614ecf8990e91b 128-130
+  s_974302adc1ddb3::t_c972e0a004d82c 152-154
+  s_974302adc1ddb3::t_1f19c683518ef8 67-68,72-77
+  s_974302adc1ddb3::t_64c90defdc27c8 698-701
+  s_974302adc1ddb3::t_8abf4fde6fcc4a 855
+  s_974302adc1ddb3::t_5b3c6aeff05f33 858
+  s_974302adc1ddb3::t_608f1f8bc6af72 875
+  s_974302adc1ddb3::t_9185d1073ada9a 885
+  s_974302adc1ddb3::t_9ff2f07a7f8c1a 894
+  s_974302adc1ddb3::t_0bfc8d8e9c2316 532-536
+  s_974302adc1ddb3::t_7a99f116fd2c07 78-79
+apps/services/workers/src/dispatch-outbound-webhook.ts
+  s_974302adc1ddb3::t_82482c5fa27766 152-154
+  s_974302adc1ddb3::t_e73c85c9f88422 17
+  s_974302adc1ddb3::t_8714c426641da9 92-95
+  s_974302adc1ddb3::t_b08e4e6213c595 25-26
+  s_974302adc1ddb3::t_614ecf8990e91b 96-132,135-151
+  s_974302adc1ddb3::t_aa861faedf456b 52-62,64-70
+apps/services/core/src/routes/v1/auth/index.ts
+  s_974302adc1ddb3::t_174ee558dd602a 31
+  s_974302adc1ddb3::t_e44e6bbc68d0af 19
+apps/packages/shared/tsup.config.ts
+  s_974302adc1ddb3::t_15ce56981e9dbd 23
+apps/services/core/src/routes/v1/admin/apps.ts
+  s_974302adc1ddb3::t_49821c9a8c94e3 366-367
+  s_974302adc1ddb3::t_4d10b1e5477df5 520-521
+apps/services/gateway/src/routes/payments.ts
+  s_974302adc1ddb3::t_d234075f9d7c74 66
+  s_974302adc1ddb3::t_6a6e7a43811b74 90
+apps/packages/shared/src/utils/logger.ts
+  s_974302adc1ddb3::t_c5b57a484cb0a5 42-59
+apps/packages/shared/src/allowed-origin.ts
+  s_974302adc1ddb3::t_c21abb8e6509a0 1-64
+apps/services/core/src/routes/v1/admin/webhooks.ts
+  s_974302adc1ddb3::t_4abffa59d1db11 173
+  s_974302adc1ddb3::t_6445cbec2e40c8 22
+  s_974302adc1ddb3::t_c36cf1ac95160e 27
+  s_974302adc1ddb3::t_b8f2bcd48bc2a8 213-215
+  s_974302adc1ddb3::t_bd5f05c3454a64 182,188-192,198
+  s_974302adc1ddb3::t_85b67893a31e7c 243
+  s_974302adc1ddb3::t_f1834d412cf2fc 258-260
+  s_974302adc1ddb3::t_8e55538e9d5ddc 551,559-560
+  s_974302adc1ddb3::t_8a2a8e40769e72 31-36
+  s_974302adc1ddb3::t_68477d6fbb86e3 233
+apps/services/core/src/config/env.ts
+  s_974302adc1ddb3::t_614ecf8990e91b 130-143,152-158
+  s_974302adc1ddb3::t_d60bb62beaa961 174,177-184
+  s_974302adc1ddb3::t_ca0d5b235ee482 86
+  s_974302adc1ddb3::t_c8218b71c00955 51-60
+  s_974302adc1ddb3::t_3880561de9d105 108-129,144-151,159-160
+  s_974302adc1ddb3::t_fdd373bc2e7198 185
+apps/services/core/src/security/backend-audit.test.ts
+  s_974302adc1ddb3::t_ee496f22d8e812 1-89
+apps/services/core/src/routes/v1/admin/index.ts
+  s_974302adc1ddb3::t_62f70e8d53b780 49-51
+  s_974302adc1ddb3::t_ce8db8d8fdb075 23-24
+  s_974302adc1ddb3::t_696824a358965d 3-4
+apps/packages/shared/package.json
+  s_974302adc1ddb3::t_a30732acb2c146 25-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d57a1206ea16762970052e8473ce8323d18d8018",
+  "prompts": {},
+  "sessions": {
+    "s_974302adc1ddb3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a2a5bedf-2cdd-4d9f-9782-9b93669c21e3",
+        "model": "auto-smart"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}

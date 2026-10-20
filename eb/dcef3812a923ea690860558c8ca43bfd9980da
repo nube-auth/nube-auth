@@ -1,0 +1,27 @@
+.github/workflows/_build-image.yml
+  s_d69bbab79ecbe0::t_93bee54d5f6f18 119,122,133-137
+  s_d69bbab79ecbe0::t_241213945da6b6 68-70
+.github/workflows/docker-build.yml
+  s_d69bbab79ecbe0::t_1db5301c7b5b71 169
+  s_d69bbab79ecbe0::t_d8f521eb767832 46
+  s_d69bbab79ecbe0::t_ca17b6f41cfcae 146
+  s_d69bbab79ecbe0::t_c39f73782bab51 116
+  s_d69bbab79ecbe0::t_18d9f3d5105b19 97
+  s_d69bbab79ecbe0::t_09c829651242ac 131
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ebdcef3812a923ea690860558c8ca43bfd9980da",
+  "prompts": {},
+  "sessions": {
+    "s_d69bbab79ecbe0": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "b34223e7-d627-475f-a51c-5f5682499be8",
+        "model": "claude-sonnet-4-5"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}

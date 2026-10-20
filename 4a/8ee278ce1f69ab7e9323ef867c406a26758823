@@ -1,0 +1,22 @@
+.github/workflows/docker-build.yml
+  s_d69bbab79ecbe0::t_2dac1ef2e3c434 97-100,119
+  s_d69bbab79ecbe0::t_c8e8c924070d01 134
+  s_d69bbab79ecbe0::t_5e797889b30d5b 172
+  s_d69bbab79ecbe0::t_3d59a8fe92fd28 149
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4a8ee278ce1f69ab7e9323ef867c406a26758823",
+  "prompts": {},
+  "sessions": {
+    "s_d69bbab79ecbe0": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "b34223e7-d627-475f-a51c-5f5682499be8",
+        "model": "claude-sonnet-4-5"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}

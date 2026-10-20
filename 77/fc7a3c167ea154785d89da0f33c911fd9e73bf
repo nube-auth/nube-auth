@@ -1,0 +1,19 @@
+apps/dashboard/admin/src/pages/AppSettings.tsx
+  s_974302adc1ddb3::t_2ce30b16ea06e6 129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "77fc7a3c167ea154785d89da0f33c911fd9e73bf",
+  "prompts": {},
+  "sessions": {
+    "s_974302adc1ddb3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a2a5bedf-2cdd-4d9f-9782-9b93669c21e3",
+        "model": "auto-smart"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
