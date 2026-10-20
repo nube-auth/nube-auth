@@ -23,15 +23,20 @@ jobs:
           pkgs="nube-auth-staging nube-auth-core nube-auth-gateway nube-auth-workers nube-auth-dashboards nube-auth-prod"
           for pkg in $pkgs; do
             echo "Package ${pkg}"
-            while true; do
-              ids=$(gh api --paginate "/orgs/nube-auth/packages/container/${pkg}/versions" --jq '.[].id' 2>/dev/null || true)
-              if [ -z "${ids}" ]; then
-                echo "  none left"
-                break
+            node_id=$(gh api graphql -f query='query($name:String!){organization(login:"nube-auth"){packages(first:1,names:[$name]){nodes{id name}}}}' -f name="$pkg" --jq '.data.organization.packages.nodes[0].id' 2>/dev/null || true)
+            if [ -n "${node_id}" ] && [ "${node_id}" != "null" ]; then
+              gh api graphql -f query='mutation($id:ID!){changePackageVisibility(input:{packageId:$id,visibility:PRIVATE}){package{name}}}' -f id="$node_id" >/dev/null \
+                && echo "  visibility private" || echo "  visibility unchanged"
+            fi
+            ids=$(gh api --paginate "/orgs/nube-auth/packages/container/${pkg}/versions" --jq '.[].id' 2>/dev/null || true)
+            if [ -z "${ids}" ]; then
+              echo "  none left"
+              continue
+            fi
+            for id in $ids; do
+              echo "  delete ${id}"
+              if ! gh api --method DELETE "/orgs/nube-auth/packages/container/${pkg}/versions/${id}" >/dev/null; then
+                echo "  skipped ${id}"
               fi
-              for id in $ids; do
-                echo "  delete ${id}"
-                gh api --method DELETE "/orgs/nube-auth/packages/container/${pkg}/versions/${id}" >/dev/null || echo "  failed ${id}"
-              done
             done
           done
