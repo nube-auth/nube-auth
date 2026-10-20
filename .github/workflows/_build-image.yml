@@ -75,6 +75,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          # Pin to the branch this image is built for (trunk/staging), not the
+          # triggering ref. A version-tag push otherwise checks out whatever
+          # commit the tag points at, which can be stale, and that stale
+          # source then overwrites the floating :trunk/:latest tags that
+          # Railway watches.
+          ref: ${{ inputs.branch }}
           submodules: true
           token: ${{ secrets.GH_PAT }}
 
