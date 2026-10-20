@@ -1,0 +1,42 @@
+name: Clean images
+
+# Deletes every published version of the staging and trunk container images
+# so the next build starts from an empty registry. Dispatched by hand.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  clean:
+    name: Delete GHCR images
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Delete staging and trunk images
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -uo pipefail
+          pkgs="nube-auth-staging nube-auth-core nube-auth-gateway nube-auth-workers nube-auth-dashboards nube-auth-prod"
+          for pkg in $pkgs; do
+            echo "Package ${pkg}"
+            node_id=$(gh api graphql -f query='query($name:String!){organization(login:"nube-auth"){packages(first:1,names:[$name]){nodes{id name}}}}' -f name="$pkg" --jq '.data.organization.packages.nodes[0].id' 2>/dev/null || true)
+            if [ -n "${node_id}" ] && [ "${node_id}" != "null" ]; then
+              gh api graphql -f query='mutation($id:ID!){changePackageVisibility(input:{packageId:$id,visibility:PRIVATE}){package{name}}}' -f id="$node_id" >/dev/null \
+                && echo "  visibility private" || echo "  visibility unchanged"
+            fi
+            ids=$(gh api --paginate "/orgs/nube-auth/packages/container/${pkg}/versions" --jq '.[].id' 2>/dev/null || true)
+            if [ -z "${ids}" ]; then
+              echo "  none left"
+              continue
+            fi
+            for id in $ids; do
+              echo "  delete ${id}"
+              if ! gh api --method DELETE "/orgs/nube-auth/packages/container/${pkg}/versions/${id}" >/dev/null; then
+                echo "  skipped ${id}"
+              fi
+            done
+          done
