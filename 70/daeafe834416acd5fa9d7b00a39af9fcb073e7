@@ -3,6 +3,9 @@
   s_d69bbab79ecbe0::t_c8e8c924070d01 134
   s_d69bbab79ecbe0::t_5e797889b30d5b 172
   s_d69bbab79ecbe0::t_3d59a8fe92fd28 149
+.github/workflows/_build-image.yml
+  s_d69bbab79ecbe0::t_49c3bdff5c0a54 119-120,123
+  s_d69bbab79ecbe0::t_c2621918292900 67-70
 ---
 {
   "schema_version": "authorship/3.0.0",
