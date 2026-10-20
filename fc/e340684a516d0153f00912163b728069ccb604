@@ -1,0 +1,19 @@
+turbo.json
+  s_974302adc1ddb3::t_0107381c0cd7b7 18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fce340684a516d0153f00912163b728069ccb604",
+  "prompts": {},
+  "sessions": {
+    "s_974302adc1ddb3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a2a5bedf-2cdd-4d9f-9782-9b93669c21e3",
+        "model": "auto-smart"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}

@@ -1,0 +1,159 @@
+apps/packages/shared/src/outbound-url.ts
+  s_974302adc1ddb3::t_f3e8f76d1b9a68 2-3
+  s_974302adc1ddb3::t_a5aa3b07f22f90 150-187,192-197,201,204,206
+  s_974302adc1ddb3::t_2808aed01b651f 198-199
+  s_974302adc1ddb3::t_f4a74f80a875f1 202
+  s_974302adc1ddb3::t_5a3fe0c6aae6ab 28,38-94,148
+  s_974302adc1ddb3::t_28641cf5ac3350 147,149,203
+apps/services/gateway/src/index.ts
+  s_974302adc1ddb3::t_58a63fd0182110 117-118,123-125,128
+  s_974302adc1ddb3::t_7112d744a64aa5 234
+apps/services/gateway/fly.toml
+  s_974302adc1ddb3::t_79e248ce6cbe0f 32
+apps/services/gateway/src/routes/me.ts
+  s_974302adc1ddb3::t_c250c2c3cdea29 342
+  s_974302adc1ddb3::t_3dded0a9388c3a 380
+apps/services/core/src/routes/v1/admin/billing.ts
+  s_974302adc1ddb3::t_e04d01ae54d5fb 2,4,7-8,11
+  s_974302adc1ddb3::t_9393c4759b0cfb 197-242,358,509,532
+  s_974302adc1ddb3::t_9b92ca7cc6354d 404
+  s_974302adc1ddb3::t_46a266656e2b97 506-507
+  s_974302adc1ddb3::t_3bfacb9b0a5c04 262,264-273
+  s_974302adc1ddb3::t_5647485d275a00 656
+  s_974302adc1ddb3::t_8731aebe75745e 529-530
+  s_974302adc1ddb3::t_f5c417faad7b9e 354-357
+  s_974302adc1ddb3::t_d0588b99a1f513 243-245,251-252,258,274-276,336-337,359-360,365,405,407,429-430,440,470-471,481,510,533,597-598,608,657,659
+apps/packages/db/src/queries.ts
+  s_974302adc1ddb3::t_51c267ee52fdbd 1927,1934,1936
+  s_974302adc1ddb3::t_6e54c6098b7f92 1980-1985,1987,1989
+  s_974302adc1ddb3::t_c827dda3406055 2006-2010,2012
+  s_974302adc1ddb3::t_b365285ee4407c 2056-2057,2060-2061,2065
+  s_974302adc1ddb3::t_f75ba08663cadc 277-288,292
+  s_974302adc1ddb3::t_c81c805c3c1039 2228-2229,2236
+  s_974302adc1ddb3::t_a838be4484ca3d 2030-2035,2037,2039
+  s_974302adc1ddb3::t_43fbe6931b5f9c 1
+  s_974302adc1ddb3::t_eed586947bf013 1845,1854,1856
+  s_974302adc1ddb3::t_6ccbd4ed23f6d4 454
+  s_974302adc1ddb3::t_6ceb809cbe8f29 1803-1826
+  s_974302adc1ddb3::t_c525e2cfb3ce6e 2180,2187,2189
+  s_974302adc1ddb3::t_2619fde55907e3 275-276
+apps/packages/shared/src/types/index.ts
+  s_974302adc1ddb3::t_9c274ee9f66647 77-82
+apps/services/core/src/routes/v1/admin/subscriptions.ts
+  s_974302adc1ddb3::t_6ee165bf2cc4ac 85-106
+  s_974302adc1ddb3::t_76f45a91d59ec0 4,7,9,11,14
+apps/services/core/src/routes/v1/subscription/index.ts
+  s_974302adc1ddb3::t_c2fc59e1403615 14
+  s_974302adc1ddb3::t_d4a1202061a5ca 197,283
+  s_974302adc1ddb3::t_fb7af6cf563a32 26-27,84-85,222-223
+apps/services/gateway/src/routes/auth.ts
+  s_974302adc1ddb3::t_23377e886fad97 584-585
+apps/services/core/src/routes/v1/billing/refunds-clean.ts
+  s_974302adc1ddb3::t_9fe418037670b1 11
+  s_974302adc1ddb3::t_ea1eb257f270ae 12-19,98
+apps/services/core/fly.toml
+  s_974302adc1ddb3::t_79e248ce6cbe0f 33
+apps/packages/db/src/index.ts
+  s_974302adc1ddb3::t_56efa61cf8117c 110
+apps/services/core/src/routes/v1/admin/promotions.ts
+  s_974302adc1ddb3::t_8672c5a1e3205b 103
+  s_974302adc1ddb3::t_e3629e8ac7f886 13
+  s_974302adc1ddb3::t_7f4c92f24a8377 104,500-501
+apps/services/core/src/routes/v1/billing/checkout.ts
+  s_974302adc1ddb3::t_abff2811bf38a2 60-62
+  s_974302adc1ddb3::t_fde8cb6ffd16d7 204
+  s_974302adc1ddb3::t_b338f817b64186 21
+  s_974302adc1ddb3::t_6de30eea785fe5 27
+  s_974302adc1ddb3::t_291afa7753d02b 141
+apps/services/workers/src/sync-plan-to-providers.ts
+  s_974302adc1ddb3::t_b262a94bbfd129 12
+  s_974302adc1ddb3::t_93bb10eea527bd 13-21,167-168
+apps/packages/db/scripts/seed-project-app.ts
+  s_974302adc1ddb3::t_1b46dcab60cb4e 16
+  s_974302adc1ddb3::t_f086ba8b1ad743 105-106,115-130
+  s_974302adc1ddb3::t_c65016cca489a8 140
+apps/services/core/src/routes/v1/license/index.ts
+  s_974302adc1ddb3::t_c6892362afbd08 219
+  s_974302adc1ddb3::t_d6226eb500406a 338,343-344
+  s_974302adc1ddb3::t_3678d14bf01763 128
+  s_974302adc1ddb3::t_605797328f1225 20
+  s_974302adc1ddb3::t_0ab92770409930 1,6,17,19,127,218,337
+apps/packages/db/src/schemas/jsonb.ts
+  s_974302adc1ddb3::t_4ecc9483abe99f 92-93
+  s_974302adc1ddb3::t_634cfec3f3cf00 83-84
+apps/services/core/src/routes/v1/admin/apps.ts
+  s_974302adc1ddb3::t_9bb58a0d588ff4 843-844
+apps/services/core/src/security/backend-audit.test.ts
+  s_974302adc1ddb3::t_2140a79b873d41 45-46
+  s_974302adc1ddb3::t_2bad63048ed044 1
+  s_974302adc1ddb3::t_40204216253309 70-81
+apps/services/core/src/routes/v1/admin/test.ts
+  s_974302adc1ddb3::t_08db89906f0ead 20-21
+  s_974302adc1ddb3::t_b57865ec1684ca 257
+  s_974302adc1ddb3::t_6c633d1ca0c870 330
+apps/services/core/src/routes/v1/admin/members.ts
+  s_974302adc1ddb3::t_c27c82109f5c8a 120-121,124-140
+  s_974302adc1ddb3::t_9226658fd17059 141
+apps/services/core/src/routes/v1/billing/index.ts
+  s_974302adc1ddb3::t_b938a8aa307651 140-141
+  s_974302adc1ddb3::t_25bd50177b020c 19
+  s_974302adc1ddb3::t_2ecb583857f775 129,131
+  s_974302adc1ddb3::t_601f576db6c3f0 142-152
+apps/services/workers/src/process-refund.ts
+  s_974302adc1ddb3::t_8545333164d1b9 12
+  s_974302adc1ddb3::t_111c764c17566a 125
+  s_974302adc1ddb3::t_0d7f95fd15745b 126
+apps/packages/db/src/secret-box.ts
+  s_974302adc1ddb3::t_32e24d941b3456 15-16,19,25-50,52-53,77-86,93-98,106
+apps/services/core/src/middleware/forwarded-session.ts
+  s_974302adc1ddb3::t_ce8d3102a4d7b3 1-24
+apps/services/gateway/src/middleware/appSecret.ts
+  s_974302adc1ddb3::t_58361471112b92 54,59
+apps/services/core/src/routes/v1/admin/providers.ts
+  s_974302adc1ddb3::t_f0b2d14bc81bf9 402
+  s_974302adc1ddb3::t_5f9894e92b0c87 26-27
+  s_974302adc1ddb3::t_842b2e60560571 308
+  s_974302adc1ddb3::t_a997ea4e104bf0 237
+apps/packages/billing/src/services/webhook-handler.ts
+  s_974302adc1ddb3::t_2d55056f35a8ce 9
+  s_974302adc1ddb3::t_70912a3c6dada3 76
+  s_974302adc1ddb3::t_98622d31a4a394 97
+apps/services/core/src/billing/services/webhook-handler.ts
+  s_974302adc1ddb3::t_28ac8b962308e9 76
+  s_974302adc1ddb3::t_4a06f1d45cbe7f 97
+  s_974302adc1ddb3::t_bfd6428c87030c 9
+apps/packages/shared/src/types/schemas/jsonb.ts
+  s_974302adc1ddb3::t_aeb677bc6eba3a 13-18
+docs/audits/BACKEND_AUDIT.md
+  s_974302adc1ddb3::t_4c97cd17e70594 11-13,15-18
+  s_974302adc1ddb3::t_12cec8f3d717e0 20-22
+  s_974302adc1ddb3::t_ca527233d9fffb 3-5,7,24-37,39,41,43,45,47-48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100,102,104,106,108-111,113,115,117-122,124,126-137,139,141-145
+  s_974302adc1ddb3::t_dd8329750fce95 19
+  s_974302adc1ddb3::t_957467aeacca7c 23
+nube-scripts
+  s_e0fee73ba207bf::t_d93434384cf43a 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3d9182b759626e0d4634498d3f385211512f1714",
+  "prompts": {},
+  "sessions": {
+    "s_974302adc1ddb3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a2a5bedf-2cdd-4d9f-9782-9b93669c21e3",
+        "model": "auto-smart"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}

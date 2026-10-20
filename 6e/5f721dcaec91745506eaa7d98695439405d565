@@ -1,0 +1,83 @@
+apps/packages/components/package.json
+  s_974302adc1ddb3::t_3917dd942a593f 21,23
+apps/packages/components/src/components/auth/login-card/auth-login-card.tsx
+  s_974302adc1ddb3::t_bb24ab4fa7d3fe 68-76
+  s_974302adc1ddb3::t_81ccd9b89e3d69 39
+apps/packages/components/src/components/display/console.tsx
+  s_974302adc1ddb3::t_f33b14cabdf778 8-15
+  s_974302adc1ddb3::t_745a170ec10fcf 1-7,16-129,131-134,141-143,150-167
+  s_974302adc1ddb3::t_312c5314efeba7 130
+  s_974302adc1ddb3::t_8d6225ada75f18 135-140,144-149
+apps/dashboard/user/src/App.tsx
+  s_974302adc1ddb3::t_2a040d50b7eb1c 26-28,32-34,44-55,65-69,74,84,92,100,109
+  s_974302adc1ddb3::t_44e85d0b4a31ae 59
+  s_974302adc1ddb3::t_dae9e13705b047 1-12
+apps/dashboard/admin/index.html
+  s_974302adc1ddb3::t_550703fc612a65 5-18
+apps/dashboard/user/index.html
+  s_974302adc1ddb3::t_89ceaa80d17c67 5-18
+apps/dashboard/user/src/index.css
+  s_974302adc1ddb3::t_f3ea441592e8ce 1
+apps/packages/components/src/styles/theme.css
+  s_974302adc1ddb3::t_b64df72375bb97 1-3,6-10,12-32,34-55,57,59-77,79-84
+  s_974302adc1ddb3::t_cfe43fd20d6496 58
+  s_974302adc1ddb3::t_75a748224c1750 56
+  s_974302adc1ddb3::t_ba7d4c6d2157d6 33
+apps/dashboard/home/src/styles/global.css
+  s_974302adc1ddb3::t_4d7b087087001f 1-2,9-10,14-25
+apps/dashboard/admin/src/App.tsx
+  s_974302adc1ddb3::t_e88d72a7020ee4 1
+  s_974302adc1ddb3::t_97e430778e7280 75-80
+apps/packages/components/src/components/display/ThemeToggle.tsx
+  s_974302adc1ddb3::t_663e194e8a3b96 53,57
+apps/dashboard/admin/src/layouts/DashboardLayout.tsx
+  s_974302adc1ddb3::t_a0344fe2f756cc 97
+apps/dashboard/user/src/pages/Root.tsx
+  s_974302adc1ddb3::t_0a9b04fba967f9 1,26-41,57
+apps/dashboard/user/src/styles.css
+  s_974302adc1ddb3::t_e304b9da62095a 1,6
+apps/dashboard/admin/src/pages/Root.tsx
+  s_974302adc1ddb3::t_fa5c8866659747 1
+  s_974302adc1ddb3::t_1290fb8228127a 28-43,59
+apps/packages/components/src/styles/dashboard.css
+  s_974302adc1ddb3::t_a46a0cf00dfbd7 1-42
+apps/packages/components/src/styles/tokens.css
+  s_974302adc1ddb3::t_7625fe495a0e49 1-23,25-78,80-126,128-155
+  s_974302adc1ddb3::t_2ccdaedea726d1 127
+  s_974302adc1ddb3::t_130e1b3798c193 24
+  s_974302adc1ddb3::t_8fd50fdde78700 79
+apps/dashboard/admin/src/styles.css
+  s_974302adc1ddb3::t_197ebea4749e90 1,6
+apps/dashboard/user/src/components/ErrorBoundary.tsx
+  s_974302adc1ddb3::t_479b257269ce07 31-32,34
+apps/dashboard/user/src/pages/Home.tsx
+  s_974302adc1ddb3::t_e6b7feb38e56e1 18-19
+apps/dashboard/home/src/layouts/Layout.astro
+  s_974302adc1ddb3::t_09ca0427f5166f 45,47,49-50
+  s_974302adc1ddb3::t_6e7075f319bbfa 24-25
+apps/packages/components/src/index.ts
+  s_974302adc1ddb3::t_b9f1d93a4a1531 38
+  s_974302adc1ddb3::t_8d6225ada75f18 72-79
+apps/dashboard/user/src/pages/NotFound.tsx
+  s_974302adc1ddb3::t_1208aa9852c604 31
+  s_974302adc1ddb3::t_97a0901f91fe2c 22
+apps/packages/components/src/hooks/useTheme.ts
+  s_974302adc1ddb3::t_7380a970ac2504 5-32
+  s_974302adc1ddb3::t_3f7f1efa17149d 67-68,70-75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6e5f721dcaec91745506eaa7d98695439405d565",
+  "prompts": {},
+  "sessions": {
+    "s_974302adc1ddb3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a2a5bedf-2cdd-4d9f-9782-9b93669c21e3",
+        "model": "auto-smart"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}

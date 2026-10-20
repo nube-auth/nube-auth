@@ -1,0 +1,70 @@
+.github/workflows/docker-build.yml
+  s_974302adc1ddb3::t_17a46e009b4687 105
+  s_974302adc1ddb3::t_6cc63d4101f2bd 172,189
+  s_974302adc1ddb3::t_f435d125d28351 61-63,65-70,80-90
+apps/dashboard/home/src/pages/terms.astro
+  s_974302adc1ddb3::t_0557b583fd0133 246
+  s_974302adc1ddb3::t_c39b0e207959ed 5
+apps/dashboard/home/src/components/Footer.astro
+  s_974302adc1ddb3::t_3caffc09946d19 10
+apps/dashboard/home/src/pages/support.astro
+  s_974302adc1ddb3::t_70f0e988c9c7d2 33
+apps/dashboard/docs/.vitepress/config.ts
+  s_974302adc1ddb3::t_1ad06cf6e97b66 7
+  s_974302adc1ddb3::t_efff5833239ffc 2,5-6,8-12
+  s_974302adc1ddb3::t_66820233332293 163-172
+  s_974302adc1ddb3::t_628f58ad6ef676 13,173
+scripts/nube-hosts.d.mts
+  s_974302adc1ddb3::t_f9922e1caf9e47 1-18
+apps/dashboard/admin/src/pages/AppDevelopers.tsx
+  s_974302adc1ddb3::t_1e47b241511604 602
+  s_974302adc1ddb3::t_ff0762364bf363 21
+  s_974302adc1ddb3::t_d8c47d86a9045d 648
+apps/dashboard/home/src/pages/privacy.astro
+  s_974302adc1ddb3::t_a8d3ae8f2f6009 5
+  s_974302adc1ddb3::t_8a18700b513d24 164
+  s_974302adc1ddb3::t_301ba74088b67c 131
+apps/dashboard/home/src/components/Nav.astro
+  s_974302adc1ddb3::t_485379ba2faf57 8
+scripts/print-nube-hosts.mjs
+  s_974302adc1ddb3::t_43274e92f362cd 1-11
+apps/dashboard/home/astro.config.mjs
+  s_974302adc1ddb3::t_67ebb949a6fc6d 2-5
+  s_974302adc1ddb3::t_b802152380ea5f 6-7,11
+apps/dashboard/home/scripts/check-integration.test.mjs
+  s_974302adc1ddb3::t_1236fc35a97624 31-32
+  s_974302adc1ddb3::t_f513b149792355 34-54
+  s_974302adc1ddb3::t_ca998719a49a7c 33
+apps/dashboard/home/src/config.ts
+  s_974302adc1ddb3::t_c594e635409f20 2-5,13-18,21-23,28-32
+scripts/nube-hosts.mjs
+  s_974302adc1ddb3::t_b13b65001f4883 1-32,35,43-44,49,53-75
+  s_974302adc1ddb3::t_00799fed7a5f49 33-34,37,45-48,51
+  s_974302adc1ddb3::t_15e1a4fc74d81a 36,38-42,50,52
+nube-scripts
+  s_e0fee73ba207bf::t_dcc3a84c2e82e7 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "056e72fbe2c590ac74eab85fcea2e55942980828",
+  "prompts": {},
+  "sessions": {
+    "s_974302adc1ddb3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a2a5bedf-2cdd-4d9f-9782-9b93669c21e3",
+        "model": "auto-smart"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}

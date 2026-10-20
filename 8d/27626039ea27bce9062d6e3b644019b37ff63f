@@ -1,0 +1,79 @@
+apps/services/core/src/routes/v1/admin/plans.ts
+  s_9a0d4dc9d5cbab::t_745ac55cfc0ae6 8
+apps/services/core/tsup.config.ts
+  s_9a0d4dc9d5cbab::t_b7243c07898f15 4
+apps/services/core/src/routes/v1/admin/promotions/shared.ts
+  s_9a0d4dc9d5cbab::t_745ac55cfc0ae6 1
+apps/services/core/src/routes/v1/admin/promotions/record.ts
+  s_9a0d4dc9d5cbab::t_745ac55cfc0ae6 1
+apps/services/core/src/routes/v1/admin/test/simulate-webhook.ts
+  s_9a0d4dc9d5cbab::t_95b07f0933f0db 6
+apps/services/core/src/routes/v1/billing/refunds-clean.ts
+  s_9a0d4dc9d5cbab::t_745ac55cfc0ae6 11
+apps/services/core/src/routes/v1/admin/prices.ts
+  s_9a0d4dc9d5cbab::t_745ac55cfc0ae6 10
+apps/services/core/src/routes/v1/subscription/index.ts
+  s_9a0d4dc9d5cbab::t_745ac55cfc0ae6 1
+apps/services/core/src/routes/v1/admin/license-management.ts
+  s_9a0d4dc9d5cbab::t_745ac55cfc0ae6 1
+apps/services/core/package.json
+  s_9a0d4dc9d5cbab::t_e272908eeeeaa3 24
+  s_9a0d4dc9d5cbab::t_14a1e5b0b984ec 32
+apps/services/core/src/routes/v1/billing/checkout.ts
+  s_9a0d4dc9d5cbab::t_745ac55cfc0ae6 9
+apps/packages/billing/src/services/provider-selector.ts
+  s_9a0d4dc9d5cbab::t_656d32f72af3d3 1-235
+apps/services/core/src/routes/v1/billing/index.ts
+  s_9a0d4dc9d5cbab::t_745ac55cfc0ae6 21
+apps/services/core/src/routes/v1/admin/test/initialize.ts
+  s_9a0d4dc9d5cbab::t_745ac55cfc0ae6 6
+apps/services/core/src/routes/v1/auth/index.ts
+  s_9a0d4dc9d5cbab::t_745ac55cfc0ae6 2
+apps/services/workers/Dockerfile
+  s_9a0d4dc9d5cbab::t_2322839ddd2000 24
+apps/services/core/src/routes/v1/admin/webhooks/delivery.ts
+  s_9a0d4dc9d5cbab::t_745ac55cfc0ae6 2
+apps/services/core/src/routes/v1/billing/webhooks.ts
+  s_9a0d4dc9d5cbab::t_76654e3cf329a8 8
+apps/packages/billing/src/services/webhook-simulator.ts
+  s_9a0d4dc9d5cbab::t_656d32f72af3d3 1-372
+apps/packages/billing/src/index.ts
+  s_9a0d4dc9d5cbab::t_745ac55cfc0ae6 28-29
+  s_9a0d4dc9d5cbab::t_d335c0c8f8740f 18-19
+apps/services/core/src/routes/v1/admin/billing.ts
+  s_9a0d4dc9d5cbab::t_745ac55cfc0ae6 1
+apps/services/core/src/routes/v1/admin/providers.ts
+  s_9a0d4dc9d5cbab::t_745ac55cfc0ae6 15
+apps/services/core/Dockerfile
+  s_9a0d4dc9d5cbab::t_536674745df1c7 23
+apps/services/core/src/routes/v1/admin/routing-rules.ts
+  s_9a0d4dc9d5cbab::t_745ac55cfc0ae6 8
+pnpm-lock.yaml
+  s_9a0d4dc9d5cbab::t_16ccf9d29e60e8 560-562
+nube-scripts
+  s_e0fee73ba207bf::t_9346933b5c8d83 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8d27626039ea27bce9062d6e3b644019b37ff63f",
+  "prompts": {},
+  "sessions": {
+    "s_9a0d4dc9d5cbab": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "62aa1d1c-96fc-4214-b162-241fa6191d89",
+        "model": "auto-smart"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
