@@ -1,0 +1,37 @@
+name: Clean images
+
+# Deletes every published version of the staging and trunk container images
+# so the next build starts from an empty registry. Dispatched by hand.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  clean:
+    name: Delete GHCR images
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Delete staging and trunk images
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -uo pipefail
+          pkgs="nube-auth-staging nube-auth-core nube-auth-gateway nube-auth-workers nube-auth-dashboards nube-auth-prod"
+          for pkg in $pkgs; do
+            echo "Package ${pkg}"
+            while true; do
+              ids=$(gh api --paginate "/orgs/nube-auth/packages/container/${pkg}/versions" --jq '.[].id' 2>/dev/null || true)
+              if [ -z "${ids}" ]; then
+                echo "  none left"
+                break
+              fi
+              for id in $ids; do
+                echo "  delete ${id}"
+                gh api --method DELETE "/orgs/nube-auth/packages/container/${pkg}/versions/${id}" >/dev/null || echo "  failed ${id}"
+              done
+            done
+          done
