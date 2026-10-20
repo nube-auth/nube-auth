@@ -1,0 +1,19 @@
+.github/workflows/_build-image.yml
+  s_9a0d4dc9d5cbab::t_60ea169db374d1 78-83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "73b3e9ba98eda967dbb706735c829f482662b49f",
+  "prompts": {},
+  "sessions": {
+    "s_9a0d4dc9d5cbab": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "62aa1d1c-96fc-4214-b162-241fa6191d89",
+        "model": "auto-smart"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
