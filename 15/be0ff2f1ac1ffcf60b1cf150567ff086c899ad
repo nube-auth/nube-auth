@@ -1,0 +1,36 @@
+apps/packages/billing/src/services/purchases.ts
+  s_f37f2058e98419::t_c9c109f5643949 371-374
+apps/services/core/src/routes/v1/admin/billing.ts
+  s_f37f2058e98419::t_cf4c4db1b7b611 77-81,87-88
+  s_f37f2058e98419::t_235b4eecb43ee9 73
+  s_f37f2058e98419::t_12dcee4a5ad356 291-292,296,299,302,316-317
+  s_f37f2058e98419::t_97d88b101ad0e2 89
+  s_f37f2058e98419::t_1d07d4c1bfccc5 288-290
+  s_f37f2058e98419::t_45ae9029a00a3b 318
+apps/services/core/src/routes/v1/billing/refunds-clean.ts
+  s_f37f2058e98419::t_de32757dcb4182 147
+  s_f37f2058e98419::t_3ec1d9b07ee5b8 212
+  s_f37f2058e98419::t_f1f4ae3986bd60 180
+  s_f37f2058e98419::t_63f590db9c2ea2 20
+apps/packages/billing/src/adapters/dodo.ts
+  s_f37f2058e98419::t_28c5520af2afd2 216-217,220,227
+  s_f37f2058e98419::t_ce403074456f50 195,201
+apps/packages/billing/src/adapters/types.ts
+  s_f37f2058e98419::t_aef7a08826d540 54-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "15be0ff2f1ac1ffcf60b1cf150567ff086c899ad",
+  "prompts": {},
+  "sessions": {
+    "s_f37f2058e98419": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "1f4a2754-6f75-4def-8c7f-04d91ea383fc",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
