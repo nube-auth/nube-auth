@@ -29,7 +29,7 @@ import {
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getIconById } from "../components/IconPicker";
 import { PageLoader } from "../components/PageLoader";
-import { useProject, useProjectApps, useProjectMembers, useProjectStats } from "../hooks/api";
+import { useProject, useProjectApps, useProjectAppsStats, useProjectMembers, useProjectStats } from "../hooks/api";
 
 export function ProjectDetailPage() {
 	const { projectId } = useParams<{ projectId: string }>();
@@ -38,6 +38,7 @@ export function ProjectDetailPage() {
 	const { data: apps, isLoading: appsLoading } = useProjectApps(projectId || "");
 	const { data: members, isLoading: membersLoading } = useProjectMembers(projectId || "");
 	const { data: stats, isLoading: statsLoading } = useProjectStats(projectId || "");
+	const { data: appsStats, isLoading: appsStatsLoading } = useProjectAppsStats(projectId || "");
 
 	if (projectLoading) {
 		return <PageLoader />;
@@ -153,7 +154,7 @@ export function ProjectDetailPage() {
 			</div>
 
 			{/* Applications Section */}
-			{appsLoading ? (
+			{appsLoading || appsStatsLoading ? (
 				<Card>
 					<CardHeader>
 						<div className="flex-1">
@@ -188,44 +189,51 @@ export function ProjectDetailPage() {
 					<TableHeader>
 						<tr>
 							<TableHead>Name</TableHead>
-							<TableHead>App ID</TableHead>
-							<TableHead>Session TTL</TableHead>
+							<TableHead>Users</TableHead>
+							<TableHead>Licenses</TableHead>
+							<TableHead>Revenue</TableHead>
 							<TableHead>Status</TableHead>
 							<TableHead className="w-8"></TableHead>
 						</tr>
 					</TableHeader>
 					<TableBody>
-						{(apps || []).map((app) => (
-							<DataTableRow
-								key={app.id}
-								onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
-							>
-								<TableCell>
-									<div className="flex items-center gap-3">
-										<IconBox size="sm" variant="secondary-subtle">
-											<Icon icon={IconType[getIconById(app.icon || "dashboard")]} size={18} />
-										</IconBox>
-										<Text className="font-medium">{app.name}</Text>
-									</div>
-								</TableCell>
-								<TableCell>
-									<code className="px-2 py-1 bg-surface-secondary rounded text-xs font-mono">
-										{app.id}
-									</code>
-								</TableCell>
-								<TableCell>
-									<Text className="text-muted">{app.sessionTtlDays || 30} days</Text>
-								</TableCell>
-								<TableCell>
-									<Chip variant="success" size="sm">
-										Active
-									</Chip>
-								</TableCell>
-								<TableCell className="text-right pr-4">
-									<Icon icon={IconType.ArrowRight} size={18} className="text-primary" />
-								</TableCell>
-							</DataTableRow>
-						))}
+						{(apps || []).map((app) => {
+							const appStat = appsStats?.stats?.[app.id];
+							return (
+								<DataTableRow
+									key={app.id}
+									onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
+								>
+									<TableCell>
+										<div className="flex items-center gap-3">
+											<IconBox size="sm" variant="secondary-subtle">
+												<Icon icon={IconType[getIconById(app.icon || "dashboard")]} size={18} />
+											</IconBox>
+											<Text className="font-medium">{app.name}</Text>
+										</div>
+									</TableCell>
+									<TableCell>
+										<Text className="font-semibold">{appStat?.users ?? "—"}</Text>
+									</TableCell>
+									<TableCell>
+										<Text className="font-semibold">{appStat?.licenses ?? "—"}</Text>
+									</TableCell>
+									<TableCell>
+										<Text className="font-semibold">
+											{appStat?.revenue != null ? `$${appStat.revenue.toFixed(2)}` : "—"}
+										</Text>
+									</TableCell>
+									<TableCell>
+										<Chip variant="success" size="sm">
+											Active
+										</Chip>
+									</TableCell>
+									<TableCell className="text-right pr-4">
+										<Icon icon={IconType.ArrowRight} size={18} className="text-primary" />
+									</TableCell>
+								</DataTableRow>
+							);
+						})}
 					</TableBody>
 				</DataTable>
 			)}

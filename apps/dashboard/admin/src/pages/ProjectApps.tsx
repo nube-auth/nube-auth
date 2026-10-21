@@ -23,7 +23,7 @@ import {
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { PageLoader } from "../components/PageLoader";
-import { useProject, useProjectApps } from "../hooks/api";
+import { useProject, useProjectApps, useProjectAppsStats } from "../hooks/api";
 
 type ViewMode = "grid" | "table";
 
@@ -32,9 +32,10 @@ export function ProjectAppsPage() {
 	const navigate = useNavigate();
 	const { data: project, isLoading: projectLoading } = useProject(projectId || "");
 	const { data: apps, isLoading: appsLoading } = useProjectApps(projectId || "");
+	const { data: appsStats, isLoading: appsStatsLoading } = useProjectAppsStats(projectId || "");
 	const [viewMode, setViewMode] = useState<ViewMode>("table");
 
-	if (projectLoading || appsLoading) {
+	if (projectLoading || appsLoading || appsStatsLoading) {
 		return <PageLoader />;
 	}
 
@@ -105,62 +106,75 @@ export function ProjectAppsPage() {
 				</EmptyState>
 			) : viewMode === "grid" ? (
 				<div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-5">
-					{apps.map((app) => (
-						<Card
-							key={app.id}
-							className="transition-all hover:border-primary hover:-translate-y-0.5 hover:shadow-lg cursor-pointer"
-							onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
-						>
-							<CardBody>
-								{/* Header */}
-								<div className="flex items-center justify-between mb-3">
-									<div className="flex items-center gap-2.5">
-										<div className="w-9 h-9 bg-surface-secondary rounded-lg flex items-center justify-center">
-											<Icon icon={IconType.Key} size={20} className="text-primary" />
+					{apps.map((app) => {
+						const appStat = appsStats?.stats?.[app.id];
+						return (
+							<Card
+								key={app.id}
+								className="transition-all hover:border-primary hover:-translate-y-0.5 hover:shadow-lg cursor-pointer"
+								onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
+							>
+								<CardBody>
+									{/* Header */}
+									<div className="flex items-center justify-between mb-3">
+										<div className="flex items-center gap-2.5">
+											<div className="w-9 h-9 bg-surface-secondary rounded-lg flex items-center justify-center">
+												<Icon icon={IconType.Key} size={20} className="text-primary" />
+											</div>
+											<div>
+												<Heading level={3} size="sm" className="font-semibold">
+													{app.name}
+												</Heading>
+												{app.slug && <Text className="text-xs text-muted">{app.slug}</Text>}
+											</div>
 										</div>
-										<div>
-											<Heading level={3} size="sm" className="font-semibold">
-												{app.name}
-											</Heading>
-											{app.slug && <Text className="text-xs text-muted">{app.slug}</Text>}
+										<div className="flex items-center justify-center">
+											<Icon icon={IconType.Check} size={18} className="text-success" bold />
 										</div>
 									</div>
-									<div className="flex items-center justify-center">
-										<Icon icon={IconType.Check} size={18} className="text-success" bold />
-									</div>
-								</div>
 
-								{/* Description */}
-								{app.description && (
-									<Text className="text-sm text-muted leading-relaxed line-clamp-2">
-										{app.description}
-									</Text>
-								)}
+									{/* Description */}
+									{app.description && (
+										<Text className="text-sm text-muted leading-relaxed line-clamp-2">
+											{app.description}
+										</Text>
+									)}
 
-								{/* Stats Grid */}
-								<div className="grid grid-cols-2 gap-3 mt-4 p-3 bg-surface-secondary rounded-lg">
-									<div className="text-center">
-										<div className="text-xl font-bold text-foreground mb-0.5">0</div>
-										<Text className="text-xs text-muted">Users</Text>
+									{/* Stats Grid */}
+									<div className="grid grid-cols-3 gap-3 mt-4 p-3 bg-surface-secondary rounded-lg">
+										<div className="text-center">
+											<div className="text-xl font-bold text-foreground mb-0.5">
+												{appStat?.users ?? "—"}
+											</div>
+											<Text className="text-xs text-muted">Users</Text>
+										</div>
+										<div className="text-center">
+											<div className="text-xl font-bold text-foreground mb-0.5">
+												{appStat?.licenses ?? "—"}
+											</div>
+											<Text className="text-xs text-muted">Licenses</Text>
+										</div>
+										<div className="text-center">
+											<div className="text-xl font-bold text-foreground mb-0.5">
+												{appStat?.revenue != null ? `$${appStat.revenue.toFixed(2)}` : "—"}
+											</div>
+											<Text className="text-xs text-muted">Revenue</Text>
+										</div>
 									</div>
-									<div className="text-center">
-										<div className="text-xl font-bold text-foreground mb-0.5">0</div>
-										<Text className="text-xs text-muted">Licenses</Text>
-									</div>
-								</div>
 
-								{/* Footer */}
-								<div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-									<Text className="text-xs text-muted">
-										{new Date(app.createdAt).toLocaleDateString()}
-									</Text>
-									<Chip variant="info" size="sm">
-										{app.id}
-									</Chip>
-								</div>
-							</CardBody>
-						</Card>
-					))}
+									{/* Footer */}
+									<div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+										<Chip variant="success" size="sm">
+											Active
+										</Chip>
+										<Chip variant="info" size="sm">
+											{app.id}
+										</Chip>
+									</div>
+								</CardBody>
+							</Card>
+						);
+					})}
 				</div>
 			) : (
 				<DataTable>
@@ -169,50 +183,61 @@ export function ProjectAppsPage() {
 							<TableHead>Application</TableHead>
 							<TableHead>Users</TableHead>
 							<TableHead>Licenses</TableHead>
-							<TableHead>Created</TableHead>
+							<TableHead>Revenue</TableHead>
+							<TableHead>Status</TableHead>
 							<TableHead align="right">Actions</TableHead>
 						</tr>
 					</TableHeader>
 					<TableBody>
-						{apps.map((app) => (
-							<DataTableRow
-								key={app.id}
-								onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
-							>
-								<TableCell>
-									<div className="flex items-center gap-3">
-										<div className="w-8 h-8 bg-surface-secondary rounded-md flex items-center justify-center shrink-0">
-											<Icon icon={IconType.Key} size={18} className="text-primary" />
+						{apps.map((app) => {
+							const appStat = appsStats?.stats?.[app.id];
+							return (
+								<DataTableRow
+									key={app.id}
+									onClick={() => navigate(`/projects/${projectId}/apps/${app.id}`)}
+								>
+									<TableCell>
+										<div className="flex items-center gap-3">
+											<div className="w-8 h-8 bg-surface-secondary rounded-md flex items-center justify-center shrink-0">
+												<Icon icon={IconType.Key} size={18} className="text-primary" />
+											</div>
+											<div>
+												<Text className="font-medium mb-0.5">{app.name}</Text>
+												<Text className="text-xs text-muted">{app.slug}</Text>
+											</div>
 										</div>
-										<div>
-											<Text className="font-medium mb-0.5">{app.name}</Text>
-											<Text className="text-xs text-muted">{app.slug}</Text>
-										</div>
-									</div>
-								</TableCell>
-								<TableCell>
-									<Text className="font-semibold">0</Text>
-								</TableCell>
-								<TableCell>
-									<Text className="font-semibold">0</Text>
-								</TableCell>
-								<TableCell>
-									<Text className="text-muted">{new Date(app.createdAt).toLocaleDateString()}</Text>
-								</TableCell>
-								<TableCell align="right">
-									<Button
-										size="sm"
-										variant="secondary"
-										onClick={(e) => {
-											e.stopPropagation();
-											navigate(`/projects/${projectId}/apps/${app.id}/settings`);
-										}}
-									>
-										Settings
-									</Button>
-								</TableCell>
-							</DataTableRow>
-						))}
+									</TableCell>
+									<TableCell>
+										<Text className="font-semibold">{appStat?.users ?? "—"}</Text>
+									</TableCell>
+									<TableCell>
+										<Text className="font-semibold">{appStat?.licenses ?? "—"}</Text>
+									</TableCell>
+									<TableCell>
+										<Text className="font-semibold">
+											{appStat?.revenue != null ? `$${appStat.revenue.toFixed(2)}` : "—"}
+										</Text>
+									</TableCell>
+									<TableCell>
+										<Chip variant="success" size="sm">
+											Active
+										</Chip>
+									</TableCell>
+									<TableCell align="right">
+										<Button
+											size="sm"
+											variant="secondary"
+											onClick={(e) => {
+												e.stopPropagation();
+												navigate(`/projects/${projectId}/apps/${app.id}/settings`);
+											}}
+										>
+											Settings
+										</Button>
+									</TableCell>
+								</DataTableRow>
+							);
+						})}
 					</TableBody>
 				</DataTable>
 			)}

@@ -236,6 +236,21 @@ export function useProjectApps(projectId: string) {
 	});
 }
 
+export function useProjectAppsStats(projectId: string) {
+	return useQuery({
+		queryKey: ["project-apps-stats", projectId],
+		queryFn: async () => {
+			return fetchAPI<{
+				stats: Record<string, { users: number; licenses: number; activeLicenses: number; revenue: number }>;
+			}>(`/v1/admin/projects/${projectId}/apps/stats`);
+		},
+		enabled: !!projectId,
+		staleTime: 5 * 60 * 1000,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
+	});
+}
+
 export function useCreateApp(projectId: string) {
 	const queryClient = useQueryClient();
 	return useMutation({

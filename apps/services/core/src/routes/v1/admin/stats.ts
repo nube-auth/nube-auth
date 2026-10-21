@@ -203,6 +203,83 @@ statsRouter.get("/:projectId/stats", async (c: Context) => {
 });
 
 /**
+ * GET /:projectId/apps/stats
+ * Get per-app statistics for all apps in a project (batch).
+ */
+statsRouter.get("/:projectId/apps/stats", async (c: Context) => {
+	try {
+		const projectId = c.req.param("projectId");
+
+		if (!projectId || !idPatterns.project.test(projectId)) {
+			return c.json({ error: "Invalid projectId" }, 400);
+		}
+
+		const db = getDb();
+
+		const project = await projectQueries.findByPublicId(db, projectId);
+		if (!project) {
+			return c.json({ error: "Project not found" }, 404);
+		}
+
+		const allApps = await appQueries.findByProjectId(db, project.id);
+		const apps = allApps.filter((a) => !a.is_test);
+
+		// Fetch licenses per app in one pass
+		const licenseEntries = await Promise.all(
+			apps.map(
+				async (a) =>
+					[a.id, (await licenseQueries.findByAppId(db, a.id)).filter((l) => !l.is_test)] as [
+						number,
+						Awaited<ReturnType<typeof licenseQueries.findByAppId>>,
+					],
+			),
+		);
+		const licensesByApp = new Map(licenseEntries);
+
+		// Fetch user counts and revenue per app in parallel
+		const [userCounts, revenueByApp] = await Promise.all([
+			Promise.all(
+				apps.map(async (a) => {
+					const count = await appUserQueries.countByAppId(db, a.id);
+					return [a.id, count] as [number, number];
+				}),
+			),
+			Promise.all(
+				apps.map(async (a) => {
+					const rev = await paymentTransactionQueries.getRevenueByAppIdGroupedByCurrency(db, a.id);
+					return [a.id, rev] as [number, Record<string, number>];
+				}),
+			),
+		]);
+
+		const userCountMap = new Map(userCounts);
+		const revenueMap = new Map(revenueByApp);
+
+		const appStats: Record<string, { users: number; licenses: number; activeLicenses: number; revenue: number }> =
+			{};
+
+		for (const app of apps) {
+			const appLicenses = licensesByApp.get(app.id) ?? [];
+			const activeLicenses = appLicenses.filter((l) => l.status === "active" || l.status === "trialing").length;
+			const rev = revenueMap.get(app.id) ?? {};
+			const totalRevenue = (rev["usd"] ?? 0) / 100;
+
+			appStats[app.public_id] = {
+				users: userCountMap.get(app.id) ?? 0,
+				licenses: appLicenses.length,
+				activeLicenses,
+				revenue: totalRevenue,
+			};
+		}
+
+		return c.json({ stats: appStats });
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "Get batch app stats error");
+		return c.json({ error: "Failed to get app stats" }, 500);
+	}
+});
+
+/**
  * GET /:projectId/apps/:appId/stats
  * Get app statistics
  */
