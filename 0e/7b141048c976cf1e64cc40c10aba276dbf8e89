@@ -1,0 +1,33 @@
+apps/dashboard/admin/src/hooks/api.ts
+  s_f37f2058e98419::t_517ee0bb5d0174 239-253
+apps/dashboard/admin/src/pages/ProjectDetail.tsx
+  s_f37f2058e98419::t_a4e7bdf62d96a3 157,192-194,200-236
+  s_f37f2058e98419::t_7760c61d328684 32,41
+apps/services/core/src/routes/v1/admin/stats.ts
+  s_f37f2058e98419::t_7a9f362a8461ea 206-281
+  s_f37f2058e98419::t_8086883e8a2509 205
+apps/dashboard/admin/src/pages/ProjectApps.tsx
+  s_f37f2058e98419::t_0c550798ee2147 26,35,38
+  s_f37f2058e98419::t_10d6bfd2426a47 174-177,186-187,192-207,209-221,223,235
+  s_f37f2058e98419::t_cb836cc254d352 109-129,131-132,136-141,143-162,165
+  s_f37f2058e98419::t_9a22913437038a 166-168,171-173
+  s_f37f2058e98419::t_03bac41a2df872 222
+  s_f37f2058e98419::t_006e589e678e36 224-226,232-234
+  s_f37f2058e98419::t_1dd7adb7ebf528 236-238
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0e7b141048c976cf1e64cc40c10aba276dbf8e89",
+  "prompts": {},
+  "sessions": {
+    "s_f37f2058e98419": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "1f4a2754-6f75-4def-8c7f-04d91ea383fc",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
