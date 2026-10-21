@@ -17,6 +17,7 @@ import {
 	payment_transactions,
 	purchases,
 	readSealedSecret,
+	sql,
 } from "@nube-auth/db";
 import { createLogger, id, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
@@ -143,7 +144,7 @@ refundRoutes.post("/", async (c: Context) => {
 			refundId: refundTx?.public_id,
 			providerRefundId: refundResult.refundId,
 			status: refundResult.status,
-			amount: refundResult.amount,
+			amount: (refundResult.amount ?? 0) / 100,
 			currency: refundResult.currency,
 		});
 	} catch (error) {
@@ -176,7 +177,7 @@ refundRoutes.get("/:id/status", async (c: Context) => {
 		return c.json({
 			refundId: refundTx.public_id,
 			status: refundTx.status,
-			amount: refundTx.amount_cents,
+			amount: (refundTx.amount_cents ?? 0) / 100,
 			currency: refundTx.currency,
 			createdAt: refundTx.created_at,
 		});
@@ -208,7 +209,7 @@ refundRoutes.get("/purchase/:purchaseId", async (c: Context) => {
 			.select({
 				refundId: payment_transactions.public_id,
 				status: payment_transactions.status,
-				amount: payment_transactions.amount_cents,
+				amount: sql<number>`${payment_transactions.amount_cents} / 100.0`,
 				currency: payment_transactions.currency,
 				createdAt: payment_transactions.created_at,
 			})

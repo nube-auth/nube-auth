@@ -368,7 +368,10 @@ export async function createPurchaseRecords(db: Database, params: CreatePurchase
 				promotion_code_id: promoCodeRow ? promoCodeRow.id : null,
 				provider_discount_id: paymentDetails.metadata?.["discountId"] || null,
 				description: `Purchase - ${interval || "one-time"}`,
-				metadata: paymentDetails.metadata || {},
+				metadata: {
+					...(paymentDetails.metadata || {}),
+					...(paymentDetails.taxAmount != null ? { tax_amount_cents: paymentDetails.taxAmount } : {}),
+				},
 				transaction_date: new Date(),
 			})
 			// Idempotency guard: if a duplicate webhook arrives for the same provider transaction
