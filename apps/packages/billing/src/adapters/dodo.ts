@@ -190,18 +190,15 @@ export class DodoAdapter implements PaymentProviderAdapter {
 		const metadata = (data["metadata"] as Record<string, string>) ?? {};
 		const totalAmount = Number(data["total_amount"] ?? 0);
 		const taxAmount = Number(data["tax"] ?? 0);
-		const preTaxAmount = Number(
-			data["pre_tax_amount"] ??
-				(Number.isFinite(totalAmount) && Number.isFinite(taxAmount) ? totalAmount - taxAmount : totalAmount),
-		);
 		return {
 			transactionId: String(data["payment_id"] ?? ""),
-			amount: preTaxAmount,
+			amount: totalAmount,
 			currency: String(data["currency"] ?? "usd").toLowerCase(),
 			status,
 			customerId: customer?.customer_id ?? "",
 			customerEmail: customer?.email ?? "",
 			...(data["subscription_id"] ? { subscriptionId: String(data["subscription_id"]) } : {}),
+			taxAmount: taxAmount > 0 ? taxAmount : undefined,
 			metadata,
 		};
 	}
@@ -216,15 +213,18 @@ export class DodoAdapter implements PaymentProviderAdapter {
 		// when the same subscription is renewed multiple times.
 		const previousBillingDate = data["previous_billing_date"] as string | undefined;
 		const transactionId = previousBillingDate ? `${subscriptionId}_${previousBillingDate}` : subscriptionId;
+		const totalAmount = Number(data["recurring_total_amount"] ?? data["total_amount"] ?? 0);
+		const taxAmount = Number(data["tax"] ?? 0);
 		return {
 			transactionId,
-			amount: Number(data["recurring_pre_tax_amount"] ?? 0),
+			amount: totalAmount,
 			currency: String(data["currency"] ?? "usd").toLowerCase(),
 			status,
 			customerId: customer?.customer_id ?? "",
 			customerEmail: customer?.email ?? "",
 			subscriptionId: subscriptionId,
 			productId: String(data["product_id"] ?? ""),
+			taxAmount: taxAmount > 0 ? taxAmount : undefined,
 			metadata,
 		};
 	}

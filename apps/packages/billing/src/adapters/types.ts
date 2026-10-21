@@ -51,6 +51,8 @@ export interface PaymentDetails {
 	customerEmail: string;
 	productId?: string;
 	subscriptionId?: string;
+	/** Tax amount in smallest currency unit (cents). Only populated by Dodo. */
+	taxAmount?: number;
 	metadata?: Record<string, string>;
 }
 

@@ -70,15 +70,23 @@ function formatTransaction(
 		provider: string | null;
 		created_at: Date | string;
 		transaction_date: Date | string | null;
+		metadata?: unknown;
 	},
 	extras?: { purchase?: { public_id: string; status: string } | null | undefined },
 ) {
+	const amountCents = tx.amount_cents ?? 0;
+	const taxAmountCents =
+		tx.metadata && typeof tx.metadata === "object" && "tax_amount_cents" in tx.metadata
+			? Number((tx.metadata as Record<string, unknown>).tax_amount_cents)
+			: 0;
 	return {
 		id: tx.public_id,
 		purchase_id: extras?.purchase?.public_id ?? null,
 		type: tx.type,
 		status: tx.status,
-		amount: tx.amount_cents,
+		amount: amountCents / 100,
+		gross_amount: amountCents / 100,
+		net_amount: (amountCents - taxAmountCents) / 100,
 		currency: tx.currency,
 		provider: tx.provider,
 		created_at: new Date(tx.created_at).toISOString(),
@@ -166,11 +174,12 @@ function formatRefund(
 		purchaseApp?: { public_id: string; name: string | null } | null | undefined;
 	},
 ) {
+	const amountCents = tx.amount_cents ?? 0;
 	return {
 		id: tx.public_id,
 		provider: tx.provider,
 		purchase_id: extras?.purchase?.public_id ?? null,
-		amount: tx.amount_cents,
+		amount: amountCents / 100,
 		currency: tx.currency,
 		status: tx.status,
 		reason: tx.description ?? tx.notes ?? "",
@@ -276,22 +285,21 @@ billingRouter.get("/stats", async (c) => {
 			webhookLogQueries.countByStatus(db, scope.appIds),
 		]);
 
-		// Compute totals from grouped results
-		const revenueTotal = byType.reduce(
-			(sum, r) => sum + (r.type !== "refund" && r.type !== "chargeback" ? Number(r.total) : 0),
-			0,
-		);
-		const refundTotal = byType.find((r) => r.type === "refund")?.total ?? 0;
+		// Compute totals from grouped results (convert cents to dollars)
+		const revenueTotal =
+			byType.reduce((sum, r) => sum + (r.type !== "refund" && r.type !== "chargeback" ? Number(r.total) : 0), 0) /
+			100;
+		const refundTotal = (byType.find((r) => r.type === "refund")?.total ?? 0) as number;
 		const txTotal = byType.reduce((sum, r) => sum + Number(r.count), 0);
 
 		const byTypeMap: Record<string, number> = {};
-		for (const r of byType) byTypeMap[r.type] = Number(r.total);
+		for (const r of byType) byTypeMap[r.type] = Number(r.total) / 100;
 
 		const byProviderMap: Record<string, number> = {};
-		for (const r of byProvider) byProviderMap[r.provider] = Number(r.total);
+		for (const r of byProvider) byProviderMap[r.provider] = Number(r.total) / 100;
 
 		const byCurrencyMap: Record<string, number> = {};
-		for (const r of byCurrency) byCurrencyMap[r.currency] = Number(r.total);
+		for (const r of byCurrency) byCurrencyMap[r.currency] = Number(r.total) / 100;
 
 		const webhookMap: Record<string, number> = {};
 		for (const w of webhookCounts) webhookMap[w.status] = Number(w.count);
@@ -305,8 +313,9 @@ billingRouter.get("/stats", async (c) => {
 					by_currency: byCurrencyMap,
 				},
 				refunds: {
-					total: Number(refundTotal),
-					percentage: txTotal > 0 ? Math.round((Number(refundTotal) / revenueTotal) * 10000) / 100 : 0,
+					total: Number(refundTotal) / 100,
+					percentage:
+						txTotal > 0 ? Math.round((Number(refundTotal) / (revenueTotal * 100)) * 10000) / 100 : 0,
 				},
 				subscriptions: {
 					active: Number(activeSubsResult[0]?.count ?? 0),
