@@ -12,6 +12,7 @@ import {
 	appQueries,
 	eq,
 	getDb,
+	identityQueries,
 	payment_provider_configs,
 	plans,
 	priceQueries,
@@ -20,12 +21,15 @@ import {
 	promotionProviderRefQueries,
 	purchases,
 	readSealedSecret,
+	sessionQueries,
+	userQueries,
 } from "@nube-auth/db";
-import { createLogger, id, serializeError } from "@nube-auth/shared";
+import { createId, createLogger, id, serializeError } from "@nube-auth/shared";
 import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
 import { requireMatchingSession } from "../../../middleware/forwarded-session.js";
+import { ensureLicenseForApp } from "../../../utils/license.js";
 
 const log = createLogger("checkout-routes");
 
@@ -290,6 +294,242 @@ checkoutRoutes.post("/", async (c: Context) => {
 		}
 
 		log.error({ err: serializeError(error as Error) }, "Checkout creation failed");
+		return c.json({ error: "Failed to create checkout session" }, 500);
+	}
+});
+
+const CheckoutGuestSchema = z.object({
+	appId: z.string(),
+	email: z.string().email(),
+	name: z.string().min(1).max(255),
+	priceId: z.string(),
+	promoCode: z.string().optional(),
+	successUrl: z.string().url(),
+	cancelUrl: z.string().url(),
+	metadata: z.record(z.string(), z.string()).optional(),
+});
+
+/**
+ * POST /v1/billing/checkout-guest
+ * S2S-only endpoint: provisions/finds a user by email, creates an ephemeral
+ * Core session, then creates a checkout session — all without requiring an
+ * existing browser session. Only callable with X-Nube-S2S-Token header
+ * (validated globally by s2sMiddleware in Core's index.ts).
+ */
+checkoutRoutes.post("/checkout-guest", async (c: Context) => {
+	try {
+		const body = await c.req.json();
+		const validated = CheckoutGuestSchema.parse(body);
+		const db = getDb();
+		const now = new Date();
+
+		// 1. Find or create user by email
+		let user = await userQueries.findByEmail(db, validated.email);
+		let isNewUser = false;
+		if (!user) {
+			isNewUser = true;
+			user = await userQueries.create(db, {
+				public_id: createId("user"),
+				primary_email: validated.email,
+				name: validated.name,
+				avatar_url: null,
+				created_at: now,
+				updated_at: now,
+			});
+			// Create email identity
+			await identityQueries.create(db, {
+				public_id: createId("identity"),
+				user_id: user.id,
+				provider: "email",
+				provider_user_id: validated.email,
+				email: validated.email,
+				created_at: now,
+			});
+		}
+
+		// Suppress TS warning for isNewUser — retained for future use (signup emails, etc.)
+		void isNewUser;
+
+		// 2. Auto-provision free plan license if configured
+		await ensureLicenseForApp(db, user.id, validated.appId);
+
+		// 3. Resolve price
+		const price = await priceQueries.findByPublicId(db, validated.priceId);
+		if (!price?.is_active) {
+			log.warn({ priceId: validated.priceId }, "Guest checkout: price not found or inactive");
+			return c.json({ error: "Invalid price ID" }, 400);
+		}
+		if (!price.external_provider || !price.external_price_id) {
+			log.error({ priceId: validated.priceId }, "Guest checkout: price has no provider mapping");
+			return c.json({ error: "Price not synced to a payment provider" }, 400);
+		}
+
+		// 4. Get plan
+		const plan = await db.query.plans.findFirst({
+			where: eq(plans.id, price.plan_id),
+			columns: { public_id: true, name: true },
+		});
+		if (!plan) {
+			log.error({ planId: price.plan_id }, "Guest checkout: plan not found");
+			return c.json({ error: "Plan not found" }, 500);
+		}
+
+		// 5. Resolve app for provider config lookup
+		const app = await appQueries.findByInternalId_(db, price.app_id);
+		if (!app) {
+			log.error({ appId: price.app_id }, "Guest checkout: app not found");
+			return c.json({ error: "App not found" }, 500);
+		}
+
+		// 6. Find active provider config
+		const [providerConfig] = await db
+			.select()
+			.from(payment_provider_configs)
+			.where(
+				and(
+					eq(payment_provider_configs.project_id, app.project_id),
+					eq(payment_provider_configs.provider, price.external_provider),
+					eq(payment_provider_configs.is_active, true),
+				),
+			)
+			.limit(1);
+
+		if (!providerConfig) {
+			log.error(
+				{ priceId: validated.priceId, provider: price.external_provider },
+				"Guest checkout: no active provider config found",
+			);
+			return c.json({ error: "No active payment provider configuration found" }, 400);
+		}
+
+		// 7. Decrypt provider credentials
+		let decryptedCredentials: unknown;
+		try {
+			decryptedCredentials = decryptProviderCredentials(providerConfig);
+		} catch (error) {
+			log.error(
+				{ err: serializeError(error as Error), providerId: providerConfig.id },
+				"Guest checkout: failed to decrypt provider credentials",
+			);
+			return c.json({ error: "Provider configuration error" }, 500);
+		}
+
+		// Add environment field for Dodo
+		if (providerConfig.provider === "dodo" && providerConfig.environment) {
+			(decryptedCredentials as any).environment =
+				providerConfig.environment === "production" ? "live_mode" : "test_mode";
+			(decryptedCredentials as any).webhookSecret = readSealedSecret(providerConfig.webhook_secret_enc);
+		}
+
+		const adapter = createProviderAdapter(providerConfig.provider, decryptedCredentials);
+		const trialPeriodDays = price.trial_enabled && price.trial_days ? price.trial_days : undefined;
+		const interval = price.interval ?? "one_time";
+
+		// 8. Resolve promo code
+		let resolvedPromoCodeId: number | undefined;
+		let resolvedProviderCoupon: { id: string; objectType: "coupon" | "promotion_code" | "discount" } | undefined;
+
+		if (validated.promoCode) {
+			const promoCode = await promotionCodeQueries.findByCode(db, validated.promoCode.toUpperCase());
+			if (promoCode && promoCode.app_id === app.id && promoCode.is_active) {
+				const planTargets = await promotionPlanQueries.findByPromotionId(db, promoCode.promotion_id);
+				const eligibleForPlan =
+					planTargets.length === 0 || planTargets.map((pt) => pt.plan_id).includes(price.plan_id);
+
+				if (eligibleForPlan) {
+					resolvedPromoCodeId = promoCode.id;
+					const ref = await promotionProviderRefQueries.findByPromotionAndProvider(
+						db,
+						promoCode.promotion_id,
+						providerConfig.id,
+					);
+					if (ref) {
+						resolvedProviderCoupon = {
+							id: ref.provider_coupon_id,
+							objectType: ref.provider_object_type as "coupon" | "promotion_code" | "discount",
+						};
+					}
+				}
+			}
+		}
+
+		// 9. Create checkout session via provider
+		const pendingPurchasePublicId = id.request();
+
+		const session = await adapter.createCheckout({
+			customerId: "",
+			customerEmail: validated.email,
+			productId: price.external_price_id,
+			quantity: 1,
+			successUrl: validated.successUrl,
+			cancelUrl: validated.cancelUrl,
+			metadata: {
+				...validated.metadata,
+				source: "guest_checkout",
+				appId: validated.appId,
+				userId: user.public_id,
+				planId: plan.public_id,
+				priceId: price.public_id,
+				interval,
+				purchaseId: pendingPurchasePublicId,
+			},
+			...(trialPeriodDays && { trialPeriodDays }),
+			mode: price.billing_type === "recurring" ? "subscription" : "payment",
+			...(resolvedProviderCoupon && { providerCoupon: resolvedProviderCoupon }),
+			billingCurrency: price.currency,
+		});
+
+		log.info(
+			{
+				appId: validated.appId,
+				priceId: validated.priceId,
+				planId: plan.public_id,
+				interval,
+				provider: providerConfig.provider,
+				sessionId: session.sessionId,
+				amountCents: price.amount_cents,
+				userId: user.public_id,
+			},
+			"Guest checkout session created",
+		);
+
+		// 10. Persist pending purchase record
+		try {
+			await db.insert(purchases).values({
+				public_id: pendingPurchasePublicId,
+				app_id: app.id,
+				subject_type: "user",
+				subject_id: user.id,
+				price_id: price.id,
+				provider_config_id: providerConfig.id,
+				provider_session_id: session.sessionId,
+				status: "pending",
+				...(resolvedPromoCodeId && { promotion_code_id: resolvedPromoCodeId }),
+			});
+		} catch (purchaseError) {
+			// Non-fatal
+			log.error(
+				{ err: serializeError(purchaseError as Error), sessionId: session.sessionId },
+				"Guest checkout: failed to create pending purchase record",
+			);
+		}
+
+		return c.json({
+			success: true,
+			checkoutUrl: session.checkoutUrl,
+			sessionId: session.sessionId,
+			provider: providerConfig.provider,
+			planName: plan.name,
+			amountCents: price.amount_cents,
+			interval,
+		});
+	} catch (error) {
+		if (error instanceof z.ZodError) {
+			log.warn({ errors: error.issues }, "Invalid guest checkout request");
+			return c.json({ error: "Invalid request", details: error.issues }, 400);
+		}
+
+		log.error({ err: serializeError(error as Error) }, "Guest checkout creation failed");
 		return c.json({ error: "Failed to create checkout session" }, 500);
 	}
 });

@@ -12,6 +12,7 @@ import { Hono } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { env } from "../config/env";
 import { getAuth } from "../middleware/auth";
+import { s2sAuthMiddleware } from "../middleware/s2s";
 
 const log = createLogger("payment-routes");
 
@@ -114,6 +115,33 @@ paymentsRoutes.post("/validate-promo", async (c: Context) => {
 	} catch (error) {
 		log.error({ err: serializeError(error as Error) }, "validate-promo proxy error");
 		return c.json({ error: "Service unavailable" }, 502);
+	}
+});
+
+/**
+ * POST /v1/payment/checkout-guest
+ * S2S-authenticated guest checkout. No user session required.
+ * Accepts: { email, name, priceId, appId, promoCode?, successUrl, cancelUrl }
+ * Returns: { checkoutUrl }
+ */
+paymentsRoutes.post("/checkout-guest", s2sAuthMiddleware, async (c: Context) => {
+	try {
+		const body = await c.req.json();
+		const coreUrl = `${env.CORE_URL}/v1/billing/checkout-guest`;
+
+		const response = await pingpong(coreUrl, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"X-Nube-S2S-Token": env.S2S_SECRET,
+			},
+			body,
+		});
+
+		return c.json(response.data, response.status as ContentfulStatusCode);
+	} catch (error) {
+		log.error({ err: serializeError(error as Error) }, "checkout-guest proxy error");
+		return c.json({ error: "Payment service unavailable" }, 502);
 	}
 });
 

@@ -21,6 +21,7 @@ import { authRoutes } from "./routes/auth";
 import { debugRoutes } from "./routes/debug";
 import { licenseRoutes } from "./routes/license";
 import { meRoutes } from "./routes/me";
+import { emailRoutes } from "./routes/email";
 import { paymentsRoutes } from "./routes/payments";
 import { s2sRoutes } from "./routes/s2s";
 
@@ -210,9 +211,11 @@ app.use("/v1/me/*", rateLimitPresets.api);
 app.use("/v1/payment/*", rateLimitPresets.api);
 app.use("/v1/license/*", rateLimitPresets.api);
 app.use("/v1/app/*", rateLimitPresets.api);
+app.use("/v1/email/*", rateLimitPresets.auth);
 
 // Routes
 app.route("/v1/auth", authRoutes);
+app.route("/v1/email", emailRoutes);
 app.route("/v1/me", meRoutes);
 app.route("/v1/admin", adminRoutes);
 app.route("/v1/app", appCatalogRoutes);
