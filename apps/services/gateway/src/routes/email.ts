@@ -27,7 +27,17 @@ function getClientIp(c: Context): string {
  */
 emailRoutes.post("/start", async (c: Context) => {
 	try {
-		const body = await c.req.json();
+		const body = await c.req.json<{
+			email?: string;
+			name?: string;
+			appId?: string;
+			redirectUrl?: string;
+		}>();
+
+		if (!body.appId) {
+			return c.json({ error: "appId is required" }, 400);
+		}
+
 		const coreUrl = `${env.CORE_URL}/v1/email/start`;
 
 		const response = await pingpong(coreUrl, {
@@ -62,6 +72,11 @@ emailRoutes.post("/verify", async (c: Context) => {
 			appId?: string;
 			name?: string;
 		}>();
+
+		if (!body.appId) {
+			return c.json({ error: "appId is required" }, 400);
+		}
+
 		const coreUrl = `${env.CORE_URL}/v1/email/verify`;
 
 		const response = await pingpong(coreUrl, {
@@ -86,7 +101,7 @@ emailRoutes.post("/verify", async (c: Context) => {
 			email: string;
 		};
 
-		const targetAppId = body.appId || "default-tamer";
+		const targetAppId = body.appId;
 		const ipAddress = getClientIp(c);
 		const userAgent = c.req.header("user-agent") || "unknown";
 
@@ -163,11 +178,15 @@ emailRoutes.get("/magic", async (c: Context) => {
 			sessionId: string;
 			userId: string;
 			email: string;
-			appId?: string;
+			appId: string;
 			redirectUrl?: string;
 		};
 
-		const targetAppId = data.appId || "default-tamer";
+		if (!data.appId) {
+			return c.json({ error: "Missing appId in session" }, 400);
+		}
+
+		const targetAppId = data.appId;
 		const ipAddress = getClientIp(c);
 		const userAgent = c.req.header("user-agent") || "unknown";
 

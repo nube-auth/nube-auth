@@ -38,7 +38,7 @@ async function completeEmailAuth(
 	db: ReturnType<typeof getDb>,
 	email: string,
 	name: string | undefined,
-	appId: string | undefined,
+	appId: string,
 	c: Context,
 ) {
 	const now = new Date();
@@ -92,26 +92,19 @@ async function completeEmailAuth(
 	// Auto-provision free/default plan license if the app has one configured
 	await ensureLicenseForApp(db, userId, appId);
 
-	// Resolve app internal id for session scoping and app_users upsert
-	let appInternalId: number | undefined;
-	let resolvedAppName: string | undefined;
-	if (appId) {
-		try {
-			const resolvedApp = await appQueries.findByPublicId(db, appId);
-			appInternalId = resolvedApp?.id;
-			resolvedAppName = resolvedApp?.name;
-		} catch (appLookupError) {
-			log.error({ err: serializeError(appLookupError as Error), appId }, "Failed to resolve app for email login");
-		}
+	// Resolve app
+	const resolvedApp = await appQueries.findByPublicId(db, appId);
+	if (!resolvedApp) {
+		throw new Error(`App not found: ${appId}`);
 	}
+	const appInternalId = resolvedApp.id;
+	const resolvedAppName = resolvedApp.name;
 
 	// Upsert persistent app_users record
-	if (appInternalId !== undefined) {
-		try {
-			await appUserQueries.upsert(db, appInternalId, userId);
-		} catch (appUserError) {
-			log.error({ err: serializeError(appUserError as Error), appId }, "Failed to upsert app_user");
-		}
+	try {
+		await appUserQueries.upsert(db, appInternalId, userId);
+	} catch (appUserError) {
+		log.error({ err: serializeError(appUserError as Error), appId }, "Failed to upsert app_user");
 	}
 
 	// Create core session
@@ -124,7 +117,7 @@ async function completeEmailAuth(
 		ip_address: ipAddress,
 		user_agent: userAgent,
 		country: country,
-		...(appInternalId !== undefined && { app_id: appInternalId }),
+		app_id: appInternalId,
 	};
 
 	const session = await sessionQueries.create(db, sessionData);
@@ -161,6 +154,10 @@ router.post("/start", async (c: Context) => {
 		return c.json({ error: "Invalid email" }, 400);
 	}
 
+	if (!appId) {
+		return c.json({ error: "appId is required" }, 400);
+	}
+
 	// Rate limit: 5 OTP requests per email per hour (skip in development)
 	if (!env.IS_DEVELOPMENT) {
 		const allowed = await rateLimit.checkLimit(email, "otp_request", 5, 3600);
@@ -172,6 +169,13 @@ router.post("/start", async (c: Context) => {
 	try {
 		const db = getDb();
 		const now = new Date();
+
+		// Validate that the app exists
+		const app = await appQueries.findByPublicId(db, appId);
+		if (!app) {
+			return c.json({ error: "App not found" }, 404);
+		}
+		const appName = app.name;
 
 		// Check if email has verification record and is locked out
 		const emailVerification = await emailVerificationQueries.findByEmail(db, email);
@@ -219,17 +223,6 @@ router.post("/start", async (c: Context) => {
 			env.EMAIL_CODE_TTL_SECONDS,
 		);
 
-		// Resolve app name if appId is provided
-		let appName = "Default Tamer";
-		if (appId) {
-			try {
-				const app = await appQueries.findByPublicId(db, appId);
-				if (app?.name) appName = app.name;
-			} catch {
-				// use default app name
-			}
-		}
-
 		// Construct magic link URL through Gateway
 		const gatewayUrl = c.req.header("x-nube-gateway-url") || env.API_BASE_URL;
 		const magicUrl = `${gatewayUrl}/v1/email/magic?token=${magicToken}`;
@@ -274,6 +267,10 @@ router.post("/verify", async (c: Context) => {
 
 	if (!email?.includes("@")) {
 		return c.json({ error: "Invalid email" }, 400);
+	}
+
+	if (!appId) {
+		return c.json({ error: "appId is required" }, 400);
 	}
 
 	if (!otp || otp.length !== OTP_LENGTH) {
@@ -372,7 +369,7 @@ router.post("/verify-magic", async (c: Context) => {
 			redirectUrl?: string;
 		}>(`magic:${token}`);
 
-		if (!data || !data.email) {
+		if (!data || !data.email || !data.appId) {
 			return c.json({ error: "Invalid or expired magic link" }, 400);
 		}
 
