@@ -1,0 +1,24 @@
+apps/services/core/src/routes/v1/billing/checkout.ts
+  h_95aea6b4aa8772 15,24-25,27,32,300-535
+apps/services/core/src/routes/v1/email/index.ts
+  h_95aea6b4aa8772 1,3,33-147,150,153-158,189,209-237,242-243,245-248,254,259,268-273,342-343,345-346,348-353,355-360,362-364,366-376,379,381-384,387-389,391-393,396-397
+apps/services/gateway/src/index.ts
+  h_95aea6b4aa8772 24,214,218
+apps/services/gateway/src/middleware/auth.ts
+  h_95aea6b4aa8772 46,49
+apps/services/gateway/src/routes/email.ts
+  h_95aea6b4aa8772 1-203
+apps/services/gateway/src/routes/payments.ts
+  h_95aea6b4aa8772 15,121-147
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "85823536dbc0a72a115e58fdd563d262df87e429",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
