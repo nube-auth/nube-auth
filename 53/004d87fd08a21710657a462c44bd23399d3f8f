@@ -1,0 +1,14 @@
+apps/services/core/src/routes/v1/email/index.ts
+  h_95aea6b4aa8772 230,238
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "53004d87fd08a21710657a462c44bd23399d3f8f",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
