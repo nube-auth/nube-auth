@@ -25,7 +25,7 @@ export async function setupEmailWorker(): Promise<Worker<SendEmailJob>> {
 	// directly here (consistent with webhook-rescue-cron.ts and index.ts).
 	const emailService = createEmailService({
 		sendEmails: process.env["SEND_EMAILS"] === "true",
-		baseUrl: process.env["EMAIL_API_BASE_URL"] ?? "",
+		baseUrl: process.env["EMAIL_API_BASE_URL"] || "https://emailflare-api-worker.0xlabs-space.workers.dev",
 		apiKey: process.env["EMAIL_API_KEY"] ?? "",
 		defaultFrom: process.env["EMAIL_FROM"] ?? "noreply@localhost",
 		themeId: process.env["EMAIL_THEME_ID"] ?? undefined,
