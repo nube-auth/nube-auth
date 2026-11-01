@@ -1,0 +1,14 @@
+apps/services/workers/src/email-worker.ts
+  h_95aea6b4aa8772 28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ca84ec274327c670734b7034a150281039437355",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
