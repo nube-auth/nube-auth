@@ -227,19 +227,16 @@ router.post("/start", async (c: Context) => {
 		const gatewayUrl = c.req.header("x-nube-gateway-url") || env.API_BASE_URL;
 		const magicUrl = `${gatewayUrl}/v1/email/magic?token=${magicToken}`;
 
-		// Send email with both OTP code and magic link button
+		// Send email with both verification code and magic link button
 		await enqueueEmail({
 			to: email,
 			templateSlug: "email-verify",
 			variables: {
 				name: name || email.split("@")[0] || "there",
 				appName,
-				otp,
-				code: otp,
 				verifyUrl: magicUrl,
-				magicUrl,
+				code: otp,
 				expiresIn: `${Math.ceil(env.EMAIL_CODE_TTL_SECONDS / 60)} minutes`,
-				expiresInMinutes: Math.ceil(env.EMAIL_CODE_TTL_SECONDS / 60),
 			},
 		});
 
