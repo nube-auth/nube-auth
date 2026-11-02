@@ -1,0 +1,14 @@
+.github/workflows/_build-image.yml
+  h_95aea6b4aa8772 153,198-201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3edcab5a42445586af01e186de0c37f98a65baed",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
