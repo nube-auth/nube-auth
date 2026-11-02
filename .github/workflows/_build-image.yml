@@ -1,4 +1,4 @@
-name: Build & Push
+name: Build image
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Reusable workflow: builds a single Docker image and pushes it to GHCR.
@@ -26,7 +26,11 @@ on:
       branch:
         required: true
         type: string
-        description: 'Git branch being built (used for tag and cache key)'
+        description: 'Git branch to check out (staging or trunk). Not used as an image tag.'
+      image_tag:
+        required: true
+        type: string
+        description: 'Environment tag Railway watches (staging or production)'
       platforms:
         required: false
         type: string
@@ -78,7 +82,7 @@ jobs:
           # Pin to the branch this image is built for (trunk/staging), not the
           # triggering ref. A version-tag push otherwise checks out whatever
           # commit the tag points at, which can be stale, and that stale
-          # source then overwrites the floating :trunk/:latest tags that
+          # source then overwrites the floating :staging/:production tags that
           # Railway watches.
           ref: ${{ inputs.branch }}
           submodules: true
@@ -97,16 +101,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # ── Image tags ──────────────────────────────────────────────────────
-      # Always tagged with the branch name (Railway watches this).
-      # If extra_tag is set (version tag push), also add that tag.
+      # Package name is the service. Tag is the environment (staging or
+      # production), never the git branch and never :latest.
+      # A version push also adds the v* tag.
       - name: Build tag list
         id: tags
         run: |
-          TAGS="type=raw,value=${{ inputs.branch }}"
-          TAGS="${TAGS}\ntype=sha,prefix=${{ inputs.branch }}-"
-          if [ "${{ inputs.branch }}" = "trunk" ]; then
-            TAGS="${TAGS}\ntype=raw,value=latest"
-          fi
+          TAGS="type=raw,value=${{ inputs.image_tag }}"
+          TAGS="${TAGS}\ntype=sha,prefix=${{ inputs.image_tag }}-"
           if [ -n "${{ inputs.extra_tag }}" ]; then
             TAGS="${TAGS}\ntype=raw,value=${{ inputs.extra_tag }}"
           fi
@@ -188,5 +190,5 @@ jobs:
           npx tsx nube-scripts/dev/scripts/railway-deploy.ts \
             --env "$ENV_NAME" \
             --service "$SVC_KEY" \
-            --tag "${{ inputs.branch }}" \
+            --tag "${{ inputs.image_tag }}" \
             --wait

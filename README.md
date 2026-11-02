@@ -249,6 +249,7 @@ pnpm typecheck            # Type check all packages
 ### Getting Started
 - **[Setup Guide](./SETUP.md)** - Complete installation and development setup
 - **[Deployment Guide](./docs/DEPLOYMENT.md)** - Railway + Vercel deployment
+- **[Stage and prod builds](./docs/BUILD_STAGE_AND_PROD.md)** - GitHub Actions image build and Railway publish
 
 ### Core Documentation
 - **[Architecture](./docs/ARCHITECTURE.md)** - System design, ID management, security patterns
