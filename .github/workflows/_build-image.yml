@@ -150,6 +150,7 @@ jobs:
       # Set RAILWAY_TOKEN as GitHub Secret and per-service RAILWAY_SERVICE_ID_* vars.
       - name: Deploy to Railway
         if: inputs.railway_service_var_suffix != ''
+        continue-on-error: true
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
@@ -194,4 +195,7 @@ jobs:
             --service-id "$SERVICE_ID" \
             --service "$SVC_KEY" \
             --tag "${{ inputs.image_tag }}" \
-            --wait
+            --wait || {
+              echo "::warning title=Railway Deploy Failed::Railway deployment failed for $SVC_KEY ($SERVICE_ID). The image was built and pushed to GHCR successfully."
+              exit 1
+            }
