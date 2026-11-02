@@ -1,0 +1,61 @@
+docs/BUILD_STAGE_AND_PROD.md
+  s_5eeef0eb204a5d::t_ad07ee98d9e2d0 1-6,9-24,26-30,48-52,54-76,78-94,96-120,122-125,127-134,137-160,162-164,166-186,188-201,203-205,208,212-213,216-217,220-221,223,225,227-229,231-246,248-250,252-262,264-272
+  s_5eeef0eb204a5d::t_3521ef689efd24 263,273
+  s_5eeef0eb204a5d::t_02eaab60d6ef4c 251
+  s_5eeef0eb204a5d::t_abc831f341302c 53,95
+  s_5eeef0eb204a5d::t_2c7e8c24325153 25,31-47
+  s_5eeef0eb204a5d::t_750318465c5611 187
+  s_5eeef0eb204a5d::t_fd103b5e63255d 7-8,77,121
+  s_5eeef0eb204a5d::t_15babef7e865f5 135-136
+  s_5eeef0eb204a5d::t_0b07918dff9be4 126,161,165,202,206-207,209-211,214-215,218-219,222,224,226,230,247
+.github/workflows/docker-build.yml
+  s_5eeef0eb204a5d::t_9c2c4458662174 189
+  s_5eeef0eb204a5d::t_5561e60277c505 88,104,108,183,199,217
+  s_5eeef0eb204a5d::t_06fccb860291dd 205
+  s_5eeef0eb204a5d::t_49748dab7aa45e 220,223
+  s_5eeef0eb204a5d::t_dfcc7bdea0162f 228-285
+  s_5eeef0eb204a5d::t_cf9dd6aaaaad9e 4-8,10,13-19
+  s_5eeef0eb204a5d::t_b46fc05dc07f01 157
+  s_5eeef0eb204a5d::t_c84466e8a8d97b 173
+  s_5eeef0eb204a5d::t_41fc0b62897894 132,135
+  s_5eeef0eb204a5d::t_bbdd71ff807752 151,167
+  s_5eeef0eb204a5d::t_2061c59d68c279 21-23,25,29,36,43-67,73-74,129
+.github/workflows/_build-image.yml
+  s_5eeef0eb204a5d::t_d36600ebaf0125 1
+  s_5eeef0eb204a5d::t_cdd63bc8bfbb51 85
+  s_5eeef0eb204a5d::t_73b8235d6cbf51 193
+  s_5eeef0eb204a5d::t_83397ab24f9f8c 29-33,104-106,110-111
+README.md
+  s_5eeef0eb204a5d::t_6a06e83e90b3f5 252
+nube-scripts
+  s_e0fee73ba207bf::t_66d6eda398b625 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d0f9bb98c495b17bad420c6faa625b4642789cd7",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_5eeef0eb204a5d": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "b2045994-f751-45dc-8901-70f6691a05b3",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    },
+    "s_e0fee73ba207bf": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "65fa24e0-8194-4263-892d-7de6e916796d",
+        "model": "unknown"
+      },
+      "human_author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
