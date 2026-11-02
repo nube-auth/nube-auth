@@ -1,0 +1,63 @@
+name: Deploy Staging
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Staging Deploy Workflow
+#
+# One-click trigger: Zero inputs required.
+# Builds and deploys the all-in-one staging image:
+#   ghcr.io/nube-auth/nube-auth-staging-all:latest
+#
+# Runs core (3003), gateway (3004), workers (3005), and nginx (8080) in a single
+# container managed by supervisord on Railway staging.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  meta:
+    name: Parameters
+    runs-on: ubuntu-latest
+    outputs:
+      domain: ${{ steps.params.outputs.domain }}
+      staging_build_args: ${{ steps.params.outputs.staging_build_args }}
+    steps:
+      - name: Checkout host map
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts
+          sparse-checkout-cone-mode: true
+          fetch-depth: 1
+      - id: params
+        run: |
+          DOMAIN="${{ vars.NUBE_DOMAIN }}"
+          if [ -z "$DOMAIN" ]; then DOMAIN="nubeauth.com"; fi
+          echo "domain=$DOMAIN" >> "$GITHUB_OUTPUT"
+          {
+            echo "staging_build_args<<EOF"
+            NUBE_DOMAIN="$DOMAIN" NUBE_ENV=staging node scripts/print-nube-hosts.mjs
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+  build-and-deploy:
+    name: Staging (all-in-one)
+    needs: meta
+    uses: ./.github/workflows/_build-image.yml
+    with:
+      image_name: nube-auth-staging-all
+      dockerfile: nube-scripts/deploy/docker/Dockerfile.app
+      branch: staging
+      image_tag: latest
+      platforms: linux/amd64
+      build_args: ${{ needs.meta.outputs.staging_build_args }}
+      railway_service_var_suffix: STAGING
+      railway_environment_id: ${{ vars.RAILWAY_STAGING_ENVIRONMENT_ID }}
+    secrets: inherit

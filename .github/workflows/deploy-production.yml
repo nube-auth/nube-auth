@@ -1,0 +1,235 @@
+name: Deploy Production
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Production Deploy Workflow
+#
+# Microservices architecture:
+#   ghcr.io/nube-auth/nube-auth-prod-core:latest
+#   ghcr.io/nube-auth/nube-auth-prod-gateway:latest
+#   ghcr.io/nube-auth/nube-auth-prod-workers:latest
+#   ghcr.io/nube-auth/nube-auth-prod-dashboards:latest
+#
+# Standalone fallback:
+#   ghcr.io/nube-auth/nube-auth-prod-all:latest
+#
+# Triggers:
+#   - Manual dispatch (choose action, service, tag)
+#   - Git tag push (v*) -> builds & deploys all services tagged with the version
+# ═══════════════════════════════════════════════════════════════════════════════
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        default: build_and_deploy
+        options:
+          - build_and_deploy
+          - deploy_only
+          - build_only
+      service:
+        description: 'Target service'
+        required: true
+        type: choice
+        default: all
+        options:
+          - all
+          - core
+          - gateway
+          - workers
+          - dashboards
+          - all-in-one
+      tag:
+        description: 'Image tag to deploy (default: latest)'
+        required: false
+        type: string
+        default: latest
+  push:
+    tags:
+      - 'v*'
+
+concurrency:
+  group: deploy-production-${{ github.event_name == 'workflow_dispatch' && inputs.action || 'push' }}-${{ github.ref_name }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' || inputs.action != 'deploy_only' }}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  meta:
+    name: Parameters
+    runs-on: ubuntu-latest
+    outputs:
+      action: ${{ steps.params.outputs.action }}
+      service: ${{ steps.params.outputs.service }}
+      tag: ${{ steps.params.outputs.tag }}
+      extra_tag: ${{ steps.params.outputs.extra_tag }}
+      domain: ${{ steps.params.outputs.domain }}
+      production_build_args: ${{ steps.params.outputs.production_build_args }}
+    steps:
+      - name: Checkout host map
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts
+          sparse-checkout-cone-mode: true
+          fetch-depth: 1
+      - id: params
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "action=build_and_deploy" >> "$GITHUB_OUTPUT"
+            echo "service=all" >> "$GITHUB_OUTPUT"
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+            echo "extra_tag=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "action=${{ inputs.action }}" >> "$GITHUB_OUTPUT"
+            echo "service=${{ inputs.service }}" >> "$GITHUB_OUTPUT"
+            TAG="${{ inputs.tag }}"
+            if [ -z "$TAG" ]; then TAG="latest"; fi
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+            echo "extra_tag=" >> "$GITHUB_OUTPUT"
+          fi
+          DOMAIN="${{ vars.NUBE_DOMAIN }}"
+          if [ -z "$DOMAIN" ]; then DOMAIN="nubeauth.com"; fi
+          echo "domain=$DOMAIN" >> "$GITHUB_OUTPUT"
+          {
+            echo "production_build_args<<EOF"
+            NUBE_DOMAIN="$DOMAIN" NUBE_ENV=production node scripts/print-nube-hosts.mjs
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+  # ── Batch 1: Core & Gateway ────────────────────────────────────────────────
+  core:
+    name: Core
+    needs: meta
+    if: needs.meta.outputs.action != 'deploy_only' && (needs.meta.outputs.service == 'all' || needs.meta.outputs.service == 'core')
+    uses: ./.github/workflows/_build-image.yml
+    with:
+      image_name: nube-auth-prod-core
+      dockerfile: nube-scripts/deploy/docker/Dockerfile.core
+      branch: trunk
+      image_tag: ${{ needs.meta.outputs.tag }}
+      platforms: linux/amd64,linux/arm64
+      extra_tag: ${{ needs.meta.outputs.extra_tag }}
+      railway_service_var_suffix: ${{ needs.meta.outputs.action == 'build_only' && '' || 'CORE' }}
+      railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
+    secrets: inherit
+
+  gateway:
+    name: Gateway
+    needs: meta
+    if: needs.meta.outputs.action != 'deploy_only' && (needs.meta.outputs.service == 'all' || needs.meta.outputs.service == 'gateway')
+    uses: ./.github/workflows/_build-image.yml
+    with:
+      image_name: nube-auth-prod-gateway
+      dockerfile: nube-scripts/deploy/docker/Dockerfile.gateway
+      branch: trunk
+      image_tag: ${{ needs.meta.outputs.tag }}
+      platforms: linux/amd64,linux/arm64
+      extra_tag: ${{ needs.meta.outputs.extra_tag }}
+      railway_service_var_suffix: ${{ needs.meta.outputs.action == 'build_only' && '' || 'GATEWAY' }}
+      railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
+    secrets: inherit
+
+  # ── Batch 2: Workers & Dashboards ──────────────────────────────────────────
+  workers:
+    name: Workers
+    needs: [meta, core, gateway]
+    if: |
+      always() &&
+      needs.meta.result == 'success' &&
+      needs.meta.outputs.action != 'deploy_only' &&
+      (needs.meta.outputs.service == 'all' ? (needs.core.result == 'success' && needs.gateway.result == 'success') : needs.meta.outputs.service == 'workers')
+    uses: ./.github/workflows/_build-image.yml
+    with:
+      image_name: nube-auth-prod-workers
+      dockerfile: nube-scripts/deploy/docker/Dockerfile.workers
+      branch: trunk
+      image_tag: ${{ needs.meta.outputs.tag }}
+      platforms: linux/amd64,linux/arm64
+      extra_tag: ${{ needs.meta.outputs.extra_tag }}
+      railway_service_var_suffix: ${{ needs.meta.outputs.action == 'build_only' && '' || 'WORKERS' }}
+      railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
+    secrets: inherit
+
+  dashboards:
+    name: Dashboards (combined)
+    needs: [meta, core, gateway]
+    if: |
+      always() &&
+      needs.meta.result == 'success' &&
+      needs.meta.outputs.action != 'deploy_only' &&
+      (needs.meta.outputs.service == 'all' ? (needs.core.result == 'success' && needs.gateway.result == 'success') : needs.meta.outputs.service == 'dashboards')
+    uses: ./.github/workflows/_build-image.yml
+    with:
+      image_name: nube-auth-prod-dashboards
+      dockerfile: nube-scripts/deploy/docker/Dockerfile.dashboards
+      branch: trunk
+      image_tag: ${{ needs.meta.outputs.tag }}
+      platforms: linux/amd64,linux/arm64
+      extra_tag: ${{ needs.meta.outputs.extra_tag }}
+      build_args: ${{ needs.meta.outputs.production_build_args }}
+      railway_service_var_suffix: ${{ needs.meta.outputs.action == 'build_only' && '' || 'DASHBOARDS' }}
+      railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
+    secrets: inherit
+
+  # ── Batch 3: Production all-in-one fallback image ──────────────────────────
+  prod-all-in-one:
+    name: Production (all-in-one)
+    needs: [meta, workers, dashboards]
+    if: |
+      always() &&
+      needs.meta.result == 'success' &&
+      needs.meta.outputs.action != 'deploy_only' &&
+      (needs.meta.outputs.service == 'all' ? (needs.workers.result == 'success' && needs.dashboards.result == 'success') : needs.meta.outputs.service == 'all-in-one')
+    uses: ./.github/workflows/_build-image.yml
+    with:
+      image_name: nube-auth-prod-all
+      dockerfile: nube-scripts/deploy/docker/Dockerfile.app
+      branch: trunk
+      image_tag: ${{ needs.meta.outputs.tag }}
+      platforms: linux/amd64,linux/arm64
+      extra_tag: ${{ needs.meta.outputs.extra_tag }}
+      build_args: ${{ needs.meta.outputs.production_build_args }}
+      railway_service_var_suffix: ${{ needs.meta.outputs.service == 'all-in-one' && 'APP' || '' }}
+      railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
+    secrets: inherit
+
+  # ═════════════════════════════════════════════════════════════════════════
+  # Redeploy an existing image in GHCR without rebuilding
+  # ═════════════════════════════════════════════════════════════════════════
+  redeploy:
+    name: Redeploy
+    needs: meta
+    if: needs.meta.outputs.action == 'deploy_only'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+          RAILWAY_SERVICE_ID_PRODUCTION_CORE: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_CORE }}
+          RAILWAY_SERVICE_ID_PRODUCTION_GATEWAY: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_GATEWAY }}
+          RAILWAY_SERVICE_ID_PRODUCTION_WORKERS: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_WORKERS }}
+          RAILWAY_SERVICE_ID_PRODUCTION_DASHBOARDS: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_DASHBOARDS }}
+          RAILWAY_SERVICE_ID_PRODUCTION_APP: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_APP }}
+        run: |
+          set -euo pipefail
+          SERVICE="${{ needs.meta.outputs.service }}"
+          TAG="${{ needs.meta.outputs.tag }}"
+
+          echo "Redeploying to production: service=$SERVICE, tag=$TAG"
+
+          npx tsx nube-scripts/dev/scripts/railway-deploy.ts \
+            --env production \
+            --service "$SERVICE" \
+            --tag "$TAG" \
+            --wait

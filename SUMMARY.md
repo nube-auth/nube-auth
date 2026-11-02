@@ -50,7 +50,7 @@ VITE_ENV_TAG          # Environment badge
 ## ✅ What We Fixed
 
 ### 1. Updated GitHub Actions Workflow
-**File:** `.github/workflows/docker-build.yml`
+**File:** `.github/workflows/deploy-production.yml` and `.github/workflows/deploy-staging.yml`
 
 Added build arguments to:
 - Staging all-in-one build
@@ -115,7 +115,7 @@ Now passes proper URLs and environment tags to Docker builds.
 
 6. **Deploy to Production**
    ```bash
-   gh workflow run docker-build.yml --ref trunk -f branch=trunk
+   gh workflow run deploy-production.yml --ref trunk
    ```
 
 7. **Verify Production**
@@ -218,7 +218,7 @@ gh workflow run deploy-railway.yml \
 ```bash
 git revert HEAD
 git push origin trunk
-gh workflow run docker-build.yml --ref trunk
+gh workflow run deploy-production.yml --ref trunk
 ```
 
 **Option 3: Manual Railway Rollback**

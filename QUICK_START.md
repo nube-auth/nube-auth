@@ -23,7 +23,7 @@ git merge staging --no-ff
 git push origin trunk
 
 # 5. Trigger production build
-gh workflow run docker-build.yml --ref trunk -f branch=trunk
+gh workflow run deploy-production.yml --ref trunk
 ```
 
 ---
@@ -57,7 +57,7 @@ The `pnpm.overrides` in `package.json` was using deprecated syntax.
 
 ### ✅ Updated Files
 
-1. **`.github/workflows/docker-build.yml`**
+1. **`.github/workflows/deploy-production.yml` & `deploy-staging.yml`**
    - Added `build_args` to staging build
    - Added `build_args` to production dashboards build
    - Added `build_args` to production all-in-one build
@@ -88,7 +88,8 @@ git diff
 ```
 
 You should see changes in:
-- `.github/workflows/docker-build.yml`
+- `.github/workflows/deploy-staging.yml`
+- `.github/workflows/deploy-production.yml`
 - `package.json`
 - `.npmrc`
 - Plus new files in `scripts/` and docs
@@ -222,7 +223,7 @@ Trigger the production build:
 
 ```bash
 # Option 1: Via GitHub CLI
-gh workflow run docker-build.yml --ref trunk -f branch=trunk
+gh workflow run deploy-production.yml --ref trunk
 
 # Option 2: Via GitHub UI
 # Go to Actions → Build & Publish → Run workflow → Select "trunk"
@@ -334,7 +335,7 @@ git revert HEAD
 git push origin trunk
 
 # Trigger rebuild
-gh workflow run docker-build.yml --ref trunk -f branch=trunk
+gh workflow run deploy-production.yml --ref trunk
 ```
 
 ### Option 3: Emergency Fix
@@ -345,7 +346,7 @@ git checkout trunk
 # ... make fixes ...
 git commit -m "hotfix: emergency production fix"
 git push origin trunk
-gh workflow run docker-build.yml --ref trunk -f branch=trunk
+gh workflow run deploy-production.yml --ref trunk
 ```
 
 ---

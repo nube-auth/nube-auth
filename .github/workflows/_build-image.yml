@@ -101,15 +101,15 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # ── Image tags ──────────────────────────────────────────────────────
-      # Package name is the service. Tag is the environment (staging or
-      # production), never the git branch and never :latest.
-      # A version push also adds the v* tag.
+      # Image name specifies env and service (e.g. nube-auth-staging-all, nube-auth-prod-core).
+      # Primary tag is :latest (or specified release tag).
+      # Also tags with :sha-<commit_sha> for immutable traceability.
       - name: Build tag list
         id: tags
         run: |
           TAGS="type=raw,value=${{ inputs.image_tag }}"
-          TAGS="${TAGS}\ntype=sha,prefix=${{ inputs.image_tag }}-"
-          if [ -n "${{ inputs.extra_tag }}" ]; then
+          TAGS="${TAGS}\ntype=sha,prefix=sha-"
+          if [ -n "${{ inputs.extra_tag }}" ] && [ "${{ inputs.extra_tag }}" != "${{ inputs.image_tag }}" ]; then
             TAGS="${TAGS}\ntype=raw,value=${{ inputs.extra_tag }}"
           fi
           echo "tags<<EOF" >> "$GITHUB_OUTPUT"
@@ -160,6 +160,7 @@ jobs:
           RAILWAY_SERVICE_ID_PRODUCTION_GATEWAY: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_GATEWAY }}
           RAILWAY_SERVICE_ID_PRODUCTION_WORKERS: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_WORKERS }}
           RAILWAY_SERVICE_ID_PRODUCTION_DASHBOARDS: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_DASHBOARDS }}
+          RAILWAY_SERVICE_ID_PRODUCTION_APP: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_APP }}
         run: |
           if [ -z "$RAILWAY_TOKEN" ] || [ -z "$RAILWAY_PROJECT_ID" ] || [ -z "$RAILWAY_ENVIRONMENT_ID" ]; then
             echo "Railway vars not configured — skipping deploy trigger."
@@ -178,9 +179,10 @@ jobs:
           echo "Triggering Railway deploy for service $SERVICE_ID in env $RAILWAY_ENVIRONMENT_ID..."
           ENV_NAME="${{ inputs.branch == 'staging' && 'staging' || 'production' }}"
           SERVICE_KEY="${{ inputs.railway_service_var_suffix }}"
-          # Convert var suffix to service key (e.g. CORE -> core, STAGING -> app)
+          # Convert var suffix to service key (e.g. STAGING -> all, CORE -> core)
           case "$SERVICE_KEY" in
-            STAGING) SVC_KEY="app" ;;
+            STAGING) SVC_KEY="all" ;;
+            APP) SVC_KEY="all-in-one" ;;
             CORE) SVC_KEY="core" ;;
             GATEWAY) SVC_KEY="gateway" ;;
             WORKERS) SVC_KEY="workers" ;;
