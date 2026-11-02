@@ -216,6 +216,7 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+          RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
           RAILWAY_SERVICE_ID_PRODUCTION_CORE: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_CORE }}
           RAILWAY_SERVICE_ID_PRODUCTION_GATEWAY: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_GATEWAY }}
           RAILWAY_SERVICE_ID_PRODUCTION_WORKERS: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_WORKERS }}
@@ -230,6 +231,7 @@ jobs:
 
           npx tsx nube-scripts/dev/scripts/railway-deploy.ts \
             --env production \
+            --environment-id "${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}" \
             --service "$SERVICE" \
             --tag "$TAG" \
             --wait
