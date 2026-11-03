@@ -1,0 +1,16 @@
+.github/workflows/_build-image.yml
+  h_95aea6b4aa8772 6-7
+.github/workflows/deploy-staging.yml
+  h_95aea6b4aa8772 50,62-101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d12f9591039700675546921e45103d47dfc5522c",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
