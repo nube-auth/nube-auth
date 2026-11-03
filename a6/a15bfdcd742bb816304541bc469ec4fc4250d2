@@ -1,0 +1,22 @@
+apps/packages/queue/package.json
+  h_95aea6b4aa8772 33-34
+apps/services/core/package.json
+  h_95aea6b4aa8772 29,31
+apps/services/workers/package.json
+  h_95aea6b4aa8772 23-24
+pnpm-lock.yaml
+  h_95aea6b4aa8772 404,625-626,628-629,743-744,749-750,835-836,838-839,1859-1860,1881-1882,1886-1887,1891-1892,1896-1897,1901-1902,1906-1907,2904-2920,2999-3002,3066-3068,3562-3564,3935-3936,3939-3940,4724,5853,5876,5879,5882,5885,5888,5891,6828,6875,6961,6963-6964,6966,6968-6970,7046-7047,7093,7535,7537-7538,7860,7864-7869,7872,7874,8719
+pnpm-workspace.yaml
+  h_95aea6b4aa8772 55-57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a6a15bfdcd742bb816304541bc469ec4fc4250d2",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
