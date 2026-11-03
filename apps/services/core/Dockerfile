@@ -2,7 +2,7 @@
 FROM node:22-alpine AS builder
 
 # Install pnpm
-RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
+RUN corepack enable && corepack prepare pnpm@12.16.1 --activate
 
 WORKDIR /app
 
@@ -26,7 +26,7 @@ RUN pnpm --filter @nube-auth/core build
 # Production stage
 FROM node:22-alpine AS runner
 
-RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
+RUN corepack enable && corepack prepare pnpm@12.16.1 --activate
 
 WORKDIR /app
 

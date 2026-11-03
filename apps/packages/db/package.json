@@ -37,7 +37,7 @@
 		"@nube-auth/shared": "workspace:*",
 		"drizzle-orm": "^0.45.4",
 		"pg": "^8.13.1",
-		"zod": "^4.3.4"
+		"zod": "^4.3.5"
 	},
 	"devDependencies": {
 		"@types/pg": "^8.11.10",
