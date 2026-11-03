@@ -1,0 +1,68 @@
+apps/dashboard/admin/package.json
+  h_95aea6b4aa8772 41
+apps/dashboard/docs/package.json
+  h_95aea6b4aa8772 18
+apps/dashboard/home/package.json
+  h_95aea6b4aa8772 23
+apps/dashboard/user/package.json
+  h_95aea6b4aa8772 28
+apps/packages/auth/package.json
+  h_95aea6b4aa8772 31
+apps/packages/billing/package.json
+  h_95aea6b4aa8772 18-19,33-34
+apps/packages/billing/tsdown.config.ts
+  h_95aea6b4aa8772 1,9
+apps/packages/cache/package.json
+  h_95aea6b4aa8772 25
+apps/packages/client/package.json
+  h_95aea6b4aa8772 19-20,28-29
+apps/packages/client/tsdown.config.ts
+  h_95aea6b4aa8772 1,4,9-14
+apps/packages/components/package.json
+  h_95aea6b4aa8772 49
+apps/packages/db/package.json
+  h_95aea6b4aa8772 47
+apps/packages/queue/package.json
+  h_95aea6b4aa8772 27-28,38-39
+apps/packages/queue/tsdown.config.ts
+  h_95aea6b4aa8772 1,10
+apps/packages/react/package.json
+  h_95aea6b4aa8772 20-21,32-33
+apps/packages/react/tsdown.config.ts
+  h_95aea6b4aa8772 1,4,9-14
+apps/packages/shared/package.json
+  h_95aea6b4aa8772 32,34,44-45
+apps/packages/shared/tsdown.config.ts
+  h_95aea6b4aa8772 1,3-5,15-18,32-34
+apps/packages/ui/package.json
+  h_95aea6b4aa8772 37
+apps/services/core/package.json
+  h_95aea6b4aa8772 16,36,38
+apps/services/core/tsdown.config.ts
+  h_95aea6b4aa8772 1,8
+apps/services/gateway/package.json
+  h_95aea6b4aa8772 9,26,28
+apps/services/gateway/tsdown.config.ts
+  h_95aea6b4aa8772 1,13
+apps/services/workers/package.json
+  h_95aea6b4aa8772 12,29,31
+apps/services/workers/tsdown.config.ts
+  h_95aea6b4aa8772 1,13
+package.json
+  h_95aea6b4aa8772 47
+pnpm-lock.yaml
+  h_95aea6b4aa8772 288-289,370-371,386-387,390,393,402,414-415,460-461,482-483,513-515,517-518,530-531,539-541,543-544,582-583,617-618,632-634,636-637,654-656,658-659,679-681,683-684,708-709,750-752,757-758,799-801,806-807,839-841,846-847,2055-2057,2073-2075,2111-2116,2123-2128,2135-2140,2147-2152,2159-2164,2171-2176,2184-2190,2198-2204,2212-2218,2226-2232,2240-2246,2254-2260,2267-2272,2279-2284,2291-2296,2728-2847,3011-3078,3210-3213,3554-3562,3582-3585,3809-3811,3830-3833,4444-4446,4530-4551,4557-4561,4818-4820,4843-4845,4848-4856,4858,4860,4862-4868,4872-4878,4889-4891,4900-4902,5230-5248,6364-6365,6380-6383,6413-6415,6419-6421,6425-6427,6431-6433,6437-6439,6443-6445,6449-6451,6455-6457,6461-6463,6467-6469,6473-6475,6479-6481,6485-6487,6491-6493,6497-6499,6866-6925,6952,6955,7107,7111-7112,7116,7118-7120,7128,7130,7137-7173,7225,7274-7275,7371-7372,7603-7604,7624-7625,7895-7896,7907-7908,8476-8477,8554-8567,8589-8609,8935-8936,8951,8953-8966,8968-8969,8971-8977,8994-9015,9021-9025,9153,9162,9168,9170,9172,9181,9184-9185,9191,9265,9273,9328-9357
+pnpm-workspace.yaml
+  h_95aea6b4aa8772 51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cb027f9277eb9676022daec95dabe8db6ee4dd7a",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
