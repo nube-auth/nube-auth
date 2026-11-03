@@ -1,0 +1,14 @@
+.github/workflows/deploy-production.yml
+  h_95aea6b4aa8772 55,116,132,144-147,156,167-170,180,192-195,205
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2be6ef52056e8abf5e0c002b086daba816e39e82",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
