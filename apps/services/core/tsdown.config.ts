@@ -1,9 +1,9 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from "tsdown";
 
 export default defineConfig({
 	entry: ["src/index.ts", "src/utils/*.ts"],
 	format: ["esm"],
-	target: "node22",
+	target: "node24",
 	clean: true,
-	splitting: false,
+	outExtensions: () => ({ js: ".js" }),
 });

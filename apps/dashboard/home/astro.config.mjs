@@ -1,3 +1,4 @@
+import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "astro/config";
 import { nubeHosts } from "../../../scripts/nube-hosts.mjs";
 
@@ -12,5 +13,8 @@ export default defineConfig({
 	output: "static",
 	server: {
 		port: 4321,
+	},
+	vite: {
+		plugins: [tailwindcss()],
 	},
 });

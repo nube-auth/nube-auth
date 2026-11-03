@@ -1,8 +1,14 @@
+@import "tailwindcss";
 @import "@nube-auth/components/styles/tokens.css";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+	--color-primary: var(--primary);
+	--color-secondary: var(--secondary);
+	--color-danger: var(--danger);
+	--color-success: var(--success);
+	--color-warning: var(--warning);
+	--color-border: var(--border);
+}
 
 /* ==========================================================================
    NubeAuth home

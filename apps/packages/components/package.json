@@ -44,9 +44,9 @@
 		"@types/react-dom": "^18.0.0",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.0.0",
-		"tailwind-merge": "^2.0.0",
-		"tailwindcss": "^4.1.18",
-		"typescript": "^6.0.2"
+		"tailwind-merge": "^3.7.0",
+		"tailwindcss": "^4.3.3",
+		"typescript": "^7.0.2"
 	},
 	"devDependencies": {
 		"selia": "^0.2.3"

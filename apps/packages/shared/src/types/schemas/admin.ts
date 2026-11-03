@@ -69,7 +69,7 @@ export const CreateAppRequestSchema = z.object({
 			currency: CurrencyCodeSchema.default("usd"),
 			billing_period: z.enum(["none", "monthly", "yearly", "one_time", "custom"]).default("none"),
 			trial_days: TrialDaysSchema,
-			features: z.record(z.any()).optional(),
+			features: z.record(z.string(), z.any()).optional(),
 		})
 		.optional(),
 });
@@ -118,13 +118,13 @@ export const GrantLicenseRequestSchema = z.object({
 	user_id: PublicIdSchema,
 	plan_id: z.number().int().positive(),
 	duration_days: z.number().int().min(1).max(3650).optional().nullable(),
-	metadata: z.record(z.any()).optional(),
+	metadata: z.record(z.string(), z.any()).optional(),
 });
 
 export const UpdateLicenseRequestSchema = z.object({
 	status: z.enum(["active", "expired", "revoked"]).optional(),
 	valid_until: z.number().int().positive().optional().nullable(),
-	metadata: z.record(z.any()).optional(),
+	metadata: z.record(z.string(), z.any()).optional(),
 });
 
 /**
@@ -139,7 +139,7 @@ export const CreatePlanRequestSchema = z.object({
 	currency: CurrencyCodeSchema,
 	billing_period: z.enum(["monthly", "yearly", "one_time", "custom"]),
 	trial_days: TrialDaysSchema,
-	features: z.record(z.any()).optional(),
+	features: z.record(z.string(), z.any()).optional(),
 	is_active: z.boolean().default(true),
 });
 
