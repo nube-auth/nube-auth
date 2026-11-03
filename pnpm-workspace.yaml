@@ -48,7 +48,7 @@ catalogs:
   default:
     express: '^4.18.0'
     hono: '^4.13.13'
-    typescript: '^6.0.2'
+    typescript: '^7.0.2'
 
 allowBuilds:
   esbuild: true

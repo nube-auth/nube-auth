@@ -13,7 +13,7 @@
 	},
 	"scripts": {
 		"dev": "dotenv -e ../../../.env.local -- tsx watch src/index.ts",
-		"build": "tsup",
+		"build": "tsdown",
 		"start": "node dist/index.js",
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run"
@@ -33,9 +33,9 @@
 	"devDependencies": {
 		"@hono/zod-validator": "^0.7.6",
 		"@types/node": "^25.0.3",
-		"tsup": "^8.0.0",
+		"tsdown": "^0.23.4",
 		"tsx": "^4.23.15",
-		"typescript": "^6.0.2",
+		"typescript": "^7.0.2",
 		"vitest": "^3.2.7",
 		"zod": "^4.6.7"
 	}

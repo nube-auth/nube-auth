@@ -29,9 +29,9 @@
 		}
 	},
 	"scripts": {
-		"build": "tsup",
+		"build": "tsdown",
 		"typecheck": "tsc --noEmit",
-		"dev": "tsup --watch"
+		"dev": "tsdown --watch"
 	},
 	"dependencies": {
 		"@pingpong-js/fetch": "^1.0.2",
@@ -41,8 +41,8 @@
 	},
 	"devDependencies": {
 		"nanoid": "^5.1.16",
-		"tsup": "^8.0.0",
-		"typescript": "^6.0.2"
+		"tsdown": "^0.23.4",
+		"typescript": "^7.0.2"
 	},
 	"files": [
 		"dist"

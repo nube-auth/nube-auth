@@ -1,8 +1,8 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from "tsdown";
 
-export default [
-	// Browser-consumed entries — no createRequire banner (breaks Vite browser bundling)
-	defineConfig({
+export default defineConfig([
+	// Browser-consumed entries — no createRequire banner
+	{
 		entry: {
 			index: "src/index.ts",
 			"types/schemas/index": "src/types/schemas/index.ts",
@@ -10,13 +10,12 @@ export default [
 		format: ["esm"],
 		platform: "node",
 		dts: true,
-		outDir: "dist",
 		clean: true,
 		sourcemap: false,
-		splitting: false,
-	}),
-	// Server-only entries — Node.js services only, never imported by browser
-	defineConfig({
+		outExtensions: () => ({ js: ".js", dts: ".d.ts" }),
+	},
+	// Server-only entries
+	{
 		entry: {
 			"env-loader": "src/env-loader.ts",
 			email: "src/email.ts",
@@ -28,9 +27,8 @@ export default [
 			js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
 		},
 		dts: true,
-		outDir: "dist",
 		clean: false,
 		sourcemap: false,
-		splitting: false,
-	}),
-];
+		outExtensions: () => ({ js: ".js", dts: ".d.ts" }),
+	},
+]);
