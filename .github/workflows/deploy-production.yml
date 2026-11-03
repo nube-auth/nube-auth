@@ -52,7 +52,7 @@ on:
 
 concurrency:
   group: deploy-production-${{ github.event_name == 'workflow_dispatch' && inputs.action || 'push' }}-${{ github.ref_name }}
-  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' || inputs.action != 'deploy_only' }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -113,7 +113,7 @@ jobs:
       image_tag: ${{ needs.meta.outputs.tag }}
       platforms: linux/amd64,linux/arm64
       extra_tag: ${{ needs.meta.outputs.extra_tag }}
-      railway_service_var_suffix: ${{ needs.meta.outputs.action == 'build_only' && '' || 'CORE' }}
+      railway_service_var_suffix: ${{ needs.meta.outputs.action != 'build_only' && 'CORE' || '' }}
       railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
     secrets: inherit
 
@@ -129,7 +129,7 @@ jobs:
       image_tag: ${{ needs.meta.outputs.tag }}
       platforms: linux/amd64,linux/arm64
       extra_tag: ${{ needs.meta.outputs.extra_tag }}
-      railway_service_var_suffix: ${{ needs.meta.outputs.action == 'build_only' && '' || 'GATEWAY' }}
+      railway_service_var_suffix: ${{ needs.meta.outputs.action != 'build_only' && 'GATEWAY' || '' }}
       railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
     secrets: inherit
 
@@ -141,7 +141,10 @@ jobs:
       always() &&
       needs.meta.result == 'success' &&
       needs.meta.outputs.action != 'deploy_only' &&
-      (needs.meta.outputs.service == 'all' ? (needs.core.result == 'success' && needs.gateway.result == 'success') : needs.meta.outputs.service == 'workers')
+      (
+        (needs.meta.outputs.service == 'all' && needs.core.result == 'success' && needs.gateway.result == 'success') ||
+        needs.meta.outputs.service == 'workers'
+      )
     uses: ./.github/workflows/_build-image.yml
     with:
       image_name: nube-auth-prod-workers
@@ -150,7 +153,7 @@ jobs:
       image_tag: ${{ needs.meta.outputs.tag }}
       platforms: linux/amd64,linux/arm64
       extra_tag: ${{ needs.meta.outputs.extra_tag }}
-      railway_service_var_suffix: ${{ needs.meta.outputs.action == 'build_only' && '' || 'WORKERS' }}
+      railway_service_var_suffix: ${{ needs.meta.outputs.action != 'build_only' && 'WORKERS' || '' }}
       railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
     secrets: inherit
 
@@ -161,7 +164,10 @@ jobs:
       always() &&
       needs.meta.result == 'success' &&
       needs.meta.outputs.action != 'deploy_only' &&
-      (needs.meta.outputs.service == 'all' ? (needs.core.result == 'success' && needs.gateway.result == 'success') : needs.meta.outputs.service == 'dashboards')
+      (
+        (needs.meta.outputs.service == 'all' && needs.core.result == 'success' && needs.gateway.result == 'success') ||
+        needs.meta.outputs.service == 'dashboards'
+      )
     uses: ./.github/workflows/_build-image.yml
     with:
       image_name: nube-auth-prod-dashboards
@@ -171,7 +177,7 @@ jobs:
       platforms: linux/amd64,linux/arm64
       extra_tag: ${{ needs.meta.outputs.extra_tag }}
       build_args: ${{ needs.meta.outputs.production_build_args }}
-      railway_service_var_suffix: ${{ needs.meta.outputs.action == 'build_only' && '' || 'DASHBOARDS' }}
+      railway_service_var_suffix: ${{ needs.meta.outputs.action != 'build_only' && 'DASHBOARDS' || '' }}
       railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
     secrets: inherit
 
@@ -183,7 +189,10 @@ jobs:
       always() &&
       needs.meta.result == 'success' &&
       needs.meta.outputs.action != 'deploy_only' &&
-      (needs.meta.outputs.service == 'all' ? (needs.workers.result == 'success' && needs.dashboards.result == 'success') : needs.meta.outputs.service == 'all-in-one')
+      (
+        (needs.meta.outputs.service == 'all' && needs.workers.result == 'success' && needs.dashboards.result == 'success') ||
+        needs.meta.outputs.service == 'all-in-one'
+      )
     uses: ./.github/workflows/_build-image.yml
     with:
       image_name: nube-auth-prod-all
@@ -193,7 +202,7 @@ jobs:
       platforms: linux/amd64,linux/arm64
       extra_tag: ${{ needs.meta.outputs.extra_tag }}
       build_args: ${{ needs.meta.outputs.production_build_args }}
-      railway_service_var_suffix: ${{ needs.meta.outputs.service == 'all-in-one' && 'APP' || '' }}
+      railway_service_var_suffix: ${{ needs.meta.outputs.action != 'build_only' && needs.meta.outputs.service == 'all-in-one' && 'APP' || '' }}
       railway_environment_id: ${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT_ID }}
     secrets: inherit
 
