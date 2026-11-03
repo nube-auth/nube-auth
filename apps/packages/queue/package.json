@@ -30,8 +30,8 @@
 		"clean": "rm -rf dist"
 	},
 	"dependencies": {
-		"bullmq": "^5.8.0",
-		"ioredis": "^5.8.2"
+		"bullmq": "^6.5.4",
+		"ioredis": "^6.0.0"
 	},
 	"devDependencies": {
 		"@types/node": "^25.0.3",

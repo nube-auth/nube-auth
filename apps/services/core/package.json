@@ -26,10 +26,9 @@
 		"@nube-auth/db": "workspace:*",
 		"@nube-auth/queue": "workspace:*",
 		"@nube-auth/shared": "workspace:*",
-		"bullmq": "^5.8.0",
+		"bullmq": "^6.5.4",
 		"hono": "4.13.13",
-		"ioredis": "^5.3.2",
-		"resend": "^2.0.0"
+		"ioredis": "^6.0.0"
 	},
 	"devDependencies": {
 		"@hono/zod-validator": "^0.7.6",

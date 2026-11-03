@@ -1,7 +1,6 @@
 overrides:
   undici: 7.29.1
   tar: 7.5.22
-  ioredis: 5.8.2
   # Direct and transitive advisories. Selectors stay on the installed major
   # when a jump would break callers (nanoid 3, minimatch 9, picomatch 2, uuid 9).
   hono: 4.13.13
@@ -53,3 +52,6 @@ catalogs:
 allowBuilds:
   esbuild: true
   msgpackr-extract: true
+
+minimumReleaseAgeExclude:
+  - bullmq@6.5.4
