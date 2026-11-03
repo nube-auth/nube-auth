@@ -23,9 +23,6 @@ export default defineConfig([
 		},
 		format: ["esm"],
 		platform: "node",
-		banner: {
-			js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
-		},
 		dts: true,
 		clean: false,
 		sourcemap: false,
