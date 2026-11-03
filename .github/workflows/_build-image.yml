@@ -3,13 +3,8 @@ name: Build image
 # ═══════════════════════════════════════════════════════════════════════════════
 # Reusable workflow: builds a single Docker image and pushes it to GHCR.
 #
-# Called by docker-build.yml for each service.  Avoids ~200 lines of duplicated
-# checkout / buildx / login / metadata / build-push steps across 5+ jobs.
-#
-# Railway integration (optional):
-#   Set RAILWAY_TOKEN + RAILWAY_ENVIRONMENT_ID + one or more
-#   RAILWAY_SERVICE_ID_<name> GitHub variables/secrets to trigger a Railway
-#   deploy immediately after the image lands in GHCR.
+# Called by deploy workflows for each service. Avoids ~200 lines of duplicated
+# checkout / buildx / login / metadata / build-push steps across jobs.
 # ═══════════════════════════════════════════════════════════════════════════════
 
 on:
@@ -46,16 +41,6 @@ on:
         type: string
         default: ''
         description: 'Additional tag (e.g. v1.2.3 from a semver tag push)'
-      railway_service_var_suffix:
-        required: false
-        type: string
-        default: ''
-        description: 'Suffix for RAILWAY_SERVICE_ID_* var lookup (e.g. CORE, GATEWAY)'
-      railway_environment_id:
-        required: false
-        type: string
-        default: ''
-        description: 'Railway environment UUID for this deploy (staging or production)'
     secrets:
       GH_PAT:
         required: true
@@ -144,58 +129,3 @@ jobs:
           sbom: false
           # Network mode host can help with flaky connections
           network: host
-
-      # ── Trigger Railway deploy via GraphQL API ───────────────────────────
-      # Uses nube-scripts/dev/scripts/railway-deploy.ts instead of CLI.
-      # Set RAILWAY_TOKEN as GitHub Secret and per-service RAILWAY_SERVICE_ID_* vars.
-      - name: Deploy to Railway
-        if: inputs.railway_service_var_suffix != ''
-        continue-on-error: true
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
-          RAILWAY_ENVIRONMENT_ID: ${{ inputs.railway_environment_id }}
-          RAILWAY_SERVICE_ID_STAGING: ${{ vars.RAILWAY_SERVICE_ID_STAGING }}
-          RAILWAY_SERVICE_ID_PRODUCTION_CORE: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_CORE }}
-          RAILWAY_SERVICE_ID_PRODUCTION_GATEWAY: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_GATEWAY }}
-          RAILWAY_SERVICE_ID_PRODUCTION_WORKERS: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_WORKERS }}
-          RAILWAY_SERVICE_ID_PRODUCTION_DASHBOARDS: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_DASHBOARDS }}
-          RAILWAY_SERVICE_ID_PRODUCTION_APP: ${{ vars.RAILWAY_SERVICE_ID_PRODUCTION_APP }}
-        run: |
-          if [ -z "$RAILWAY_TOKEN" ] || [ -z "$RAILWAY_ENVIRONMENT_ID" ]; then
-            echo "Railway vars not configured — skipping deploy trigger."
-            exit 0
-          fi
-          if [ "${{ inputs.branch }}" = "staging" ]; then
-            SERVICE_ID_VAR="RAILWAY_SERVICE_ID_${{ inputs.railway_service_var_suffix }}"
-          else
-            SERVICE_ID_VAR="RAILWAY_SERVICE_ID_PRODUCTION_${{ inputs.railway_service_var_suffix }}"
-          fi
-          SERVICE_ID=$(eval echo "\$$SERVICE_ID_VAR")
-          if [ -z "$SERVICE_ID" ]; then
-            echo "SERVICE_ID var $SERVICE_ID_VAR not set — skipping deploy trigger."
-            exit 0
-          fi
-          echo "Triggering Railway deploy for service $SERVICE_ID in env $RAILWAY_ENVIRONMENT_ID..."
-          ENV_NAME="${{ inputs.branch == 'staging' && 'staging' || 'production' }}"
-          SERVICE_KEY="${{ inputs.railway_service_var_suffix }}"
-          # Convert var suffix to service key (e.g. STAGING -> all, CORE -> core)
-          case "$SERVICE_KEY" in
-            STAGING) SVC_KEY="all" ;;
-            APP) SVC_KEY="all-in-one" ;;
-            CORE) SVC_KEY="core" ;;
-            GATEWAY) SVC_KEY="gateway" ;;
-            WORKERS) SVC_KEY="workers" ;;
-            DASHBOARDS) SVC_KEY="dashboards" ;;
-            *) SVC_KEY="$(echo "$SERVICE_KEY" | tr '[:upper:]' '[:lower:]')" ;;
-          esac
-          npx tsx nube-scripts/dev/scripts/railway-deploy.ts \
-            --env "$ENV_NAME" \
-            --environment-id "$RAILWAY_ENVIRONMENT_ID" \
-            --service-id "$SERVICE_ID" \
-            --service "$SVC_KEY" \
-            --tag "${{ inputs.image_tag }}" \
-            --wait || {
-              echo "::warning title=Railway Deploy Failed::Railway deployment failed for $SVC_KEY ($SERVICE_ID). The image was built and pushed to GHCR successfully."
-              exit 1
-            }

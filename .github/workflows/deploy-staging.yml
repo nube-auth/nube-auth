@@ -47,7 +47,7 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-  build-and-deploy:
+  build:
     name: Staging (all-in-one)
     needs: meta
     uses: ./.github/workflows/_build-image.yml
@@ -58,6 +58,44 @@ jobs:
       image_tag: latest
       platforms: linux/amd64
       build_args: ${{ needs.meta.outputs.staging_build_args }}
-      railway_service_var_suffix: STAGING
-      railway_environment_id: ${{ vars.RAILWAY_STAGING_ENVIRONMENT_ID }}
     secrets: inherit
+
+  # ═════════════════════════════════════════════════════════════════════════
+  # Deploy to Railway (runs only after the build step is done)
+  # ═════════════════════════════════════════════════════════════════════════
+  deploy:
+    name: Deploy to Railway
+    needs: [meta, build]
+    if: |
+      always() &&
+      needs.meta.result == 'success' &&
+      needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Deploy to Railway
+        continue-on-error: true
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+          RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_STAGING_ENVIRONMENT_ID }}
+          RAILWAY_SERVICE_ID_STAGING: ${{ vars.RAILWAY_SERVICE_ID_STAGING }}
+        run: |
+          set -euo pipefail
+          echo "Deploying to staging..."
+
+          npx tsx nube-scripts/dev/scripts/railway-deploy.ts \
+            --env staging \
+            --environment-id "${{ vars.RAILWAY_STAGING_ENVIRONMENT_ID }}" \
+            --service-id "${{ vars.RAILWAY_SERVICE_ID_STAGING }}" \
+            --service all \
+            --tag latest \
+            --wait || {
+              echo "::warning title=Railway Deploy Failed::Railway staging deployment failed. Image was built and pushed to GHCR successfully."
+              exit 1
+            }
