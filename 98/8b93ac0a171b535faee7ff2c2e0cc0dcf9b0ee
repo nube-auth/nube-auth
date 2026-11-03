@@ -1,0 +1,16 @@
+pnpm-lock.yaml
+  h_95aea6b4aa8772 223,393-394,2870,2907-2908,5142-5143,6931,6934,6991,6994-6997,7057,7065,7075,9124,9134,9208,9210-9212,9214
+pnpm-workspace.yaml
+  h_95aea6b4aa8772 36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "988b93ac0a171b535faee7ff2c2e0cc0dcf9b0ee",
+  "prompts": {},
+  "humans": {
+    "h_95aea6b4aa8772": {
+      "author": "Devendra Pratap <dps.manit@gmail.com>"
+    }
+  }
+}
