@@ -36,12 +36,10 @@
 	"dependencies": {
 		"@pingpong-js/fetch": "^1.0.2",
 		"hono": "4.13.13",
-		"nodemailer": "^10.1.1",
-		"pino": "^10.1.0",
-		"zod": "^4.3.5"
+		"pino": "^10.4.0",
+		"zod": "^4.6.7"
 	},
 	"devDependencies": {
-		"@types/nodemailer": "^8.0.2",
 		"nanoid": "^5.1.16",
 		"tsup": "^8.0.0",
 		"typescript": "^6.0.2"
