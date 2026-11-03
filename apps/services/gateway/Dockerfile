@@ -1,5 +1,5 @@
 # Build stage
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@12.16.1 --activate
@@ -21,7 +21,7 @@ RUN pnpm --filter @nube-auth/auth build
 RUN pnpm --filter @nube-auth/gateway build
 
 # Production stage
-FROM node:22-alpine AS runner
+FROM node:24-alpine AS runner
 
 RUN corepack enable && corepack prepare pnpm@12.16.1 --activate
 
