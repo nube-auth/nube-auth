@@ -29,6 +29,7 @@ export async function setupEmailWorker(): Promise<Worker<SendEmailJob>> {
 		apiKey: process.env["EMAIL_API_KEY"] ?? "",
 		defaultFrom: process.env["EMAIL_FROM"] ?? "noreply@localhost",
 		themeId: process.env["EMAIL_THEME_ID"] ?? undefined,
+		templatePrefix: process.env["EMAIL_TEMPLATE_PREFIX"] ?? "nubeauth-",
 	});
 
 	return new BullWorker<SendEmailJob>(

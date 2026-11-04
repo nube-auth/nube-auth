@@ -213,7 +213,7 @@ membersRouter.post("/:projectId/members", async (c: Context) => {
 		try {
 			await enqueueEmail({
 				to: email,
-				templateSlug: "project-invite",
+				templateSlug: "team-invite",
 				variables: {
 					projectName: project.name,
 					inviterName: requestingUser.name || requestingUser.primary_email || "A team member",

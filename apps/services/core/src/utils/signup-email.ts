@@ -3,7 +3,7 @@
  *
  * On a user's very first signup, two emails are sent:
  *  1. account-welcome — Nube Auth account welcome with the user dashboard link.
- *  2. app-signup     — app-specific welcome (only when signing up through an app).
+ *  2. app-welcome     — app-specific welcome (only when signing up through an app).
  *
  * These are enqueued fire-and-forget; delivery + retries are handled by the
  * email worker.
@@ -51,13 +51,13 @@ export function enqueueSignupEmails(params: SignupEmailParams): void {
 	if (appName) {
 		enqueueEmail({
 			to: email,
-			templateSlug: "app-signup",
+			templateSlug: "app-welcome",
 			variables: {
 				userName,
 				appName,
 			},
 		}).catch((err: unknown) => {
-			log.error({ err: serializeError(err as Error), email, appName }, "Failed to enqueue app-signup email");
+			log.error({ err: serializeError(err as Error), email, appName }, "Failed to enqueue app-welcome email");
 		});
 	}
 }
